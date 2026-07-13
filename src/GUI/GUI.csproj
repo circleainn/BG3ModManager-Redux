@@ -115,9 +115,6 @@
 	</Target>
 	
 	<Target Name="RunBuildRelease" AfterTargets="SetupLibFolder" Condition="'$(Configuration)' == 'Publish'">
-		<GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
-			<Output TaskParameter="Assemblies" ItemName="AssemblyVersion" />
-		</GetAssemblyIdentity>
-		<Exec Command="python &quot;BuildRelease.py&quot; &quot;%(AssemblyVersion.Version)&quot;" WorkingDirectory="$(SolutionDir)" />
+		<Exec Command="python &quot;BuildRelease.py&quot; &quot;$(InformationalVersion)&quot;" WorkingDirectory="$(SolutionDir)" />
 	</Target>
 </Project>
