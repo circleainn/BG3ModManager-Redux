@@ -1,0 +1,107 @@
+<adonisUI:AdonisWindow x:Class="DivinityModManager.Views.OfflineNexusDatabaseWarningWindow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+	Title="Offline Nexus Metadata"
+	Width="680"
+	Height="438"
+	MinWidth="680"
+	MinHeight="438"
+	MaxWidth="680"
+	MaxHeight="438"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontWeight="Medium"
+	TextOptions.TextFormattingMode="Display"
+	TextOptions.TextRenderingMode="ClearType"
+	ResizeMode="NoResize"
+	ShowInTaskbar="False"
+	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
+	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
+	WindowStartupLocation="CenterOwner">
+	<Window.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Window.Resources>
+	<Border Padding="22"
+		Background="{DynamicResource ReduxAppBackgroundBrush}"
+		BorderBrush="{DynamicResource ReduxBorderBrush}"
+		BorderThickness="1">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+				<Border Width="42"
+					Height="42"
+					Margin="0,0,14,0"
+					VerticalAlignment="Top"
+					Background="{DynamicResource ReduxAccentSoftBrush}"
+					BorderBrush="{DynamicResource ReduxAccentBrush}"
+					BorderThickness="1"
+					CornerRadius="21">
+					<TextBlock HorizontalAlignment="Center"
+						VerticalAlignment="Center"
+						FontSize="21"
+						Foreground="{DynamicResource ReduxAccentHoverBrush}"
+						Text="i" />
+				</Border>
+				<StackPanel Grid.Column="1">
+					<TextBlock FontSize="20"
+						FontWeight="SemiBold"
+						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+						Text="Redux can identify some Nexus mods offline" />
+					<TextBlock Margin="0,5,0,0"
+						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+						Text="Live Nexus metadata requires a Nexus Mods API key in Preferences."
+						TextWrapping="Wrap" />
+				</StackPanel>
+			</Grid>
+			<Border Grid.Row="1"
+				Margin="0,18,0,14"
+				Padding="14,12"
+				Background="{DynamicResource ReduxSurfaceBrush}"
+				BorderBrush="{DynamicResource ReduxAccentBrush}"
+				BorderThickness="1"
+				CornerRadius="8">
+				<StackPanel>
+					<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+						Text="Without an API key, Redux may identify a pre-existing Nexus mod only when its installed .pak is an exact byte-for-byte match for a version recorded in the bundled offline database. Unknown files remain Local."
+						TextWrapping="Wrap" />
+					<TextBlock Margin="0,9,0,0"
+						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+						Text="The database is a work in progress. Its information may be incomplete or out of date, and a different version of the same mod will not match. Add a personal Nexus Mods API key for live metadata during private testing."
+						TextWrapping="Wrap" />
+					<TextBlock Margin="0,9,0,0"
+						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+						Text="The bundled offline database covers Nexus Mods only. Redux does not include an offline mod.io database; a mod.io API key is required to retrieve live mod.io metadata."
+						TextWrapping="Wrap" />
+					<CheckBox x:Name="AcknowledgementCheckBox"
+						Margin="0,14,0,0"
+						FontWeight="SemiBold"
+						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+						Content="I understand that offline matches are exact-version fallbacks and may be incomplete." />
+				</StackPanel>
+			</Border>
+			<Button Grid.Row="2"
+				Width="116"
+				Height="34"
+				HorizontalAlignment="Right"
+				Background="{DynamicResource ReduxAccentBrush}"
+				BorderBrush="{DynamicResource ReduxAccentHoverBrush}"
+				Click="ContinueButton_Click"
+				Content="Continue"
+				Foreground="White"
+				IsDefault="True"
+				IsEnabled="{Binding IsChecked, ElementName=AcknowledgementCheckBox}" />
+		</Grid>
+	</Border>
+</adonisUI:AdonisWindow>

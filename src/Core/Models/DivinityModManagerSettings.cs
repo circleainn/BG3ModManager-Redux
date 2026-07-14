@@ -57,6 +57,12 @@ public class DivinityModManagerSettings : ReactiveObject
 	[Reactive] public bool ResetModioSupportWarningAcknowledgement { get; set; }
 
 	[DefaultValue(false)]
+	[DataMember, Reactive] public bool OfflineNexusDatabaseWarningAcknowledged { get; set; }
+
+	[SettingsEntry("Show offline Nexus database notice again", "Clear the saved acknowledgement so the offline Nexus metadata notice appears again when Redux starts without a Nexus API key or uses an exact bundled .pak match.")]
+	[Reactive] public bool ResetOfflineNexusDatabaseWarningAcknowledgement { get; set; }
+
+	[DefaultValue(false)]
 	[SettingsEntry("Story Log", "When launching the game, enable the Osiris story log (osiris.log)")]
 	[DataMember, Reactive] public bool GameStoryLogEnabled { get; set; }
 
@@ -360,6 +366,15 @@ public class DivinityModManagerSettings : ReactiveObject
 			{
 				ReduxPreviewWarningAcknowledged = false;
 				ResetReduxPreviewWarningAcknowledgement = false;
+				CanSaveSettings = true;
+			});
+
+		this.WhenAnyValue(x => x.ResetOfflineNexusDatabaseWarningAcknowledgement)
+			.Where(reset => reset)
+			.Subscribe(_ =>
+			{
+				OfflineNexusDatabaseWarningAcknowledged = false;
+				ResetOfflineNexusDatabaseWarningAcknowledgement = false;
 				CanSaveSettings = true;
 			});
 

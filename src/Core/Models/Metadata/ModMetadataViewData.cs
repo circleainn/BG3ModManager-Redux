@@ -1,5 +1,6 @@
 using DivinityModManager.Util;
 using DivinityModManager.Extensions;
+using DivinityModManager.Models.NexusMods;
 
 using System.ComponentModel;
 using System.Globalization;
@@ -17,10 +18,10 @@ public sealed class ModMetadataViewData : ReactiveObject
 	private readonly DivinityModData _mod;
 	private INotifyPropertyChanged _nexusMetadata;
 	private INotifyPropertyChanged _modioMetadata;
-	private IExternalModMetadata Provider => _mod.CanOpenNexusModsLink
-		? _mod.NexusModsData
-		: _mod.ModioData?.HasMetadata == true
-			? _mod.ModioData
+	private IExternalModMetadata Provider => _mod.ModioData?.HasMetadata == true
+		? _mod.ModioData
+		: _mod.CanOpenNexusModsLink
+			? _mod.NexusModsData
 			: null;
 	private bool HasOnlineMetadata => Provider?.HasMetadata == true;
 
@@ -69,6 +70,13 @@ public sealed class ModMetadataViewData : ReactiveObject
 	public string LinkStatus => HasOnlineMetadata
 		? $"Automatically linked from {SourceLabel}"
 		: "Selected mod details";
+
+	public bool UsesBundledNexusMetadata => SourceType == ModSourceType.NEXUSMODS
+		&& _mod.NexusModsData?.UsesBundledProvenance == true;
+	public Visibility OfflineDatabaseNoticeVisibility => UsesBundledNexusMetadata ? Visibility.Visible : Visibility.Collapsed;
+	public string OfflineDatabaseNotice => "Redux offline database";
+	public string OfflineDatabaseNoticeTooltip =>
+		"Loaded from Redux's bundled offline mod database using an exact .pak match. Information may be incomplete or out of date until Nexus Mods metadata is refreshed.";
 
 	public string VersionLabel => HasOnlineMetadata
 		? $"{SourceLabel} version {Version}"
@@ -188,6 +196,10 @@ public sealed class ModMetadataViewData : ReactiveObject
 		this.RaisePropertyChanged(nameof(ChangelogButtonLabel));
 		this.RaisePropertyChanged(nameof(ChangelogHelperText));
 		this.RaisePropertyChanged(nameof(LinkStatus));
+		this.RaisePropertyChanged(nameof(UsesBundledNexusMetadata));
+		this.RaisePropertyChanged(nameof(OfflineDatabaseNoticeVisibility));
+		this.RaisePropertyChanged(nameof(OfflineDatabaseNotice));
+		this.RaisePropertyChanged(nameof(OfflineDatabaseNoticeTooltip));
 		this.RaisePropertyChanged(nameof(VersionLabel));
 		this.RaisePropertyChanged(nameof(AuthorLabel));
 		this.RaisePropertyChanged(nameof(Uploader));

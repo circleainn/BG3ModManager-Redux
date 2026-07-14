@@ -512,10 +512,26 @@
 								</Border>
 							</WrapPanel>
 						</StackPanel>
-						<TextBlock Grid.Row="1"
-							Margin="0,2,0,0"
-							Foreground="{DynamicResource ReduxTextMutedBrush}"
-							Text="{Binding Metadata.LinkStatus}" />
+						<WrapPanel Grid.Row="1" Margin="0,2,0,0" VerticalAlignment="Center">
+							<TextBlock VerticalAlignment="Center"
+								Foreground="{DynamicResource ReduxTextMutedBrush}"
+								Text="{Binding Metadata.LinkStatus}" />
+							<Border Margin="8,0,0,0"
+								Padding="6,2"
+								VerticalAlignment="Center"
+								Background="{DynamicResource ReduxWarningSoftBrush}"
+								BorderBrush="{DynamicResource ReduxWarningBrush}"
+								BorderThickness="1"
+								CornerRadius="6"
+								ToolTip="{Binding Metadata.OfflineDatabaseNoticeTooltip}"
+								Visibility="{Binding Metadata.OfflineDatabaseNoticeVisibility}">
+								<TextBlock VerticalAlignment="Center"
+									FontSize="10"
+									FontWeight="SemiBold"
+									Foreground="{DynamicResource ReduxWarningBrush}"
+									Text="{Binding Metadata.OfflineDatabaseNotice}" />
+							</Border>
+						</WrapPanel>
 						<WrapPanel Grid.Row="2" Margin="0,7,0,0">
 							<Border Style="{StaticResource ModDetailsMetadataChipStyle}"
 								ToolTip="{Binding SourceComponentTooltip}"

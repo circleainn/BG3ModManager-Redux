@@ -2501,6 +2501,48 @@ Directory the zip will be extracted to:
 					}, RxApp.MainThreadScheduler);
 				}
 
+				var provenanceMatches = new List<(DivinityModData Mod, NexusPakProvenanceEntry Entry)>();
+				var provenanceCandidates = loadedUserMods
+					.Where(mod => mod.NexusModsData.ModId < DivinityApp.NEXUSMODS_MOD_ID_START
+						&& mod.ModioData?.HasMetadata != true
+						&& NexusPakProvenanceService.CouldMatch(mod.FilePath))
+					.ToList();
+
+				foreach (var mod in provenanceCandidates)
+				{
+					try
+					{
+						var match = await NexusPakProvenanceService.TryResolveAsync(mod.FilePath, cancellationToken);
+						if (match != null)
+						{
+							provenanceMatches.Add((mod, match));
+						}
+					}
+					catch (OperationCanceledException)
+					{
+						throw;
+					}
+					catch (Exception ex)
+					{
+						DivinityApp.Log($"Could not calculate Nexus provenance for '{mod.FilePath}':\n{ex}");
+					}
+				}
+
+				if (provenanceMatches.Count > 0)
+				{
+					await Observable.Start(() =>
+					{
+						foreach (var (mod, entry) in provenanceMatches)
+						{
+							mod.NexusModsData.Update(entry.CreateMetadata(mod.UUID));
+							UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
+							DivinityApp.Log($"Matched '{mod.FileName}' to Nexus Mods project {entry.ModId} using the bundled exact-pak database.");
+						}
+					}, RxApp.MainThreadScheduler);
+
+					cacheChanged = true;
+				}
+
 				var missingMetadata = loadedUserMods
 					.Where(mod => mod.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START
 						&& (String.IsNullOrWhiteSpace(mod.NexusModsData.Name)
@@ -2545,16 +2587,18 @@ Directory the zip will be extracted to:
 				RxApp.MainThreadScheduler.Schedule(() =>
 				{
 					IsRefreshingModUpdates = false;
+					ShowOfflineNexusDatabaseWarningIfRequired(loadedUserMods, false);
 					ScheduleRefreshModCategories();
 				});
 			}
 		});
 	}
 
-	private void LoadModioMetadataBackground()
+	private void LoadModioMetadataBackground(Action onCompleted = null)
 	{
 		if (String.IsNullOrWhiteSpace(Settings.ModioAPIKey))
 		{
+			onCompleted?.Invoke();
 			return;
 		}
 
@@ -2595,7 +2639,11 @@ Directory the zip will be extracted to:
 			}
 			finally
 			{
-				RxApp.MainThreadScheduler.Schedule(ScheduleRefreshModCategories);
+				RxApp.MainThreadScheduler.Schedule(() =>
+				{
+					ScheduleRefreshModCategories();
+					onCompleted?.Invoke();
+				});
 			}
 		});
 	}
@@ -2631,6 +2679,28 @@ Directory the zip will be extracted to:
 		if (warningWindow.ShowDialog() == true)
 		{
 			Settings.ModioSupportWarningAcknowledged = true;
+			SaveSettings();
+		}
+	}
+
+	private void ShowOfflineNexusDatabaseWarningIfRequired(IEnumerable<DivinityModData> loadedUserMods, bool isApplicationLaunch)
+	{
+		if (Settings.OfflineNexusDatabaseWarningAcknowledged)
+		{
+			return;
+		}
+
+		var apiKeyMissing = String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey);
+		var bundledMatchUsed = loadedUserMods?.Any(mod => mod.NexusModsData?.UsesBundledProvenance == true) == true;
+		if (!bundledMatchUsed && !(isApplicationLaunch && apiKeyMissing))
+		{
+			return;
+		}
+
+		var warningWindow = new OfflineNexusDatabaseWarningWindow { Owner = Window };
+		if (warningWindow.ShowDialog() == true)
+		{
+			Settings.OfflineNexusDatabaseWarningAcknowledged = true;
 			SaveSettings();
 		}
 	}
@@ -2887,8 +2957,10 @@ Directory the zip will be extracted to:
 			IsLoadingOrder = false;
 			IsInitialized = true;
 			ShowReduxPreviewWarningIfRequired();
-			LoadNexusModsMetadataBackground();
-			LoadModioMetadataBackground();
+			ShowOfflineNexusDatabaseWarningIfRequired(UserMods, true);
+			// Resolve the strongest provider identity first. The bundled Nexus
+			// provenance database is only a fallback for mods not identified by mod.io.
+			LoadModioMetadataBackground(LoadNexusModsMetadataBackground);
 
 			if (AppSettings.FeatureEnabled("ScriptExtender"))
 			{

@@ -11,6 +11,13 @@ using System.Text;
 
 namespace DivinityModManager.Models.NexusMods;
 
+public enum NexusMetadataOrigin
+{
+	Unknown = 0,
+	BundledProvenance = 1,
+	LiveApi = 2
+}
+
 public class NexusModsModData : INotifyPropertyChanged, IExternalModMetadata
 {
 	[JsonIgnore]
@@ -161,6 +168,26 @@ public class NexusModsModData : INotifyPropertyChanged, IExternalModMetadata
 	[JsonProperty("available")]
 	public bool Available { get; set; }
 
+	private NexusMetadataOrigin _metadataOrigin;
+
+	[JsonProperty("metadata_origin", DefaultValueHandling = DefaultValueHandling.Ignore)]
+	public NexusMetadataOrigin MetadataOrigin
+	{
+		get => _metadataOrigin;
+		set
+		{
+			if (_metadataOrigin != value)
+			{
+				_metadataOrigin = value;
+				RaisePropertyChanged(nameof(MetadataOrigin));
+				RaisePropertyChanged(nameof(UsesBundledProvenance));
+			}
+		}
+	}
+
+	[JsonIgnore]
+	public bool UsesBundledProvenance => MetadataOrigin == NexusMetadataOrigin.BundledProvenance;
+
 	public event PropertyChangedEventHandler PropertyChanged;
 
 	public void RaisePropertyChanged(string propertyName)
@@ -237,6 +264,7 @@ public class NexusModsModData : INotifyPropertyChanged, IExternalModMetadata
 		}
 		DescriptionLoaded = true;
 		RaisePropertyChanged(nameof(DescriptionLoaded));
+		MetadataOrigin = NexusMetadataOrigin.LiveApi;
 		IsUpdated = true;
 		RaisePropertyChanged(nameof(IsUpdated));
 	}

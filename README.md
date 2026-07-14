@@ -7,7 +7,7 @@ safer file operations, richer metadata, and better organization for large mod li
 
 ## Current version
 
-**0.1.0-alpha.1 — work-in-progress alpha**
+**0.1.0-alpha.2 — work-in-progress alpha**
 
 Redux is still experimental. Current builds are intended for careful personal use and a small
 group of private testers. Features, metadata matching, themes, and interface details may be
@@ -179,7 +179,11 @@ Nexus Mods and mod.io API keys can be entered in Preferences for private testing
 share, or commit personal API keys.
 
 - Nexus Mods is the preferred online metadata source when a reliable match is available.
+- Redux includes a bundled offline Nexus `.pak` provenance database for some pre-existing installs.
+  It identifies only exact known file hashes; unknown packages remain **Local**, and bundled details
+  may be older than the current Nexus page until live metadata is refreshed with an API key.
 - mod.io metadata is used for packages recognized as BG3 in-game/mod.io installations.
+- There is no bundled offline mod.io database; a mod.io API key is required for live mod.io details.
 - Local metadata remains available when neither provider can be matched.
 - mod.io support displays an additional warning because subscriptions can restore removed files.
 
@@ -278,7 +282,8 @@ Redux also depends on third-party projects including:
 Baldur's Gate 3 is developed and published by Larian Studios. Redux is an unofficial community
 project and is not affiliated with or endorsed by Larian Studios, Nexus Mods, or mod.io.
 
-See the repository license and bundled dependency licenses for complete terms and notices.
+See the repository [license](LICENSE) and [third-party notices](licenses/Third-Party-Notices.md)
+for complete terms and notices.
 
 ## License
 

@@ -28,7 +28,7 @@ sponsorship, or official support.
 ## Inter
 
 Redux bundles the Inter typeface under the SIL Open Font License. A copy is included in the
-distribution at `Licenses/Inter-LICENSE.txt`.
+distribution at `licenses/Inter-OFL-1.1.txt`.
 
 ## Other dependencies
 
