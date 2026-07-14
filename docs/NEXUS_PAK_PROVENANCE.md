@@ -18,7 +18,7 @@ Redux first uses file size to narrow the candidates, then hashes the installed `
 1. Confirm the Nexus project ID and file ID from the real Nexus Mods file page.
 2. Obtain the exact installed `.pak` produced by that download.
 3. Record its byte length and calculate the same xxHash64/Base64 value described above.
-4. Add one entry to `entries`, keeping entries ordered by `size`, then `modId`, then `fileId` where practical.
+4. Add one entry to `entries`, keeping named entries ordered alphabetically by mod name. Records without a name belong at the end.
 5. Update `entryCount`.
 6. Validate that the JSON parses and that an identical `size` + `hash` pair does not point to more than one Nexus file.
 7. Test the exact `.pak` with a clean Redux Debug settings file, both without and with a Nexus API key.

@@ -1023,6 +1023,7 @@
 			<controls:ModEntryGrid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
+				<ColumnDefinition Width="Auto" />
 			</controls:ModEntryGrid.ColumnDefinitions>
 			<TextBlock x:Name="ModNameText"
 			    HorizontalAlignment="Stretch"
@@ -1031,7 +1032,25 @@
 				TextTrimming="CharacterEllipsis"
 			    ToolTip="{StaticResource ModToolTip}"
 			    ToolTipService.IsEnabled="{Binding HasToolTip}" />
-			<Border Grid.Column="1" Padding="0,0,4,0" BorderThickness="0">
+			<Border Grid.Column="1"
+				Width="8"
+				Height="8"
+				Margin="7,0,3,0"
+				VerticalAlignment="Center"
+				Background="{DynamicResource ReduxSuccessBrush}"
+				BorderBrush="{DynamicResource ReduxSuccessBrush}"
+				BorderThickness="0"
+				CornerRadius="4"
+				ToolTip="Newly detected mod"
+				Visibility="{Binding IsNewlyDetected, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+				<Border.Effect>
+					<DropShadowEffect BlurRadius="8"
+						Color="{DynamicResource ReduxSuccessColor}"
+						Opacity="0.85"
+						ShadowDepth="0" />
+				</Border.Effect>
+			</Border>
+			<Border Grid.Column="2" Padding="0,0,4,0" BorderThickness="0">
 				<StackPanel Orientation="Horizontal">
 					<Image Width="16"
 					    Height="16"

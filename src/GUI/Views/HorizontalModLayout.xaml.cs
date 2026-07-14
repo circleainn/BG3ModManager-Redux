@@ -644,6 +644,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		var detailsWereVisible = ModDetailsPanel.Visibility == Visibility.Visible;
 		var selectedMod = e?.AddedItems?.OfType<DivinityModData>().LastOrDefault(item => !item.IsVisualDivider)
 			?? GetSelectedModForDetails();
+		if (e?.AddedItems?.Count > 0 && selectedMod != null)
+		{
+			ViewModel.MarkModSeen(selectedMod);
+		}
 
 		if (selectedMod == null)
 		{

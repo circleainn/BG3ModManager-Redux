@@ -5144,6 +5144,28 @@ Directory the zip will be extracted to:
 		if (changed) { SaveSettings(); RefreshModCategories(); }
 	}
 
+	public void MarkModSeen(DivinityModData mod)
+	{
+		if (mod == null || String.IsNullOrWhiteSpace(mod.UUID) || Settings.DisableNewModCategoryIndicators) return;
+
+		var changed = false;
+		foreach (var category in Settings.UnseenCategoryModIds.Keys.ToList())
+		{
+			var ids = Settings.UnseenCategoryModIds[category];
+			if (ids == null) continue;
+			changed |= ids.RemoveAll(id => id.Equals(mod.UUID, StringComparison.OrdinalIgnoreCase)) > 0;
+			if (ids.Count == 0) Settings.UnseenCategoryModIds.Remove(category);
+		}
+
+		if (!changed) return;
+		mod.IsNewlyDetected = false;
+		foreach (var category in ModCategoryFilters)
+		{
+			category.HasNewMods = CategoryHasNewMods(category.Name);
+		}
+		SaveSettings();
+	}
+
 	private bool CategoryHasNewMods(string category) => !Settings.DisableNewModCategoryIndicators &&
 		(category.Equals(AllModsCategory, StringComparison.OrdinalIgnoreCase)
 			? Settings.UnseenCategoryModIds.Values.Any(ids => ids.Count > 0)
@@ -5269,6 +5291,7 @@ Directory the zip will be extracted to:
 	private void RefreshModCategories()
 	{
 		var allMods = ActiveMods.Concat(InactiveMods).Concat(ForceLoadedMods)
+			.Where(mod => !mod.IsVisualDivider)
 			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
 			.Select(group => group.First())
 			.ToList();
@@ -5311,6 +5334,17 @@ Directory the zip will be extracted to:
 			}
 		}
 		if (indicatorStateChanged && IsInitialized) QueueSave();
+		var unseenModIds = Settings.DisableNewModCategoryIndicators
+			? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+			: Settings.UnseenCategoryModIds.Values
+				.Where(ids => ids != null)
+				.SelectMany(ids => ids)
+				.Where(id => !String.IsNullOrWhiteSpace(id))
+				.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		foreach (var mod in allMods)
+		{
+			mod.IsNewlyDetected = unseenModIds.Contains(mod.UUID);
+		}
 		var previousSelection = SelectedModCategory;
 		// Early category refreshes can run before the installed-mod refresh is complete.
 		// Wait until initialization finishes so a saved category is not rejected simply

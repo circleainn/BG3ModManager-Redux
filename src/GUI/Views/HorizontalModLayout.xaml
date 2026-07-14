@@ -516,21 +516,6 @@
 							<TextBlock VerticalAlignment="Center"
 								Foreground="{DynamicResource ReduxTextMutedBrush}"
 								Text="{Binding Metadata.LinkStatus}" />
-							<Border Margin="8,0,0,0"
-								Padding="6,2"
-								VerticalAlignment="Center"
-								Background="{DynamicResource ReduxWarningSoftBrush}"
-								BorderBrush="{DynamicResource ReduxWarningBrush}"
-								BorderThickness="1"
-								CornerRadius="6"
-								ToolTip="{Binding Metadata.OfflineDatabaseNoticeTooltip}"
-								Visibility="{Binding Metadata.OfflineDatabaseNoticeVisibility}">
-								<TextBlock VerticalAlignment="Center"
-									FontSize="10"
-									FontWeight="SemiBold"
-									Foreground="{DynamicResource ReduxWarningBrush}"
-									Text="{Binding Metadata.OfflineDatabaseNotice}" />
-							</Border>
 						</WrapPanel>
 						<WrapPanel Grid.Row="2" Margin="0,7,0,0">
 							<Border Style="{StaticResource ModDetailsMetadataChipStyle}"
@@ -546,6 +531,17 @@
 							<Border Style="{StaticResource ModDetailsMetadataChipStyle}">
 								<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 									Text="{Binding Metadata.UpdatedLabel}" />
+							</Border>
+							<Border Style="{StaticResource ModDetailsMetadataChipStyle}"
+								ToolTip="{Binding Metadata.OfflineDatabaseNoticeTooltip}"
+								Visibility="{Binding Metadata.OfflineDatabaseNoticeVisibility}">
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Margin="0,0,5,0"
+										Foreground="{DynamicResource ReduxTextMutedBrush}"
+										Text="◇" />
+									<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}"
+										Text="{Binding Metadata.OfflineDatabaseNotice}" />
+								</StackPanel>
 							</Border>
 							<Border Style="{StaticResource ModDetailsAuthorChipStyle}" Visibility="{Binding Metadata.LocalAuthorVisibility}">
 								<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}"
@@ -1014,7 +1010,6 @@
 							<Grid>
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="Auto" />
-									<ColumnDefinition Width="Auto" />
 									<ColumnDefinition Width="*" />
 									<ColumnDefinition Width="Auto" />
 								</Grid.ColumnDefinitions>
@@ -1030,15 +1025,28 @@
 										</DataTemplate>
 									</ContentControl.ContentTemplate>
 								</ContentControl>
-								<TextBlock Grid.Column="1" VerticalAlignment="Center"
-									Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-									Text="{Binding Name}"
-									TextTrimming="CharacterEllipsis" />
-								<Ellipse Grid.Column="2" Width="8" Height="8" Margin="7,0,0,0"
-									Fill="{DynamicResource ReduxSuccessBrush}" ToolTip="New mod detected in this category">
-									<Ellipse.Style><Style TargetType="Ellipse"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding HasNewMods}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Ellipse.Style>
-								</Ellipse>
-								<Border Grid.Column="3"
+								<StackPanel Grid.Column="1" Orientation="Horizontal">
+									<TextBlock VerticalAlignment="Center"
+										Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+										Text="{Binding Name}"
+										TextTrimming="CharacterEllipsis" />
+									<Border Width="8"
+										Height="8"
+										Margin="8,0,0,0"
+										VerticalAlignment="Center"
+										Background="{DynamicResource ReduxSuccessBrush}"
+										CornerRadius="4"
+										ToolTip="New mod detected in this category">
+										<Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding HasNewMods}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Border.Style>
+										<Border.Effect>
+											<DropShadowEffect BlurRadius="8"
+												Color="{DynamicResource ReduxSuccessColor}"
+												Opacity="0.85"
+												ShadowDepth="0" />
+										</Border.Effect>
+									</Border>
+								</StackPanel>
+								<Border Grid.Column="2"
 									MinWidth="28"
 									Margin="8,0,0,0"
 									Padding="6,2"
