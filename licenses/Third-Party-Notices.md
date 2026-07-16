@@ -25,10 +25,10 @@ sponsorship, or official support.
 - Terms: https://mod.io/legal/terms
 - Documentation: https://docs.mod.io/
 
-## Inter
+## Manrope
 
-Redux bundles the Inter typeface under the SIL Open Font License. A copy is included in the
-distribution at `licenses/Inter-OFL-1.1.txt`.
+Redux bundles the Manrope typeface under the SIL Open Font License. A copy is included in the
+distribution at `licenses/Manrope-OFL-1.1.txt`.
 
 ## Other dependencies
 

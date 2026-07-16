@@ -1,0 +1,43 @@
+<adonisUi:AdonisWindow x:Class="DivinityModManager.Views.NexusManualLinkDialog"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:adonisUi="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+	Title="Link Nexus Mods Project"
+	Width="520" Height="245" MinWidth="460" MinHeight="225"
+	ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
+	WindowStartupLocation="CenterOwner"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	Background="{DynamicResource ReduxSurfaceBrush}"
+	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
+	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}">
+	<adonisUi:AdonisWindow.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</adonisUi:AdonisWindow.Resources>
+	<Border Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
+		<Grid Margin="20">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+			<TextBlock FontSize="17" FontWeight="SemiBold" Text="Link this installed package to Nexus Mods" />
+			<TextBlock Grid.Row="1" Margin="0,5,0,12" TextWrapping="Wrap"
+				Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+				Text="Paste the Baldur's Gate 3 Nexus Mods project page. Redux keeps the installed package name, version, UUID, and load-order position unchanged." />
+			<TextBox x:Name="NexusLinkTextBox" Grid.Row="2" Height="34" Padding="9,5"
+				ToolTip="Example: https://www.nexusmods.com/baldursgate3/mods/125" />
+			<TextBlock Grid.Row="3" Margin="0,8,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
+				Text="With an API key, Redux will refresh current project details after linking." />
+			<StackPanel Grid.Row="4" Margin="0,14,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
+				<Button MinWidth="92" Margin="0,0,8,0" IsDefault="True" Click="Link_Click" Content="Link Project" />
+				<Button MinWidth="84" IsCancel="True" Content="Cancel" />
+			</StackPanel>
+		</Grid>
+	</Border>
+</adonisUi:AdonisWindow>

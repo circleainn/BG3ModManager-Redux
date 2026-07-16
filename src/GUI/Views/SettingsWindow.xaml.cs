@@ -164,6 +164,9 @@ public partial class SettingsWindow : SettingsWindowBase
 				var combo = new ComboBox()
 				{
 					ToolTip = !isBlankTooltip ? prop.Attribute.Tooltip : null,
+					MinHeight = 30,
+					HorizontalAlignment = HorizontalAlignment.Stretch,
+					VerticalContentAlignment = VerticalAlignment.Center,
 					SelectedValuePath = "Value",
 					ItemsSource = prop.Property.PropertyType.GetEnumValues().Cast<Enum>().Select(x => new EnumEntry(x))
 				};
@@ -222,7 +225,11 @@ public partial class SettingsWindow : SettingsWindowBase
 					var utb = new UnfocusableTextBox
 					{
 						ToolTip = !isBlankTooltip ? prop.Attribute.Tooltip : null,
+						MinHeight = 30,
+						HorizontalAlignment = HorizontalAlignment.Stretch,
 						VerticalAlignment = VerticalAlignment.Center,
+						VerticalContentAlignment = VerticalAlignment.Center,
+						Padding = new Thickness(8, 4, 8, 4),
 						//utb.HorizontalAlignment = HorizontalAlignment.Stretch;
 						TextAlignment = TextAlignment.Left
 					};

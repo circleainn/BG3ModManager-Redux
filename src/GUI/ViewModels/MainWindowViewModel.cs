@@ -219,19 +219,39 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		("User Interface", ["user interface", "interface", "improvedui", "ui", "hud", "menu", "hotbar"]),
 		("Classes", ["class", "subclass", "multiclass"]),
 		("Spells", ["spell", "spells", "cantrip", "cantrips", "spellbook"]),
-		("Cosmetics", ["cosmetic", "hair", "hairstyle", "face", "head", "makeup", "tattoo", "appearance", "dress", "outfit", "dye"]),
+		("Accessories", ["accessory", "accessories", "jewelry", "jewellery", "earring", "necklace", "ring"]),
+		("Animations", ["animation", "animations", "pose", "poses", "emote"]),
+		("Armor", ["armor", "armour", "helmet", "shield"]),
+		("Audio", ["audio", "music", "sound", "voice", "voices"]),
+		("Character Customization", ["character customisation", "character customization", "hair", "hairstyle", "face", "head", "makeup", "tattoo", "appearance"]),
+		("Clothing", ["clothing", "clothes", "dress", "outfit", "underwear", "dye"]),
+		("Companions", ["companion", "astarion", "gale", "karlach", "laezel", "shadowheart", "wyll", "minthara", "halsin", "jaheira", "minsc"]),
+		("Dice", ["dice", "die skin", "dice skin"]),
+		("Equipment", ["equipment", "gear", "item pack"]),
+		("Maps", ["map", "maps", "location", "area"]),
+		("Photo Mode", ["photo mode", "photomode", "camera preset"]),
+		("Quests", ["quest", "quests", "adventure", "story expansion"]),
+		("Races", ["race", "races", "species", "origin"]),
+		("Resources", ["resource", "resources", "asset", "assets", "modders resource"]),
+		("Visuals", ["visual", "visuals", "graphics", "lighting", "reshade", "texture", "textures"]),
+		("Weapons", ["weapon", "weapons", "sword", "bow", "staff"]),
+		("Cosmetics", ["cosmetic", "cosmetics", "vanity"]),
 		("Libraries", ["library", "framework", "dependency", "communitylibrary", "api"]),
 		("Patches", ["patch", "compatibility", "hotfix", "bugfix"]),
 		("Overhauls", ["overhaul", "total conversion"]),
-		("Companions", ["companion", "astarion", "gale", "karlach", "laezel", "shadowheart", "wyll", "minthara", "halsin", "jaheira", "minsc"]),
 		("Utilities", ["utility", "tool", "mod fixer", "script extender", "achievement enabler", "native camera"]),
-		("Gameplay", ["gameplay", "balance", "combat", "feat", "weapon", "armor", "equipment", "gold", "weight", "carry", "level", "quest", "race", "origin"]),
+		("Gameplay", ["gameplay", "balance", "combat", "feat", "gold", "weight", "carry", "level"]),
+		("Miscellaneous", ["miscellaneous", "misc", "other"]),
 		("Overrides", ["override", "always loaded", "file override"])
 	];
 	private static readonly Dictionary<string, string> ReduxCategoryDefaultColors = new(StringComparer.OrdinalIgnoreCase)
 	{
 		[AllModsCategory] = "#8A6AF1", [UncategorizedModsCategory] = "#8F879E",
 		["User Interface"] = "#8A6AF1", ["Classes"] = "#3B82F6", ["Spells"] = "#7768D8", ["Cosmetics"] = "#D45A9E",
+		["Accessories"] = "#C76FA9", ["Animations"] = "#7C79D8", ["Armor"] = "#6B86B8", ["Audio"] = "#A66FC2",
+		["Character Customization"] = "#C65BA3", ["Clothing"] = "#C76B87", ["Dice"] = "#B06FD3", ["Equipment"] = "#A87955",
+		["Maps"] = "#4F9B82", ["Miscellaneous"] = "#7F8898", ["Photo Mode"] = "#6E91C7", ["Quests"] = "#C48255",
+		["Races"] = "#8E70C1", ["Resources"] = "#4D9C91", ["Visuals"] = "#5E8FC4", ["Weapons"] = "#B36A61",
 		["Libraries"] = "#3FA37A", ["Patches"] = "#71B96B", ["Overhauls"] = "#D66B55",
 		["Companions"] = "#C9963E", ["Utilities"] = "#22B8C5", ["Gameplay"] = "#D7A24B",
 		["Overrides"] = "#C65362"
@@ -2501,21 +2521,26 @@ Directory the zip will be extracted to:
 					}, RxApp.MainThreadScheduler);
 				}
 
-				var provenanceMatches = new List<(DivinityModData Mod, NexusPakProvenanceEntry Entry)>();
-				var provenanceCandidates = loadedUserMods
+				var databaseMatches = new List<(DivinityModData Mod, ReduxModDatabaseMatch Match)>();
+				var databaseCandidates = loadedUserMods
 					.Where(mod => mod.NexusModsData.ModId < DivinityApp.NEXUSMODS_MOD_ID_START
-						&& mod.ModioData?.HasMetadata != true
-						&& NexusPakProvenanceService.CouldMatch(mod.FilePath))
+						&& mod.NexusModsData.MetadataOrigin != NexusMetadataOrigin.ManualUnlinked
+						&& mod.ModioData?.HasMetadata != true)
 					.ToList();
 
-				foreach (var mod in provenanceCandidates)
+				foreach (var mod in databaseCandidates)
 				{
 					try
 					{
-						var match = await NexusPakProvenanceService.TryResolveAsync(mod.FilePath, cancellationToken);
+						ReduxModDatabaseMatch match = null;
+						if (ReduxModDatabaseService.CouldMatchPak(mod.FilePath))
+						{
+							match = await ReduxModDatabaseService.TryResolvePakAsync(mod.FilePath, cancellationToken);
+						}
+						match ??= ReduxModDatabaseService.TryResolveIdentity(mod);
 						if (match != null)
 						{
-							provenanceMatches.Add((mod, match));
+							databaseMatches.Add((mod, match));
 						}
 					}
 					catch (OperationCanceledException)
@@ -2524,19 +2549,19 @@ Directory the zip will be extracted to:
 					}
 					catch (Exception ex)
 					{
-						DivinityApp.Log($"Could not calculate Nexus provenance for '{mod.FilePath}':\n{ex}");
+						DivinityApp.Log($"Could not resolve offline Nexus identity for '{mod.FilePath}':\n{ex}");
 					}
 				}
 
-				if (provenanceMatches.Count > 0)
+				if (databaseMatches.Count > 0)
 				{
 					await Observable.Start(() =>
 					{
-						foreach (var (mod, entry) in provenanceMatches)
+						foreach (var (mod, match) in databaseMatches)
 						{
-							mod.NexusModsData.Update(entry.CreateMetadata(mod.UUID));
+							mod.NexusModsData.Update(match.CreateMetadata(mod.UUID));
 							UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
-							DivinityApp.Log($"Matched '{mod.FileName}' to Nexus Mods project {entry.ModId} using the bundled exact-pak database.");
+							DivinityApp.Log($"Matched '{mod.FileName}' to Nexus Mods project {match.ModId} using Redux offline match '{match.Kind}'.");
 						}
 					}, RxApp.MainThreadScheduler);
 
@@ -2590,6 +2615,81 @@ Directory the zip will be extracted to:
 					ShowOfflineNexusDatabaseWarningIfRequired(loadedUserMods, false);
 					ScheduleRefreshModCategories();
 				});
+			}
+		});
+	}
+
+	public bool TryManuallyLinkNexusMod(DivinityModData mod, string linkOrId, out string error)
+	{
+		error = null;
+		if (mod == null)
+		{
+			error = "No mod was selected.";
+			return false;
+		}
+		if (mod.ModioData?.HasMetadata == true)
+		{
+			error = "This mod has a native mod.io identity. Redux will not replace that stronger source association with a Nexus link.";
+			return false;
+		}
+
+		var value = linkOrId?.Trim();
+		var match = Regex.Match(value ?? String.Empty, @"(?:nexusmods\.com/(?:baldursgate3/)?mods/)?(?<id>\d+)(?:[/?#].*)?$", RegexOptions.IgnoreCase);
+		if (!match.Success || !Int64.TryParse(match.Groups["id"].Value, out var modId) || modId < DivinityApp.NEXUSMODS_MOD_ID_START)
+		{
+			error = "Paste a Baldur's Gate 3 Nexus Mods page URL, for example https://www.nexusmods.com/baldursgate3/mods/125.";
+			return false;
+		}
+
+		mod.NexusModsData.ResetSourceAssociation();
+		var bundledProject = ReduxModDatabaseService.TryResolveProject(modId);
+		var linkedMetadata = bundledProject?.CreateMetadata(mod.UUID) ?? new NexusModsModData
+		{
+			UUID = mod.UUID,
+			ModId = modId,
+			LastFileId = -1,
+			Name = mod.DisplayName,
+			Available = true
+		};
+		// Local author credits can contain teams or multiple names; they are not
+		// necessarily the Nexus uploading account and must not create a profile link.
+		linkedMetadata.MetadataOrigin = NexusMetadataOrigin.Manual;
+		linkedMetadata.OfflineMatchKind = ReduxOfflineMatchKind.Unknown;
+		mod.NexusModsData.Update(linkedMetadata);
+		UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
+		SaveAndRefreshManualNexusAssociation(mod, true);
+		return true;
+	}
+
+	public void UnlinkNexusMod(DivinityModData mod)
+	{
+		if (mod == null || mod.ModioData?.HasMetadata == true) return;
+		mod.NexusModsData.ResetSourceAssociation();
+		mod.NexusModsData.MetadataOrigin = NexusMetadataOrigin.ManualUnlinked;
+		UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
+		SaveAndRefreshManualNexusAssociation(mod, false);
+	}
+
+	private void SaveAndRefreshManualNexusAssociation(DivinityModData mod, bool refreshLiveMetadata)
+	{
+		RxApp.TaskpoolScheduler.ScheduleAsync(async (_, cancellationToken) =>
+		{
+			try
+			{
+				if (refreshLiveMetadata && !String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey))
+				{
+					await UpdateHandler.Nexus.Update(new[] { mod }, cancellationToken);
+					UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
+				}
+				await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), cancellationToken);
+			}
+			catch (Exception ex)
+			{
+				DivinityApp.Log($"Failed to save the manual Nexus Mods association for '{mod.FileName}':\n{ex}");
+			}
+			finally
+			{
+				RxApp.MainThreadScheduler.Schedule(ScheduleRefreshModCategories);
 			}
 		});
 	}
@@ -3669,15 +3769,58 @@ Directory the zip will be extracted to:
 		DivinityApp.Log($"Imported Mod: {mod}");
 	}
 
+	private bool ApplyImportedNexusAssociation(DivinityModData mod, NexusModFileVersionData fileNameInfo, ReduxModDatabaseMatch archiveMatch)
+	{
+		if (fileNameInfo.Success)
+		{
+			// A Nexus-aware imported filename is an explicit source association and
+			// therefore takes precedence over an offline archive fingerprint.
+			mod.NexusModsData.SetModVersion(fileNameInfo);
+			UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
+			return true;
+		}
+
+		if (archiveMatch != null)
+		{
+			mod.NexusModsData.Update(archiveMatch.CreateMetadata(mod.UUID));
+			UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
+			DivinityApp.Log($"Matched imported archive to Nexus Mods project {archiveMatch.ModId} using Redux offline match '{archiveMatch.Kind}'.");
+			return true;
+		}
+
+		return false;
+	}
+
+	private async Task<ReduxModDatabaseMatch> TryResolveImportedArchiveAsync(string filePath, CancellationToken cancellationToken)
+	{
+		try
+		{
+			return ReduxModDatabaseService.CouldMatchArchive(filePath)
+				? await ReduxModDatabaseService.TryResolveArchiveAsync(filePath, cancellationToken)
+				: null;
+		}
+		catch (OperationCanceledException)
+		{
+			throw;
+		}
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Could not resolve offline Nexus archive identity for '{filePath}':\n{ex}");
+			return null;
+		}
+	}
+
 	private async Task<bool> ImportCompressedFileAsync(Dictionary<string, DivinityModData> builtinMods, ImportOperationResults taskResult, string filePath, string extension, bool onlyMods, CancellationToken cts, bool? toActiveList = null)
 	{
 		FileStream fileStream = null;
 		string outputDirectory = PathwayData.AppDataModsPath;
 		double taskStepAmount = 1.0 / 4;
 		bool success = false;
+		bool nexusAssociationChanged = false;
 		var jsonFiles = new Dictionary<string, string>();
 		try
 		{
+			var archiveDatabaseMatch = await TryResolveImportedArchiveAsync(filePath, cts);
 			fileStream = File.Open(filePath, new FileStreamOptions
 			{
 				Options = FileOptions.Asynchronous,
@@ -3759,11 +3902,7 @@ Directory the zip will be extracted to:
 								success = true;
 								taskResult.TotalPaks++;
 								taskResult.Mods.Add(mod);
-								mod.NexusModsData.SetModVersion(info);
-								if (info.Success)
-								{
-									UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
-								}
+								nexusAssociationChanged |= ApplyImportedNexusAssociation(mod, info, archiveDatabaseMatch);
 								await Observable.Start(() =>
 								{
 									AddImportedMod(mod, toActiveList);
@@ -3788,7 +3927,7 @@ Directory the zip will be extracted to:
 					tempFile?.Dispose();
 				}
 
-				if (info.Success && success)
+				if (nexusAssociationChanged && success)
 				{
 					//Still save cache from imported zips, even if we aren't updating
 					await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), MainProgressToken.Token);
@@ -3840,9 +3979,11 @@ Directory the zip will be extracted to:
 		string outputDirectory = PathwayData.AppDataModsPath;
 		double taskStepAmount = 1.0 / 4;
 		bool success = false;
+		bool nexusAssociationChanged = false;
 		var jsonFiles = new Dictionary<string, string>();
 		try
 		{
+			var archiveDatabaseMatch = await TryResolveImportedArchiveAsync(archivePath, cts);
 			fileStream = File.Open(archivePath, new FileStreamOptions
 			{
 				Options = FileOptions.Asynchronous,
@@ -3882,11 +4023,7 @@ Directory the zip will be extracted to:
 									var mod = await ValidateAndCommitImportedPakAsync(temporaryPath, outputFilePath, builtinMods, cts);
 									success = true;
 									taskResult.Mods.Add(mod);
-									mod.NexusModsData.SetModVersion(info);
-									if (info.Success)
-									{
-										UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
-									}
+									nexusAssociationChanged |= ApplyImportedNexusAssociation(mod, info, archiveDatabaseMatch);
 									await Observable.Start(() =>
 									{
 										AddImportedMod(mod, toActiveList);
@@ -3924,7 +4061,7 @@ Directory the zip will be extracted to:
 					}
 				}
 
-				if (info.Success && success)
+				if (nexusAssociationChanged && success)
 				{
 					//Still save cache from imported zips, even if we aren't updating
 					await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), MainProgressToken.Token);

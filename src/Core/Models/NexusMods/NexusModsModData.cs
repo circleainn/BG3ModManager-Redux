@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Serialization;
 
 using DivinityModManager.Models.Metadata;
+using DivinityModManager.AppServices;
 
 using NexusModsNET.DataModels;
 
@@ -15,7 +16,9 @@ public enum NexusMetadataOrigin
 {
 	Unknown = 0,
 	BundledProvenance = 1,
-	LiveApi = 2
+	LiveApi = 2,
+	Manual = 3,
+	ManualUnlinked = 4
 }
 
 public class NexusModsModData : INotifyPropertyChanged, IExternalModMetadata
@@ -187,6 +190,36 @@ public class NexusModsModData : INotifyPropertyChanged, IExternalModMetadata
 
 	[JsonIgnore]
 	public bool UsesBundledProvenance => MetadataOrigin == NexusMetadataOrigin.BundledProvenance;
+
+	private ReduxOfflineMatchKind _offlineMatchKind;
+
+	[JsonProperty("offline_match_kind", DefaultValueHandling = DefaultValueHandling.Ignore)]
+	public ReduxOfflineMatchKind OfflineMatchKind
+	{
+		get => _offlineMatchKind;
+		set
+		{
+			if (_offlineMatchKind != value)
+			{
+				_offlineMatchKind = value;
+				RaisePropertyChanged(nameof(OfflineMatchKind));
+			}
+		}
+	}
+
+	public void ResetSourceAssociation()
+	{
+		ModId = -1;
+		LastFileId = -1;
+		Name = Summary = Description = Version = Author = UploadedBy = Status = null;
+		PictureUrl = UploadedUsersProfileUrl = null;
+		Available = DescriptionLoaded = ChangelogsLoaded = IsUpdated = false;
+		Changelogs = new Dictionary<string, List<string>>();
+		MetadataOrigin = NexusMetadataOrigin.Unknown;
+		OfflineMatchKind = ReduxOfflineMatchKind.Unknown;
+		foreach (var property in _lazySerializedProperties) RaisePropertyChanged(property.Name);
+		RaisePropertyChanged(nameof(IsUpdated));
+	}
 
 	public event PropertyChangedEventHandler PropertyChanged;
 

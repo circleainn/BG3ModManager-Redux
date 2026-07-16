@@ -1,6 +1,7 @@
 using DivinityModManager.Util;
 using DivinityModManager.Extensions;
 using DivinityModManager.Models.NexusMods;
+using DivinityModManager.AppServices;
 
 using System.ComponentModel;
 using System.Globalization;
@@ -68,23 +69,41 @@ public sealed class ModMetadataViewData : ReactiveObject
 		: "Version history will appear here after an online source is linked.";
 
 	public string LinkStatus => HasOnlineMetadata
-		? $"Automatically linked from {SourceLabel}"
+		? SourceType == ModSourceType.NEXUSMODS
+			? _mod.NexusModsData?.MetadataOrigin switch
+			{
+				NexusMetadataOrigin.Manual => "Manually linked from Nexus Mods",
+				NexusMetadataOrigin.BundledProvenance => "Automatically linked from the Redux mod database",
+				_ => "Automatically linked from Nexus Mods"
+			}
+			: $"Automatically linked from {SourceLabel}"
 		: "Selected mod details";
 
 	public bool UsesBundledNexusMetadata => SourceType == ModSourceType.NEXUSMODS
 		&& _mod.NexusModsData?.UsesBundledProvenance == true;
 	public Visibility OfflineDatabaseNoticeVisibility => UsesBundledNexusMetadata ? Visibility.Visible : Visibility.Collapsed;
-	public string OfflineDatabaseNotice => "Redux offline database";
-	public string OfflineDatabaseNoticeTooltip =>
-		"Loaded from Redux's bundled offline mod database using an exact .pak match. Information may be incomplete or out of date until Nexus Mods metadata is refreshed.";
+	public string OfflineDatabaseNotice => _mod.NexusModsData?.OfflineMatchKind is ReduxOfflineMatchKind.ModuleIdentity or ReduxOfflineMatchKind.NameAndAuthor
+		? "Probable Nexus match"
+		: "Verified offline match";
+	public string LinkStatusTooltip => !UsesBundledNexusMetadata ? null : _mod.NexusModsData?.OfflineMatchKind switch
+	{
+		ReduxOfflineMatchKind.ExactArchive => "Redux associated this package with a Nexus project using an exact recorded package fingerprint. Live API data is used when available.",
+		ReduxOfflineMatchKind.ModuleIdentity => "Redux associated this package with a Nexus project using a reviewed module identity. Local package details and load order remain unchanged.",
+		ReduxOfflineMatchKind.NameAndAuthor => "Redux associated this package with a Nexus project because its normalized name and author matched one reviewed project. Local package details and load order remain unchanged.",
+		_ => "Redux associated this package with a Nexus project using an exact installed .pak match. Live API data is used when available."
+	};
+	// Retained as compatibility aliases for existing bindings while the standalone database badge is removed.
+	public string OfflineDatabaseNoticeTooltip => LinkStatusTooltip;
 
 	public string VersionLabel => HasOnlineMetadata
 		? $"{SourceLabel} version {Version}"
 		: $"Version {Version}";
 
 	public string AuthorLabel => SourceType == ModSourceType.NEXUSMODS ? $"Created by {Author}" : $"By {Author}";
+	// A Nexus mod's credited creator and uploading account are separate values.
+	// Only UploadedBy is safe to use when constructing a Nexus profile link.
 	public string Uploader => SourceType == ModSourceType.NEXUSMODS
-		? (!String.IsNullOrWhiteSpace(_mod.NexusModsData?.UploadedBy) ? _mod.NexusModsData.UploadedBy : _mod.NexusModsData?.Author)
+		? _mod.NexusModsData?.UploadedBy
 		: Author;
 	public string UploaderLabel => $"Uploaded by {Uploader}";
 	public string AuthorPageUrl
@@ -196,6 +215,7 @@ public sealed class ModMetadataViewData : ReactiveObject
 		this.RaisePropertyChanged(nameof(ChangelogButtonLabel));
 		this.RaisePropertyChanged(nameof(ChangelogHelperText));
 		this.RaisePropertyChanged(nameof(LinkStatus));
+		this.RaisePropertyChanged(nameof(LinkStatusTooltip));
 		this.RaisePropertyChanged(nameof(UsesBundledNexusMetadata));
 		this.RaisePropertyChanged(nameof(OfflineDatabaseNoticeVisibility));
 		this.RaisePropertyChanged(nameof(OfflineDatabaseNotice));

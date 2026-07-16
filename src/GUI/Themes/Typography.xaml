@@ -4,7 +4,11 @@
 		Typography is intentionally shared by every Redux theme. Color themes should
 		override palette tokens only, never the app's font family or layout.
 	-->
-	<FontFamily x:Key="Redux.FontFamily.UI">pack://application:,,,/BG3ModManager;component/Resources/Fonts/#Inter</FontFamily>
+	<FontFamily x:Key="Redux.FontFamily.UI">pack://application:,,,/BG3ModManager;component/Resources/Fonts/#Manrope</FontFamily>
 	<!-- Legacy alias retained for extension dictionaries that used the original key. -->
-	<FontFamily x:Key="ReduxFontFamily">pack://application:,,,/BG3ModManager;component/Resources/Fonts/#Inter</FontFamily>
+	<FontFamily x:Key="ReduxFontFamily">pack://application:,,,/BG3ModManager;component/Resources/Fonts/#Manrope</FontFamily>
+	<FontWeight x:Key="Redux.FontWeight.Body">Normal</FontWeight>
+	<FontWeight x:Key="Redux.FontWeight.Control">Medium</FontWeight>
+	<FontWeight x:Key="Redux.FontWeight.Title">SemiBold</FontWeight>
+	<FontWeight x:Key="Redux.FontWeight.Brand">Bold</FontWeight>
 </ResourceDictionary>

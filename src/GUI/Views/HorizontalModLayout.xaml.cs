@@ -44,6 +44,7 @@ public class HorizontalModLayoutBase : ReactiveUserControl<MainWindowViewModel> 
 public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayout
 {
 	private const string CategoryAssignmentMenuTag = "ReduxCategoryAssignment";
+	private const string SourceLinkMenuTag = "ReduxSourceLink";
 	private Point _categoryDragStart;
 	private ModCategoryFilterItem _draggedCategory;
 	private CategoryDropIndicatorAdorner _categoryDropIndicator;
@@ -358,6 +359,43 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		menu.Items.Insert(Math.Min(2, menu.Items.Count), categoryMenu);
 
+		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, SourceLinkMenuTag)).ToList())
+		{
+			menu.Items.Remove(generatedItem);
+		}
+
+		var sourceMenu = new MenuItem { Header = "Source Link", Tag = SourceLinkMenuTag };
+		if (mod.ModioData?.HasMetadata == true)
+		{
+			sourceMenu.Items.Add(new MenuItem
+			{
+				Header = "Native mod.io identity detected",
+				IsEnabled = false,
+				ToolTip = "Redux keeps the stronger mod.io identity for this package."
+			});
+		}
+		else
+		{
+			var hasNexusLink = mod.NexusModsData?.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START;
+			var linkItem = new MenuItem { Header = hasNexusLink ? "Change Nexus Mods Link..." : "Link to Nexus Mods..." };
+			linkItem.Click += (_, _) => ShowManualNexusLinkDialog(mod);
+			sourceMenu.Items.Add(linkItem);
+			if (hasNexusLink)
+			{
+				sourceMenu.Items.Add(new Separator());
+				var unlinkItem = new MenuItem { Header = "Unlink Nexus Mods" };
+				unlinkItem.Click += (_, _) =>
+				{
+					var result = ShowCategoryMessage(
+						$"Remove the Nexus Mods source link from '{mod.DisplayName}'?\n\nThe installed package and its load-order position will not be changed.",
+						"Unlink Nexus Mods", MessageBoxButton.YesNo, MessageBoxImage.Question);
+					if (result == MessageBoxResult.Yes) ViewModel.UnlinkNexusMod(mod);
+				};
+				sourceMenu.Items.Add(unlinkItem);
+			}
+		}
+		menu.Items.Insert(Math.Min(3, menu.Items.Count), sourceMenu);
+
 		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, VisualDividerMenuTag)).ToList())
 		{
 			menu.Items.Remove(generatedItem);
@@ -379,6 +417,20 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		dividerMenu.Items.Add(addAbove);
 		dividerMenu.Items.Add(addBelow);
 		menu.Items.Insert(Math.Min(3, menu.Items.Count), dividerMenu);
+	}
+
+	private void ShowManualNexusLinkDialog(DivinityModData mod)
+	{
+		var currentLink = mod.NexusModsData?.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START
+			? mod.NexusModsData.SourcePageUrl
+			: null;
+		var dialog = new NexusManualLinkDialog(currentLink) { Owner = Window.GetWindow(this) };
+		ResourceLocator.SetColorScheme(dialog.Resources, DivinityApp.GetThemeUri(ViewModel.Settings.ColorTheme));
+		if (dialog.ShowDialog() != true) return;
+		if (!ViewModel.TryManuallyLinkNexusMod(mod, dialog.NexusLink, out var error))
+		{
+			ShowCategoryMessage(error, "Link Nexus Mods Project", MessageBoxButton.OK, MessageBoxImage.Information);
+		}
 	}
 
 	private int GetVisualInsertionIndex(ListView listView, Point point)

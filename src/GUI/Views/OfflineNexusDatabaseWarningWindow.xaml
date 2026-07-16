@@ -2,7 +2,7 @@
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
-	Title="Offline Nexus Metadata"
+	Title="Redux Mod Database"
 	Width="680"
 	Height="438"
 	MinWidth="680"
@@ -58,7 +58,7 @@
 					<TextBlock FontSize="20"
 						FontWeight="SemiBold"
 						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-						Text="Redux can identify some Nexus mods offline" />
+						Text="Redux can identify some pre-existing Nexus mods" />
 					<TextBlock Margin="0,5,0,0"
 						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 						Text="Live Nexus metadata requires a Nexus Mods API key in Preferences."
@@ -74,21 +74,21 @@
 				CornerRadius="8">
 				<StackPanel>
 					<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-						Text="Without an API key, Redux may identify a pre-existing Nexus mod only when its installed .pak is an exact byte-for-byte match for a version recorded in the bundled offline database. Unknown files remain Local."
+						Text="The bundled Redux mod database can associate some installed .pak files with Nexus projects using recorded exact package matches and conservative reviewed identity matches. Unknown files remain Local."
 						TextWrapping="Wrap" />
 					<TextBlock Margin="0,9,0,0"
 						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-						Text="The database is a work in progress. Its information may be incomplete or out of date, and a different version of the same mod will not match. Add a personal Nexus Mods API key for live metadata during private testing."
+						Text="The database is a work in progress and may not include every mod or version. Add a personal Nexus Mods API key for live metadata during private testing."
 						TextWrapping="Wrap" />
 					<TextBlock Margin="0,9,0,0"
 						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-						Text="The bundled offline database covers Nexus Mods only. Redux does not include an offline mod.io database; a mod.io API key is required to retrieve live mod.io metadata."
+						Text="The bundled database covers Nexus Mods only. Redux does not include a mod.io database; a mod.io API key is required to retrieve live mod.io metadata."
 						TextWrapping="Wrap" />
 					<CheckBox x:Name="AcknowledgementCheckBox"
 						Margin="0,14,0,0"
 						FontWeight="SemiBold"
 						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-						Content="I understand that offline matches are exact-version fallbacks and may be incomplete." />
+						Content="I understand that database matches may be incomplete and live metadata requires an API key." />
 				</StackPanel>
 			</Border>
 			<Button Grid.Row="2"

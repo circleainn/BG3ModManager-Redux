@@ -192,8 +192,11 @@
 		<Setter Property="ContextMenu" Value="{StaticResource TextBoxContextMenu}" />
 	</Style>
 	<Style BasedOn="{StaticResource {x:Type ToolTip}}" TargetType="{x:Type ToolTip}">
-		<Setter Property="OverridesDefaultStyle" Value="true" />
+		<Setter Property="OverridesDefaultStyle" Value="True" />
 		<Setter Property="HasDropShadow" Value="True" />
+		<Setter Property="MaxWidth" Value="440" />
+		<Setter Property="FontFamily" Value="{DynamicResource Redux.FontFamily.UI}" />
+		<Setter Property="FontSize" Value="12" />
 		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 		<Setter Property="Template">
 			<Setter.Value>
@@ -201,19 +204,31 @@
 					<Border Name="Border"
 					    Width="{TemplateBinding Width}"
 					    Height="{TemplateBinding Height}"
-					    Padding="4"
-					    Background="{DynamicResource ReduxSurfaceBrush}"
-					    BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
+					    Padding="8,5"
+					    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+					    BorderBrush="{DynamicResource ReduxBorderBrush}"
 					    BorderThickness="1"
 					    CornerRadius="8">
-						<ContentPresenter Margin="4" HorizontalAlignment="Left" VerticalAlignment="Top" />
+						<ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Top" />
 					</Border>
 					<ControlTemplate.Triggers>
 						<Trigger Property="HasDropShadow" Value="true">
-							<Setter TargetName="Border" Property="CornerRadius" Value="4" />
 							<Setter TargetName="Border" Property="SnapsToDevicePixels" Value="true" />
 						</Trigger>
 					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<!-- Rich safety/status tooltips provide their own themed card and must not inherit ordinary tooltip chrome. -->
+	<Style x:Key="ReduxRichToolTipStyle" TargetType="{x:Type ToolTip}">
+		<Setter Property="OverridesDefaultStyle" Value="True" />
+		<Setter Property="HasDropShadow" Value="True" />
+		<Setter Property="FontFamily" Value="{DynamicResource Redux.FontFamily.UI}" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type ToolTip}">
+					<ContentPresenter />
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
@@ -1239,7 +1254,7 @@
 				Source="/BG3ModManager;component/Resources/Icons/Platforms/modio-warning.png"
 				Stretch="Uniform">
 				<Image.ToolTip>
-					<ToolTip Placement="Mouse" HorizontalOffset="12" VerticalOffset="10">
+					<ToolTip Placement="Mouse" HorizontalOffset="12" VerticalOffset="10" Style="{StaticResource ReduxRichToolTipStyle}">
 						<Border MaxWidth="390"
 							Padding="12,10"
 							Background="{DynamicResource ReduxSurfaceElevatedBrush}"
@@ -1361,7 +1376,7 @@
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastModifiedTemplate}" Header="Last Modified" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="135" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 		</GridView.Columns>
 	</GridView>
@@ -1408,7 +1423,7 @@
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastModifiedTemplate}" Header="Last Modified" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="135" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 		</GridView.Columns>
 	</GridView>
@@ -1436,7 +1451,7 @@
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastModifiedTemplate}" Header="Last Modified" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="135" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 		</GridView.Columns>
 	</GridView>

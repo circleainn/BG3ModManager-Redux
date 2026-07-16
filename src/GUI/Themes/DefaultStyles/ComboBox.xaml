@@ -6,7 +6,7 @@
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="pack://application:,,,/AdonisUI.ClassicTheme;component/DefaultStyles/TextBox.xaml" />
 	</ResourceDictionary.MergedDictionaries>
-	<Style x:Key="{x:Type ComboBoxItem}" TargetType="ComboBoxItem">
+	<Style x:Key="ReduxComboBoxItemStyle" TargetType="ComboBoxItem">
 		<Setter Property="Background" Value="Transparent" />
 		<Setter Property="BorderBrush" Value="Transparent" />
 		<Setter Property="BorderThickness" Value="{DynamicResource {x:Static adonisUi:Dimensions.BorderThickness}}" />
@@ -37,11 +37,17 @@
 						<ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
 					</Grid>
 					<ControlTemplate.Triggers>
+						<Trigger Property="IsSelected" Value="True">
+							<Setter Property="Background" Value="{DynamicResource ReduxSelectionBrush}" />
+							<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+							<Setter Property="adonisExtensions:CursorSpotlightExtension.BackgroundBrush" Value="Transparent" />
+							<Setter Property="adonisExtensions:CursorSpotlightExtension.BorderBrush" Value="Transparent" />
+						</Trigger>
 						<Trigger Property="IsHighlighted" Value="True">
-							<Setter Property="Background" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer1HighlightBrush}}" />
-							<Setter Property="BorderBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer1HighlightBorderBrush}}" />
-							<Setter Property="adonisExtensions:CursorSpotlightExtension.BackgroundBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer1IntenseHighlightBrush}}" />
-							<Setter Property="adonisExtensions:CursorSpotlightExtension.BorderBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer1IntenseHighlightBorderBrush}}" />
+							<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+							<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+							<Setter Property="adonisExtensions:CursorSpotlightExtension.BackgroundBrush" Value="{DynamicResource ReduxSelectionBrush}" />
+							<Setter Property="adonisExtensions:CursorSpotlightExtension.BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 						</Trigger>
 						<Trigger Property="IsEnabled" Value="False">
 							<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUi:Brushes.DisabledForegroundBrush}}" />
@@ -52,10 +58,10 @@
 								<Condition Binding="{Binding IsHighlighted, RelativeSource={RelativeSource Self}}" Value="True" />
 							</MultiDataTrigger.Conditions>
 							<MultiDataTrigger.Setters>
-								<Setter Property="Background" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer2HighlightBrush}}" />
-								<Setter Property="BorderBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer2HighlightBorderBrush}}" />
-								<Setter Property="adonisExtensions:CursorSpotlightExtension.BackgroundBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer2IntenseHighlightBrush}}" />
-								<Setter Property="adonisExtensions:CursorSpotlightExtension.BorderBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer2IntenseHighlightBorderBrush}}" />
+								<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+								<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+								<Setter Property="adonisExtensions:CursorSpotlightExtension.BackgroundBrush" Value="{DynamicResource ReduxSelectionBrush}" />
+								<Setter Property="adonisExtensions:CursorSpotlightExtension.BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 							</MultiDataTrigger.Setters>
 						</MultiDataTrigger>
 						<MultiDataTrigger>
@@ -64,10 +70,10 @@
 								<Condition Binding="{Binding IsHighlighted, RelativeSource={RelativeSource Self}}" Value="True" />
 							</MultiDataTrigger.Conditions>
 							<MultiDataTrigger.Setters>
-								<Setter Property="Background" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer3HighlightBrush}}" />
-								<Setter Property="BorderBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer3HighlightBorderBrush}}" />
-								<Setter Property="adonisExtensions:CursorSpotlightExtension.BackgroundBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer3IntenseHighlightBrush}}" />
-								<Setter Property="adonisExtensions:CursorSpotlightExtension.BorderBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer3IntenseHighlightBorderBrush}}" />
+								<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+								<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+								<Setter Property="adonisExtensions:CursorSpotlightExtension.BackgroundBrush" Value="{DynamicResource ReduxSelectionBrush}" />
+								<Setter Property="adonisExtensions:CursorSpotlightExtension.BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 							</MultiDataTrigger.Setters>
 						</MultiDataTrigger>
 						<MultiDataTrigger>
@@ -76,10 +82,10 @@
 								<Condition Binding="{Binding IsHighlighted, RelativeSource={RelativeSource Self}}" Value="True" />
 							</MultiDataTrigger.Conditions>
 							<MultiDataTrigger.Setters>
-								<Setter Property="Background" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer4HighlightBrush}}" />
-								<Setter Property="BorderBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer4HighlightBorderBrush}}" />
-								<Setter Property="adonisExtensions:CursorSpotlightExtension.BackgroundBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer4IntenseHighlightBrush}}" />
-								<Setter Property="adonisExtensions:CursorSpotlightExtension.BorderBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer4IntenseHighlightBorderBrush}}" />
+								<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+								<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+								<Setter Property="adonisExtensions:CursorSpotlightExtension.BackgroundBrush" Value="{DynamicResource ReduxSelectionBrush}" />
+								<Setter Property="adonisExtensions:CursorSpotlightExtension.BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 							</MultiDataTrigger.Setters>
 						</MultiDataTrigger>
 					</ControlTemplate.Triggers>
@@ -87,6 +93,7 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
+	<Style x:Key="{x:Type ComboBoxItem}" BasedOn="{StaticResource ReduxComboBoxItemStyle}" TargetType="ComboBoxItem" />
 	<ControlTemplate x:Key="ComboBoxToggleButtonTemplate" TargetType="ToggleButton">
 		<Grid>
 			<Grid.ColumnDefinitions>
@@ -186,6 +193,7 @@
 		</ControlTemplate.Triggers>
 	</ControlTemplate>
 	<Style x:Key="{x:Type ComboBox}" TargetType="ComboBox">
+		<Setter Property="ItemContainerStyle" Value="{StaticResource ReduxComboBoxItemStyle}" />
 		<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUi:Brushes.ForegroundBrush}}" />
 		<Setter Property="Background" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer1BackgroundBrush}}" />
 		<Setter Property="BorderBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer1BorderBrush}}" />

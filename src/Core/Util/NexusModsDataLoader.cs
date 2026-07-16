@@ -213,7 +213,16 @@ public static class NexusModsDataLoader
 				var result = await dataLoader.Mods.GetMod(DivinityApp.NEXUSMODS_GAME_DOMAIN, mod.NexusModsData.ModId, t);
 				if (result != null)
 				{
+					var associationOrigin = mod.NexusModsData.MetadataOrigin;
 					mod.NexusModsData.Update(result);
+					// Live API data enriches the record, but the association origin still
+					// explains how Redux connected this installed package to the project.
+					mod.NexusModsData.MetadataOrigin = associationOrigin switch
+					{
+						NexusMetadataOrigin.Manual => NexusMetadataOrigin.Manual,
+						NexusMetadataOrigin.BundledProvenance => NexusMetadataOrigin.BundledProvenance,
+						_ => NexusMetadataOrigin.LiveApi
+					};
 					taskResult.UpdatedMods.Add(mod);
 					totalLoaded++;
 				}

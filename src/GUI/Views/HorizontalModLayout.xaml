@@ -172,6 +172,7 @@
 				</Setter>
 			</Style>
 			<Style x:Key="ModDetailsTabItemStyle" TargetType="{x:Type TabItem}">
+				<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Control}" />
 				<Setter Property="Background" Value="Transparent" />
 				<Setter Property="BorderBrush" Value="Transparent" />
 				<Setter Property="BorderThickness" Value="1" />
@@ -179,7 +180,7 @@
 				<Setter Property="Cursor" Value="Hand" />
 				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-				<Setter Property="Margin" Value="0,0,4,0" />
+				<Setter Property="Margin" Value="0,0,6,0" />
 				<Setter Property="MinWidth" Value="86" />
 				<Setter Property="Padding" Value="12,7" />
 				<Setter Property="Template">
@@ -446,7 +447,18 @@
 						</Grid.RowDefinitions>
 						<StackPanel>
 							<WrapPanel Margin="0,1,0,0">
-								<Border ToolTip="Contains Mod Fixer. BG3 Patch 7 and newer generally do not require it, and Mod Fixer does not need to be installed separately.">
+								<Border>
+									<Border.ToolTip>
+										<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
+											<Border MaxWidth="390" Padding="12,10" Background="{DynamicResource ReduxSurfaceElevatedBrush}" BorderBrush="{DynamicResource ReduxWarningBrush}" BorderThickness="1" CornerRadius="8">
+												<StackPanel>
+													<TextBlock FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource ReduxWarningBrush}" Text="Contains Mod Fixer" />
+													<TextBlock Margin="0,5,0,0" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="This package contains the older Mod Fixer technique used by some BG3 mods." TextWrapping="Wrap" />
+													<TextBlock Margin="0,6,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="BG3 Patch 7 and newer generally do not require Mod Fixer, and it does not need to be installed separately." TextWrapping="Wrap" />
+												</StackPanel>
+											</Border>
+										</ToolTip>
+									</Border.ToolTip>
 									<Border.Style>
 										<Style BasedOn="{StaticResource ModDetailsLegacyStatusChipStyle}" TargetType="{x:Type Border}">
 											<Setter Property="Visibility" Value="Collapsed" />
@@ -515,7 +527,8 @@
 						<WrapPanel Grid.Row="1" Margin="0,2,0,0" VerticalAlignment="Center">
 							<TextBlock VerticalAlignment="Center"
 								Foreground="{DynamicResource ReduxTextMutedBrush}"
-								Text="{Binding Metadata.LinkStatus}" />
+								Text="{Binding Metadata.LinkStatus}"
+								ToolTip="{Binding Metadata.LinkStatusTooltip}" />
 						</WrapPanel>
 						<WrapPanel Grid.Row="2" Margin="0,7,0,0">
 							<Border Style="{StaticResource ModDetailsMetadataChipStyle}"
@@ -532,14 +545,20 @@
 								<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 									Text="{Binding Metadata.UpdatedLabel}" />
 							</Border>
-							<Border Style="{StaticResource ModDetailsMetadataChipStyle}"
+							<Border Margin="0,0,6,5"
+								Padding="8,4"
+								Background="{DynamicResource ReduxAccentSoftBrush}"
+								BorderBrush="{DynamicResource ReduxAccentBrush}"
+								BorderThickness="1"
+								CornerRadius="7"
 								ToolTip="{Binding Metadata.OfflineDatabaseNoticeTooltip}"
-								Visibility="{Binding Metadata.OfflineDatabaseNoticeVisibility}">
+								Visibility="Collapsed">
 								<StackPanel Orientation="Horizontal">
 									<TextBlock Margin="0,0,5,0"
-										Foreground="{DynamicResource ReduxTextMutedBrush}"
+										Foreground="{DynamicResource ReduxAccentHoverBrush}"
 										Text="◇" />
-									<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}"
+									<TextBlock FontWeight="SemiBold"
+										Foreground="{DynamicResource ReduxAccentHoverBrush}"
 										Text="{Binding Metadata.OfflineDatabaseNotice}" />
 								</StackPanel>
 							</Border>

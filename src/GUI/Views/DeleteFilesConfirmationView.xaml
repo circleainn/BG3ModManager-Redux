@@ -140,6 +140,7 @@
 					    DockPanel.Dock="Bottom"
 					    TextAlignment="Center" />
 					<ProgressBar x:Name="TaskProgressBar"
+						Style="{StaticResource ReduxProgressBarStyle}"
 					    MinHeight="15"
 					    VerticalAlignment="Center"
 					    DockPanel.Dock="Top"
