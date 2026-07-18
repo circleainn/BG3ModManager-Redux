@@ -63,6 +63,9 @@ NEUTRAL_BUILD_ROOT = r"R:\BG3ModManager-Redux"
 FORBIDDEN_PRIVATE_MARKERS = (
 )
 
+BINARY_ONLY_PRIVATE_MARKERS = (
+)
+
 
 def remove_path(path: Path) -> None:
 	if path.is_dir():
@@ -79,11 +82,15 @@ def prepare_publish_directory() -> None:
 		if child.is_dir() and child.name.lower() in USER_STATE_DIRECTORIES:
 			remove_path(child)
 
-	for source_name in ("README.md", "LICENSE", "THIRD-PARTY-NOTICES.md"):
-		source = ROOT / source_name
+	distribution_documents = {
+		ROOT / "README.md": PUBLISH_DIR / "README.md",
+		ROOT / "LICENSE": PUBLISH_DIR / "LICENSE",
+		ROOT / "licenses" / "Third-Party-Notices.md": PUBLISH_DIR / "THIRD-PARTY-NOTICES.md",
+	}
+	for source, destination in distribution_documents.items():
 		if not source.is_file():
 			raise SystemExit(f"Required distribution document is missing: {source}")
-		shutil.copy2(source, PUBLISH_DIR / source_name)
+		shutil.copy2(source, destination)
 
 
 def replace_fixed_width(data: bytes, old: bytes, new: bytes) -> tuple[bytes, int]:
@@ -119,7 +126,10 @@ def sanitize_binary_build_metadata() -> None:
 def validate_package_privacy(files: list[Path]) -> None:
 	for path in files:
 		data = path.read_bytes().lower()
-		for marker in FORBIDDEN_PRIVATE_MARKERS:
+		markers = FORBIDDEN_PRIVATE_MARKERS
+		if path.suffix.lower() in BINARY_SUFFIXES:
+			markers += BINARY_ONLY_PRIVATE_MARKERS
+		for marker in markers:
 			encoded_markers = (marker.encode("utf-8"), marker.encode("utf-16-le"))
 			if any(encoded in data for encoded in encoded_markers):
 				raise SystemExit(
