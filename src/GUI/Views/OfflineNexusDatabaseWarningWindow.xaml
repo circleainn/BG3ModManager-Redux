@@ -4,16 +4,14 @@
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	Title="Redux Mod Database"
 	Width="680"
-	Height="438"
 	MinWidth="680"
-	MinHeight="438"
 	MaxWidth="680"
-	MaxHeight="438"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontWeight="Medium"
 	TextOptions.TextFormattingMode="Display"
 	TextOptions.TextRenderingMode="ClearType"
 	ResizeMode="NoResize"
+	SizeToContent="Height"
 	ShowInTaskbar="False"
 	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
 	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
@@ -32,7 +30,7 @@
 		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 			<Grid>
@@ -88,20 +86,22 @@
 						Margin="0,14,0,0"
 						FontWeight="SemiBold"
 						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-						Content="I understand that database matches may be incomplete and live metadata requires an API key." />
+						HorizontalContentAlignment="Stretch"
+						Style="{StaticResource ReduxCheckBoxStyle}">
+						<TextBlock Text="I understand that database matches may be incomplete and live metadata requires an API key."
+							TextWrapping="Wrap" />
+					</CheckBox>
 				</StackPanel>
 			</Border>
 			<Button Grid.Row="2"
 				Width="116"
 				Height="34"
 				HorizontalAlignment="Right"
-				Background="{DynamicResource ReduxAccentBrush}"
-				BorderBrush="{DynamicResource ReduxAccentHoverBrush}"
 				Click="ContinueButton_Click"
 				Content="Continue"
-				Foreground="White"
 				IsDefault="True"
-				IsEnabled="{Binding IsChecked, ElementName=AcknowledgementCheckBox}" />
+				IsEnabled="{Binding IsChecked, ElementName=AcknowledgementCheckBox}"
+				Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" />
 		</Grid>
 	</Border>
 </adonisUI:AdonisWindow>

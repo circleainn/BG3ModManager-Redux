@@ -36,6 +36,66 @@
 		<Setter Property="BorderThickness" Value="1" />
 		<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="7" />
 	</Style>
+	<!--  Shared corner radius for Redux-themed input controls (TextBox, ComboBox). Single source of truth so fields stay visually consistent.  -->
+	<CornerRadius x:Key="Redux.CornerRadius.Control">6</CornerRadius>
+	<!--
+		Named, app-wide TextBox chrome. A self-contained Template (like ReduxCheckBoxStyle
+		below) rather than a BasedOn self-key bridge to the type's default style, since that bridge
+		does not reliably resolve to AdonisUI's real default TextBox style from this dictionary,
+		and silently fell back every TextBox in the app (including Launch Params, which used to
+		style itself locally) to the raw unstyled WPF template. PART_ContentHost is required by
+		TextBoxBase for editing to function.
+	-->
+	<Style TargetType="{x:Type TextBox}">
+		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+		<Setter Property="CaretBrush" Value="{DynamicResource ReduxAccentBrush}" />
+		<Setter Property="SelectionBrush" Value="{DynamicResource ReduxAccentSoftBrush}" />
+		<Setter Property="SelectionTextBrush" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+		<Setter Property="Padding" Value="8,3" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="AllowDrop" Value="True" />
+		<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+		<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type TextBox}">
+					<Border x:Name="FieldChrome"
+						Background="{TemplateBinding Background}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						CornerRadius="{TemplateBinding adonisExtensions:CornerRadiusExtension.CornerRadius}"
+						SnapsToDevicePixels="True">
+						<!-- No Margin={TemplateBinding Padding} here: TextBoxBase already forwards
+						     Padding to the ScrollContentPresenter inside PART_ContentHost, so adding
+						     it again double-pads the field vertically. -->
+						<ScrollViewer x:Name="PART_ContentHost"
+							HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+							Focusable="False"
+							HorizontalScrollBarVisibility="Hidden"
+							VerticalScrollBarVisibility="Hidden" />
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter TargetName="FieldChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
+						</Trigger>
+						<Trigger Property="IsKeyboardFocused" Value="True">
+							<Setter TargetName="FieldChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+						</Trigger>
+						<Trigger Property="Validation.HasError" Value="True">
+							<Setter TargetName="FieldChrome" Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
+						</Trigger>
+						<Trigger Property="IsEnabled" Value="False">
+							<Setter Property="Opacity" Value="0.55" />
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
 	<!--  Bridge legacy AdonisUI controls into the Redux semantic palette.  -->
 	<SolidColorBrush x:Key="{x:Static adonisUI:Brushes.ForegroundBrush}" Color="{DynamicResource ReduxTextPrimaryColor}" />
 	<SolidColorBrush x:Key="{x:Static adonisUI:Brushes.DisabledForegroundBrush}" Color="{DynamicResource ReduxTextMutedColor}" />
@@ -79,6 +139,105 @@
 	<SolidColorBrush x:Key="{x:Static adonisUI:Brushes.Layer4HighlightBorderBrush}" Color="{DynamicResource ReduxBorderStrongColor}" />
 	<SolidColorBrush x:Key="{x:Static adonisUI:Brushes.Layer4IntenseHighlightBrush}" Color="{DynamicResource ReduxSelectionColor}" />
 	<SolidColorBrush x:Key="{x:Static adonisUI:Brushes.Layer4IntenseHighlightBorderBrush}" Color="{DynamicResource ReduxAccentColor}" />
+	<!--
+		Named, opt-in checkbox chrome for Redux-owned surfaces. This intentionally
+		does not replace AdonisUI's application-wide implicit CheckBox style.
+	-->
+	<Style x:Key="ReduxCheckBoxStyle" TargetType="{x:Type CheckBox}">
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+		<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type CheckBox}">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Border x:Name="CheckSurface"
+							Width="16"
+							Height="16"
+							VerticalAlignment="Center"
+							Background="{DynamicResource ReduxSurfaceMutedBrush}"
+							BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
+							BorderThickness="1"
+							CornerRadius="4">
+							<TextBlock x:Name="CheckMark"
+								HorizontalAlignment="Center"
+								VerticalAlignment="Center"
+								FontSize="11"
+								FontWeight="Bold"
+								Foreground="{DynamicResource ReduxAccentForegroundBrush}"
+								Text="&#x2713;"
+								Visibility="Collapsed" />
+						</Border>
+						<ContentPresenter Grid.Column="1"
+							Margin="7,0,0,0"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Center"
+							RecognizesAccessKey="True"
+								/>
+					</Grid>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter TargetName="CheckSurface" Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
+						</Trigger>
+						<Trigger Property="IsKeyboardFocused" Value="True">
+							<Setter TargetName="CheckSurface" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+						</Trigger>
+						<Trigger Property="IsChecked" Value="True">
+							<Setter TargetName="CheckSurface" Property="Background" Value="{DynamicResource ReduxAccentBrush}" />
+							<Setter TargetName="CheckSurface" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+							<Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+						</Trigger>
+						<Trigger Property="IsEnabled" Value="False">
+							<Setter Property="Opacity" Value="0.45" />
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<!-- Shared primary action chrome for Redux-owned dialogs. -->
+	<Style x:Key="ReduxRoundedPrimaryButtonStyle" TargetType="{x:Type Button}">
+		<Setter Property="Background" Value="{DynamicResource ReduxAccentBrush}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
+		<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Control}" />
+		<Setter Property="Padding" Value="16,7" />
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type Button}">
+					<Border x:Name="ButtonChrome"
+						Background="{TemplateBinding Background}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						CornerRadius="6"
+						Padding="{TemplateBinding Padding}">
+						<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+							RecognizesAccessKey="True" />
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxAccentHoverBrush}" />
+						</Trigger>
+						<Trigger Property="IsPressed" Value="True">
+							<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.82" />
+						</Trigger>
+						<Trigger Property="IsEnabled" Value="False">
+							<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
 	<SolidColorBrush x:Key="{x:Static adonisUI:Brushes.Layer4InteractionBrush}" Color="{DynamicResource ReduxAccentSoftColor}" />
 	<SolidColorBrush x:Key="{x:Static adonisUI:Brushes.Layer4InteractionBorderBrush}" Color="{DynamicResource ReduxAccentColor}" />
 	<SolidColorBrush x:Key="{x:Static adonisUI:Brushes.Layer4InteractionForegroundBrush}" Color="{DynamicResource ReduxTextPrimaryColor}" />
@@ -201,15 +360,25 @@
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="ToolTip">
+					<ControlTemplate.Resources>
+						<!-- Plain string tooltips wrap without forcing rich UIElement tooltips
+						     through a text-only template. -->
+						<DataTemplate DataType="{x:Type sys:String}">
+							<TextBlock MaxWidth="400"
+							    Text="{Binding}"
+							    TextTrimming="None"
+							    TextWrapping="Wrap" />
+						</DataTemplate>
+					</ControlTemplate.Resources>
 					<Border Name="Border"
-					    Width="{TemplateBinding Width}"
-					    Height="{TemplateBinding Height}"
 					    Padding="8,5"
 					    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 					    BorderBrush="{DynamicResource ReduxBorderBrush}"
 					    BorderThickness="1"
 					    CornerRadius="8">
-						<ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Top" />
+						<ContentPresenter HorizontalAlignment="Left"
+							VerticalAlignment="Top"
+							RecognizesAccessKey="True" />
 					</Border>
 					<ControlTemplate.Triggers>
 						<Trigger Property="HasDropShadow" Value="true">
@@ -297,10 +466,44 @@
 	<Style x:Key="ModuleShortDescListBox" BasedOn="{StaticResource {x:Type ListBox}}" TargetType="ListBox">
 		<Setter Property="Background" Value="{DynamicResource ReduxListInteriorBrush}" />
 		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+		<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 		<Setter Property="ItemContainerStyle">
 			<Setter.Value>
 				<Style TargetType="ListBoxItem">
 					<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+					<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+					<Setter Property="Background" Value="Transparent" />
+					<Setter Property="BorderBrush" Value="Transparent" />
+					<Setter Property="BorderThickness" Value="1" />
+					<Setter Property="Padding" Value="4,2" />
+					<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+					<Setter Property="Template">
+						<Setter.Value>
+							<ControlTemplate TargetType="ListBoxItem">
+								<Border x:Name="ItemChrome"
+									Background="{TemplateBinding Background}"
+									BorderBrush="{TemplateBinding BorderBrush}"
+									BorderThickness="{TemplateBinding BorderThickness}"
+									CornerRadius="4"
+									Padding="{TemplateBinding Padding}">
+									<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+										VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+								</Border>
+								<ControlTemplate.Triggers>
+									<Trigger Property="IsMouseOver" Value="True">
+										<Setter TargetName="ItemChrome" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+									</Trigger>
+									<Trigger Property="IsSelected" Value="True">
+										<Setter TargetName="ItemChrome" Property="Background" Value="{DynamicResource ReduxSelectionBrush}" />
+										<Setter TargetName="ItemChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+									</Trigger>
+									<Trigger Property="IsEnabled" Value="False">
+										<Setter Property="Opacity" Value="0.55" />
+									</Trigger>
+								</ControlTemplate.Triggers>
+							</ControlTemplate>
+						</Setter.Value>
+					</Setter>
 				</Style>
 			</Setter.Value>
 		</Setter>

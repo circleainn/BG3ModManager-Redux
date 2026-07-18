@@ -3,9 +3,9 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	Title="Redux Preview"
-	Width="650" Height="410" MinWidth="650" MinHeight="410" MaxWidth="650" MaxHeight="410"
+	Width="650" MinWidth="650" MaxWidth="650"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontWeight="{DynamicResource Redux.FontWeight.Body}"
-	ResizeMode="NoResize" ShowInTaskbar="False"
+	ResizeMode="NoResize" SizeToContent="Height" ShowInTaskbar="False"
 	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
 	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
 	WindowStartupLocation="CenterOwner">
@@ -14,7 +14,7 @@
 	</ResourceDictionary.MergedDictionaries></ResourceDictionary></Window.Resources>
 	<Border Padding="22" Background="{DynamicResource ReduxAppBackgroundBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
 		<Grid>
-			<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+			<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 			<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 				<Border Width="42" Height="42" Margin="0,0,14,0" VerticalAlignment="Top" Background="{DynamicResource ReduxAccentSoftBrush}" BorderBrush="{DynamicResource ReduxAccentBrush}" BorderThickness="1" CornerRadius="21">
 					<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="23" Foreground="{DynamicResource ReduxAccentHoverBrush}" Text="◇" />
@@ -26,10 +26,12 @@
 				<StackPanel>
 					<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Features, metadata matching, themes, and interface details may be incomplete or change between builds. Keep backups of important profiles and mod files, and verify your exported load order before launching the game." TextWrapping="Wrap" />
 					<TextBlock Margin="0,9,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="If something behaves unexpectedly, stop and report what happened before repeating a destructive action." TextWrapping="Wrap" />
-					<CheckBox x:Name="AcknowledgementCheckBox" Margin="0,14,0,0" FontWeight="{DynamicResource Redux.FontWeight.Control}" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Content="I understand that this Redux build is a work in progress." />
+					<CheckBox x:Name="AcknowledgementCheckBox" Margin="0,14,0,0" FontWeight="{DynamicResource Redux.FontWeight.Control}" Foreground="{DynamicResource ReduxTextPrimaryBrush}" HorizontalContentAlignment="Stretch" Style="{StaticResource ReduxCheckBoxStyle}">
+						<TextBlock Text="I understand that this Redux build is a work in progress." TextWrapping="Wrap" />
+					</CheckBox>
 				</StackPanel>
 			</Border>
-			<Button Grid.Row="2" Width="116" Height="34" HorizontalAlignment="Right" Background="{DynamicResource ReduxAccentBrush}" BorderBrush="{DynamicResource ReduxAccentHoverBrush}" Click="ContinueButton_Click" Content="Continue" Foreground="White" IsDefault="True" IsEnabled="{Binding IsChecked, ElementName=AcknowledgementCheckBox}" />
+			<Button Grid.Row="2" Width="116" Height="34" HorizontalAlignment="Right" Click="ContinueButton_Click" Content="Continue" IsDefault="True" IsEnabled="{Binding IsChecked, ElementName=AcknowledgementCheckBox}" Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" />
 		</Grid>
 	</Border>
 </adonisUI:AdonisWindow>

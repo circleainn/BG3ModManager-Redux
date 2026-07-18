@@ -583,7 +583,7 @@
 							    LostFocus="OrdersComboBox_LostFocus"
 							    Tag="{Binding}">
 								<ComboBox.ItemContainerStyle>
-									<Style TargetType="ComboBoxItem">
+									<Style BasedOn="{StaticResource ReduxComboBoxItemStyle}" TargetType="ComboBoxItem">
 										<EventSetter Event="ComboBoxItem.PreviewMouseDown" Handler="OrderComboBox_OnUserClick" />
 									</Style>
 								</ComboBox.ItemContainerStyle>

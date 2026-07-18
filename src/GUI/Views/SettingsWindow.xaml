@@ -123,30 +123,66 @@
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type TabItem}">
-							<Grid Margin="2,1" ClipToBounds="False">
-								<Rectangle x:Name="TabChrome"
-									Fill="{TemplateBinding Background}"
-									RadiusX="7"
-									RadiusY="7"
-									Stroke="{TemplateBinding BorderBrush}"
-									StrokeThickness="1" />
+							<Grid x:Name="HeaderHost"
+								Background="Transparent"
+								TextElement.Foreground="{DynamicResource ReduxTextMutedBrush}">
+								<Grid.RowDefinitions>
+									<RowDefinition Height="*" />
+									<RowDefinition Height="2" />
+								</Grid.RowDefinitions>
 								<ContentPresenter Margin="{TemplateBinding Padding}"
 									HorizontalAlignment="Center"
 									VerticalAlignment="Center"
 									ContentSource="Header"
 									RecognizesAccessKey="True" />
+								<Border x:Name="SelectionUnderline"
+									Grid.Row="1"
+									Margin="5,0"
+									Background="{DynamicResource ReduxAccentBrush}"
+									CornerRadius="1"
+									Opacity="0"
+									RenderTransformOrigin="0.5,0.5">
+									<Border.RenderTransform>
+										<ScaleTransform ScaleX="0.4" />
+									</Border.RenderTransform>
+								</Border>
 							</Grid>
 							<ControlTemplate.Triggers>
 								<Trigger Property="IsMouseOver" Value="True">
-									<Setter TargetName="TabChrome" Property="Fill" Value="{DynamicResource ReduxAccentSoftBrush}" />
-									<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+									<Setter TargetName="HeaderHost" Property="TextElement.Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 								</Trigger>
 								<Trigger Property="IsSelected" Value="True">
 									<Setter Property="Panel.ZIndex" Value="1" />
-									<Setter TargetName="TabChrome" Property="Fill" Value="{DynamicResource ReduxSelectionBrush}" />
-									<Setter TargetName="TabChrome" Property="Stroke" Value="{DynamicResource ReduxAccentBrush}" />
-									<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-									<Setter Property="FontWeight" Value="SemiBold" />
+									<Setter TargetName="HeaderHost" Property="TextElement.Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
+									<Setter TargetName="HeaderHost" Property="TextElement.FontWeight" Value="SemiBold" />
+									<Trigger.EnterActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="SelectionUnderline"
+													Storyboard.TargetProperty="Opacity"
+													To="1" Duration="0:0:0.14" />
+												<DoubleAnimation Storyboard.TargetName="SelectionUnderline"
+													Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+													To="1" Duration="0:0:0.14">
+													<DoubleAnimation.EasingFunction>
+														<QuadraticEase EasingMode="EaseOut" />
+													</DoubleAnimation.EasingFunction>
+												</DoubleAnimation>
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.EnterActions>
+									<Trigger.ExitActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="SelectionUnderline"
+													Storyboard.TargetProperty="Opacity"
+													To="0" Duration="0:0:0.10" />
+												<DoubleAnimation Storyboard.TargetName="SelectionUnderline"
+													Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+													To="0.4" Duration="0:0:0.10" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.ExitActions>
 								</Trigger>
 							</ControlTemplate.Triggers>
 						</ControlTemplate>
@@ -286,7 +322,7 @@
 			<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
 				<Setter Property="VerticalAlignment" Value="Center" />
 			</Style>
-			<Style BasedOn="{StaticResource {x:Type CheckBox}}" TargetType="CheckBox">
+			<Style BasedOn="{StaticResource ReduxCheckBoxStyle}" TargetType="CheckBox">
 				<Setter Property="VerticalAlignment" Value="Center" />
 			</Style>
 			<Style TargetType="controls:AutoGrid">

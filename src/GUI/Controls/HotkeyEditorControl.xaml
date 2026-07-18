@@ -29,10 +29,45 @@
 		VerticalContentAlignment="Center"
 		Click="HotkeyButton_Click">
 		<Button.Style>
-			<Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
+			<!--
+				A self-contained Template, not a BasedOn self-key bridge to the type's default style;
+				that bridge does not reliably resolve AdonisUI's real default Button style from
+				this UserControl's own merged resources, and silently falls back to the raw unstyled
+				WPF template (see the same issue fixed for TextBox in MainResourceDictionary.xaml).
+			-->
+			<Style TargetType="Button">
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+				<Setter Property="BorderThickness" Value="1" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+				<Setter Property="Padding" Value="8,4" />
+				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+				<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="Button">
+							<Border x:Name="ButtonChrome"
+								Background="{TemplateBinding Background}"
+								BorderBrush="{TemplateBinding BorderBrush}"
+								BorderThickness="{TemplateBinding BorderThickness}"
+								CornerRadius="{TemplateBinding adonisExtensions:CornerRadiusExtension.CornerRadius}">
+								<ContentPresenter Margin="{TemplateBinding Padding}"
+									HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+									VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+									RecognizesAccessKey="True" />
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
 				<Style.Triggers>
 					<DataTrigger Binding="{Binding IsFocused, ElementName=HotkeyTextBox}" Value="True">
-						<Setter Property="Background" Value="OrangeRed" />
+						<Setter Property="Background" Value="{DynamicResource ReduxSelectionBrush}" />
+						<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 					</DataTrigger>
 					<MultiDataTrigger>
 						<MultiDataTrigger.Conditions>
@@ -40,8 +75,8 @@
 							<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
 						</MultiDataTrigger.Conditions>
 						<MultiDataTrigger.Setters>
-							<Setter Property="Background" Value="OrangeRed" />
-							<Setter Property="adonisExtensions:CursorSpotlightExtension.BackgroundBrush" Value="Coral" />
+							<Setter Property="Background" Value="{DynamicResource ReduxSelectionBrush}" />
+							<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
 						</MultiDataTrigger.Setters>
 					</MultiDataTrigger>
 				</Style.Triggers>
@@ -54,6 +89,7 @@
 				Background="Transparent"
 				BorderBrush="Transparent"
 				BorderThickness="0"
+				Padding="0"
 				Focusable="{Binding Path=Hotkey.CanEdit, ElementName=HotkeyUserControl, FallbackValue=True}"
 				IsHitTestVisible="False"
 				IsReadOnly="True"

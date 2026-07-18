@@ -4,16 +4,14 @@
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	Title="Limited mod.io Support"
 	Width="650"
-	Height="360"
 	MinWidth="650"
-	MinHeight="360"
 	MaxWidth="650"
-	MaxHeight="360"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontWeight="Medium"
 	TextOptions.TextFormattingMode="Display"
 	TextOptions.TextRenderingMode="ClearType"
 	ResizeMode="NoResize"
+	SizeToContent="Height"
 	ShowInTaskbar="False"
 	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
 	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
@@ -32,7 +30,7 @@
 		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 			<Grid>
@@ -76,20 +74,22 @@
 						Margin="0,14,0,0"
 						FontWeight="SemiBold"
 						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-						Content="I understand that subscribed mod.io mods may be redownloaded by the game." />
+						HorizontalContentAlignment="Stretch"
+						Style="{StaticResource ReduxCheckBoxStyle}">
+						<TextBlock Text="I understand that subscribed mod.io mods may be redownloaded by the game."
+							TextWrapping="Wrap" />
+					</CheckBox>
 				</StackPanel>
 			</Border>
 			<Button Grid.Row="2"
 				Width="116"
 				Height="34"
 				HorizontalAlignment="Right"
-				Background="{DynamicResource ReduxAccentBrush}"
-				BorderBrush="{DynamicResource ReduxAccentHoverBrush}"
 				Click="ContinueButton_Click"
 				Content="Continue"
-				Foreground="White"
 				IsDefault="True"
-				IsEnabled="{Binding IsChecked, ElementName=AcknowledgementCheckBox}" />
+				IsEnabled="{Binding IsChecked, ElementName=AcknowledgementCheckBox}"
+				Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" />
 		</Grid>
 	</Border>
 </adonisUI:AdonisWindow>

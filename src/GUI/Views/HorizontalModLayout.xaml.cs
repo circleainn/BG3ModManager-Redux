@@ -11,6 +11,7 @@ using AdonisUI;
 
 using ReactiveMarbles.ObservableEvents;
 
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
@@ -56,6 +57,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private const double CollapsedModDetailsRowHeight = 58;
 	private const double ModDetailsSplitterHeight = 6;
 	private const double CollapsedCategoriesWidth = 52;
+	// Fallback seed only, used before the panel has real category data to measure against.
 	private const double MinimumExpandedCategoriesWidth = 180;
 	private const double DefaultExpandedCategoriesWidth = 220;
 	private const double DefaultOverrideModsRowHeight = 160;
@@ -64,6 +66,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private object _focusedList = null;
 	private double _lastExpandedModDetailsRowHeight = DefaultModDetailsRowHeight;
 	private double _lastExpandedCategoriesWidth = DefaultExpandedCategoriesWidth;
+	private double _minimumExpandedCategoriesWidth = MinimumExpandedCategoriesWidth;
 	private double _lastExpandedOverrideModsRowHeight = DefaultOverrideModsRowHeight;
 	private readonly Dictionary<GridViewColumn, double> _visibleModListColumnWidths = new();
 	private readonly Dictionary<GridView, Dictionary<string, (GridViewColumn Column, int Index)>> _modListColumnRegistry = new();
@@ -783,7 +786,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		if (!isExpanded)
 		{
-			if (CategoriesColumn.ActualWidth >= MinimumExpandedCategoriesWidth)
+			if (CategoriesColumn.ActualWidth >= _minimumExpandedCategoriesWidth)
 				_lastExpandedCategoriesWidth = CategoriesColumn.ActualWidth;
 
 			CategoriesGridSplitter.IsEnabled = false;
@@ -794,9 +797,61 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		}
 
 		CategoriesColumn.MaxWidth = Double.PositiveInfinity;
-		CategoriesColumn.MinWidth = MinimumExpandedCategoriesWidth;
-		CategoriesColumn.Width = new GridLength(Math.Max(MinimumExpandedCategoriesWidth, _lastExpandedCategoriesWidth));
+		CategoriesColumn.MinWidth = _minimumExpandedCategoriesWidth;
+		CategoriesColumn.Width = new GridLength(Math.Max(_minimumExpandedCategoriesWidth, _lastExpandedCategoriesWidth));
 		CategoriesGridSplitter.IsEnabled = true;
+	}
+
+	/// <summary>
+	/// Recomputes the expanded category panel's minimum width from the longest currently
+	/// visible category label, so the floor tracks whatever categories are actually shown
+	/// (filtering, renaming, enabling/disabling) instead of a permanently fixed value.
+	/// Chrome constants below are read directly from the panel's own XAML: the color dot
+	/// and its margin, the count badge and its margin, ModCategoryListItemStyle's padding
+	/// and border, CategoryListBox's margin, and the panel border/margin/inner-grid margin.
+	/// </summary>
+	private void UpdateMinimumExpandedCategoriesWidth()
+	{
+		const double dotAndMargin = 12d + 7d;
+		const double badgeAndMargin = 8d + 28d;
+		const double itemChrome = (10d * 2) + (1d * 2);
+		const double listBoxMargin = 6d * 2;
+		const double panelChrome = (1d * 2) + (10d + 5d) + (10d * 2);
+		const double fixedChrome = dotAndMargin + badgeAndMargin + itemChrome + listBoxMargin + panelChrome;
+		const double measurementBuffer = 4d;
+
+		double longestLabelWidth = 0d;
+		var probe = new TextBlock
+		{
+			FontFamily = CategoryListBox.FontFamily,
+			FontSize = CategoryListBox.FontSize,
+			FontWeight = CategoryListBox.FontWeight,
+			FontStyle = CategoryListBox.FontStyle
+		};
+
+		foreach (var entry in CategoryListBox.Items)
+		{
+			if (entry is ModCategoryFilterItem category && !String.IsNullOrEmpty(category.Name))
+			{
+				probe.Text = category.Name;
+				probe.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
+				if (probe.DesiredSize.Width > longestLabelWidth)
+				{
+					longestLabelWidth = probe.DesiredSize.Width;
+				}
+			}
+		}
+
+		_minimumExpandedCategoriesWidth = fixedChrome + longestLabelWidth + measurementBuffer;
+
+		if (ViewModel != null && ViewModel.IsCategoriesExpanded)
+		{
+			CategoriesColumn.MinWidth = _minimumExpandedCategoriesWidth;
+			if (CategoriesColumn.ActualWidth < _minimumExpandedCategoriesWidth)
+			{
+				CategoriesColumn.Width = new GridLength(_minimumExpandedCategoriesWidth);
+			}
+		}
 	}
 
 	private IDisposable updatingActiveViewSelection;
@@ -1043,6 +1098,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				d(this.ViewModel.WhenAnyValue(x => x.IsCategoriesExpanded)
 					.ObserveOn(RxApp.MainThreadScheduler)
 					.Subscribe(UpdateCategoriesLayout));
+				d(Observable.FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
+					h => ((INotifyCollectionChanged)CategoryListBox.Items).CollectionChanged += h,
+					h => ((INotifyCollectionChanged)CategoryListBox.Items).CollectionChanged -= h)
+					.ObserveOn(RxApp.MainThreadScheduler)
+					.Subscribe(_ => UpdateMinimumExpandedCategoriesWidth()));
+				UpdateMinimumExpandedCategoriesWidth();
 				d(this.Events().KeyUp.Select(e => e.Key != Key.System ? e.Key : e.SystemKey).Subscribe(ViewModel.OnKeyUp));
 				d(this.Events().KeyDown.Select(e => e.Key != Key.System ? e.Key : e.SystemKey).Subscribe(key =>
 				{
