@@ -58,7 +58,11 @@ REQUIRED_FILES = {
 	Path("LICENSE"),
 	Path("README.md"),
 	Path("THIRD-PARTY-NOTICES.md"),
+	Path("licenses/CrossSpeak-LGPL-2.1.txt"),
+	Path("licenses/Ionicons-MIT.txt"),
+	Path("licenses/LSLib-MIT.txt"),
 	Path("licenses/Manrope-OFL-1.1.txt"),
+	Path("licenses/Tabler-Icons-MIT.txt"),
 }
 
 BINARY_SUFFIXES = {".dll", ".exe"}
@@ -94,6 +98,11 @@ def prepare_publish_directory() -> None:
 		if not source.is_file():
 			raise SystemExit(f"Required distribution document is missing: {source}")
 		shutil.copy2(source, destination)
+
+	# Keep the release layout unambiguous: project license and consolidated notices
+	# live at the package root; licenses/ contains dependency license texts only.
+	remove_path(PUBLISH_DIR / "licenses" / "BG3ModManager-Redux-MIT.txt")
+	remove_path(PUBLISH_DIR / "licenses" / "Third-Party-Notices.md")
 
 
 def replace_fixed_width(data: bytes, old: bytes, new: bytes) -> tuple[bytes, int]:

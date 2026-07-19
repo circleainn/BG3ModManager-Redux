@@ -366,7 +366,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			Header = "No Category",
 			IsCheckable = true,
-			IsChecked = ViewModel.HasNoCategoryAssignment(mod)
+			IsChecked = ViewModel.HasNoCategoryAssignment(mod),
+			Icon = CreateCategoryAssignmentIcon(MainWindowViewModel.UncategorizedModsCategory)
 		};
 		noCategoryItem.Click += (_, _) => ViewModel.ToggleModCategoryAssignment(mod, MainWindowViewModel.NoCategoryAssignment);
 		categoryMenu.Items.Add(noCategoryItem);
@@ -378,7 +379,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			{
 				Header = category,
 				IsCheckable = true,
-				IsChecked = ViewModel.HasModCategoryOverride(mod, category)
+				IsChecked = ViewModel.HasModCategoryOverride(mod, category),
+				Icon = CreateCategoryAssignmentIcon(category)
 			};
 			categoryItem.Click += (_, _) => ViewModel.ToggleModCategoryAssignment(mod, category);
 			categoryMenu.Items.Add(categoryItem);
@@ -467,6 +469,37 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		dividerMenu.Items.Add(addAbove);
 		dividerMenu.Items.Add(addBelow);
 		menu.Items.Insert(Math.Min(3, menu.Items.Count), dividerMenu);
+	}
+
+	private FrameworkElement CreateCategoryAssignmentIcon(string category)
+	{
+		var colorValue = ViewModel.GetCurrentCategoryColor(category);
+		var brush = ColorConverter.ConvertFromString(colorValue) is Color color
+			? new SolidColorBrush(color)
+			: TryFindResource("ReduxTextSecondaryBrush") as Brush ?? System.Windows.Media.Brushes.Gray;
+		if (brush.CanFreeze) brush.Freeze();
+
+		var iconId = ViewModel.GetCurrentCategoryIcon(category);
+		if (!String.IsNullOrWhiteSpace(iconId))
+		{
+			return new ReduxIcon
+			{
+				Width = 14,
+				Height = 14,
+				IconKey = iconId,
+				Foreground = brush
+			};
+		}
+
+		return new Border
+		{
+			Width = 7,
+			Height = 7,
+			CornerRadius = new CornerRadius(4),
+			Background = brush,
+			HorizontalAlignment = HorizontalAlignment.Center,
+			VerticalAlignment = VerticalAlignment.Center
+		};
 	}
 
 	private void ShowManualNexusLinkDialog(DivinityModData mod)

@@ -580,6 +580,7 @@
 	<conv:StringToLinearBrushConverter x:Key="StringToLinearBrushConverter" />
 	<conv:UriToBitmapImageConverter x:Key="UriToBitmapImageConverter" />
 	<conv:ModToDisplayNameConverter x:Key="ModToDisplayNameConverter" />
+	<conv:AvailableWidthConverter x:Key="AvailableWidthConverter" />
 	<xconv:ProgressBarWidthConverter x:Key="ProgressBarWidthConverter" />
 	<Style x:Key="ReduxProgressBarStyle" TargetType="{x:Type ProgressBar}">
 		<Setter Property="Height" Value="14" />
@@ -1404,8 +1405,13 @@
 		</Style.Triggers>
 	</Style>
 	<DataTemplate x:Key="ModTooltipCategoryPillItemTemplate">
-		<Border MaxWidth="170" Margin="0,0,6,0" Style="{StaticResource ReduxCategoryPillBaseStyle}">
-			<StackPanel Orientation="Horizontal">
+		<Border Margin="0,0,6,0" Style="{StaticResource ReduxCategoryPillBaseStyle}"
+			MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Converter={StaticResource AvailableWidthConverter}, ConverterParameter=6}">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
 				<controls:ReduxIcon Width="12" Height="12" Margin="0,0,5,0"
 					IconKey="{Binding IconId}" Foreground="{Binding Color}">
 					<controls:ReduxIcon.Style>
@@ -1423,9 +1429,9 @@
 						</Style>
 					</controls:ReduxIcon.Style>
 				</controls:ReduxIcon>
-				<TextBlock Margin="0" FontSize="11" FontWeight="Medium" Foreground="{Binding Color}"
+				<TextBlock Grid.Column="1" Margin="0" FontSize="11" FontWeight="Medium" Foreground="{Binding Color}"
 					Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-			</StackPanel>
+			</Grid>
 		</Border>
 	</DataTemplate>
 	<controls:AutomationTooltip x:Key="ModToolTip" DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
@@ -2055,8 +2061,13 @@
 		<Setter Property="Margin" Value="0,0,5,0" />
 	</Style>
 	<DataTemplate x:Key="ModCategoryPillItemTemplate">
-		<Border MaxWidth="170" Style="{StaticResource ReduxCategoryPillStyle}">
-			<StackPanel Orientation="Horizontal">
+		<Border Style="{StaticResource ReduxCategoryPillStyle}"
+			MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Converter={StaticResource AvailableWidthConverter}, ConverterParameter=5}">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
 				<controls:ReduxIcon Width="12" Height="12" Margin="0,0,5,0" IconKey="{Binding IconId}" Foreground="{Binding Color}">
 					<controls:ReduxIcon.Style>
 						<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
@@ -2073,9 +2084,9 @@
 						</Style>
 					</controls:ReduxIcon.Style>
 				</controls:ReduxIcon>
-				<TextBlock FontSize="11" FontWeight="Medium" Foreground="{Binding Color}"
+				<TextBlock Grid.Column="1" FontSize="11" FontWeight="Medium" Foreground="{Binding Color}"
 					Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
-			</StackPanel>
+			</Grid>
 		</Border>
 	</DataTemplate>
 	<DataTemplate x:Key="ModCategoryTemplate" DataType="{x:Type data:DivinityModData}">
