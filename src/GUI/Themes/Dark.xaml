@@ -7,27 +7,29 @@
 		<ResourceDictionary Source="pack://application:,,,/AdonisUI;component/ColorSchemes/Dark.xaml" />
 	</ResourceDictionary.MergedDictionaries>
 	<!--  BG3 Mod Manager Redux semantic palette  -->
-	<Color x:Key="ReduxWindowColor">#141218</Color>
-	<Color x:Key="ReduxListInteriorColor">#17151C</Color>
-	<Color x:Key="ReduxSurfaceColor">#1E1A26</Color>
-	<Color x:Key="ReduxSurfaceElevatedColor">#211D28</Color>
-	<Color x:Key="ReduxSurfaceMutedColor">#24202C</Color>
-	<Color x:Key="ReduxBorderColor">#312B3A</Color>
-	<Color x:Key="ReduxBorderStrongColor">#3A3346</Color>
-	<Color x:Key="ReduxAccentColor">#8A6AF1</Color>
-	<Color x:Key="ReduxAccentHoverColor">#A58BFF</Color>
-	<Color x:Key="ReduxAccentSoftColor">#342B49</Color>
-	<Color x:Key="ReduxSelectionColor">#3A2E50</Color>
-	<Color x:Key="ReduxCyanColor">#22D3C5</Color>
-	<Color x:Key="ReduxSuccessColor">#3FA37A</Color>
-	<Color x:Key="ReduxSuccessSoftColor">#173B30</Color>
-	<Color x:Key="ReduxWarningColor">#D7A24B</Color>
-	<Color x:Key="ReduxErrorColor">#D85B68</Color>
-	<Color x:Key="ReduxInfoColor">#6E9ED8</Color>
-	<Color x:Key="ReduxTextPrimaryColor">#ECE8F2</Color>
-	<Color x:Key="ReduxTextSecondaryColor">#B8B1C7</Color>
-	<Color x:Key="ReduxTextMutedColor">#8F879E</Color>
-	<Color x:Key="ReduxAccentForegroundColor">#F8F5FF</Color>
+	<Color x:Key="ReduxWindowColor">#0D0B10</Color>
+	<Color x:Key="ReduxListInteriorColor">#110D15</Color>
+	<Color x:Key="ReduxSurfaceColor">#17121D</Color>
+	<Color x:Key="ReduxSurfaceElevatedColor">#1C1623</Color>
+	<Color x:Key="ReduxSurfaceMutedColor">#241C2C</Color>
+	<Color x:Key="ReduxBorderColor">#33283F</Color>
+	<Color x:Key="ReduxBorderStrongColor">#4B3A5C</Color>
+	<Color x:Key="ReduxHoverColor">#2A2034</Color>
+	<Color x:Key="ReduxPressedColor">#33263F</Color>
+	<Color x:Key="ReduxAccentColor">#9676FF</Color>
+	<Color x:Key="ReduxAccentHoverColor">#B49DFF</Color>
+	<Color x:Key="ReduxAccentSoftColor">#322543</Color>
+	<Color x:Key="ReduxSelectionColor">#3D2C57</Color>
+	<Color x:Key="ReduxCyanColor">#2BD6C8</Color>
+	<Color x:Key="ReduxSuccessColor">#49B486</Color>
+	<Color x:Key="ReduxSuccessSoftColor">#193F32</Color>
+	<Color x:Key="ReduxWarningColor">#E0AA4B</Color>
+	<Color x:Key="ReduxErrorColor">#E46674</Color>
+	<Color x:Key="ReduxInfoColor">#74A8E5</Color>
+	<Color x:Key="ReduxTextPrimaryColor">#F2EDF7</Color>
+	<Color x:Key="ReduxTextSecondaryColor">#C8BDD4</Color>
+	<Color x:Key="ReduxTextMutedColor">#A094AE</Color>
+	<Color x:Key="ReduxAccentForegroundColor">#17131C</Color>
 	<SolidColorBrush x:Key="ReduxWindowBrush" Color="{DynamicResource ReduxWindowColor}" />
 	<SolidColorBrush x:Key="ReduxListInteriorBrush" Color="{DynamicResource ReduxListInteriorColor}" />
 	<SolidColorBrush x:Key="ReduxSurfaceBrush" Color="{DynamicResource ReduxSurfaceColor}" />
@@ -35,6 +37,8 @@
 	<SolidColorBrush x:Key="ReduxSurfaceMutedBrush" Color="{DynamicResource ReduxSurfaceMutedColor}" />
 	<SolidColorBrush x:Key="ReduxBorderBrush" Color="{DynamicResource ReduxBorderColor}" />
 	<SolidColorBrush x:Key="ReduxBorderStrongBrush" Color="{DynamicResource ReduxBorderStrongColor}" />
+	<SolidColorBrush x:Key="ReduxHoverBrush" Color="{DynamicResource ReduxHoverColor}" />
+	<SolidColorBrush x:Key="ReduxPressedBrush" Color="{DynamicResource ReduxPressedColor}" />
 	<SolidColorBrush x:Key="ReduxAccentBrush" Color="{DynamicResource ReduxAccentColor}" />
 	<SolidColorBrush x:Key="ReduxAccentHoverBrush" Color="{DynamicResource ReduxAccentHoverColor}" />
 	<SolidColorBrush x:Key="ReduxAccentSoftBrush" Color="{DynamicResource ReduxAccentSoftColor}" />
@@ -49,6 +53,7 @@
 	<SolidColorBrush x:Key="ReduxTextSecondaryBrush" Color="{DynamicResource ReduxTextSecondaryColor}" />
 	<SolidColorBrush x:Key="ReduxTextMutedBrush" Color="{DynamicResource ReduxTextMutedColor}" />
 	<SolidColorBrush x:Key="ReduxAccentForegroundBrush" Color="{DynamicResource ReduxAccentForegroundColor}" />
+	<SolidColorBrush x:Key="ReduxIconBrush" Color="{DynamicResource ReduxAccentColor}" />
 	<!-- Keep stock Adonis controls on the Redux palette after every theme switch. -->
 	<SolidColorBrush x:Key="{x:Static adonisUi:Brushes.ForegroundBrush}" Color="{DynamicResource ReduxTextPrimaryColor}" />
 	<SolidColorBrush x:Key="{x:Static adonisUi:Brushes.DisabledForegroundBrush}" Color="{DynamicResource ReduxTextMutedColor}" />

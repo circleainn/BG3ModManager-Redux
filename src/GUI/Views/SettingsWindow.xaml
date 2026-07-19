@@ -70,7 +70,7 @@
 				<Setter Property="Height" Value="32" />
 				<Setter Property="Padding" Value="12,4" />
 				<Setter Property="Margin" Value="0,0,8,0" />
-				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
 				<Setter Property="BorderThickness" Value="1" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
@@ -118,18 +118,31 @@
 				<Setter Property="Cursor" Value="Hand" />
 				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
-				<Setter Property="Margin" Value="0,0,4,0" />
 				<Setter Property="Padding" Value="12,6" />
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type TabItem}">
+							<!--
+								Inter-tab gap lives on the template root, NOT on TabItem.Margin:
+								TabPanel double-counts external child margins and applies a layout
+								clip 4px narrower than the tab, shearing the hover pill's right
+								corner (the same clip caused the original selected-pill clipping).
+							-->
 							<Grid x:Name="HeaderHost"
+								Margin="0,0,4,0"
 								Background="Transparent"
 								TextElement.Foreground="{DynamicResource ReduxTextMutedBrush}">
 								<Grid.RowDefinitions>
 									<RowDefinition Height="*" />
 									<RowDefinition Height="2" />
 								</Grid.RowDefinitions>
+								<Border x:Name="TabHoverSurface"
+									Grid.RowSpan="2"
+									Margin="2,3"
+									Background="{DynamicResource ReduxHoverBrush}"
+									CornerRadius="5"
+									IsHitTestVisible="False"
+									Opacity="0" />
 								<ContentPresenter Margin="{TemplateBinding Padding}"
 									HorizontalAlignment="Center"
 									VerticalAlignment="Center"
@@ -148,6 +161,28 @@
 								</Border>
 							</Grid>
 							<ControlTemplate.Triggers>
+								<MultiTrigger>
+									<MultiTrigger.Conditions>
+										<Condition Property="IsMouseOver" Value="True" />
+										<Condition Property="IsSelected" Value="False" />
+									</MultiTrigger.Conditions>
+									<MultiTrigger.EnterActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="TabHoverSurface" Storyboard.TargetProperty="Opacity"
+													To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</MultiTrigger.EnterActions>
+									<MultiTrigger.ExitActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="TabHoverSurface" Storyboard.TargetProperty="Opacity"
+													To="0" Duration="{StaticResource Redux.Motion.Standard}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</MultiTrigger.ExitActions>
+								</MultiTrigger>
 								<Trigger Property="IsMouseOver" Value="True">
 									<Setter TargetName="HeaderHost" Property="TextElement.Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 								</Trigger>
@@ -317,7 +352,8 @@
 				</ContentControl>
 			</controls:AutomationTooltip>
 			<Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
-				<Setter Property="Padding" Value="20,2" />
+				<Setter Property="MinHeight" Value="30" />
+				<Setter Property="Padding" Value="12,4" />
 				<Setter Property="Margin" Value="2,0,2,0" />
 			</Style>
 			<Style TargetType="StackPanel">
@@ -330,6 +366,7 @@
 			</Style>
 			<Style BasedOn="{StaticResource ReduxCheckBoxStyle}" TargetType="CheckBox">
 				<Setter Property="VerticalAlignment" Value="Center" />
+				<Setter Property="Margin" Value="0,1" />
 			</Style>
 			<Style TargetType="controls:AutoGrid">
 				<Setter Property="Margin" Value="10,0" />
@@ -375,13 +412,13 @@
 			<StackPanel Margin="0" HorizontalAlignment="Left" Orientation="Horizontal">
 				<Button x:Name="SaveSettingsButton" Style="{StaticResource SettingsActionButtonStyle}" ToolTip="Save all Preferences now (Ctrl+S)">
 					<StackPanel Margin="0" Orientation="Horizontal">
-						<controls:AutoGrayableImage Margin="0,0,6,0" Source="{StaticResource SaveImage}" />
+						<controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.Save}" />
 						<TextBlock Text="Save Preferences" />
 					</StackPanel>
 				</Button>
 				<Button x:Name="OpenSettingsFolderButton" Style="{StaticResource SettingsActionButtonStyle}" ToolTip="Open Settings Folder">
 					<StackPanel Margin="0" Orientation="Horizontal">
-						<controls:AutoGrayableImage Margin="0,0,6,0" Source="{StaticResource OpenFolderImage}" />
+						<controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.FolderOpen}" />
 						<TextBlock Text="Settings Folder" />
 					</StackPanel>
 				</Button>
@@ -391,7 +428,7 @@
 			    HorizontalAlignment="Right"
 			    Style="{StaticResource SettingsWarningButtonStyle}">
 				<StackPanel Margin="0" Orientation="Horizontal">
-					<controls:AutoGrayableImage Margin="0,0,6,0" Source="{StaticResource DefaultIcon}" />
+					<controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.RefreshStroke}" Foreground="{DynamicResource ReduxWarningBrush}" />
 					<TextBlock Text="Reset" />
 				</StackPanel>
 			</Button>
@@ -552,6 +589,16 @@
 											<TextBlock Margin="0,5,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Typography, layout, icons, and behavior remain consistent across all themes." TextWrapping="Wrap" />
 										</StackPanel>
 									</Border>
+									<CheckBox Margin="0,12,0,0"
+										IsChecked="{Binding Settings.UseCategoryColorsForHover, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+										<StackPanel Margin="6,0,0,0">
+											<TextBlock FontWeight="SemiBold" Text="Match mod hover to category" />
+											<TextBlock Margin="0,3,0,0"
+												Foreground="{DynamicResource ReduxTextMutedBrush}"
+												Text="Use a mod's primary category color when hovering its row. Turn this off to use the standard Redux accent."
+												TextWrapping="Wrap" />
+										</StackPanel>
+									</CheckBox>
 								</StackPanel>
 							</Border>
 						</Grid>
@@ -825,7 +872,7 @@
 						    Grid.Column="1"
 						    Style="{StaticResource IconButtonStyle}"
 						    ToolTip="Clear current params">
-							<controls:AutoGrayableImage Source="{StaticResource AlertBar_Close}" />
+							<controls:ReduxIcon Data="{StaticResource Redux.Icon.Close}" />
 						</Button>
 					</Grid>
 					<TextBlock Text="Experimental" />

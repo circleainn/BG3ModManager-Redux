@@ -203,6 +203,7 @@
 		<Setter Property="adonisExtensions:RippleExtension.ForegroundBrush" Value="{DynamicResource {x:Static adonisUi:Brushes.Layer1InteractionForegroundBrush}}" />
 		<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
 		<Setter Property="Padding" Value="8,3" />
+		<Setter Property="MinHeight" Value="30" />
 		<Setter Property="HorizontalContentAlignment" Value="Stretch" />
 		<Setter Property="VerticalContentAlignment" Value="Center" />
 		<Setter Property="SnapsToDevicePixels" Value="True" />

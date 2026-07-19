@@ -30,6 +30,13 @@ sponsorship, or official support.
 Redux bundles the Manrope typeface under the SIL Open Font License. A copy is included in the
 distribution at `licenses/Manrope-OFL-1.1.txt`.
 
+## Ionicons
+
+Redux includes selected vector icon geometry adapted from Ionicons 8.0.13, copyright Ionic,
+under the MIT License. A copy is included in the distribution at `licenses/Ionicons-MIT.txt`.
+
+- Project: https://github.com/ionic-team/ionicons
+
 ## Other dependencies
 
 Redux also includes or depends on projects such as LSLib, BG3 Script Extender, CrossSpeak,

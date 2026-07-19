@@ -22,6 +22,15 @@
 		<EventTrigger RoutedEvent="{x:Static local:AlertBar.ShowEvent}">
 			<BeginStoryboard>
 				<Storyboard>
+					<DoubleAnimation Storyboard.TargetName="AlertTranslateTransform"
+						Storyboard.TargetProperty="Y"
+						From="6"
+						To="0"
+						Duration="0:0:0.18">
+						<DoubleAnimation.EasingFunction>
+							<QuadraticEase EasingMode="EaseOut" />
+						</DoubleAnimation.EasingFunction>
+					</DoubleAnimation>
 					<DoubleAnimationUsingKeyFrames Name="AnimationObject"
 					    Completed="AnimationObject_Completed"
 					    Storyboard.TargetName="grdWrapper"
@@ -35,14 +44,17 @@
 			</BeginStoryboard>
 		</EventTrigger>
 	</UserControl.Triggers>
-	<Grid Name="grdWrapper" Visibility="Collapsed">
+	<Grid Name="grdWrapper" RenderTransformOrigin="0.5,0.5" Visibility="Collapsed">
+		<Grid.RenderTransform>
+			<TranslateTransform x:Name="AlertTranslateTransform" Y="6" />
+		</Grid.RenderTransform>
 		<StackPanel Name="spStandard" Visibility="Collapsed">
 			<Border x:Name="bdrStandard"
-				Margin="4,2"
+				Margin="5,3"
 				Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 				BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
-				BorderThickness="3,1,1,1"
-				CornerRadius="6"
+				BorderThickness="1"
+				CornerRadius="12"
 				SnapsToDevicePixels="True">
 				<Grid>
 					<Grid.ColumnDefinitions>
@@ -50,35 +62,40 @@
 						<ColumnDefinition Width="*" />
 						<ColumnDefinition Width="26" />
 					</Grid.ColumnDefinitions>
-					<Image Grid.Column="0"
-					    Width="16"
-					    Height="16"
-					    Margin="9,4,0,4"
-					    VerticalAlignment="Center" />
+					<Border x:Name="StandardIconSurface"
+						Width="24"
+						Height="24"
+						Margin="7,5,0,5"
+						VerticalAlignment="Center"
+						Background="{DynamicResource ReduxSurfaceMutedBrush}"
+						CornerRadius="12">
+						<local:ReduxIcon Width="14" Height="14" />
+					</Border>
 					<TextBlock Grid.Column="1"
-					    Margin="7,3"
+					    Margin="8,5"
 					    VerticalAlignment="Center"
 					    FontSize="12"
-					    FontWeight="SemiBold"
+					    FontWeight="Medium"
 					    Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 					    TextTrimming="CharacterEllipsis" />
-					<Image Grid.Column="2"
+					<local:ReduxIcon Grid.Column="2"
 					    Width="10"
 					    Height="10"
-					    Margin="4,4,10,4"
+					    Margin="4,5,10,5"
 					    VerticalAlignment="Center"
 					    MouseUp="Image_MouseUp">
-						<Image.Style>
-							<Style>
-								<Setter Property="Image.Source" Value="../Resources/Icons/AlertBar_Close.png" />
+						<local:ReduxIcon.Style>
+							<Style TargetType="{x:Type local:ReduxIcon}">
+								<Setter Property="Data" Value="{StaticResource Redux.Icon.Close}" />
+								<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
 								<Style.Triggers>
-									<Trigger Property="Image.IsMouseOver" Value="True">
-										<Setter Property="Image.Source" Value="../Resources/Icons/AlertBar_Close_Hover.png" />
+									<Trigger Property="IsMouseOver" Value="True">
+										<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 									</Trigger>
 								</Style.Triggers>
 							</Style>
-						</Image.Style>
-					</Image>
+						</local:ReduxIcon.Style>
+					</local:ReduxIcon>
 				</Grid>
 			</Border>
 		</StackPanel>
@@ -91,7 +108,7 @@
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="20" />
 						</Grid.ColumnDefinitions>
-						<Image Grid.Column="0"
+						<local:ReduxIcon Grid.Column="0"
 						    Width="16"
 						    Height="16"
 						    Margin="10,4,0,4"
@@ -102,23 +119,24 @@
 						    FontSize="12"
 						    FontWeight="SemiBold"
 						    Foreground="{DynamicResource ReduxTextPrimaryBrush}" />
-						<Image Grid.Column="2"
+						<local:ReduxIcon Grid.Column="2"
 						    Width="10"
 						    Height="10"
 						    Margin="0,4,10,4"
 						    VerticalAlignment="Center"
 						    MouseUp="Image_MouseUp">
-							<Image.Style>
-								<Style>
-									<Setter Property="Image.Source" Value="../Resources/Icons/AlertBar_Close.png" />
+							<local:ReduxIcon.Style>
+								<Style TargetType="{x:Type local:ReduxIcon}">
+									<Setter Property="Data" Value="{StaticResource Redux.Icon.Close}" />
+									<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
 									<Style.Triggers>
-										<Trigger Property="Image.IsMouseOver" Value="True">
-											<Setter Property="Image.Source" Value="../Resources/Icons/AlertBar_Close_Hover.png" />
+										<Trigger Property="IsMouseOver" Value="True">
+											<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 										</Trigger>
 									</Style.Triggers>
 								</Style>
-							</Image.Style>
-						</Image>
+							</local:ReduxIcon.Style>
+						</local:ReduxIcon>
 					</Grid>
 				</StackPanel>
 			</Border>

@@ -99,6 +99,12 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</None>
+		<None Include="..\..\licenses\Ionicons-MIT.txt">
+			<Link>licenses\Ionicons-MIT.txt</Link>
+			<TargetPath>licenses\Ionicons-MIT.txt</TargetPath>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</None>
 		<None Include="..\..\licenses\LSLib-MIT.txt">
 			<Link>licenses\LSLib-MIT.txt</Link>
 			<TargetPath>licenses\LSLib-MIT.txt</TargetPath>

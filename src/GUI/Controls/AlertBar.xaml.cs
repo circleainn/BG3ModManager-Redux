@@ -6,7 +6,6 @@ using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace DivinityModManager.Controls;
 
@@ -46,10 +45,20 @@ public partial class AlertBar : UserControl
 		RaiseEvent(newEventArgs);
 	}
 
-	private void TransformStage(string msg, int secs, string colorhex, BitmapImage iconsrc)
+	private Brush GetSemanticBrush(string resourceKey, string fallbackColor)
 	{
-		SolidColorBrush bg = new SolidColorBrush();
-		bg = (SolidColorBrush)(new BrushConverter().ConvertFrom(colorhex));
+		return TryFindResource(resourceKey) as Brush
+			?? (Brush)new BrushConverter().ConvertFrom(fallbackColor);
+	}
+
+	private static Brush CreateSoftBrush(Brush accentBrush, byte alpha)
+	{
+		var color = accentBrush is SolidColorBrush solidBrush ? solidBrush.Color : Colors.Transparent;
+		return new SolidColorBrush(Color.FromArgb(alpha, color.R, color.G, color.B));
+	}
+
+	private void TransformStage(string msg, int secs, Brush accentBrush, Geometry iconData)
+	{
 
 		Grid grdParent;
 		switch (_Theme)
@@ -59,7 +68,9 @@ public partial class AlertBar : UserControl
 				spOutline.Visibility = Visibility.Collapsed;
 
 				grdParent = FindVisualChildren<Grid>(spStandard).FirstOrDefault();
-				bdrStandard.BorderBrush = bg;
+				bdrStandard.BorderBrush = accentBrush;
+				bdrStandard.Background = CreateSoftBrush(accentBrush, 0x2E);
+				StandardIconSurface.Background = CreateSoftBrush(accentBrush, 0x40);
 				break;
 			case ThemeType.Outline:
 			default:
@@ -67,27 +78,28 @@ public partial class AlertBar : UserControl
 				spOutline.Visibility = Visibility.Visible;
 
 				grdParent = FindVisualChildren<Grid>(spOutline).FirstOrDefault();
-				bdr.BorderBrush = bg;
+				bdr.BorderBrush = accentBrush;
 				break;
 		}
 
 		TextBlock lblMessage = FindVisualChildren<TextBlock>(grdParent).FirstOrDefault();
-		List<Image> imgs = FindVisualChildren<Image>(grdParent).ToList();
-		Image imgStatusIcon = imgs[0];
-		Image imgCloseIcon = imgs[1];
+		List<ReduxIcon> icons = FindVisualChildren<ReduxIcon>(grdParent).ToList();
+		ReduxIcon statusIcon = icons[0];
+		ReduxIcon closeIcon = icons[1];
 
 		if (_IconVisibility == false)
 		{
-			imgStatusIcon.Visibility = Visibility.Collapsed;
+			statusIcon.Visibility = Visibility.Collapsed;
 			grdParent.ColumnDefinitions.RemoveAt(0);
 			lblMessage.SetValue(Grid.ColumnProperty, 0);
-			imgCloseIcon.SetValue(Grid.ColumnProperty, 1);
+			closeIcon.SetValue(Grid.ColumnProperty, 1);
 			lblMessage.Margin = new Thickness(10, 4, 0, 4);
 			lblMessage.Height = 16;
 		}
 		else
 		{
-			imgStatusIcon.Source = iconsrc;
+			statusIcon.Data = iconData;
+			statusIcon.Foreground = accentBrush;
 		}
 
 		lblMessage.Text = msg;
@@ -159,8 +171,7 @@ public partial class AlertBar : UserControl
 	{
 		_syncContext.Post(o =>
 		{
-			string color = "#D95D6A";
-			TransformStage(message, timeoutInSeconds, color, (BitmapImage)this.Resources["AlertBar_Danger"]);
+			TransformStage(message, timeoutInSeconds, GetSemanticBrush("ReduxErrorBrush", "#D95D6A"), (Geometry)FindResource("Redux.Icon.Danger"));
 		}, null);
 	}
 
@@ -173,8 +184,7 @@ public partial class AlertBar : UserControl
 	{
 		_syncContext.Post(o =>
 		{
-			string color = "#D7A24B";
-			TransformStage(message, timeoutInSeconds, color, (BitmapImage)this.Resources["AlertBar_Warning"]);
+			TransformStage(message, timeoutInSeconds, GetSemanticBrush("ReduxWarningBrush", "#D7A24B"), (Geometry)FindResource("Redux.Icon.Warning"));
 		}, null);
 	}
 
@@ -187,8 +197,7 @@ public partial class AlertBar : UserControl
 	{
 		_syncContext.Post(o =>
 		{
-			string color = "#3FA37A";
-			TransformStage(message, timeoutInSeconds, color, (BitmapImage)this.Resources["AlertBar_Success"]);
+			TransformStage(message, timeoutInSeconds, GetSemanticBrush("ReduxSuccessBrush", "#3FA37A"), (Geometry)FindResource("Redux.Icon.Success"));
 		}, null);
 	}
 
@@ -202,8 +211,7 @@ public partial class AlertBar : UserControl
 	{
 		_syncContext.Post(o =>
 		{
-			string color = "#8A6AF1";
-			TransformStage(message, timeoutInSeconds, color, (BitmapImage)this.Resources["AlertBar_Information"]);
+			TransformStage(message, timeoutInSeconds, GetSemanticBrush("ReduxAccentBrush", "#8A6AF1"), (Geometry)FindResource("Redux.Icon.Information"));
 		}, null);
 	}
 

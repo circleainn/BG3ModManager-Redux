@@ -120,6 +120,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public ReduxThemeType ColorTheme { get; set; } = ReduxThemeType.ReduxDark;
 
 	[DefaultValue(false)]
+	[SettingsEntry("Match category hover colors", "Use a mod's primary category color when hovering its row. Disable this to use the standard Redux accent.", HideFromUI = true)]
+	[DataMember, Reactive] public bool UseCategoryColorsForHover { get; set; }
+
+	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ReduxPreviewWarningAcknowledged { get; set; }
 
 	[SettingsEntry("Show Redux preview warning again", "Clear the saved acknowledgement so the alpha preview warning appears again the next time Redux starts.")]

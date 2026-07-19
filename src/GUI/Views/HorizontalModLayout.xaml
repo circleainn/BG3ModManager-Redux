@@ -63,18 +63,49 @@
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type ListBoxItem}">
 							<Border x:Name="CategorySurface"
-								Padding="{TemplateBinding Padding}"
 								Background="{TemplateBinding Background}"
 								BorderBrush="{TemplateBinding BorderBrush}"
 								BorderThickness="{TemplateBinding BorderThickness}"
 								CornerRadius="6">
-								<ContentPresenter />
+								<Grid>
+									<Border x:Name="CategoryHoverSurface"
+										Background="{Binding SoftColor}"
+										BorderBrush="{Binding Color}"
+										BorderThickness="1"
+										CornerRadius="6"
+										IsHitTestVisible="False"
+										Opacity="0" />
+									<ContentPresenter Margin="{TemplateBinding Padding}" />
+								</Grid>
 							</Border>
 							<ControlTemplate.Triggers>
-								<Trigger Property="IsMouseOver" Value="True">
-									<Setter TargetName="CategorySurface" Property="Background" Value="{Binding SoftColor}" />
-									<Setter TargetName="CategorySurface" Property="BorderBrush" Value="{Binding Color}" />
-								</Trigger>
+								<MultiTrigger>
+									<MultiTrigger.Conditions>
+										<Condition Property="IsMouseOver" Value="True" />
+										<Condition Property="IsSelected" Value="False" />
+									</MultiTrigger.Conditions>
+									<MultiTrigger.EnterActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="CategoryHoverSurface"
+													Storyboard.TargetProperty="Opacity"
+													To="1"
+													Duration="{StaticResource Redux.Motion.Fast}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</MultiTrigger.EnterActions>
+									<MultiTrigger.ExitActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="CategoryHoverSurface"
+													Storyboard.TargetProperty="Opacity"
+													To="0"
+													Duration="{StaticResource Redux.Motion.Standard}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</MultiTrigger.ExitActions>
+								</MultiTrigger>
 								<Trigger Property="IsSelected" Value="True">
 									<Setter TargetName="CategorySurface" Property="Background" Value="{Binding SoftColor}" />
 									<Setter TargetName="CategorySurface" Property="BorderBrush" Value="{Binding Color}" />
@@ -180,17 +211,28 @@
 				<Setter Property="Cursor" Value="Hand" />
 				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-				<Setter Property="Margin" Value="0,0,6,0" />
 				<Setter Property="MinWidth" Value="86" />
 				<Setter Property="Padding" Value="12,7" />
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type TabItem}">
-							<Grid Background="Transparent">
+							<!--
+								Inter-tab gap lives on the template root, NOT on TabItem.Margin:
+								TabPanel double-counts external child margins and applies a layout
+								clip narrower than the tab, shearing the hover pill's right corner.
+							-->
+							<Grid Margin="0,0,6,0" Background="Transparent">
 								<Grid.RowDefinitions>
 									<RowDefinition Height="*" />
 									<RowDefinition Height="2" />
 								</Grid.RowDefinitions>
+								<Border x:Name="TabHoverSurface"
+									Grid.RowSpan="2"
+									Margin="2,3"
+									Background="{DynamicResource ReduxHoverBrush}"
+									CornerRadius="5"
+									IsHitTestVisible="False"
+									Opacity="0" />
 								<TextBlock x:Name="HeaderText"
 									Margin="{TemplateBinding Padding}"
 									HorizontalAlignment="Center"
@@ -210,6 +252,28 @@
 								</Border>
 							</Grid>
 							<ControlTemplate.Triggers>
+								<MultiTrigger>
+									<MultiTrigger.Conditions>
+										<Condition Property="IsMouseOver" Value="True" />
+										<Condition Property="IsSelected" Value="False" />
+									</MultiTrigger.Conditions>
+									<MultiTrigger.EnterActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="TabHoverSurface" Storyboard.TargetProperty="Opacity"
+													To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</MultiTrigger.EnterActions>
+									<MultiTrigger.ExitActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="TabHoverSurface" Storyboard.TargetProperty="Opacity"
+													To="0" Duration="{StaticResource Redux.Motion.Standard}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</MultiTrigger.ExitActions>
+								</MultiTrigger>
 								<Trigger Property="IsMouseOver" Value="True">
 									<Setter TargetName="HeaderText" Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 								</Trigger>
@@ -253,11 +317,11 @@
 			</Style>
 			<Style x:Key="ModDetailsMetadataChipStyle" TargetType="{x:Type Border}">
 				<Setter Property="Margin" Value="0,0,6,5" />
-				<Setter Property="Padding" Value="8,3" />
+				<Setter Property="Padding" Value="9,3" />
 				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
-				<Setter Property="BorderThickness" Value="1" />
-				<Setter Property="CornerRadius" Value="6" />
+				<Setter Property="BorderThickness" Value="1.5" />
+				<Setter Property="CornerRadius" Value="10" />
 			</Style>
 			<Style x:Key="ModDetailsLegacyStatusChipStyle" BasedOn="{StaticResource ModDetailsMetadataChipStyle}" TargetType="{x:Type Border}">
 				<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
@@ -276,7 +340,7 @@
 				<Setter Property="Padding" Value="9,3" />
 				<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-				<Setter Property="BorderThickness" Value="1" />
+				<Setter Property="BorderThickness" Value="1.5" />
 				<Setter Property="Cursor" Value="Hand" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
 				<Setter Property="FontWeight" Value="SemiBold" />
@@ -289,7 +353,7 @@
 								Background="{TemplateBinding Background}"
 								BorderBrush="{TemplateBinding BorderBrush}"
 								BorderThickness="{TemplateBinding BorderThickness}"
-								CornerRadius="6">
+								CornerRadius="10">
 								<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
 							</Border>
 							<ControlTemplate.Triggers>
@@ -305,14 +369,14 @@
 				</Setter>
 				<Style.Triggers>
 					<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}">
-						<Setter Property="Background" Value="#22F9A332" />
-						<Setter Property="BorderBrush" Value="#F9A332" />
-						<Setter Property="Foreground" Value="#F9A332" />
+						<Setter Property="Background" Value="{StaticResource Redux.Pill.Nexus.Background}" />
+						<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Nexus.Border}" />
+						<Setter Property="Foreground" Value="{StaticResource Redux.Pill.Nexus.Border}" />
 					</DataTrigger>
 					<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}">
-						<Setter Property="Background" Value="#2205C2D8" />
-						<Setter Property="BorderBrush" Value="#05C2D8" />
-						<Setter Property="Foreground" Value="#05C2D8" />
+						<Setter Property="Background" Value="{StaticResource Redux.Pill.Modio.Background}" />
+						<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Modio.Border}" />
+						<Setter Property="Foreground" Value="{StaticResource Redux.Pill.Modio.Border}" />
 					</DataTrigger>
 				</Style.Triggers>
 			</Style>
@@ -442,10 +506,10 @@
 								BorderThickness="1"
 								CornerRadius="8">
 								<Border.Style><Style TargetType="Border">
-									<Setter Property="Background" Value="#168F879E" /><Setter Property="BorderBrush" Value="#668F879E" />
+									<Setter Property="Background" Value="{StaticResource Redux.Pill.Local.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Local.Border}" />
 									<Style.Triggers>
-										<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}"><Setter Property="Background" Value="#22F9A332" /><Setter Property="BorderBrush" Value="#F9A332" /></DataTrigger>
-										<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}"><Setter Property="Background" Value="#2205C2D8" /><Setter Property="BorderBrush" Value="#05C2D8" /></DataTrigger>
+										<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}"><Setter Property="Background" Value="{StaticResource Redux.Pill.Nexus.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Nexus.Border}" /></DataTrigger>
+										<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}"><Setter Property="Background" Value="{StaticResource Redux.Pill.Modio.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Modio.Border}" /></DataTrigger>
 									</Style.Triggers>
 								</Style></Border.Style>
 								<StackPanel HorizontalAlignment="Center"
@@ -583,8 +647,8 @@
 								Padding="8,4"
 								Background="{DynamicResource ReduxAccentSoftBrush}"
 								BorderBrush="{DynamicResource ReduxAccentBrush}"
-								BorderThickness="1"
-								CornerRadius="7"
+								BorderThickness="1.5"
+								CornerRadius="10"
 								ToolTip="{Binding Metadata.OfflineDatabaseNoticeTooltip}"
 								Visibility="Collapsed">
 								<StackPanel Orientation="Horizontal">

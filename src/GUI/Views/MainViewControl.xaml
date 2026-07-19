@@ -324,16 +324,14 @@
 											    Color="Black" />
 										</TextBlock.Effect>
 									</TextBlock>
-									<Image x:Name="UpdatesToggleButtonExpandImage"
+									<controls:ReduxIcon x:Name="UpdatesToggleButtonExpandImage"
 									    Grid.Column="3"
 									    Width="16"
 									    Height="16"
-									    RenderOptions.BitmapScalingMode="Fant"
-									    Source="{StaticResource ExpandDownImage}"
-									    Stretch="Uniform"
-									    StretchDirection="UpOnly">
-										<Image.Style>
-											<Style TargetType="Image">
+									    StrokeData="{StaticResource Redux.Icon.ChevronDownStroke}"
+									    StrokeThickness="48">
+										<controls:ReduxIcon.Style>
+											<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
 												<Style.Triggers>
 													<MultiDataTrigger>
 														<MultiDataTrigger.Conditions>
@@ -341,7 +339,7 @@
 															<Condition Binding="{Binding ModUpdatesAvailable}" Value="True" />
 														</MultiDataTrigger.Conditions>
 														<MultiDataTrigger.Setters>
-															<Setter Property="Source" Value="{StaticResource ExpandDownImage}" />
+													<Setter Property="StrokeData" Value="{StaticResource Redux.Icon.ChevronDownStroke}" />
 														</MultiDataTrigger.Setters>
 													</MultiDataTrigger>
 													<MultiDataTrigger>
@@ -350,7 +348,7 @@
 															<Condition Binding="{Binding ModUpdatesAvailable}" Value="True" />
 														</MultiDataTrigger.Conditions>
 														<MultiDataTrigger.Setters>
-															<Setter Property="Source" Value="{StaticResource ExpandUpImage}" />
+													<Setter Property="StrokeData" Value="{StaticResource Redux.Icon.ChevronUpStroke}" />
 														</MultiDataTrigger.Setters>
 													</MultiDataTrigger>
 													<MultiDataTrigger>
@@ -359,13 +357,14 @@
 															<Condition Binding="{Binding ModUpdatesAvailable}" Value="False" />
 														</MultiDataTrigger.Conditions>
 														<MultiDataTrigger.Setters>
-															<Setter Property="Source" Value="{StaticResource ExpandDownImageDisabled}" />
+													<Setter Property="StrokeData" Value="{StaticResource Redux.Icon.ChevronDownStroke}" />
+													<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
 														</MultiDataTrigger.Setters>
 													</MultiDataTrigger>
 												</Style.Triggers>
 											</Style>
-										</Image.Style>
-									</Image>
+										</controls:ReduxIcon.Style>
+									</controls:ReduxIcon>
 								</Grid>
 							</Button.Content>
 						</Button>
@@ -397,26 +396,54 @@
 						</Grid.ColumnDefinitions>
 						<Grid.Resources>
 							<ControlTemplate x:Key="ToolbarButtonTemplate" TargetType="{x:Type Button}">
+								<!--
+									Padding is applied to the ContentPresenter, not ButtonChrome:
+									with Border.Padding the HoverSurface only covers the content box,
+									leaving the padding ring (right edge/corners) in the base color
+									during hover.
+								-->
 								<Border x:Name="ButtonChrome"
-									Padding="{TemplateBinding Padding}"
 									Background="{TemplateBinding Background}"
 									BorderBrush="{TemplateBinding BorderBrush}"
 									BorderThickness="{TemplateBinding BorderThickness}"
 									CornerRadius="6">
-									<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-										VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-										Content="{TemplateBinding Content}"
-										ContentStringFormat="{TemplateBinding ContentStringFormat}"
-										ContentTemplate="{TemplateBinding ContentTemplate}"
-										RecognizesAccessKey="True" />
+									<Grid>
+										<Border x:Name="HoverSurface"
+											Background="{DynamicResource ReduxHoverBrush}"
+											CornerRadius="5"
+											IsHitTestVisible="False"
+											Opacity="0" />
+										<ContentPresenter Margin="{TemplateBinding Padding}"
+											HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+											VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+											Content="{TemplateBinding Content}"
+											ContentStringFormat="{TemplateBinding ContentStringFormat}"
+											ContentTemplate="{TemplateBinding ContentTemplate}"
+											RecognizesAccessKey="True" />
+									</Grid>
 								</Border>
 								<ControlTemplate.Triggers>
 									<Trigger Property="IsMouseOver" Value="True">
-										<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
 										<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+										<Trigger.EnterActions>
+											<BeginStoryboard>
+												<Storyboard>
+													<DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
+														To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+												</Storyboard>
+											</BeginStoryboard>
+										</Trigger.EnterActions>
+										<Trigger.ExitActions>
+											<BeginStoryboard>
+												<Storyboard>
+													<DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
+														To="0" Duration="{StaticResource Redux.Motion.Standard}" />
+												</Storyboard>
+											</BeginStoryboard>
+										</Trigger.ExitActions>
 									</Trigger>
 									<Trigger Property="IsPressed" Value="True">
-										<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxSelectionBrush}" />
+										<Setter TargetName="HoverSurface" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
 										<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 									</Trigger>
 									<Trigger Property="IsEnabled" Value="False">
@@ -425,25 +452,48 @@
 								</ControlTemplate.Triggers>
 							</ControlTemplate>
 							<ControlTemplate x:Key="ToolbarPrimaryButtonTemplate" TargetType="{x:Type Button}">
+								<!-- Same padding-on-content structure as ToolbarButtonTemplate; see note there. -->
 								<Border x:Name="ButtonChrome"
-									Padding="{TemplateBinding Padding}"
 									Background="{TemplateBinding Background}"
 									BorderBrush="{TemplateBinding BorderBrush}"
 									BorderThickness="{TemplateBinding BorderThickness}"
 									CornerRadius="6">
-									<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-										VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-										Content="{TemplateBinding Content}"
-										ContentStringFormat="{TemplateBinding ContentStringFormat}"
-										ContentTemplate="{TemplateBinding ContentTemplate}"
-										RecognizesAccessKey="True" />
+									<Grid>
+										<Border x:Name="HoverSurface"
+											Background="{DynamicResource ReduxAccentHoverBrush}"
+											CornerRadius="5"
+											IsHitTestVisible="False"
+											Opacity="0" />
+										<ContentPresenter Margin="{TemplateBinding Padding}"
+											HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+											VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+											Content="{TemplateBinding Content}"
+											ContentStringFormat="{TemplateBinding ContentStringFormat}"
+											ContentTemplate="{TemplateBinding ContentTemplate}"
+											RecognizesAccessKey="True" />
+									</Grid>
 								</Border>
 								<ControlTemplate.Triggers>
 									<Trigger Property="IsMouseOver" Value="True">
-										<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxAccentHoverBrush}" />
+										<Trigger.EnterActions>
+											<BeginStoryboard>
+												<Storyboard>
+													<DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
+														To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+												</Storyboard>
+											</BeginStoryboard>
+										</Trigger.EnterActions>
+										<Trigger.ExitActions>
+											<BeginStoryboard>
+												<Storyboard>
+													<DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
+														To="0" Duration="{StaticResource Redux.Motion.Standard}" />
+												</Storyboard>
+											</BeginStoryboard>
+										</Trigger.ExitActions>
 									</Trigger>
 									<Trigger Property="IsPressed" Value="True">
-										<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxSelectionBrush}" />
+										<Setter TargetName="HoverSurface" Property="Opacity" Value="1" />
 									</Trigger>
 									<Trigger Property="IsEnabled" Value="False">
 										<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
@@ -459,8 +509,8 @@
 								<Setter Property="Fill" Value="{DynamicResource ReduxBorderStrongBrush}" />
 							</Style>
 							<Style x:Key="ToolbarButtonBaseStyle" BasedOn="{StaticResource IconButtonStyle}" TargetType="{x:Type Button}">
-								<Setter Property="Width" Value="30" />
-								<Setter Property="Height" Value="30" />
+								<Setter Property="Width" Value="32" />
+								<Setter Property="Height" Value="32" />
 								<Setter Property="Margin" Value="1,0" />
 								<Setter Property="Background" Value="Transparent" />
 								<Setter Property="BorderBrush" Value="Transparent" />
@@ -473,7 +523,7 @@
 							</Style>
 							<Style BasedOn="{StaticResource ToolbarButtonBaseStyle}" TargetType="{x:Type Button}" />
 							<Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="{x:Type ComboBox}">
-								<Setter Property="MinHeight" Value="30" />
+								<Setter Property="MinHeight" Value="32" />
 								<Setter Property="Padding" Value="9,3" />
 								<Setter Property="Background" Value="{DynamicResource ReduxSurfaceBrush}" />
 								<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
@@ -482,7 +532,7 @@
 							</Style>
 							<Style x:Key="ToolbarTextButtonStyle" BasedOn="{StaticResource ToolbarButtonBaseStyle}" TargetType="{x:Type Button}">
 								<Setter Property="Width" Value="Auto" />
-								<Setter Property="Height" Value="30" />
+								<Setter Property="Height" Value="32" />
 								<Setter Property="Margin" Value="2,0" />
 								<Setter Property="Padding" Value="9,0" />
 								<Setter Property="Background" Value="Transparent" />
@@ -503,7 +553,7 @@
 							</Style>
 							<Style x:Key="ToolbarGroupStyle" TargetType="{x:Type Border}">
 								<Setter Property="Margin" Value="0,0,3,0" />
-								<Setter Property="Padding" Value="9,3,12,5" />
+								<Setter Property="Padding" Value="10,4,13,6" />
 								<Setter Property="Background" Value="Transparent" />
 								<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
 								<Setter Property="BorderThickness" Value="0,0,1,0" />
@@ -511,9 +561,9 @@
 							</Style>
 							<Style x:Key="ToolbarGroupLabelStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
 								<Setter Property="Margin" Value="2,0,2,3" />
-								<Setter Property="FontSize" Value="9" />
-								<Setter Property="FontWeight" Value="Medium" />
-								<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+								<Setter Property="FontSize" Value="10" />
+								<Setter Property="FontWeight" Value="SemiBold" />
+								<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
 							</Style>
 							<Style x:Key="ToolbarInlineLabelStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
 								<Setter Property="Margin" Value="2,0,5,0" />
@@ -525,18 +575,18 @@
 						</Grid.Resources>
 						<Border Grid.Column="0" Grid.ColumnSpan="2" Style="{StaticResource ToolbarGroupStyle}">
 							<StackPanel>
-								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="INSTALL / PROFILE" />
+								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Install &amp; Profile" />
 								<StackPanel Orientation="Horizontal">
 						<Button x:Name="ImportModButton"
 							Margin="0,0,10,0"
 							Style="{StaticResource ToolbarPrimaryButtonStyle}"
 							ToolTip="Install a Mod from an Archive">
 							<StackPanel Orientation="Horizontal">
-								<controls:AutoGrayableImage Margin="0,0,6,0" Source="{StaticResource AddItemImage}" />
+								<controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.AddCircle}" Style="{StaticResource ReduxPrimaryIconStyle}" />
 								<TextBlock Text="Install Mod" />
 							</StackPanel>
 						</Button>
-						<Grid Height="30" VerticalAlignment="Center">
+						<Grid Height="32" VerticalAlignment="Center">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="*" />
@@ -564,8 +614,8 @@
 						</Border>
 						<Border Grid.Column="2" Style="{StaticResource ToolbarGroupStyle}">
 							<StackPanel>
-								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="LOAD ORDER" />
-						<Grid Height="30" VerticalAlignment="Center">
+								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Load Order" />
+						<Grid Height="32" VerticalAlignment="Center">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="*" />
@@ -574,7 +624,7 @@
 							<ComboBox x:Name="OrdersComboBox"
 							    Grid.Column="1"
 							    MinWidth="140"
-							    MinHeight="30"
+							    MinHeight="32"
 							    MaxWidth="250"
 							    VerticalAlignment="Center"
 							    DisplayMemberPath="Name"
@@ -604,42 +654,30 @@
 							<StackPanel Orientation="Horizontal">
 								<Border Style="{StaticResource ToolbarGroupStyle}">
 									<StackPanel>
-										<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="ORDER ACTIONS" />
+										<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Order Actions" />
 										<StackPanel Orientation="Horizontal">
 								<Button x:Name="SaveButton" ToolTip="Save Load Order to File">
-									<Button.Resources>
-										<Style BasedOn="{StaticResource {x:Type controls:AutoGrayableImage}}" TargetType="{x:Type controls:AutoGrayableImage}">
-											<Style.Triggers>
-												<Trigger Property="IsEnabled" Value="True">
-													<Setter Property="Source" Value="{StaticResource SaveImage}" />
-												</Trigger>
-												<Trigger Property="IsEnabled" Value="False">
-													<Setter Property="Source" Value="{StaticResource SaveDisabledImage}" />
-												</Trigger>
-											</Style.Triggers>
-										</Style>
-									</Button.Resources>
-									<controls:AutoGrayableImage />
+									<controls:ReduxIcon Data="{StaticResource Redux.Icon.Save}" />
 								</Button>
 								<Button x:Name="SaveAsButton" ToolTip="Save Order As...">
-									<controls:AutoGrayableImage Source="{StaticResource SaveAsImage}" />
+									<controls:ReduxIcon Data="{StaticResource Redux.Icon.Duplicate}" />
 								</Button>
 								<Button x:Name="AddNewOrderButton" ToolTip="Add New Load Order">
-									<controls:AutoGrayableImage Source="{StaticResource AddItemImage}" />
+									<controls:ReduxIcon Data="{StaticResource Redux.Icon.AddCircle}" />
 								</Button>
 										</StackPanel>
 									</StackPanel>
 								</Border>
 								<Border Style="{StaticResource ToolbarGroupStyle}">
 									<StackPanel>
-										<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="EXPORT" />
+										<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Export" />
 										<StackPanel Orientation="Horizontal">
 								<StackPanel.Resources />
 								<Button x:Name="ExportToModSettingsButton"
 									Style="{StaticResource ToolbarActionButtonStyle}"
 									ToolTip="Export Order to Game">
 									<StackPanel Orientation="Horizontal">
-										<controls:AutoGrayableImage Margin="0,0,6,0" Source="{StaticResource ExportScriptImage}" />
+										<controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.CloudUpload}" />
 										<TextBlock Text="Export to Game" />
 									</StackPanel>
 									<Button.ContextMenu>
@@ -653,22 +691,22 @@
 									</Button.ContextMenu>
 								</Button>
 								<Button x:Name="ExportOrderToArchiveButton" ToolTip="Export Active Mods to Zip">
-									<controls:AutoGrayableImage Source="{StaticResource ZipFileImage}" />
+									<controls:ReduxIcon Data="{StaticResource Redux.Icon.Archive}" />
 								</Button>
 								<Button x:Name="ExportOrderToArchiveAsButton" ToolTip="Export Active Mods to Zip As...">
-									<controls:AutoGrayableImage Source="{StaticResource ZipFileAsImage}" />
+									<controls:ReduxIcon Data="{StaticResource Redux.Icon.Duplicate}" />
 								</Button>
 										</StackPanel>
 									</StackPanel>
 								</Border>
 								<Border Style="{StaticResource ToolbarGroupStyle}">
 									<StackPanel>
-										<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="CAMPAIGN" />
-										<StackPanel Height="30" VerticalAlignment="Center" Orientation="Horizontal">
+										<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Campaign" />
+										<StackPanel Height="32" VerticalAlignment="Center" Orientation="Horizontal">
 									<ComboBox x:Name="AdventureModComboBox"
 									    Grid.Column="1"
 									    MinWidth="100"
-									    MinHeight="30"
+									    MinHeight="32"
 									    HorizontalAlignment="Left"
 									    VerticalAlignment="Center"
 									    DisplayMemberPath="DisplayName"
@@ -687,18 +725,18 @@
 								</Border>
 								<Border Style="{StaticResource ToolbarGroupStyle}">
 									<StackPanel>
-										<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="TOOLS" />
+										<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Tools" />
 										<StackPanel Orientation="Horizontal">
 								<Button x:Name="RefreshButton"
 									Style="{StaticResource ToolbarActionButtonStyle}"
 									ToolTip="Refresh Mods">
 									<StackPanel Orientation="Horizontal">
-										<controls:AutoGrayableImage Margin="0,0,6,0" Source="{StaticResource RefreshImage}" />
+										<controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.RefreshStroke}" />
 										<TextBlock Text="Refresh" />
 									</StackPanel>
 								</Button>
 								<Button x:Name="OpenModsFolderButton" ToolTip="Open Mods Folder">
-									<controls:AutoGrayableImage Source="{StaticResource OpenFolderImage}" />
+									<controls:ReduxIcon Data="{StaticResource Redux.Icon.FolderOpen}" />
 									<Button.ContextMenu>
 										<ContextMenu>
 											<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding PathwayData.AppDataModsPath}" Header="Copy Path to Clipboard" />
@@ -706,7 +744,7 @@
 									</Button.ContextMenu>
 								</Button>
 								<Button x:Name="OpenExtenderLogsFolderButton" ToolTip="Open Logs Folder">
-									<controls:AutoGrayableImage Width="16" Height="16" Source="{StaticResource LogImage}" />
+									<controls:ReduxIcon Data="{StaticResource Redux.Icon.DocumentText}" />
 									<Button.ContextMenu>
 										<ContextMenu>
 											<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding Settings.ExtenderLogDirectory}" Header="Copy Path to Clipboard" />
@@ -739,13 +777,13 @@
 								</Border>
 								<Border Style="{StaticResource ToolbarGroupStyle}">
 									<StackPanel>
-										<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="LAUNCH" />
+										<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Launch" />
 										<StackPanel Orientation="Horizontal">
 								<Button x:Name="OpenGameButton"
 									Style="{StaticResource ToolbarPrimaryButtonStyle}"
 									ToolTip="Launch Game (Ctrl+Shift+G)">
 									<StackPanel Orientation="Horizontal">
-										<controls:AutoGrayableImage Margin="0,0,6,0" Source="{StaticResource OpenGameImage}" />
+										<controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.GameController}" Style="{StaticResource ReduxPrimaryIconStyle}" />
 										<TextBlock Text="Launch Game" />
 									</StackPanel>
 									<Button.ContextMenu>
@@ -767,12 +805,12 @@
 								<Button x:Name="OpenDonationPageButton"
 									Visibility="Collapsed"
 									ToolTip="Tip the Developer (Ko-fi)&#x0a;https://ko-fi.com/laughingleader">
-									<controls:AutoGrayableImage Source="{StaticResource OpenDonationLinkImage}" />
+									<controls:ReduxIcon Data="{StaticResource Redux.Icon.Heart}" />
 								</Button>
 								<Button x:Name="OpenRepoPageButton"
 									Visibility="Collapsed"
 									ToolTip="Open Project Page (Github)">
-									<controls:AutoGrayableImage Source="{StaticResource OpenRepoLinkImage}" />
+									<controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" />
 								</Button>
 							</StackPanel>
 						</Grid>
