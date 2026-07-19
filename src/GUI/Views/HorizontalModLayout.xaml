@@ -334,9 +334,36 @@
 					</DataTrigger>
 				</Style.Triggers>
 			</Style>
+			<!-- The drawer header is auto-sized, so its pill must measure naturally instead of
+				 using the list-cell template's arranged-width clamp. -->
+			<DataTemplate x:Key="ModDetailsTitleCategoryPillItemTemplate">
+				<Border Style="{StaticResource ReduxCategoryPillStyle}">
+					<StackPanel Orientation="Horizontal">
+						<c:ReduxIcon Width="12" Height="12" Margin="0,0,5,0"
+							IconKey="{Binding IconId}" Foreground="{Binding Color}">
+							<c:ReduxIcon.Style>
+								<Style BasedOn="{StaticResource {x:Type c:ReduxIcon}}" TargetType="{x:Type c:ReduxIcon}">
+									<Setter Property="Visibility" Value="Collapsed" />
+									<Style.Triggers>
+										<MultiDataTrigger>
+											<MultiDataTrigger.Conditions>
+												<Condition Binding="{Binding HasIcon}" Value="True" />
+												<Condition Binding="{Binding DataContext.Settings.ShowCategoryIconsInPills, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" Value="True" />
+											</MultiDataTrigger.Conditions>
+											<Setter Property="Visibility" Value="Visible" />
+										</MultiDataTrigger>
+									</Style.Triggers>
+								</Style>
+							</c:ReduxIcon.Style>
+						</c:ReduxIcon>
+						<TextBlock FontSize="11" FontWeight="Medium" Foreground="{Binding Color}"
+							Text="{Binding Name}" />
+					</StackPanel>
+				</Border>
+			</DataTemplate>
 			<DataTemplate x:Key="ModDetailsCategoryTemplate" DataType="{x:Type data:DivinityModData}">
 				<ItemsControl ClipToBounds="False"
-					ItemTemplate="{StaticResource ModCategoryPillItemTemplate}"
+					ItemTemplate="{StaticResource ModDetailsTitleCategoryPillItemTemplate}"
 					ItemsSource="{Binding DisplayCategories}"
 					ToolTip="{Binding DisplayCategory}">
 					<ItemsControl.ItemsPanel>
