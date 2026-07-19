@@ -16,47 +16,47 @@ public class ScriptExtenderSettings : ReactiveObject
 
 	[DefaultValue(false)]
 	[JsonIgnore] // This isn't an actual extender setting, so omit it from the exported json
-	[SettingsEntry("Export Default Values", "Export all values, even if it matches a default extender value")]
+	[SettingsEntry("Export settings with default values", "Include every setting when writing ScriptExtenderSettings.json, even when its value matches the extender default.")]
 	[DataMember, Reactive]
 	public bool ExportDefaultExtenderSettings { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Enable Developer Mode", "Enables various debug functionality for development purposes\nThis can be checked by mods to enable additional log messages and more")]
+	[SettingsEntry("Enable developer mode", "Enable Script Extender debugging features. Mods can also detect this setting and produce additional diagnostic output.")]
 	[DataMember, Reactive]
 	public bool DeveloperMode { get; set; }
 
 	[DefaultValue("")]
-	[SettingsEntry("Custom Profile", "Use a profile other than Public\nThis should be the profile folder name")]
+	[SettingsEntry("Custom profile folder", "Use a profile other than Public. Enter the profile folder name, not a full path.")]
 	[DataMember, Reactive]
 	public string CustomProfile { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Create Console", "Creates a console window that logs extender internals\nMainly useful for debugging")]
+	[SettingsEntry("Open extender console", "Open a console window that displays Script Extender diagnostic output while the game runs.")]
 	[DataMember, Reactive]
 	public bool CreateConsole { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Log Working Story Errors", "Log errors during Osiris story compilation to a log file (LogFailedCompile)")]
+	[SettingsEntry("Log story compilation errors", "Write Osiris story compilation errors to the LogFailedCompile file.")]
 	[DataMember, Reactive]
 	public bool LogFailedCompile { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Enable Osiris Logging", "Enable logging of Osiris activity (rule evaluation, queries, etc.) to a log file")]
+	[SettingsEntry("Log Osiris activity", "Log Osiris rule evaluation, queries, and related activity.")]
 	[DataMember, Reactive]
 	public bool EnableLogging { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Log Script Compilation", "Log Osiris story compilation to a log file")]
+	[SettingsEntry("Log story compilation", "Write Osiris story compilation activity to a log file.")]
 	[DataMember, Reactive]
 	public bool LogCompile { get; set; }
 
 	[DefaultValue("")]
-	[SettingsEntry("Log Directory", "Directory where the generated Osiris logs will be stored\nDefault is Documents\\OsirisLogs")]
+	[SettingsEntry("Log output folder", "Folder where Script Extender and Osiris logs are written. Default: Documents\\OsirisLogs.")]
 	[DataMember, Reactive]
 	public string LogDirectory { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Log Runtime", "Log extender console and script output to a log file")]
+	[SettingsEntry("Log console and script output", "Write Script Extender console and script output to a log file.")]
 	[DataMember, Reactive]
 	public bool LogRuntime { get; set; }
 
@@ -76,12 +76,12 @@ public class ScriptExtenderSettings : ReactiveObject
 	public bool DisableStoryPatching { get; set; }
 
 	[DefaultValue(true)]
-	[SettingsEntry("Disable Mod Validation", "Disable module hashing when loading mods\nSpeeds up mod loading with no drawbacks")]
+	[SettingsEntry("Skip mod validation", "Skip module hashing when loading mods. This reduces loading time without changing the load order.")]
 	[DataMember, Reactive]
 	public bool DisableModValidation { get; set; }
 
 	[DefaultValue(true)]
-	[SettingsEntry("Enable Achievements", "Re-enable achievements for modded games")]
+	[SettingsEntry("Enable achievements", "Allow achievements while playing with mods.")]
 	[DataMember, Reactive]
 	public bool EnableAchievements { get; set; }
 
@@ -91,7 +91,7 @@ public class ScriptExtenderSettings : ReactiveObject
 	public bool EnableExtensions { get; set; }
 
 	[DefaultValue(true)]
-	[SettingsEntry("Send Crash Reports", "Upload minidumps to the crash report collection server after a game crash")]
+	[SettingsEntry("Send Script Extender crash reports", "Upload Script Extender minidumps to its crash-report server after a game crash.")]
 	[DataMember, Reactive]
 	public bool SendCrashReports { get; set; }
 
@@ -111,7 +111,7 @@ public class ScriptExtenderSettings : ReactiveObject
 	public bool DumpNetworkStrings { get; set; }
 
 	[DefaultValue(0)]
-	[SettingsEntry("Osiris Debugger Flags", "Debugger flags to set\nDefault: 0")]
+	[SettingsEntry("Osiris debugger flags", "Advanced debugger flags passed to the Osiris debugger. Default: 0.")]
 	[DataMember, Reactive]
 	public int DebuggerFlags { get; set; }
 
@@ -141,7 +141,7 @@ public class ScriptExtenderSettings : ReactiveObject
 	public bool ShowPerfWarnings { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Disable ModCrashSanityCheck", "Disables the ModCrashSanityCheck jank that disables mods the next time the game runs")]
+	[SettingsEntry("Prevent ModCrashSanityCheck", "Ask Script Extender to prevent BG3's ModCrashSanityCheck from disabling mods on the next launch.")]
 	[DataMember, Reactive]
 	public bool InsanityCheck { get; set; }
 

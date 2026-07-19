@@ -26,70 +26,70 @@ public enum ReduxThemeType
 [DataContract]
 public class DivinityModManagerSettings : ReactiveObject
 {
-	[SettingsEntry("Game Data Path", "The path to the Data folder, for loading editor mods.\nExample: Baldur's Gate 3/Data")]
+	[SettingsEntry("Game Data folder", "The game's Data folder, used when loading editor projects. Example: Baldur's Gate 3/Data.")]
 	[DataMember, Reactive] public string GameDataPath { get; set; }
 
-	[SettingsEntry("Game Executable Path", "The path to bg3.exe")]
+	[SettingsEntry("Game executable", "The path to bg3.exe or bg3_dx11.exe in the game's bin folder.")]
 	[DataMember, Reactive] public string GameExecutablePath { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("DirectX 11", "If enabled, when launching the game, bg3_dx11.exe is used instead")]
+	[SettingsEntry("Use DirectX 11", "Launch bg3_dx11.exe instead of the default Vulkan executable.")]
 	[DataMember, Reactive] public bool LaunchDX11 { get; set; }
 
 	[DefaultValue("")]
 	// REDUX RELEASE BLOCKER: Before public release, register with Nexus Mods, obtain an SSO application slug,
 	// replace the personal API key testing flow with browser SSO, and re-review API usage/rate limits.
-	[SettingsEntry("Nexus Mods API Key", "Personal API key used to retrieve Nexus Mods metadata and updates. This testing build stores the key locally in Data/settings.json. You can revoke the key from your Nexus Mods account at any time.")]
+	[SettingsEntry("Nexus Mods API key", "Personal API key used to retrieve Nexus Mods metadata and updates. This alpha stores the key locally in Data/settings.json; you can revoke it from your Nexus Mods account at any time.")]
 	[DataMember, Reactive] public string NexusModsAPIKey { get; set; }
 
 	[DefaultValue("")]
-	[SettingsEntry("mod.io API Key", "Read-only API key used to retrieve metadata for mods installed through BG3's in-game Mod Manager. The key is stored locally in Data/settings.json.")]
+	[SettingsEntry("mod.io API key", "Read-only API key used to retrieve metadata for mods installed through BG3's in-game Mod Manager. The key is stored locally in Data/settings.json.")]
 	[DataMember, Reactive] public string ModioAPIKey { get; set; }
 
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ModioSupportWarningAcknowledged { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Hide mod.io source warning icons", "Hide the amber warning icon beside mod.io sources. Subscribed mod.io mods may still be restored or redownloaded by BG3 after local deletion.")]
+	[SettingsEntry("Hide mod.io warning icons", "Hide the amber warning icon beside mod.io sources. Subscribed mods may still be restored or redownloaded by BG3 after local deletion.")]
 	[DataMember, Reactive] public bool HideModioSourceWarningIcons { get; set; }
 
-	[SettingsEntry("Reset mod.io warning acknowledgement", "Clear the saved acknowledgement so the mandatory mod.io safety warning appears again on the next metadata refresh or application launch.")]
+	[SettingsEntry("Show mod.io safety warning again", "Clear the saved acknowledgement so the mod.io safety warning appears again on the next metadata refresh or application launch.")]
 	[Reactive] public bool ResetModioSupportWarningAcknowledgement { get; set; }
 
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool OfflineNexusDatabaseWarningAcknowledged { get; set; }
 
-	[SettingsEntry("Show offline Nexus database notice again", "Clear the saved acknowledgement so the offline Nexus metadata notice appears again when Redux starts without a Nexus API key or uses an exact bundled .pak match.")]
+	[SettingsEntry("Show offline Nexus notice again", "Clear the saved acknowledgement so the offline metadata notice appears again when Redux uses its bundled Nexus database.")]
 	[Reactive] public bool ResetOfflineNexusDatabaseWarningAcknowledgement { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Story Log", "When launching the game, enable the Osiris story log (osiris.log)")]
+	[SettingsEntry("Enable story logging", "Enable the Osiris story log (osiris.log) when launching the game.")]
 	[DataMember, Reactive] public bool GameStoryLogEnabled { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Launcher - Disable Telemetry", "Disable the telemetry options in the launcher\nTelemetry is always disabled if mods are active")]
+	[SettingsEntry("Disable launcher telemetry", "Disable telemetry options in the Larian launcher. Telemetry is already disabled when mods are active.")]
 	[DataMember, Reactive] public bool DisableLauncherTelemetry { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Launcher - Disable Warnings", "Disable the mod/data mismatch warnings in the launcher")]
+	[SettingsEntry("Disable launcher mod warnings", "Disable mod and data-mismatch warnings in the Larian launcher.")]
 	[DataMember, Reactive] public bool DisableLauncherModWarnings { get; set; }
 
 	[DefaultValue(LaunchGameType.Exe)]
-	[SettingsEntry("Launch Game - Action", "Change how to launch the game")]
+	[SettingsEntry("Launch method", "Choose whether Redux launches the executable directly, uses Steam, or runs a custom target.")]
 	[DataMember, Reactive] public LaunchGameType LaunchType { get; set; }
 
 	[DefaultValue("")]
-	[SettingsEntry("Launch Game - Custom Action", "A file path, protocol, or custom process shell command to run")]
+	[SettingsEntry("Custom launch target", "File path, protocol, or shell command to run when the launch method is Custom.")]
 	[DataMember, Reactive] public string CustomLaunchAction { get; set; }
 
 	[DefaultValue("")]
-	[SettingsEntry("Launch Game - Custom Arguments", "Optional additional arguments to path to the custom launch command")]
+	[SettingsEntry("Custom launch arguments", "Optional arguments passed to the custom launch target.")]
 	[DataMember, Reactive] public string CustomLaunchArgs { get; set; }
 
 	[ObservableAsProperty] public Visibility CustomLaunchVisibility { get; }
 
 	[DefaultValue("Orders")]
-	[SettingsEntry("Load Orders Path", "The folder containing mod load order .json files")]
+	[SettingsEntry("Load-order folder", "The folder where Redux stores load-order .json files.")]
 	[DataMember, Reactive] public string LoadOrderPath { get; set; }
 
 	[DefaultValue(false)]
@@ -97,19 +97,19 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool LogEnabled { get; set; }
 
 	[DefaultValue(true)]
-	[SettingsEntry("Add Missing Dependencies When Exporting", "Automatically add dependency mods above their dependents in the exported load order, if omitted from the active order")]
+	[SettingsEntry("Add missing dependencies when exporting", "Add installed dependency mods above their dependents when they were omitted from the active order.")]
 	[DataMember, Reactive] public bool AutoAddDependenciesWhenExporting { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Automatically Check For Updates", "Reserved for future Redux releases. Application self-updating is disabled during the private alpha.")]
+	[SettingsEntry("Check for Redux updates automatically", "Reserved for a future Redux release. Automatic application updates are disabled during the alpha.")]
 	[DataMember, Reactive] public bool CheckForUpdates { get; set; }
 
 	[DefaultValue("")]
-	[SettingsEntry("Override AppData Path", "[EXPERIMENTAL]\nOverride the default location to %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3\nThis folder is used when exporting load orders, loading profiles, and loading mods.")]
+	[SettingsEntry("BG3 AppData folder override", "Advanced: override %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3. Redux uses this folder for profiles, installed mods, and exported load orders.")]
 	[DataMember, Reactive] public string DocumentsFolderPathOverride { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Colorblind Support", "Enables some colorblind support, such as displaying icons for toolkit projects (which normally have a green background)")]
+	[SettingsEntry("Use colorblind-friendly indicators", "Show additional icons where Redux would otherwise communicate status mainly through color.")]
 	[DataMember, Reactive] public bool EnableColorblindSupport { get; set; }
 
 	[DefaultValue(true)]
@@ -122,7 +122,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ReduxPreviewWarningAcknowledged { get; set; }
 
-	[SettingsEntry("Show Redux preview warning again", "Clear the saved acknowledgement so the work-in-progress warning appears again the next time Redux starts.")]
+	[SettingsEntry("Show Redux preview warning again", "Clear the saved acknowledgement so the alpha preview warning appears again the next time Redux starts.")]
 	[Reactive] public bool ResetReduxPreviewWarningAcknowledgement { get; set; }
 
 	// Redux mod-list column choices. These are managed from the column-header
@@ -149,7 +149,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool ShowModListCategoryColumn { get; set; }
 
 	[DefaultValue(true)]
-	[SettingsEntry("Hide empty mod categories", "Hide categories with no matching installed mods from the Categories sidebar.")]
+	[SettingsEntry("Hide empty categories", "Hide categories with no matching installed mods from the Categories sidebar.")]
 	[DataMember, Reactive] public bool HideEmptyModCategories { get; set; }
 
 	[DataMember, Reactive] public List<string> CustomModCategories { get; set; } = new();
@@ -181,19 +181,19 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public List<ModListVisualDividerData> VisualModListDividers { get; set; } = new();
 
 	[DefaultValue(true)]
-	[SettingsEntry("Shift Focus on Swap", "When moving selected mods to the opposite list with Enter, move focus to that list as well")]
+	[SettingsEntry("Move focus when transferring mods", "When Enter moves selected mods to the other list, move keyboard focus to that list too.")]
 	[DataMember, Reactive] public bool ShiftListFocusOnSwap { get; set; }
 
 	[DataMember, IgnoreSetFrom] public ScriptExtenderSettings ExtenderSettings { get; set; }
 	[DataMember, IgnoreSetFrom] public ScriptExtenderUpdateConfig ExtenderUpdaterSettings { get; set; }
 
 	[DefaultValue(DivinityGameLaunchWindowAction.None)]
-	[SettingsEntry("On Game Launch", "When the game launches through the mod manager, this action will be performed")]
+	[SettingsEntry("After launching the game", "Choose whether Redux stays open, minimizes, or closes after it launches the game.")]
 	[DataMember, Reactive]
 	public DivinityGameLaunchWindowAction ActionOnGameLaunch { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Skip Checking for Missing Mods", "If a load order is missing mods, no warnings will be displayed")]
+	[SettingsEntry("Suppress missing-mod warnings", "Do not display a warning when the selected load order references mods that are not installed.")]
 	[DataMember, Reactive] public bool DisableMissingModWarnings { get; set; }
 
 	[DefaultValue(false)]
@@ -209,11 +209,11 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember] public WindowSettings Window { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Save Window Location", "Save and restore the window location when the application starts.")]
+	[SettingsEntry("Remember window position", "Restore the main window to its previous screen position when Redux starts.")]
 	[DataMember, Reactive] public bool SaveWindowLocation { get; set; }
 
 	[DefaultValue(true)]
-	[SettingsEntry("Delete ModCrashSanityCheck", "Automatically delete the %LOCALAPPDATA%/Larian Studios/Baldur's Gate 3/ModCrashSanityCheck folder, which may make certain mods deactivate if it exists")]
+	[SettingsEntry("Clear ModCrashSanityCheck", "Delete BG3's ModCrashSanityCheck folder when needed so it cannot silently deactivate installed mods.")]
 	[DataMember, Reactive] public bool DeleteModCrashSanityCheck { get; set; }
 
 	[DataMember] public ConfirmationSettings Confirmations { get; set; }

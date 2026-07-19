@@ -1515,7 +1515,37 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		return count;
 	}
 
-	private double GetContentMinimumColumnWidth(ModListView listView, string columnName)
+	/// <summary>
+	/// The smallest width a column may be resized/clamped to: its header title plus the
+	/// shared fallback floor. Content length deliberately does not raise this minimum —
+	/// long values (e.g. UUID-suffixed .pak file names) render with ellipsis instead of
+	/// forcing the column wide. Content-based sizing is reserved for the explicit
+	/// "Auto Size Columns" action (GetContentAutoSizeColumnWidth).
+	/// </summary>
+	private double GetHeaderMinimumColumnWidth(ModListView listView, string columnName)
+	{
+		var headerWidth = listView != null
+			? MeasureColumnText(listView, columnName, fontWeight: FontWeights.SemiBold) + 28
+			: 0d;
+		return Math.Ceiling(Math.Max(headerWidth, GetFallbackMinimumColumnWidth(columnName)));
+	}
+
+	/// <summary>
+	/// Caps for the explicit auto-size action so free-text columns with unbounded values
+	/// cannot claim excessive width; users can still drag wider manually.
+	/// </summary>
+	private static double GetMaximumAutoSizeColumnWidth(string columnName)
+	{
+		return columnName switch
+		{
+			"File Name" => 280,
+			"Name" => 340,
+			"Author" => 220,
+			_ => Double.PositiveInfinity
+		};
+	}
+
+	private double GetContentAutoSizeColumnWidth(ModListView listView, string columnName)
 	{
 		var headerWidth = MeasureColumnText(listView, columnName, fontWeight: FontWeights.SemiBold) + 28;
 		var contentWidth = 0d;
@@ -1567,7 +1597,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			contentWidth = Math.Max(contentWidth, candidateWidth);
 		}
 
-		return Math.Ceiling(Math.Max(headerWidth, Math.Max(contentWidth, GetFallbackMinimumColumnWidth(columnName))));
+		var autoSizeWidth = Math.Max(headerWidth, Math.Max(contentWidth, GetFallbackMinimumColumnWidth(columnName)));
+		return Math.Ceiling(Math.Min(autoSizeWidth, GetMaximumAutoSizeColumnWidth(columnName)));
 	}
 
 	private void ClampModListColumnWidth(ModListView listView, GridViewColumn column)
@@ -1578,9 +1609,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		}
 
 		var columnName = GetColumnName(column);
-		var minimumWidth = listView != null
-			? GetContentMinimumColumnWidth(listView, columnName)
-			: GetFallbackMinimumColumnWidth(columnName);
+		var minimumWidth = GetHeaderMinimumColumnWidth(listView, columnName);
 		if (column.Width < minimumWidth)
 		{
 			column.Width = minimumWidth;
@@ -1732,7 +1761,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			if (listView.View is not GridView visibleGridView) return;
 			foreach (var column in visibleGridView.Columns)
 			{
-				column.Width = GetContentMinimumColumnWidth(listView, GetColumnName(column));
+				column.Width = GetContentAutoSizeColumnWidth(listView, GetColumnName(column));
 				_visibleModListColumnWidths[column] = column.Width;
 			}
 		};

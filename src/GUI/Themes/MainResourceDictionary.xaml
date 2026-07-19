@@ -1280,8 +1280,45 @@
 					    DataContext="{Binding}"
 					    RenderOptions.BitmapScalingMode="HighQuality"
 					    Stretch="UniformToFill"
-					    ToolTip="{Binding OsirisStatusToolTipText}"
 					>
+						<Image.ToolTip>
+							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
+								<Border MaxWidth="390" Padding="12,10"
+									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+									BorderThickness="1" CornerRadius="8">
+									<Border.Style>
+										<Style TargetType="{x:Type Border}">
+											<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding OsirisModStatus}" Value="{x:Static dapp:DivinityOsirisModStatus.MODFIXER}">
+													<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</Border.Style>
+									<StackPanel>
+										<TextBlock FontSize="13" FontWeight="SemiBold">
+											<TextBlock.Style>
+												<Style TargetType="{x:Type TextBlock}">
+													<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
+													<Setter Property="Text" Value="Osiris scripting detected" />
+													<Style.Triggers>
+														<DataTrigger Binding="{Binding OsirisModStatus}" Value="{x:Static dapp:DivinityOsirisModStatus.MODFIXER}">
+															<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+															<Setter Property="Text" Value="Mod Fixer detected" />
+														</DataTrigger>
+													</Style.Triggers>
+												</Style>
+											</TextBlock.Style>
+										</TextBlock>
+										<TextBlock Margin="0,5,0,0"
+											Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+											Text="{Binding OsirisStatusToolTipText}"
+											TextWrapping="Wrap" />
+									</StackPanel>
+								</Border>
+							</ToolTip>
+						</Image.ToolTip>
 						<Image.Style>
 							<Style TargetType="{x:Type Image}">
 								<Setter Property="Visibility" Value="Collapsed" />
@@ -1349,8 +1386,52 @@
 					    DataContext="{Binding}"
 					    RenderOptions.BitmapScalingMode="HighQuality"
 					    Stretch="UniformToFill"
-					    ToolTip="{Binding ScriptExtenderSupportToolTipText}"
 					    Visibility="{Binding ExtenderStatusVisibility, FallbackValue=Collapsed}">
+						<Image.ToolTip>
+							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
+								<Border MaxWidth="390" Padding="12,10"
+									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+									BorderThickness="1" CornerRadius="8">
+									<Border.Style>
+										<Style TargetType="{x:Type Border}">
+											<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Warning}">
+													<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+												</DataTrigger>
+												<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Missing}">
+													<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</Border.Style>
+									<StackPanel>
+										<TextBlock FontSize="13" FontWeight="SemiBold">
+											<TextBlock.Style>
+												<Style TargetType="{x:Type TextBlock}">
+													<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
+													<Setter Property="Text" Value="Script Extender status" />
+													<Style.Triggers>
+														<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Warning}">
+															<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+															<Setter Property="Text" Value="Script Extender warning" />
+														</DataTrigger>
+														<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Missing}">
+															<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+															<Setter Property="Text" Value="Script Extender missing" />
+														</DataTrigger>
+													</Style.Triggers>
+												</Style>
+											</TextBlock.Style>
+										</TextBlock>
+										<TextBlock Margin="0,5,0,0"
+											Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+											Text="{Binding ScriptExtenderSupportToolTipText}"
+											TextWrapping="Wrap" />
+									</StackPanel>
+								</Border>
+							</ToolTip>
+						</Image.ToolTip>
 						<Image.Style>
 							<Style TargetType="{x:Type Image}">
 								<Style.Triggers>
@@ -1436,8 +1517,12 @@
 		</Grid>
 	</DataTemplate>
 	<DataTemplate x:Key="ModSourceTemplate" DataType="{x:Type data:DivinityModData}">
-		<StackPanel Orientation="Horizontal">
-			<Border Padding="7,2" VerticalAlignment="Center" BorderThickness="1" CornerRadius="8"
+		<Grid HorizontalAlignment="Left" ClipToBounds="True">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
+			</Grid.ColumnDefinitions>
+			<Border Grid.Column="0" Padding="7,2" HorizontalAlignment="Left" VerticalAlignment="Center" BorderThickness="1" CornerRadius="8"
 				ToolTip="{Binding DisplaySource, StringFormat='Metadata source: {0}'}">
 				<Border.Style><Style TargetType="Border">
 					<Setter Property="Background" Value="#168F879E" /><Setter Property="BorderBrush" Value="#668F879E" />
@@ -1446,17 +1531,19 @@
 						<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}"><Setter Property="Background" Value="#2205C2D8" /><Setter Property="BorderBrush" Value="#05C2D8" /></DataTrigger>
 					</Style.Triggers>
 				</Style></Border.Style>
-				<StackPanel Orientation="Horizontal">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
 					<ContentControl Margin="0,0,5,0" Content="{Binding}" ContentTemplate="{StaticResource PlatformIconPresenterTemplate}" Visibility="{Binding Metadata.OnlineSourceVisibility}" />
-					<TextBlock VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{Binding DisplaySource}" />
-				</StackPanel>
+					<TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+						Text="{Binding DisplaySource}" TextTrimming="CharacterEllipsis" />
+				</Grid>
 			</Border>
-			<Image Width="16" Height="16" Margin="6,0,0,0"
-			    VerticalAlignment="Center"
-				RenderOptions.BitmapScalingMode="HighQuality"
-				Source="/BG3ModManager;component/Resources/Icons/Platforms/modio-warning.png"
-				Stretch="Uniform">
-				<Image.ToolTip>
+			<Viewbox Grid.Column="1" Width="16" Height="16" Margin="5,0,0,0"
+				VerticalAlignment="Center" Stretch="Uniform">
+				<Viewbox.ToolTip>
 					<ToolTip Placement="Mouse" HorizontalOffset="12" VerticalOffset="10" Style="{StaticResource ReduxRichToolTipStyle}">
 						<Border MaxWidth="390"
 							Padding="12,10"
@@ -1483,9 +1570,9 @@
 							</StackPanel>
 						</Border>
 					</ToolTip>
-				</Image.ToolTip>
-				<Image.Style>
-					<Style TargetType="{x:Type Image}">
+				</Viewbox.ToolTip>
+				<Viewbox.Style>
+					<Style TargetType="{x:Type Viewbox}">
 						<Setter Property="Visibility" Value="Collapsed" />
 						<Style.Triggers>
 							<MultiDataTrigger>
@@ -1497,16 +1584,21 @@
 							</MultiDataTrigger>
 						</Style.Triggers>
 					</Style>
-				</Image.Style>
-			</Image>
-		</StackPanel>
+				</Viewbox.Style>
+				<Image Width="16" Height="16"
+					RenderOptions.BitmapScalingMode="HighQuality"
+					Source="{StaticResource StatusWarning}"
+					Stretch="Uniform" />
+			</Viewbox>
+		</Grid>
 	</DataTemplate>
 	<DataTemplate x:Key="ModCategoryTemplate" DataType="{x:Type data:DivinityModData}">
-		<ItemsControl ItemsSource="{Binding DisplayCategories}" ToolTip="{Binding DisplayCategory}">
+		<ItemsControl ClipToBounds="True" ItemsSource="{Binding DisplayCategories}" ToolTip="{Binding DisplayCategory}">
 			<ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
 			<ItemsControl.ItemTemplate>
 				<DataTemplate>
-					<Border Margin="0,0,4,0" Padding="7,2" HorizontalAlignment="Left" VerticalAlignment="Center"
+					<Border MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
+						Margin="0,0,4,0" Padding="7,2" HorizontalAlignment="Left" VerticalAlignment="Center"
 						Background="{Binding SoftColor}" BorderBrush="{Binding Color}" BorderThickness="1" CornerRadius="8">
 						<Border.Style>
 							<Style TargetType="Border">

@@ -1161,6 +1161,16 @@
 					<ColumnDefinition Width="220" />
 				</Grid.ColumnDefinitions>
 				<TextBlock Style="{StaticResource ModSectionTitle}" Text="Active Mods" />
+				<TextBlock Grid.Column="1"
+					Margin="12,0,8,0"
+					VerticalAlignment="Center"
+					AutomationProperties.HelpText="The active list is sorted by metadata. Click the number-sign column to restore load-order editing."
+					FontSize="11"
+					Foreground="{DynamicResource ReduxWarningBrush}"
+					Text="Sorted view — drag disabled; click # to edit order"
+					TextTrimming="CharacterEllipsis"
+					ToolTip="The active list is sorted by metadata, so visible rows no longer match load-order positions. Click the # column to restore load-order editing and drag-and-drop."
+					Visibility="{Binding IsActiveListMetadataSorted, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
 			<c:UnfocusableTextBox x:Name="ActiveModsFilterTextBox"
 					Grid.Column="5"
 					Height="28"

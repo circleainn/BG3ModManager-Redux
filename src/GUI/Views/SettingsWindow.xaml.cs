@@ -52,11 +52,81 @@ internal class SortSettings : IComparer<SettingsAttributeProperty>
 	}
 }
 
+internal sealed record SettingsGroup(string Title, params string[] PropertyNames);
+
 /// <summary>
 /// Interaction logic for SettingsWindow.xaml
 /// </summary>
 public partial class SettingsWindow : SettingsWindowBase
 {
+	private static readonly SettingsGroup[] GeneralSettingsGroups =
+	[
+		new("Paths and storage",
+			nameof(DivinityModManagerSettings.GameExecutablePath),
+			nameof(DivinityModManagerSettings.GameDataPath),
+			nameof(DivinityModManagerSettings.DocumentsFolderPathOverride),
+			nameof(DivinityModManagerSettings.LoadOrderPath)),
+		new("Game launch",
+			nameof(DivinityModManagerSettings.LaunchType),
+			nameof(DivinityModManagerSettings.CustomLaunchAction),
+			nameof(DivinityModManagerSettings.CustomLaunchArgs),
+			nameof(DivinityModManagerSettings.LaunchDX11),
+			nameof(DivinityModManagerSettings.ActionOnGameLaunch),
+			nameof(DivinityModManagerSettings.DisableLauncherTelemetry),
+			nameof(DivinityModManagerSettings.DisableLauncherModWarnings),
+			nameof(DivinityModManagerSettings.GameStoryLogEnabled)),
+		new("Mod-list workflow",
+			nameof(DivinityModManagerSettings.AutoAddDependenciesWhenExporting),
+			nameof(DivinityModManagerSettings.HideEmptyModCategories),
+			nameof(DivinityModManagerSettings.ShiftListFocusOnSwap),
+			nameof(DivinityModManagerSettings.SaveWindowLocation),
+			nameof(DivinityModManagerSettings.EnableColorblindSupport)),
+		new("Metadata services",
+			nameof(DivinityModManagerSettings.NexusModsAPIKey),
+			nameof(DivinityModManagerSettings.ModioAPIKey),
+			nameof(DivinityModManagerSettings.HideModioSourceWarningIcons)),
+		new("Warnings and maintenance",
+			nameof(DivinityModManagerSettings.CheckForUpdates),
+			nameof(DivinityModManagerSettings.DeleteModCrashSanityCheck),
+			nameof(DivinityModManagerSettings.DisableMissingModWarnings),
+			nameof(DivinityModManagerSettings.ResetModioSupportWarningAcknowledgement),
+			nameof(DivinityModManagerSettings.ResetOfflineNexusDatabaseWarningAcknowledgement),
+			nameof(DivinityModManagerSettings.ResetReduxPreviewWarningAcknowledgement))
+	];
+
+	private static readonly SettingsGroup[] ExtenderSettingsGroups =
+	[
+		new("Core behavior",
+			nameof(ScriptExtenderSettings.CustomProfile),
+			nameof(ScriptExtenderSettings.DisableModValidation),
+			nameof(ScriptExtenderSettings.InsanityCheck),
+			nameof(ScriptExtenderSettings.EnableAchievements),
+			nameof(ScriptExtenderSettings.SendCrashReports),
+			nameof(ScriptExtenderSettings.ExportDefaultExtenderSettings)),
+		new("Logging",
+			nameof(ScriptExtenderSettings.LogDirectory),
+			nameof(ScriptExtenderSettings.CreateConsole),
+			nameof(ScriptExtenderSettings.EnableLogging),
+			nameof(ScriptExtenderSettings.LogRuntime),
+			nameof(ScriptExtenderSettings.LogCompile),
+			nameof(ScriptExtenderSettings.LogFailedCompile)),
+		new("Developer and diagnostics",
+			nameof(ScriptExtenderSettings.DeveloperMode),
+			nameof(ScriptExtenderSettings.DebuggerFlags),
+			nameof(ScriptExtenderSettings.DisableLauncher),
+			nameof(ScriptExtenderSettings.DisableStoryMerge),
+			nameof(ScriptExtenderSettings.DisableStoryPatching),
+			nameof(ScriptExtenderSettings.EnableExtensions),
+			nameof(ScriptExtenderSettings.EnableDebugger),
+			nameof(ScriptExtenderSettings.DebuggerPort),
+			nameof(ScriptExtenderSettings.DumpNetworkStrings),
+			nameof(ScriptExtenderSettings.EnableLuaDebugger),
+			nameof(ScriptExtenderSettings.LuaBuiltinResourceDirectory),
+			nameof(ScriptExtenderSettings.ClearOnReset),
+			nameof(ScriptExtenderSettings.DefaultToClientConsole),
+			nameof(ScriptExtenderSettings.ShowPerfWarnings))
+	];
+
 	public SettingsWindow()
 	{
 		InitializeComponent();
@@ -122,8 +192,24 @@ public partial class SettingsWindow : SettingsWindowBase
 			.Select(SettingsAttributeProperty.FromProperty)
 			.Where(x => x.Attribute != null && !x.Attribute.HideFromUI)
 			.OrderBy(x => x, sorter).ToList();
+		var settingsGroups = settingsModelType == typeof(DivinityModManagerSettings)
+			? GeneralSettingsGroups
+			: settingsModelType == typeof(ScriptExtenderSettings)
+				? ExtenderSettingsGroups
+				: null;
+		if (settingsGroups != null)
+		{
+			var propertyOrder = settingsGroups
+				.SelectMany(group => group.PropertyNames)
+				.Select((name, index) => (name, index))
+				.ToDictionary(entry => entry.name, entry => entry.index);
+			props = props
+				.OrderBy(prop => propertyOrder.TryGetValue(prop.Property.Name, out var index) ? index : Int32.MaxValue)
+				.ThenBy(prop => prop.Attribute.DisplayName)
+				.ToList();
+		}
 
-		int count = props.Count + targetGrid.Children.Count + 1;
+		int count = props.Count + (settingsGroups?.Length ?? 0) + targetGrid.Children.Count + 1;
 		int row = targetGrid.Children.Count;
 
 		var enumDataTemplate = FindResource("EnumEntryTemplate") as DataTemplate;
@@ -137,8 +223,22 @@ public partial class SettingsWindow : SettingsWindowBase
 			FallbackValue = Visibility.Collapsed
 		};
 
+		string currentGroupTitle = null;
 		foreach (var prop in props)
 		{
+			var group = settingsGroups?.FirstOrDefault(candidate => candidate.PropertyNames.Contains(prop.Property.Name));
+			if (group != null && group.Title != currentGroupTitle)
+			{
+				currentGroupTitle = group.Title;
+				var heading = new TextBlock
+				{
+					Text = currentGroupTitle,
+					Style = FindResource("SettingsSubsectionTitleStyle") as Style
+				};
+				targetGrid.Children.Add(heading);
+				Grid.SetRow(heading, row++);
+				Grid.SetColumnSpan(heading, 2);
+			}
 			var isBlankTooltip = String.IsNullOrEmpty(prop.Attribute.Tooltip);
 			var targetRow = row;
 			row++;
