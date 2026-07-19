@@ -348,26 +348,25 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		return new CachedAutomationPeer(this);
 	}
 
-	public void UpdateColorTheme(ReduxThemeType theme)
+	public void UpdateColorTheme(ReduxThemeType theme, ReduxCustomTheme customTheme = null)
 	{
-		var themeUri = DivinityApp.GetThemeUri(theme);
-		ResourceLocator.SetColorScheme(this.Resources, themeUri);
-		ResourceLocator.SetColorScheme(SettingsWindow.Resources, themeUri);
+		ReduxThemeService.Apply(this.Resources, theme, customTheme);
+		ReduxThemeService.Apply(SettingsWindow.Resources, theme, customTheme);
 		if (AboutWindow != null)
 		{
-			ResourceLocator.SetColorScheme(AboutWindow.Resources, themeUri);
+			ReduxThemeService.Apply(AboutWindow.Resources, theme, customTheme);
 		}
 		if (VersionGeneratorWindow != null)
 		{
-			ResourceLocator.SetColorScheme(VersionGeneratorWindow.Resources, themeUri);
+			ReduxThemeService.Apply(VersionGeneratorWindow.Resources, theme, customTheme);
 		}
 		if (UpdateWindow != null)
 		{
-			ResourceLocator.SetColorScheme(UpdateWindow.Resources, themeUri);
+			ReduxThemeService.Apply(UpdateWindow.Resources, theme, customTheme);
 		}
 		if (HelpWindow != null)
 		{
-			ResourceLocator.SetColorScheme(HelpWindow.Resources, themeUri);
+			ReduxThemeService.Apply(HelpWindow.Resources, theme, customTheme);
 		}
 	}
 

@@ -30,7 +30,7 @@
 			<TextBlock Grid.Row="1" Margin="0,5,0,12" TextWrapping="Wrap"
 				Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 				Text="Paste the Baldur's Gate 3 Nexus Mods project page. Redux keeps the installed package name, version, UUID, and load-order position unchanged." />
-			<TextBox x:Name="NexusLinkTextBox" Grid.Row="2" Height="34" Padding="9,5"
+			<TextBox x:Name="NexusLinkTextBox" Grid.Row="2" MinHeight="34" Padding="9,5"
 				ToolTip="Example: https://www.nexusmods.com/baldursgate3/mods/125" />
 			<TextBlock Grid.Row="3" Margin="0,8,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
 				Text="With an API key, Redux will refresh current project details after linking." />

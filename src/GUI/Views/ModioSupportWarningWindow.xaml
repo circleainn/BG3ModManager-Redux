@@ -61,7 +61,7 @@
 				Background="{DynamicResource ReduxSurfaceBrush}"
 				BorderBrush="{DynamicResource ReduxWarningBrush}"
 				BorderThickness="1"
-				CornerRadius="8">
+				CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 				<StackPanel>
 					<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 						Text="A mod.io subscription can restore or redownload a mod when Baldur's Gate 3 launches—even after Redux deletes the local file. To remove one fully, unsubscribe through mod.io or BG3's in-game Mod Manager as well."
@@ -82,8 +82,8 @@
 				</StackPanel>
 			</Border>
 			<Button Grid.Row="2"
-				Width="116"
-				Height="34"
+				MinWidth="116"
+				MinHeight="34"
 				HorizontalAlignment="Right"
 				Click="ContinueButton_Click"
 				Content="Continue"

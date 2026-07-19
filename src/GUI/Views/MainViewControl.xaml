@@ -35,7 +35,7 @@
 					Background="{TemplateBinding Background}"
 					BorderBrush="{TemplateBinding BorderBrush}"
 					BorderThickness="{TemplateBinding BorderThickness}"
-					CornerRadius="6">
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 					<ContentPresenter HorizontalAlignment="Center"
 						VerticalAlignment="Center"
 						Content="{TemplateBinding Content}"
@@ -62,7 +62,7 @@
 					Background="{TemplateBinding Background}"
 					BorderBrush="{TemplateBinding BorderBrush}"
 					BorderThickness="{TemplateBinding BorderThickness}"
-					CornerRadius="6">
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 					<ContentPresenter HorizontalAlignment="Center"
 						VerticalAlignment="Center"
 						Content="{TemplateBinding Content}"
@@ -121,7 +121,7 @@
 				</Setter>
 			</Style>
 			<Style x:Key="MenuItemHightlightBlink" BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
-				<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="7" />
+				<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
 				<Style.Triggers>
 					<DataTrigger Binding="{Binding HighlightExtenderDownload}" Value="True">
 						<Setter Property="Foreground" Value="Gold" />
@@ -222,7 +222,7 @@
 						Foreground="{DynamicResource ReduxTextPrimaryBrush}">
 						<Menu.Resources>
 							<Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
-								<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="7" />
+								<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
 							</Style>
 						</Menu.Resources>
 						<MenuItem x:Name="FileMenuItem" Header="File" />
@@ -385,7 +385,7 @@
 					    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 					    BorderBrush="{DynamicResource ReduxBorderBrush}"
 					    BorderThickness="1"
-					    CornerRadius="10">
+					    CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 						<Grid>
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="Auto" />
@@ -406,11 +406,11 @@
 									Background="{TemplateBinding Background}"
 									BorderBrush="{TemplateBinding BorderBrush}"
 									BorderThickness="{TemplateBinding BorderThickness}"
-									CornerRadius="6">
+									CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 									<Grid>
 										<Border x:Name="HoverSurface"
 											Background="{DynamicResource ReduxHoverBrush}"
-											CornerRadius="5"
+										CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
 											IsHitTestVisible="False"
 											Opacity="0" />
 										<ContentPresenter Margin="{TemplateBinding Padding}"
@@ -457,11 +457,11 @@
 									Background="{TemplateBinding Background}"
 									BorderBrush="{TemplateBinding BorderBrush}"
 									BorderThickness="{TemplateBinding BorderThickness}"
-									CornerRadius="6">
+									CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 									<Grid>
 										<Border x:Name="HoverSurface"
 											Background="{DynamicResource ReduxAccentHoverBrush}"
-											CornerRadius="5"
+										CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
 											IsHitTestVisible="False"
 											Opacity="0" />
 										<ContentPresenter Margin="{TemplateBinding Padding}"
@@ -534,9 +534,9 @@
 								<Setter Property="Width" Value="Auto" />
 								<Setter Property="Height" Value="32" />
 								<Setter Property="Margin" Value="2,0" />
-								<Setter Property="Padding" Value="9,0" />
-								<Setter Property="Background" Value="Transparent" />
-								<Setter Property="BorderBrush" Value="Transparent" />
+								<Setter Property="Padding" Value="10,0" />
+								<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
+								<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 								<Setter Property="BorderThickness" Value="1" />
 								<Setter Property="Tag" Value="{Binding}" />
@@ -547,7 +547,7 @@
 							</Style>
 							<Style x:Key="ToolbarPrimaryButtonStyle" BasedOn="{StaticResource ToolbarTextButtonStyle}" TargetType="{x:Type Button}">
 								<Setter Property="Background" Value="{DynamicResource ReduxAccentBrush}" />
-								<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
+								<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
 								<Setter Property="Template" Value="{StaticResource ToolbarPrimaryButtonTemplate}" />
 							</Style>
@@ -586,7 +586,7 @@
 								<TextBlock Text="Install Mod" />
 							</StackPanel>
 						</Button>
-						<Grid Height="32" VerticalAlignment="Center">
+						<Grid MinHeight="32" VerticalAlignment="Center">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="*" />
@@ -619,7 +619,7 @@
 						<Border Grid.Column="2" Style="{StaticResource ToolbarGroupStyle}">
 							<StackPanel>
 								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Load Order" />
-						<Grid Height="32" VerticalAlignment="Center">
+						<Grid MinHeight="32" VerticalAlignment="Center">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="*" />
@@ -724,7 +724,7 @@
 								<Border Style="{StaticResource ToolbarGroupStyle}">
 									<StackPanel>
 										<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Campaign" />
-										<StackPanel Height="32" VerticalAlignment="Center" Orientation="Horizontal">
+									<StackPanel MinHeight="32" VerticalAlignment="Center" Orientation="Horizontal">
 									<ComboBox x:Name="AdventureModComboBox"
 									    Grid.Column="1"
 									    MinWidth="100"
@@ -808,10 +808,10 @@
 												<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" /></MenuItem.Icon>
 											</MenuItem>
 											<MenuItem Header="BG3 Script Extender on GitHub" Click="OpenScriptExtenderRepo_Click">
-												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" /></MenuItem.Icon>
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" Foreground="{DynamicResource ReduxGithubIconBrush}" /></MenuItem.Icon>
 											</MenuItem>
 											<MenuItem Header="BG3 Mod Manager Redux on GitHub" Click="OpenReduxRepo_Click">
-												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" /></MenuItem.Icon>
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" Foreground="{DynamicResource ReduxGithubIconBrush}" /></MenuItem.Icon>
 											</MenuItem>
 										</ContextMenu>
 									</Button.ContextMenu>
@@ -858,7 +858,7 @@
 								<Button x:Name="OpenRepoPageButton"
 									Visibility="Collapsed"
 									ToolTip="Open Project Page (Github)">
-									<controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" />
+									<controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" Foreground="{DynamicResource ReduxGithubIconBrush}" />
 								</Button>
 							</StackPanel>
 						</Grid>

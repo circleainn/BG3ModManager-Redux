@@ -30,14 +30,26 @@
 		<ResourceDictionary Source="DefaultStyles/ComboBox.xaml" />
 	</ResourceDictionary.MergedDictionaries>
 	<!--  Keep native menu behavior while giving Redux popups a softer silhouette.  -->
+	<!--
+		Redux corner-radius scale. Single source of truth; do not hardcode radii on new
+		surfaces. Small = checkboxes/small chips/markers. Control = buttons, fields,
+		combos, menus, tab chrome. ControlInner = hover/selection overlays nested 1px
+		inside Control chrome. Card = panels, section cards, popups, dialogs.
+		Pill = capsule pills and badges. Intentionally NOT tokenized: true circles,
+		height-dependent capsules, the 1-2px underline accents, and the miniature
+		mockup shapes inside theme preview cards.
+	-->
+	<CornerRadius x:Key="Redux.CornerRadius.Small">4</CornerRadius>
+	<CornerRadius x:Key="Redux.CornerRadius.Control">7</CornerRadius>
+	<CornerRadius x:Key="Redux.CornerRadius.ControlInner">6</CornerRadius>
+	<CornerRadius x:Key="Redux.CornerRadius.Card">8</CornerRadius>
+	<CornerRadius x:Key="Redux.CornerRadius.Pill">10</CornerRadius>
 	<Style BasedOn="{StaticResource {x:Type ContextMenu}}" TargetType="{x:Type ContextMenu}">
 		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
 		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
 		<Setter Property="BorderThickness" Value="1" />
-		<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="7" />
+		<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
 	</Style>
-	<!--  Shared corner radius for Redux-themed input controls (TextBox, ComboBox). Single source of truth so fields stay visually consistent.  -->
-	<CornerRadius x:Key="Redux.CornerRadius.Control">6</CornerRadius>
 	<!--  Short, functional motion only: hover feedback and state transitions.  -->
 	<Duration x:Key="Redux.Motion.Fast">0:0:0.12</Duration>
 	<Duration x:Key="Redux.Motion.Standard">0:0:0.16</Duration>
@@ -51,6 +63,136 @@
 	<SolidColorBrush x:Key="Redux.Pill.Modio.Border" Color="#05C2D8" />
 
 	<!-- Ionicons 8.0.13 vector pilot. Geometry is normalized to the original 512x512 view box. -->
+	<!-- Curated fantasy/category glyphs. Keep these filled and readable at 12-16px. -->
+	<GeometryGroup x:Key="Redux.Icon.Shirt">
+		<PathGeometry Figures="M256,96c33.08,0,60.71-25.78,64-58,.3-3-3-6-6-6h0a13,13,0,0,0-4.74.9c-.2.08-21.1,8.1-53.26,8.1s-53.1-8-53.26-8.1a16.21,16.21,0,0,0-5.3-.9h-.06A5.69,5.69,0,0,0,192,38C195.35,70.16,223,96,256,96Z" />
+		<PathGeometry Figures="M485.29,89.9,356,44.64a4,4,0,0,0-5.27,3.16,96,96,0,0,1-189.38,0A4,4,0,0,0,156,44.64L26.71,89.9A16,16,0,0,0,16.28,108l16.63,88A16,16,0,0,0,46.83,208.9l48.88,5.52a8,8,0,0,1,7.1,8.19l-7.33,240.9a16,16,0,0,0,9.1,14.94A17.49,17.49,0,0,0,112,480H400a17.49,17.49,0,0,0,7.42-1.55,16,16,0,0,0,9.1-14.94l-7.33-240.9a8,8,0,0,1,7.1-8.19l48.88-5.52A16,16,0,0,0,479.09,196l16.63-88A16,16,0,0,0,485.29,89.9Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Sparkles">
+		<PathGeometry Figures="M208,512a24.84,24.84,0,0,1-23.34-16l-39.84-103.6a16.06,16.06,0,0,0-9.19-9.19L32,343.34a25,25,0,0,1,0-46.68l103.6-39.84a16.06,16.06,0,0,0,9.19-9.19L184.66,144a25,25,0,0,1,46.68,0l39.84,103.6a16.06,16.06,0,0,0,9.19,9.19l103,39.63A25.49,25.49,0,0,1,400,320.52a24.82,24.82,0,0,1-16,22.82l-103.6,39.84a16.06,16.06,0,0,0-9.19,9.19L231.34,496A24.84,24.84,0,0,1,208,512Z" />
+		<PathGeometry Figures="M88,176a14.67,14.67,0,0,1-13.69-9.4L57.45,122.76a7.28,7.28,0,0,0-4.21-4.21L9.4,101.69a14.67,14.67,0,0,1,0-27.38L53.24,57.45a7.31,7.31,0,0,0,4.21-4.21L74.16,9.79A15,15,0,0,1,86.23.11,14.67,14.67,0,0,1,101.69,9.4l16.86,43.84a7.31,7.31,0,0,0,4.21,4.21L166.6,74.31a14.67,14.67,0,0,1,0,27.38l-43.84,16.86a7.28,7.28,0,0,0-4.21,4.21L101.69,166.6A14.67,14.67,0,0,1,88,176Z" />
+		<PathGeometry Figures="M400,256a16,16,0,0,1-14.93-10.26l-22.84-59.37a8,8,0,0,0-4.6-4.6l-59.37-22.84a16,16,0,0,1,0-29.86l59.37-22.84a8,8,0,0,0,4.6-4.6L384.9,42.68a16.45,16.45,0,0,1,13.17-10.57,16,16,0,0,1,16.86,10.15l22.84,59.37a8,8,0,0,0,4.6,4.6l59.37,22.84a16,16,0,0,1,0,29.86l-59.37,22.84a8,8,0,0,0-4.6,4.6l-22.84,59.37A16,16,0,0,1,400,256Z" />
+	</GeometryGroup>
+	<PathGeometry x:Key="Redux.Icon.Shield" Figures="M479.07,111.35A16,16,0,0,0,465.92,96.6C379.89,81.18,343.69,69.12,266,34.16c-7.76-2.89-12.57-2.84-20,0-77.69,35-113.89,47-199.92,62.44a16,16,0,0,0-13.15,14.75c-3.85,61.1,4.34,118,24.36,169.15a348.86,348.86,0,0,0,71.43,112.41c44.67,47.43,94.2,75.12,119.74,85.6a20,20,0,0,0,15.11,0c27-10.92,74.69-37.82,119.71-85.62A348.86,348.86,0,0,0,454.71,280.5C474.73,229.36,482.92,172.45,479.07,111.35Z" />
+	<PathGeometry x:Key="Redux.Icon.Flask" Figures="M452.32,365,327.4,167.12A48.07,48.07,0,0,1,320,141.48V64h15.56c8.61,0,16-6.62,16.43-15.23A16,16,0,0,0,336,32H176.45c-8.61,0-16,6.62-16.43,15.23A16,16,0,0,0,176,64h16v77.48a47.92,47.92,0,0,1-7.41,25.63L59.68,365a74,74,0,0,0-2.5,75.84C70.44,465.19,96.36,480,124.13,480H387.87c27.77,0,53.69-14.81,66.95-39.21A74,74,0,0,0,452.32,365ZM211.66,184.2A79.94,79.94,0,0,0,224,141.48V68a4,4,0,0,1,4-4h56a4,4,0,0,1,4,4v73.48a79.94,79.94,0,0,0,12.35,42.72l57.8,91.53A8,8,0,0,1,351.37,288H160.63a8,8,0,0,1-6.77-12.27Z" />
+	<PathGeometry x:Key="Redux.Icon.Skull" Figures="M402,76.94C362.61,37.63,310.78,16,256,16h-.37A208,208,0,0,0,48,224V324.67A79.62,79.62,0,0,0,98.29,399L122,408.42a15.92,15.92,0,0,1,9.75,11.72l10,50.13A32.09,32.09,0,0,0,173.12,496H184a8,8,0,0,0,8-8V448.45c0-8.61,6.62-16,15.23-16.43A16,16,0,0,1,224,448v40a8,8,0,0,0,8,8h0a8,8,0,0,0,8-8V448.45c0-8.61,6.62-16,15.23-16.43A16,16,0,0,1,272,448v40a8,8,0,0,0,8,8h0a8,8,0,0,0,8-8V448.45c0-8.61,6.62-16,15.23-16.43A16,16,0,0,1,320,448v40a8,8,0,0,0,8,8h10.88a32.09,32.09,0,0,0,31.38-25.72l10-50.14A16,16,0,0,1,390,408.42L413.71,399A79.62,79.62,0,0,0,464,324.67v-99C464,169.67,442,116.86,402,76.94ZM171.66,335.88a56,56,0,1,1,52.22-52.22A56,56,0,0,1,171.66,335.88ZM281,397.25A16.37,16.37,0,0,1,271.7,400H240.3a16.37,16.37,0,0,1-9.28-2.75,16,16,0,0,1-6.6-16.9l15.91-47.6C243,326,247.25,321,254,320.13c8.26-1,14,2.87,17.61,12.22l16,48A16,16,0,0,1,281,397.25Zm66.68-61.37a56,56,0,1,1,52.22-52.22A56,56,0,0,1,347.66,335.88Z" />
+	<GeometryGroup x:Key="Redux.Icon.Paw">
+		<PathGeometry Figures="M490.39,182.75c-5.55-13.19-14.77-22.7-26.67-27.49l-.16-.06a46.46,46.46,0,0,0-17-3.2h-.64c-27.24.41-55.05,23.56-69.19,57.61-10.37,24.9-11.56,51.68-3.18,71.64,5.54,13.2,14.78,22.71,26.73,27.5l.13.05a46.53,46.53,0,0,0,17,3.2c27.5,0,55.6-23.15,70-57.65C497.65,229.48,498.78,202.72,490.39,182.75Z" />
+		<PathGeometry Figures="M381.55,329.61c-15.71-9.44-30.56-18.37-40.26-34.41C314.53,250.8,298.37,224,256,224s-58.57,26.8-85.39,71.2c-9.72,16.06-24.6,25-40.36,34.48-18.07,10.86-36.74,22.08-44.8,44.16a66.93,66.93,0,0,0-4.65,25c0,35.95,28,65.2,62.4,65.2,17.75,0,36.64-6.15,56.63-12.66,19.22-6.26,39.09-12.73,56.27-12.73s37,6.47,56.15,12.73C332.2,457.85,351,464,368.8,464c34.35,0,62.3-29.25,62.3-65.2a67,67,0,0,0-4.75-25C418.29,351.7,399.61,340.47,381.55,329.61Z" />
+		<PathGeometry Figures="M150,188.85c11.9,14.93,27,23.15,42.52,23.15a42.88,42.88,0,0,0,6.33-.47c32.37-4.76,52.54-44.26,45.92-90C242,102.3,234.6,84.39,224,71.11,212.12,56.21,197,48,181.49,48a42.88,42.88,0,0,0-6.33.47c-32.37,4.76-52.54,44.26-45.92,90C132,157.67,139.4,175.56,150,188.85Z" />
+		<PathGeometry Figures="M313.16,211.53a42.88,42.88,0,0,0,6.33.47c15.53,0,30.62-8.22,42.52-23.15,10.59-13.29,17.95-31.18,20.75-50.4h0c6.62-45.72-13.55-85.22-45.92-90a42.88,42.88,0,0,0-6.33-.47C315,48,299.88,56.21,288,71.11c-10.6,13.28-18,31.19-20.76,50.44C260.62,167.27,280.79,206.77,313.16,211.53Z" />
+		<PathGeometry Figures="M111.59,308.8l.14-.05c11.93-4.79,21.16-14.29,26.69-27.48,8.38-20,7.2-46.75-3.15-71.65C120.94,175.16,92.85,152,65.38,152a46.4,46.4,0,0,0-17,3.2l-.14.05C36.34,160,27.11,169.54,21.58,182.73c-8.38,20-7.2,46.75,3.15,71.65C39.06,288.84,67.15,312,94.62,312A46.4,46.4,0,0,0,111.59,308.8Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Dice">
+		<PathGeometry Figures="M440.88,129.37,288.16,40.62a64.14,64.14,0,0,0-64.33,0L71.12,129.37a4,4,0,0,0,0,6.9L254,243.85a4,4,0,0,0,4.06,0L440.9,136.27A4,4,0,0,0,440.88,129.37ZM256,152c-13.25,0-24-7.16-24-16s10.75-16,24-16,24,7.16,24,16S269.25,152,256,152Z" />
+		<PathGeometry Figures="M238,270.81,54,163.48a4,4,0,0,0-6,3.46V340.86a48,48,0,0,0,23.84,41.39L234,479.48a4,4,0,0,0,6-3.46V274.27A4,4,0,0,0,238,270.81ZM96,368c-8.84,0-16-10.75-16-24s7.16-24,16-24,16,10.75,16,24S104.84,368,96,368Zm96-32c-8.84,0-16-10.75-16-24s7.16-24,16-24,16,10.75,16,24S200.84,336,192,336Z" />
+		<PathGeometry Figures="M458,163.51,274,271.56a4,4,0,0,0-2,3.45V476a4,4,0,0,0,6,3.46l162.15-97.23A48,48,0,0,0,464,340.86V167A4,4,0,0,0,458,163.51ZM320,424c-8.84,0-16-10.75-16-24s7.16-24,16-24,16,10.75,16,24S328.84,424,320,424Zm0-88c-8.84,0-16-10.75-16-24s7.16-24,16-24,16,10.75,16,24S328.84,336,320,336Zm96,32c-8.84,0-16-10.75-16-24s7.16-24,16-24,16,10.75,16,24S424.84,368,416,368Zm0-88c-8.84,0-16-10.75-16-24s7.16-24,16-24,16,10.75,16,24S424.84,280,416,280Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Map">
+		<PathGeometry Figures="M48.17,113.34A32,32,0,0,0,32,141.24V438a32,32,0,0,0,47,28.37c.43-.23.85-.47,1.26-.74l84.14-55.05a8,8,0,0,0,3.63-6.72V46.45a8,8,0,0,0-12.51-6.63Z" />
+		<PathGeometry Figures="M212.36,39.31A8,8,0,0,0,200,46V403.56a8,8,0,0,0,3.63,6.72l96,62.42A8,8,0,0,0,312,466V108.67a8,8,0,0,0-3.64-6.73Z" />
+		<PathGeometry Figures="M464.53,46.47a31.64,31.64,0,0,0-31.5-.88,12.07,12.07,0,0,0-1.25.74l-84.15,55a8,8,0,0,0-3.63,6.72V465.51a8,8,0,0,0,12.52,6.63l107.07-73.46a32,32,0,0,0,16.41-28v-296A32.76,32.76,0,0,0,464.53,46.47Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Hammer">
+		<PathGeometry Figures="M280.16,242.79l-26.11-26.12a32,32,0,0,0-45.14-.12L27.38,384.08c-6.61,6.23-10.95,14.17-11.35,23.06a32.11,32.11,0,0,0,9.21,23.94l39,39.43A32.29,32.29,0,0,0,87,480l1.18,0c8.89-.33,16.85-4.5,23.17-11.17l168.7-180.7A32,32,0,0,0,280.16,242.79Z" />
+		<PathGeometry Figures="M490,190l-.31-.31-34.27-33.92a21.46,21.46,0,0,0-15.28-6.26,21.89,21.89,0,0,0-12.79,4.14c.45-6.5,1.15-16.32-5.2-25.22a258,258,0,0,0-24.8-28.74c-13.32-13.12-42.31-37.83-86.72-55.94A139.55,139.55,0,0,0,257.56,32C226,32,202,46.24,192.81,54.68A119.92,119.92,0,0,0,178.63,70.9a16,16,0,0,0,18.65,24.34,74.45,74.45,0,0,1,8.58-2.63,63.46,63.46,0,0,1,18.45-1.15C237.5,92.55,253.1,99.1,260,104.55c11.7,9.41,17.33,22.09,18.26,41.09.18,3.82-7.72,18.14-20,34.48a16,16,0,0,0,1.45,21l34.41,34.41a16,16,0,0,0,22,.62c9.73-8.69,24.55-21.79,29.73-25,7.69-4.73,13.19-5.64,14.7-5.8a19.18,19.18,0,0,1,11.29,2.38,1.24,1.24,0,0,1-.31.95l-1.82,1.73a21.52,21.52,0,0,0,.05,30.54l34.26,33.91A21.45,21.45,0,0,0,419,281.39a21.7,21.7,0,0,0,15.22-6.2l55.5-54.82A21.87,21.87,0,0,0,490,190Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Book">
+		<PathGeometry Figures="M202.24,74C166.11,56.75,115.61,48.3,48,48a31.36,31.36,0,0,0-17.92,5.33A32,32,0,0,0,16,79.9V366c0,19.34,13.76,33.93,32,33.93,71.07,0,142.36,6.64,185.06,47a4.11,4.11,0,0,0,6.94-3V106.82a15.89,15.89,0,0,0-5.46-12A143,143,0,0,0,202.24,74Z" />
+		<PathGeometry Figures="M481.92,53.3A31.33,31.33,0,0,0,464,48c-67.61.3-118.11,8.71-154.24,26a143.31,143.31,0,0,0-32.31,20.78,15.93,15.93,0,0,0-5.45,12V443.91a3.93,3.93,0,0,0,6.68,2.81c25.67-25.5,70.72-46.82,185.36-46.81a32,32,0,0,0,32-32v-288A32,32,0,0,0,481.92,53.3Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Eye">
+		<EllipseGeometry Center="256,256" RadiusX="64" RadiusY="64" />
+		<PathGeometry Figures="M490.84,238.6c-26.46-40.92-60.79-75.68-99.27-100.53C349,110.55,302,96,255.66,96c-42.52,0-84.33,12.15-124.27,36.11C90.66,156.54,53.76,192.23,21.71,238.18a31.92,31.92,0,0,0-.64,35.54c26.41,41.33,60.4,76.14,98.28,100.65C162,402,207.9,416,255.66,416c46.71,0,93.81-14.43,136.2-41.72,38.46-24.77,72.72-59.66,99.08-100.92A32.2,32.2,0,0,0,490.84,238.6ZM256,352a96,96,0,1,1,96-96A96.11,96.11,0,0,1,256,352Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.People">
+		<PathGeometry Figures="M336,256c-20.56,0-40.44-9.18-56-25.84-15.13-16.25-24.37-37.92-26-61-1.74-24.62,5.77-47.26,21.14-63.76S312,80,336,80c23.83,0,45.38,9.06,60.7,25.52,15.47,16.62,23,39.22,21.26,63.63-1.67,23.11-10.9,44.77-26,61C376.44,246.82,356.57,256,336,256Z" />
+		<PathGeometry Figures="M467.83,432H204.18a27.71,27.71,0,0,1-22-10.67,30.22,30.22,0,0,1-5.26-25.79c8.42-33.81,29.28-61.85,60.32-81.08C264.79,297.4,299.86,288,336,288c36.85,0,71,9,98.71,26.05,31.11,19.13,52,47.33,60.38,81.55a30.27,30.27,0,0,1-5.32,25.78A27.68,27.68,0,0,1,467.83,432Z" />
+		<PathGeometry Figures="M147,260c-35.19,0-66.13-32.72-69-72.93C76.58,166.47,83,147.42,96,133.45,108.86,119.62,127,112,147,112s38,7.66,50.93,21.57c13.1,14.08,19.5,33.09,18,53.52C213.06,227.29,182.13,260,147,260Z" />
+		<PathGeometry Figures="M212.66,291.45c-17.59-8.6-40.42-12.9-65.65-12.9-29.46,0-58.07,7.68-80.57,21.62C40.93,316,23.77,339.05,16.84,366.88a27.39,27.39,0,0,0,4.79,23.36A25.32,25.32,0,0,0,41.72,400h111a8,8,0,0,0,7.87-6.57c.11-.63.25-1.26.41-1.88,8.48-34.06,28.35-62.84,57.71-83.82a8,8,0,0,0-.63-13.39C216.51,293.42,214.71,292.45,212.66,291.45Z" />
+	</GeometryGroup>
+	<PathGeometry x:Key="Redux.Icon.Flame" Figures="M394.23,197.56a300.43,300.43,0,0,0-53.37-90C301.2,61.65,249.05,32,208,32a16,16,0,0,0-15.48,20c13.87,53-14.88,97.07-45.31,143.72C122,234.36,96,274.27,96,320c0,88.22,71.78,160,160,160s160-71.78,160-160C416,276.7,408.68,235.51,394.23,197.56ZM288.33,418.69C278,429.69,265.05,432,256,432s-22-2.31-32.33-13.31S208,390.24,208,368c0-25.14,8.82-44.28,17.34-62.78,4.95-10.74,10-21.67,13-33.37a8,8,0,0,1,12.49-4.51A126.48,126.48,0,0,1,275,292c18.17,24,29,52.42,29,76C304,390.24,298.58,407.77,288.33,418.69Z" />
+	<GeometryGroup x:Key="Redux.Icon.Camera">
+		<PathGeometry Figures="M456,96H384l-16.36-32.69C359.49,47,342.82,32,324.6,32H187.4c-18.22,0-34.89,15-43,31.31L128,96H56a24,24,0,0,0-24,24V432a24,24,0,0,0,24,24H456a24,24,0,0,0,24-24V120A24,24,0,0,0,456,96ZM256,400a104,104,0,1,1,104-104A104.11,104.11,0,0,1,256,400Z" />
+		<EllipseGeometry Center="256,296" RadiusX="72" RadiusY="72" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Person">
+		<EllipseGeometry Center="256,144" RadiusX="112" RadiusY="112" />
+		<PathGeometry Figures="M256,288c-100.61,0-182.88,67.55-191.39,154.06C63.39,454.52,72.92,464,85.44,464H426.56c12.52,0,22.05-9.48,20.83-21.94C438.88,355.55,356.61,288,256,288Z" />
+	</GeometryGroup>
+	<PathGeometry x:Key="Redux.Icon.Star" Figures="M394,480a16,16,0,0,1-9.39-3L256,383.76,127.39,477a16,16,0,0,1-24.55-18.08L153,310.35,23,221.2A16,16,0,0,1,32,192H192.38l48.4-148.95a16,16,0,0,1,30.44,0l48.4,149H480a16,16,0,0,1,9.05,29.2L359,310.35l50.13,148.53A16,16,0,0,1,394,480Z" />
+	<PathGeometry x:Key="Redux.Icon.Moon" Figures="M264,480A232,232,0,0,1,32,248C32,154,86,69.72,169.61,33.33a16,16,0,0,1,21.06,21.06C181.07,76.43,176,104.66,176,136c0,110.28,89.72,200,200,200,31.34,0,59.57-5.07,81.61-14.67a16,16,0,0,1,21.06,21.06C442.28,426,358,480,264,480Z" />
+	<GeometryGroup x:Key="Redux.Icon.Leaf">
+		<PathGeometry Figures="M161.35,242a16,16,0,0,1,22.62-.68c73.63,69.36,147.51,111.56,234.45,133.07,11.73-32,12.77-67.22,2.64-101.58-13.44-45.59-44.74-85.31-90.49-114.86-40.84-26.38-81.66-33.25-121.15-39.89-49.82-8.38-96.88-16.3-141.79-63.85-5-5.26-11.81-7.37-18.32-5.66-7.44,2-12.43,7.88-14.82,17.6-5.6,22.75-2,86.51,13.75,153.82,25.29,108.14,65.65,162.86,95.06,189.73,38,34.69,87.62,53.9,136.93,53.9A186,186,0,0,0,308,461.56c41.71-6.32,76.43-27.27,96-57.75-89.49-23.28-165.94-67.55-242-139.16A16,16,0,0,1,161.35,242Z" />
+		<PathGeometry Figures="M467.43,384.19c-16.83-2.59-33.13-5.84-49-9.77a157.71,157.71,0,0,1-12.13,25.68c-.73,1.25-1.5,2.49-2.29,3.71a584.21,584.21,0,0,0,58.56,12,16,16,0,1,0,4.87-31.62Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Diamond">
+		<PathGeometry Figures="M121.72,32A4,4,0,0,0,118,37.56l2.3,5.43L161,137.89a4,4,0,0,0,6.88.82L243,38.4a4,4,0,0,0-3.2-6.4Z" />
+		<PathGeometry Figures="M419.93,58.06l-41.28,96.37a4,4,0,0,0,3.68,5.57h101a4,4,0,0,0,3.4-6.11L427,57.53A4,4,0,0,0,419.93,58.06Z" />
+		<PathGeometry Figures="M85,57.57,25.29,153.89a4,4,0,0,0,3.4,6.11h101a4,4,0,0,0,3.67-5.58L92,58.1A4,4,0,0,0,85,57.57Z" />
+		<PathGeometry Figures="M393.27,32H267.82a1.94,1.94,0,0,0-1.56,3.11l79.92,106.46a1.94,1.94,0,0,0,3.34-.4L391.6,43,395,34.66A1.92,1.92,0,0,0,393.3,32Z" />
+		<PathGeometry Figures="M239,448,149.57,194.51A3.78,3.78,0,0,0,146,192H25.7a3.72,3.72,0,0,0-2.95,6l216,279.81a5.06,5.06,0,0,0,6.39,1.37,5,5,0,0,0,2.39-6.08Z" />
+		<PathGeometry Figures="M486.3,192H366a3.75,3.75,0,0,0-3.54,2.51L264.26,472.67a5.21,5.21,0,0,0,2.42,6.31,5.22,5.22,0,0,0,6.61-1.39L489.25,198A3.72,3.72,0,0,0,486.3,192Z" />
+		<PathGeometry Figures="M259.2,78.93l56,74.67A4,4,0,0,1,312,160H200a4,4,0,0,1-3.2-6.4l56-74.67A4,4,0,0,1,259.2,78.93Zm-7,310.31L184.5,197.33a4,4,0,0,1,3.77-5.33H323.73a4,4,0,0,1,3.77,5.33L259.77,389.24A4,4,0,0,1,252.23,389.24Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Planet">
+		<PathGeometry Figures="M96.85,286.62a8,8,0,0,0-12.53,8.25C102.07,373.28,172.3,432,256,432a175.31,175.31,0,0,0,52.41-8,8,8,0,0,0,.79-15,1120,1120,0,0,1-109.48-55.61A1126.24,1126.24,0,0,1,96.85,286.62Z" />
+		<PathGeometry Figures="M492.72,339.51c-4.19-5.58-9.11-11.44-14.7-17.53a15.83,15.83,0,0,0-26.56,5.13,15.75,15.75,0,0,0,3.15,16.53c22.74,25,26.42,38.51,25.48,41.36-2,2.23-17.05,6.89-58.15-3.53-10.84-2.75-21.87-6.12-33.11-9.95A176,176,0,0,0,432,256C432,158.8,353.2,80,256,80A176,176,0,0,0,89.43,199.12C55.77,169.81,34.65,145.19,32.06,127c2-2.23,15.54-5.87,48.62,1.31A16,16,0,0,0,87.91,97.13C33.41,89.47,13.3,95.52,4.35,111-12.41,140,24.34,186.94,81.35,234.14c76.37,63.24,198.64,133.06,315.33,173.54C453.51,427.4,495.8,421.4,507.58,401,516.67,385.39,511.66,364.69,492.72,339.51Z" />
+	</GeometryGroup>
+	<PathGeometry x:Key="Redux.Icon.Flash" Figures="M194.82,496a18.36,18.36,0,0,1-18.1-21.53L204.83,320H96a16,16,0,0,1-12.44-26.06L302.73,23a18.45,18.45,0,0,1,32.8,13.71L307.19,192H416a16,16,0,0,1,12.44,26.06L209.24,489A18.45,18.45,0,0,1,194.82,496Z" />
+	<GeometryGroup x:Key="Redux.Icon.Sunny">
+		<PathGeometry Figures="M256,118a22,22,0,0,1-22-22V48a22,22,0,0,1,44,0V96A22,22,0,0,1,256,118Z M256,486a22,22,0,0,1-22-22V416a22,22,0,0,1,44,0v48A22,22,0,0,1,256,486Z M464,278H416a22,22,0,0,1,0-44h48a22,22,0,0,1,0,44Z M96,278H48a22,22,0,0,1,0-44H96a22,22,0,0,1,0,44Z" />
+		<PathGeometry Figures="M369.14,164.86a22,22,0,0,1-15.56-37.55l33.94-33.94a22,22,0,0,1,31.11,31.11l-33.94,33.94A21.93,21.93,0,0,1,369.14,164.86Z M108.92,425.08a22,22,0,0,1-15.55-37.56l33.94-33.94a22,22,0,1,1,31.11,31.11l-33.94,33.94A21.94,21.94,0,0,1,108.92,425.08Z M403.08,425.08a21.94,21.94,0,0,1-15.56-6.45l-33.94-33.94a22,22,0,0,1,31.11-31.11l33.94,33.94a22,22,0,0,1-15.55,37.56Z M142.86,164.86a21.89,21.89,0,0,1-15.55-6.44L93.37,124.48a22,22,0,0,1,31.11-31.11l33.94,33.94a22,22,0,0,1-15.56,37.55Z" />
+		<EllipseGeometry Center="256,256" RadiusX="102" RadiusY="102" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Rose">
+		<PathGeometry Figures="M429.55,119.49a16,16,0,0,0-17.06-7.1c-18.64,4.19-37.06,9-54.73,14.22C322.7,137,288.43,150.53,249.91,169.2c-18.62,9.05-26,13.35-48,26.13L197.41,198c-32.95,19-57.09,40-73.79,64.29C105.29,288.89,96,320,96,354.64c0,40.74,15.71,77.1,44.24,102.37C169,482.52,209.06,496,256,496c46.76,0,86.89-14.33,116-41.43,28.35-26.35,44-63.39,44-104.29,0-25-6.19-47-12.17-68.22-12.59-44.69-23.46-83.29,24.71-144.13A16,16,0,0,0,429.55,119.49Z" />
+		<PathGeometry Figures="M219,119.55C168.46,92.08,101.46,80.69,98.63,80.22A16,16,0,0,0,81,90.55a16.47,16.47,0,0,0,3.79,16.84c31.84,33.78,32.86,68.79,28.65,104.63a4.45,4.45,0,0,0,7.58,3.64c16.39-16.51,36.37-31.52,60.4-45.39l4.48-2.6C208,154.8,216.23,150,236,140.41l2.69-1.3a4,4,0,0,0,.64-6.83A178.59,178.59,0,0,0,219,119.55Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Bonfire">
+		<PathGeometry Figures="M293.46,242.39c10-5.42,19.45-10.54,28.31-16.16,42.46-26.92,62.23-59,62.23-101,0-64.66-56.07-104.4-108.82-109-6.49-.57-15-.42-19.91,3.88s-5.88,12.56-6.15,19.1c-1.38,33.61-28.38,59-57,85.86-28,26.3-56.93,53.49-62.71,91C121,270.75,151.15,302.78,169.87,317a31.88,31.88,0,0,0,48-11.31C232.76,275.3,263.62,258.57,293.46,242.39Z" />
+		<PathGeometry Figures="M330.34,239.74c-9.33,5.92-19,11.16-29.25,16.71-28.91,15.68-56.21,30.48-68.88,56.28-.64,1.32-1.25,2.5-1.88,3.61a8,8,0,0,0,3.89,11.3c12.31,5.1,25.13,8.27,38.91,8.27a111.42,111.42,0,0,0,78.24-31.37A107.45,107.45,0,0,0,384,226.85a86.56,86.56,0,0,0-1.33-15,8,8,0,0,0-13.8-4C358.69,219.32,345.94,229.85,330.34,239.74Z M273.38,368.37c-.81-9.23-8.86-16.44-18.55-16.44A18.63,18.63,0,0,0,236.63,366l-18.2,88.36a35.59,35.59,0,0,0-.93,7.87c0,19.93,16.68,33.77,37.33,33.77s37.34-13.84,37.34-33.77a36.16,36.16,0,0,0-1.29-9.45Z" />
+	</GeometryGroup>
+	<PathGeometry x:Key="Redux.Icon.TrailSign" Figures="M491.31,324.69,432,265.37A31.8,31.8,0,0,0,409.37,256H272V224H416a32,32,0,0,0,32-32V96a32,32,0,0,0-32-32H272V48a16,16,0,0,0-32,0V64H102.63A31.8,31.8,0,0,0,80,73.37L20.69,132.69a16,16,0,0,0,0,22.62L80,214.63A31.8,31.8,0,0,0,102.63,224H240v32H96a32,32,0,0,0-32,32v96a32,32,0,0,0,32,32H240v48a16,16,0,0,0,32,0V416H409.37A31.8,31.8,0,0,0,432,406.63l59.31-59.32A16,16,0,0,0,491.31,324.69Z" />
+	<GeometryGroup x:Key="Redux.Icon.ColorWand">
+		<PathGeometry Figures="M96,208H48a16,16,0,0,1,0-32H96a16,16,0,0,1,0,32Z M192,112a16,16,0,0,1-16-16V48a16,16,0,0,1,32,0V96A16,16,0,0,1,192,112Z M124.1,140.1a16,16,0,0,1-11.3-4.7L78.9,101.5a16,16,0,0,1,22.6-22.6l33.9,33.9a16,16,0,0,1-11.3,27.3Z M259.9,140.1a16,16,0,0,1-11.3-27.3l33.9-33.9a16,16,0,0,1,22.6,22.6l-33.9,33.9A16,16,0,0,1,259.9,140.1Z" />
+		<PathGeometry Figures="M234.2,167c-18.4-18.7-48.5-19-67.2-.7s-19,48.5-.7,67.2l40.2,40.2a8,8,0,0,0,11.3,0l55.9-55.9a8,8,0,0,0,0-11.3Z M457,389.8,307.6,240.4a8,8,0,0,0-11.3,0l-55.9,55.9a8,8,0,0,0,0,11.3L389.8,457c18.4,18.7,48.5,19,67.2.7s19-48.5.7-67.2Z" />
+	</GeometryGroup>
+	<PathGeometry x:Key="Redux.Icon.Bug" Figures="M463.55,272.13H400v-48.2q0-4.32-.27-8.47c29.57-27.88,32.25-64.63,32.27-103a16,16,0,0,0-32,0c0,28-1.86,48.15-9.9,63.84-19.22-41.15-65.78-63.91-134.1-63.91-68,0-114.68,22.7-133.13,64.11C114,160.65,112,141,112,112.46a16,16,0,0,0-32-.46c0,37.63,2.61,73.73,32.44,101.63Q112,218.69,112,223.93v48.2H48.45a16,16,0,0,0-.45,32h64V320c0,79.53,64.47,144,144,144s144-64.47,144-144V304.13h64a16,16,0,0,0-.45-32Z" />
+	<PathGeometry x:Key="Redux.Icon.Nutrition" Figures="M439,166.29c-18.67-32.57-47.46-50.81-85.57-54.23-37.18-3.32-68.17,15.94-97.43,15.94s-60.18-19.34-97.49-15.93C122.12,115.48,93,134.18,74.2,166.15,56.82,195.76,48,236.76,48,288c0,40.4,15,90.49,40,134,12.82,22.25,47,74,87.16,74,52.12,0,57.23-24,80.84-24s28.72,24,80.8,24c40.17,0,74.34-51.76,87.16-74,25.07-43.5,40-93.59,40-134C464,235.43,455.82,195.62,439,166.29ZM216,352c-13.25,0-24-21.49-24-48s10.75-48,24-48,24,21.49,24,48S229.25,352,216,352Zm80,0c-13.25,0-24-21.49-24-48s10.75-48,24-48,24,21.49,24,48S309.25,352,296,352Z" />
+	<GeometryGroup x:Key="Redux.Icon.Albums">
+		<PathGeometry Figures="M368,96H144a16,16,0,0,1,0-32H368a16,16,0,0,1,0,32Z" />
+		<PathGeometry Figures="M400,144H112a16,16,0,0,1,0-32H400a16,16,0,0,1,0,32Z" />
+		<PathGeometry Figures="M419.13,448H92.87A44.92,44.92,0,0,1,48,403.13V204.87A44.92,44.92,0,0,1,92.87,160H419.13A44.92,44.92,0,0,1,464,204.87V403.13A44.92,44.92,0,0,1,419.13,448Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Desktop">
+		<PathGeometry Figures="M16,352a48.05,48.05,0,0,0,48,48H197.88l-4,32H144a16,16,0,0,0,0,32H368a16,16,0,0,0,0-32H318.12l-4-32H448a48.05,48.05,0,0,0,48-48V304H16Zm240-16a16,16,0,1,1-16,16A16,16,0,0,1,256,336Z" />
+		<PathGeometry Figures="M496,96a48.05,48.05,0,0,0-48-48H64A48.05,48.05,0,0,0,16,96V288H496Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.School">
+		<PathGeometry Figures="M256,368a16,16,0,0,1-7.94-2.11L108,285.84a8,8,0,0,0-12,6.94V368a16,16,0,0,0,8.23,14l144,80a16,16,0,0,0,15.54,0l144-80A16,16,0,0,0,416,368V292.78a8,8,0,0,0-12-6.94L263.94,365.89A16,16,0,0,1,256,368Z" />
+		<PathGeometry Figures="M495.92,190.5a16,16,0,0,0-8-12.39l-224-128a16,16,0,0,0-15.88,0l-224,128a16,16,0,0,0,0,27.78l224,128a16,16,0,0,0,15.88,0L461,221.28a2,2,0,0,1,3,1.74V367.55a16,16,0,0,0,32,.45V192A14.76,14.76,0,0,0,495.92,190.5Z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Body">
+		<EllipseGeometry Center="256,56" RadiusX="56" RadiusY="56" />
+		<PathGeometry Figures="M437,128H75a27,27,0,0,0,0,54H176.88c6.91,0,15,3.09,19.58,15,5.35,13.83,2.73,40.54-.57,61.23L156.85,479.84A27.43,27.43,0,0,0,179,511.58a27.06,27.06,0,0,0,31.42-22.29l23.91-136.8S242,320,256,320c14.23,0,21.74,32.49,21.74,32.49l23.91,136.92a27.24,27.24,0,1,0,53.62-9.6L316.22,258.2c-3.3-20.69-5.92-47.4-.57-61.23,4.56-11.88,12.91-15,19.28-15H437a27,27,0,0,0,0-54Z" />
+	</GeometryGroup>
+	<PathGeometry x:Key="Redux.Icon.MusicalNotes" Figures="M421.84,37.37a25.86,25.86,0,0,0-22.6-4.46L199.92,86.49A32.3,32.3,0,0,0,176,118v226c0,6.74-4.36,12.56-11.11,14.83l-52.12,18.05C92.88,383.53,80,402,80,423.91a55.54,55.54,0,0,0,23.23,45.63A54.78,54.78,0,0,0,135.34,480a55.82,55.82,0,0,0,17.75-2.93L175.31,469A47.84,47.84,0,0,0,208,423.91v-212c0-7.29,4.77-13.21,12.16-15.07L395,150.14a4,4,0,0,1,5,3.86V295.93c0,6.75-4.25,12.38-11.11,14.68l-51.14,18.2A49.09,49.09,0,0,0,304,375.92a55.67,55.67,0,0,0,23.23,45.8,54.63,54.63,0,0,0,49.88,7.35L399.31,421A47.83,47.83,0,0,0,432,375.92V58A25.74,25.74,0,0,0,421.84,37.37Z" />
+	<GeometryGroup x:Key="Redux.Icon.Cube">
+		<PathGeometry Figures="M440.9,136.3a4,4,0,0,0,0-6.91L288.16,40.65a64.14,64.14,0,0,0-64.33,0L71.12,129.39a4,4,0,0,0,0,6.91L254,243.88a4,4,0,0,0,4.06,0Z" />
+		<PathGeometry Figures="M54,163.51A4,4,0,0,0,48,167V340.89a48,48,0,0,0,23.84,41.39L234,479.51a4,4,0,0,0,6-3.46V274.3a4,4,0,0,0-2-3.46Z" />
+		<PathGeometry Figures="M272,275v201a4,4,0,0,0,6,3.46l162.15-97.23A48,48,0,0,0,464,340.89V167a4,4,0,0,0-6-3.45l-184,108A4,4,0,0,0,272,275Z" />
+	</GeometryGroup>
+	<PathGeometry x:Key="Redux.Icon.ShieldHalfFill" Figures="M256,48c80.71,36.45,117.68,48.33,207.1,64.37C479.3,369.13,271.42,457.79,256,464Z" />
+	<PathGeometry x:Key="Redux.Icon.ShieldHalfStroke" Figures="M48.9,112.37C138.32,96.33,175.29,84.45,256,48c80.71,36.45,117.68,48.33,207.1,64.37C479.3,369.13,271.42,457.79,256,464,240.58,457.79,32.7,369.13,48.9,112.37Z" />
+	<GeometryGroup x:Key="Redux.Icon.Construct">
+		<PathGeometry Figures="M503.58,126.2a16.85,16.85,0,0,0-27.07-4.55L425.36,172.8a11.15,11.15,0,0,1-15.66,0l-22.48-22.48a11.17,11.17,0,0,1,0-15.67L438.1,83.76a16.85,16.85,0,0,0-5.27-27.4c-39.71-17-89.08-7.45-120,23.29-26.81,26.61-34.83,68-22,113.7a11,11,0,0,1-3.16,11.1L114.77,365.1a56.76,56.76,0,1,0,80.14,80.18L357,272.08a11,11,0,0,1,10.9-3.17c45,12,86,4,112.43-22,15.2-15,25.81-36.17,29.89-59.71C514.05,165,511.63,142.76,503.58,126.2Z" />
+		<PathGeometry Figures="M437.33,378.41c-13.94-11.59-43.72-38.4-74.07-66.22L297.19,382.8c28.24,30,53.8,57.85,65,70.88A30,30,0,0,0,383.72,464a30.11,30.11,0,0,0,22.1-8.62l33.5-33.44a29.46,29.46,0,0,0-2-43.53Z" />
+	</GeometryGroup>
+	<PathGeometry x:Key="Redux.Icon.Film" Figures="M436,80H76a44.05,44.05,0,0,0-44,44V388a44.05,44.05,0,0,0,44,44H436a44.05,44.05,0,0,0,44-44V124A44.05,44.05,0,0,0,436,80ZM112,388a12,12,0,0,1-12,12H76a12,12,0,0,1-12-12V364a12,12,0,0,1,12-12h24a12,12,0,0,1,12,12Zm0-80a12,12,0,0,1-12,12H76a12,12,0,0,1-12-12V284a12,12,0,0,1,12-12h24a12,12,0,0,1,12,12Zm0-80a12,12,0,0,1-12,12H76a12,12,0,0,1-12-12V204a12,12,0,0,1,12-12h24a12,12,0,0,1,12,12Zm0-80a12,12,0,0,1-12,12H76a12,12,0,0,1-12-12V124a12,12,0,0,1,12-12h24a12,12,0,0,1,12,12ZM353.68,272H158.32a16,16,0,0,1,0-32H353.68a16,16,0,1,1,0,32ZM448,388a12,12,0,0,1-12,12H412a12,12,0,0,1-12-12V364a12,12,0,0,1,12-12h24a12,12,0,0,1,12,12Zm0-80a12,12,0,0,1-12,12H412a12,12,0,0,1-12-12V284a12,12,0,0,1,12-12h24a12,12,0,0,1,12,12Zm0-80a12,12,0,0,1-12,12H412a12,12,0,0,1-12-12V204a12,12,0,0,1,12-12h24a12,12,0,0,1,12,12Zm0-80a12,12,0,0,1-12,12H412a12,12,0,0,1-12-12V124a12,12,0,0,1,12-12h24a12,12,0,0,1,12,12Z" />
+	<PathGeometry x:Key="Redux.Icon.SwordStroke" Figures="M20,4v5l-9,7l-4,4l-3-3l4-4l7-9h5 M6.5,11.5l6,6">
+		<PathGeometry.Transform><ScaleTransform ScaleX="21.333333" ScaleY="21.333333" /></PathGeometry.Transform>
+	</PathGeometry>
 	<GeometryGroup x:Key="Redux.Icon.Save">
 		<PathGeometry Figures="M465.94,119.76 l-73.7,-73.7 h0 A47.68,47.68 0 0 0 358.3,32 H96 A64,64 0 0 0 32,96 V416 A64,64 0 0 0 96,480 H416 A64,64 0 0 0 480,416 V153.7 A47.68,47.68 0 0 0 465.94,119.76 Z M120,112 H296 A8,8 0 0 1 304,120 v48 A8,8 0 0 1 296,176 H120 A8,8 0 0 1 112,168 V120 A8,8 0 0 1 120,112 Z M259.75,431.91 a80,80 0 1 1 76.16,-76.16 A80.06,80.06 0 0 1 259.75,431.91 Z" />
 		<EllipseGeometry Center="256,352" RadiusX="48" RadiusY="48" />
@@ -146,6 +288,73 @@
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
+		<!--
+			Persisted/custom icons use stable string IDs. Resolve those IDs here with
+			the same StaticResource path used by fixed toolbar icons; runtime string
+			resource lookup is unreliable for controls hosted inside popups.
+		-->
+		<Style.Triggers>
+			<Trigger Property="IconKey" Value="list"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.ListStroke}" /></Trigger>
+			<Trigger Property="IconKey" Value="palette"><Setter Property="Data" Value="{StaticResource Redux.Icon.ColorPalette}" /></Trigger>
+			<Trigger Property="IconKey" Value="shirt"><Setter Property="Data" Value="{StaticResource Redux.Icon.Shirt}" /></Trigger>
+			<Trigger Property="IconKey" Value="sparkles"><Setter Property="Data" Value="{StaticResource Redux.Icon.Sparkles}" /></Trigger>
+			<Trigger Property="IconKey" Value="shield"><Setter Property="Data" Value="{StaticResource Redux.Icon.Shield}" /></Trigger>
+			<Trigger Property="IconKey" Value="flask"><Setter Property="Data" Value="{StaticResource Redux.Icon.Flask}" /></Trigger>
+			<Trigger Property="IconKey" Value="skull"><Setter Property="Data" Value="{StaticResource Redux.Icon.Skull}" /></Trigger>
+			<Trigger Property="IconKey" Value="paw"><Setter Property="Data" Value="{StaticResource Redux.Icon.Paw}" /></Trigger>
+			<Trigger Property="IconKey" Value="dice"><Setter Property="Data" Value="{StaticResource Redux.Icon.Dice}" /></Trigger>
+			<Trigger Property="IconKey" Value="map"><Setter Property="Data" Value="{StaticResource Redux.Icon.Map}" /></Trigger>
+			<Trigger Property="IconKey" Value="hammer"><Setter Property="Data" Value="{StaticResource Redux.Icon.Hammer}" /></Trigger>
+			<Trigger Property="IconKey" Value="book"><Setter Property="Data" Value="{StaticResource Redux.Icon.Book}" /></Trigger>
+			<Trigger Property="IconKey" Value="eye"><Setter Property="Data" Value="{StaticResource Redux.Icon.Eye}" /></Trigger>
+			<Trigger Property="IconKey" Value="camera"><Setter Property="Data" Value="{StaticResource Redux.Icon.Camera}" /></Trigger>
+			<Trigger Property="IconKey" Value="person"><Setter Property="Data" Value="{StaticResource Redux.Icon.Person}" /></Trigger>
+			<Trigger Property="IconKey" Value="people"><Setter Property="Data" Value="{StaticResource Redux.Icon.People}" /></Trigger>
+			<Trigger Property="IconKey" Value="albums"><Setter Property="Data" Value="{StaticResource Redux.Icon.Albums}" /></Trigger>
+			<Trigger Property="IconKey" Value="desktop"><Setter Property="Data" Value="{StaticResource Redux.Icon.Desktop}" /></Trigger>
+			<Trigger Property="IconKey" Value="school"><Setter Property="Data" Value="{StaticResource Redux.Icon.School}" /></Trigger>
+			<Trigger Property="IconKey" Value="body"><Setter Property="Data" Value="{StaticResource Redux.Icon.Body}" /></Trigger>
+			<Trigger Property="IconKey" Value="music"><Setter Property="Data" Value="{StaticResource Redux.Icon.MusicalNotes}" /></Trigger>
+			<Trigger Property="IconKey" Value="cube"><Setter Property="Data" Value="{StaticResource Redux.Icon.Cube}" /></Trigger>
+			<Trigger Property="IconKey" Value="shield-half">
+				<Setter Property="Data" Value="{StaticResource Redux.Icon.ShieldHalfFill}" />
+				<Setter Property="StrokeData" Value="{StaticResource Redux.Icon.ShieldHalfStroke}" />
+			</Trigger>
+			<Trigger Property="IconKey" Value="construct"><Setter Property="Data" Value="{StaticResource Redux.Icon.Construct}" /></Trigger>
+			<Trigger Property="IconKey" Value="film"><Setter Property="Data" Value="{StaticResource Redux.Icon.Film}" /></Trigger>
+			<Trigger Property="IconKey" Value="sword"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.SwordStroke}" /></Trigger>
+			<Trigger Property="IconKey" Value="flame"><Setter Property="Data" Value="{StaticResource Redux.Icon.Flame}" /></Trigger>
+			<Trigger Property="IconKey" Value="star"><Setter Property="Data" Value="{StaticResource Redux.Icon.Star}" /></Trigger>
+			<Trigger Property="IconKey" Value="moon"><Setter Property="Data" Value="{StaticResource Redux.Icon.Moon}" /></Trigger>
+			<Trigger Property="IconKey" Value="sunny"><Setter Property="Data" Value="{StaticResource Redux.Icon.Sunny}" /></Trigger>
+			<Trigger Property="IconKey" Value="leaf"><Setter Property="Data" Value="{StaticResource Redux.Icon.Leaf}" /></Trigger>
+			<Trigger Property="IconKey" Value="rose"><Setter Property="Data" Value="{StaticResource Redux.Icon.Rose}" /></Trigger>
+			<Trigger Property="IconKey" Value="diamond"><Setter Property="Data" Value="{StaticResource Redux.Icon.Diamond}" /></Trigger>
+			<Trigger Property="IconKey" Value="planet"><Setter Property="Data" Value="{StaticResource Redux.Icon.Planet}" /></Trigger>
+			<Trigger Property="IconKey" Value="flash"><Setter Property="Data" Value="{StaticResource Redux.Icon.Flash}" /></Trigger>
+			<Trigger Property="IconKey" Value="bonfire"><Setter Property="Data" Value="{StaticResource Redux.Icon.Bonfire}" /></Trigger>
+			<Trigger Property="IconKey" Value="trail"><Setter Property="Data" Value="{StaticResource Redux.Icon.TrailSign}" /></Trigger>
+			<Trigger Property="IconKey" Value="wand"><Setter Property="Data" Value="{StaticResource Redux.Icon.ColorWand}" /></Trigger>
+			<Trigger Property="IconKey" Value="bug"><Setter Property="Data" Value="{StaticResource Redux.Icon.Bug}" /></Trigger>
+			<Trigger Property="IconKey" Value="nutrition"><Setter Property="Data" Value="{StaticResource Redux.Icon.Nutrition}" /></Trigger>
+			<Trigger Property="IconKey" Value="gameplay"><Setter Property="Data" Value="{StaticResource Redux.Icon.GameController}" /></Trigger>
+			<Trigger Property="IconKey" Value="puzzle"><Setter Property="Data" Value="{StaticResource Redux.Icon.ExtensionPuzzle}" /></Trigger>
+			<Trigger Property="IconKey" Value="terminal"><Setter Property="Data" Value="{StaticResource Redux.Icon.Terminal}" /></Trigger>
+			<Trigger Property="IconKey" Value="tools"><Setter Property="Data" Value="{StaticResource Redux.Icon.Build}" /></Trigger>
+			<Trigger Property="IconKey" Value="heart"><Setter Property="Data" Value="{StaticResource Redux.Icon.Heart}" /></Trigger>
+			<Trigger Property="IconKey" Value="key"><Setter Property="Data" Value="{StaticResource Redux.Icon.Key}" /></Trigger>
+			<Trigger Property="IconKey" Value="tag"><Setter Property="Data" Value="{StaticResource Redux.Icon.Pricetag}" /></Trigger>
+			<Trigger Property="IconKey" Value="archive"><Setter Property="Data" Value="{StaticResource Redux.Icon.Archive}" /></Trigger>
+			<Trigger Property="IconKey" Value="document"><Setter Property="Data" Value="{StaticResource Redux.Icon.DocumentText}" /></Trigger>
+			<Trigger Property="IconKey" Value="folder"><Setter Property="Data" Value="{StaticResource Redux.Icon.FolderOpen}" /></Trigger>
+			<Trigger Property="IconKey" Value="audio"><Setter Property="Data" Value="{StaticResource Redux.Icon.VolumeHigh}" /></Trigger>
+			<Trigger Property="IconKey" Value="settings"><Setter Property="Data" Value="{StaticResource Redux.Icon.Settings}" /></Trigger>
+			<Trigger Property="IconKey" Value="download"><Setter Property="Data" Value="{StaticResource Redux.Icon.Download}" /></Trigger>
+			<Trigger Property="IconKey" Value="warning"><Setter Property="Data" Value="{StaticResource Redux.Icon.Warning}" /></Trigger>
+			<Trigger Property="IconKey" Value="info"><Setter Property="Data" Value="{StaticResource Redux.Icon.Information}" /></Trigger>
+			<Trigger Property="IconKey" Value="help"><Setter Property="Data" Value="{StaticResource Redux.Icon.HelpCircle}" /></Trigger>
+			<Trigger Property="IconKey" Value="refresh"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.RefreshStroke}" /></Trigger>
+		</Style.Triggers>
 	</Style>
 	<Style x:Key="ReduxPrimaryIconStyle" BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
 		<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
@@ -276,7 +485,7 @@
 							Background="{DynamicResource ReduxSurfaceMutedBrush}"
 							BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
 							BorderThickness="1"
-							CornerRadius="4">
+							CornerRadius="{DynamicResource Redux.CornerRadius.Small}">
 							<TextBlock x:Name="CheckMark"
 								HorizontalAlignment="Center"
 								VerticalAlignment="Center"
@@ -335,7 +544,7 @@
 						Background="{TemplateBinding Background}"
 						BorderBrush="{TemplateBinding BorderBrush}"
 						BorderThickness="{TemplateBinding BorderThickness}"
-						CornerRadius="6"
+						CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
 						Padding="{TemplateBinding Padding}">
 						<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
 							VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
@@ -501,7 +710,7 @@
 					    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 					    BorderBrush="{DynamicResource ReduxBorderBrush}"
 					    BorderThickness="1"
-					    CornerRadius="8">
+					    CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 						<ContentPresenter HorizontalAlignment="Left"
 							VerticalAlignment="Top"
 							RecognizesAccessKey="True" />
@@ -610,7 +819,7 @@
 									Background="{TemplateBinding Background}"
 									BorderBrush="{TemplateBinding BorderBrush}"
 									BorderThickness="{TemplateBinding BorderThickness}"
-									CornerRadius="4"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Small}"
 									Padding="{TemplateBinding Padding}">
 									<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
 										VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -842,10 +1051,16 @@
 										<Path.Style><Style TargetType="Path"><Setter Property="Data" Value="M 0,0 L 8,0 L 4,5 Z" /><Style.Triggers><DataTrigger Binding="{Binding IsVisualDividerCollapsed}" Value="True"><Setter Property="Data" Value="M 0,0 L 5,4 L 0,8 Z" /><Setter Property="Width" Value="5" /><Setter Property="Height" Value="8" /></DataTrigger></Style.Triggers></Style></Path.Style>
 									</Path>
 								</ToggleButton>
-								<Path Grid.Column="1" Width="12" Height="12" Margin="0,0,8,0"
+								<Grid Grid.Column="1" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center">
+									<Path Width="12" Height="12"
 										Data="M 6,0 L 12,6 L 6,12 L 0,6 Z M 6,3 L 9,6 L 6,9 L 3,6 Z"
 										Fill="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
-										Stretch="Uniform" />
+										Stretch="Uniform"
+										Visibility="{Binding HasVisualDividerIcon, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
+									<controls:ReduxIcon Width="14" Height="14" IconKey="{Binding VisualDividerIconId}"
+										Foreground="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
+										Visibility="{Binding HasVisualDividerIcon, Converter={StaticResource BoolToVisibilityConverter}}" />
+								</Grid>
 								<TextBlock Grid.Column="2" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"
 										Foreground="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
 										Text="{Binding VisualDividerTitle}" TextTrimming="CharacterEllipsis"
@@ -1090,7 +1305,7 @@
 		</Setter>
 	</Style>
 	<DataTemplate x:Key="TagTemplate">
-		<Border Background="{DynamicResource {x:Static divThemes:DivinityColors.TagBackgroundBrush}}" BorderThickness="2" CornerRadius="12">
+		<Border Background="{DynamicResource {x:Static divThemes:DivinityColors.TagBackgroundBrush}}" BorderThickness="2" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
 			<TextBlock Padding="12,2" Foreground="{DynamicResource {x:Static adonisUI:Brushes.Layer3InteractionForegroundBrush}}" Text="{Binding}">
 				<TextBlock.Effect>
 					<DropShadowEffect BlurRadius="4"
@@ -1110,7 +1325,7 @@
 		</Border>
 	</DataTemplate>
 	<DataTemplate x:Key="ModeTagTemplate">
-		<Border Background="{DynamicResource {x:Static divThemes:DivinityColors.ModeTagBackgroundBrush}}" BorderThickness="2" CornerRadius="12">
+		<Border Background="{DynamicResource {x:Static divThemes:DivinityColors.ModeTagBackgroundBrush}}" BorderThickness="2" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
 			<TextBlock Padding="12,2" Foreground="{DynamicResource {x:Static adonisUI:Brushes.Layer3InteractionForegroundBrush}}" Text="{Binding}">
 				<TextBlock.Effect>
 					<DropShadowEffect BlurRadius="4"
@@ -1130,7 +1345,7 @@
 		</Border>
 	</DataTemplate>
 	<DataTemplate x:Key="CustomTagTemplate">
-		<Border Background="{DynamicResource {x:Static divThemes:DivinityColors.CustomTagBackgroundBrush}}" BorderThickness="2" CornerRadius="12">
+		<Border Background="{DynamicResource {x:Static divThemes:DivinityColors.CustomTagBackgroundBrush}}" BorderThickness="2" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
 			<TextBlock Padding="12,2" Foreground="{DynamicResource {x:Static adonisUI:Brushes.Layer3InteractionForegroundBrush}}" Text="{Binding}">
 				<TextBlock.Effect>
 					<DropShadowEffect BlurRadius="4"
@@ -1149,17 +1364,84 @@
 			</Border.Effect>
 		</Border>
 	</DataTemplate>
+	<!-- Shared pill chrome used by list cells, the selected-mod drawer, and mod hover cards. -->
+	<Style x:Key="ReduxCategoryPillBaseStyle" TargetType="{x:Type Border}">
+		<Setter Property="MinHeight" Value="21" />
+		<Setter Property="Padding" Value="8,2" />
+		<Setter Property="HorizontalAlignment" Value="Left" />
+		<Setter Property="VerticalAlignment" Value="Center" />
+		<Setter Property="Background" Value="{Binding SoftColor}" />
+		<Setter Property="BorderBrush" Value="{Binding Color}" />
+		<Setter Property="BorderThickness" Value="1.5" />
+		<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Pill}" />
+		<Style.Triggers>
+			<DataTrigger Binding="{Binding Name}" Value="No Category">
+				<Setter Property="Visibility" Value="Collapsed" />
+			</DataTrigger>
+		</Style.Triggers>
+	</Style>
+	<Style x:Key="ReduxSourcePillStyle" TargetType="{x:Type Border}">
+		<Setter Property="MinHeight" Value="21" />
+		<Setter Property="Padding" Value="8,2" />
+		<Setter Property="HorizontalAlignment" Value="Left" />
+		<Setter Property="VerticalAlignment" Value="Center" />
+		<Setter Property="BorderThickness" Value="1.5" />
+		<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Pill}" />
+		<Setter Property="Background" Value="{StaticResource Redux.Pill.Local.Background}" />
+		<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Local.Border}" />
+		<Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Local.Border}" />
+		<Style.Triggers>
+			<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}">
+				<Setter Property="Background" Value="{StaticResource Redux.Pill.Nexus.Background}" />
+				<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Nexus.Border}" />
+				<Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Nexus.Border}" />
+			</DataTrigger>
+			<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}">
+				<Setter Property="Background" Value="{StaticResource Redux.Pill.Modio.Background}" />
+				<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Modio.Border}" />
+				<Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Modio.Border}" />
+			</DataTrigger>
+		</Style.Triggers>
+	</Style>
+	<DataTemplate x:Key="ModTooltipCategoryPillItemTemplate">
+		<Border MaxWidth="170" Margin="0,0,6,0" Style="{StaticResource ReduxCategoryPillBaseStyle}">
+			<StackPanel Orientation="Horizontal">
+				<controls:ReduxIcon Width="12" Height="12" Margin="0,0,5,0"
+					IconKey="{Binding IconId}" Foreground="{Binding Color}">
+					<controls:ReduxIcon.Style>
+						<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
+							<Setter Property="Visibility" Value="Collapsed" />
+							<Style.Triggers>
+								<MultiDataTrigger>
+									<MultiDataTrigger.Conditions>
+										<Condition Binding="{Binding HasIcon}" Value="True" />
+										<Condition Binding="{Binding MainWindow.DataContext.Settings.ShowCategoryIconsInPills, Source={x:Static Application.Current}, FallbackValue=True}" Value="True" />
+									</MultiDataTrigger.Conditions>
+									<Setter Property="Visibility" Value="Visible" />
+								</MultiDataTrigger>
+							</Style.Triggers>
+						</Style>
+					</controls:ReduxIcon.Style>
+				</controls:ReduxIcon>
+				<TextBlock Margin="0" FontSize="11" FontWeight="Medium" Foreground="{Binding Color}"
+					Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+			</StackPanel>
+		</Border>
+	</DataTemplate>
 	<controls:AutomationTooltip x:Key="ModToolTip" DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
 		<controls:AutomationTooltip.Style>
 			<Style BasedOn="{StaticResource {x:Type ToolTip}}" TargetType="controls:AutomationTooltip">
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="controls:AutomationTooltip">
-							<Border Padding="10"
-							    Background="{DynamicResource ReduxSurfaceBrush}"
+							<Border Padding="12"
+							    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 							    BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
 							    BorderThickness="1"
-							    CornerRadius="8">
+							    CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+								<Border.Effect>
+									<DropShadowEffect BlurRadius="14" Color="Black" Opacity="0.28" ShadowDepth="3" />
+								</Border.Effect>
 								<ContentPresenter />
 							</Border>
 						</ControlTemplate>
@@ -1198,7 +1480,7 @@
 					Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{Binding DisplayVersion}" />
 				<Border Grid.Column="2" Width="104" Height="78" HorizontalAlignment="Right"
 					Background="{DynamicResource ReduxListInteriorBrush}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
-					BorderThickness="1" CornerRadius="7">
+					BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 					<Image Margin="2" RenderOptions.BitmapScalingMode="HighQuality"
 						Source="{Binding Metadata.PreviewImageUri}" Stretch="Uniform"
 						Visibility="{Binding Metadata.PreviewImageVisibility}" />
@@ -1211,16 +1493,12 @@
 				</StackPanel>
 			</Grid>
 
-			<WrapPanel Margin="4,0,4,8">
-				<ItemsControl ItemsSource="{Binding DisplayCategories}">
+			<WrapPanel Margin="4,0,4,9">
+				<ItemsControl ItemsSource="{Binding DisplayCategories}"
+					ItemTemplate="{StaticResource ModTooltipCategoryPillItemTemplate}">
 					<ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
-					<ItemsControl.ItemTemplate><DataTemplate>
-						<Border Margin="0,0,6,0" Padding="8,3" Background="{Binding SoftColor}" BorderBrush="{Binding Color}" BorderThickness="1" CornerRadius="8">
-							<TextBlock Margin="0" FontSize="11" FontWeight="SemiBold" Text="{Binding Name}" />
-						</Border>
-					</DataTemplate></ItemsControl.ItemTemplate>
 				</ItemsControl>
-				<Border Margin="0,0,6,0" Padding="8,3" BorderThickness="1" CornerRadius="8">
+				<Border MinHeight="21" Margin="0,0,6,0" Padding="8,2" BorderThickness="1.5" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
 					<Border.Style><Style TargetType="Border">
 						<Setter Property="Background" Value="{DynamicResource ReduxSuccessSoftBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
 						<Style.Triggers>
@@ -1239,7 +1517,7 @@
 							</MultiDataTrigger>
 						</Style.Triggers>
 					</Style></Border.Style>
-					<TextBlock Margin="0" FontSize="11" FontWeight="SemiBold">
+					<TextBlock Margin="0" FontSize="11" FontWeight="Medium">
 						<TextBlock.Style><Style TargetType="TextBlock">
 							<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" /><Setter Property="Text" Value="Active" />
 							<Style.Triggers>
@@ -1259,20 +1537,7 @@
 						</Style></TextBlock.Style>
 					</TextBlock>
 				</Border>
-				<Border Margin="0,0,6,0" Padding="8,3" BorderThickness="1" CornerRadius="8">
-					<Border.Style><Style TargetType="Border">
-						<Setter Property="Background" Value="{StaticResource Redux.Pill.Local.Background}" />
-						<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Local.Border}" />
-						<Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Local.Border}" />
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}">
-								<Setter Property="Background" Value="{StaticResource Redux.Pill.Nexus.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Nexus.Border}" /><Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Nexus.Border}" />
-							</DataTrigger>
-							<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}">
-								<Setter Property="Background" Value="{StaticResource Redux.Pill.Modio.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Modio.Border}" /><Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Modio.Border}" />
-							</DataTrigger>
-						</Style.Triggers>
-					</Style></Border.Style>
+				<Border Margin="0,0,6,0" Style="{StaticResource ReduxSourcePillStyle}">
 					<StackPanel Orientation="Horizontal">
 						<Grid Width="14" Height="14" Margin="0,0,5,0" Visibility="{Binding Metadata.OnlineSourceVisibility}">
 							<Image RenderOptions.BitmapScalingMode="HighQuality"
@@ -1288,13 +1553,15 @@
 								</Style></Image.Style>
 							</Image>
 						</Grid>
-						<TextBlock Margin="0" VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold" Text="{Binding DisplaySource}" />
+						<TextBlock Margin="0" VerticalAlignment="Center" FontSize="11" FontWeight="Medium"
+							Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
+							Text="{Binding DisplaySource}" />
 					</StackPanel>
 				</Border>
 			</WrapPanel>
 
 			<Separator Margin="4,0" Background="{DynamicResource ReduxBorderBrush}" />
-			<TextBlock Margin="4,8,4,4" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource ReduxAccentHoverBrush}" Text="LOCAL PACKAGE" />
+			<TextBlock Margin="4,8,4,5" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource ReduxAccentHoverBrush}" Text="Local package" />
 			<Grid Margin="6,0,6,6">
 				<Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
@@ -1325,8 +1592,8 @@
 
 			<StackPanel Visibility="{Binding Metadata.OnlineSourceVisibility}">
 				<Separator Margin="4,0" Background="{DynamicResource ReduxBorderBrush}" />
-				<TextBlock Margin="4,8,4,4" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource ReduxAccentHoverBrush}"
-					Text="{Binding Metadata.SourceLabel, StringFormat='SOURCE ({0})'}" />
+				<TextBlock Margin="4,8,4,5" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource ReduxAccentHoverBrush}"
+					Text="{Binding Metadata.SourceLabel, StringFormat='Source · {0}'}" />
 				<Grid Margin="6,0,6,6">
 					<Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 					<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
@@ -1336,19 +1603,41 @@
 					<TextBlock Grid.Row="3" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Linked packages" /><TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SourceComponentCount}" />
 				</Grid>
 			</StackPanel>
-			<StackPanel Margin="2" Orientation="Vertical" Visibility="{Binding DependencyVisibility, FallbackValue=Collapsed}">
-				<TextBlock FontWeight="Bold" Text="Dependencies:" />
-				<ListBox Grid.IsSharedSizeScope="True"
-				    ItemTemplate="{StaticResource DependencyModTemplate}"
-				    ItemsSource="{Binding DisplayedDependencies}"
-				    Style="{StaticResource ModuleShortDescListBox}" />
+			<StackPanel Margin="2,5,2,2" Orientation="Vertical" Visibility="{Binding DependencyVisibility, FallbackValue=Collapsed}">
+				<TextBlock Margin="2,0,2,5" FontWeight="SemiBold" Text="Dependencies" />
+				<Border Background="{DynamicResource ReduxListInteriorBrush}"
+					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}" ClipToBounds="True">
+					<ListBox Grid.IsSharedSizeScope="True"
+						ItemTemplate="{StaticResource DependencyModTemplate}"
+						ItemsSource="{Binding DisplayedDependencies}">
+						<ListBox.Style>
+							<Style BasedOn="{StaticResource ModuleShortDescListBox}" TargetType="ListBox">
+								<Setter Property="Background" Value="Transparent" />
+								<Setter Property="BorderThickness" Value="0" />
+								<Setter Property="Margin" Value="0" />
+							</Style>
+						</ListBox.Style>
+					</ListBox>
+				</Border>
 			</StackPanel>
-			<StackPanel Margin="2" Orientation="Vertical" Visibility="{Binding ConflictsVisibility, FallbackValue=Collapsed}">
-				<TextBlock FontWeight="Bold" Text="Conflicts:" />
-				<ListBox Grid.IsSharedSizeScope="True"
-				    ItemTemplate="{StaticResource ConflictModTemplate}"
-				    ItemsSource="{Binding DisplayedConflicts}"
-				    Style="{StaticResource ModuleShortDescListBox}" />
+			<StackPanel Margin="2,5,2,2" Orientation="Vertical" Visibility="{Binding ConflictsVisibility, FallbackValue=Collapsed}">
+				<TextBlock Margin="2,0,2,5" FontWeight="SemiBold" Text="Conflicts" />
+				<Border Background="{DynamicResource ReduxListInteriorBrush}"
+					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}" ClipToBounds="True">
+					<ListBox Grid.IsSharedSizeScope="True"
+						ItemTemplate="{StaticResource ConflictModTemplate}"
+						ItemsSource="{Binding DisplayedConflicts}">
+						<ListBox.Style>
+							<Style BasedOn="{StaticResource ModuleShortDescListBox}" TargetType="ListBox">
+								<Setter Property="Background" Value="Transparent" />
+								<Setter Property="BorderThickness" Value="0" />
+								<Setter Property="Margin" Value="0" />
+							</Style>
+						</ListBox.Style>
+					</ListBox>
+				</Border>
 			</StackPanel>
 			<StackPanel Margin="2" DataContext="{Binding}" Orientation="Vertical">
 				<ItemsControl ItemTemplateSelector="{StaticResource TagTemplateSelector}" ItemsSource="{Binding Tags}">
@@ -1433,7 +1722,7 @@
 				Background="{DynamicResource ReduxSuccessBrush}"
 				BorderBrush="{DynamicResource ReduxSuccessBrush}"
 				BorderThickness="0"
-				CornerRadius="4"
+				CornerRadius="{DynamicResource Redux.CornerRadius.Small}"
 				ToolTip="Newly detected mod"
 				Visibility="{Binding IsNewlyDetected, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
 				<Border.Effect>
@@ -1452,13 +1741,14 @@
 					    Margin="2,0"
 					    HorizontalAlignment="Center"
 					    VerticalAlignment="Center"
+					    IsHitTestVisible="True"
 					    DataContext="{Binding}"
 					>
 						<controls:ReduxIcon.ToolTip>
 							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
 								<Border MaxWidth="390" Padding="12,10"
 									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-									BorderThickness="1" CornerRadius="8">
+									BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 									<Border.Style>
 										<Style TargetType="{x:Type Border}">
 											<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
@@ -1493,7 +1783,7 @@
 							</ToolTip>
 						</controls:ReduxIcon.ToolTip>
 						<controls:ReduxIcon.Style>
-							<Style TargetType="{x:Type controls:ReduxIcon}">
+							<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
 								<Setter Property="Visibility" Value="Collapsed" />
 								<Style.Triggers>
 									<DataTrigger Binding="{Binding Path=OsirisModStatus}" Value="{x:Static dapp:DivinityOsirisModStatus.NONE}">
@@ -1524,6 +1814,7 @@
 					    VerticalAlignment="Center"
 					    Data="{StaticResource Redux.Icon.Danger}"
 					    Foreground="{DynamicResource ReduxErrorBrush}"
+					    IsHitTestVisible="True"
 					    ToolTip="{Binding MissingDependencyToolTip}"
 					    Visibility="{Binding MissingDependencyIconVisibility, FallbackValue=Collapsed}" />
 					<controls:ReduxIcon Width="16"
@@ -1535,6 +1826,7 @@
 					    VerticalAlignment="Center"
 					    Data="{StaticResource Redux.Icon.Danger}"
 					    Foreground="{DynamicResource ReduxErrorBrush}"
+					    IsHitTestVisible="True"
 					    ToolTip="This mod has an invalid UUID, and will likely fail to load"
 					    Visibility="{Binding HasInvalidUUIDVisibility, FallbackValue=Collapsed}" />
 					<controls:ReduxIcon Width="16"
@@ -1545,6 +1837,7 @@
 					    HorizontalAlignment="Center"
 					    VerticalAlignment="Center"
 					    Data="{StaticResource Redux.Icon.Build}"
+					    IsHitTestVisible="True"
 					    ToolTip="Toolkit Mod Project"
 					    Visibility="{Binding ToolkitIconVisibility, FallbackValue=Collapsed}" />
 					<controls:ReduxIcon Width="16"
@@ -1554,13 +1847,14 @@
 					    Margin="2,0"
 					    HorizontalAlignment="Center"
 					    VerticalAlignment="Center"
+					    IsHitTestVisible="True"
 					    DataContext="{Binding}"
 					    Visibility="{Binding ExtenderStatusVisibility, FallbackValue=Collapsed}">
 						<controls:ReduxIcon.ToolTip>
 							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
 								<Border MaxWidth="390" Padding="12,10"
 									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-									BorderThickness="1" CornerRadius="8">
+									BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 									<Border.Style>
 										<Style TargetType="{x:Type Border}">
 											<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
@@ -1602,7 +1896,7 @@
 							</ToolTip>
 						</controls:ReduxIcon.ToolTip>
 						<controls:ReduxIcon.Style>
-							<Style TargetType="{x:Type controls:ReduxIcon}">
+							<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
 								<Setter Property="Data" Value="{StaticResource Redux.Icon.ExtensionPuzzle}" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
 								<Style.Triggers>
@@ -1693,15 +1987,8 @@
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-			<Border Grid.Column="0" MinHeight="21" Padding="8,2" HorizontalAlignment="Left" VerticalAlignment="Center" BorderThickness="1.5" CornerRadius="10"
+			<Border Grid.Column="0" Style="{StaticResource ReduxSourcePillStyle}"
 				ToolTip="{Binding DisplaySource, StringFormat='Metadata source: {0}'}">
-				<Border.Style><Style TargetType="Border">
-					<Setter Property="Background" Value="{StaticResource Redux.Pill.Local.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Local.Border}" /><Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Local.Border}" />
-					<Style.Triggers>
-						<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}"><Setter Property="Background" Value="{StaticResource Redux.Pill.Nexus.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Nexus.Border}" /><Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Nexus.Border}" /></DataTrigger>
-						<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}"><Setter Property="Background" Value="{StaticResource Redux.Pill.Modio.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Modio.Border}" /><Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Modio.Border}" /></DataTrigger>
-					</Style.Triggers>
-				</Style></Border.Style>
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto" />
@@ -1709,6 +1996,7 @@
 					</Grid.ColumnDefinitions>
 					<ContentControl Margin="0,0,5,0" Content="{Binding}" ContentTemplate="{StaticResource PlatformIconPresenterTemplate}" Visibility="{Binding Metadata.OnlineSourceVisibility}" />
 					<TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="11" FontWeight="Medium"
+						Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
 						Text="{Binding DisplaySource}" TextTrimming="CharacterEllipsis" />
 				</Grid>
 			</Border>
@@ -1721,7 +2009,7 @@
 							Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 							BorderBrush="{DynamicResource ReduxWarningBrush}"
 							BorderThickness="1"
-							CornerRadius="8">
+							CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 							<StackPanel>
 								<TextBlock FontFamily="{DynamicResource Redux.FontFamily.UI}"
 									FontSize="13"
@@ -1757,31 +2045,37 @@
 					</Style>
 				</Viewbox.Style>
 				<controls:ReduxIcon Width="16" Height="16"
-					Data="{StaticResource Redux.Icon.Warning}"
-					Foreground="{DynamicResource ReduxWarningBrush}" />
+					Data="{StaticResource Redux.Icon.Danger}"
+					Foreground="{DynamicResource ReduxWarningBrush}"
+					IsHitTestVisible="True" />
 			</Viewbox>
 		</Grid>
 	</DataTemplate>
-	<Style x:Key="ReduxCategoryPillStyle" TargetType="{x:Type Border}">
-		<Setter Property="MinHeight" Value="21" />
+	<Style x:Key="ReduxCategoryPillStyle" BasedOn="{StaticResource ReduxCategoryPillBaseStyle}" TargetType="{x:Type Border}">
 		<Setter Property="Margin" Value="0,0,5,0" />
-		<Setter Property="Padding" Value="8,2" />
-		<Setter Property="HorizontalAlignment" Value="Left" />
-		<Setter Property="VerticalAlignment" Value="Center" />
-		<Setter Property="Background" Value="{Binding SoftColor}" />
-		<Setter Property="BorderBrush" Value="{Binding Color}" />
-		<Setter Property="BorderThickness" Value="1.5" />
-		<Setter Property="CornerRadius" Value="10" />
-		<Style.Triggers>
-			<DataTrigger Binding="{Binding Name}" Value="Uncategorized">
-				<Setter Property="Visibility" Value="Collapsed" />
-			</DataTrigger>
-		</Style.Triggers>
 	</Style>
 	<DataTemplate x:Key="ModCategoryPillItemTemplate">
 		<Border MaxWidth="170" Style="{StaticResource ReduxCategoryPillStyle}">
-			<TextBlock FontSize="11" FontWeight="Medium" Foreground="{Binding Color}"
-				Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+			<StackPanel Orientation="Horizontal">
+				<controls:ReduxIcon Width="12" Height="12" Margin="0,0,5,0" IconKey="{Binding IconId}" Foreground="{Binding Color}">
+					<controls:ReduxIcon.Style>
+						<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
+							<Setter Property="Visibility" Value="Collapsed" />
+							<Style.Triggers>
+								<MultiDataTrigger>
+									<MultiDataTrigger.Conditions>
+										<Condition Binding="{Binding HasIcon}" Value="True" />
+										<Condition Binding="{Binding DataContext.Settings.ShowCategoryIconsInPills, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" Value="True" />
+									</MultiDataTrigger.Conditions>
+									<Setter Property="Visibility" Value="Visible" />
+								</MultiDataTrigger>
+							</Style.Triggers>
+						</Style>
+					</controls:ReduxIcon.Style>
+				</controls:ReduxIcon>
+				<TextBlock FontSize="11" FontWeight="Medium" Foreground="{Binding Color}"
+					Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+			</StackPanel>
 		</Border>
 	</DataTemplate>
 	<DataTemplate x:Key="ModCategoryTemplate" DataType="{x:Type data:DivinityModData}">
@@ -1980,8 +2274,8 @@
 										<Border Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 										    BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
 										    BorderThickness="1"
-										    CornerRadius="8">
-											<Border Margin="1" Background="{DynamicResource ReduxSurfaceBrush}" CornerRadius="7">
+										    CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+											<Border Margin="1" Background="{DynamicResource ReduxSurfaceBrush}" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 												<Grid x:Name="_grid" MinWidth="150">
 													<Grid.RowDefinitions>
 														<RowDefinition />

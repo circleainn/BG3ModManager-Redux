@@ -14,6 +14,8 @@ public sealed class ModCategoryFilterItem : ReactiveObject
 	public string DisplayCategory => Name;
 	public int Count { get; }
 	public string Color { get; }
+	public string IconId { get; }
+	public bool HasIcon => !String.IsNullOrWhiteSpace(IconId);
 	public string SoftColor => String.IsNullOrWhiteSpace(Color) ? "#243A3346" : $"#33{Color.TrimStart('#')}";
 	public bool HasNewMods
 	{
@@ -21,11 +23,12 @@ public sealed class ModCategoryFilterItem : ReactiveObject
 		set => this.RaiseAndSetIfChanged(ref _hasNewMods, value);
 	}
 
-	public ModCategoryFilterItem(string name, int count, string color, bool hasNewMods = false)
+	public ModCategoryFilterItem(string name, int count, string color, string iconId = "", bool hasNewMods = false)
 	{
 		Name = name;
 		Count = count;
 		Color = color;
+		IconId = iconId ?? String.Empty;
 		_hasNewMods = hasNewMods;
 	}
 }

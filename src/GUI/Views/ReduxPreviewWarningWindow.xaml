@@ -22,7 +22,7 @@
 				<StackPanel Grid.Column="1"><TextBlock FontSize="20" FontWeight="{DynamicResource Redux.FontWeight.Title}" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Redux is an early preview" />
 					<TextBlock Margin="0,5,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="This build is still a work in progress intended for careful personal use and private testing." TextWrapping="Wrap" /></StackPanel>
 			</Grid>
-			<Border Grid.Row="1" Margin="0,18,0,14" Padding="14,12" Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxAccentBrush}" BorderThickness="1" CornerRadius="8">
+			<Border Grid.Row="1" Margin="0,18,0,14" Padding="14,12" Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxAccentBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 				<StackPanel>
 					<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Features, metadata matching, themes, and interface details may be incomplete or change between builds. Keep backups of important profiles and mod files, and verify your exported load order before launching the game." TextWrapping="Wrap" />
 					<TextBlock Margin="0,9,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="If something behaves unexpectedly, stop and report what happened before repeating a destructive action." TextWrapping="Wrap" />
@@ -31,7 +31,7 @@
 					</CheckBox>
 				</StackPanel>
 			</Border>
-			<Button Grid.Row="2" Width="116" Height="34" HorizontalAlignment="Right" Click="ContinueButton_Click" Content="Continue" IsDefault="True" IsEnabled="{Binding IsChecked, ElementName=AcknowledgementCheckBox}" Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" />
+			<Button Grid.Row="2" MinWidth="116" MinHeight="34" HorizontalAlignment="Right" Click="ContinueButton_Click" Content="Continue" IsDefault="True" IsEnabled="{Binding IsChecked, ElementName=AcknowledgementCheckBox}" Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" />
 		</Grid>
 	</Border>
 </adonisUI:AdonisWindow>

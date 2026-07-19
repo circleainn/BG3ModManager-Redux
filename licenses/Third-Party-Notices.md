@@ -37,6 +37,14 @@ under the MIT License. A copy is included in the distribution at `licenses/Ionic
 
 - Project: https://github.com/ionic-team/ionicons
 
+## Tabler Icons
+
+Redux includes selected vector icon geometry adapted from Tabler Icons, copyright Paweł Kuna,
+under the MIT License. A copy is included in the distribution at
+`licenses/Tabler-Icons-MIT.txt`.
+
+- Project: https://github.com/tabler/tabler-icons
+
 ## Other dependencies
 
 Redux also includes or depends on projects such as LSLib, BG3 Script Extender, CrossSpeak,

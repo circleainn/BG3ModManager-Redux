@@ -7,6 +7,7 @@ using DynamicData;
 using DynamicData.Binding;
 
 using System.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Windows;
@@ -119,6 +120,11 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("Theme", "Choose the Redux color palette. Themes change colors only; layout, typography, icons, and behavior remain shared.", HideFromUI = true)]
 	[DataMember, Reactive] public ReduxThemeType ColorTheme { get; set; } = ReduxThemeType.ReduxDark;
 
+	[DefaultValue("")]
+	[DataMember, Reactive] public string ActiveCustomThemeId { get; set; } = String.Empty;
+
+	[DataMember] public ObservableCollection<ReduxCustomTheme> CustomThemes { get; set; } = new();
+
 	[DefaultValue(false)]
 	[SettingsEntry("Match category hover colors", "Use a mod's primary category color when hovering its row. Disable this to use the standard Redux accent.", HideFromUI = true)]
 	[DataMember, Reactive] public bool UseCategoryColorsForHover { get; set; }
@@ -163,11 +169,16 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public Dictionary<string, string> ModCategoryOverrides { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	[DataMember, Reactive] public Dictionary<string, List<string>> ModCategoryAssignments { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	[DataMember, Reactive] public Dictionary<string, string> ModCategoryColors { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+	// Optional Redux presentation icon per category. Empty values explicitly retain the dot fallback.
+	[DataMember, Reactive] public Dictionary<string, string> ModCategoryIcons { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	[DataMember, Reactive] public List<string> SavedCategoryColors { get; set; } = new();
 	[DataMember, Reactive] public List<string> DisabledModCategories { get; set; } = new();
 
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool SaveModCategoryFilterBetweenSessions { get; set; }
+
+	[DefaultValue(false)]
+	[DataMember, Reactive] public bool ShowCategoryIconsInPills { get; set; } = true;
 
 	[DefaultValue("All Mods")]
 	[DataMember, Reactive] public string SavedModCategoryFilter { get; set; } = "All Mods";
@@ -284,6 +295,16 @@ public class DivinityModManagerSettings : ReactiveObject
 			ColorTheme = DarkThemeEnabled ? ReduxThemeType.ReduxDark : ReduxThemeType.ReduxLight;
 		}
 		DarkThemeEnabled = ColorTheme == ReduxThemeType.ReduxDark;
+		CustomThemes ??= new ObservableCollection<ReduxCustomTheme>();
+		foreach (var theme in CustomThemes)
+		{
+			theme.Id = String.IsNullOrWhiteSpace(theme.Id) ? Guid.NewGuid().ToString("N") : theme.Id;
+			theme.Name = String.IsNullOrWhiteSpace(theme.Name) ? "Imported Theme" : theme.Name.Trim();
+		}
+		if (!CustomThemes.Any(theme => theme.Id.Equals(ActiveCustomThemeId, StringComparison.OrdinalIgnoreCase)))
+		{
+			ActiveCustomThemeId = String.Empty;
+		}
 		CustomModCategories ??= new List<string>();
 		ModCategoryDisplayOrder ??= new List<string>();
 		ModCategoryOverrides = ModCategoryOverrides != null
@@ -294,6 +315,9 @@ public class DivinityModManagerSettings : ReactiveObject
 			: new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 		ModCategoryColors = ModCategoryColors != null
 			? new Dictionary<string, string>(ModCategoryColors, StringComparer.OrdinalIgnoreCase)
+			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		ModCategoryIcons = ModCategoryIcons != null
+			? new Dictionary<string, string>(ModCategoryIcons, StringComparer.OrdinalIgnoreCase)
 			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 		SavedCategoryColors ??= new List<string>();
 		DisabledModCategories ??= new List<string>();

@@ -1,4 +1,5 @@
 using AdonisUI.Controls;
+using DivinityModManager.Controls;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -17,11 +18,21 @@ public partial class CategoryNameDialog : AdonisWindow
 	private readonly bool _allowEmptyName;
 	private readonly List<string> _savedColors;
 	public IReadOnlyList<string> SavedColors => _savedColors;
+	public bool ResetToDefaultRequested { get; private set; }
 	public string CategoryName => CategoryNameTextBox.Text?.Trim();
 	public string CategoryColor => CategoryColorPicker.SelectedColor is Color color
 		? $"#{color.R:X2}{color.G:X2}{color.B:X2}" : "#8A6AF1";
+	public string CategoryIconId => ReduxIconCatalog.Normalize(CategoryIconComboBox?.SelectedValue as string);
 
-	public CategoryNameDialog(string categoryName = "", string color = "#8A6AF1", bool canEditName = true, IEnumerable<string> savedColors = null, bool visualDividerMode = false)
+	public void ConfigureColorOnlyCopy(string heading, string helperText, string fieldLabel)
+	{
+		DialogHeading.Text = heading;
+		DialogHelperText.Text = helperText;
+		ColorFieldLabel.Text = fieldLabel;
+		IconChooserPanel.Visibility = Visibility.Collapsed;
+	}
+
+	public CategoryNameDialog(string categoryName = "", string color = "#8A6AF1", bool canEditName = true, IEnumerable<string> savedColors = null, bool visualDividerMode = false, string iconId = "", bool canResetToDefault = false)
 	{
 		InitializeComponent();
 		_allowEmptyName = visualDividerMode;
@@ -30,18 +41,25 @@ public partial class CategoryNameDialog : AdonisWindow
 			.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 		CategoryNameTextBox.Text = categoryName;
 		CategoryNameTextBox.IsEnabled = canEditName;
+		CategoryIconComboBox.SelectedValue = ReduxIconCatalog.Normalize(iconId);
 		if (ColorConverter.ConvertFromString(color) is Color selectedColor) CategoryColorPicker.SelectedColor = selectedColor;
-		Title = visualDividerMode ? (String.IsNullOrEmpty(categoryName) ? "Add Separator" : "Edit Separator") : canEditName ? "Add Mod Category" : "Change Category Color";
-		DialogHeading.Text = visualDividerMode ? "Style a separator" : canEditName ? "Create a custom mod category" : $"Change {categoryName} color";
+		Title = visualDividerMode ? (String.IsNullOrEmpty(categoryName) ? "Add Separator" : "Edit Separator") : canEditName ? "Add Mod Category" : "Edit Category";
+		DialogHeading.Text = visualDividerMode ? "Style a separator" : canEditName ? "Create a custom mod category" : $"Edit {categoryName}";
 		DialogHelperText.Text = visualDividerMode
-			? "Choose a color and an optional label. Leave the name empty for a line-only separator."
+			? "Choose a color, optional icon, and optional label. Leave the name empty for a line-only separator."
 			: canEditName
-			? "Choose a unique name and color. Category changes are saved between sessions."
-			: "Choose a color for this category. The change updates every category badge.";
+			? "Choose a unique name, color, and optional icon. No icon uses the original colored dot."
+			: canResetToDefault
+			? "Redux category names stay fixed. Customize its color and icon, or restore the Redux defaults."
+			: "Choose a color and optional icon. No icon uses the original colored dot.";
 		ConfirmButton.Content = visualDividerMode ? "Save" : canEditName ? "Add" : "Save";
+		ResetToDefaultButton.Visibility = canResetToDefault ? Visibility.Visible : Visibility.Collapsed;
+		if (canResetToDefault)
+			CategoryNameTextBox.ToolTip = "Redux category names are fixed. Create a custom category for a different name.";
 		if (visualDividerMode)
 		{
 			ColorFieldLabel.Text = "Separator color";
+			IconFieldLabel.Text = "ICON";
 			CategoryNameTextBox.ToolTip = "Optional separator label";
 		}
 		UpdateColorPresentation();
@@ -101,6 +119,7 @@ public partial class CategoryNameDialog : AdonisWindow
 		var hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
 		HexColorTextBox.Text = hex;
 		SelectedColorPreview.Background = new SolidColorBrush(color);
+		Resources["Redux.CategoryEditor.IconBrush"] = new SolidColorBrush(color);
 		_updatingColorControls = true;
 		RedSlider.Value = color.R;
 		GreenSlider.Value = color.G;
@@ -200,5 +219,11 @@ public partial class CategoryNameDialog : AdonisWindow
 		{
 			DialogResult = true;
 		}
+	}
+
+	private void ResetToDefault_Click(object sender, RoutedEventArgs e)
+	{
+		ResetToDefaultRequested = true;
+		DialogResult = true;
 	}
 }

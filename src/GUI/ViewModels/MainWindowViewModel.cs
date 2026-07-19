@@ -2,6 +2,7 @@
 using AutoUpdaterDotNET;
 
 using DivinityModManager.AppServices;
+using DivinityModManager.Controls;
 using DivinityModManager.Extensions;
 using DivinityModManager.Models;
 using DivinityModManager.Models.App;
@@ -207,7 +208,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	[Reactive] public string InactiveModFilterText { get; set; }
 
 	public const string AllModsCategory = "All Mods";
-	public const string UncategorizedModsCategory = "Uncategorized";
+	public const string UncategorizedModsCategory = "No Category";
 	public const string NoCategoryAssignment = "__ReduxNoCategory__";
 	public ObservableCollectionExtended<ModCategoryFilterItem> ModCategoryFilters { get; } = new();
 	[Reactive] public string SelectedModCategory { get; set; } = AllModsCategory;
@@ -244,17 +245,37 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		("Miscellaneous", ["miscellaneous", "misc", "other"]),
 		("Overrides", ["override", "always loaded", "file override"])
 	];
+	// Presentation order is intentionally separate from rule priority so sidebar refinement
+	// cannot change automatic category classification behavior.
+	private static readonly string[] ReduxDefaultCategoryDisplayOrder =
+	[
+		"User Interface", "Gameplay", "Classes", "Races", "Spells", "Companions", "Quests",
+		"Character Customization", "Clothing", "Armor", "Weapons", "Accessories", "Equipment",
+		"Cosmetics", "Dice", "Maps", "Photo Mode", "Visuals", "Animations", "Audio", "Overhauls",
+		"Patches", "Libraries", "Resources", "Utilities", "Miscellaneous", "Overrides"
+	];
 	private static readonly Dictionary<string, string> ReduxCategoryDefaultColors = new(StringComparer.OrdinalIgnoreCase)
 	{
-		[AllModsCategory] = "#8A6AF1", [UncategorizedModsCategory] = "#8F879E",
-		["User Interface"] = "#8A6AF1", ["Classes"] = "#3B82F6", ["Spells"] = "#7768D8", ["Cosmetics"] = "#D45A9E",
-		["Accessories"] = "#C76FA9", ["Animations"] = "#7C79D8", ["Armor"] = "#6B86B8", ["Audio"] = "#A66FC2",
-		["Character Customization"] = "#C65BA3", ["Clothing"] = "#C76B87", ["Dice"] = "#B06FD3", ["Equipment"] = "#A87955",
-		["Maps"] = "#4F9B82", ["Miscellaneous"] = "#7F8898", ["Photo Mode"] = "#6E91C7", ["Quests"] = "#C48255",
-		["Races"] = "#8E70C1", ["Resources"] = "#4D9C91", ["Visuals"] = "#5E8FC4", ["Weapons"] = "#B36A61",
-		["Libraries"] = "#3FA37A", ["Patches"] = "#71B96B", ["Overhauls"] = "#D66B55",
-		["Companions"] = "#C9963E", ["Utilities"] = "#22B8C5", ["Gameplay"] = "#D7A24B",
-		["Overrides"] = "#C65362"
+		[AllModsCategory] = "#8A6FE8", [UncategorizedModsCategory] = "#828A98",
+		["User Interface"] = "#2FAFC0", ["Classes"] = "#4B7FD8", ["Spells"] = "#936FE5", ["Cosmetics"] = "#DC609B",
+		["Accessories"] = "#C38A3F", ["Animations"] = "#7087D8", ["Armor"] = "#627F9F", ["Audio"] = "#A767C3",
+		["Character Customization"] = "#D764AA", ["Clothing"] = "#C96B7F", ["Dice"] = "#AE68CC", ["Equipment"] = "#A77C55",
+		["Maps"] = "#3C9A79", ["Miscellaneous"] = "#798392", ["Photo Mode"] = "#4D9ED0", ["Quests"] = "#C47A43",
+		["Races"] = "#7769C5", ["Resources"] = "#399B8E", ["Visuals"] = "#4C89BE", ["Weapons"] = "#C45F55",
+		["Libraries"] = "#3E9668", ["Patches"] = "#72A956", ["Overhauls"] = "#D66843",
+		["Companions"] = "#C59632", ["Utilities"] = "#22A99D", ["Gameplay"] = "#D5A13A",
+		["Overrides"] = "#D55061"
+	};
+	private static readonly Dictionary<string, string> ReduxCategoryDefaultIcons = new(StringComparer.OrdinalIgnoreCase)
+	{
+		[AllModsCategory] = "albums",
+		["User Interface"] = "eye", ["Classes"] = "school", ["Spells"] = "sparkles", ["Cosmetics"] = "rose",
+		["Accessories"] = "diamond", ["Animations"] = "film", ["Armor"] = "shield-half", ["Audio"] = "audio",
+		["Character Customization"] = "body", ["Clothing"] = "shirt", ["Companions"] = "people", ["Dice"] = "dice",
+		["Equipment"] = "cube", ["Maps"] = "map", ["Photo Mode"] = "camera", ["Quests"] = "document",
+		["Races"] = "person", ["Resources"] = "flask", ["Visuals"] = "sunny", ["Weapons"] = "sword",
+		["Libraries"] = "puzzle", ["Patches"] = "settings", ["Overhauls"] = "planet", ["Utilities"] = "construct",
+		["Gameplay"] = "gameplay", ["Miscellaneous"] = "tag", ["Overrides"] = "warning"
 	};
 	private static readonly string[] ReduxCustomCategoryPalette =
 	[
@@ -1077,8 +1098,9 @@ Directory the zip will be extracted to:
 
 		Settings.WhenAnyValue(x => x.LogEnabled).Subscribe(Window.ToggleLogging);
 
-		Settings.WhenAnyValue(x => x.ColorTheme).ObserveOn(RxApp.MainThreadScheduler).Subscribe((theme) =>
+		Settings.WhenAnyValue(x => x.ColorTheme, x => x.ActiveCustomThemeId).ObserveOn(RxApp.MainThreadScheduler).Subscribe((selection) =>
 		{
+			var theme = selection.Item1;
 			// Retain the original boolean for compatibility with older BG3MM/Redux settings.
 			Settings.DarkThemeEnabled = theme == ReduxThemeType.ReduxDark;
 			View.UpdateColorTheme(theme);
@@ -5015,6 +5037,16 @@ Directory the zip will be extracted to:
 		return ReduxCategoryDefaultColors.TryGetValue(category, out var defaultColor) ? defaultColor : "#8F879E";
 	}
 
+	private string GetCategoryIcon(string category)
+	{
+		if (String.IsNullOrWhiteSpace(category)) return String.Empty;
+		if (Settings.ModCategoryIcons?.TryGetValue(category, out var selectedIcon) == true)
+			return ReduxIconCatalog.Normalize(selectedIcon);
+		return ReduxCategoryDefaultIcons.TryGetValue(category, out var defaultIcon)
+			? ReduxIconCatalog.Normalize(defaultIcon)
+			: String.Empty;
+	}
+
 	private string GetNextCustomCategoryColor()
 	{
 		var used = GetAllModCategories().Select(GetCategoryColor).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -5035,8 +5067,9 @@ Directory the zip will be extracted to:
 
 	private IReadOnlyList<string> GetSidebarCategoryOrder()
 	{
-		var ordered = ApplySavedCategoryOrder(ReduxCategoryRules
-			.Select(category => category.Name)
+		var ordered = ApplySavedCategoryOrder(ReduxDefaultCategoryDisplayOrder
+			.Concat(ReduxCategoryRules.Select(category => category.Name))
+			.Distinct(StringComparer.OrdinalIgnoreCase)
 			.Concat(Settings.CustomModCategories ?? Enumerable.Empty<string>())
 			.Where(category => !category.Equals(UncategorizedModsCategory, StringComparison.OrdinalIgnoreCase)))
 			.ToList();
@@ -5079,25 +5112,26 @@ Directory the zip will be extracted to:
 		? Settings.VisualModListDividers?.FirstOrDefault(entry => entry.Id.Equals(item.VisualDividerId, StringComparison.OrdinalIgnoreCase))
 		: null;
 
-	public void AddVisualDivider(bool activeList, int position, string title, string color)
+	public void AddVisualDivider(bool activeList, int position, string title, string color, string iconId)
 	{
 		Settings.VisualModListDividers ??= new List<ModListVisualDividerData>();
 		foreach (var existing in Settings.VisualModListDividers.Where(item => item.IsActiveList == activeList && item.Position >= position))
 			existing.Position++;
 		Settings.VisualModListDividers.Add(new ModListVisualDividerData
 		{
-			Title = title?.Trim() ?? "", Color = color, IsActiveList = activeList, Position = Math.Max(0, position)
+			Title = title?.Trim() ?? "", Color = color, IconId = ReduxIconCatalog.Normalize(iconId), IsActiveList = activeList, Position = Math.Max(0, position)
 		});
 		RefreshVisualDividers();
 		SaveSettings();
 	}
 
-	public void UpdateVisualDivider(DivinityModData item, string title, string color)
+	public void UpdateVisualDivider(DivinityModData item, string title, string color, string iconId)
 	{
 		var divider = GetVisualDivider(item);
 		if (divider == null) return;
 		divider.Title = title?.Trim() ?? "";
 		divider.Color = color;
+		divider.IconId = ReduxIconCatalog.Normalize(iconId);
 		RefreshVisualDividers();
 		SaveSettings();
 	}
@@ -5177,6 +5211,7 @@ Directory the zip will be extracted to:
 		VisualDividerId = divider.Id,
 		VisualDividerTitle = divider.Title,
 		VisualDividerColor = divider.Color,
+		VisualDividerIconId = ReduxIconCatalog.Normalize(divider.IconId),
 		IsVisualDividerCollapsed = divider.IsCollapsed,
 		IsVisualDivider = true,
 		ShowVisualDivider = true,
@@ -5248,6 +5283,7 @@ Directory the zip will be extracted to:
 		Settings.CustomModCategories.Remove(existing);
 		Settings.ModCategoryDisplayOrder?.RemoveAll(item => item.Equals(existing, StringComparison.OrdinalIgnoreCase));
 		Settings.ModCategoryColors.Remove(existing);
+		Settings.ModCategoryIcons.Remove(existing);
 		Settings.DisabledModCategories.RemoveAll(item => item.Equals(existing, StringComparison.OrdinalIgnoreCase));
 		Settings.UnseenCategoryModIds.Remove(existing);
 		foreach (var assignment in Settings.ModCategoryAssignments.Values)
@@ -5308,7 +5344,7 @@ Directory the zip will be extracted to:
 			? Settings.UnseenCategoryModIds.Values.Any(ids => ids.Count > 0)
 			: Settings.UnseenCategoryModIds.TryGetValue(category, out var ids) && ids.Count > 0);
 
-	public bool TryAddCustomModCategory(string categoryName, string color, out string error)
+	public bool TryAddCustomModCategory(string categoryName, string color, string iconId, out string error)
 	{
 		categoryName = categoryName?.Trim();
 		error = String.Empty;
@@ -5330,6 +5366,7 @@ Directory the zip will be extracted to:
 			.OrderBy(category => category, StringComparer.CurrentCultureIgnoreCase)
 			.ToList();
 		Settings.ModCategoryColors[categoryName] = color;
+		Settings.ModCategoryIcons[categoryName] = ReduxIconCatalog.Normalize(iconId);
 		SaveSettings();
 		ScheduleRefreshModCategories();
 		return true;
@@ -5337,7 +5374,7 @@ Directory the zip will be extracted to:
 
 	public string GetSuggestedCustomCategoryColor() => GetNextCustomCategoryColor();
 
-	public bool TrySetCategoryColor(string category, string color, out string error)
+	public bool TrySetCategoryStyle(string category, string color, string iconId, out string error)
 	{
 		error = String.Empty;
 		if (String.IsNullOrWhiteSpace(category) || !Regex.IsMatch(color ?? String.Empty, "^#[0-9A-Fa-f]{6}$"))
@@ -5346,12 +5383,27 @@ Directory the zip will be extracted to:
 			return false;
 		}
 		Settings.ModCategoryColors[category] = color.ToUpperInvariant();
+		// An explicit empty value overrides built-in defaults with the original dot.
+		Settings.ModCategoryIcons[category] = ReduxIconCatalog.Normalize(iconId);
 		SaveSettings();
 		RefreshModCategories();
 		return true;
 	}
 
 	public string GetCurrentCategoryColor(string category) => GetCategoryColor(category);
+	public string GetCurrentCategoryIcon(string category) => GetCategoryIcon(category);
+	public bool CanResetCategoryStyle(string category) =>
+		!String.IsNullOrWhiteSpace(category) &&
+		(ReduxCategoryDefaultColors.ContainsKey(category) || ReduxCategoryDefaultIcons.ContainsKey(category));
+
+	public void ResetCategoryStyle(string category)
+	{
+		if (!CanResetCategoryStyle(category)) return;
+		Settings.ModCategoryColors.Remove(category);
+		Settings.ModCategoryIcons.Remove(category);
+		SaveSettings();
+		RefreshModCategories();
+	}
 
 	public void ToggleModCategoryAssignment(DivinityModData mod, string category)
 	{
@@ -5437,7 +5489,7 @@ Directory the zip will be extracted to:
 		{
 			var categories = GetEffectiveModCategories(mod);
 			mod.DisplayCategory = categories.FirstOrDefault() ?? UncategorizedModsCategory;
-			mod.DisplayCategories = categories.Select(category => new ModCategoryDisplayData(category, GetCategoryColor(category))).ToList();
+			mod.DisplayCategories = categories.Select(category => new ModCategoryDisplayData(category, GetCategoryColor(category), GetCategoryIcon(category))).ToList();
 		}
 		var currentModIds = allMods.Select(mod => mod.UUID).Where(id => !String.IsNullOrWhiteSpace(id))
 			.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
@@ -5497,7 +5549,7 @@ Directory the zip will be extracted to:
 		ModCategoryFilters.Clear();
 		var uncategorizedCount = allMods.Count(mod => mod.DisplayCategories.Count == 0 ||
 			mod.DisplayCategories.Any(item => item.Name.Equals(UncategorizedModsCategory, StringComparison.OrdinalIgnoreCase)));
-		ModCategoryFilters.Add(new ModCategoryFilterItem(AllModsCategory, allMods.Count, GetCategoryColor(AllModsCategory), CategoryHasNewMods(AllModsCategory)));
+		ModCategoryFilters.Add(new ModCategoryFilterItem(AllModsCategory, allMods.Count, GetCategoryColor(AllModsCategory), GetCategoryIcon(AllModsCategory), CategoryHasNewMods(AllModsCategory)));
 		foreach (var category in GetSidebarCategoryOrder())
 		{
 			if (!IsModCategoryEnabled(category)) continue;
@@ -5505,7 +5557,7 @@ Directory the zip will be extracted to:
 				? uncategorizedCount
 				: allMods.Count(mod => mod.DisplayCategories.Any(item => item.Name.Equals(category, StringComparison.OrdinalIgnoreCase)));
 			if (!Settings.HideEmptyModCategories || count > 0)
-				ModCategoryFilters.Add(new ModCategoryFilterItem(category, count, GetCategoryColor(category), CategoryHasNewMods(category)));
+				ModCategoryFilters.Add(new ModCategoryFilterItem(category, count, GetCategoryColor(category), GetCategoryIcon(category), CategoryHasNewMods(category)));
 		}
 
 		SelectedModCategory = ModCategoryFilters.Any(category => category.Name.Equals(previousSelection, StringComparison.OrdinalIgnoreCase))
@@ -6352,6 +6404,7 @@ Directory the zip will be extracted to:
 
 		Keys.ToggleViewTheme.AddAction(() =>
 		{
+			Settings.ActiveCustomThemeId = String.Empty;
 			Settings.ColorTheme = Settings.ColorTheme switch
 			{
 				ReduxThemeType.ReduxDark => ReduxThemeType.ReduxLight,

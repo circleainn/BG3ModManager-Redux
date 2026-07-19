@@ -30,6 +30,7 @@
 	<Color x:Key="ReduxTextSecondaryColor">#51465F</Color>
 	<Color x:Key="ReduxTextMutedColor">#776A85</Color>
 	<Color x:Key="ReduxAccentForegroundColor">#FFFFFF</Color>
+	<Color x:Key="ReduxGithubIconColor">#000000</Color>
 	<SolidColorBrush x:Key="ReduxWindowBrush" Color="{DynamicResource ReduxWindowColor}" />
 	<SolidColorBrush x:Key="ReduxListInteriorBrush" Color="{DynamicResource ReduxListInteriorColor}" />
 	<SolidColorBrush x:Key="ReduxSurfaceBrush" Color="{DynamicResource ReduxSurfaceColor}" />
@@ -53,6 +54,7 @@
 	<SolidColorBrush x:Key="ReduxTextSecondaryBrush" Color="{DynamicResource ReduxTextSecondaryColor}" />
 	<SolidColorBrush x:Key="ReduxTextMutedBrush" Color="{DynamicResource ReduxTextMutedColor}" />
 	<SolidColorBrush x:Key="ReduxAccentForegroundBrush" Color="{DynamicResource ReduxAccentForegroundColor}" />
+	<SolidColorBrush x:Key="ReduxGithubIconBrush" Color="{DynamicResource ReduxGithubIconColor}" />
 	<SolidColorBrush x:Key="ReduxIconBrush" Color="{DynamicResource ReduxAccentColor}" />
 	<!-- Keep stock Adonis controls on the Redux palette after every theme switch. -->
 	<SolidColorBrush x:Key="{x:Static adonisUi:Brushes.ForegroundBrush}" Color="{DynamicResource ReduxTextPrimaryColor}" />

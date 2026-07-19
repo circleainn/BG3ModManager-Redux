@@ -69,7 +69,7 @@
 				Background="{DynamicResource ReduxSurfaceBrush}"
 				BorderBrush="{DynamicResource ReduxAccentBrush}"
 				BorderThickness="1"
-				CornerRadius="8">
+				CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 				<StackPanel>
 					<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 						Text="The bundled Redux mod database can associate some installed .pak files with Nexus projects using recorded exact package matches and conservative reviewed identity matches. Unknown files remain Local."
@@ -94,8 +94,8 @@
 				</StackPanel>
 			</Border>
 			<Button Grid.Row="2"
-				Width="116"
-				Height="34"
+				MinWidth="116"
+				MinHeight="34"
 				HorizontalAlignment="Right"
 				Click="ContinueButton_Click"
 				Content="Continue"

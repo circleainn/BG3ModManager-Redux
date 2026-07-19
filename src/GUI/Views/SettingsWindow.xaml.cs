@@ -59,6 +59,7 @@ internal sealed record SettingsGroup(string Title, params string[] PropertyNames
 /// </summary>
 public partial class SettingsWindow : SettingsWindowBase
 {
+	private bool _updatingCustomThemeSelection;
 	private static readonly SettingsGroup[] GeneralSettingsGroups =
 	[
 		new("Paths and storage",
@@ -172,7 +173,9 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		if (sender is RadioButton { Tag: ReduxThemeType theme })
 		{
+			ViewModel.Settings.ActiveCustomThemeId = String.Empty;
 			ThemeComboBox.SelectedValue = theme;
+			RefreshCustomThemeControls();
 		}
 	}
 
@@ -180,9 +183,161 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		if (ThemeComboBox.SelectedValue is not ReduxThemeType theme) return;
 
-		ReduxDarkThemeCard.IsChecked = theme == ReduxThemeType.ReduxDark;
-		ReduxLightThemeCard.IsChecked = theme == ReduxThemeType.ReduxLight;
-		ParchmentThemeCard.IsChecked = theme == ReduxThemeType.Parchment;
+		var customThemeActive = !String.IsNullOrWhiteSpace(ViewModel?.Settings?.ActiveCustomThemeId);
+		ReduxDarkThemeCard.IsChecked = !customThemeActive && theme == ReduxThemeType.ReduxDark;
+		ReduxLightThemeCard.IsChecked = !customThemeActive && theme == ReduxThemeType.ReduxLight;
+		ParchmentThemeCard.IsChecked = !customThemeActive && theme == ReduxThemeType.Parchment;
+	}
+
+	private ReduxCustomTheme SelectedCustomTheme => CustomThemeComboBox.SelectedItem as ReduxCustomTheme;
+
+	private void RefreshCustomThemeControls()
+	{
+		if (ViewModel?.Settings == null) return;
+		_updatingCustomThemeSelection = true;
+		CustomThemeComboBox.ItemsSource = ViewModel.Settings.CustomThemes;
+		var activeTheme = ReduxThemeService.GetActiveTheme(ViewModel.Settings);
+		CustomThemeComboBox.SelectedItem = activeTheme;
+		var hasSelection = CustomThemeComboBox.SelectedItem is ReduxCustomTheme;
+		EditCustomThemeButton.IsEnabled = hasSelection;
+		DeleteCustomThemeButton.IsEnabled = hasSelection;
+		DuplicateCustomThemeButton.IsEnabled = hasSelection;
+		ExportCustomThemeButton.IsEnabled = hasSelection;
+		CustomThemeStatusText.Text = activeTheme != null
+			? $"Active custom theme · based on {activeTheme.BaseTheme.GetDescription()}"
+			: ViewModel.Settings.CustomThemes.Count == 0
+				? "No custom themes yet. Create one from the current built-in palette."
+				: "Choose a custom theme above, or keep using a built-in theme.";
+		_updatingCustomThemeSelection = false;
+		ThemeComboBox_SelectionChanged(ThemeComboBox, null);
+	}
+
+	private void CustomThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (_updatingCustomThemeSelection || SelectedCustomTheme == null || ViewModel?.Settings == null) return;
+		ActivateCustomTheme(SelectedCustomTheme);
+	}
+
+	private void ActivateCustomTheme(ReduxCustomTheme theme)
+	{
+		ViewModel.Settings.ActiveCustomThemeId = theme.Id;
+		ViewModel.Settings.ColorTheme = theme.BaseTheme;
+		MainWindow.Self.MainView.UpdateColorTheme(theme.BaseTheme);
+		ViewModel.Main.SaveSettings();
+		RefreshCustomThemeControls();
+	}
+
+	private bool EditCustomTheme(ReduxCustomTheme workingTheme)
+	{
+		var previousTheme = ViewModel.Settings.ColorTheme;
+		var dialog = new CustomThemeEditorWindow(workingTheme) { Owner = this };
+		dialog.PreviewChanged += preview => MainWindow.Self.MainView.PreviewCustomTheme(preview);
+		var accepted = dialog.ShowDialog() == true;
+		if (!accepted)
+		{
+			MainWindow.Self.MainView.UpdateColorTheme(previousTheme);
+		}
+		return accepted;
+	}
+
+	private void CreateCustomTheme_Click(object sender, RoutedEventArgs e)
+	{
+		var working = ReduxThemeService.CreateFromBase("My Custom Theme", ViewModel.Settings.ColorTheme);
+		if (!EditCustomTheme(working)) return;
+		ViewModel.Settings.CustomThemes.Add(working);
+		ActivateCustomTheme(working);
+	}
+
+	private void EditCustomTheme_Click(object sender, RoutedEventArgs e)
+	{
+		var selected = SelectedCustomTheme;
+		if (selected == null) return;
+		var working = selected.Clone();
+		if (!EditCustomTheme(working)) return;
+		var index = ViewModel.Settings.CustomThemes.IndexOf(selected);
+		if (index >= 0) ViewModel.Settings.CustomThemes[index] = working;
+		ActivateCustomTheme(working);
+	}
+
+	private void DuplicateCustomTheme_Click(object sender, RoutedEventArgs e)
+	{
+		var selected = SelectedCustomTheme;
+		if (selected == null) return;
+		var working = selected.Clone(createNewIdentity: true);
+		working.Name = $"{selected.Name} Copy";
+		if (!EditCustomTheme(working)) return;
+		ViewModel.Settings.CustomThemes.Add(working);
+		ActivateCustomTheme(working);
+	}
+
+	private void DeleteCustomTheme_Click(object sender, RoutedEventArgs e)
+	{
+		var selected = SelectedCustomTheme;
+		if (selected == null) return;
+		var result = Xceed.Wpf.Toolkit.MessageBox.Show(this,
+			$"Delete the custom theme '{selected.Name}'?\n\nExport it first if you may want to use it again.",
+			"Delete Custom Theme", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No,
+			MainWindow.Self.MessageBoxStyle);
+		if (result != MessageBoxResult.Yes) return;
+		ViewModel.Settings.CustomThemes.Remove(selected);
+		if (selected.Id.Equals(ViewModel.Settings.ActiveCustomThemeId, StringComparison.OrdinalIgnoreCase))
+		{
+			ViewModel.Settings.ActiveCustomThemeId = String.Empty;
+			MainWindow.Self.MainView.UpdateColorTheme(ViewModel.Settings.ColorTheme);
+		}
+		ViewModel.Main.SaveSettings();
+		RefreshCustomThemeControls();
+	}
+
+	private void ImportCustomTheme_Click(object sender, RoutedEventArgs e)
+	{
+		var dialog = new Microsoft.Win32.OpenFileDialog
+		{
+			Title = "Import Redux Custom Theme",
+			Filter = "Redux theme (*.json)|*.json|All files (*.*)|*.*",
+			CheckFileExists = true,
+			Multiselect = false
+		};
+		if (dialog.ShowDialog(this) != true) return;
+		try
+		{
+			var imported = ReduxThemeService.Import(dialog.FileName);
+			ViewModel.Settings.CustomThemes.Add(imported);
+			ActivateCustomTheme(imported);
+		}
+		catch (Exception ex)
+		{
+			Xceed.Wpf.Toolkit.MessageBox.Show(this, $"Could not import that theme.\n\n{ex.Message}",
+				"Import Custom Theme", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
+				MainWindow.Self.MessageBoxStyle);
+		}
+	}
+
+	private void ExportCustomTheme_Click(object sender, RoutedEventArgs e)
+	{
+		var selected = SelectedCustomTheme;
+		if (selected == null) return;
+		var safeName = String.Concat(selected.Name.Select(character => Path.GetInvalidFileNameChars().Contains(character) ? '_' : character));
+		var dialog = new Microsoft.Win32.SaveFileDialog
+		{
+			Title = "Export Redux Custom Theme",
+			Filter = "Redux theme (*.json)|*.json",
+			FileName = $"{safeName}.json",
+			AddExtension = true,
+			DefaultExt = ".json"
+		};
+		if (dialog.ShowDialog(this) != true) return;
+		try
+		{
+			ReduxThemeService.Export(dialog.FileName, selected);
+			ViewModel.ShowAlert($"Exported '{selected.Name}'.", AlertType.Success);
+		}
+		catch (Exception ex)
+		{
+			Xceed.Wpf.Toolkit.MessageBox.Show(this, $"Could not export that theme.\n\n{ex.Message}",
+				"Export Custom Theme", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
+				MainWindow.Self.MessageBoxStyle);
+		}
 	}
 
 	private void CreateSettingsElements(ReactiveObject source, Type settingsModelType, AutoGrid targetGrid)
@@ -246,6 +401,8 @@ public partial class SettingsWindow : SettingsWindowBase
 			{
 				Text = prop.Attribute.DisplayName,
 				ToolTip = !isBlankTooltip ? prop.Attribute.Tooltip : null,
+				TextWrapping = TextWrapping.Wrap,
+				VerticalAlignment = VerticalAlignment.Center,
 			};
 			targetGrid.Children.Add(tb);
 			Grid.SetRow(tb, targetRow);
@@ -457,6 +614,10 @@ public partial class SettingsWindow : SettingsWindowBase
 		this.Bind(ViewModel, vm => vm.Settings.DebugModeEnabled, view => view.DebugModeCheckBox.IsChecked);
 		this.Bind(ViewModel, vm => vm.Settings.LogEnabled, view => view.LogEnabledCheckBox.IsChecked);
 		this.Bind(ViewModel, vm => vm.Settings.ColorTheme, view => view.ThemeComboBox.SelectedValue);
+		ViewModel.Settings.WhenAnyValue(settings => settings.ActiveCustomThemeId)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(_ => RefreshCustomThemeControls());
+		RefreshCustomThemeControls();
 
 		this.OneWayBind(ViewModel, vm => vm.LaunchParams, view => view.GameLaunchParamsMainMenu.ItemsSource);
 		GameLaunchParamsMainButton.Events().Click.Subscribe(e =>

@@ -33,4 +33,5 @@
 	<Color x:Key="ReduxTextSecondaryColor">#5C4A3A</Color>
 	<Color x:Key="ReduxTextMutedColor">#74614D</Color>
 	<Color x:Key="ReduxAccentForegroundColor">#FFF7E8</Color>
+	<Color x:Key="ReduxGithubIconColor">#000000</Color>
 </ResourceDictionary>

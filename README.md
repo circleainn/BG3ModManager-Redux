@@ -7,7 +7,7 @@ safer file operations, richer metadata, and better organization for large mod li
 
 ## Current version
 
-**0.1.0-alpha.4 — work-in-progress alpha**
+**0.1.0-alpha.4 — private testing alpha**
 
 Redux is still experimental. Current builds are intended for careful personal use and a small
 group of private testers. Features, metadata matching, themes, and interface details may be
@@ -22,6 +22,23 @@ incomplete or change between builds.
 - There is currently no public Redux release, installer, or supported binary download.
 - Source code is public for transparency and development, but this alpha is not yet intended for
   inexperienced users.
+
+### Alpha.4 highlights
+
+- Stabilized the Redux visual system across dialogs, tooltips, menus, buttons, tabs, fields,
+  notifications, mod lists, and the selected-mod drawer.
+- Added safe color-only custom themes with create, edit, duplicate, import, export, and live
+  preview workflows.
+- Expanded categories with curated default identities, custom colors and icons, reset-to-default,
+  icon-aware pills, reordered sidebar presentation, and a **No Category** fallback.
+- Added optional icons to visual separators while preserving their original diamond fallback.
+- Replaced many legacy bitmap and inconsistent interface glyphs with theme-aware vector icons.
+- Refined Dark, Light, and Parchment palettes, shared pill styling, hover feedback, and restrained
+  interface transitions.
+- Improved Preferences organization, responsive text handling, compact hotkey controls, column
+  resizing behavior, warning dialogs, hover cards, and rounded confirmation dialogs.
+- Preserved Script Extender, Osiris, Mod Fixer, mod.io, dependency, and source status indicators
+  with updated Redux tooltips.
 
 ## Before you begin
 
@@ -125,15 +142,19 @@ must end at the game's `Data` directory, not merely the Baldur's Gate 3 installa
 - Exporting load orders to the game, text files, JSON, and archives where supported.
 - Filtering and configurable list columns.
 - Shortcuts to common game, mod, save, and log folders.
-- Dark, Light, and Parchment themes with bundled Manrope typography.
+- Dark, Light, and Parchment themes with bundled Manrope typography and refined semantic palettes.
+- Safe custom color themes with live preview, duplication, JSON import, and JSON export.
+- Theme-aware vector iconography and consistent interaction feedback across Redux-owned controls.
 - Screen-reader and accessibility behavior inherited from the upstream manager.
 
 ### Organization
 
 - Persistent automatic and custom categories spanning common Nexus BG3 mod types, with conservative best-effort assignment.
-- Multiple categories per mod and custom category colors.
+- Multiple categories per mod with custom colors and optional curated vector icons.
+- Fixed Redux default category identities with per-category color/icon customization and reset.
+- Optional category icons in pills and optional category-colored mod-row hover feedback.
 - Category filtering without changing the underlying load order.
-- Redux-only visual separators and collapsible sections.
+- Redux-only visual separators and collapsible sections with optional custom icons.
 - Draggable category ordering and optional filter-state persistence.
 
 Categories and separators are Redux organizational metadata. Separators are not mods, are never
@@ -146,7 +167,7 @@ positions would be misleading.
 - Manual Nexus project linking plus a bundled Redux mod database for conservative pre-existing-install matching.
 - Source-specific titles, authors, versions, dates, descriptions, requirements, files, and
   changelogs when available.
-- A resizable details drawer and quick-glance hover cards.
+- A resizable details drawer and quick-glance hover cards using shared Redux pill and status styles.
 - Separate display names and local `.pak` filenames for projects with multiple downloadable files.
 - Local metadata fallback when no online source can be matched.
 
@@ -226,7 +247,6 @@ affect game files.
 - Provider matching, automatic categories, dependency data, and conflict data may be incomplete.
 - mod.io author profile links cannot always be resolved reliably.
 - The complete Mod Health tray, requirement validator, and Load Order Advisor are not implemented.
-- Custom theme creation/import/export is planned but not implemented.
 - Some inherited dialogs or dense tab selections may still have minor visual inconsistencies.
 - Packaging and clean-machine behavior still require wider private testing.
 
@@ -280,6 +300,8 @@ Redux also depends on third-party projects including:
 - [BG3 Script Extender by Norbyte](https://github.com/Norbyte/bg3se)
 - CrossSpeak and its bundled screen-reader integrations
 - [Manrope](https://github.com/davelab6/manrope), distributed under the SIL Open Font License
+- [Ionicons](https://github.com/ionic-team/ionicons) and
+  [Tabler Icons](https://github.com/tabler/tabler-icons), distributed under the MIT License
 - AdonisUI, ReactiveUI, GongSolutions.WPF.DragDrop, and other packages listed in the project files
 
 Baldur's Gate 3 is developed and published by Larian Studios. Redux is an unofficial community

@@ -35,7 +35,7 @@
 		Background="{DynamicResource ReduxSurfaceBrush}"
 		BorderBrush="{DynamicResource ReduxBorderBrush}"
 		BorderThickness="1"
-		CornerRadius="10">
+		CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
@@ -48,7 +48,7 @@
 					Background="{DynamicResource ReduxAccentSoftBrush}"
 					BorderBrush="{DynamicResource ReduxAccentBrush}"
 					BorderThickness="1"
-					CornerRadius="12">
+					CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
 					<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
 						FontSize="22" FontWeight="SemiBold"
 						Foreground="{DynamicResource ReduxAccentHoverBrush}" Text="R" />
@@ -72,14 +72,14 @@
 					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
 				<Border Padding="16" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="8">
+					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 					<StackPanel>
 						<TextBlock FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Redux Project" />
 						<TextBlock Margin="0,4,0,14" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="Maintained by raincloudsfollow." />
 						<Grid>
 							<Grid.ColumnDefinitions><ColumnDefinition Width="76" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Grid.RowDefinitions><RowDefinition Height="28" /><RowDefinition Height="28" /><RowDefinition Height="28" /><RowDefinition Height="28" /></Grid.RowDefinitions>
+							<Grid.RowDefinitions><RowDefinition MinHeight="28" /><RowDefinition MinHeight="28" /><RowDefinition MinHeight="28" /><RowDefinition MinHeight="28" /></Grid.RowDefinitions>
 							<TextBlock Style="{StaticResource AboutLabelStyle}" Text="Project" />
 							<c:HyperlinkText Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Open Redux on GitHub" URL="{x:Static app:DivinityApp.URL_REDUX_REPO}" />
 							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="Releases" />
@@ -93,14 +93,14 @@
 				</Border>
 
 				<Border Grid.Column="2" Padding="16" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="8">
+					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 					<StackPanel>
 						<TextBlock FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Original Project Credit" />
 						<TextBlock Margin="0,4,0,14" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="Redux is based on LaughingLeader's original BG3 Mod Manager and retains its core functionality." />
 						<Grid>
 							<Grid.ColumnDefinitions><ColumnDefinition Width="76" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Grid.RowDefinitions><RowDefinition Height="28" /><RowDefinition Height="28" /><RowDefinition Height="28" /></Grid.RowDefinitions>
+							<Grid.RowDefinitions><RowDefinition MinHeight="28" /><RowDefinition MinHeight="28" /><RowDefinition MinHeight="28" /></Grid.RowDefinitions>
 							<TextBlock Style="{StaticResource AboutLabelStyle}" Text="Upstream" />
 							<c:HyperlinkText Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Original BG3 Mod Manager" URL="{x:Static app:DivinityApp.URL_REPO}" />
 							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="Author" />

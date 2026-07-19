@@ -57,6 +57,15 @@ public partial class AlertBar : UserControl
 		return new SolidColorBrush(Color.FromArgb(alpha, color.R, color.G, color.B));
 	}
 
+	private static Brush CreateSoftGradientBrush(Brush accentBrush)
+	{
+		var color = accentBrush is SolidColorBrush solidBrush ? solidBrush.Color : Colors.Transparent;
+		return new LinearGradientBrush(
+			Color.FromArgb(0x34, color.R, color.G, color.B),
+			Color.FromArgb(0x1A, color.R, color.G, color.B),
+			0);
+	}
+
 	private void TransformStage(string msg, int secs, Brush accentBrush, Geometry iconData)
 	{
 
@@ -69,7 +78,7 @@ public partial class AlertBar : UserControl
 
 				grdParent = FindVisualChildren<Grid>(spStandard).FirstOrDefault();
 				bdrStandard.BorderBrush = accentBrush;
-				bdrStandard.Background = CreateSoftBrush(accentBrush, 0x2E);
+				bdrStandard.Background = CreateSoftGradientBrush(accentBrush);
 				StandardIconSurface.Background = CreateSoftBrush(accentBrush, 0x40);
 				break;
 			case ThemeType.Outline:
@@ -86,6 +95,7 @@ public partial class AlertBar : UserControl
 		List<ReduxIcon> icons = FindVisualChildren<ReduxIcon>(grdParent).ToList();
 		ReduxIcon statusIcon = icons[0];
 		ReduxIcon closeIcon = icons[1];
+		lblMessage.Foreground = accentBrush;
 
 		if (_IconVisibility == false)
 		{

@@ -1,0 +1,187 @@
+<adonisUi:AdonisWindow x:Class="DivinityModManager.Views.CustomThemeEditorWindow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:adonisUi="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+	xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
+	xmlns:ext="clr-namespace:DivinityModManager.Controls.Extensions"
+	Title="Custom Theme Editor"
+	Width="720"
+	Height="650"
+	MinWidth="660"
+	MinHeight="600"
+	ResizeMode="CanResizeWithGrip"
+	ShowInTaskbar="False"
+	WindowStartupLocation="CenterOwner"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	Background="{DynamicResource ReduxSurfaceBrush}"
+	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
+	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}">
+	<adonisUi:AdonisWindow.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+			<Style x:Key="ThemeColorButtonStyle" TargetType="Button">
+				<Setter Property="Height" Value="52" />
+				<Setter Property="Margin" Value="0,0,10,10" />
+				<Setter Property="Padding" Value="10,7" />
+				<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
+				<Setter Property="BorderThickness" Value="1" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="Button">
+							<Border x:Name="ColorTileChrome" Padding="{TemplateBinding Padding}"
+								Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+								BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+								<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter TargetName="ColorTileChrome" Property="Background" Value="{DynamicResource ReduxHoverBrush}" />
+									<Setter TargetName="ColorTileChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+								</Trigger>
+								<Trigger Property="IsPressed" Value="True">
+									<Setter TargetName="ColorTileChrome" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
+			<Style x:Key="ThemeEditorActionButtonStyle" TargetType="Button">
+				<Setter Property="Height" Value="32" />
+				<Setter Property="Padding" Value="12,4" />
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+				<Setter Property="BorderThickness" Value="1" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="Button">
+							<Border x:Name="ActionChrome" Padding="{TemplateBinding Padding}"
+								Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+								BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+								<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ActionChrome" Property="Background" Value="{DynamicResource ReduxHoverBrush}" /></Trigger>
+								<Trigger Property="IsPressed" Value="True"><Setter TargetName="ActionChrome" Property="Background" Value="{DynamicResource ReduxPressedBrush}" /></Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
+	</ResourceDictionary>
+	</adonisUi:AdonisWindow.Resources>
+	<Border Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
+		<Grid Margin="20">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+			<TextBlock FontSize="19" FontWeight="SemiBold" Text="Design a custom Redux palette" />
+			<TextBlock Grid.Row="1" Margin="0,5,0,16" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+				Text="Choose eight semantic colors. Redux derives hover, selection, borders, muted text, and contrast-safe button text automatically."
+				TextWrapping="Wrap" />
+
+			<Grid Grid.Row="2">
+				<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="220" /></Grid.ColumnDefinitions>
+				<StackPanel>
+					<TextBlock Margin="0,0,0,5" FontWeight="SemiBold" Text="Theme name" />
+					<TextBox x:Name="ThemeNameTextBox" MaxLength="50" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+				</StackPanel>
+				<StackPanel Grid.Column="2">
+					<TextBlock Margin="0,0,0,5" FontWeight="SemiBold" Text="Start from" />
+					<ComboBox x:Name="BaseThemeComboBox" DisplayMemberPath="Description"
+						ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxThemeType}}}"
+						SelectedValuePath="Value" SelectionChanged="BaseThemeComboBox_SelectionChanged" />
+				</StackPanel>
+			</Grid>
+
+			<Border Grid.Row="3" Margin="0,16,0,14" Padding="10" Background="{DynamicResource ReduxSurfaceMutedBrush}"
+				BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+						<ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+					<Border Height="30" Background="{Binding BackgroundColor}" CornerRadius="6,0,0,6" />
+					<Border Grid.Column="1" Height="30" Background="{Binding SurfaceColor}" />
+					<Border Grid.Column="2" Height="30" Background="{Binding AccentColor}" />
+					<Border Grid.Column="3" Height="30" Background="{Binding TextColor}" />
+					<Border Grid.Column="4" Height="30" Background="{Binding SuccessColor}" />
+					<Border Grid.Column="5" Height="30" Background="{Binding WarningColor}" />
+					<Border Grid.Column="6" Height="30" Background="{Binding ErrorColor}" />
+					<Border Grid.Column="7" Height="30" Background="{Binding InfoColor}" CornerRadius="0,6,6,0" />
+				</Grid>
+			</Border>
+
+			<ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
+				<UniformGrid Columns="2">
+					<Button Tag="BackgroundColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
+						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+							<Border Width="26" Height="26" Background="{Binding BackgroundColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
+							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Background" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding BackgroundColor}" /></StackPanel>
+						</Grid>
+					</Button>
+					<Button Tag="SurfaceColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
+						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+							<Border Width="26" Height="26" Background="{Binding SurfaceColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
+							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Surface" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding SurfaceColor}" /></StackPanel>
+						</Grid>
+					</Button>
+					<Button Tag="AccentColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
+						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+							<Border Width="26" Height="26" Background="{Binding AccentColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
+							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Accent" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding AccentColor}" /></StackPanel>
+						</Grid>
+					</Button>
+					<Button Tag="TextColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
+						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+							<Border Width="26" Height="26" Background="{Binding TextColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
+							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Primary text" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding TextColor}" /></StackPanel>
+						</Grid>
+					</Button>
+					<Button Tag="SuccessColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
+						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+							<Border Width="26" Height="26" Background="{Binding SuccessColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
+							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Success" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding SuccessColor}" /></StackPanel>
+						</Grid>
+					</Button>
+					<Button Tag="WarningColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
+						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+							<Border Width="26" Height="26" Background="{Binding WarningColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
+							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Warning" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding WarningColor}" /></StackPanel>
+						</Grid>
+					</Button>
+					<Button Tag="ErrorColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
+						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+							<Border Width="26" Height="26" Background="{Binding ErrorColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
+							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Error" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding ErrorColor}" /></StackPanel>
+						</Grid>
+					</Button>
+					<Button Tag="InfoColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
+						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+							<Border Width="26" Height="26" Background="{Binding InfoColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
+							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Information" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding InfoColor}" /></StackPanel>
+						</Grid>
+					</Button>
+				</UniformGrid>
+			</ScrollViewer>
+
+			<Grid Grid.Row="5" Margin="0,14,0,0">
+				<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Color changes preview immediately behind this window." />
+				<Button Grid.Column="1" MinWidth="90" Margin="0,0,8,0" Content="Cancel" IsCancel="True" Style="{StaticResource ThemeEditorActionButtonStyle}" Click="CancelButton_Click" />
+				<Button Grid.Column="2" MinWidth="110" Content="Save Theme" IsDefault="True" Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" Click="SaveButton_Click" />
+			</Grid>
+		</Grid>
+	</Border>
+</adonisUi:AdonisWindow>

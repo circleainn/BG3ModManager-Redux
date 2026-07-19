@@ -51,6 +51,8 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 	[Reactive] public bool IsVisualDivider { get; set; }
 	[Reactive] public string VisualDividerId { get; set; }
 	[Reactive] public string VisualDividerColor { get; set; } = "#8A6AF1";
+	[Reactive] public string VisualDividerIconId { get; set; } = String.Empty;
+	public bool HasVisualDividerIcon => !String.IsNullOrWhiteSpace(VisualDividerIconId);
 	[Reactive] public bool IsVisualDividerCollapsed { get; set; }
 	[Reactive] public bool IsHiddenByVisualDivider { get; set; }
 

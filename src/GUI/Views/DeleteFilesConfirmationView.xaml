@@ -33,7 +33,7 @@
 								    Background="{DynamicResource ReduxSurfaceMutedBrush}"
 								    BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
 								    BorderThickness="1"
-								    CornerRadius="4">
+								    CornerRadius="{DynamicResource Redux.CornerRadius.Small}">
 									<TextBlock x:Name="CheckMark"
 									    HorizontalAlignment="Center"
 									    VerticalAlignment="Center"
@@ -68,7 +68,7 @@
 				    Background="{TemplateBinding Background}"
 				    BorderBrush="{TemplateBinding BorderBrush}"
 				    BorderThickness="{TemplateBinding BorderThickness}"
-				    CornerRadius="7">
+				    CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 					<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
 				</Border>
 				<ControlTemplate.Triggers>

@@ -94,7 +94,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ShowEmptyCategoriesMenuItem.IsChecked = !ViewModel.Settings.HideEmptyModCategories;
 		SaveCategoryFilterMenuItem.IsChecked = ViewModel.Settings.SaveModCategoryFilterBetweenSessions;
 		DisableNewModIndicatorsMenuItem.IsChecked = ViewModel.Settings.DisableNewModCategoryIndicators;
-		ChangeCategoryColorMenuItem.IsEnabled = !String.IsNullOrWhiteSpace(ViewModel.SelectedModCategory) &&
+		EditCategoryMenuItem.IsEnabled = !String.IsNullOrWhiteSpace(ViewModel.SelectedModCategory) &&
 			!ViewModel.SelectedModCategory.Equals(MainWindowViewModel.AllModsCategory, StringComparison.OrdinalIgnoreCase);
 
 		EnableCategoriesMenuItem.Items.Clear();
@@ -246,10 +246,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private void AddCustomCategoryMenuItem_Click(object sender, RoutedEventArgs e)
 	{
 		var dialog = new CategoryNameDialog(color: ViewModel.GetSuggestedCustomCategoryColor(), savedColors: ViewModel.Settings.SavedCategoryColors) { Owner = Window.GetWindow(this) };
-		ResourceLocator.SetColorScheme(dialog.Resources, DivinityApp.GetThemeUri(ViewModel.Settings.ColorTheme));
+		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		var result = dialog.ShowDialog();
 		SaveCategoryDialogColors(dialog);
-		if (result == true && !ViewModel.TryAddCustomModCategory(dialog.CategoryName, dialog.CategoryColor, out var error))
+		if (result == true && !ViewModel.TryAddCustomModCategory(dialog.CategoryName, dialog.CategoryColor, dialog.CategoryIconId, out var error))
 		{
 			ShowCategoryMessage(error, "Add Mod Category", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
@@ -263,17 +263,25 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ViewModel.SaveSettings();
 	}
 
-	private void ChangeCategoryColorMenuItem_Click(object sender, RoutedEventArgs e)
+	private void EditCategoryMenuItem_Click(object sender, RoutedEventArgs e)
 	{
 		var category = ViewModel.SelectedModCategory;
 		if (String.IsNullOrWhiteSpace(category) || category.Equals(MainWindowViewModel.AllModsCategory, StringComparison.OrdinalIgnoreCase)) return;
-		var dialog = new CategoryNameDialog(category, ViewModel.GetCurrentCategoryColor(category), false, ViewModel.Settings.SavedCategoryColors) { Owner = Window.GetWindow(this) };
-		ResourceLocator.SetColorScheme(dialog.Resources, DivinityApp.GetThemeUri(ViewModel.Settings.ColorTheme));
+		var dialog = new CategoryNameDialog(category, ViewModel.GetCurrentCategoryColor(category), false, ViewModel.Settings.SavedCategoryColors,
+			iconId: ViewModel.GetCurrentCategoryIcon(category),
+			canResetToDefault: ViewModel.CanResetCategoryStyle(category)) { Owner = Window.GetWindow(this) };
+		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		var result = dialog.ShowDialog();
 		SaveCategoryDialogColors(dialog);
-		if (result == true && !ViewModel.TrySetCategoryColor(category, dialog.CategoryColor, out var error))
+		if (result != true) return;
+		if (dialog.ResetToDefaultRequested)
 		{
-			ShowCategoryMessage(error, "Change Category Color", MessageBoxButton.OK, MessageBoxImage.Information);
+			ViewModel.ResetCategoryStyle(category);
+			return;
+		}
+		if (!ViewModel.TrySetCategoryStyle(category, dialog.CategoryColor, dialog.CategoryIconId, out var error))
+		{
+			ShowCategoryMessage(error, "Edit Category", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
 	}
 
@@ -441,19 +449,19 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			Tag = VisualDividerMenuTag,
 			IsEnabled = activeModList,
 			ToolTip = activeModList ? null : "Inactive mods do not retain a load order.",
-			Icon = ReduxIcon.FromResource("Redux.Icon.ReorderStroke", true)
+			Icon = ReduxIcon.FromResource("Redux.Icon.AddStroke", true)
 		};
 		var visualIndex = listView.Items.IndexOf(mod);
 		var addAbove = new MenuItem
 		{
 			Header = "Add Separator Above...",
-			Icon = ReduxIcon.FromResource("Redux.Icon.ChevronUpStroke", true)
+			Icon = ReduxIcon.FromResource("Redux.Icon.AddStroke", true)
 		};
 		addAbove.Click += (_, _) => ShowAddVisualDividerDialog(listView == ActiveModsListView, visualIndex);
 		var addBelow = new MenuItem
 		{
 			Header = "Add Separator Below...",
-			Icon = ReduxIcon.FromResource("Redux.Icon.ChevronDownStroke", true)
+			Icon = ReduxIcon.FromResource("Redux.Icon.AddStroke", true)
 		};
 		addBelow.Click += (_, _) => ShowAddVisualDividerDialog(listView == ActiveModsListView, visualIndex + 1);
 		dividerMenu.Items.Add(addAbove);
@@ -467,7 +475,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			? mod.NexusModsData.SourcePageUrl
 			: null;
 		var dialog = new NexusManualLinkDialog(currentLink) { Owner = Window.GetWindow(this) };
-		ResourceLocator.SetColorScheme(dialog.Resources, DivinityApp.GetThemeUri(ViewModel.Settings.ColorTheme));
+		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		if (dialog.ShowDialog() != true) return;
 		if (!ViewModel.TryManuallyLinkNexusMod(mod, dialog.NexusLink, out var error))
 		{
@@ -491,22 +499,22 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (!activeList) return;
 		var dialog = new CategoryNameDialog(color: ViewModel.GetSuggestedCustomCategoryColor(), savedColors: ViewModel.Settings.SavedCategoryColors, visualDividerMode: true)
 			{ Owner = Window.GetWindow(this) };
-		ResourceLocator.SetColorScheme(dialog.Resources, DivinityApp.GetThemeUri(ViewModel.Settings.ColorTheme));
+		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
 		SaveCategoryDialogColors(dialog);
-		ViewModel.AddVisualDivider(activeList, position, dialog.CategoryName, dialog.CategoryColor);
+		ViewModel.AddVisualDivider(activeList, position, dialog.CategoryName, dialog.CategoryColor, dialog.CategoryIconId);
 	}
 
 	private void ShowEditVisualDividerDialog(DivinityModData item)
 	{
 		var divider = ViewModel.GetVisualDivider(item);
 		if (divider == null) return;
-		var dialog = new CategoryNameDialog(divider.Title, divider.Color, true, ViewModel.Settings.SavedCategoryColors, true)
+		var dialog = new CategoryNameDialog(divider.Title, divider.Color, true, ViewModel.Settings.SavedCategoryColors, true, divider.IconId)
 			{ Owner = Window.GetWindow(this) };
-		ResourceLocator.SetColorScheme(dialog.Resources, DivinityApp.GetThemeUri(ViewModel.Settings.ColorTheme));
+		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
 		SaveCategoryDialogColors(dialog);
-		ViewModel.UpdateVisualDivider(item, dialog.CategoryName, dialog.CategoryColor);
+		ViewModel.UpdateVisualDivider(item, dialog.CategoryName, dialog.CategoryColor, dialog.CategoryIconId);
 	}
 
 	public ModListView ActiveModsView => ActiveModsListView;

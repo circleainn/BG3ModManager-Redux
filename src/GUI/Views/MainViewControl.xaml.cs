@@ -223,7 +223,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			{
 				Header = "Original BG3 Mod Manager on GitHub",
 				Command = ViewModel.Keys.OpenRepositoryPage.Command,
-				Icon = ReduxIcon.FromResource("Redux.Icon.Github")
+				Icon = ReduxIcon.FromResource("Redux.Icon.Github", foregroundResourceKey: "ReduxGithubIconBrush")
 			});
 			creditsMenu.Items.Add(new MenuItem
 			{
@@ -242,8 +242,16 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	public void UpdateColorTheme(ReduxThemeType theme)
 	{
-		ResourceLocator.SetColorScheme(this.Resources, DivinityApp.GetThemeUri(theme));
-		main.UpdateColorTheme(theme);
+		var customTheme = ReduxThemeService.GetActiveTheme(ViewModel.Settings);
+		ReduxThemeService.Apply(this.Resources, theme, customTheme);
+		main.UpdateColorTheme(theme, customTheme);
+	}
+
+	public void PreviewCustomTheme(ReduxCustomTheme theme)
+	{
+		var baseTheme = theme?.BaseTheme ?? ViewModel.Settings.ColorTheme;
+		ReduxThemeService.Apply(this.Resources, baseTheme, theme);
+		main.UpdateColorTheme(baseTheme, theme);
 	}
 
 	private void ComboBox_KeyDown_LoseFocus(object sender, KeyEventArgs e)
