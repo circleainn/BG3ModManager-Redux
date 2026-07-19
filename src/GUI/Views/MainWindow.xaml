@@ -39,6 +39,7 @@
 			</ResourceDictionary.MergedDictionaries>
 			<Style TargetType="{x:Type xc:MessageBox}">
 				<Setter Property="Width" Value="600" />
+				<Setter Property="ext:RoundedMessageBoxChrome.Radius" Value="7" />
 				<Setter Property="FontFamily" Value="{DynamicResource Redux.FontFamily.UI}" />
 				<Setter Property="Background" Value="{DynamicResource {x:Static adonisUI:Brushes.Layer0BackgroundBrush}}" />
 				<Setter Property="ButtonRegionBackground" Value="{DynamicResource {x:Static adonisUI:Brushes.Layer0BackgroundBrush}}" />
