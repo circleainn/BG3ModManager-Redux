@@ -10,6 +10,32 @@ namespace DivinityModManager.Controls;
 /// </summary>
 public sealed class ReduxIcon : Control
 {
+	/// <summary>
+	/// Creates a consistently styled menu icon from an application geometry resource.
+	/// </summary>
+	public static ReduxIcon FromResource(string resourceKey, bool useStroke = false, string foregroundResourceKey = null)
+	{
+		var icon = new ReduxIcon();
+		var geometry = Application.Current?.MainWindow?.TryFindResource(resourceKey) as Geometry
+			?? Application.Current?.TryFindResource(resourceKey) as Geometry;
+		if (geometry != null)
+		{
+			if (useStroke)
+			{
+				icon.StrokeData = geometry;
+			}
+			else
+			{
+				icon.Data = geometry;
+			}
+		}
+		if (!String.IsNullOrWhiteSpace(foregroundResourceKey))
+		{
+			icon.SetResourceReference(ForegroundProperty, foregroundResourceKey);
+		}
+		return icon;
+	}
+
 	public static readonly DependencyProperty DataProperty = DependencyProperty.Register(
 		nameof(Data),
 		typeof(Geometry),

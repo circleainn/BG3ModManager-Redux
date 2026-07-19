@@ -603,8 +603,12 @@
 							    Tag="{Binding}">
 								<ComboBox.ContextMenu>
 									<ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
-										<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.Folder}" Header="Open Profile Folder in File Explorer..." />
-										<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedProfile.Folder}" Header="Copy Profile Path to Clipboard" />
+										<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.Folder}" Header="Open Profile Folder in File Explorer...">
+											<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
+										</MenuItem>
+										<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedProfile.Folder}" Header="Copy Profile Path to Clipboard">
+											<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
+										</MenuItem>
 									</ContextMenu>
 								</ComboBox.ContextMenu>
 							</ComboBox>
@@ -640,10 +644,18 @@
 								</ComboBox.ItemContainerStyle>
 								<ComboBox.ContextMenu>
 									<ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
-										<MenuItem Command="{Binding ToggleOrderRenamingCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}, Path=PlacementTarget}" Header="Rename" />
-										<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedModOrder.FilePath}" Header="Open in File Explorer..." />
-										<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedModOrder.FilePath}" Header="Copy Path to Clipboard" />
-										<MenuItem Command="{Binding DeleteOrderCommand}" CommandParameter="{Binding SelectedModOrder}" Header="Delete Order" />
+										<MenuItem Command="{Binding ToggleOrderRenamingCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}, Path=PlacementTarget}" Header="Rename">
+											<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Create}" /></MenuItem.Icon>
+										</MenuItem>
+										<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedModOrder.FilePath}" Header="Open in File Explorer...">
+											<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
+										</MenuItem>
+										<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedModOrder.FilePath}" Header="Copy Path to Clipboard">
+											<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
+										</MenuItem>
+										<MenuItem Command="{Binding DeleteOrderCommand}" CommandParameter="{Binding SelectedModOrder}" Header="Delete Order">
+											<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
+										</MenuItem>
 									</ContextMenu>
 								</ComboBox.ContextMenu>
 							</ComboBox>
@@ -682,11 +694,21 @@
 									</StackPanel>
 									<Button.ContextMenu>
 										<ContextMenu>
-											<MenuItem Command="{Binding Path=OpenFileCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="Open Exported Mod Order File..." />
-											<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="Open in File Explorer..." />
-											<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="Copy Path to Clipboard" />
-											<MenuItem Command="{Binding CopyOrderToClipboardCommand}" Header="Copy Order to Clipboard" />
-											<MenuItem Command="{Binding ExportOrderAsListCommand}" Header="Export Order As List..." />
+											<MenuItem Command="{Binding Path=OpenFileCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="Open Exported Mod Order File...">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Open}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="Open in File Explorer...">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="Copy Path to Clipboard">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Command="{Binding CopyOrderToClipboardCommand}" Header="Copy Order to Clipboard">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Clipboard}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Command="{Binding ExportOrderAsListCommand}" Header="Export Order As List...">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
+											</MenuItem>
 										</ContextMenu>
 									</Button.ContextMenu>
 								</Button>
@@ -715,8 +737,12 @@
 									    ToolTip="{StaticResource ModToolTip}">
 										<ComboBox.ContextMenu>
 											<ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
-												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="Open Adventure Mod in File Explorer..." />
-												<MenuItem Command="{Binding Path=CopyToClipboardCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="Copy Mod Path to Clipboard" />
+												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="Open Adventure Mod in File Explorer...">
+													<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
+												</MenuItem>
+												<MenuItem Command="{Binding Path=CopyToClipboardCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="Copy Mod Path to Clipboard">
+													<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
+												</MenuItem>
 											</ContextMenu>
 										</ComboBox.ContextMenu>
 									</ComboBox>
@@ -739,7 +765,9 @@
 									<controls:ReduxIcon Data="{StaticResource Redux.Icon.FolderOpen}" />
 									<Button.ContextMenu>
 										<ContextMenu>
-											<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding PathwayData.AppDataModsPath}" Header="Copy Path to Clipboard" />
+											<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding PathwayData.AppDataModsPath}" Header="Copy Path to Clipboard">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
+											</MenuItem>
 										</ContextMenu>
 									</Button.ContextMenu>
 								</Button>
@@ -747,7 +775,9 @@
 									<controls:ReduxIcon Data="{StaticResource Redux.Icon.DocumentText}" />
 									<Button.ContextMenu>
 										<ContextMenu>
-											<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding Settings.ExtenderLogDirectory}" Header="Copy Path to Clipboard" />
+											<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding Settings.ExtenderLogDirectory}" Header="Copy Path to Clipboard">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
+											</MenuItem>
 										</ContextMenu>
 									</Button.ContextMenu>
 								</Button>
@@ -760,15 +790,29 @@
 									<Button.ContextMenu>
 										<ContextMenu>
 											<MenuItem Header="FOLDERS" IsEnabled="False" />
-											<MenuItem Command="{Binding Keys.OpenModsFolder.Command}" Header="Mods Folder" InputGestureText="Ctrl+1" />
-											<MenuItem Command="{Binding Keys.OpenGameFolder.Command}" Header="Game Folder" InputGestureText="Ctrl+2" />
-											<MenuItem Command="{Binding Keys.OpenLogsFolder.Command}" Header="Extender Logs Folder" InputGestureText="Ctrl+4" />
-											<MenuItem Header="Save Games Folder" Click="OpenSaveGamesFolder_Click" />
+											<MenuItem Command="{Binding Keys.OpenModsFolder.Command}" Header="Mods Folder" InputGestureText="Ctrl+1">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Command="{Binding Keys.OpenGameFolder.Command}" Header="Game Folder" InputGestureText="Ctrl+2">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.GameController}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Command="{Binding Keys.OpenLogsFolder.Command}" Header="Extender Logs Folder" InputGestureText="Ctrl+4">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Header="Save Games Folder" Click="OpenSaveGamesFolder_Click">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
+											</MenuItem>
 											<Separator />
 											<MenuItem Header="ONLINE" IsEnabled="False" />
-											<MenuItem Header="BG3 on Nexus Mods" Click="OpenBg3Nexus_Click" />
-											<MenuItem Header="BG3 Script Extender on GitHub" Click="OpenScriptExtenderRepo_Click" />
-											<MenuItem Header="BG3 Mod Manager Redux on GitHub" Click="OpenReduxRepo_Click" />
+											<MenuItem Header="BG3 on Nexus Mods" Click="OpenBg3Nexus_Click">
+												<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Header="BG3 Script Extender on GitHub" Click="OpenScriptExtenderRepo_Click">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Header="BG3 Mod Manager Redux on GitHub" Click="OpenReduxRepo_Click">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" /></MenuItem.Icon>
+											</MenuItem>
 										</ContextMenu>
 									</Button.ContextMenu>
 								</Button>
@@ -788,8 +832,12 @@
 									</StackPanel>
 									<Button.ContextMenu>
 										<ContextMenu>
-											<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding Settings.GameExecutablePath}" Header="Open Game Folder..." />
-											<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding Settings.GameExecutablePath}" Header="Copy Path to Clipboard" />
+											<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding Settings.GameExecutablePath}" Header="Open Game Folder...">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding Settings.GameExecutablePath}" Header="Copy Path to Clipboard">
+												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
+											</MenuItem>
 										</ContextMenu>
 									</Button.ContextMenu>
 								</Button>

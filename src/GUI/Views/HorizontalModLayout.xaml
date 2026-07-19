@@ -334,6 +334,16 @@
 					</DataTrigger>
 				</Style.Triggers>
 			</Style>
+			<DataTemplate x:Key="ModDetailsCategoryTemplate" DataType="{x:Type data:DivinityModData}">
+				<ItemsControl ClipToBounds="False"
+					ItemTemplate="{StaticResource ModCategoryPillItemTemplate}"
+					ItemsSource="{Binding DisplayCategories}"
+					ToolTip="{Binding DisplayCategory}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+				</ItemsControl>
+			</DataTemplate>
 			<Style x:Key="ModDetailsSourceButtonStyle" TargetType="{x:Type Button}">
 				<Setter Property="Height" Value="27" />
 				<Setter Property="Margin" Value="0,0,6,5" />
@@ -506,10 +516,10 @@
 								BorderThickness="1"
 								CornerRadius="8">
 								<Border.Style><Style TargetType="Border">
-									<Setter Property="Background" Value="{StaticResource Redux.Pill.Local.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Local.Border}" />
+									<Setter Property="Background" Value="{StaticResource Redux.Pill.Local.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Local.Border}" /><Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Local.Border}" />
 									<Style.Triggers>
-										<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}"><Setter Property="Background" Value="{StaticResource Redux.Pill.Nexus.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Nexus.Border}" /></DataTrigger>
-										<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}"><Setter Property="Background" Value="{StaticResource Redux.Pill.Modio.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Modio.Border}" /></DataTrigger>
+										<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}"><Setter Property="Background" Value="{StaticResource Redux.Pill.Nexus.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Nexus.Border}" /><Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Nexus.Border}" /></DataTrigger>
+										<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}"><Setter Property="Background" Value="{StaticResource Redux.Pill.Modio.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Modio.Border}" /><Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Modio.Border}" /></DataTrigger>
 									</Style.Triggers>
 								</Style></Border.Style>
 								<StackPanel HorizontalAlignment="Center"
@@ -521,11 +531,9 @@
 										FontWeight="SemiBold">
 									<TextBlock.Style>
 										<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
-											<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
 											<Setter Property="Text" Value="Local" />
 											<Style.Triggers>
 										<DataTrigger Binding="{Binding Metadata.OnlineSourceVisibility}" Value="Visible">
-											<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 											<Setter Property="Text" Value="{Binding Metadata.SourceLabel}" />
 												</DataTrigger>
 											</Style.Triggers>
@@ -1012,21 +1020,35 @@
 					<MenuItem x:Name="ShowEmptyCategoriesMenuItem"
 						Header="Show categories with 0 mods"
 						IsCheckable="True"
-						Click="ShowEmptyCategoriesMenuItem_Click" />
+						Click="ShowEmptyCategoriesMenuItem_Click">
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.ListStroke}" /></MenuItem.Icon>
+					</MenuItem>
 					<MenuItem x:Name="SaveCategoryFilterMenuItem"
 						Header="Save filter state between sessions"
 						IsCheckable="True"
-						Click="SaveCategoryFilterMenuItem_Click" />
+						Click="SaveCategoryFilterMenuItem_Click">
+						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.Save}" /></MenuItem.Icon>
+					</MenuItem>
 					<MenuItem x:Name="DisableNewModIndicatorsMenuItem"
 						Header="Disable new-mod indicators"
 						IsCheckable="True"
-						Click="DisableNewModIndicatorsMenuItem_Click" />
+						Click="DisableNewModIndicatorsMenuItem_Click">
+						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.Information}" /></MenuItem.Icon>
+					</MenuItem>
 					<Separator />
-					<MenuItem Header="Add New Custom Category..." Click="AddCustomCategoryMenuItem_Click" />
-					<MenuItem x:Name="ChangeCategoryColorMenuItem" Header="Change Selected Category Color..." Click="ChangeCategoryColorMenuItem_Click" />
+					<MenuItem Header="Add New Custom Category..." Click="AddCustomCategoryMenuItem_Click">
+						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.AddCircle}" /></MenuItem.Icon>
+					</MenuItem>
+					<MenuItem x:Name="ChangeCategoryColorMenuItem" Header="Change Selected Category Color..." Click="ChangeCategoryColorMenuItem_Click">
+						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.ColorPalette}" /></MenuItem.Icon>
+					</MenuItem>
 					<Separator />
-					<MenuItem x:Name="EnableCategoriesMenuItem" Header="Enable / Disable Categories" />
-					<MenuItem x:Name="DeleteCustomCategoryMenuItem" Header="Delete Custom Category" />
+					<MenuItem x:Name="EnableCategoriesMenuItem" Header="Enable / Disable Categories">
+						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.Pricetag}" /></MenuItem.Icon>
+					</MenuItem>
+					<MenuItem x:Name="DeleteCustomCategoryMenuItem" Header="Delete Custom Category">
+						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
+					</MenuItem>
 				</ContextMenu>
 			</Border.ContextMenu>
 			<Grid>
@@ -1571,7 +1593,7 @@
 						TextTrimming="CharacterEllipsis" />
 					<ContentControl Grid.Column="2" Margin="9,0,0,0" VerticalAlignment="Center"
 						Content="{Binding Content, ElementName=ModDetailsContent}"
-						ContentTemplate="{StaticResource ModCategoryTemplate}" />
+						ContentTemplate="{StaticResource ModDetailsCategoryTemplate}" />
 					<Border Grid.Column="3" MaxWidth="360" Margin="9,0,8,0" Padding="8,3"
 						HorizontalAlignment="Left" VerticalAlignment="Center"
 						Background="{DynamicResource ReduxSurfaceMutedBrush}"

@@ -2,6 +2,7 @@
 
 
 
+using DivinityModManager.Controls;
 using DivinityModManager.Converters;
 using DivinityModManager.Models;
 using DivinityModManager.Models.App;
@@ -28,6 +29,42 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private readonly Dictionary<string, MenuItem> menuItems = new();
 	public Dictionary<string, MenuItem> MenuItems => menuItems;
+	private static readonly IReadOnlyDictionary<string, (string Resource, bool UseStroke, string Foreground)> MenuIconMap =
+		new Dictionary<string, (string, bool, string)>
+		{
+			[nameof(AppKeys.ImportMod)] = ("Redux.Icon.AddCircle", false, null),
+			[nameof(AppKeys.NewOrder)] = ("Redux.Icon.DocumentText", false, null),
+			[nameof(AppKeys.Save)] = ("Redux.Icon.Save", false, null),
+			[nameof(AppKeys.SaveAs)] = ("Redux.Icon.Duplicate", false, null),
+			[nameof(AppKeys.ImportOrderFromSave)] = ("Redux.Icon.FolderOpen", false, null),
+			[nameof(AppKeys.ImportOrderFromSaveAsNew)] = ("Redux.Icon.AddCircle", false, null),
+			[nameof(AppKeys.ImportOrderFromFile)] = ("Redux.Icon.FolderOpen", false, null),
+			[nameof(AppKeys.ImportOrderFromZipFile)] = ("Redux.Icon.Archive", false, null),
+			[nameof(AppKeys.ExportOrderToGame)] = ("Redux.Icon.GameController", false, null),
+			[nameof(AppKeys.ExportOrderToList)] = ("Redux.Icon.DocumentText", false, null),
+			[nameof(AppKeys.ExportOrderToZip)] = ("Redux.Icon.Archive", false, null),
+			[nameof(AppKeys.ExportOrderToArchiveAs)] = ("Redux.Icon.Duplicate", false, null),
+			[nameof(AppKeys.Refresh)] = ("Redux.Icon.RefreshStroke", true, null),
+			[nameof(AppKeys.Confirm)] = ("Redux.Icon.SwapHorizontalStroke", true, null),
+			[nameof(AppKeys.MoveFocusLeft)] = ("Redux.Icon.ArrowBackStroke", true, null),
+			[nameof(AppKeys.MoveFocusRight)] = ("Redux.Icon.ArrowForwardStroke", true, null),
+			[nameof(AppKeys.SwapListFocus)] = ("Redux.Icon.SwapHorizontalStroke", true, null),
+			[nameof(AppKeys.MoveToTop)] = ("Redux.Icon.ChevronUpStroke", true, null),
+			[nameof(AppKeys.MoveToBottom)] = ("Redux.Icon.ChevronDownStroke", true, null),
+			[nameof(AppKeys.ToggleFilterFocus)] = ("Redux.Icon.Funnel", false, null),
+			[nameof(AppKeys.DeleteSelectedMods)] = ("Redux.Icon.Trash", false, "ReduxErrorBrush"),
+			[nameof(AppKeys.OpenPreferences)] = ("Redux.Icon.Settings", false, null),
+			[nameof(AppKeys.OpenKeybindings)] = ("Redux.Icon.Key", false, null),
+			[nameof(AppKeys.ToggleViewTheme)] = ("Redux.Icon.ColorPalette", false, null),
+			[nameof(AppKeys.ExtractSelectedMods)] = ("Redux.Icon.Archive", false, null),
+			[nameof(AppKeys.ExtractSelectedAdventure)] = ("Redux.Icon.Archive", false, null),
+			[nameof(AppKeys.ToggleVersionGeneratorWindow)] = ("Redux.Icon.Build", false, null),
+			[nameof(AppKeys.DownloadScriptExtender)] = ("Redux.Icon.Download", false, null),
+			[nameof(AppKeys.SpeakActiveModOrder)] = ("Redux.Icon.VolumeHigh", false, null),
+			[nameof(AppKeys.StopSpeaking)] = ("Redux.Icon.StopCircle", false, "ReduxErrorBrush"),
+			[nameof(AppKeys.CheckForUpdates)] = ("Redux.Icon.Download", false, null),
+			[nameof(AppKeys.OpenAboutWindow)] = ("Redux.Icon.Information", false, null)
+		};
 
 	public static Brush MessageBoxDefaultBackgroundBrush =>
 		Application.Current?.TryFindResource("ReduxSurfaceElevatedBrush") as Brush ?? System.Windows.Media.Brushes.DimGray;
@@ -142,6 +179,10 @@ public partial class MainViewControl : MainViewControlViewBase
 				InputGestureText = key.ToString(),
 				Command = key.Command
 			};
+			if (MenuIconMap.TryGetValue(prop.Name, out var iconSpec))
+			{
+				newEntry.Icon = ReduxIcon.FromResource(iconSpec.Resource, iconSpec.UseStroke, iconSpec.Foreground);
+			}
 			if(key == ViewModel.Keys.DownloadScriptExtender && TryFindResource("MenuItemHightlightBlink") is Style blinKStyle)
 			{
 				newEntry.Style = blinKStyle;
@@ -173,16 +214,22 @@ public partial class MainViewControl : MainViewControlViewBase
 		if (menuItems.TryGetValue("Help", out var helpMenuItem))
 		{
 			helpMenuItem.Items.Add(new Separator());
-			var creditsMenu = new MenuItem { Header = "Credits & Attribution" };
+			var creditsMenu = new MenuItem
+			{
+				Header = "Credits & Attribution",
+				Icon = ReduxIcon.FromResource("Redux.Icon.Information")
+			};
 			creditsMenu.Items.Add(new MenuItem
 			{
 				Header = "Original BG3 Mod Manager on GitHub",
-				Command = ViewModel.Keys.OpenRepositoryPage.Command
+				Command = ViewModel.Keys.OpenRepositoryPage.Command,
+				Icon = ReduxIcon.FromResource("Redux.Icon.Github")
 			});
 			creditsMenu.Items.Add(new MenuItem
 			{
 				Header = "Support LaughingLeader on Ko-fi",
-				Command = ViewModel.Keys.OpenDonationLink.Command
+				Command = ViewModel.Keys.OpenDonationLink.Command,
+				Icon = ReduxIcon.FromResource("Redux.Icon.Heart")
 			});
 			helpMenuItem.Items.Add(creditsMenu);
 		}

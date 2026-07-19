@@ -300,7 +300,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			{
 				Header = activeList ? "Insert Separator Here..." : "Insert Separator (Inactive mods do not retain a load order)",
 				IsEnabled = activeList,
-				ToolTip = activeList ? null : "Inactive mods do not retain a load order."
+				ToolTip = activeList ? null : "Inactive mods do not retain a load order.",
+				Icon = ReduxIcon.FromResource("Redux.Icon.AddStroke", true)
 			};
 			addHere.Click += (_, _) => ShowAddVisualDividerDialog(activeList, insertIndex);
 			menu.Items.Add(addHere);
@@ -315,9 +316,19 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				entry.Tag = "ReduxHiddenForDivider";
 				entry.Visibility = Visibility.Collapsed;
 			}
-			var edit = new MenuItem { Header = "Edit Separator...", Tag = VisualDividerMenuTag };
+			var edit = new MenuItem
+			{
+				Header = "Edit Separator...",
+				Tag = VisualDividerMenuTag,
+				Icon = ReduxIcon.FromResource("Redux.Icon.Create")
+			};
 			edit.Click += (_, _) => ShowEditVisualDividerDialog(mod);
-			var remove = new MenuItem { Header = "Remove Separator", Tag = VisualDividerMenuTag };
+			var remove = new MenuItem
+			{
+				Header = "Remove Separator",
+				Tag = VisualDividerMenuTag,
+				Icon = ReduxIcon.FromResource("Redux.Icon.Trash", foregroundResourceKey: "ReduxErrorBrush")
+			};
 			remove.Click += (_, _) => ViewModel.RemoveVisualDivider(mod);
 			menu.Items.Add(edit);
 			menu.Items.Add(remove);
@@ -329,7 +340,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			menu.Items.Remove(generatedItem);
 		}
 
-		var categoryMenu = new MenuItem { Header = "Assign Category", Tag = CategoryAssignmentMenuTag };
+		var categoryMenu = new MenuItem
+		{
+			Header = "Assign Category",
+			Tag = CategoryAssignmentMenuTag,
+			Icon = ReduxIcon.FromResource("Redux.Icon.Pricetag")
+		};
 		var automaticItem = new MenuItem
 		{
 			Header = "Automatic",
@@ -367,26 +383,40 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			menu.Items.Remove(generatedItem);
 		}
 
-		var sourceMenu = new MenuItem { Header = "Source Link", Tag = SourceLinkMenuTag };
+		var sourceMenu = new MenuItem
+		{
+			Header = "Source Link",
+			Tag = SourceLinkMenuTag,
+			Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true)
+		};
 		if (mod.ModioData?.HasMetadata == true)
 		{
 			sourceMenu.Items.Add(new MenuItem
 			{
 				Header = "Native mod.io identity detected",
 				IsEnabled = false,
-				ToolTip = "Redux keeps the stronger mod.io identity for this package."
+				ToolTip = "Redux keeps the stronger mod.io identity for this package.",
+				Icon = ReduxIcon.FromResource("Redux.Icon.Information", foregroundResourceKey: "ReduxInfoBrush")
 			});
 		}
 		else
 		{
 			var hasNexusLink = mod.NexusModsData?.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START;
-			var linkItem = new MenuItem { Header = hasNexusLink ? "Change Nexus Mods Link..." : "Link to Nexus Mods..." };
+			var linkItem = new MenuItem
+			{
+				Header = hasNexusLink ? "Change Nexus Mods Link..." : "Link to Nexus Mods...",
+				Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true)
+			};
 			linkItem.Click += (_, _) => ShowManualNexusLinkDialog(mod);
 			sourceMenu.Items.Add(linkItem);
 			if (hasNexusLink)
 			{
 				sourceMenu.Items.Add(new Separator());
-				var unlinkItem = new MenuItem { Header = "Unlink Nexus Mods" };
+				var unlinkItem = new MenuItem
+				{
+					Header = "Unlink Nexus Mods",
+					Icon = ReduxIcon.FromResource("Redux.Icon.UnlinkStroke", true, "ReduxErrorBrush")
+				};
 				unlinkItem.Click += (_, _) =>
 				{
 					var result = ShowCategoryMessage(
@@ -410,12 +440,21 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			Header = activeModList ? "Separator" : "Separator (Inactive mods do not retain a load order)",
 			Tag = VisualDividerMenuTag,
 			IsEnabled = activeModList,
-			ToolTip = activeModList ? null : "Inactive mods do not retain a load order."
+			ToolTip = activeModList ? null : "Inactive mods do not retain a load order.",
+			Icon = ReduxIcon.FromResource("Redux.Icon.ReorderStroke", true)
 		};
 		var visualIndex = listView.Items.IndexOf(mod);
-		var addAbove = new MenuItem { Header = "Add Separator Above..." };
+		var addAbove = new MenuItem
+		{
+			Header = "Add Separator Above...",
+			Icon = ReduxIcon.FromResource("Redux.Icon.ChevronUpStroke", true)
+		};
 		addAbove.Click += (_, _) => ShowAddVisualDividerDialog(listView == ActiveModsListView, visualIndex);
-		var addBelow = new MenuItem { Header = "Add Separator Below..." };
+		var addBelow = new MenuItem
+		{
+			Header = "Add Separator Below...",
+			Icon = ReduxIcon.FromResource("Redux.Icon.ChevronDownStroke", true)
+		};
 		addBelow.Click += (_, _) => ShowAddVisualDividerDialog(listView == ActiveModsListView, visualIndex + 1);
 		dividerMenu.Items.Add(addAbove);
 		dividerMenu.Items.Add(addBelow);
@@ -1755,7 +1794,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		}
 
 		menu.Items.Add(new Separator());
-		var autoSizeItem = new MenuItem { Header = "Auto Size Columns" };
+		var autoSizeItem = new MenuItem
+		{
+			Header = "Auto Size Columns",
+			Icon = ReduxIcon.FromResource("Redux.Icon.ReorderStroke", true)
+		};
 		autoSizeItem.Click += (_, _) =>
 		{
 			if (listView.View is not GridView visibleGridView) return;
@@ -1766,7 +1809,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			}
 		};
 		menu.Items.Add(autoSizeItem);
-		var resetItem = new MenuItem { Header = "Reset Columns" };
+		var resetItem = new MenuItem
+		{
+			Header = "Reset Columns",
+			Icon = ReduxIcon.FromResource("Redux.Icon.RefreshStroke", true)
+		};
 		resetItem.Click += (_, _) =>
 		{
 			foreach (var columnName in OptionalModListColumns)

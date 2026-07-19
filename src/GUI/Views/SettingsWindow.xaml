@@ -381,8 +381,12 @@
 				<Setter Property="ContextMenu">
 					<Setter.Value>
 						<ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
-							<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding}" Header="Open in File Explorer..." />
-							<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding}" Header="Copy Path to Clipboard" />
+							<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding}" Header="Open in File Explorer...">
+								<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
+							</MenuItem>
+							<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding}" Header="Copy Path to Clipboard">
+								<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
+							</MenuItem>
 						</ContextMenu>
 					</Setter.Value>
 				</Setter>
@@ -749,8 +753,12 @@
 							<Setter Property="ContextMenu">
 								<Setter.Value>
 									<ContextMenu>
-										<MenuItem x:Name="ResetHotkeyMenuItem" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.DataContext.ResetCommand}" Header="Reset Keybinding" />
-										<MenuItem x:Name="ClearHotkeyMenuItem" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.DataContext.ClearCommand}" Header="Remove Keybinding" />
+										<MenuItem x:Name="ResetHotkeyMenuItem" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.DataContext.ResetCommand}" Header="Reset Keybinding">
+											<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
+										</MenuItem>
+										<MenuItem x:Name="ClearHotkeyMenuItem" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.DataContext.ClearCommand}" Header="Remove Keybinding">
+											<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.RemoveCircle}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
+										</MenuItem>
 									</ContextMenu>
 								</Setter.Value>
 							</Setter>
