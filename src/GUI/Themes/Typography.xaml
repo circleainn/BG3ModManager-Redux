@@ -1,12 +1,12 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<!--
-		Typography is intentionally shared by every Redux theme. Color themes should
-		override palette tokens only, never the app's font family or layout.
+		Typography is intentionally independent from Redux color themes. The active
+		family token is replaced at runtime; weights remain shared across families.
 	-->
-	<FontFamily x:Key="Redux.FontFamily.UI">pack://application:,,,/BG3ModManager;component/Resources/Fonts/#Manrope</FontFamily>
+	<FontFamily x:Key="Redux.FontFamily.UI">./Resources/Fonts/#Manrope</FontFamily>
 	<!-- Legacy alias retained for extension dictionaries that used the original key. -->
-	<FontFamily x:Key="ReduxFontFamily">pack://application:,,,/BG3ModManager;component/Resources/Fonts/#Manrope</FontFamily>
+	<FontFamily x:Key="ReduxFontFamily">./Resources/Fonts/#Manrope</FontFamily>
 	<FontWeight x:Key="Redux.FontWeight.Body">Normal</FontWeight>
 	<FontWeight x:Key="Redux.FontWeight.Control">Medium</FontWeight>
 	<FontWeight x:Key="Redux.FontWeight.Title">SemiBold</FontWeight>

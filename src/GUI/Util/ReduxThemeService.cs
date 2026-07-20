@@ -44,7 +44,8 @@ public static class ReduxThemeService
 		settings?.CustomThemes?.FirstOrDefault(theme =>
 			theme.Id.Equals(settings.ActiveCustomThemeId, StringComparison.OrdinalIgnoreCase));
 
-	public static ReduxCustomTheme CreateFromBase(string name, ReduxThemeType baseTheme)
+	public static ReduxCustomTheme CreateFromBase(string name, ReduxThemeType baseTheme,
+		ReduxTypographyFont typographyFont = 0)
 	{
 		if (!BaseColors.TryGetValue(baseTheme, out var colors))
 		{
@@ -55,6 +56,7 @@ public static class ReduxThemeService
 		{
 			Name = String.IsNullOrWhiteSpace(name) ? "Custom Theme" : name.Trim(),
 			BaseTheme = baseTheme,
+			TypographyFont = NormalizeTypography(typographyFont, baseTheme),
 			BackgroundColor = colors[0],
 			SurfaceColor = colors[1],
 			AccentColor = colors[2],
@@ -95,6 +97,11 @@ public static class ReduxThemeService
 		if (!BaseColors.ContainsKey(theme.BaseTheme))
 		{
 			error = "The custom theme uses an unsupported base theme.";
+			return false;
+		}
+		if (!Enum.IsDefined(theme.TypographyFont) || theme.TypographyFont == 0)
+		{
+			error = "The custom theme uses an unsupported typeface.";
 			return false;
 		}
 		foreach (var (label, value) in GetEditableColors(theme))
@@ -158,6 +165,7 @@ public static class ReduxThemeService
 	public static ReduxCustomTheme Import(string path)
 	{
 		var theme = JsonConvert.DeserializeObject<ReduxCustomTheme>(File.ReadAllText(path));
+		if (theme != null) theme.TypographyFont = NormalizeTypography(theme.TypographyFont, theme.BaseTheme);
 		if (!TryValidate(theme, out var error)) throw new InvalidDataException(error);
 		theme.Id = Guid.NewGuid().ToString("N");
 		theme.Name = theme.Name.Trim();
@@ -250,6 +258,12 @@ public static class ReduxThemeService
 
 	private static Color Parse(string value) => TryParseColor(value, out var color) ? color : System.Windows.Media.Colors.Magenta;
 	private static string Normalize(string value) => $"#{Parse(value).R:X2}{Parse(value).G:X2}{Parse(value).B:X2}";
+	private static ReduxTypographyFont NormalizeTypography(ReduxTypographyFont value, ReduxThemeType baseTheme) =>
+		Enum.IsDefined(value) && value != 0
+			? value
+			: baseTheme == ReduxThemeType.Parchment
+				? ReduxTypographyFont.Minipax
+				: ReduxTypographyFont.Manrope;
 	private static Color Mix(Color left, Color right, double amount) => Color.FromRgb(
 		(byte)Math.Round(left.R + ((right.R - left.R) * amount)),
 		(byte)Math.Round(left.G + ((right.G - left.G) * amount)),

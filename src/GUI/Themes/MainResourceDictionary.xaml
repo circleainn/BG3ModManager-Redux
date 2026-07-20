@@ -24,9 +24,8 @@
     xmlns:xc="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:xconv="clr-namespace:Xceed.Wpf.Toolkit.Converters;assembly=DotNetProjects.Wpf.Extended.Toolkit"
     xmlns:xcthemes="clr-namespace:Xceed.Wpf.Toolkit.Themes;assembly=DotNetProjects.Wpf.Extended.Toolkit"
-    x:Name="MainResources">
+	x:Name="MainResources">
 	<ResourceDictionary.MergedDictionaries>
-		<ResourceDictionary Source="Typography.xaml" />
 		<ResourceDictionary Source="DefaultStyles/ComboBox.xaml" />
 	</ResourceDictionary.MergedDictionaries>
 	<!--  Keep native menu behavior while giving Redux popups a softer silhouette.  -->

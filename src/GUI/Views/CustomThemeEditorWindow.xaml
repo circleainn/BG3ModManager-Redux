@@ -5,9 +5,9 @@
 	xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
 	xmlns:ext="clr-namespace:DivinityModManager.Controls.Extensions"
 	Title="Custom Theme Editor"
-	Width="720"
-	Height="650"
-	MinWidth="660"
+	Width="860"
+	Height="670"
+	MinWidth="780"
 	MinHeight="600"
 	ResizeMode="CanResizeWithGrip"
 	ShowInTaskbar="False"
@@ -88,11 +88,17 @@
 			</Grid.RowDefinitions>
 			<TextBlock FontSize="19" FontWeight="SemiBold" Text="Design a custom Redux palette" />
 			<TextBlock Grid.Row="1" Margin="0,5,0,16" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-				Text="Choose eight semantic colors. Redux derives hover, selection, borders, muted text, and contrast-safe button text automatically."
+				Text="Choose a default typeface and eight semantic colors. Redux derives hover, selection, borders, muted text, and contrast-safe button text automatically."
 				TextWrapping="Wrap" />
 
 			<Grid Grid.Row="2">
-				<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="220" /></Grid.ColumnDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition Width="14" />
+					<ColumnDefinition Width="190" />
+					<ColumnDefinition Width="14" />
+					<ColumnDefinition Width="220" />
+				</Grid.ColumnDefinitions>
 				<StackPanel>
 					<TextBlock Margin="0,0,0,5" FontWeight="SemiBold" Text="Theme name" />
 					<TextBox x:Name="ThemeNameTextBox" MaxLength="50" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
@@ -102,6 +108,14 @@
 					<ComboBox x:Name="BaseThemeComboBox" DisplayMemberPath="Description"
 						ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxThemeType}}}"
 						SelectedValuePath="Value" SelectionChanged="BaseThemeComboBox_SelectionChanged" />
+				</StackPanel>
+				<StackPanel Grid.Column="4">
+					<TextBlock Margin="0,0,0,5" FontWeight="SemiBold" Text="Default typeface" />
+					<ComboBox x:Name="TypographyFontComboBox" DisplayMemberPath="Description"
+						ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxTypographyFont}}}"
+						SelectedValuePath="Value" SelectionChanged="TypographyFontComboBox_SelectionChanged" />
+					<TextBlock Margin="2,5,0,0" FontSize="15" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+						Text="Aa Qg 0O 1Il" />
 				</StackPanel>
 			</Grid>
 

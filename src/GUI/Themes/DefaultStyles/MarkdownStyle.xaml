@@ -4,7 +4,7 @@
     xmlns:controls="clr-namespace:DivinityModManager.Controls"
     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 	<Style x:Key="DocumentStyle" BasedOn="{StaticResource {x:Type FlowDocument}}" TargetType="FlowDocument">
-		<Setter Property="FontFamily" Value="Segoe UI" />
+		<Setter Property="FontFamily" Value="{DynamicResource Redux.FontFamily.UI}" />
 		<Setter Property="TextAlignment" Value="Left" />
 		<Setter Property="Background" Value="{DynamicResource {x:Static adonisUI:Brushes.Layer1BackgroundBrush}}" />
 	</Style>

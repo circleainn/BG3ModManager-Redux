@@ -27,8 +27,8 @@ incomplete or change between builds.
 
 - Stabilized the Redux visual system across dialogs, tooltips, menus, buttons, tabs, fields,
   notifications, mod lists, and the selected-mod drawer.
-- Added safe color-only custom themes with create, edit, duplicate, import, export, and live
-  preview workflows.
+- Added safe custom themes with a preferred bundled typeface plus create, edit, duplicate, import,
+  export, and live preview workflows.
 - Expanded categories with curated default identities, custom colors and icons, reset-to-default,
   icon-aware pills, reordered sidebar presentation, and a **No Category** fallback.
 - Added optional icons to visual separators while preserving their original diamond fallback.
@@ -142,8 +142,10 @@ must end at the game's `Data` directory, not merely the Baldur's Gate 3 installa
 - Exporting load orders to the game, text files, JSON, and archives where supported.
 - Filtering and configurable list columns.
 - Shortcuts to common game, mod, save, and log folders.
-- Dark, Light, and Parchment themes with bundled Manrope typography and refined semantic palettes.
-- Safe custom color themes with live preview, duplication, JSON import, and JSON export.
+- Dark, Light, and Parchment themes with a bundled typography selector and refined semantic palettes.
+  Parchment defaults to Minipax; Redux Dark and Redux Light default to Manrope.
+- Safe custom themes with a preferred bundled typeface, live preview, duplication, JSON import,
+  and JSON export.
 - Theme-aware vector iconography and consistent interaction feedback across Redux-owned controls.
 - Screen-reader and accessibility behavior inherited from the upstream manager.
 
@@ -250,6 +252,12 @@ affect game files.
 - Some inherited dialogs or dense tab selections may still have minor visual inconsistencies.
 - Packaging and clean-machine behavior still require wider private testing.
 
+### Planned appearance follow-ups
+
+- Optional custom transparent PNG icons for categories and visual separators.
+- Compact, Default, and Large typography sizing presets with a clipping-safety pass.
+- Safe custom font import for typography and custom-theme defaults.
+
 Report reproducible problems through the
 [Redux issue tracker](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues). Include the
 Redux version, relevant logs, screenshots, the affected mod names/UUIDs, and the steps that led to
@@ -299,7 +307,12 @@ Redux also depends on third-party projects including:
 - [LSLib by Norbyte](https://github.com/Norbyte/lslib)
 - [BG3 Script Extender by Norbyte](https://github.com/Norbyte/bg3se)
 - CrossSpeak and its bundled screen-reader integrations
-- [Manrope](https://github.com/davelab6/manrope), distributed under the SIL Open Font License
+- [Manrope](https://github.com/davelab6/manrope),
+  [Atkinson Hyperlegible](https://github.com/googlefonts/atkinson-hyperlegible),
+  [Monaspace](https://github.com/githubnext/monaspace),
+  [Minipax](https://github.com/ronotypo/Minipax),
+  [Chivo](https://github.com/Omnibus-Type/Chivo), and
+  [Crimson Pro](https://github.com/Fonthausen/CrimsonPro), distributed under the SIL Open Font License
 - [Ionicons](https://github.com/ionic-team/ionicons) and
   [Tabler Icons](https://github.com/tabler/tabler-icons), distributed under the MIT License
 - AdonisUI, ReactiveUI, GongSolutions.WPF.DragDrop, and other packages listed in the project files

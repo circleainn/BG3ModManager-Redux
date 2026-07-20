@@ -174,6 +174,9 @@ public partial class SettingsWindow : SettingsWindowBase
 		if (sender is RadioButton { Tag: ReduxThemeType theme })
 		{
 			ViewModel.Settings.ActiveCustomThemeId = String.Empty;
+			ViewModel.Settings.TypographyFont = theme == ReduxThemeType.Parchment
+				? ReduxTypographyFont.Minipax
+				: ReduxTypographyFont.Manrope;
 			ThemeComboBox.SelectedValue = theme;
 			RefreshCustomThemeControls();
 		}
@@ -204,7 +207,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		DuplicateCustomThemeButton.IsEnabled = hasSelection;
 		ExportCustomThemeButton.IsEnabled = hasSelection;
 		CustomThemeStatusText.Text = activeTheme != null
-			? $"Active custom theme · based on {activeTheme.BaseTheme.GetDescription()}"
+			? $"Active custom theme · {activeTheme.BaseTheme.GetDescription()} · {activeTheme.TypographyFont.GetDescription()}"
 			: ViewModel.Settings.CustomThemes.Count == 0
 				? "No custom themes yet. Create one from the current built-in palette."
 				: "Choose a custom theme above, or keep using a built-in theme.";
@@ -222,6 +225,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		ViewModel.Settings.ActiveCustomThemeId = theme.Id;
 		ViewModel.Settings.ColorTheme = theme.BaseTheme;
+		ViewModel.Settings.TypographyFont = theme.TypographyFont;
 		MainWindow.Self.MainView.UpdateColorTheme(theme.BaseTheme);
 		ViewModel.Main.SaveSettings();
 		RefreshCustomThemeControls();
@@ -230,19 +234,22 @@ public partial class SettingsWindow : SettingsWindowBase
 	private bool EditCustomTheme(ReduxCustomTheme workingTheme)
 	{
 		var previousTheme = ViewModel.Settings.ColorTheme;
+		var previousFont = ViewModel.Settings.TypographyFont;
 		var dialog = new CustomThemeEditorWindow(workingTheme) { Owner = this };
 		dialog.PreviewChanged += preview => MainWindow.Self.MainView.PreviewCustomTheme(preview);
 		var accepted = dialog.ShowDialog() == true;
 		if (!accepted)
 		{
 			MainWindow.Self.MainView.UpdateColorTheme(previousTheme);
+			ReduxTypographyService.Apply(Application.Current.Resources, previousFont);
 		}
 		return accepted;
 	}
 
 	private void CreateCustomTheme_Click(object sender, RoutedEventArgs e)
 	{
-		var working = ReduxThemeService.CreateFromBase("My Custom Theme", ViewModel.Settings.ColorTheme);
+		var working = ReduxThemeService.CreateFromBase("My Custom Theme", ViewModel.Settings.ColorTheme,
+			ViewModel.Settings.TypographyFont);
 		if (!EditCustomTheme(working)) return;
 		ViewModel.Settings.CustomThemes.Add(working);
 		ActivateCustomTheme(working);
@@ -614,6 +621,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		this.Bind(ViewModel, vm => vm.Settings.DebugModeEnabled, view => view.DebugModeCheckBox.IsChecked);
 		this.Bind(ViewModel, vm => vm.Settings.LogEnabled, view => view.LogEnabledCheckBox.IsChecked);
 		this.Bind(ViewModel, vm => vm.Settings.ColorTheme, view => view.ThemeComboBox.SelectedValue);
+		this.Bind(ViewModel, vm => vm.Settings.TypographyFont, view => view.TypographyComboBox.SelectedValue);
 		ViewModel.Settings.WhenAnyValue(settings => settings.ActiveCustomThemeId)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => RefreshCustomThemeControls());

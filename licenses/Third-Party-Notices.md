@@ -30,6 +30,43 @@ sponsorship, or official support.
 Redux bundles the Manrope typeface under the SIL Open Font License. A copy is included in the
 distribution at `licenses/Manrope-OFL-1.1.txt`.
 
+## Atkinson Hyperlegible
+
+Redux bundles the Atkinson Hyperlegible typeface, created by the Braille Institute of America,
+under the SIL Open Font License. A copy is included in the distribution at
+`licenses/Atkinson-Hyperlegible-OFL-1.1.txt`.
+
+- Project: https://github.com/googlefonts/atkinson-hyperlegible
+- Braille Institute: https://www.brailleinstitute.org/freefont/
+
+## Monaspace Neon
+
+Redux bundles selected static weights of Monaspace Neon from the Monaspace type system under the
+SIL Open Font License. A copy is included at `licenses/Monaspace-OFL-1.1.txt`.
+
+- Project: https://github.com/githubnext/monaspace
+
+## Minipax
+
+Redux bundles selected weights of the Minipax typeface under the SIL Open Font License. A copy is
+included at `licenses/Minipax-OFL-1.1.txt`.
+
+- Project: https://github.com/ronotypo/Minipax
+
+## Chivo
+
+Redux bundles selected weights of the Chivo typeface under the SIL Open Font License. A copy is
+included at `licenses/Chivo-OFL-1.1.txt`.
+
+- Project: https://github.com/Omnibus-Type/Chivo
+
+## Crimson Pro
+
+Redux bundles selected weights of the Crimson Pro typeface under the SIL Open Font License. A copy
+is included at `licenses/Crimson-Pro-OFL-1.1.txt`.
+
+- Project: https://github.com/Fonthausen/CrimsonPro
+
 ## Ionicons
 
 Redux includes selected vector icon geometry adapted from Ionicons 8.0.13, copyright Ionic,

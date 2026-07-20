@@ -1098,6 +1098,12 @@ Directory the zip will be extracted to:
 
 		Settings.WhenAnyValue(x => x.LogEnabled).Subscribe(Window.ToggleLogging);
 
+		Settings.WhenAnyValue(x => x.TypographyFont).ObserveOn(RxApp.MainThreadScheduler).Subscribe((font) =>
+		{
+			ReduxTypographyService.Apply(Application.Current.Resources, font);
+			if (IsInitialized) SaveSettings();
+		});
+
 		Settings.WhenAnyValue(x => x.ColorTheme, x => x.ActiveCustomThemeId).ObserveOn(RxApp.MainThreadScheduler).Subscribe((selection) =>
 		{
 			var theme = selection.Item1;
@@ -6405,12 +6411,16 @@ Directory the zip will be extracted to:
 		Keys.ToggleViewTheme.AddAction(() =>
 		{
 			Settings.ActiveCustomThemeId = String.Empty;
-			Settings.ColorTheme = Settings.ColorTheme switch
+			var nextTheme = Settings.ColorTheme switch
 			{
 				ReduxThemeType.ReduxDark => ReduxThemeType.ReduxLight,
 				ReduxThemeType.ReduxLight => ReduxThemeType.Parchment,
 				_ => ReduxThemeType.ReduxDark
 			};
+			Settings.TypographyFont = nextTheme == ReduxThemeType.Parchment
+				? ReduxTypographyFont.Minipax
+				: ReduxTypographyFont.Manrope;
+			Settings.ColorTheme = nextTheme;
 		});
 
 		Keys.ToggleFileNameDisplay.AddAction(() =>

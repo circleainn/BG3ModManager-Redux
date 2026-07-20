@@ -42,13 +42,13 @@
 			</ResourceDictionary.MergedDictionaries>
 			<ControlTemplate x:Key="SettingsActionButtonTemplate" TargetType="{x:Type Button}">
 				<Border x:Name="ButtonChrome"
-					Padding="{TemplateBinding Padding}"
 					Background="{TemplateBinding Background}"
 					BorderBrush="{TemplateBinding BorderBrush}"
 					BorderThickness="{TemplateBinding BorderThickness}"
-					CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
 					SnapsToDevicePixels="True">
-					<ContentPresenter HorizontalAlignment="Center"
+					<ContentPresenter Margin="{TemplateBinding Padding}"
+						HorizontalAlignment="Center"
 						VerticalAlignment="Center"
 						Content="{TemplateBinding Content}"
 						ContentTemplate="{TemplateBinding ContentTemplate}" />
@@ -56,7 +56,7 @@
 				<ControlTemplate.Triggers>
 					<Trigger Property="IsMouseOver" Value="True">
 						<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxHoverBrush}" />
-						<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+						<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
 					</Trigger>
 					<Trigger Property="IsPressed" Value="True">
 						<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
@@ -65,16 +65,24 @@
 					<Trigger Property="IsEnabled" Value="False">
 						<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
 					</Trigger>
+					<MultiTrigger>
+						<MultiTrigger.Conditions>
+							<Condition Property="Tag" Value="Warning" />
+							<Condition Property="IsMouseOver" Value="True" />
+						</MultiTrigger.Conditions>
+						<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+						<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxWarningBrush}" />
+					</MultiTrigger>
 				</ControlTemplate.Triggers>
 			</ControlTemplate>
 			<Style x:Key="SettingsActionButtonStyle" TargetType="{x:Type Button}">
 				<Setter Property="Height" Value="31" />
-				<Setter Property="Padding" Value="11,3" />
+				<Setter Property="Padding" Value="12,3" />
 				<Setter Property="Margin" Value="0,0,8,0" />
-				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
-				<Setter Property="BorderThickness" Value="1" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+				<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+				<Setter Property="BorderThickness" Value="1.5" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
 				<Setter Property="Template" Value="{StaticResource SettingsActionButtonTemplate}" />
 			</Style>
 			<Style x:Key="SettingsTabControlStyle" TargetType="{x:Type TabControl}">
@@ -307,7 +315,9 @@
 				</Setter>
 			</Style>
 			<Style x:Key="SettingsWarningButtonStyle" BasedOn="{StaticResource SettingsActionButtonStyle}" TargetType="{x:Type Button}">
-				<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+				<Setter Property="Tag" Value="Warning" />
+				<Setter Property="Background" Value="{DynamicResource ReduxWarningBrush}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxWindowBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 			</Style>
 			<Style x:Key="SettingsListViewStyle" BasedOn="{StaticResource {x:Type ListView}}" TargetType="{x:Type ListView}">
@@ -437,7 +447,7 @@
 			    HorizontalAlignment="Right"
 			    Style="{StaticResource SettingsWarningButtonStyle}">
 				<StackPanel Margin="0" Orientation="Horizontal">
-					<controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.RefreshStroke}" Foreground="{DynamicResource ReduxWarningBrush}" />
+					<controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.RefreshStroke}" />
 					<TextBlock Text="Reset" />
 				</StackPanel>
 			</Button>
@@ -502,7 +512,7 @@
 						</Grid.RowDefinitions>
 						<TextBlock Style="{StaticResource SettingsPageTitleStyle}" Text="Theme &amp; Appearance" />
 						<TextBlock Grid.Row="1" Style="{StaticResource SettingsPageDescriptionStyle}"
-							Text="Customize the look and feel of Redux. Themes control colors and surfaces while typography, layout, icons, and behavior remain consistent." />
+							Text="Customize the look and feel of Redux. Themes control colors and surfaces, while typography can be selected independently." />
 						<Border Grid.Row="2" Margin="0,12,0,0" Background="{DynamicResource ReduxBorderBrush}" />
 
 						<StackPanel Grid.Row="3" Margin="0,12,0,0">
@@ -611,7 +621,7 @@
 											<TextBlock FontWeight="SemiBold" Text="Show icons in category pills" />
 											<TextBlock Margin="0,3,0,0"
 												Foreground="{DynamicResource ReduxTextMutedBrush}"
-												Text="Add the selected category icon to mod-list and drawer pills. Off by default."
+											Text="Add the selected category icon to mod-list and drawer pills. On by default."
 												TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
@@ -619,7 +629,39 @@
 							</Border>
 						</Grid>
 
-						<Border Grid.Row="5" Style="{StaticResource CompactThemeSectionCardStyle}">
+						<Border Grid.Row="5" Margin="0,10,0,0" Style="{StaticResource CompactThemeSectionCardStyle}">
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+								<Border Width="30" Height="30" Margin="0,0,10,0"
+									Background="{DynamicResource ReduxAccentSoftBrush}"
+									BorderBrush="{DynamicResource ReduxAccentBrush}"
+									BorderThickness="1"
+									CornerRadius="15">
+									<controls:ReduxIcon Width="15" Height="15" HorizontalAlignment="Center" VerticalAlignment="Center"
+										Data="{StaticResource Redux.Icon.DocumentText}" />
+								</Border>
+								<StackPanel Grid.Column="1" Margin="0,0,16,0">
+									<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Typography" />
+									<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
+										Text="Choose the app typeface. Text size remains unchanged."
+										TextWrapping="Wrap" />
+									<TextBlock x:Name="TypographyPreviewText" Margin="0,6,0,0" FontSize="22"
+										FontFamily="{DynamicResource Redux.FontFamily.UI}"
+										Text="Aa Qg 0O 1Il — Typography preview" />
+								</StackPanel>
+								<ComboBox x:Name="TypographyComboBox" Grid.Column="2" Width="230" VerticalAlignment="Center"
+									DisplayMemberPath="Description"
+									ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxTypographyFont}}}"
+									SelectedValuePath="Value"
+									ToolTip="Choose the typeface used throughout Redux" />
+							</Grid>
+						</Border>
+
+						<Border Grid.Row="6" Margin="0,10,0,0" Style="{StaticResource CompactThemeSectionCardStyle}">
 							<Grid>
 								<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 								<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
@@ -629,7 +671,7 @@
 								<StackPanel Grid.Column="1">
 									<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Custom themes" />
 									<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-										Text="Create and share safe color-only palettes. Redux derives interaction and contrast colors automatically."
+									Text="Create and share palettes with a preferred typeface. Redux derives interaction and contrast colors automatically."
 										TextWrapping="Wrap" />
 								</StackPanel>
 

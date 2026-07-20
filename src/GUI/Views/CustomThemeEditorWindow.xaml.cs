@@ -20,6 +20,7 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 		InitializeComponent();
 		DataContext = Theme;
 		BaseThemeComboBox.SelectedValue = Theme.BaseTheme;
+		TypographyFontComboBox.SelectedValue = Theme.TypographyFont;
 		ReduxThemeService.Apply(Resources, Theme.BaseTheme, Theme);
 		Loaded += (_, _) =>
 		{
@@ -34,6 +35,14 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 		if (_initializing || BaseThemeComboBox.SelectedValue is not ReduxThemeType baseTheme || baseTheme == Theme.BaseTheme) return;
 		ReduxThemeService.ResetToBase(Theme, baseTheme);
 		PreviewTheme();
+	}
+
+	private void TypographyFontComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (_initializing || TypographyFontComboBox.SelectedValue is not ReduxTypographyFont typographyFont) return;
+		Theme.TypographyFont = typographyFont;
+		ReduxTypographyService.Apply(Application.Current.Resources, typographyFont);
+		PreviewChanged?.Invoke(Theme);
 	}
 
 	private void ColorButton_Click(object sender, RoutedEventArgs e)
@@ -60,6 +69,7 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 	private void PreviewTheme()
 	{
 		ReduxThemeService.Apply(Resources, Theme.BaseTheme, Theme);
+		ReduxTypographyService.Apply(Application.Current.Resources, Theme.TypographyFont);
 		PreviewChanged?.Invoke(Theme);
 	}
 

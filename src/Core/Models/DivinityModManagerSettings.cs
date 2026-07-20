@@ -24,6 +24,24 @@ public enum ReduxThemeType
 	Parchment = 3
 }
 
+public enum ReduxTypographyFont
+{
+	[Description("Manrope")]
+	Manrope = 1,
+	[Description("Segoe UI")]
+	SegoeUI = 2,
+	[Description("Atkinson Hyperlegible")]
+	AtkinsonHyperlegible = 3,
+	[Description("Monaspace Neon")]
+	MonaspaceNeon = 4,
+	[Description("Minipax")]
+	Minipax = 5,
+	[Description("Chivo")]
+	Chivo = 6,
+	[Description("Crimson Pro")]
+	CrimsonPro = 7
+}
+
 [DataContract]
 public class DivinityModManagerSettings : ReactiveObject
 {
@@ -120,6 +138,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("Theme", "Choose the Redux color palette. Themes change colors only; layout, typography, icons, and behavior remain shared.", HideFromUI = true)]
 	[DataMember, Reactive] public ReduxThemeType ColorTheme { get; set; } = ReduxThemeType.ReduxDark;
 
+	[DefaultValue(ReduxTypographyFont.Manrope)]
+	[SettingsEntry("App font", "Choose the typeface used throughout Redux. Text sizing is managed separately.", HideFromUI = true)]
+	[DataMember, Reactive] public ReduxTypographyFont TypographyFont { get; set; } = ReduxTypographyFont.Manrope;
+
 	[DefaultValue("")]
 	[DataMember, Reactive] public string ActiveCustomThemeId { get; set; } = String.Empty;
 
@@ -177,7 +199,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool SaveModCategoryFilterBetweenSessions { get; set; }
 
-	[DefaultValue(false)]
+	[DefaultValue(true)]
 	[DataMember, Reactive] public bool ShowCategoryIconsInPills { get; set; } = true;
 
 	[DefaultValue("All Mods")]
@@ -285,6 +307,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	{
 		// A zero value marks settings written before Redux added the three-theme selector.
 		ColorTheme = 0;
+		TypographyFont = 0;
 	}
 
 	[OnDeserialized]
@@ -295,11 +318,23 @@ public class DivinityModManagerSettings : ReactiveObject
 			ColorTheme = DarkThemeEnabled ? ReduxThemeType.ReduxDark : ReduxThemeType.ReduxLight;
 		}
 		DarkThemeEnabled = ColorTheme == ReduxThemeType.ReduxDark;
+		if (!Enum.IsDefined(TypographyFont) || TypographyFont == 0)
+		{
+			TypographyFont = ColorTheme == ReduxThemeType.Parchment
+				? ReduxTypographyFont.Minipax
+				: ReduxTypographyFont.Manrope;
+		}
 		CustomThemes ??= new ObservableCollection<ReduxCustomTheme>();
 		foreach (var theme in CustomThemes)
 		{
 			theme.Id = String.IsNullOrWhiteSpace(theme.Id) ? Guid.NewGuid().ToString("N") : theme.Id;
 			theme.Name = String.IsNullOrWhiteSpace(theme.Name) ? "Imported Theme" : theme.Name.Trim();
+			if (!Enum.IsDefined(theme.TypographyFont) || theme.TypographyFont == 0)
+			{
+				theme.TypographyFont = theme.BaseTheme == ReduxThemeType.Parchment
+					? ReduxTypographyFont.Minipax
+					: ReduxTypographyFont.Manrope;
+			}
 		}
 		if (!CustomThemes.Any(theme => theme.Id.Equals(ActiveCustomThemeId, StringComparison.OrdinalIgnoreCase)))
 		{

@@ -62,7 +62,18 @@ REQUIRED_FILES = {
 	Path("licenses/Ionicons-MIT.txt"),
 	Path("licenses/LSLib-MIT.txt"),
 	Path("licenses/Manrope-OFL-1.1.txt"),
+	Path("licenses/Atkinson-Hyperlegible-OFL-1.1.txt"),
+	Path("licenses/Monaspace-OFL-1.1.txt"),
+	Path("licenses/Minipax-OFL-1.1.txt"),
+	Path("licenses/Chivo-OFL-1.1.txt"),
+	Path("licenses/Crimson-Pro-OFL-1.1.txt"),
 	Path("licenses/Tabler-Icons-MIT.txt"),
+	Path("Resources/Fonts/Manrope-Regular.ttf"),
+	Path("Resources/Fonts/AtkinsonHyperlegible-Regular.ttf"),
+	Path("Resources/Fonts/MonaspaceNeon-Regular.otf"),
+	Path("Resources/Fonts/Minipax-Regular.ttf"),
+	Path("Resources/Fonts/Chivo-Regular.ttf"),
+	Path("Resources/Fonts/CrimsonPro-Regular.ttf"),
 }
 
 BINARY_SUFFIXES = {".dll", ".exe"}

@@ -1,4 +1,5 @@
 using System.Runtime.Serialization;
+using System.ComponentModel;
 
 namespace DivinityModManager.Models;
 
@@ -12,6 +13,8 @@ public class ReduxCustomTheme : ReactiveObject
 	[DataMember, Reactive] public string Id { get; set; } = Guid.NewGuid().ToString("N");
 	[DataMember, Reactive] public string Name { get; set; } = "Custom Theme";
 	[DataMember, Reactive] public ReduxThemeType BaseTheme { get; set; } = ReduxThemeType.ReduxDark;
+	[DefaultValue(ReduxTypographyFont.Manrope)]
+	[DataMember, Reactive] public ReduxTypographyFont TypographyFont { get; set; } = ReduxTypographyFont.Manrope;
 	[DataMember, Reactive] public string BackgroundColor { get; set; } = "#0D0B10";
 	[DataMember, Reactive] public string SurfaceColor { get; set; } = "#17121D";
 	[DataMember, Reactive] public string AccentColor { get; set; } = "#9676FF";
@@ -26,6 +29,7 @@ public class ReduxCustomTheme : ReactiveObject
 		Id = createNewIdentity ? Guid.NewGuid().ToString("N") : Id,
 		Name = Name,
 		BaseTheme = BaseTheme,
+		TypographyFont = TypographyFont,
 		BackgroundColor = BackgroundColor,
 		SurfaceColor = SurfaceColor,
 		AccentColor = AccentColor,

@@ -80,7 +80,10 @@
 		</Resource>
 		<Resource Include="Resources\Icons\Platforms\*.svg" />
 		<Resource Include="Resources\Icons\Platforms\*.png" />
-		<Resource Include="Resources\Fonts\Manrope-Regular.ttf;Resources\Fonts\Manrope-Medium.ttf;Resources\Fonts\Manrope-SemiBold.ttf;Resources\Fonts\Manrope-Bold.ttf" />
+		<Content Include="Resources\Fonts\*.ttf;Resources\Fonts\*.otf">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
 		<None Include="..\..\licenses\BG3ModManager-Redux-MIT.txt">
 			<Link>licenses\BG3ModManager-Redux-MIT.txt</Link>
 			<TargetPath>licenses\BG3ModManager-Redux-MIT.txt</TargetPath>
@@ -96,6 +99,36 @@
 		<None Include="..\..\licenses\Manrope-OFL-1.1.txt">
 			<Link>licenses\Manrope-OFL-1.1.txt</Link>
 			<TargetPath>licenses\Manrope-OFL-1.1.txt</TargetPath>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</None>
+		<None Include="..\..\licenses\Atkinson-Hyperlegible-OFL-1.1.txt">
+			<Link>licenses\Atkinson-Hyperlegible-OFL-1.1.txt</Link>
+			<TargetPath>licenses\Atkinson-Hyperlegible-OFL-1.1.txt</TargetPath>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</None>
+		<None Include="..\..\licenses\Monaspace-OFL-1.1.txt">
+			<Link>licenses\Monaspace-OFL-1.1.txt</Link>
+			<TargetPath>licenses\Monaspace-OFL-1.1.txt</TargetPath>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</None>
+		<None Include="..\..\licenses\Minipax-OFL-1.1.txt">
+			<Link>licenses\Minipax-OFL-1.1.txt</Link>
+			<TargetPath>licenses\Minipax-OFL-1.1.txt</TargetPath>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</None>
+		<None Include="..\..\licenses\Chivo-OFL-1.1.txt">
+			<Link>licenses\Chivo-OFL-1.1.txt</Link>
+			<TargetPath>licenses\Chivo-OFL-1.1.txt</TargetPath>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</None>
+		<None Include="..\..\licenses\Crimson-Pro-OFL-1.1.txt">
+			<Link>licenses\Crimson-Pro-OFL-1.1.txt</Link>
+			<TargetPath>licenses\Crimson-Pro-OFL-1.1.txt</TargetPath>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</None>
@@ -144,6 +177,13 @@
 			<MoveToLibFolder Include="$(OutputPath)*.dll;$(OutputPath)*.xml;$(OutputPath)\runtimes\win-x64\native\WebView2Loader.dll" Exclude="$(OutputPath)BG3ModManager.dll;$(OutputPath)WinRT.Runtime.dll" />
 		</ItemGroup>
 		<Move SourceFiles="@(MoveToLibFolder)" DestinationFolder="$(OutputPath)_Lib" OverwriteReadOnlyFiles="true" ContinueOnError="true" />
+		<!-- The C++/CLI loader shim is required for LSLibNative at runtime but is not
+		     transitively copied when a prebuilt native reference is used. -->
+		<Copy SourceFiles="$(SolutionDir)x64\$(Configuration)\Ijwhost.dll" DestinationFolder="$(OutputPath)_Lib"
+			OverwriteReadOnlyFiles="true" Condition="Exists('$(SolutionDir)x64\$(Configuration)\Ijwhost.dll')" />
+		<Copy SourceFiles="$(SolutionDir)x64\Debug\Ijwhost.dll" DestinationFolder="$(OutputPath)_Lib"
+			OverwriteReadOnlyFiles="true"
+			Condition="!Exists('$(OutputPath)_Lib\Ijwhost.dll') and Exists('$(SolutionDir)x64\Debug\Ijwhost.dll')" />
 		<Delete Files="@(DeleteDebug)" ContinueOnError="true" TreatErrorsAsWarnings="true">
 			<Output TaskParameter="DeletedFiles" ItemName="DeletedList" />
 		</Delete>
