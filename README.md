@@ -7,7 +7,7 @@ safer file operations, richer metadata, and better organization for large mod li
 
 ## Current version
 
-**0.1.0-alpha.4 — private testing alpha**
+**0.1.0-alpha.5 — private testing alpha**
 
 Redux is still experimental. Current builds are intended for careful personal use and a small
 group of private testers. Features, metadata matching, themes, and interface details may be
@@ -23,22 +23,18 @@ incomplete or change between builds.
 - Source code is public for transparency and development, but this alpha is not yet intended for
   inexperienced users.
 
-### Alpha.4 highlights
+### Alpha.5 highlights
 
-- Stabilized the Redux visual system across dialogs, tooltips, menus, buttons, tabs, fields,
-  notifications, mod lists, and the selected-mod drawer.
-- Added safe custom themes with a preferred bundled typeface plus create, edit, duplicate, import,
-  export, and live preview workflows.
-- Expanded categories with curated default identities, custom colors and icons, reset-to-default,
-  icon-aware pills, reordered sidebar presentation, and a **No Category** fallback.
-- Added optional icons to visual separators while preserving their original diamond fallback.
-- Replaced many legacy bitmap and inconsistent interface glyphs with theme-aware vector icons.
-- Refined Dark, Light, and Parchment palettes, shared pill styling, hover feedback, and restrained
-  interface transitions.
-- Improved Preferences organization, responsive text handling, compact hotkey controls, column
-  resizing behavior, warning dialogs, hover cards, and rounded confirmation dialogs.
-- Preserved Script Extender, Osiris, Mod Fixer, mod.io, dependency, and source status indicators
-  with updated Redux tooltips.
+- Added shared dot and diamond markers for categories and visual separators, with the dot as the
+  consistent default and custom icons still supported.
+- Refined the Categories pane with stronger color-aware borders and an optional setting for
+  category-colored names.
+- Unified secondary buttons, editor wording, spacing, and interaction feedback across category and
+  custom-theme workflows.
+- Replaced the stale bug-report template with a Redux-specific issue form and added direct
+  **Report a Bug** links to the Help menu and About window.
+- Continued conservative UI cleanup without changing load-order behavior, package parsing,
+  import/export behavior, game-path detection, or file-management semantics.
 
 ## Before you begin
 
@@ -257,6 +253,11 @@ affect game files.
 - Optional custom transparent PNG icons for categories and visual separators.
 - Compact, Default, and Large typography sizing presets with a clipping-safety pass.
 - Safe custom font import for typography and custom-theme defaults.
+
+### Planned accessibility follow-ups
+
+- Add a dedicated Accessibility preferences tab that consolidates related options and actions,
+  including Speak Load Order and Stop Speaking, while preserving the existing CrossSpeak behavior.
 
 Report reproducible problems through the
 [Redux issue tracker](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues). Include the

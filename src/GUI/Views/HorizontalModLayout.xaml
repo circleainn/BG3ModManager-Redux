@@ -55,7 +55,7 @@
 				<Setter Property="Padding" Value="10,7" />
 				<Setter Property="Background" Value="Transparent" />
 				<Setter Property="BorderBrush" Value="Transparent" />
-				<Setter Property="BorderThickness" Value="1" />
+				<Setter Property="BorderThickness" Value="1.5" />
 				<Setter Property="Cursor" Value="Hand" />
 				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 				<Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -71,7 +71,7 @@
 									<Border x:Name="CategoryHoverSurface"
 										Background="{Binding SoftColor}"
 										BorderBrush="{Binding Color}"
-										BorderThickness="1"
+										BorderThickness="1.5"
 										CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
 										IsHitTestVisible="False"
 										Opacity="0" />
@@ -1191,9 +1191,20 @@
 								</Grid>
 								<StackPanel Grid.Column="1" Orientation="Horizontal">
 									<TextBlock VerticalAlignment="Center"
-										Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+										FontWeight="Medium"
 										Text="{Binding Name}"
-										TextTrimming="CharacterEllipsis" />
+										TextTrimming="CharacterEllipsis">
+										<TextBlock.Style>
+											<Style TargetType="{x:Type TextBlock}">
+												<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarText, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
+														<Setter Property="Foreground" Value="{Binding Color}" />
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</TextBlock.Style>
+									</TextBlock>
 									<Border Width="8"
 										Height="8"
 										Margin="8,0,0,0"

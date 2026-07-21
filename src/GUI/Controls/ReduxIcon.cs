@@ -127,7 +127,8 @@ public static class ReduxIconCatalog
 {
 	public static IReadOnlyList<ReduxIconChoice> Choices { get; } = new List<ReduxIconChoice>
 	{
-		new("", "No icon (use default marker)"),
+		new("", "Dot marker (default)"),
+		new("marker-diamond", "Diamond marker", "Redux.Icon.MarkerDiamond"),
 		new("list", "List", "Redux.Icon.ListStroke", true),
 		new("palette", "Palette", "Redux.Icon.ColorPalette"),
 		new("shirt", "Clothing / outfit", "Redux.Icon.Shirt"),

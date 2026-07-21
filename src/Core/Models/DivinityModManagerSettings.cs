@@ -150,6 +150,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool UseCategoryColorsForHover { get; set; }
 
 	[DefaultValue(false)]
+	[SettingsEntry("Color category names", "Use each category's color for its name in the Categories pane.", HideFromUI = true)]
+	[DataMember, Reactive] public bool UseCategoryColorsForSidebarText { get; set; }
+
+	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ReduxPreviewWarningAcknowledged { get; set; }
 
 	[SettingsEntry("Show Redux preview warning again", "Clear the saved acknowledgement so the alpha preview warning appears again the next time Redux starts.")]

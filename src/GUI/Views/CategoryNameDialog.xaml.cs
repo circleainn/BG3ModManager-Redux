@@ -29,14 +29,11 @@ public partial class CategoryNameDialog : AdonisWindow
 		public string Id { get; }
 		public string DisplayName { get; }
 		public bool IsNone => String.IsNullOrWhiteSpace(Id);
-		public bool UseCategoryDefaultMarker => IsNone && !UseSeparatorDefaultMarker;
-		public bool UseSeparatorDefaultMarker { get; }
 
-		public IconChooserChoice(ReduxIconChoice choice, bool visualDividerMode)
+		public IconChooserChoice(ReduxIconChoice choice)
 		{
 			Id = choice.Id;
 			DisplayName = choice.DisplayName;
-			UseSeparatorDefaultMarker = choice.IsNone && visualDividerMode;
 		}
 	}
 
@@ -58,19 +55,19 @@ public partial class CategoryNameDialog : AdonisWindow
 		CategoryNameTextBox.Text = categoryName;
 		CategoryNameTextBox.IsEnabled = canEditName;
 		CategoryIconComboBox.ItemsSource = ReduxIconCatalog.Choices
-			.Select(choice => new IconChooserChoice(choice, visualDividerMode))
+			.Select(choice => new IconChooserChoice(choice))
 			.ToList();
 		CategoryIconComboBox.SelectedValue = ReduxIconCatalog.Normalize(iconId);
 		if (ColorConverter.ConvertFromString(color) is Color selectedColor) CategoryColorPicker.SelectedColor = selectedColor;
 		Title = visualDividerMode ? (String.IsNullOrEmpty(categoryName) ? "Add Separator" : "Edit Separator") : canEditName ? "Add Mod Category" : "Edit Category";
 		DialogHeading.Text = visualDividerMode ? "Style a separator" : canEditName ? "Create a custom mod category" : $"Edit {categoryName}";
 		DialogHelperText.Text = visualDividerMode
-			? "Choose a color, optional icon, and optional label. Leave the name empty for a line-only separator."
+			? "Choose a color, marker or icon, and optional label. Leave the name empty for a line-only separator."
 			: canEditName
-			? "Choose a unique name, color, and optional icon. No icon uses the original colored dot."
+			? "Choose a unique name, color, and marker or icon. Dot is the default."
 			: canResetToDefault
-			? "Redux category names stay fixed. Customize its color and icon, or restore the Redux defaults."
-			: "Choose a color and optional icon. No icon uses the original colored dot.";
+			? "Redux category names stay fixed. Customize its color and marker or icon, or restore the Redux defaults."
+			: "Choose a color and marker or icon. Dot is the default.";
 		ConfirmButton.Content = visualDividerMode ? "Save" : canEditName ? "Add" : "Save";
 		ResetToDefaultButton.Visibility = canResetToDefault ? Visibility.Visible : Visibility.Collapsed;
 		if (canResetToDefault)
@@ -78,8 +75,8 @@ public partial class CategoryNameDialog : AdonisWindow
 		if (visualDividerMode)
 		{
 			ColorFieldLabel.Text = "Separator color";
-			IconFieldLabel.Text = "ICON";
-			CategoryIconComboBox.ToolTip = "Choose a separator icon. Hover an icon to see its name.";
+			IconFieldLabel.Text = "Icon";
+			CategoryIconComboBox.ToolTip = "Choose a separator marker or icon. Hover an option to see its name.";
 			CategoryNameTextBox.ToolTip = "Optional separator label";
 		}
 		UpdateColorPresentation();

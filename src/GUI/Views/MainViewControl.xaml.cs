@@ -214,6 +214,15 @@ public partial class MainViewControl : MainViewControlViewBase
 		if (menuItems.TryGetValue("Help", out var helpMenuItem))
 		{
 			helpMenuItem.Items.Add(new Separator());
+			var reportBugMenuItem = new MenuItem
+			{
+				Header = "Report a Bug...",
+				ToolTip = "Open the BG3 Mod Manager Redux bug report form on GitHub",
+				Icon = ReduxIcon.FromResource("Redux.Icon.Bug")
+			};
+			reportBugMenuItem.Click += (_, _) => ProcessHelper.TryOpenUrl(DivinityApp.URL_REDUX_BUG_REPORT);
+			helpMenuItem.Items.Add(reportBugMenuItem);
+			helpMenuItem.Items.Add(new Separator());
 			var creditsMenu = new MenuItem
 			{
 				Header = "Credits & Attribution",

@@ -85,7 +85,7 @@
 							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="Releases" />
 							<c:HyperlinkText Grid.Row="1" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="View Redux releases" URL="{x:Static app:DivinityApp.URL_REDUX_RELEASES}" />
 							<TextBlock Grid.Row="2" Style="{StaticResource AboutLabelStyle}" Text="Issues" />
-							<c:HyperlinkText Grid.Row="2" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Report a Redux issue" URL="{x:Static app:DivinityApp.URL_REDUX_ISSUES}" />
+							<c:HyperlinkText Grid.Row="2" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Report a Redux issue" URL="{x:Static app:DivinityApp.URL_REDUX_BUG_REPORT}" />
 							<TextBlock Grid.Row="3" Style="{StaticResource AboutLabelStyle}" Text="License" />
 							<c:HyperlinkText Grid.Row="3" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="MIT License" URL="{x:Static app:DivinityApp.URL_REDUX_LICENSE}" />
 						</Grid>

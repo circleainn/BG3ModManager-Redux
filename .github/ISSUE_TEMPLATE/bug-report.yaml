@@ -1,51 +1,134 @@
-name: Bug Report
-description: File a bug report
+name: Bug report
+description: Report a reproducible problem in BG3 Mod Manager Redux
 title: "[Bug]: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        Thanks for helping improve BG3 Mod Manager Redux.
+
+        Please do not include API keys or other credentials. Before attaching a debug log, review it for personal folder names or paths you do not want to share publicly.
+
   - type: input
-    id: os
+    id: redux-version
     attributes:
-      label: Operating System
-      description: The operating system you're using (Windows 10 / 11, Linux with Wine, Mac etc). Note that only Windows is officially supported.
-      placeholder: Windows 10
+      label: Redux version
+      description: Copy the version shown in the Redux window title bar.
+      placeholder: 0.1.0-alpha.5
     validations:
       required: true
-  - type: input
-    id: version
+
+  - type: dropdown
+    id: build-type
     attributes:
-      label: BG3 Mod Manager Version
-      description: The version of the mod manager when you encountered this issue (visible on the window title bar).
-      placeholder: 1.0.9.10
+      label: Build type
+      description: Which build were you using when the problem occurred?
+      options:
+        - Packaged tester build
+        - Local Debug build
+        - Other or unknown
     validations:
       required: true
+
+  - type: input
+    id: windows-version
+    attributes:
+      label: Windows version
+      description: Redux currently supports Windows. Include the edition and version when known.
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+
   - type: input
     id: game-version
     attributes:
-      label: BG3 Game Version
-      description: The version of Baldur's Gate 3 when you encountered this issue.
-      placeholder: Full Release Patch 3 Hotfix 2
-    validations:
-      required: true
-  - type: textarea
-    id: what-happened
-    attributes:
-      label: Bug Summary
-      description: Describe what the bug is, and how to reproduce it.
-      placeholder: Describe the bug here.
-      value: 
-    validations:
-      required: true
-  - type: textarea
-    id: links
-    attributes:
-      label: Links
-      description: Links to any screenshots, pastes for files etc that are too big to be attached.
-      placeholder: Debug log https://gist.github.com/MyUserName/SomeLink
-      value: 
+      label: Baldur's Gate 3 version
+      description: Include the game patch or hotfix when it may be relevant.
+      placeholder: Patch and hotfix shown in the game launcher
     validations:
       required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Startup or mod loading
+        - Active or inactive mod lists
+        - Load order or export
+        - Mod installation, import, or deletion
+        - Categories or separators
+        - Preferences, themes, or typography
+        - Nexus Mods, mod.io, or metadata
+        - Dialogs, notifications, or tooltips
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: appearance
+    attributes:
+      label: Theme and typography
+      description: For visual issues, include the active theme, font, Windows display scaling, and approximate window size.
+      placeholder: Redux Dark, Manrope, 125% scaling, maximized at 2560x1440
+    validations:
+      required: false
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Problem summary
+      description: Briefly describe what went wrong and when you first noticed it.
+      placeholder: Describe the problem and its impact.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Provide the smallest reliable sequence that causes the problem.
+      placeholder: |
+        1. Open...
+        2. Select...
+        3. Observe...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: Describe what you expected Redux to do.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: Describe what Redux did instead, including any visible error message.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs-and-screenshots
+    attributes:
+      label: Logs and screenshots
+      description: Drag files here or provide links. Redact credentials and private paths before posting.
+      placeholder: Attach a screenshot and the relevant section of the latest debug log when available.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmation
+      options:
+        - label: I searched the existing issues for the same problem.
+          required: true
+        - label: I have not included API keys, credentials, or other secrets.
+          required: true
+        - label: I can reproduce this issue, or I clearly noted that it happened only once.
+          required: true

@@ -627,6 +627,16 @@
 												TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
+									<CheckBox Margin="0,10,0,0"
+										IsChecked="{Binding Settings.UseCategoryColorsForSidebarText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+										<StackPanel Margin="6,0,0,0">
+											<TextBlock FontWeight="SemiBold" Text="Color category names" />
+											<TextBlock Margin="0,3,0,0"
+												Foreground="{DynamicResource ReduxTextMutedBrush}"
+												Text="Match category names in the Categories pane to their assigned colors."
+												TextWrapping="Wrap" />
+										</StackPanel>
+									</CheckBox>
 								</StackPanel>
 							</Border>
 						</Grid>

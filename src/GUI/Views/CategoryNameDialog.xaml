@@ -27,7 +27,7 @@
 			<Setter Property="Margin" Value="0,0,8,0" /><Setter Property="CornerRadius" Value="6" />
 			<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
 			<Setter Property="BorderThickness" Value="1" /><Setter Property="Cursor" Value="Hand" />
-			<Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="{DynamicResource ReduxTextPrimaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Trigger></Style.Triggers>
+			<Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" /><Setter Property="BorderThickness" Value="2" /></Trigger></Style.Triggers>
 		</Style>
 		<Style x:Key="CategoryColorSliderStyle" TargetType="Slider">
 			<Setter Property="Height" Value="20" /><Setter Property="Minimum" Value="0" /><Setter Property="Maximum" Value="255" />
@@ -38,35 +38,6 @@
 					<Track.IncreaseRepeatButton><RepeatButton Command="Slider.IncreaseLarge"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Height="6" VerticalAlignment="Center" Background="{DynamicResource ReduxBorderStrongBrush}" CornerRadius="3" /></ControlTemplate></RepeatButton.Template></RepeatButton></Track.IncreaseRepeatButton>
 				</Track>
 			</ControlTemplate></Setter.Value></Setter>
-		</Style>
-		<Style x:Key="CategoryDialogButtonStyle" TargetType="{x:Type Button}">
-			<Setter Property="MinHeight" Value="30" />
-			<Setter Property="Padding" Value="12,5" />
-			<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
-			<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
-			<Setter Property="BorderThickness" Value="1" />
-			<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-			<Setter Property="FocusVisualStyle" Value="{x:Null}" />
-			<Setter Property="Template">
-				<Setter.Value>
-					<ControlTemplate TargetType="{x:Type Button}">
-						<Border x:Name="ButtonChrome" Background="{TemplateBinding Background}"
-							BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
-							CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-							<ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center"
-								VerticalAlignment="Center" RecognizesAccessKey="True" />
-						</Border>
-						<ControlTemplate.Triggers>
-							<Trigger Property="IsMouseOver" Value="True">
-								<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxHoverBrush}" />
-								<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-							</Trigger>
-							<Trigger Property="IsPressed" Value="True"><Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxPressedBrush}" /></Trigger>
-							<Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
-						</ControlTemplate.Triggers>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
 		</Style>
 		</ResourceDictionary>
 	</adonisUi:AdonisWindow.Resources>
@@ -120,16 +91,16 @@
 				<xctk:ColorCanvas x:Name="CategoryColorPicker" Visibility="Collapsed" UsingAlphaChannel="False" SelectedColorChanged="CategoryColorPicker_SelectedColorChanged" />
 				<StackPanel Grid.Column="2" VerticalAlignment="Top">
 					<TextBlock Margin="0,0,0,6" FontSize="11" FontWeight="SemiBold"
-						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="PREVIEW" />
+						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Preview" />
 					<Border x:Name="SelectedColorPreview" Height="54" Background="#8A6AF1"
 						BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}" />
 					<TextBlock Margin="0,10,0,4" FontSize="11" FontWeight="SemiBold"
-						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="HEX COLOR" />
+						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Hex color" />
 					<TextBox x:Name="HexColorTextBox" MinHeight="30" Padding="7,3" Text="#8A6AF1"
 						LostFocus="HexColorTextBox_Commit" KeyDown="HexColorTextBox_KeyDown" />
 					<StackPanel x:Name="IconChooserPanel" Margin="0,8,0,0">
 						<TextBlock x:Name="IconFieldLabel" Margin="0,0,0,4" FontSize="11" FontWeight="SemiBold"
-							Foreground="{DynamicResource ReduxTextMutedBrush}" Text="ICON" />
+							Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Icon" />
 						<ComboBox x:Name="CategoryIconComboBox"
 							Width="92"
 							HorizontalAlignment="Left"
@@ -137,7 +108,7 @@
 							MaxDropDownHeight="239"
 							ScrollViewer.HorizontalScrollBarVisibility="Disabled"
 							ScrollViewer.VerticalScrollBarVisibility="Disabled"
-							ToolTip="Choose a category icon. Hover an icon to see its name.">
+							ToolTip="Choose a category marker or icon. Hover an option to see its name.">
 							<ComboBox.ItemsPanel>
 								<ItemsPanelTemplate>
 									<WrapPanel Width="297" IsItemsHost="True" />
@@ -158,14 +129,9 @@
 							<ComboBox.ItemTemplate>
 								<DataTemplate>
 									<Grid Width="20" Height="20" VerticalAlignment="Center">
-										<Ellipse x:Name="DefaultCategoryMarker" Width="8" Height="8"
+										<Ellipse Width="8" Height="8"
 											Fill="{DynamicResource Redux.CategoryEditor.IconBrush}"
-											Visibility="{Binding UseCategoryDefaultMarker, Converter={StaticResource BoolToVisibilityConverter}}" />
-										<Path x:Name="DefaultSeparatorMarker" Width="16" Height="16"
-											Data="M 6,0 L 12,6 L 6,12 L 0,6 Z M 6,3 L 9,6 L 6,9 L 3,6 Z"
-											Fill="{DynamicResource Redux.CategoryEditor.IconBrush}"
-											Stretch="Uniform"
-											Visibility="{Binding UseSeparatorDefaultMarker, Converter={StaticResource BoolToVisibilityConverter}}" />
+											Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverter}}" />
 										<controls:ReduxIcon Width="18" Height="18" IconKey="{Binding Id}"
 											Foreground="{DynamicResource Redux.CategoryEditor.IconBrush}"
 											Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
@@ -173,8 +139,6 @@
 								</DataTemplate>
 							</ComboBox.ItemTemplate>
 						</ComboBox>
-						<TextBlock Visibility="Collapsed" Margin="0,7,0,4" FontSize="10" Foreground="{DynamicResource ReduxTextMutedBrush}"
-							Text="Quick choices — hover for names" />
 					</StackPanel>
 				</StackPanel>
 				<Grid Grid.Row="2" Grid.ColumnSpan="3">
@@ -192,7 +156,7 @@
 				</Grid>
 				<StackPanel Grid.Row="4" Grid.ColumnSpan="3">
 					<TextBlock Margin="0,0,0,7" FontSize="11" FontWeight="SemiBold"
-						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="REDUX PRESETS" />
+						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Redux presets" />
 					<WrapPanel>
 						<Border Style="{StaticResource CategoryColorSwatchStyle}" Background="#8A6AF1" Tag="#8A6AF1" ToolTip="Arcane Violet" MouseLeftButtonUp="ColorSwatch_Click" />
 						<Border Style="{StaticResource CategoryColorSwatchStyle}" Background="#3B82F6" Tag="#3B82F6" ToolTip="Electric Blue" MouseLeftButtonUp="ColorSwatch_Click" />
@@ -207,9 +171,14 @@
 					</WrapPanel>
 					<DockPanel Margin="0,12,0,7" LastChildFill="False">
 						<TextBlock VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold"
-							Foreground="{DynamicResource ReduxTextMutedBrush}" Text="SAVED COLORS" />
-						<Button DockPanel.Dock="Right" MinWidth="96" Style="{StaticResource CategoryDialogButtonStyle}"
-							Click="SaveCurrentColor_Click" Content="+ Save current" />
+							Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Saved colors" />
+						<Button DockPanel.Dock="Right" MinWidth="96" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}"
+							Click="SaveCurrentColor_Click">
+							<StackPanel Margin="0" Orientation="Horizontal">
+								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" Data="{StaticResource Redux.Icon.AddCircle}" />
+								<TextBlock Text="Save current" />
+							</StackPanel>
+						</Button>
 					</DockPanel>
 					<WrapPanel x:Name="SavedColorsPanel" />
 					<TextBlock x:Name="NoSavedColorsText" Foreground="{DynamicResource ReduxTextMutedBrush}"
@@ -219,7 +188,7 @@
 		</Border>
 		<StackPanel Grid.Row="5" Margin="0,12,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
 			<Button x:Name="ResetToDefaultButton" MinWidth="138" Margin="0,0,8,0"
-				Style="{StaticResource CategoryDialogButtonStyle}" Visibility="Collapsed"
+				Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Visibility="Collapsed"
 				Click="ResetToDefault_Click">
 				<StackPanel Orientation="Horizontal">
 					<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
@@ -228,7 +197,7 @@
 				</StackPanel>
 			</Button>
 			<Button x:Name="ConfirmButton" MinWidth="84" Margin="0,0,8,0" Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" IsDefault="True" Click="Add_Click" Content="Add" />
-			<Button MinWidth="84" Style="{StaticResource CategoryDialogButtonStyle}" IsCancel="True" Content="Cancel" />
+			<Button MinWidth="84" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" IsCancel="True" Content="Cancel" />
 		</StackPanel>
 	</Grid>
 	</Border>

@@ -51,30 +51,7 @@
 					</Setter.Value>
 				</Setter>
 			</Style>
-			<Style x:Key="ThemeEditorActionButtonStyle" TargetType="Button">
-				<Setter Property="Height" Value="32" />
-				<Setter Property="Padding" Value="12,4" />
-				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-				<Setter Property="BorderThickness" Value="1" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-				<Setter Property="Template">
-					<Setter.Value>
-						<ControlTemplate TargetType="Button">
-							<Border x:Name="ActionChrome" Padding="{TemplateBinding Padding}"
-								Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-								BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-								<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-							</Border>
-							<ControlTemplate.Triggers>
-								<Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ActionChrome" Property="Background" Value="{DynamicResource ReduxHoverBrush}" /></Trigger>
-								<Trigger Property="IsPressed" Value="True"><Setter TargetName="ActionChrome" Property="Background" Value="{DynamicResource ReduxPressedBrush}" /></Trigger>
-							</ControlTemplate.Triggers>
-						</ControlTemplate>
-					</Setter.Value>
-				</Setter>
-			</Style>
-	</ResourceDictionary>
+		</ResourceDictionary>
 	</adonisUi:AdonisWindow.Resources>
 	<Border Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
 		<Grid Margin="20">
@@ -193,7 +170,7 @@
 			<Grid Grid.Row="5" Margin="0,14,0,0">
 				<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
 				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Color changes preview immediately behind this window." />
-				<Button Grid.Column="1" MinWidth="90" Margin="0,0,8,0" Content="Cancel" IsCancel="True" Style="{StaticResource ThemeEditorActionButtonStyle}" Click="CancelButton_Click" />
+				<Button Grid.Column="1" MinWidth="90" Margin="0,0,8,0" Content="Cancel" IsCancel="True" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Click="CancelButton_Click" />
 				<Button Grid.Column="2" MinWidth="110" Content="Save Theme" IsDefault="True" Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" Click="SaveButton_Click" />
 			</Grid>
 		</Grid>
