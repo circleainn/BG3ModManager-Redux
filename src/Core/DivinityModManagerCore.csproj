@@ -9,6 +9,7 @@
 		<Configurations>Debug;Release;Publish;PublishTest</Configurations>
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 		<SupportedCultures>en-US</SupportedCultures>
+		<Nullable>annotations</Nullable>
 		<DebugType>none</DebugType>
 		<Optimize>True</Optimize>
 	</PropertyGroup>
@@ -31,7 +32,5 @@
 		<PackageReference Include="ReactiveUI" Version="20.1.63" />
 		<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
 		<PackageReference Include="System.Reactive" Version="6.0.1" />
-		<PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-		<PackageReference Include="System.Net.Http" Version="4.3.4" />
 	</ItemGroup>
 </Project>

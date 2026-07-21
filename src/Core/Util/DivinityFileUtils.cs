@@ -389,7 +389,7 @@ public static class DivinityFileUtils
 				return true;
 			}
 		}
-		catch (Exception ex) { }
+		catch (Exception) { }
 		return false;
 	}
 
@@ -405,7 +405,7 @@ public static class DivinityFileUtils
 				return true;
 			}
 		}
-		catch (Exception ex) { }
+		catch (Exception) { }
 		return false;
 	}
 

@@ -40,10 +40,7 @@ public class BaseProgressViewModel : ReactiveObject
 		return Unit.Default;
 	}
 
-	public virtual async Task<bool> Run(CancellationToken cts)
-	{
-		return true;
-	}
+	public virtual Task<bool> Run(CancellationToken cts) => Task.FromResult(true);
 
 	public virtual void Close()
 	{

@@ -1,0 +1,44 @@
+<Project>
+	<!--
+		CrossSpeak and LSLib are vendored submodules. Keep Redux-specific build compatibility
+		outside those repositories so updating either submodule does not overwrite it.
+	-->
+	<PropertyGroup Condition="'$(MSBuildProjectName)' == 'CrossSpeak'">
+		<!-- Redux consumes the project directly; generating its standalone NuGet package adds no app artifact. -->
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+	</PropertyGroup>
+
+	<Target Name="ApplyReduxNuGetWarningPolicy"
+		BeforeTargets="_GenerateRestoreProjectSpec;CollectPackageReferences;ResolvePackageAssets"
+		Condition="'$(MSBuildProjectName)' == 'LSLib'
+			Or '$(MSBuildProjectName)' == 'LSLibStats'
+			Or '$(MSBuildProjectName)' == 'DivinityModManagerCore'
+			Or '$(MSBuildProjectName)' == 'GUI'
+			Or $([System.String]::Copy('$(MSBuildProjectName)').StartsWith('GUI_'))">
+		<PropertyGroup>
+			<!--
+				lz4net's legacy System.Net.Http graph requests unavailable 4.3.0 Unix RID
+				packages. NuGet resolves patched 4.3.2 assets; none ship in Windows Redux.
+			-->
+			<NoWarn>$(NoWarn);NU1603</NoWarn>
+		</PropertyGroup>
+	</Target>
+
+	<ItemGroup Condition="'$(MSBuildProjectName)' == 'LSLibNative'">
+		<!-- C++/CLI net8 imports the reference framework automatically. These old GAC references duplicate it. -->
+		<Reference Remove="System" />
+		<Reference Remove="System.Data" />
+		<Reference Remove="System.Xml" />
+	</ItemGroup>
+
+	<ItemDefinitionGroup Condition="'$(MSBuildProjectName)' == 'LSLibNative'">
+		<ClCompile>
+			<!-- LSLib bridges size_t buffers into CLR arrays, whose length is always a 32-bit int. -->
+			<DisableSpecificWarnings>4267;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+		</ClCompile>
+		<Link>
+			<!-- LZ4 deliberately exposes its compression contexts as opaque forward-declared structs. -->
+			<AdditionalOptions>/ignore:4248 %(AdditionalOptions)</AdditionalOptions>
+		</Link>
+	</ItemDefinitionGroup>
+</Project>

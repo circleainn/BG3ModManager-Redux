@@ -33,6 +33,7 @@
 		
 		<Platforms>AnyCPU;x64</Platforms>
 		<PlatformTarget>x64</PlatformTarget>
+		<Nullable>annotations</Nullable>
 		<Configurations>Debug;Release;Publish;PublishTest</Configurations>
 
 		<DisableCrossSpeakLib>True</DisableCrossSpeakLib>
@@ -123,12 +124,6 @@
 		<None Include="..\..\licenses\Chivo-OFL-1.1.txt">
 			<Link>licenses\Chivo-OFL-1.1.txt</Link>
 			<TargetPath>licenses\Chivo-OFL-1.1.txt</TargetPath>
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-		</None>
-		<None Include="..\..\licenses\Crimson-Pro-OFL-1.1.txt">
-			<Link>licenses\Crimson-Pro-OFL-1.1.txt</Link>
-			<TargetPath>licenses\Crimson-Pro-OFL-1.1.txt</TargetPath>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</None>

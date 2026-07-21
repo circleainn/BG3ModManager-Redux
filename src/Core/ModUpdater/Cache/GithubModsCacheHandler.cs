@@ -25,8 +25,5 @@ public class GithubModsCacheHandler : IExternalModCacheHandler<GithubModsCachedD
 		CacheData = new GithubModsCachedData();
 	}
 
-	public async Task<bool> Update(IEnumerable<DivinityModData> mods, CancellationToken cts)
-	{
-		return false;
-	}
+	public Task<bool> Update(IEnumerable<DivinityModData> mods, CancellationToken cts) => Task.FromResult(false);
 }

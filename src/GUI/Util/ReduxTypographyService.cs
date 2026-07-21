@@ -25,7 +25,6 @@ public static class ReduxTypographyService
 			ReduxTypographyFont.MonaspaceNeon => CreateBundledFont("Monaspace Neon"),
 			ReduxTypographyFont.Minipax => CreateBundledFont("Minipax"),
 			ReduxTypographyFont.Chivo => CreateBundledFont("Chivo"),
-			ReduxTypographyFont.CrimsonPro => CreateBundledFont("Crimson Pro"),
 			_ => CreateBundledFont("Manrope")
 		};
 

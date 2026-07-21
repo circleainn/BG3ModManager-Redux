@@ -2457,8 +2457,6 @@ Directory the zip will be extracted to:
 		}, RxApp.MainThreadScheduler);
 	}
 
-	private CancellationToken workshopModLoadingCancelToken;
-
 	private readonly List<string> ignoredModProjectNames = new() { "Test", "Debug" };
 	private bool CanFetchWorkshopData(DivinityModData mod)
 	{
@@ -6417,9 +6415,7 @@ Directory the zip will be extracted to:
 				ReduxThemeType.ReduxLight => ReduxThemeType.Parchment,
 				_ => ReduxThemeType.ReduxDark
 			};
-			Settings.TypographyFont = nextTheme == ReduxThemeType.Parchment
-				? ReduxTypographyFont.Minipax
-				: ReduxTypographyFont.Manrope;
+			Settings.TypographyFont = ReduxTypographyFont.Manrope;
 			Settings.ColorTheme = nextTheme;
 		});
 

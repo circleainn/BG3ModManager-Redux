@@ -37,9 +37,7 @@ public enum ReduxTypographyFont
 	[Description("Minipax")]
 	Minipax = 5,
 	[Description("Chivo")]
-	Chivo = 6,
-	[Description("Crimson Pro")]
-	CrimsonPro = 7
+	Chivo = 6
 }
 
 [DataContract]
@@ -320,9 +318,7 @@ public class DivinityModManagerSettings : ReactiveObject
 		DarkThemeEnabled = ColorTheme == ReduxThemeType.ReduxDark;
 		if (!Enum.IsDefined(TypographyFont) || TypographyFont == 0)
 		{
-			TypographyFont = ColorTheme == ReduxThemeType.Parchment
-				? ReduxTypographyFont.Minipax
-				: ReduxTypographyFont.Manrope;
+			TypographyFont = ReduxTypographyFont.Manrope;
 		}
 		CustomThemes ??= new ObservableCollection<ReduxCustomTheme>();
 		foreach (var theme in CustomThemes)
@@ -331,9 +327,7 @@ public class DivinityModManagerSettings : ReactiveObject
 			theme.Name = String.IsNullOrWhiteSpace(theme.Name) ? "Imported Theme" : theme.Name.Trim();
 			if (!Enum.IsDefined(theme.TypographyFont) || theme.TypographyFont == 0)
 			{
-				theme.TypographyFont = theme.BaseTheme == ReduxThemeType.Parchment
-					? ReduxTypographyFont.Minipax
-					: ReduxTypographyFont.Manrope;
+				theme.TypographyFont = ReduxTypographyFont.Manrope;
 			}
 		}
 		if (!CustomThemes.Any(theme => theme.Id.Equals(ActiveCustomThemeId, StringComparison.OrdinalIgnoreCase)))

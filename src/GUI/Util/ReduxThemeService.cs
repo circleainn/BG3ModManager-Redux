@@ -261,9 +261,7 @@ public static class ReduxThemeService
 	private static ReduxTypographyFont NormalizeTypography(ReduxTypographyFont value, ReduxThemeType baseTheme) =>
 		Enum.IsDefined(value) && value != 0
 			? value
-			: baseTheme == ReduxThemeType.Parchment
-				? ReduxTypographyFont.Minipax
-				: ReduxTypographyFont.Manrope;
+			: ReduxTypographyFont.Manrope;
 	private static Color Mix(Color left, Color right, double amount) => Color.FromRgb(
 		(byte)Math.Round(left.R + ((right.R - left.R) * amount)),
 		(byte)Math.Round(left.G + ((right.G - left.G) * amount)),

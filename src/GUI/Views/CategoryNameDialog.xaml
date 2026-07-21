@@ -133,7 +133,6 @@
 						<ComboBox x:Name="CategoryIconComboBox"
 							Width="92"
 							HorizontalAlignment="Left"
-							ItemsSource="{x:Static controls:ReduxIconCatalog.Choices}"
 							SelectedValuePath="Id"
 							MaxDropDownHeight="239"
 							ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -159,11 +158,17 @@
 							<ComboBox.ItemTemplate>
 								<DataTemplate>
 									<Grid Width="20" Height="20" VerticalAlignment="Center">
-											<Ellipse Width="8" Height="8" Fill="{DynamicResource Redux.CategoryEditor.IconBrush}"
-												Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverter}}" />
-											<controls:ReduxIcon Width="18" Height="18" IconKey="{Binding Id}"
-												Foreground="{DynamicResource Redux.CategoryEditor.IconBrush}"
-												Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
+										<Ellipse x:Name="DefaultCategoryMarker" Width="8" Height="8"
+											Fill="{DynamicResource Redux.CategoryEditor.IconBrush}"
+											Visibility="{Binding UseCategoryDefaultMarker, Converter={StaticResource BoolToVisibilityConverter}}" />
+										<Path x:Name="DefaultSeparatorMarker" Width="16" Height="16"
+											Data="M 6,0 L 12,6 L 6,12 L 0,6 Z M 6,3 L 9,6 L 6,9 L 3,6 Z"
+											Fill="{DynamicResource Redux.CategoryEditor.IconBrush}"
+											Stretch="Uniform"
+											Visibility="{Binding UseSeparatorDefaultMarker, Converter={StaticResource BoolToVisibilityConverter}}" />
+										<controls:ReduxIcon Width="18" Height="18" IconKey="{Binding Id}"
+											Foreground="{DynamicResource Redux.CategoryEditor.IconBrush}"
+											Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
 									</Grid>
 								</DataTemplate>
 							</ComboBox.ItemTemplate>

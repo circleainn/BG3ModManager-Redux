@@ -143,7 +143,7 @@ must end at the game's `Data` directory, not merely the Baldur's Gate 3 installa
 - Filtering and configurable list columns.
 - Shortcuts to common game, mod, save, and log folders.
 - Dark, Light, and Parchment themes with a bundled typography selector and refined semantic palettes.
-  Parchment defaults to Minipax; Redux Dark and Redux Light default to Manrope.
+  Redux Dark, Redux Light, and Parchment all default to Manrope.
 - Safe custom themes with a preferred bundled typeface, live preview, duplication, JSON import,
   and JSON export.
 - Theme-aware vector iconography and consistent interaction feedback across Redux-owned controls.
@@ -310,9 +310,8 @@ Redux also depends on third-party projects including:
 - [Manrope](https://github.com/davelab6/manrope),
   [Atkinson Hyperlegible](https://github.com/googlefonts/atkinson-hyperlegible),
   [Monaspace](https://github.com/githubnext/monaspace),
-  [Minipax](https://github.com/ronotypo/Minipax),
-  [Chivo](https://github.com/Omnibus-Type/Chivo), and
-  [Crimson Pro](https://github.com/Fonthausen/CrimsonPro), distributed under the SIL Open Font License
+  [Minipax](https://github.com/ronotypo/Minipax), and
+  [Chivo](https://github.com/Omnibus-Type/Chivo), distributed under the SIL Open Font License
 - [Ionicons](https://github.com/ionic-team/ionicons) and
   [Tabler Icons](https://github.com/tabler/tabler-icons), distributed under the MIT License
 - AdonisUI, ReactiveUI, GongSolutions.WPF.DragDrop, and other packages listed in the project files
@@ -322,6 +321,9 @@ project and is not affiliated with or endorsed by Larian Studios, Nexus Mods, or
 
 See the repository [license](LICENSE) and [third-party notices](licenses/Third-Party-Notices.md)
 for complete terms and notices.
+Packaged builds combine the complete bundled dependency terms into one
+`THIRD-PARTY-LICENSES.txt` file; the repository keeps the original per-dependency files for
+provenance and maintenance.
 
 ## License
 

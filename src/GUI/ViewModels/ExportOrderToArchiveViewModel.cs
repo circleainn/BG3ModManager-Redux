@@ -58,13 +58,7 @@ public class ExportOrderToArchiveViewModel : BaseProgressViewModel
 
 	public RxCommandUnit SelectAllCommand { get; private set; }
 
-	public override async Task<bool> Run(CancellationToken cts)
-	{
-		//Only visible + selected entries
-		var exportedMods = Entries.Where(x => x.IsSelected);
-
-		return true;
-	}
+	public override Task<bool> Run(CancellationToken cts) => Task.FromResult(true);
 
 	public override void Close()
 	{

@@ -1,0 +1,10 @@
+<Project>
+	<!--
+		Redux consumes Windows-x64 LSLib submodules that retain a few legacy package and
+		platform declarations. Keep the compatibility policy here so vendor updates stay clean.
+	-->
+	<PropertyGroup Condition="'$(MSBuildProjectName)' == 'LSLibStats'">
+		<!-- LSLib itself is AMD64, so its companion project must not compile as MSIL. -->
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+</Project>

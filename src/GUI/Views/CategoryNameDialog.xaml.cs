@@ -24,6 +24,22 @@ public partial class CategoryNameDialog : AdonisWindow
 		? $"#{color.R:X2}{color.G:X2}{color.B:X2}" : "#8A6AF1";
 	public string CategoryIconId => ReduxIconCatalog.Normalize(CategoryIconComboBox?.SelectedValue as string);
 
+	private sealed class IconChooserChoice
+	{
+		public string Id { get; }
+		public string DisplayName { get; }
+		public bool IsNone => String.IsNullOrWhiteSpace(Id);
+		public bool UseCategoryDefaultMarker => IsNone && !UseSeparatorDefaultMarker;
+		public bool UseSeparatorDefaultMarker { get; }
+
+		public IconChooserChoice(ReduxIconChoice choice, bool visualDividerMode)
+		{
+			Id = choice.Id;
+			DisplayName = choice.DisplayName;
+			UseSeparatorDefaultMarker = choice.IsNone && visualDividerMode;
+		}
+	}
+
 	public void ConfigureColorOnlyCopy(string heading, string helperText, string fieldLabel)
 	{
 		DialogHeading.Text = heading;
@@ -41,6 +57,9 @@ public partial class CategoryNameDialog : AdonisWindow
 			.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 		CategoryNameTextBox.Text = categoryName;
 		CategoryNameTextBox.IsEnabled = canEditName;
+		CategoryIconComboBox.ItemsSource = ReduxIconCatalog.Choices
+			.Select(choice => new IconChooserChoice(choice, visualDividerMode))
+			.ToList();
 		CategoryIconComboBox.SelectedValue = ReduxIconCatalog.Normalize(iconId);
 		if (ColorConverter.ConvertFromString(color) is Color selectedColor) CategoryColorPicker.SelectedColor = selectedColor;
 		Title = visualDividerMode ? (String.IsNullOrEmpty(categoryName) ? "Add Separator" : "Edit Separator") : canEditName ? "Add Mod Category" : "Edit Category";
@@ -60,6 +79,7 @@ public partial class CategoryNameDialog : AdonisWindow
 		{
 			ColorFieldLabel.Text = "Separator color";
 			IconFieldLabel.Text = "ICON";
+			CategoryIconComboBox.ToolTip = "Choose a separator icon. Hover an icon to see its name.";
 			CategoryNameTextBox.ToolTip = "Optional separator label";
 		}
 		UpdateColorPresentation();

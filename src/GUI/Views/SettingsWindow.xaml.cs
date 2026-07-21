@@ -174,9 +174,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		if (sender is RadioButton { Tag: ReduxThemeType theme })
 		{
 			ViewModel.Settings.ActiveCustomThemeId = String.Empty;
-			ViewModel.Settings.TypographyFont = theme == ReduxThemeType.Parchment
-				? ReduxTypographyFont.Minipax
-				: ReduxTypographyFont.Manrope;
+			ViewModel.Settings.TypographyFont = ReduxTypographyFont.Manrope;
 			ThemeComboBox.SelectedValue = theme;
 			RefreshCustomThemeControls();
 		}

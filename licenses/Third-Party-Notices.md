@@ -2,7 +2,8 @@
 
 BG3 Mod Manager Redux is based on LaughingLeader's original BG3 Mod Manager and includes or
 depends on third-party software and branding. The notices below supplement the repository's MIT
-License and bundled dependency licenses.
+License and the complete dependency terms. Packaged builds collect those terms in
+`THIRD-PARTY-LICENSES.txt`; the repository retains individual source files under `licenses/`.
 
 ## Nexus Mods branding
 
@@ -28,13 +29,13 @@ sponsorship, or official support.
 ## Manrope
 
 Redux bundles the Manrope typeface under the SIL Open Font License. A copy is included in the
-distribution at `licenses/Manrope-OFL-1.1.txt`.
+distribution in `THIRD-PARTY-LICENSES.txt`.
 
 ## Atkinson Hyperlegible
 
 Redux bundles the Atkinson Hyperlegible typeface, created by the Braille Institute of America,
-under the SIL Open Font License. A copy is included in the distribution at
-`licenses/Atkinson-Hyperlegible-OFL-1.1.txt`.
+under the SIL Open Font License. A copy is included in the distribution in
+`THIRD-PARTY-LICENSES.txt`.
 
 - Project: https://github.com/googlefonts/atkinson-hyperlegible
 - Braille Institute: https://www.brailleinstitute.org/freefont/
@@ -42,43 +43,36 @@ under the SIL Open Font License. A copy is included in the distribution at
 ## Monaspace Neon
 
 Redux bundles selected static weights of Monaspace Neon from the Monaspace type system under the
-SIL Open Font License. A copy is included at `licenses/Monaspace-OFL-1.1.txt`.
+SIL Open Font License. A copy is included in `THIRD-PARTY-LICENSES.txt`.
 
 - Project: https://github.com/githubnext/monaspace
 
 ## Minipax
 
 Redux bundles selected weights of the Minipax typeface under the SIL Open Font License. A copy is
-included at `licenses/Minipax-OFL-1.1.txt`.
+included in `THIRD-PARTY-LICENSES.txt`.
 
 - Project: https://github.com/ronotypo/Minipax
 
 ## Chivo
 
 Redux bundles selected weights of the Chivo typeface under the SIL Open Font License. A copy is
-included at `licenses/Chivo-OFL-1.1.txt`.
+included in `THIRD-PARTY-LICENSES.txt`.
 
 - Project: https://github.com/Omnibus-Type/Chivo
-
-## Crimson Pro
-
-Redux bundles selected weights of the Crimson Pro typeface under the SIL Open Font License. A copy
-is included at `licenses/Crimson-Pro-OFL-1.1.txt`.
-
-- Project: https://github.com/Fonthausen/CrimsonPro
 
 ## Ionicons
 
 Redux includes selected vector icon geometry adapted from Ionicons 8.0.13, copyright Ionic,
-under the MIT License. A copy is included in the distribution at `licenses/Ionicons-MIT.txt`.
+under the MIT License. A copy is included in the distribution in `THIRD-PARTY-LICENSES.txt`.
 
 - Project: https://github.com/ionic-team/ionicons
 
 ## Tabler Icons
 
 Redux includes selected vector icon geometry adapted from Tabler Icons, copyright Paweł Kuna,
-under the MIT License. A copy is included in the distribution at
-`licenses/Tabler-Icons-MIT.txt`.
+under the MIT License. A copy is included in the distribution in
+`THIRD-PARTY-LICENSES.txt`.
 
 - Project: https://github.com/tabler/tabler-icons
 
