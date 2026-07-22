@@ -127,15 +127,15 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</None>
-		<None Include="..\..\licenses\Ionicons-MIT.txt">
-			<Link>licenses\Ionicons-MIT.txt</Link>
-			<TargetPath>licenses\Ionicons-MIT.txt</TargetPath>
+		<None Include="..\..\licenses\Lucide-ISC.txt">
+			<Link>licenses\Lucide-ISC.txt</Link>
+			<TargetPath>licenses\Lucide-ISC.txt</TargetPath>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</None>
-		<None Include="..\..\licenses\Tabler-Icons-MIT.txt">
-			<Link>licenses\Tabler-Icons-MIT.txt</Link>
-			<TargetPath>licenses\Tabler-Icons-MIT.txt</TargetPath>
+		<None Include="..\..\licenses\Simple-Icons-CC0.txt">
+			<Link>licenses\Simple-Icons-CC0.txt</Link>
+			<TargetPath>licenses\Simple-Icons-CC0.txt</TargetPath>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</None>

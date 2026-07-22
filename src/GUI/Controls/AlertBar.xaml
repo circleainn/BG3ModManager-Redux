@@ -85,7 +85,7 @@
 					    MouseUp="Image_MouseUp">
 						<local:ReduxIcon.Style>
 							<Style TargetType="{x:Type local:ReduxIcon}">
-								<Setter Property="Data" Value="{StaticResource Redux.Icon.Close}" />
+								<Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Close}" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
 								<Style.Triggers>
 									<Trigger Property="IsMouseOver" Value="True">
@@ -126,7 +126,7 @@
 						    MouseUp="Image_MouseUp">
 							<local:ReduxIcon.Style>
 								<Style TargetType="{x:Type local:ReduxIcon}">
-									<Setter Property="Data" Value="{StaticResource Redux.Icon.Close}" />
+									<Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Close}" />
 									<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
 									<Style.Triggers>
 										<Trigger Property="IsMouseOver" Value="True">

@@ -7,7 +7,7 @@ namespace DivinityModManager.Controls;
 
 /// <summary>
 /// Theme-aware vector icon surface used by Redux-owned UI.
-/// Geometry resources are vendored from Ionicons under the MIT license.
+/// Geometry resources are vendored from Lucide under the ISC license.
 /// </summary>
 public sealed class ReduxIcon : Control
 {
@@ -56,7 +56,7 @@ public sealed class ReduxIcon : Control
 		nameof(StrokeThickness),
 		typeof(double),
 		typeof(ReduxIcon),
-		new FrameworkPropertyMetadata(32d));
+		new FrameworkPropertyMetadata(2d));
 
 	public static readonly DependencyProperty IconKeyProperty = DependencyProperty.Register(
 		nameof(IconKey),
@@ -244,7 +244,23 @@ public static class ReduxIconCatalog
 		new("warning", "Warning", "Redux.Icon.Warning"),
 		new("info", "Information", "Redux.Icon.Information"),
 		new("help", "Help", "Redux.Icon.HelpCircle"),
-		new("refresh", "Refresh / overhaul", "Redux.Icon.RefreshStroke", true)
+		new("refresh", "Refresh / overhaul", "Redux.Icon.RefreshStroke", true),
+		new("dna", "Race / species", "Redux.Icon.Dna", true),
+		new("moon-star", "Spells / arcane", "Redux.Icon.MoonStar", true),
+		new("scroll", "Quest / scroll", "Redux.Icon.Scroll", true),
+		new("glasses", "Accessories", "Redux.Icon.Glasses", true),
+		new("package", "Equipment / package", "Redux.Icon.Package", true),
+		new("aperture", "Visuals / camera settings", "Redux.Icon.Aperture", true),
+		new("bandage", "Patches / fixes", "Redux.Icon.Bandage", true),
+		new("blocks", "Libraries / framework", "Redux.Icon.Blocks", true),
+		new("database", "Resources / data", "Redux.Icon.Database", true),
+		new("toolbox", "Utilities", "Redux.Icon.Toolbox", true),
+		new("shapes", "Miscellaneous", "Redux.Icon.Shapes", true),
+		new("shield-alert", "Overrides / conflict", "Redux.Icon.ShieldAlert", true),
+		new("paintbrush", "Cosmetics", "Redux.Icon.Paintbrush", true),
+		new("crown", "Legendary / boss", "Redux.Icon.Crown", true),
+		new("compass", "Exploration / travel", "Redux.Icon.Compass", true),
+		new("target", "Objectives / targets", "Redux.Icon.Target", true)
 	};
 
 	private static readonly Dictionary<string, ReduxIconChoice> ById = Choices

@@ -61,20 +61,22 @@ included in `THIRD-PARTY-LICENSES.txt`.
 
 - Project: https://github.com/Omnibus-Type/Chivo
 
-## Ionicons
+## Lucide
 
-Redux includes selected vector icon geometry adapted from Ionicons 8.0.13, copyright Ionic,
-under the MIT License. A copy is included in the distribution in `THIRD-PARTY-LICENSES.txt`.
+Redux includes selected vector icon geometry adapted from Lucide, copyright Lucide Icons and
+Contributors, under the ISC License. Some Lucide icons are themselves derived from the Feather
+project, copyright Cole Bemis, under the MIT License. A copy of both licenses is included in the
+distribution in `THIRD-PARTY-LICENSES.txt`.
 
-- Project: https://github.com/ionic-team/ionicons
+- Project: https://github.com/lucide-icons/lucide
 
-## Tabler Icons
+## Simple Icons
 
-Redux includes selected vector icon geometry adapted from Tabler Icons, copyright Paweł Kuna,
-under the MIT License. A copy is included in the distribution in
-`THIRD-PARTY-LICENSES.txt`.
+Redux includes the GitHub brand mark adapted from Simple Icons, dedicated to the public domain
+under CC0 1.0. Lucide does not include brand/logo icons, so the GitHub reference link icon is
+sourced separately.
 
-- Project: https://github.com/tabler/tabler-icons
+- Project: https://github.com/simple-icons/simple-icons
 
 ## Other dependencies
 

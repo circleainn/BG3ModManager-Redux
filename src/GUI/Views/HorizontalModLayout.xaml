@@ -1054,27 +1054,27 @@
 						Header="Save filter state between sessions"
 						IsCheckable="True"
 						Click="SaveCategoryFilterMenuItem_Click">
-						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.Save}" /></MenuItem.Icon>
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Save}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem x:Name="DisableNewModIndicatorsMenuItem"
 						Header="Disable new-mod indicators"
 						IsCheckable="True"
 						Click="DisableNewModIndicatorsMenuItem_Click">
-						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.Information}" /></MenuItem.Icon>
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Information}" /></MenuItem.Icon>
 					</MenuItem>
 					<Separator />
 					<MenuItem Header="Add New Custom Category..." Click="AddCustomCategoryMenuItem_Click">
-						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.AddCircle}" /></MenuItem.Icon>
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.AddCircle}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem x:Name="EditCategoryMenuItem" Header="Edit Selected Category..." Click="EditCategoryMenuItem_Click">
-						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.ColorPalette}" /></MenuItem.Icon>
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.ColorPalette}" /></MenuItem.Icon>
 					</MenuItem>
 					<Separator />
 					<MenuItem x:Name="EnableCategoriesMenuItem" Header="Enable / Disable Categories">
-						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.Pricetag}" /></MenuItem.Icon>
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Pricetag}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem x:Name="DeleteCustomCategoryMenuItem" Header="Delete Custom Category">
-						<MenuItem.Icon><c:ReduxIcon Data="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
 					</MenuItem>
 				</ContextMenu>
 			</Border.ContextMenu>

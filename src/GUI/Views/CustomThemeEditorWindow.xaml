@@ -96,7 +96,7 @@
 							SelectionChanged="TypographyFontComboBox_SelectionChanged" />
 						<Button Grid.Column="1" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7"
 							Click="ImportCustomFont_Click" ToolTip="Import a TrueType or OpenType font">
-							<controls:ReduxIcon Width="14" Height="14" Data="{StaticResource Redux.Icon.Download}" />
+							<controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Download}" />
 						</Button>
 					</Grid>
 					<TextBlock Margin="2,5,0,0" FontSize="{DynamicResource Redux.FontSize.15}" Foreground="{DynamicResource ReduxTextSecondaryBrush}"

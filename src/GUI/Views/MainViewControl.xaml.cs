@@ -31,18 +31,18 @@ public partial class MainViewControl : MainViewControlViewBase
 	private static readonly IReadOnlyDictionary<string, (string Resource, bool UseStroke, string Foreground)> MenuIconMap =
 		new Dictionary<string, (string, bool, string)>
 		{
-			[nameof(AppKeys.ImportMod)] = ("Redux.Icon.AddCircle", false, null),
-			[nameof(AppKeys.NewOrder)] = ("Redux.Icon.DocumentText", false, null),
-			[nameof(AppKeys.Save)] = ("Redux.Icon.Save", false, null),
-			[nameof(AppKeys.SaveAs)] = ("Redux.Icon.Duplicate", false, null),
-			[nameof(AppKeys.ImportOrderFromSave)] = ("Redux.Icon.FolderOpen", false, null),
-			[nameof(AppKeys.ImportOrderFromSaveAsNew)] = ("Redux.Icon.AddCircle", false, null),
-			[nameof(AppKeys.ImportOrderFromFile)] = ("Redux.Icon.FolderOpen", false, null),
-			[nameof(AppKeys.ImportOrderFromZipFile)] = ("Redux.Icon.Archive", false, null),
-			[nameof(AppKeys.ExportOrderToGame)] = ("Redux.Icon.GameController", false, null),
-			[nameof(AppKeys.ExportOrderToList)] = ("Redux.Icon.DocumentText", false, null),
-			[nameof(AppKeys.ExportOrderToZip)] = ("Redux.Icon.Archive", false, null),
-			[nameof(AppKeys.ExportOrderToArchiveAs)] = ("Redux.Icon.Duplicate", false, null),
+			[nameof(AppKeys.ImportMod)] = ("Redux.Icon.AddCircle", true, null),
+			[nameof(AppKeys.NewOrder)] = ("Redux.Icon.DocumentText", true, null),
+			[nameof(AppKeys.Save)] = ("Redux.Icon.Save", true, null),
+			[nameof(AppKeys.SaveAs)] = ("Redux.Icon.Duplicate", true, null),
+			[nameof(AppKeys.ImportOrderFromSave)] = ("Redux.Icon.FolderOpen", true, null),
+			[nameof(AppKeys.ImportOrderFromSaveAsNew)] = ("Redux.Icon.AddCircle", true, null),
+			[nameof(AppKeys.ImportOrderFromFile)] = ("Redux.Icon.FolderOpen", true, null),
+			[nameof(AppKeys.ImportOrderFromZipFile)] = ("Redux.Icon.Archive", true, null),
+			[nameof(AppKeys.ExportOrderToGame)] = ("Redux.Icon.GameController", true, null),
+			[nameof(AppKeys.ExportOrderToList)] = ("Redux.Icon.DocumentText", true, null),
+			[nameof(AppKeys.ExportOrderToZip)] = ("Redux.Icon.Archive", true, null),
+			[nameof(AppKeys.ExportOrderToArchiveAs)] = ("Redux.Icon.Duplicate", true, null),
 			[nameof(AppKeys.Refresh)] = ("Redux.Icon.RefreshStroke", true, null),
 			[nameof(AppKeys.Confirm)] = ("Redux.Icon.SwapHorizontalStroke", true, null),
 			[nameof(AppKeys.MoveFocusLeft)] = ("Redux.Icon.ArrowBackStroke", true, null),
@@ -50,19 +50,19 @@ public partial class MainViewControl : MainViewControlViewBase
 			[nameof(AppKeys.SwapListFocus)] = ("Redux.Icon.SwapHorizontalStroke", true, null),
 			[nameof(AppKeys.MoveToTop)] = ("Redux.Icon.ChevronUpStroke", true, null),
 			[nameof(AppKeys.MoveToBottom)] = ("Redux.Icon.ChevronDownStroke", true, null),
-			[nameof(AppKeys.ToggleFilterFocus)] = ("Redux.Icon.Funnel", false, null),
-			[nameof(AppKeys.DeleteSelectedMods)] = ("Redux.Icon.Trash", false, "ReduxErrorBrush"),
-			[nameof(AppKeys.OpenPreferences)] = ("Redux.Icon.Settings", false, null),
-			[nameof(AppKeys.OpenKeybindings)] = ("Redux.Icon.Key", false, null),
-			[nameof(AppKeys.ToggleViewTheme)] = ("Redux.Icon.ColorPalette", false, null),
-			[nameof(AppKeys.ExtractSelectedMods)] = ("Redux.Icon.Archive", false, null),
-			[nameof(AppKeys.ExtractSelectedAdventure)] = ("Redux.Icon.Archive", false, null),
-			[nameof(AppKeys.ToggleVersionGeneratorWindow)] = ("Redux.Icon.Build", false, null),
-			[nameof(AppKeys.DownloadScriptExtender)] = ("Redux.Icon.Download", false, null),
-			[nameof(AppKeys.SpeakActiveModOrder)] = ("Redux.Icon.VolumeHigh", false, null),
-			[nameof(AppKeys.StopSpeaking)] = ("Redux.Icon.StopCircle", false, "ReduxErrorBrush"),
-			[nameof(AppKeys.CheckForUpdates)] = ("Redux.Icon.Download", false, null),
-			[nameof(AppKeys.OpenAboutWindow)] = ("Redux.Icon.Information", false, null)
+			[nameof(AppKeys.ToggleFilterFocus)] = ("Redux.Icon.Funnel", true, null),
+			[nameof(AppKeys.DeleteSelectedMods)] = ("Redux.Icon.Trash", true, "ReduxErrorBrush"),
+			[nameof(AppKeys.OpenPreferences)] = ("Redux.Icon.Settings", true, null),
+			[nameof(AppKeys.OpenKeybindings)] = ("Redux.Icon.Key", true, null),
+			[nameof(AppKeys.ToggleViewTheme)] = ("Redux.Icon.ColorPalette", true, null),
+			[nameof(AppKeys.ExtractSelectedMods)] = ("Redux.Icon.Archive", true, null),
+			[nameof(AppKeys.ExtractSelectedAdventure)] = ("Redux.Icon.Archive", true, null),
+			[nameof(AppKeys.ToggleVersionGeneratorWindow)] = ("Redux.Icon.Build", true, null),
+			[nameof(AppKeys.DownloadScriptExtender)] = ("Redux.Icon.Download", true, null),
+			[nameof(AppKeys.SpeakActiveModOrder)] = ("Redux.Icon.VolumeHigh", true, null),
+			[nameof(AppKeys.StopSpeaking)] = ("Redux.Icon.StopCircle", true, "ReduxErrorBrush"),
+			[nameof(AppKeys.CheckForUpdates)] = ("Redux.Icon.Download", true, null),
+			[nameof(AppKeys.OpenAboutWindow)] = ("Redux.Icon.Information", true, null)
 		};
 
 	private void QuickLinksButton_Click(object sender, RoutedEventArgs e)
@@ -211,7 +211,7 @@ public partial class MainViewControl : MainViewControlViewBase
 				Header = "Keyboard Shortcuts...",
 				Command = ViewModel.Keys.OpenKeybindings.Command,
 				ToolTip = "Open Preferences to customize keyboard shortcuts.",
-				Icon = ReduxIcon.FromResource("Redux.Icon.Key")
+				Icon = ReduxIcon.FromResource("Redux.Icon.Key", true)
 			};
 
 			accessibilityMenuItem.Items.Add(new Separator());
@@ -226,7 +226,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			{
 				Header = "Report a Bug...",
 				ToolTip = "Open the BG3 Mod Manager Redux bug report form on GitHub",
-				Icon = ReduxIcon.FromResource("Redux.Icon.Bug")
+				Icon = ReduxIcon.FromResource("Redux.Icon.Bug", true)
 			};
 			reportBugMenuItem.Click += (_, _) => ProcessHelper.TryOpenUrl(DivinityApp.URL_REDUX_BUG_REPORT);
 			helpMenuItem.Items.Add(reportBugMenuItem);
@@ -234,7 +234,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			var creditsMenu = new MenuItem
 			{
 				Header = "Credits & Attribution",
-				Icon = ReduxIcon.FromResource("Redux.Icon.Information")
+				Icon = ReduxIcon.FromResource("Redux.Icon.Information", true)
 			};
 			creditsMenu.Items.Add(new MenuItem
 			{
@@ -246,7 +246,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			{
 				Header = "Support LaughingLeader on Ko-fi",
 				Command = ViewModel.Keys.OpenDonationLink.Command,
-				Icon = ReduxIcon.FromResource("Redux.Icon.Heart")
+				Icon = ReduxIcon.FromResource("Redux.Icon.Heart", true)
 			});
 			helpMenuItem.Items.Add(creditsMenu);
 		}

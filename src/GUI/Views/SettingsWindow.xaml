@@ -399,10 +399,10 @@
 					<Setter.Value>
 						<ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
 							<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding}" Header="Open in File Explorer...">
-								<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
+								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 							</MenuItem>
 							<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding}" Header="Copy Path to Clipboard">
-								<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
+								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
 							</MenuItem>
 						</ContextMenu>
 					</Setter.Value>
@@ -433,13 +433,13 @@
 			<StackPanel Margin="0" HorizontalAlignment="Left" Orientation="Horizontal">
 				<Button x:Name="SaveSettingsButton" Style="{StaticResource SettingsActionButtonStyle}" ToolTip="Save all Preferences now (Ctrl+S)">
 					<StackPanel Margin="0" Orientation="Horizontal">
-						<controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.Save}" />
+						<controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Save}" />
 						<TextBlock Text="Save Preferences" />
 					</StackPanel>
 				</Button>
 				<Button x:Name="OpenSettingsFolderButton" Style="{StaticResource SettingsActionButtonStyle}" ToolTip="Open Settings Folder">
 					<StackPanel Margin="0" Orientation="Horizontal">
-						<controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.FolderOpen}" />
+						<controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.FolderOpen}" />
 						<TextBlock Text="Settings Folder" />
 					</StackPanel>
 				</Button>
@@ -635,7 +635,7 @@
 										BorderBrush="{DynamicResource ReduxAccentBrush}"
 										BorderThickness="1"
 										CornerRadius="16">
-										<controls:ReduxIcon Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" Data="{StaticResource Redux.Icon.ColorPalette}" />
+										<controls:ReduxIcon Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.ColorPalette}" />
 									</Border>
 									<StackPanel Grid.Column="1" Margin="0" Orientation="Vertical">
 										<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Typography &amp; custom themes" />
@@ -672,17 +672,17 @@
 											<Button Grid.Column="1" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7"
 												Style="{StaticResource SettingsActionButtonStyle}" Click="ImportCustomFont_Click"
 												ToolTip="Import a TrueType or OpenType font">
-												<controls:ReduxIcon Width="14" Height="14" Data="{StaticResource Redux.Icon.Download}" />
+												<controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Download}" />
 											</Button>
 											<Button x:Name="DeleteCustomFontButton" Grid.Column="2" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7"
 												Style="{StaticResource SettingsActionButtonStyle}" Click="DeleteCustomFont_Click"
 												ToolTip="Remove the selected imported font">
-												<controls:ReduxIcon Width="14" Height="14" Data="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" />
+												<controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" />
 											</Button>
 											<Button Grid.Column="3" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7"
 												Style="{StaticResource SettingsActionButtonStyle}" Click="OpenCustomFontsFolder_Click"
 												ToolTip="Open the custom fonts folder">
-												<controls:ReduxIcon Width="14" Height="14" Data="{StaticResource Redux.Icon.FolderOpen}" />
+												<controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.FolderOpen}" />
 											</Button>
 										</Grid>
 									</StackPanel>
@@ -717,13 +717,13 @@
 										<ComboBox x:Name="CustomThemeComboBox" MinWidth="240" DisplayMemberPath="Name"
 											SelectionChanged="CustomThemeComboBox_SelectionChanged" ToolTip="Select and apply a custom theme" />
 										<Button Grid.Column="1" MinWidth="82" Margin="8,0,0,0" Style="{StaticResource SettingsActionButtonStyle}" Click="CreateCustomTheme_Click">
-											<StackPanel Margin="0" Orientation="Horizontal"><controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.AddCircle}" /><TextBlock Text="Create" /></StackPanel>
+											<StackPanel Margin="0" Orientation="Horizontal"><controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.AddCircle}" /><TextBlock Text="Create" /></StackPanel>
 										</Button>
 										<Button x:Name="EditCustomThemeButton" Grid.Column="2" MinWidth="74" Margin="6,0,0,0" Style="{StaticResource SettingsActionButtonStyle}" Click="EditCustomTheme_Click">
-											<StackPanel Margin="0" Orientation="Horizontal"><controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.Create}" /><TextBlock Text="Edit" /></StackPanel>
+											<StackPanel Margin="0" Orientation="Horizontal"><controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Create}" /><TextBlock Text="Edit" /></StackPanel>
 										</Button>
 										<Button x:Name="DeleteCustomThemeButton" Grid.Column="3" MinWidth="82" Margin="6,0,0,0" Style="{StaticResource SettingsActionButtonStyle}" Click="DeleteCustomTheme_Click">
-											<StackPanel Margin="0" Orientation="Horizontal"><controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /><TextBlock Text="Delete" /></StackPanel>
+											<StackPanel Margin="0" Orientation="Horizontal"><controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /><TextBlock Text="Delete" /></StackPanel>
 										</Button>
 									</Grid>
 
@@ -731,10 +731,10 @@
 										<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
 										<Button x:Name="DuplicateCustomThemeButton" Grid.Column="1" MinWidth="92" Margin="0" Style="{StaticResource SettingsActionButtonStyle}" Click="DuplicateCustomTheme_Click" Content="Duplicate" />
 										<Button Grid.Column="2" MinWidth="80" Margin="6,0,0,0" Style="{StaticResource SettingsActionButtonStyle}" Click="ImportCustomTheme_Click">
-											<StackPanel Margin="0" Orientation="Horizontal"><controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.Download}" /><TextBlock Text="Import" /></StackPanel>
+											<StackPanel Margin="0" Orientation="Horizontal"><controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Download}" /><TextBlock Text="Import" /></StackPanel>
 										</Button>
 										<Button x:Name="ExportCustomThemeButton" Grid.Column="3" MinWidth="80" Margin="6,0,0,0" Style="{StaticResource SettingsActionButtonStyle}" Click="ExportCustomTheme_Click">
-											<StackPanel Margin="0" Orientation="Horizontal"><controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.CloudUpload}" /><TextBlock Text="Export" /></StackPanel>
+											<StackPanel Margin="0" Orientation="Horizontal"><controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.CloudUpload}" /><TextBlock Text="Export" /></StackPanel>
 										</Button>
 									</Grid>
 								</Grid>
@@ -869,7 +869,7 @@
 											<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
 										</MenuItem>
 										<MenuItem x:Name="ClearHotkeyMenuItem" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.DataContext.ClearCommand}" Header="Remove Keybinding">
-											<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.RemoveCircle}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
+											<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RemoveCircle}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
 										</MenuItem>
 									</ContextMenu>
 								</Setter.Value>
@@ -992,7 +992,7 @@
 						    Grid.Column="1"
 						    Style="{StaticResource IconButtonStyle}"
 						    ToolTip="Clear current params">
-							<controls:ReduxIcon Data="{StaticResource Redux.Icon.Close}" />
+							<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Close}" />
 						</Button>
 					</Grid>
 					<TextBlock Text="Experimental" />

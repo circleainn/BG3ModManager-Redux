@@ -219,8 +219,9 @@ Redux also depends on third-party projects including:
   [Monaspace](https://github.com/githubnext/monaspace),
   [Minipax](https://github.com/ronotypo/Minipax), and
   [Chivo](https://github.com/Omnibus-Type/Chivo), distributed under the SIL Open Font License
-- [Ionicons](https://github.com/ionic-team/ionicons) and
-  [Tabler Icons](https://github.com/tabler/tabler-icons), distributed under the MIT License
+- [Lucide](https://github.com/lucide-icons/lucide), distributed under the ISC License
+- [Simple Icons](https://github.com/simple-icons/simple-icons) (GitHub brand mark only),
+  dedicated to the public domain under CC0 1.0
 - AdonisUI, ReactiveUI, GongSolutions.WPF.DragDrop, and other packages listed in the project files
 
 Baldur's Gate 3 is developed and published by Larian Studios. Redux is an unofficial community

@@ -269,13 +269,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private static readonly Dictionary<string, string> ReduxCategoryDefaultIcons = new(StringComparer.OrdinalIgnoreCase)
 	{
 		[AllModsCategory] = "albums",
-		["User Interface"] = "eye", ["Classes"] = "school", ["Spells"] = "sparkles", ["Cosmetics"] = "rose",
-		["Accessories"] = "diamond", ["Animations"] = "film", ["Armor"] = "shield-half", ["Audio"] = "audio",
+		["User Interface"] = "eye", ["Classes"] = "school", ["Spells"] = "moon-star", ["Cosmetics"] = "paintbrush",
+		["Accessories"] = "glasses", ["Animations"] = "film", ["Armor"] = "shield-half", ["Audio"] = "audio",
 		["Character Customization"] = "body", ["Clothing"] = "shirt", ["Companions"] = "people", ["Dice"] = "dice",
-		["Equipment"] = "cube", ["Maps"] = "map", ["Photo Mode"] = "camera", ["Quests"] = "document",
-		["Races"] = "person", ["Resources"] = "flask", ["Visuals"] = "sunny", ["Weapons"] = "sword",
-		["Libraries"] = "puzzle", ["Patches"] = "settings", ["Overhauls"] = "planet", ["Utilities"] = "construct",
-		["Gameplay"] = "gameplay", ["Miscellaneous"] = "tag", ["Overrides"] = "warning"
+		["Equipment"] = "package", ["Maps"] = "map", ["Photo Mode"] = "camera", ["Quests"] = "scroll",
+		["Races"] = "dna", ["Resources"] = "database", ["Visuals"] = "aperture", ["Weapons"] = "sword",
+		["Libraries"] = "blocks", ["Patches"] = "bandage", ["Overhauls"] = "planet", ["Utilities"] = "toolbox",
+		["Gameplay"] = "gameplay", ["Miscellaneous"] = "shapes", ["Overrides"] = "shield-alert"
 	};
 	private static readonly string[] ReduxCustomCategoryPalette =
 	[

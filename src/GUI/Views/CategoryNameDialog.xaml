@@ -145,14 +145,14 @@
 							Style="{StaticResource ReduxRoundedSecondaryButtonStyle}"
 							Click="ImportCustomIcon_Click" ToolTip="Import a square transparent PNG into Redux">
 							<StackPanel Orientation="Horizontal">
-								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,5,0" Data="{StaticResource Redux.Icon.FolderOpen}" />
+								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,5,0" StrokeData="{StaticResource Redux.Icon.FolderOpen}" />
 								<TextBlock Text="Import PNG" />
 							</StackPanel>
 						</Button>
 						<Button x:Name="DeleteCustomIconButton" Margin="6,0,0,0" MinWidth="32" Padding="7,4"
 							Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Visibility="Collapsed"
 							Click="DeleteCustomIcon_Click" ToolTip="Remove the selected custom icon from Redux">
-							<controls:ReduxIcon Width="14" Height="14" Data="{StaticResource Redux.Icon.Trash}"
+							<controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Trash}"
 								Foreground="{DynamicResource ReduxErrorBrush}" />
 						</Button>
 						</WrapPanel>
@@ -201,7 +201,7 @@
 						<Button DockPanel.Dock="Right" MinWidth="96" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}"
 							Click="SaveCurrentColor_Click">
 							<StackPanel Margin="0" Orientation="Horizontal">
-								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" Data="{StaticResource Redux.Icon.AddCircle}" />
+								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.AddCircle}" />
 								<TextBlock Text="Save current" />
 							</StackPanel>
 						</Button>

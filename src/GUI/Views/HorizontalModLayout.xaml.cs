@@ -327,14 +327,14 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			{
 				Header = "Edit Separator...",
 				Tag = VisualDividerMenuTag,
-				Icon = ReduxIcon.FromResource("Redux.Icon.Create")
+				Icon = ReduxIcon.FromResource("Redux.Icon.Create", true)
 			};
 			edit.Click += (_, _) => ShowEditVisualDividerDialog(mod);
 			var remove = new MenuItem
 			{
 				Header = "Remove Separator",
 				Tag = VisualDividerMenuTag,
-				Icon = ReduxIcon.FromResource("Redux.Icon.Trash", foregroundResourceKey: "ReduxErrorBrush")
+				Icon = ReduxIcon.FromResource("Redux.Icon.Trash", true, "ReduxErrorBrush")
 			};
 			remove.Click += (_, _) => ViewModel.RemoveVisualDivider(mod);
 			menu.Items.Add(edit);
@@ -351,7 +351,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			Header = "Assign Category",
 			Tag = CategoryAssignmentMenuTag,
-			Icon = ReduxIcon.FromResource("Redux.Icon.Pricetag")
+			Icon = ReduxIcon.FromResource("Redux.Icon.Pricetag", true)
 		};
 		var automaticItem = new MenuItem
 		{
@@ -405,7 +405,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				Header = "Native mod.io identity detected",
 				IsEnabled = false,
 				ToolTip = "Redux keeps the stronger mod.io identity for this package.",
-				Icon = ReduxIcon.FromResource("Redux.Icon.Information", foregroundResourceKey: "ReduxInfoBrush")
+				Icon = ReduxIcon.FromResource("Redux.Icon.Information", true, "ReduxInfoBrush")
 			});
 		}
 		else

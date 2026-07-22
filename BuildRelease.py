@@ -16,14 +16,14 @@ latest_path = ROOT / "BG3ModManager-Redux-Latest.zip"
 
 THIRD_PARTY_LICENSE_FILES = (
 	Path("CrossSpeak-LGPL-2.1.txt"),
-	Path("Ionicons-MIT.txt"),
+	Path("Lucide-ISC.txt"),
+	Path("Simple-Icons-CC0.txt"),
 	Path("LSLib-MIT.txt"),
 	Path("Manrope-OFL-1.1.txt"),
 	Path("Atkinson-Hyperlegible-OFL-1.1.txt"),
 	Path("Monaspace-OFL-1.1.txt"),
 	Path("Minipax-OFL-1.1.txt"),
 	Path("Chivo-OFL-1.1.txt"),
-	Path("Tabler-Icons-MIT.txt"),
 )
 
 USER_STATE_DIRECTORIES = {
