@@ -1,4 +1,4 @@
-﻿<Window
+<Window
 	x:Class="DivinityModManager.Views.LeaderLibSettingsWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,7 +8,7 @@
 	Title="LeaderLibSettingsWindow"
 	Width="800"
 	Height="450"
-	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	mc:Ignorable="d">
 	<Grid />
 </Window>

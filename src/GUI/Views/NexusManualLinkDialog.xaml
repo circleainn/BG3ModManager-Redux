@@ -6,7 +6,7 @@
 	Width="520" Height="245" MinWidth="460" MinHeight="225"
 	ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
-	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	Background="{DynamicResource ReduxSurfaceBrush}"
 	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
 	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}">
@@ -26,7 +26,7 @@
 				<RowDefinition Height="*" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
-			<TextBlock FontSize="17" FontWeight="SemiBold" Text="Link this installed package to Nexus Mods" />
+			<TextBlock FontSize="{DynamicResource Redux.FontSize.17}" FontWeight="SemiBold" Text="Link this installed package to Nexus Mods" />
 			<TextBlock Grid.Row="1" Margin="0,5,0,12" TextWrapping="Wrap"
 				Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 				Text="Paste the Baldur's Gate 3 Nexus Mods project page. Redux keeps the installed package name, version, UUID, and load-order position unchanged." />

@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:adonisUI="clr-namespace:AdonisUI;assembly=AdonisUI"
     xmlns:controls="clr-namespace:DivinityModManager.Controls"
@@ -9,7 +9,7 @@
 		<Setter Property="Background" Value="{DynamicResource {x:Static adonisUI:Brushes.Layer1BackgroundBrush}}" />
 	</Style>
 	<Style x:Key="H1Style" BasedOn="{StaticResource {x:Type Paragraph}}" TargetType="Paragraph">
-		<Setter Property="FontSize" Value="32" />
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.32}" />
 		<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUI:Brushes.AccentForegroundBrush}}" />
 		<Setter Property="FontWeight" Value="Normal" />
 		<!-- <Setter Property="TextDecorations" Value="Underline" /> -->
@@ -17,15 +17,15 @@
 		<Setter Property="Margin" Value="0" />
 	</Style>
 	<Style x:Key="H2Style" BasedOn="{StaticResource {x:Type Paragraph}}" TargetType="Paragraph">
-		<Setter Property="FontSize" Value="20" />
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.20}" />
 		<Setter Property="FontWeight" Value="Light" />
 	</Style>
 	<Style x:Key="H3Style" BasedOn="{StaticResource {x:Type Paragraph}}" TargetType="Paragraph">
-		<Setter Property="FontSize" Value="20" />
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.20}" />
 		<Setter Property="FontWeight" Value="Light" />
 	</Style>
 	<Style x:Key="H4Style" BasedOn="{StaticResource {x:Type Paragraph}}" TargetType="Paragraph">
-		<Setter Property="FontSize" Value="14" />
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.14}" />
 		<Setter Property="FontWeight" Value="Light" />
 	</Style>
 	<Style x:Key="LinkStyle" BasedOn="{StaticResource {x:Type Hyperlink}}" TargetType="Hyperlink">

@@ -6,7 +6,7 @@
 	Width="650"
 	MinWidth="650"
 	MaxWidth="650"
-	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="Medium"
 	TextOptions.TextFormattingMode="Display"
 	TextOptions.TextRenderingMode="ClearType"
@@ -41,11 +41,11 @@
 				<TextBlock Margin="0,0,14,0"
 					VerticalAlignment="Top"
 					FontFamily="Segoe UI Symbol"
-					FontSize="34"
+					FontSize="{DynamicResource Redux.FontSize.34}"
 					Foreground="{DynamicResource ReduxWarningBrush}"
 					Text="&#x26A0;" />
 				<StackPanel Grid.Column="1">
-					<TextBlock FontSize="20"
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.20}"
 						FontWeight="SemiBold"
 						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 						Text="mod.io support is limited" />

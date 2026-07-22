@@ -12,7 +12,7 @@
 	ResizeMode="CanResizeWithGrip"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
-	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	Background="{DynamicResource ReduxSurfaceBrush}"
 	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
 	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}">
@@ -51,7 +51,7 @@
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
-		<TextBlock x:Name="DialogHeading" FontSize="16" FontWeight="SemiBold" Text="Create a custom mod category" />
+		<TextBlock x:Name="DialogHeading" FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="Create a custom mod category" />
 		<TextBlock x:Name="DialogHelperText" Grid.Row="1" Margin="0,4,0,10" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 			Text="You can assign installed mods to it from their right-click menu." />
 		<TextBox x:Name="CategoryNameTextBox" Grid.Row="2" MinHeight="32" VerticalAlignment="Top"
@@ -90,16 +90,16 @@
 				</Grid>
 				<xctk:ColorCanvas x:Name="CategoryColorPicker" Visibility="Collapsed" UsingAlphaChannel="False" SelectedColorChanged="CategoryColorPicker_SelectedColorChanged" />
 				<StackPanel Grid.Column="2" VerticalAlignment="Top">
-					<TextBlock Margin="0,0,0,6" FontSize="11" FontWeight="SemiBold"
+					<TextBlock Margin="0,0,0,6" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
 						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Preview" />
 					<Border x:Name="SelectedColorPreview" Height="54" Background="#8A6AF1"
 						BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}" />
-					<TextBlock Margin="0,10,0,4" FontSize="11" FontWeight="SemiBold"
+					<TextBlock Margin="0,10,0,4" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
 						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Hex color" />
 					<TextBox x:Name="HexColorTextBox" MinHeight="30" Padding="7,3" Text="#8A6AF1"
 						LostFocus="HexColorTextBox_Commit" KeyDown="HexColorTextBox_KeyDown" />
 					<StackPanel x:Name="IconChooserPanel" Margin="0,8,0,0">
-						<TextBlock x:Name="IconFieldLabel" Margin="0,0,0,4" FontSize="11" FontWeight="SemiBold"
+						<TextBlock x:Name="IconFieldLabel" Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
 							Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Icon" />
 						<ComboBox x:Name="CategoryIconComboBox"
 							Width="92"
@@ -155,7 +155,7 @@
 					<TextBlock Grid.Row="2" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{Binding Value, ElementName=BlueSlider, StringFormat={}{0:0}}" />
 				</Grid>
 				<StackPanel Grid.Row="4" Grid.ColumnSpan="3">
-					<TextBlock Margin="0,0,0,7" FontSize="11" FontWeight="SemiBold"
+					<TextBlock Margin="0,0,0,7" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
 						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Redux presets" />
 					<WrapPanel>
 						<Border Style="{StaticResource CategoryColorSwatchStyle}" Background="#8A6AF1" Tag="#8A6AF1" ToolTip="Arcane Violet" MouseLeftButtonUp="ColorSwatch_Click" />
@@ -170,7 +170,7 @@
 						<Border Style="{StaticResource CategoryColorSwatchStyle}" Background="#8F879E" Tag="#8F879E" ToolTip="Muted Lilac" MouseLeftButtonUp="ColorSwatch_Click" />
 					</WrapPanel>
 					<DockPanel Margin="0,12,0,7" LastChildFill="False">
-						<TextBlock VerticalAlignment="Center" FontSize="11" FontWeight="SemiBold"
+						<TextBlock VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
 							Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Saved colors" />
 						<Button DockPanel.Dock="Right" MinWidth="96" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}"
 							Click="SaveCurrentColor_Click">
@@ -182,7 +182,7 @@
 					</DockPanel>
 					<WrapPanel x:Name="SavedColorsPanel" />
 					<TextBlock x:Name="NoSavedColorsText" Foreground="{DynamicResource ReduxTextMutedBrush}"
-						FontSize="11" Text="No saved colors yet." />
+						FontSize="{DynamicResource Redux.FontSize.11}" Text="No saved colors yet." />
 				</StackPanel>
 			</Grid>
 		</Border>

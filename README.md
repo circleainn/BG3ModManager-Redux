@@ -33,99 +33,11 @@ incomplete or change between builds.
   custom-theme workflows.
 - Replaced the stale bug-report template with a Redux-specific issue form and added direct
   **Report a Bug** links to the Help menu and About window.
+- Added Compact, Default, and Large interface text sizing with shared dynamic typography tokens.
+- Custom themes now preserve both their preferred bundled typeface and text-size preset across
+  activation, duplication, import/export, and application restarts.
 - Continued conservative UI cleanup without changing load-order behavior, package parsing,
   import/export behavior, game-path detection, or file-management semantics.
-
-## Before you begin
-
-1. Install and launch Baldur's Gate 3 at least once. This creates the game's user folders and
-   initial profile data.
-2. Create or select the profile/campaign you intend to mod in-game. Redux can manage existing BG3
-   profiles, but it is safest to create new profiles from inside the game.
-3. Back up these folders before building a large load order:
-   - `%LOCALAPPDATA%\Larian Studios\Baldur's Gate 3\Mods`
-   - `%LOCALAPPDATA%\Larian Studios\Baldur's Gate 3\PlayerProfiles`
-4. Keep copies of the original archives you download. A removed or broken package is much easier
-   to recover when its archive is still available.
-5. Avoid running the original BG3 Mod Manager and Redux at the same time.
-
-## Installation and first setup
-
-There is no public packaged release yet. These steps apply to a private test build supplied by the
-project owner.
-
-1. Extract the complete archive into a normal, writable folder.
-2. Do not run Redux from inside the archive, `Program Files`, or another protected folder.
-3. Start `BG3ModManager.exe`.
-4. Open **Settings > Preferences > General** and verify:
-   - **Game Data Path** points to Baldur's Gate 3's `Data` folder.
-   - **Game Executable Path** points to `bg3.exe` or the intended game executable.
-   - The selected profile and campaign are correct.
-5. If Redux cannot detect the paths automatically, set them manually and save the preferences.
-
-The Game Data Path must be the real BG3 `Data` directory containing the game's data `.pak` files.
-Selecting the installation root instead of its `Data` folder can prevent the manager from loading
-game information correctly.
-
-## Creating your first load order
-
-1. Select the intended **Profile**, **Mod Order**, and **Campaign** in the top command bar.
-2. Use **Install Mod** to import a `.pak` or supported archive.
-3. Move the desired mods into **Active Mods**.
-4. Drag active mods into the required order. The `#` column represents the real load order.
-5. Use categories and visual separators for organization if desired. They do not change export
-   behavior by themselves.
-6. Select **Export to Game** to write the active order to BG3's `modsettings.lsx`.
-7. Start the game and confirm the correct profile and mods load.
-
-Add mods in small groups and test between exports when creating a large load order. If something
-fails, the smaller batch makes it much easier to identify the cause.
-
-## Important troubleshooting tips
-
-### BG3 reset `modsettings.lsx`
-
-BG3 may replace or reset `modsettings.lsx` when it rejects the exported configuration. Common
-causes include:
-
-- A broken or incompatible mod.
-- A missing required dependency.
-- An invalid or conflicting load order.
-- Exporting to the wrong profile or campaign.
-- Unexpected folder structures in the user Mods folder.
-
-The normal user Mods folder should contain installed `.pak` files directly. Historically, placing
-arbitrary subfolders inside `%LOCALAPPDATA%\Larian Studios\Baldur's Gate 3\Mods` has caused BG3 to
-reject or reset mod settings. Keep archives, documentation, and manual backups somewhere else.
-
-If the file continues to reset, disable the most recently added mods, export again, and test in
-small groups. A reset is usually the game's response to a mod or configuration problem rather than
-Redux silently changing the order.
-
-### The game does not show the expected profile
-
-- Launch BG3 and create/select the profile in-game first.
-- Return to Redux, refresh, and select the matching profile and campaign.
-- Export again after confirming the selection.
-
-### A mod appears installed but does not work
-
-- Check whether it is in **Active Mods** or is an **Override Mod**.
-- Review its description and requirements in the details drawer.
-- Confirm required dependencies and Script Extender versions on the mod's source page.
-- Remember that automatic metadata matching and categorization can be incomplete.
-- Check whether another mod overwrites the same game files.
-
-### mod.io restored a deleted mod
-
-BG3's in-game mod manager can redownload subscribed mod.io packages. Removing the local file in
-Redux does not necessarily unsubscribe from the mod. Unsubscribe through mod.io or BG3's in-game
-manager when you want the mod removed permanently.
-
-### Paths are not detected
-
-Use **Settings > Preferences** to set the Game Data Path and executable manually. The Data Path
-must end at the game's `Data` directory, not merely the Baldur's Gate 3 installation folder.
 
 ## Redux features
 
@@ -138,10 +50,10 @@ must end at the game's `Data` directory, not merely the Baldur's Gate 3 installa
 - Exporting load orders to the game, text files, JSON, and archives where supported.
 - Filtering and configurable list columns.
 - Shortcuts to common game, mod, save, and log folders.
-- Dark, Light, and Parchment themes with a bundled typography selector and refined semantic palettes.
+- Dark, Light, and Parchment themes with bundled typography and text-size selectors plus refined semantic palettes.
   Redux Dark, Redux Light, and Parchment all default to Manrope.
-- Safe custom themes with a preferred bundled typeface, live preview, duplication, JSON import,
-  and JSON export.
+- Safe custom themes with a preferred bundled typeface and text size, live preview, duplication,
+  JSON import/export, and restart persistence.
 - Theme-aware vector iconography and consistent interaction feedback across Redux-owned controls.
 
 ### Accessibility
@@ -261,35 +173,12 @@ affect game files.
 ### Planned appearance follow-ups
 
 - Optional custom transparent PNG icons for categories and visual separators.
-- Compact, Default, and Large typography sizing presets with a clipping-safety pass.
 - Safe custom font import for typography and custom-theme defaults.
 
 Report reproducible problems through the
 [Redux issue tracker](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues). Include the
 Redux version, relevant logs, screenshots, the affected mod names/UUIDs, and the steps that led to
 the problem. Do not post API keys or private filesystem information.
-
-## Building from source
-
-Redux targets .NET 8 and Windows WPF. Building the complete solution also requires Visual Studio's
-C++ build tools for LSLibNative.
-
-### Requirements
-
-- Windows 10 or Windows 11.
-- Visual Studio with .NET desktop development and Desktop development with C++ workloads.
-- .NET 8 SDK.
-- Git with repository submodules/dependencies present.
-
-### Build
-
-1. Clone the repository and its required submodules.
-2. Open `BG3ModManager.sln` in Visual Studio.
-3. Select the `x64` platform.
-4. Build the `Debug` or `Release` configuration.
-
-The internal assembly and executable filename remain `BG3ModManager` for compatibility with
-inherited WPF resource paths. That internal name does not indicate an upstream release.
 
 ## Project links
 

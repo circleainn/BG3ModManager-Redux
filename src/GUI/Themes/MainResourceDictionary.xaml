@@ -1,4 +1,4 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
     xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
@@ -491,7 +491,7 @@
 							<TextBlock x:Name="CheckMark"
 								HorizontalAlignment="Center"
 								VerticalAlignment="Center"
-								FontSize="11"
+								FontSize="{DynamicResource Redux.FontSize.11}"
 								FontWeight="Bold"
 								Foreground="{DynamicResource ReduxAccentForegroundBrush}"
 								Text="&#x2713;"
@@ -737,7 +737,7 @@
 		<Setter Property="HasDropShadow" Value="True" />
 		<Setter Property="MaxWidth" Value="440" />
 		<Setter Property="FontFamily" Value="{DynamicResource Redux.FontFamily.UI}" />
-		<Setter Property="FontSize" Value="12" />
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.12}" />
 		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 		<Setter Property="Template">
 			<Setter.Value>
@@ -1106,7 +1106,7 @@
 										Foreground="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
 										Visibility="{Binding HasVisualDividerIcon, Converter={StaticResource BoolToVisibilityConverter}}" />
 								</Grid>
-								<TextBlock Grid.Column="2" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="12" FontWeight="SemiBold"
+								<TextBlock Grid.Column="2" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.12}" FontWeight="SemiBold"
 										Foreground="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
 										Text="{Binding VisualDividerTitle}" TextTrimming="CharacterEllipsis"
 										Visibility="{Binding VisualDividerTitle, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
@@ -1313,7 +1313,7 @@
 							IsHitTestVisible="False"
 							Visibility="Collapsed">
 							<StackPanel HorizontalAlignment="Center">
-								<TextBlock HorizontalAlignment="Center" FontSize="14" FontWeight="SemiBold" Text="No mods here yet" />
+								<TextBlock HorizontalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.14}" FontWeight="SemiBold" Text="No mods here yet" />
 								<TextBlock Margin="0,6,0,0"
 									HorizontalAlignment="Center"
 									Foreground="{DynamicResource ReduxTextMutedBrush}"
@@ -1473,7 +1473,7 @@
 						</Style>
 					</controls:ReduxIcon.Style>
 				</controls:ReduxIcon>
-				<TextBlock Grid.Column="1" Margin="0" FontSize="11" FontWeight="Medium" Foreground="{Binding Color}"
+				<TextBlock Grid.Column="1" Margin="0" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="Medium" Foreground="{Binding Color}"
 					Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
 			</Grid>
 		</Border>
@@ -1520,7 +1520,7 @@
 					<ColumnDefinition Width="112" />
 				</Grid.ColumnDefinitions>
 				<StackPanel VerticalAlignment="Center">
-					<TextBlock FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.18}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 						Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" />
 					<TextBlock Margin="2,3,2,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
 						Text="{Binding Metadata.Title, StringFormat='Source project: {0}'}"
@@ -1567,7 +1567,7 @@
 							</MultiDataTrigger>
 						</Style.Triggers>
 					</Style></Border.Style>
-					<TextBlock Margin="0" FontSize="11" FontWeight="Medium">
+					<TextBlock Margin="0" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="Medium">
 						<TextBlock.Style><Style TargetType="TextBlock">
 							<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" /><Setter Property="Text" Value="Active" />
 							<Style.Triggers>
@@ -1603,7 +1603,7 @@
 								</Style></Image.Style>
 							</Image>
 						</Grid>
-						<TextBlock Margin="0" VerticalAlignment="Center" FontSize="11" FontWeight="Medium"
+						<TextBlock Margin="0" VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="Medium"
 							Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
 							Text="{Binding DisplaySource}" />
 					</StackPanel>
@@ -1611,7 +1611,7 @@
 			</WrapPanel>
 
 			<Separator Margin="4,0" Background="{DynamicResource ReduxBorderBrush}" />
-			<TextBlock Margin="4,8,4,5" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource ReduxAccentHoverBrush}" Text="Local package" />
+			<TextBlock Margin="4,8,4,5" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxAccentHoverBrush}" Text="Local package" />
 			<Grid Margin="6,0,6,6">
 				<Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
@@ -1642,7 +1642,7 @@
 
 			<StackPanel Visibility="{Binding Metadata.OnlineSourceVisibility}">
 				<Separator Margin="4,0" Background="{DynamicResource ReduxBorderBrush}" />
-				<TextBlock Margin="4,8,4,5" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource ReduxAccentHoverBrush}"
+				<TextBlock Margin="4,8,4,5" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxAccentHoverBrush}"
 					Text="{Binding Metadata.SourceLabel, StringFormat='Source · {0}'}" />
 				<Grid Margin="6,0,6,6">
 					<Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
@@ -1810,7 +1810,7 @@
 										</Style>
 									</Border.Style>
 									<StackPanel>
-										<TextBlock FontSize="13" FontWeight="SemiBold">
+										<TextBlock FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold">
 											<TextBlock.Style>
 												<Style TargetType="{x:Type TextBlock}">
 													<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
@@ -1919,7 +1919,7 @@
 										</Style>
 									</Border.Style>
 									<StackPanel>
-										<TextBlock FontSize="13" FontWeight="SemiBold">
+										<TextBlock FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold">
 											<TextBlock.Style>
 												<Style TargetType="{x:Type TextBlock}">
 													<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
@@ -2045,7 +2045,7 @@
 						<ColumnDefinition Width="*" />
 					</Grid.ColumnDefinitions>
 					<ContentControl Margin="0,0,5,0" Content="{Binding}" ContentTemplate="{StaticResource PlatformIconPresenterTemplate}" Visibility="{Binding Metadata.OnlineSourceVisibility}" />
-					<TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="11" FontWeight="Medium"
+					<TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="Medium"
 						Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
 						Text="{Binding DisplaySource}" TextTrimming="CharacterEllipsis" />
 				</Grid>
@@ -2062,7 +2062,7 @@
 							CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 							<StackPanel>
 								<TextBlock FontFamily="{DynamicResource Redux.FontFamily.UI}"
-									FontSize="13"
+									FontSize="{DynamicResource Redux.FontSize.13}"
 									FontWeight="SemiBold"
 									Foreground="{DynamicResource ReduxWarningBrush}"
 									Text="Limited mod.io support" />
@@ -2128,7 +2128,7 @@
 						</Style>
 					</controls:ReduxIcon.Style>
 				</controls:ReduxIcon>
-				<TextBlock Grid.Column="1" FontSize="11" FontWeight="Medium" Foreground="{Binding Color}"
+				<TextBlock Grid.Column="1" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="Medium" Foreground="{Binding Color}"
 					Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
 			</Grid>
 		</Border>

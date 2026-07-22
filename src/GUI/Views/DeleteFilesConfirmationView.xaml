@@ -1,4 +1,4 @@
-﻿<local:DeleteFilesConfirmationViewBase x:Class="DivinityModManager.Views.DeleteFilesConfirmationView"
+<local:DeleteFilesConfirmationViewBase x:Class="DivinityModManager.Views.DeleteFilesConfirmationView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:adonisUI="clr-namespace:AdonisUI;assembly=AdonisUI"
@@ -37,7 +37,7 @@
 									<TextBlock x:Name="CheckMark"
 									    HorizontalAlignment="Center"
 									    VerticalAlignment="Center"
-									    FontSize="11"
+									    FontSize="{DynamicResource Redux.FontSize.11}"
 									    FontWeight="Bold"
 									    Foreground="{DynamicResource ReduxAccentForegroundBrush}"
 									    Text="&#x2713;"
@@ -131,7 +131,7 @@
 				</Grid.RowDefinitions>
 				<TextBlock x:Name="TaskProgressTitleText"
 				    HorizontalAlignment="Center"
-				    FontSize="16"
+				    FontSize="{DynamicResource Redux.FontSize.16}"
 				    FontWeight="Bold" />
 				<DockPanel Grid.Row="1" Margin="8">
 					<TextBlock x:Name="TaskProgressWorkText"
@@ -173,7 +173,7 @@
 				    Padding="12,7"
 				    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 				    Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-				    FontSize="24"
+				    FontSize="{DynamicResource Redux.FontSize.24}"
 				    TextAlignment="Center" />
 				<Rectangle Height="1" Fill="{DynamicResource ReduxBorderBrush}" />
 			</StackPanel>

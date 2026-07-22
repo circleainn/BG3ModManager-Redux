@@ -469,7 +469,10 @@ public class SettingsWindowViewModel : ReactiveObject
 						Settings.SetToDefault();
 						break;
 					case SettingsWindowTab.Appearance:
+						Settings.ActiveCustomThemeId = String.Empty;
 						Settings.ColorTheme = ReduxThemeType.ReduxDark;
+						Settings.TypographyFont = ReduxTypographyFont.Manrope;
+						Settings.TextSize = ReduxTextSize.Default;
 						break;
 					case SettingsWindowTab.Extender:
 						Settings.ExtenderSettings.SetToDefault();

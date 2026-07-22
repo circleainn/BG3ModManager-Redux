@@ -6,7 +6,7 @@
 	Width="680"
 	MinWidth="680"
 	MaxWidth="680"
-	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="Medium"
 	TextOptions.TextFormattingMode="Display"
 	TextOptions.TextRenderingMode="ClearType"
@@ -48,12 +48,12 @@
 					CornerRadius="21">
 					<TextBlock HorizontalAlignment="Center"
 						VerticalAlignment="Center"
-						FontSize="21"
+						FontSize="{DynamicResource Redux.FontSize.21}"
 						Foreground="{DynamicResource ReduxAccentHoverBrush}"
 						Text="i" />
 				</Border>
 				<StackPanel Grid.Column="1">
-					<TextBlock FontSize="20"
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.20}"
 						FontWeight="SemiBold"
 						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 						Text="Redux can identify some pre-existing Nexus mods" />

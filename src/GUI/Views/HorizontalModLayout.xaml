@@ -47,7 +47,7 @@
 				<Setter Property="ClipToBounds" Value="True" />
 			</Style>
 			<Style x:Key="ModSectionTitle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
-				<Setter Property="FontSize" Value="14" />
+				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.14}" />
 				<Setter Property="FontWeight" Value="SemiBold" />
 			</Style>
 			<Style x:Key="ModCategoryListItemStyle" TargetType="{x:Type ListBoxItem}">
@@ -356,7 +356,7 @@
 								</Style>
 							</c:ReduxIcon.Style>
 						</c:ReduxIcon>
-						<TextBlock FontSize="11" FontWeight="Medium" Foreground="{Binding Color}"
+						<TextBlock FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="Medium" Foreground="{Binding Color}"
 							Text="{Binding Name}" />
 					</StackPanel>
 				</Border>
@@ -520,7 +520,7 @@
 										CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 										<TextBlock HorizontalAlignment="Center"
 											VerticalAlignment="Center"
-											FontSize="15"
+											FontSize="{DynamicResource Redux.FontSize.15}"
 											FontWeight="Bold"
 											Foreground="{DynamicResource ReduxAccentHoverBrush}"
 											Text="MOD" />
@@ -554,7 +554,7 @@
 									Orientation="Horizontal">
 									<ContentControl Margin="0,0,5,0" Content="{Binding}" ContentTemplate="{StaticResource PlatformIconPresenterTemplate}" Visibility="{Binding Metadata.OnlineSourceVisibility}" />
 									<TextBlock VerticalAlignment="Center"
-										FontSize="10"
+										FontSize="{DynamicResource Redux.FontSize.10}"
 										FontWeight="SemiBold">
 									<TextBlock.Style>
 										<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
@@ -585,7 +585,7 @@
 										<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
 											<Border MaxWidth="390" Padding="12,10" Background="{DynamicResource ReduxSurfaceElevatedBrush}" BorderBrush="{DynamicResource ReduxWarningBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 												<StackPanel>
-													<TextBlock FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource ReduxWarningBrush}" Text="Contains Mod Fixer" />
+													<TextBlock FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxWarningBrush}" Text="Contains Mod Fixer" />
 													<TextBlock Margin="0,5,0,0" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="This package contains the older Mod Fixer technique used by some BG3 mods." TextWrapping="Wrap" />
 													<TextBlock Margin="0,6,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="BG3 Patch 7 and newer generally do not require Mod Fixer, and it does not need to be installed separately." TextWrapping="Wrap" />
 												</StackPanel>
@@ -725,7 +725,7 @@
 									<RowDefinition Height="Auto" />
 									<RowDefinition Height="*" />
 								</Grid.RowDefinitions>
-								<TextBlock FontSize="11"
+								<TextBlock FontSize="{DynamicResource Redux.FontSize.11}"
 									FontWeight="SemiBold"
 									Foreground="{DynamicResource ReduxTextMutedBrush}"
 									Text="SUMMARY" />
@@ -750,7 +750,7 @@
 						<RowDefinition Height="*" />
 					</Grid.RowDefinitions>
 					<Grid>
-						<TextBlock FontSize="16"
+						<TextBlock FontSize="{DynamicResource Redux.FontSize.16}"
 							FontWeight="SemiBold"
 							Text="{Binding Metadata.DescriptionHeading}" />
 					</Grid>
@@ -790,7 +790,7 @@
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="Auto" />
 					</Grid.RowDefinitions>
-					<TextBlock FontSize="16" FontWeight="SemiBold" Text="Installed package" />
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="Installed package" />
 					<Grid Grid.Row="1" Margin="0,10,0,0">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="80" />
@@ -821,7 +821,7 @@
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
-						<TextBlock FontSize="16" FontWeight="SemiBold">
+						<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold">
 							<TextBlock.Style>
 								<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
 									<Setter Property="Text" Value="No linked media yet" />
@@ -901,7 +901,7 @@
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="*" />
 					</Grid.RowDefinitions>
-					<TextBlock FontSize="16" FontWeight="SemiBold" Text="Installed mod dependencies" />
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="Installed mod dependencies" />
 					<TextBlock Grid.Row="1"
 						Margin="0,2,0,0"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
@@ -961,7 +961,7 @@
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
-						<TextBlock FontSize="16"
+						<TextBlock FontSize="{DynamicResource Redux.FontSize.16}"
 							FontWeight="SemiBold"
 							Text="{Binding Metadata.ChangelogHeading}" />
 						<Button Grid.Column="1"
@@ -1127,7 +1127,7 @@
 						ToolTip="Collapse or expand categories">
 						<TextBlock HorizontalAlignment="Center"
 							VerticalAlignment="Center"
-							FontSize="18"
+							FontSize="{DynamicResource Redux.FontSize.18}"
 							Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}">
 							<TextBlock.Style>
 								<Style TargetType="{x:Type TextBlock}">
@@ -1228,7 +1228,7 @@
 									Background="{DynamicResource ReduxSurfaceMutedBrush}"
 									CornerRadius="9">
 									<TextBlock HorizontalAlignment="Center"
-										FontSize="11"
+										FontSize="{DynamicResource Redux.FontSize.11}"
 										Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 										Text="{Binding Count}" />
 								</Border>
@@ -1239,7 +1239,7 @@
 				<TextBlock Grid.Row="2"
 					HorizontalAlignment="Center"
 					VerticalAlignment="Center"
-					FontSize="12"
+					FontSize="{DynamicResource Redux.FontSize.12}"
 					FontWeight="SemiBold"
 					Foreground="{DynamicResource ReduxTextMutedBrush}"
 					IsHitTestVisible="False"
@@ -1287,7 +1287,7 @@
 					Margin="12,0,8,0"
 					VerticalAlignment="Center"
 					AutomationProperties.HelpText="The active list is sorted by metadata. Click the number-sign column to restore load-order editing."
-					FontSize="11"
+					FontSize="{DynamicResource Redux.FontSize.11}"
 					Foreground="{DynamicResource ReduxWarningBrush}"
 					Text="Sorted view — drag disabled; click # to edit order"
 					TextTrimming="CharacterEllipsis"
@@ -1382,8 +1382,8 @@
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
 						<StackPanel VerticalAlignment="Center">
-							<TextBlock FontSize="14" FontWeight="SemiBold" Text="Override Mods" />
-							<TextBlock FontSize="11" Foreground="{DynamicResource ReduxTextMutedBrush}"
+							<TextBlock FontSize="{DynamicResource Redux.FontSize.14}" FontWeight="SemiBold" Text="Override Mods" />
+							<TextBlock FontSize="{DynamicResource Redux.FontSize.11}" Foreground="{DynamicResource ReduxTextMutedBrush}"
 								Text="Always loaded while installed; overrides built-in game files outside the normal load order" />
 						</StackPanel>
 						<ToggleButton x:Name="AlwaysLoadedToggleButton" Grid.Column="1"
@@ -1391,7 +1391,7 @@
 							Style="{StaticResource CategoryPanelToggleStyle}"
 							IsChecked="{Binding IsAlwaysLoadedExpanded, Mode=TwoWay}"
 							ToolTip="Collapse or expand Override Mods">
-							<TextBlock Text="⌃" FontSize="15">
+							<TextBlock Text="⌃" FontSize="{DynamicResource Redux.FontSize.15}">
 								<TextBlock.Style>
 									<Style TargetType="TextBlock">
 										<Setter Property="Text" Value="⌃" />
@@ -1629,7 +1629,7 @@
 					</Grid>
 					<TextBlock Grid.Column="1"
 						VerticalAlignment="Center"
-						FontSize="15"
+						FontSize="{DynamicResource Redux.FontSize.15}"
 						FontWeight="SemiBold"
 						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 						MaxWidth="420"
@@ -1643,7 +1643,7 @@
 						Background="{DynamicResource ReduxSurfaceMutedBrush}"
 						BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
 						ToolTip="{Binding Content.FileName, ElementName=ModDetailsContent}">
-						<TextBlock FontSize="11" Foreground="{DynamicResource ReduxTextMutedBrush}"
+						<TextBlock FontSize="{DynamicResource Redux.FontSize.11}" Foreground="{DynamicResource ReduxTextMutedBrush}"
 							Text="{Binding Content.FileName, ElementName=ModDetailsContent, TargetNullValue='Local package'}"
 							TextTrimming="CharacterEllipsis" />
 					</Border>

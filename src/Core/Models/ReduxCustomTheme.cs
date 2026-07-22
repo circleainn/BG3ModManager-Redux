@@ -4,8 +4,9 @@ using System.ComponentModel;
 namespace DivinityModManager.Models;
 
 /// <summary>
-/// A safe, color-only Redux theme. Layout, typography, templates, icons, and behavior
-/// remain owned by the application and cannot be supplied by imported themes.
+/// A safe Redux theme containing semantic colors and curated typography choices.
+/// Layout, templates, icons, and behavior remain owned by the application and
+/// cannot be supplied by imported themes.
 /// </summary>
 [DataContract]
 public class ReduxCustomTheme : ReactiveObject
@@ -15,6 +16,8 @@ public class ReduxCustomTheme : ReactiveObject
 	[DataMember, Reactive] public ReduxThemeType BaseTheme { get; set; } = ReduxThemeType.ReduxDark;
 	[DefaultValue(ReduxTypographyFont.Manrope)]
 	[DataMember, Reactive] public ReduxTypographyFont TypographyFont { get; set; } = ReduxTypographyFont.Manrope;
+	[DefaultValue(ReduxTextSize.Default)]
+	[DataMember, Reactive] public ReduxTextSize TextSize { get; set; } = ReduxTextSize.Default;
 	[DataMember, Reactive] public string BackgroundColor { get; set; } = "#0D0B10";
 	[DataMember, Reactive] public string SurfaceColor { get; set; } = "#17121D";
 	[DataMember, Reactive] public string AccentColor { get; set; } = "#9676FF";
@@ -30,6 +33,7 @@ public class ReduxCustomTheme : ReactiveObject
 		Name = Name,
 		BaseTheme = BaseTheme,
 		TypographyFont = TypographyFont,
+		TextSize = TextSize,
 		BackgroundColor = BackgroundColor,
 		SurfaceColor = SurfaceColor,
 		AccentColor = AccentColor,

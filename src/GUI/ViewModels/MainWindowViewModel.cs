@@ -1104,6 +1104,12 @@ Directory the zip will be extracted to:
 			if (IsInitialized) SaveSettings();
 		});
 
+		Settings.WhenAnyValue(x => x.TextSize).ObserveOn(RxApp.MainThreadScheduler).Subscribe((textSize) =>
+		{
+			ReduxTypographyService.ApplyTextSize(Application.Current.Resources, textSize);
+			if (IsInitialized) SaveSettings();
+		});
+
 		Settings.WhenAnyValue(x => x.ColorTheme, x => x.ActiveCustomThemeId).ObserveOn(RxApp.MainThreadScheduler).Subscribe((selection) =>
 		{
 			var theme = selection.Item1;
@@ -6416,6 +6422,7 @@ Directory the zip will be extracted to:
 				_ => ReduxThemeType.ReduxDark
 			};
 			Settings.TypographyFont = ReduxTypographyFont.Manrope;
+			Settings.TextSize = ReduxTextSize.Default;
 			Settings.ColorTheme = nextTheme;
 		});
 

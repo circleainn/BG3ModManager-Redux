@@ -4,7 +4,7 @@
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	Title="Redux Preview"
 	Width="650" MinWidth="650" MaxWidth="650"
-	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontWeight="{DynamicResource Redux.FontWeight.Body}"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}" FontWeight="{DynamicResource Redux.FontWeight.Body}"
 	ResizeMode="NoResize" SizeToContent="Height" ShowInTaskbar="False"
 	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
 	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
@@ -17,9 +17,9 @@
 			<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 			<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 				<Border Width="42" Height="42" Margin="0,0,14,0" VerticalAlignment="Top" Background="{DynamicResource ReduxAccentSoftBrush}" BorderBrush="{DynamicResource ReduxAccentBrush}" BorderThickness="1" CornerRadius="21">
-					<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="23" Foreground="{DynamicResource ReduxAccentHoverBrush}" Text="◇" />
+					<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.23}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Text="◇" />
 				</Border>
-				<StackPanel Grid.Column="1"><TextBlock FontSize="20" FontWeight="{DynamicResource Redux.FontWeight.Title}" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Redux is an early preview" />
+				<StackPanel Grid.Column="1"><TextBlock FontSize="{DynamicResource Redux.FontSize.20}" FontWeight="{DynamicResource Redux.FontWeight.Title}" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Redux is an early preview" />
 					<TextBlock Margin="0,5,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="This build is still a work in progress intended for careful personal use and private testing." TextWrapping="Wrap" /></StackPanel>
 			</Grid>
 			<Border Grid.Row="1" Margin="0,18,0,14" Padding="14,12" Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxAccentBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">

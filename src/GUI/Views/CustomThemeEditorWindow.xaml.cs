@@ -21,6 +21,7 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 		DataContext = Theme;
 		BaseThemeComboBox.SelectedValue = Theme.BaseTheme;
 		TypographyFontComboBox.SelectedValue = Theme.TypographyFont;
+		TextSizeComboBox.SelectedValue = Theme.TextSize;
 		ReduxThemeService.Apply(Resources, Theme.BaseTheme, Theme);
 		Loaded += (_, _) =>
 		{
@@ -28,6 +29,14 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 			ThemeNameTextBox.Focus();
 			ThemeNameTextBox.SelectAll();
 		};
+	}
+
+	private void TextSizeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (_initializing || TextSizeComboBox.SelectedValue is not ReduxTextSize textSize) return;
+		Theme.TextSize = textSize;
+		ReduxTypographyService.ApplyTextSize(Application.Current.Resources, textSize);
+		PreviewChanged?.Invoke(Theme);
 	}
 
 	private void BaseThemeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -70,6 +79,7 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 	{
 		ReduxThemeService.Apply(Resources, Theme.BaseTheme, Theme);
 		ReduxTypographyService.Apply(Application.Current.Resources, Theme.TypographyFont);
+		ReduxTypographyService.ApplyTextSize(Application.Current.Resources, Theme.TextSize);
 		PreviewChanged?.Invoke(Theme);
 	}
 

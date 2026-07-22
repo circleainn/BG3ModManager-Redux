@@ -175,6 +175,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		{
 			ViewModel.Settings.ActiveCustomThemeId = String.Empty;
 			ViewModel.Settings.TypographyFont = ReduxTypographyFont.Manrope;
+			ViewModel.Settings.TextSize = ReduxTextSize.Default;
 			ThemeComboBox.SelectedValue = theme;
 			RefreshCustomThemeControls();
 		}
@@ -205,7 +206,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		DuplicateCustomThemeButton.IsEnabled = hasSelection;
 		ExportCustomThemeButton.IsEnabled = hasSelection;
 		CustomThemeStatusText.Text = activeTheme != null
-			? $"Active custom theme · {activeTheme.BaseTheme.GetDescription()} · {activeTheme.TypographyFont.GetDescription()}"
+			? $"Active custom theme · {activeTheme.BaseTheme.GetDescription()} · {activeTheme.TypographyFont.GetDescription()} · {activeTheme.TextSize.GetDescription()} text"
 			: ViewModel.Settings.CustomThemes.Count == 0
 				? "No custom themes yet. Create one from the current built-in palette."
 				: "Choose a custom theme above, or keep using a built-in theme.";
@@ -224,6 +225,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		ViewModel.Settings.ActiveCustomThemeId = theme.Id;
 		ViewModel.Settings.ColorTheme = theme.BaseTheme;
 		ViewModel.Settings.TypographyFont = theme.TypographyFont;
+		ViewModel.Settings.TextSize = theme.TextSize;
 		MainWindow.Self.MainView.UpdateColorTheme(theme.BaseTheme);
 		ViewModel.Main.SaveSettings();
 		RefreshCustomThemeControls();
@@ -233,6 +235,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		var previousTheme = ViewModel.Settings.ColorTheme;
 		var previousFont = ViewModel.Settings.TypographyFont;
+		var previousTextSize = ViewModel.Settings.TextSize;
 		var dialog = new CustomThemeEditorWindow(workingTheme) { Owner = this };
 		dialog.PreviewChanged += preview => MainWindow.Self.MainView.PreviewCustomTheme(preview);
 		var accepted = dialog.ShowDialog() == true;
@@ -240,6 +243,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		{
 			MainWindow.Self.MainView.UpdateColorTheme(previousTheme);
 			ReduxTypographyService.Apply(Application.Current.Resources, previousFont);
+			ReduxTypographyService.ApplyTextSize(Application.Current.Resources, previousTextSize);
 		}
 		return accepted;
 	}
@@ -247,7 +251,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	private void CreateCustomTheme_Click(object sender, RoutedEventArgs e)
 	{
 		var working = ReduxThemeService.CreateFromBase("My Custom Theme", ViewModel.Settings.ColorTheme,
-			ViewModel.Settings.TypographyFont);
+			ViewModel.Settings.TypographyFont, ViewModel.Settings.TextSize);
 		if (!EditCustomTheme(working)) return;
 		ViewModel.Settings.CustomThemes.Add(working);
 		ActivateCustomTheme(working);
@@ -288,6 +292,8 @@ public partial class SettingsWindow : SettingsWindowBase
 		if (selected.Id.Equals(ViewModel.Settings.ActiveCustomThemeId, StringComparison.OrdinalIgnoreCase))
 		{
 			ViewModel.Settings.ActiveCustomThemeId = String.Empty;
+			ViewModel.Settings.TypographyFont = ReduxTypographyFont.Manrope;
+			ViewModel.Settings.TextSize = ReduxTextSize.Default;
 			MainWindow.Self.MainView.UpdateColorTheme(ViewModel.Settings.ColorTheme);
 		}
 		ViewModel.Main.SaveSettings();
@@ -620,6 +626,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		this.Bind(ViewModel, vm => vm.Settings.LogEnabled, view => view.LogEnabledCheckBox.IsChecked);
 		this.Bind(ViewModel, vm => vm.Settings.ColorTheme, view => view.ThemeComboBox.SelectedValue);
 		this.Bind(ViewModel, vm => vm.Settings.TypographyFont, view => view.TypographyComboBox.SelectedValue);
+		this.Bind(ViewModel, vm => vm.Settings.TextSize, view => view.TextSizeComboBox.SelectedValue);
 		ViewModel.Settings.WhenAnyValue(settings => settings.ActiveCustomThemeId)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => RefreshCustomThemeControls());

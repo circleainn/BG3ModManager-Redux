@@ -1,4 +1,4 @@
-﻿<local:HelpWindowBase
+<local:HelpWindowBase
 	x:Class="DivinityModManager.Views.HelpWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,7 +8,7 @@
 	Title="Help"
 	Width="800"
 	Height="450"
-	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	mc:Ignorable="d">
 	<Window.Style>
 		<Style BasedOn="{StaticResource {x:Type Window}}" TargetType="Window" />
@@ -29,7 +29,7 @@
 			x:Name="HelpTitleText"
 			Grid.Row="0"
 			Padding="4"
-			FontSize="24"
+			FontSize="{DynamicResource Redux.FontSize.24}"
 			TextAlignment="Center" />
 		<FlowDocumentScrollViewer
 			x:Name="MarkdownViewer"

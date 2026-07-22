@@ -40,6 +40,16 @@ public enum ReduxTypographyFont
 	Chivo = 6
 }
 
+public enum ReduxTextSize
+{
+	[Description("Compact")]
+	Compact = 1,
+	[Description("Default")]
+	Default = 2,
+	[Description("Large")]
+	Large = 3
+}
+
 [DataContract]
 public class DivinityModManagerSettings : ReactiveObject
 {
@@ -140,10 +150,14 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("App font", "Choose the typeface used throughout Redux. Text sizing is managed separately.", HideFromUI = true)]
 	[DataMember, Reactive] public ReduxTypographyFont TypographyFont { get; set; } = ReduxTypographyFont.Manrope;
 
+	[DefaultValue(ReduxTextSize.Default)]
+	[SettingsEntry("Text size", "Choose a curated interface text-size preset.", HideFromUI = true)]
+	[DataMember, Reactive] public ReduxTextSize TextSize { get; set; } = ReduxTextSize.Default;
+
 	[DefaultValue("")]
 	[DataMember, Reactive] public string ActiveCustomThemeId { get; set; } = String.Empty;
 
-	[DataMember] public ObservableCollection<ReduxCustomTheme> CustomThemes { get; set; } = new();
+	[DataMember, Reactive] public ObservableCollection<ReduxCustomTheme> CustomThemes { get; set; } = new();
 
 	[DefaultValue(false)]
 	[SettingsEntry("Match category hover colors", "Use a mod's primary category color when hovering its row. Disable this to use the standard Redux accent.", HideFromUI = true)]
@@ -310,6 +324,7 @@ public class DivinityModManagerSettings : ReactiveObject
 		// A zero value marks settings written before Redux added the three-theme selector.
 		ColorTheme = 0;
 		TypographyFont = 0;
+		TextSize = 0;
 	}
 
 	[OnDeserialized]
@@ -324,6 +339,10 @@ public class DivinityModManagerSettings : ReactiveObject
 		{
 			TypographyFont = ReduxTypographyFont.Manrope;
 		}
+		if (!Enum.IsDefined(TextSize) || TextSize == 0)
+		{
+			TextSize = ReduxTextSize.Default;
+		}
 		CustomThemes ??= new ObservableCollection<ReduxCustomTheme>();
 		foreach (var theme in CustomThemes)
 		{
@@ -332,6 +351,10 @@ public class DivinityModManagerSettings : ReactiveObject
 			if (!Enum.IsDefined(theme.TypographyFont) || theme.TypographyFont == 0)
 			{
 				theme.TypographyFont = ReduxTypographyFont.Manrope;
+			}
+			if (!Enum.IsDefined(theme.TextSize) || theme.TextSize == 0)
+			{
+				theme.TextSize = ReduxTextSize.Default;
 			}
 		}
 		if (!CustomThemes.Any(theme => theme.Id.Equals(ActiveCustomThemeId, StringComparison.OrdinalIgnoreCase)))

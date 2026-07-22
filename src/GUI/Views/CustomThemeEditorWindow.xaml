@@ -12,7 +12,7 @@
 	ResizeMode="CanResizeWithGrip"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
-	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	Background="{DynamicResource ReduxSurfaceBrush}"
 	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
 	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}">
@@ -63,9 +63,9 @@
 				<RowDefinition Height="*" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
-			<TextBlock FontSize="19" FontWeight="SemiBold" Text="Design a custom Redux palette" />
+			<TextBlock FontSize="{DynamicResource Redux.FontSize.19}" FontWeight="SemiBold" Text="Design a custom Redux palette" />
 			<TextBlock Grid.Row="1" Margin="0,5,0,16" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-				Text="Choose a default typeface and eight semantic colors. Redux derives hover, selection, borders, muted text, and contrast-safe button text automatically."
+				Text="Choose default typography and eight semantic colors. Redux derives hover, selection, borders, muted text, and contrast-safe button text automatically."
 				TextWrapping="Wrap" />
 
 			<Grid Grid.Row="2">
@@ -91,8 +91,12 @@
 					<ComboBox x:Name="TypographyFontComboBox" DisplayMemberPath="Description"
 						ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxTypographyFont}}}"
 						SelectedValuePath="Value" SelectionChanged="TypographyFontComboBox_SelectionChanged" />
-					<TextBlock Margin="2,5,0,0" FontSize="15" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+					<TextBlock Margin="2,5,0,0" FontSize="{DynamicResource Redux.FontSize.15}" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 						Text="Aa Qg 0O 1Il" />
+					<TextBlock Margin="0,10,0,5" FontWeight="SemiBold" Text="Default text size" />
+					<ComboBox x:Name="TextSizeComboBox" DisplayMemberPath="Description"
+						ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxTextSize}}}"
+						SelectedValuePath="Value" SelectionChanged="TextSizeComboBox_SelectionChanged" />
 				</StackPanel>
 			</Grid>
 

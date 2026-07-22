@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:sys="clr-namespace:System;assembly=mscorlib">
 	<!--
 		Typography is intentionally independent from Redux color themes. The active
 		family token is replaced at runtime; weights remain shared across families.
@@ -11,4 +12,23 @@
 	<FontWeight x:Key="Redux.FontWeight.Control">Medium</FontWeight>
 	<FontWeight x:Key="Redux.FontWeight.Title">SemiBold</FontWeight>
 	<FontWeight x:Key="Redux.FontWeight.Brand">Bold</FontWeight>
+	<!-- Numeric tokens preserve Redux's current Default sizing exactly. The
+	     typography service scales the same tokens for Compact and Large. -->
+	<sys:Double x:Key="Redux.FontSize.10">10</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.11">11</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.12">12</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.13">13</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.14">14</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.15">15</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.16">16</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.17">17</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.18">18</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.19">19</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.20">20</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.21">21</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.22">22</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.23">23</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.24">24</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.32">32</sys:Double>
+	<sys:Double x:Key="Redux.FontSize.34">34</sys:Double>
 </ResourceDictionary>

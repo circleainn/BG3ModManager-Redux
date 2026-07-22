@@ -13,6 +13,11 @@ namespace DivinityModManager.Util;
 /// </summary>
 public static class ReduxTypographyService
 {
+	private static readonly double[] FontSizeBaselines =
+	[
+		10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 32, 34
+	];
+
 	public static void Apply(ResourceDictionary resources, ReduxTypographyFont selection)
 	{
 		if (resources == null) return;
@@ -46,6 +51,34 @@ public static class ReduxTypographyService
 		}
 	}
 
+	public static void ApplyTextSize(ResourceDictionary resources, ReduxTextSize selection)
+	{
+		if (resources == null) return;
+		if (!Enum.IsDefined(selection)) selection = ReduxTextSize.Default;
+
+		var scale = selection switch
+		{
+			ReduxTextSize.Compact => 0.92,
+			ReduxTextSize.Large => 1.15,
+			_ => 1.0
+		};
+
+		foreach (var baseline in FontSizeBaselines)
+		{
+			var scaled = Math.Round(baseline * scale * 2, MidpointRounding.AwayFromZero) / 2;
+			SetResource(resources, $"Redux.FontSize.{baseline:0}", scaled);
+		}
+
+		if (Application.Current != null)
+		{
+			var bodySize = Math.Round(12 * scale * 2, MidpointRounding.AwayFromZero) / 2;
+			foreach (Window window in Application.Current.Windows)
+			{
+				window.FontSize = bodySize;
+			}
+		}
+	}
+
 	private static FontFamily CreateBundledFont(string familyName)
 	{
 		var fontDirectory = Path.Combine(AppContext.BaseDirectory, "Resources", "Fonts")
@@ -63,7 +96,7 @@ public static class ReduxTypographyService
 		return new FontFamily("Segoe UI");
 	}
 
-	private static void SetResource(ResourceDictionary resources, string key, FontFamily value)
+	private static void SetResource(ResourceDictionary resources, string key, object value)
 	{
 		var owner = FindResourceOwner(resources, key) ?? resources;
 		owner[key] = value;
