@@ -193,7 +193,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ClearCategoryDropIndicator();
 		var layer = AdornerLayer.GetAdornerLayer(target);
 		if (layer == null) return;
-		var brush = TryFindResource("ReduxAccentHoverBrush") as Brush ?? System.Windows.Media.Brushes.MediumPurple;
+		var brush = TryFindResource("ReduxAccentHoverBrush") as Brush ?? System.Windows.Media.Brushes.Gray;
 		_categoryDropTarget = target;
 		_categoryDropAfter = insertAfter;
 		_categoryDropIndicator = new CategoryDropIndicatorAdorner(target, insertAfter, brush);

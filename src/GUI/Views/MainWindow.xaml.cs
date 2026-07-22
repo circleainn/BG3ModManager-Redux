@@ -323,6 +323,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		if (AboutWindow == null)
 		{
 			AboutWindow = new AboutWindow();
+			ApplyCurrentTheme(AboutWindow);
 		}
 
 		if (!AboutWindow.IsVisible)
@@ -342,6 +343,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		if (HelpWindow == null)
 		{
 			HelpWindow = new HelpWindow();
+			ApplyCurrentTheme(HelpWindow);
 		}
 
 		HelpWindow.ViewModel.HelpTitle = title;
@@ -362,6 +364,17 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 	protected override System.Windows.Automation.Peers.AutomationPeer OnCreateAutomationPeer()
 	{
 		return new CachedAutomationPeer(this);
+	}
+
+	/// <summary>
+	/// Lazily-created windows (About, Help, Update, Version Generator) only receive their theme
+	/// retroactively if the user happens to switch themes after opening one for the first time.
+	/// Call this immediately after constructing any such window so it's correct on first show.
+	/// </summary>
+	private void ApplyCurrentTheme(Window window)
+	{
+		if (ViewModel?.Settings == null) return;
+		ReduxThemeService.Apply(window.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 	}
 
 	public void UpdateColorTheme(ReduxThemeType theme, ReduxCustomTheme customTheme = null)
@@ -452,6 +465,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		SettingsWindow.Init(ViewModel);
 
 		UpdateWindow = new AppUpdateWindow();
+		ApplyCurrentTheme(UpdateWindow);
 		UpdateWindow.ViewModel.AppTitle = ViewModel.AppTitle;
 		UpdateWindow.ViewModel.AppVersion = ViewModel.Version;
 		UpdateWindow.ViewModel.WhenAnyValue(x => x.IsVisible).Subscribe(b =>
@@ -500,6 +514,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 				if (VersionGeneratorWindow == null)
 				{
 					VersionGeneratorWindow = new VersionGeneratorWindow();
+					ApplyCurrentTheme(VersionGeneratorWindow);
 				}
 
 				if (!VersionGeneratorWindow.IsVisible)

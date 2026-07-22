@@ -47,8 +47,8 @@ public partial class AlertBar : UserControl
 
 	private Brush GetSemanticBrush(string resourceKey, string fallbackColor)
 	{
-		return TryFindResource(resourceKey) as Brush
-			?? (Brush)new BrushConverter().ConvertFrom(fallbackColor);
+		var resolved = TryFindResource(resourceKey) as Brush;
+		return resolved ?? (Brush)new BrushConverter().ConvertFrom(fallbackColor);
 	}
 
 	private static Brush CreateSoftBrush(Brush accentBrush, byte alpha)

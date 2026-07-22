@@ -1,4 +1,4 @@
-using DivinityModManager.Controls;
+using DivinityModManager.Util;
 
 using System.Windows;
 using System.Windows.Controls;
@@ -25,6 +25,16 @@ public partial class ReduxMessageBoxWindow : AdonisUI.Controls.AdonisWindow
 		if (owner != null && owner.IsLoaded)
 		{
 			Owner = owner;
+		}
+
+		// Dynamically-created windows only see the app-level default theme unless they're
+		// explicitly themed, same as every other on-demand dialog in this app (CategoryNameDialog,
+		// CustomThemeEditorWindow, etc.) - otherwise this always renders in Redux Dark regardless
+		// of the user's active theme.
+		var settings = MainWindow.Self?.ViewModel?.Settings;
+		if (settings != null)
+		{
+			ReduxThemeService.Apply(Resources, settings.ColorTheme, ReduxThemeService.GetActiveTheme(settings));
 		}
 
 		Title = caption;
