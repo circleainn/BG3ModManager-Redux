@@ -67,7 +67,6 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 	private readonly string _logFileName;
 
 	public AlertBar AlertBar => MainView.AlertBar;
-	public Style MessageBoxStyle => MainView.MainWindowMessageBox_OK.Style;
 
 	public void ToggleLogging(bool enabled)
 	{
@@ -99,11 +98,11 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 	{
 		ToggleLogging(true);
 		DivinityApp.Log(msg);
-		var result = Xceed.Wpf.Toolkit.MessageBox.Show(msg,
+		var result = ReduxMessageBox.Show(msg,
 			"Open the logs folder?",
 			System.Windows.MessageBoxButton.YesNo,
 			System.Windows.MessageBoxImage.Error,
-			System.Windows.MessageBoxResult.No, MessageBoxStyle);
+			System.Windows.MessageBoxResult.No);
 		if (result == System.Windows.MessageBoxResult.Yes)
 		{
 			ProcessHelper.TryOpenPath("_Logs");
@@ -114,10 +113,10 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 	{
 		if (!showLog)
 		{
-			Xceed.Wpf.Toolkit.MessageBox.Show(msg, caption,
+			ReduxMessageBox.Show(msg, caption,
 			System.Windows.MessageBoxButton.OK,
 			System.Windows.MessageBoxImage.Warning,
-			System.Windows.MessageBoxResult.OK, MessageBoxStyle);
+			System.Windows.MessageBoxResult.OK);
 		}
 		else
 		{
@@ -133,11 +132,11 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		var shutdownText = doShutdown ? " The program will close." : "";
 		DivinityApp.Log($"An exception in the UI occurred.{shutdownText}\n{e.Exception}");
 
-		var result = Xceed.Wpf.Toolkit.MessageBox.Show($"An exception in the UI occurred.{shutdownText}\n{e.Exception}",
+		var result = ReduxMessageBox.Show($"An exception in the UI occurred.{shutdownText}\n{e.Exception}",
 			"Open the logs folder?",
 			System.Windows.MessageBoxButton.YesNo,
 			System.Windows.MessageBoxImage.Error,
-			System.Windows.MessageBoxResult.No, MessageBoxStyle);
+			System.Windows.MessageBoxResult.No);
 		if (result == System.Windows.MessageBoxResult.Yes)
 		{
 			ProcessHelper.TryOpenPath("_Logs");
@@ -157,11 +156,11 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		var shutdownText = doShutdown ? " The program will close." : "";
 
 		DivinityApp.Log($"An unhandled exception occurred.{shutdownText}\n{e.ExceptionObject}");
-		var result = Xceed.Wpf.Toolkit.MessageBox.Show($"An unhandled exception occurred.{shutdownText}\n{e.ExceptionObject}",
+		var result = ReduxMessageBox.Show($"An unhandled exception occurred.{shutdownText}\n{e.ExceptionObject}",
 			"Open the logs folder?",
 			System.Windows.MessageBoxButton.YesNo,
 			System.Windows.MessageBoxImage.Error,
-			System.Windows.MessageBoxResult.No, MessageBoxStyle);
+			System.Windows.MessageBoxResult.No);
 		if (result == System.Windows.MessageBoxResult.Yes)
 		{
 			ProcessHelper.TryOpenPath("_Logs");

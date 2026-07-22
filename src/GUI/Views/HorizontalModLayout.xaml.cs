@@ -84,9 +84,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private MessageBoxResult ShowCategoryMessage(string message, string caption, MessageBoxButton buttons, MessageBoxImage image)
 	{
 		var owner = Window.GetWindow(this) as MainWindow ?? MainWindow.Self;
-		return Xceed.Wpf.Toolkit.MessageBox.Show(owner, message, caption, buttons, image,
-			buttons == MessageBoxButton.YesNo ? MessageBoxResult.No : MessageBoxResult.OK,
-			owner?.MessageBoxStyle);
+		return ReduxMessageBox.Show(owner, message, caption, buttons, image,
+			buttons == MessageBoxButton.YesNo ? MessageBoxResult.No : MessageBoxResult.OK);
 	}
 
 	private void CategoriesContextMenu_Opened(object sender, RoutedEventArgs e)

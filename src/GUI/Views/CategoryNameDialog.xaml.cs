@@ -347,8 +347,7 @@ public partial class CategoryNameDialog : AdonisWindow
 		var defaultResult = buttons == System.Windows.MessageBoxButton.YesNo
 			? System.Windows.MessageBoxResult.No
 			: System.Windows.MessageBoxResult.OK;
-		return Xceed.Wpf.Toolkit.MessageBox.Show(this, message, caption, buttons, image,
-			defaultResult, MainWindow.Self?.MessageBoxStyle);
+		return ReduxMessageBox.Show(this, message, caption, buttons, image, defaultResult);
 	}
 
 	private void TintCustomIconCheckBox_Changed(object sender, RoutedEventArgs e) => UpdateCustomIconControls();

@@ -15,14 +15,12 @@ class RxExceptionHandler : IObserver<Exception>
 		DivinityApp.Log(message);
 		if (view != null)
 		{
-			Xceed.Wpf.Toolkit.MessageBox.Show(view, message, "Error Encountered", MessageBoxButton.OK,
-				MessageBoxImage.Error, MessageBoxResult.OK, view.MessageBoxStyle);
+			ReduxMessageBox.Show(view, message, "Error Encountered", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
 		else
 		{
-			MessageBox.Show(message, "Error Encountered", MessageBoxButton.OK, MessageBoxImage.Error);
+			ReduxMessageBox.Show(message, "Error Encountered", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
-		//MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show(view, message, "Error Encountered", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, view.MainWindowMessageBox_OK.Style);
 		//RxApp.MainThreadScheduler.Schedule(() => { throw value; });
 	}
 
@@ -30,7 +28,6 @@ class RxExceptionHandler : IObserver<Exception>
 	{
 		var message = $"(OnError) Exception encountered:\nType: {value.GetType()}\tMessage: {value.Message}\nSource: {value.Source}\nStackTrace: {value.StackTrace}";
 		DivinityApp.Log(message);
-		//MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show(view, message, "Error Encountered", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, view.MainWindowMessageBox_OK.Style);
 	}
 
 	public void OnCompleted()

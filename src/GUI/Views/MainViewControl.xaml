@@ -29,97 +29,6 @@
 				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<Style BasedOn="{StaticResource {x:Type Button}}" TargetType="{x:Type Button}" />
-			<ControlTemplate x:Key="ReduxDialogButtonTemplate" TargetType="{x:Type Button}">
-				<Border x:Name="ButtonChrome"
-					Padding="{TemplateBinding Padding}"
-					Background="{TemplateBinding Background}"
-					BorderBrush="{TemplateBinding BorderBrush}"
-					BorderThickness="{TemplateBinding BorderThickness}"
-					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-					<ContentPresenter HorizontalAlignment="Center"
-						VerticalAlignment="Center"
-						Content="{TemplateBinding Content}"
-						ContentTemplate="{TemplateBinding ContentTemplate}"
-						RecognizesAccessKey="True" />
-				</Border>
-				<ControlTemplate.Triggers>
-					<Trigger Property="IsMouseOver" Value="True">
-						<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
-						<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-					</Trigger>
-					<Trigger Property="IsPressed" Value="True">
-						<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxSelectionBrush}" />
-						<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-					</Trigger>
-					<Trigger Property="IsEnabled" Value="False">
-						<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
-					</Trigger>
-				</ControlTemplate.Triggers>
-			</ControlTemplate>
-			<ControlTemplate x:Key="ReduxDialogPrimaryButtonTemplate" TargetType="{x:Type Button}">
-				<Border x:Name="ButtonChrome"
-					Padding="{TemplateBinding Padding}"
-					Background="{TemplateBinding Background}"
-					BorderBrush="{TemplateBinding BorderBrush}"
-					BorderThickness="{TemplateBinding BorderThickness}"
-					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-					<ContentPresenter HorizontalAlignment="Center"
-						VerticalAlignment="Center"
-						Content="{TemplateBinding Content}"
-						ContentTemplate="{TemplateBinding ContentTemplate}"
-						RecognizesAccessKey="True" />
-				</Border>
-				<ControlTemplate.Triggers>
-					<Trigger Property="IsMouseOver" Value="True">
-						<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxAccentHoverBrush}" />
-					</Trigger>
-					<Trigger Property="IsPressed" Value="True">
-						<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxSelectionBrush}" />
-					</Trigger>
-					<Trigger Property="IsEnabled" Value="False">
-						<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
-					</Trigger>
-				</ControlTemplate.Triggers>
-			</ControlTemplate>
-			<Style x:Key="ReduxDialogButtonStyle" TargetType="{x:Type Button}">
-				<Setter Property="Height" Value="30" />
-				<Setter Property="Padding" Value="14,4" />
-				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-				<Setter Property="BorderThickness" Value="1" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-				<Setter Property="Template" Value="{StaticResource ReduxDialogButtonTemplate}" />
-			</Style>
-			<Style x:Key="ReduxDialogPrimaryButtonStyle" BasedOn="{StaticResource ReduxDialogButtonStyle}" TargetType="{x:Type Button}">
-				<Setter Property="Background" Value="{DynamicResource ReduxAccentBrush}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
-				<Setter Property="Template" Value="{StaticResource ReduxDialogPrimaryButtonTemplate}" />
-			</Style>
-			<Style x:Key="ReduxMessageBoxStyle" TargetType="{x:Type xc:MessageBox}">
-				<Setter Property="Width" Value="600" />
-				<Setter Property="ext:RoundedMessageBoxChrome.Radius" Value="7" />
-				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceBrush}" />
-				<Setter Property="ButtonRegionBackground" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
-				<Setter Property="CaptionForeground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-				<Setter Property="WindowBackground" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
-				<Setter Property="WindowBorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-				<Setter Property="WindowBorderThickness" Value="1" />
-				<Setter Property="YesButtonStyle" Value="{StaticResource ReduxDialogPrimaryButtonStyle}" />
-				<Setter Property="NoButtonStyle" Value="{StaticResource ReduxDialogButtonStyle}" />
-				<Setter Property="OkButtonStyle" Value="{StaticResource ReduxDialogPrimaryButtonStyle}" />
-				<Setter Property="CancelButtonStyle" Value="{StaticResource ReduxDialogButtonStyle}" />
-				<Setter Property="CloseButtonStyle">
-					<Setter.Value>
-						<Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
-							<Setter Property="IsEnabled" Value="False" />
-							<Setter Property="Opacity" Value="0" />
-						</Style>
-					</Setter.Value>
-				</Setter>
-			</Style>
 			<Style x:Key="MenuItemHightlightBlink" BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
 				<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
 				<Style.Triggers>
@@ -157,14 +66,6 @@
 			<RowDefinition Height="*" />
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
-		<xc:WindowContainer Grid.Row="0"
-		    HorizontalAlignment="Stretch"
-		    VerticalAlignment="Stretch"
-		    Panel.ZIndex="99">
-			<xc:MessageBox x:Name="MainWindowMessageBox_OK"
-				Style="{StaticResource ReduxMessageBoxStyle}"
-				Template="{StaticResource MessageBoxSelectableText}" />
-		</xc:WindowContainer>
 		<xc:BusyIndicator x:Name="MainBusyIndicator" Style="{StaticResource BusyIndicatorProgressStyle}" Visibility="Hidden">
 			<xc:BusyIndicator.BusyContent>
 				<Grid Margin="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">

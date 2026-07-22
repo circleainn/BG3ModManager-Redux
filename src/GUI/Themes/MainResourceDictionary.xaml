@@ -263,6 +263,7 @@
 	<PathGeometry x:Key="Redux.Icon.Clipboard" Figures="M368,48 H356.59 a8,8 0 0 1 -7.44,-5.08 A42.18,42.18 0 0 0 309.87,16 H202.13 a42.18,42.18 0 0 0 -39.28,26.92 A8,8 0 0 1 155.41,48 H144 a64,64 0 0 0 -64,64 V432 a64,64 0 0 0 64,64 H368 a64,64 0 0 0 64,-64 V112 a64,64 0 0 0 -64,-64 Z M319.87,112 H192.13 a16,16 0 0 1 0,-32 H319.87 a16,16 0 0 1 0,32 Z" />
 	<PathGeometry x:Key="Redux.Icon.Cut" Figures="M103.48,224 a71.64,71.64 0 0 0 44.76,-15.66 l41.5,16.89 6.82,-12.63 a39.15,39.15 0 0 1 4.32,-6.37 l14.22,-14.42 -41.17,-24.94 A72,72 0 1 0 103.48,224 Z M103.48,112 a40,40 0 1 1 0,80 40,40 0 0 1 0,-80 Z M480,169 l-5.52,-12.58 c-4.48,-10.42 -14.74,-16 -32.78,-17.85 -10.12,-1 -26.95,-1.24 -49.69,3.81 -20,4.45 -122.14,28.2 -164.95,58.62 C206.81,215.39 203,234.67 200,250.16 c-2.78,14.14 -5,25.31 -18,35 -15,11.14 -27.27,16.38 -33.58,18.6 A71.74,71.74 0 1 0 173.21,342 l170.58,-82.13 Z M255.48,256 a16,16 0 1 1 0,-32 16,16 0 0 1 0,32 Z M103.48,400 a40,40 0 1 1 0,-80 40,40 0 0 1 0,80 Z M343.79,259.87 l-83.74,48.18 27.63,13.08 3.62,1.74 C310,331.92 359.74,356 410.53,359 c24.25,1.43 37.47,-4.01 49.22,-9 L480,336 Z" />
 	<PathGeometry x:Key="Redux.Icon.RemoveCircle" Figures="M256,48 C141.31,48 48,141.31 48,256 s93.31,208 208,208 208,-93.31 208,-208 S370.69,48 256,48 Z M336,272 H176 a16,16 0 0 1 0,-32 H336 a16,16 0 0 1 0,32 Z" />
+	<PathGeometry x:Key="Redux.Icon.CloseCircle" Figures="M256 48C140.559 48 48 140.559 48 256c0 115.436 92.559 208 208 208 115.435 0 208-92.564 208-208 0-115.441-92.564-208-208-208zm104.002 282.881l-29.12 29.117L256 285.117l-74.881 74.881-29.121-29.117L226.881 256l-74.883-74.881 29.121-29.116L256 226.881l74.881-74.878 29.12 29.116L285.119 256l74.883 74.881z" />
 	<PathGeometry x:Key="Redux.Icon.Open" Figures="M224,304 a16,16 0 0 1 -11.31,-27.31 L370.63,118.75 A55.7,55.7 0 0 0 344,112 H104 a56.06,56.06 0 0 0 -56,56 V408 a56.06,56.06 0 0 0 56,56 H344 a56.06,56.06 0 0 0 56,-56 V168 a55.7,55.7 0 0 0 -6.75,-26.63 L235.31,299.31 A15.92,15.92 0 0 1 224,304 Z M448,48 H336 a16,16 0 0 0 0,32 h73.37 l-38.74,38.75 a56.35,56.35 0 0 1 22.62,22.62 L432,102.63 V176 a16,16 0 0 0 32,0 V64 a16,16 0 0 0 -16,-16 Z" />
 
 	<Style TargetType="{x:Type controls:ReduxIcon}">
@@ -356,6 +357,8 @@
 			<Trigger Property="IconKey" Value="download"><Setter Property="Data" Value="{StaticResource Redux.Icon.Download}" /></Trigger>
 			<Trigger Property="IconKey" Value="warning"><Setter Property="Data" Value="{StaticResource Redux.Icon.Warning}" /></Trigger>
 			<Trigger Property="IconKey" Value="info"><Setter Property="Data" Value="{StaticResource Redux.Icon.Information}" /></Trigger>
+			<Trigger Property="IconKey" Value="error"><Setter Property="Data" Value="{StaticResource Redux.Icon.CloseCircle}" /></Trigger>
+			<Trigger Property="IconKey" Value="question"><Setter Property="Data" Value="{StaticResource Redux.Icon.HelpCircle}" /></Trigger>
 			<Trigger Property="IconKey" Value="help"><Setter Property="Data" Value="{StaticResource Redux.Icon.HelpCircle}" /></Trigger>
 			<Trigger Property="IconKey" Value="refresh"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.RefreshStroke}" /></Trigger>
 		</Style.Triggers>
@@ -2445,207 +2448,6 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
-	<ControlTemplate x:Key="MessageBoxSelectableText" TargetType="{x:Type xc:MessageBox}">
-		<Grid>
-			<xc:WindowControl x:Name="PART_WindowControl"
-			    Background="{TemplateBinding Background}"
-			    BorderBrush="{TemplateBinding BorderBrush}"
-			    BorderThickness="{TemplateBinding BorderThickness}"
-			    Caption="{TemplateBinding Caption}"
-			    CaptionFontSize="{TemplateBinding CaptionFontSize}"
-			    CaptionForeground="{TemplateBinding CaptionForeground}"
-			    CaptionIcon="{TemplateBinding CaptionIcon}"
-			    CaptionShadowBrush="{TemplateBinding CaptionShadowBrush}"
-			    CloseButtonStyle="{TemplateBinding CloseButtonStyle}"
-			    IsActive="{TemplateBinding IsActive}"
-			    WindowBackground="{TemplateBinding WindowBackground}"
-			    WindowBorderBrush="{TemplateBinding WindowBorderBrush}"
-			    WindowBorderThickness="{TemplateBinding WindowBorderThickness}"
-			    WindowInactiveBackground="{TemplateBinding WindowInactiveBackground}"
-			    WindowOpacity="{TemplateBinding WindowOpacity}">
-				<xc:WindowControl.Content>
-					<Grid MinWidth="350">
-						<Grid.RowDefinitions>
-							<RowDefinition />
-							<RowDefinition Height="Auto" />
-						</Grid.RowDefinitions>
-						<Grid>
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto" />
-								<ColumnDefinition Width="*" />
-							</Grid.ColumnDefinitions>
-							<!--  Message Image  -->
-							<Image x:Name="MessageBoxImage"
-							    VerticalAlignment="Top"
-							    SnapsToDevicePixels="True"
-							    Source="{TemplateBinding ImageSource}"
-							    Stretch="None" />
-							<!--  Message Text  -->
-							<ScrollViewer Grid.Column="1" Margin="2" VerticalScrollBarVisibility="Auto">
-								<TextBox x:Name="MessageText"
-								    HorizontalAlignment="Stretch"
-								    VerticalAlignment="Stretch"
-								    FontFamily="{TemplateBinding FontFamily}"
-								    FontSize="{TemplateBinding FontSize}"
-								    FontStyle="{TemplateBinding FontStyle}"
-								    FontWeight="{TemplateBinding FontWeight}"
-								    Background="Transparent"
-								    BorderThickness="0"
-								    Foreground="{TemplateBinding Foreground}"
-								    IsReadOnly="True"
-								    Text="{TemplateBinding Text}"
-								    TextWrapping="Wrap" />
-							</ScrollViewer>
-						</Grid>
-						<!--  Buttons  -->
-						<Border Grid.Row="1" Background="{TemplateBinding ButtonRegionBackground}">
-							<Grid Margin="12">
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="*" />
-									<ColumnDefinition Width="*" />
-								</Grid.ColumnDefinitions>
-								<Grid Grid.Column="0" HorizontalAlignment="Left">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="*" />
-										<ColumnDefinition Width="*" />
-									</Grid.ColumnDefinitions>
-									<Button MinWidth="65"
-									    Margin="6,0,0,0"
-									    Padding="6,0,6,0"
-									    Command="{Binding Path=CopyToClipboardCommand, Source={x:Static dapp:DivinityApp.Commands}}"
-									    CommandParameter="{Binding ElementName=MessageText, Path=Text}"
-									    Content="Copy to Clipboard"
-									    Style="{TemplateBinding OkButtonStyle}"
-									    ToolTip="Copy to Clipboard" />
-									<Button Grid.Column="1"
-									    MinWidth="65"
-									    Margin="6,0,0,0"
-									    Padding="6,0,6,0"
-									    Command="{Binding Path=ClearMissingModsCommand, Source={x:Static dapp:DivinityApp.Commands}}"
-									    Content="Remove All Missing"
-									    Style="{TemplateBinding OkButtonStyle}"
-									    ToolTip="Remove all missing mods from the load order." />
-								</Grid>
-								<Grid Grid.Column="1" HorizontalAlignment="Right">
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="Auto" />
-										<ColumnDefinition Width="Auto" />
-										<ColumnDefinition Width="Auto" />
-										<ColumnDefinition Width="Auto" />
-									</Grid.ColumnDefinitions>
-									<Button x:Name="PART_YesButton"
-									    Grid.Column="0"
-									    MinWidth="65"
-									    Margin="6,0,0,0"
-									    Content="{TemplateBinding YesButtonContent}"
-									    Style="{TemplateBinding YesButtonStyle}"
-									    Visibility="Collapsed" />
-									<Button x:Name="PART_NoButton"
-									    Grid.Column="1"
-									    MinWidth="65"
-									    Margin="6,0,0,0"
-									    Content="{TemplateBinding NoButtonContent}"
-									    Style="{TemplateBinding NoButtonStyle}"
-									    Visibility="Collapsed" />
-									<Button x:Name="PART_OkButton"
-									    Grid.Column="2"
-									    MinWidth="65"
-									    Margin="6,0,0,0"
-									    Content="{TemplateBinding OkButtonContent}"
-									    Style="{TemplateBinding OkButtonStyle}"
-									    Visibility="Collapsed" />
-									<Button x:Name="PART_CancelButton"
-									    Grid.Column="3"
-									    MinWidth="65"
-									    Margin="6,0,0,0"
-									    Content="{TemplateBinding CancelButtonContent}"
-									    IsCancel="True"
-									    Style="{TemplateBinding CancelButtonStyle}"
-									    Visibility="Collapsed" />
-								</Grid>
-							</Grid>
-						</Border>
-					</Grid>
-				</xc:WindowControl.Content>
-			</xc:WindowControl>
-			<VisualStateManager.VisualStateGroups>
-				<VisualStateGroup x:Name="group1">
-					<VisualState x:Name="OK">
-						<Storyboard>
-							<ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_OkButton" Storyboard.TargetProperty="Visibility">
-								<DiscreteObjectKeyFrame KeyTime="0">
-									<DiscreteObjectKeyFrame.Value>
-										<Visibility>Visible</Visibility>
-									</DiscreteObjectKeyFrame.Value>
-								</DiscreteObjectKeyFrame>
-							</ObjectAnimationUsingKeyFrames>
-						</Storyboard>
-					</VisualState>
-					<VisualState x:Name="OKCancel">
-						<Storyboard>
-							<ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_OkButton" Storyboard.TargetProperty="Visibility">
-								<DiscreteObjectKeyFrame KeyTime="0">
-									<DiscreteObjectKeyFrame.Value>
-										<Visibility>Visible</Visibility>
-									</DiscreteObjectKeyFrame.Value>
-								</DiscreteObjectKeyFrame>
-							</ObjectAnimationUsingKeyFrames>
-							<ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CancelButton" Storyboard.TargetProperty="Visibility">
-								<DiscreteObjectKeyFrame KeyTime="0">
-									<DiscreteObjectKeyFrame.Value>
-										<Visibility>Visible</Visibility>
-									</DiscreteObjectKeyFrame.Value>
-								</DiscreteObjectKeyFrame>
-							</ObjectAnimationUsingKeyFrames>
-						</Storyboard>
-					</VisualState>
-					<VisualState x:Name="YesNo">
-						<Storyboard>
-							<ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_YesButton" Storyboard.TargetProperty="Visibility">
-								<DiscreteObjectKeyFrame KeyTime="0">
-									<DiscreteObjectKeyFrame.Value>
-										<Visibility>Visible</Visibility>
-									</DiscreteObjectKeyFrame.Value>
-								</DiscreteObjectKeyFrame>
-							</ObjectAnimationUsingKeyFrames>
-							<ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_NoButton" Storyboard.TargetProperty="Visibility">
-								<DiscreteObjectKeyFrame KeyTime="0">
-									<DiscreteObjectKeyFrame.Value>
-										<Visibility>Visible</Visibility>
-									</DiscreteObjectKeyFrame.Value>
-								</DiscreteObjectKeyFrame>
-							</ObjectAnimationUsingKeyFrames>
-						</Storyboard>
-					</VisualState>
-					<VisualState x:Name="YesNoCancel">
-						<Storyboard>
-							<ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_YesButton" Storyboard.TargetProperty="Visibility">
-								<DiscreteObjectKeyFrame KeyTime="0">
-									<DiscreteObjectKeyFrame.Value>
-										<Visibility>Visible</Visibility>
-									</DiscreteObjectKeyFrame.Value>
-								</DiscreteObjectKeyFrame>
-							</ObjectAnimationUsingKeyFrames>
-							<ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_NoButton" Storyboard.TargetProperty="Visibility">
-								<DiscreteObjectKeyFrame KeyTime="0">
-									<DiscreteObjectKeyFrame.Value>
-										<Visibility>Visible</Visibility>
-									</DiscreteObjectKeyFrame.Value>
-								</DiscreteObjectKeyFrame>
-							</ObjectAnimationUsingKeyFrames>
-							<ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_CancelButton" Storyboard.TargetProperty="Visibility">
-								<DiscreteObjectKeyFrame KeyTime="0">
-									<DiscreteObjectKeyFrame.Value>
-										<Visibility>Visible</Visibility>
-									</DiscreteObjectKeyFrame.Value>
-								</DiscreteObjectKeyFrame>
-							</ObjectAnimationUsingKeyFrames>
-						</Storyboard>
-					</VisualState>
-				</VisualStateGroup>
-			</VisualStateManager.VisualStateGroups>
-		</Grid>
-	</ControlTemplate>
 	<DataTemplate x:Key="HotkeyTemplate" DataType="{x:Type appdata:IHotkey}">
 		<controls:HotkeyEditorControl Hotkey="{Binding}" />
 	</DataTemplate>

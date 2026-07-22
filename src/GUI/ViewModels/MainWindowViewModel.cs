@@ -577,10 +577,10 @@ Download url:
 Directory the zip will be extracted to:
 {1}", PathwayData.ScriptExtenderLatestReleaseUrl, exeDir);
 
-				var result = Xceed.Wpf.Toolkit.MessageBox.Show(Window,
+				var result = ReduxMessageBox.Show(Window,
 				messageText,
 				"Download & Install the Script Extender?",
-				MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No, Window.MessageBoxStyle);
+				MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
 
 				if (result == MessageBoxResult.Yes)
 				{
@@ -720,10 +720,10 @@ Directory the zip will be extracted to:
 			_warnExtenderUpdateFailureTask = RxApp.MainThreadScheduler.Schedule(() =>
 			{
 				_justDownloadedScriptExtender = false;
-				Xceed.Wpf.Toolkit.MessageBox.Show(Window,
+				ReduxMessageBox.Show(Window,
 				"The Script Extender has been successfully downloaded.\n\nPlease start the game once to complete the installation process.",
 				"Script Extender Installation",
-				MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK, Window.MessageBoxStyle);
+				MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK);
 			});
 		}
 		return false;
@@ -1072,7 +1072,7 @@ Directory the zip will be extracted to:
 					{
 						var msg = $"Error running custom launch '{Settings.CustomLaunchAction}' with args '{Settings.CustomLaunchArgs}':\n{ex}";
 						DivinityApp.Log(msg);
-						var result = Xceed.Wpf.Toolkit.MessageBox.Show(Window, msg, "Custom Launch Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, Window.MessageBoxStyle);
+						var result = ReduxMessageBox.Show(Window, msg, "Custom Launch Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 					}
 				}
 				else
@@ -1802,10 +1802,10 @@ Directory the zip will be extracted to:
 				var message = string.Join(Environment.NewLine, duplicateProjects);
 				RxApp.MainThreadScheduler.Schedule(() =>
 				{
-					var result = Xceed.Wpf.Toolkit.MessageBox.Show(Window,
+					var result = ReduxMessageBox.Show(Window,
 					$"Duplicate toolkit projects were found in the Data folder:\n\n{message}",
 					"Duplicate Toolkit Projects",
-					MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, Window.MessageBoxStyle);
+					MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 					ShowAlert($"Found duplicate toolkit mods in the Data folder", AlertType.Danger, 60);
 				});
 			}
@@ -2382,15 +2382,6 @@ Directory the zip will be extracted to:
 		return true;
 	}
 
-	public void MainWindowMessageBox_Closed_ResetColor(object sender, EventArgs e)
-	{
-		if (sender is Xceed.Wpf.Toolkit.MessageBox messageBox)
-		{
-			messageBox.WindowBackground = MainViewControl.MessageBoxDefaultBackgroundBrush;
-			messageBox.Closed -= MainWindowMessageBox_Closed_ResetColor;
-		}
-	}
-
 	private void UpdateModExtenderStatus(DivinityModData mod)
 	{
 		mod.CurrentExtenderVersion = Settings.ExtenderSettings.ExtenderMajorVersion;
@@ -2851,13 +2842,12 @@ Directory the zip will be extracted to:
 			{
 				var doReset = await Observable.Start(() =>
 				{
-					MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show(Window,
+					MessageBoxResult result = ReduxMessageBox.Show(Window,
 					"It looks like the load order was reset externally. Use the last exported mod order?",
 					"Restore Load Order",
 					MessageBoxButton.YesNo,
 					MessageBoxImage.Warning,
-					MessageBoxResult.Yes,
-					Window.MessageBoxStyle);
+					MessageBoxResult.Yes);
 					if (result == MessageBoxResult.Yes)
 					{
 						return true;
@@ -3325,10 +3315,10 @@ Directory the zip will be extracted to:
 				}
 
 				var finalMessage = string.Join(Environment.NewLine, messages);
-				View.MainWindowMessageBox_OK.WindowBackground = MainViewControl.MessageBoxErrorBackgroundBrush;
-				View.MainWindowMessageBox_OK.Closed += MainWindowMessageBox_Closed_ResetColor;
-				View.MainWindowMessageBox_OK.ShowMessageBox(finalMessage,
-					"Missing Mods in Load Order", MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK);
+				ReduxMessageBox.ShowWithActions(Window, finalMessage, "Missing Mods in Load Order",
+					MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK,
+					("Copy to Clipboard", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(finalMessage)),
+					("Remove All Missing", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.ClearMissingModsCommand).Execute(null)));
 			}
 			else
 			{
@@ -3380,10 +3370,9 @@ Directory the zip will be extracted to:
 				var finalMessage = "The following mods require the Script Extender. Functionality may be limited without it.\n";
 				finalMessage += missingResults.GetExtenderRequiredMessage();
 
-				View.MainWindowMessageBox_OK.WindowBackground = MainViewControl.MessageBoxErrorBackgroundBrush;
-				View.MainWindowMessageBox_OK.Closed += MainWindowMessageBox_Closed_ResetColor;
-				View.MainWindowMessageBox_OK.ShowMessageBox(finalMessage,
-					"Mods Require the Script Extender - Install it with the Tools menu!", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+				ReduxMessageBox.ShowWithActions(Window, finalMessage,
+					"Mods Require the Script Extender - Install it with the Tools menu!", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
+					("Copy to Clipboard", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(finalMessage)));
 			}
 		}
 	}
@@ -3552,9 +3541,9 @@ Directory the zip will be extracted to:
 				{
 					string msg = $"Problem exporting load order to '{outputPath}'. Is the file locked?";
 					ShowAlert(msg, AlertType.Danger);
-					View.MainWindowMessageBox_OK.WindowBackground = MainViewControl.MessageBoxErrorBackgroundBrush;
-					View.MainWindowMessageBox_OK.Closed += MainWindowMessageBox_Closed_ResetColor;
-					View.MainWindowMessageBox_OK.ShowMessageBox(msg, "Mod Order Export Failed", MessageBoxButton.OK);
+					ReduxMessageBox.ShowWithActions(Window, msg, "Mod Order Export Failed",
+						MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK,
+						("Copy to Clipboard", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(msg)));
 					return Unit.Default;
 				}, RxApp.MainThreadScheduler);
 			}
@@ -4142,8 +4131,8 @@ Directory the zip will be extracted to:
 	{
 		//view.MainWindowMessageBox.Text = "Add active mods to a zip file?";
 		//view.MainWindowMessageBox.Caption = "Depending on the number of mods, this may take some time.";
-		MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show(Window, $"Save active mods to a zip file?{Environment.NewLine}Depending on the number of mods, this may take some time.", "Confirm Archive Creation",
-			MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel, Window.MessageBoxStyle);
+		MessageBoxResult result = ReduxMessageBox.Show(Window, $"Save active mods to a zip file?{Environment.NewLine}Depending on the number of mods, this may take some time.", "Confirm Archive Creation",
+			MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel);
 		if (result == MessageBoxResult.OK)
 		{
 			MainProgressTitle = "Adding active mods to zip...";
@@ -4775,10 +4764,10 @@ Directory the zip will be extracted to:
 				{
 					RxApp.MainThreadScheduler.Schedule(() =>
 					{
-						var result = Xceed.Wpf.Toolkit.MessageBox.Show(Window,
+						var result = ReduxMessageBox.Show(Window,
 						"BG3MM is currently running as an administrator, which can lead to issues.\nPlease restart BG3MM in non-admin mode.\nClick Cancel to disable this warning in the future.",
 						"Process Elevation Warning",
-						MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.OK, Window.MessageBoxStyle);
+						MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.OK);
 						if(result == MessageBoxResult.Cancel)
 						{
 							Settings.Confirmations.DisableAdminModeWarning = true;
@@ -5661,8 +5650,8 @@ Directory the zip will be extracted to:
 
 	private void DeleteOrder(DivinityLoadOrder order)
 	{
-		MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show(Window, $"Delete load order '{order.Name}'? This cannot be undone.", "Confirm Order Deletion",
-			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, Window.MessageBoxStyle);
+		MessageBoxResult result = ReduxMessageBox.Show(Window, $"Delete load order '{order.Name}'? This cannot be undone.", "Confirm Order Deletion",
+			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 		if (result == MessageBoxResult.Yes)
 		{
 			SelectedModOrderIndex = 0;
@@ -5808,8 +5797,8 @@ Directory the zip will be extracted to:
 		}
 		else
 		{
-			MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show(Window, $"Extract the following mods?\n'{String.Join("\n", SelectedPakMods.Select(x => $"{x.DisplayName}"))}", "Extract Mods?",
-			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, Window.MessageBoxStyle);
+			MessageBoxResult result = ReduxMessageBox.Show(Window, $"Extract the following mods?\n'{String.Join("\n", SelectedPakMods.Select(x => $"{x.DisplayName}"))}", "Extract Mods?",
+			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 			if (result == MessageBoxResult.Yes)
 			{
 				ExtractSelectedMods_ChooseFolder();
@@ -6832,8 +6821,8 @@ Directory the zip will be extracted to:
 
 			var confirmed = await Observable.Start((Func<bool>)(() =>
 			{
-				MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show(Window, msg, "Confirm Mod Deletion",
-				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, Window.MessageBoxStyle);
+				MessageBoxResult result = ReduxMessageBox.Show(Window, msg, "Confirm Mod Deletion",
+				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 				if (result == MessageBoxResult.Yes)
 				{
 					return true;
@@ -6895,10 +6884,10 @@ Directory the zip will be extracted to:
 						{
 							//Window.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Indeterminate;
 							Window.FlashTaskbar();
-							var result = Xceed.Wpf.Toolkit.MessageBox.Show(Window,
+							var result = ReduxMessageBox.Show(Window,
 							"The active load order (modsettings.lsx) has been reset externally, which has deactivated your mods.\nOne or more mods may be invalid in your current load order.",
 							"Mod Order Reset",
-							MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, Window.MessageBoxStyle);
+							MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 						});
 					}
 					HasExported = false;

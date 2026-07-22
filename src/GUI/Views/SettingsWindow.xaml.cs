@@ -232,8 +232,8 @@ public partial class SettingsWindow : SettingsWindowBase
 		if (dialog.ShowDialog(this) != true) return;
 		if (!ReduxCustomFontService.TryImport(dialog.FileName, out var choice, out var error))
 		{
-			Xceed.Wpf.Toolkit.MessageBox.Show(this, error, "Import Font", MessageBoxButton.OK,
-				MessageBoxImage.Error, MessageBoxResult.OK, MainWindow.Self.MessageBoxStyle);
+			ReduxMessageBox.Show(this, error, "Import Font", MessageBoxButton.OK,
+				MessageBoxImage.Error, MessageBoxResult.OK);
 			return;
 		}
 		RefreshTypographyChoices(choice.CustomReference);
@@ -249,14 +249,14 @@ public partial class SettingsWindow : SettingsWindowBase
 		var usageNote = affectedThemes == 0
 			? ""
 			: $"\n\n{affectedThemes} custom theme{(affectedThemes == 1 ? "" : "s")} will fall back to Manrope.";
-		var result = Xceed.Wpf.Toolkit.MessageBox.Show(this,
+		var result = ReduxMessageBox.Show(this,
 			$"Remove '{choice.Name}' from Redux?{usageNote}", "Remove Custom Font",
-			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, MainWindow.Self.MessageBoxStyle);
+			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 		if (result != MessageBoxResult.Yes) return;
 		if (!ReduxCustomFontService.TryDelete(choice.CustomReference, out var error))
 		{
-			Xceed.Wpf.Toolkit.MessageBox.Show(this, error, "Remove Custom Font", MessageBoxButton.OK,
-				MessageBoxImage.Error, MessageBoxResult.OK, MainWindow.Self.MessageBoxStyle);
+			ReduxMessageBox.Show(this, error, "Remove Custom Font", MessageBoxButton.OK,
+				MessageBoxImage.Error, MessageBoxResult.OK);
 			return;
 		}
 
@@ -289,8 +289,8 @@ public partial class SettingsWindow : SettingsWindowBase
 		catch (Exception exception)
 		{
 			DivinityApp.Log($"Could not open the Redux custom fonts folder: {exception.Message}");
-			Xceed.Wpf.Toolkit.MessageBox.Show(this, "Redux could not open the custom fonts folder.", "Custom Fonts",
-				MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MainWindow.Self.MessageBoxStyle);
+			ReduxMessageBox.Show(this, "Redux could not open the custom fonts folder.", "Custom Fonts",
+				MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
 	}
 
@@ -389,10 +389,9 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		var selected = SelectedCustomTheme;
 		if (selected == null) return;
-		var result = Xceed.Wpf.Toolkit.MessageBox.Show(this,
+		var result = ReduxMessageBox.Show(this,
 			$"Delete the custom theme '{selected.Name}'?\n\nExport it first if you may want to use it again.",
-			"Delete Custom Theme", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No,
-			MainWindow.Self.MessageBoxStyle);
+			"Delete Custom Theme", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 		if (result != MessageBoxResult.Yes) return;
 		ViewModel.Settings.CustomThemes.Remove(selected);
 		if (selected.Id.Equals(ViewModel.Settings.ActiveCustomThemeId, StringComparison.OrdinalIgnoreCase))
@@ -425,9 +424,8 @@ public partial class SettingsWindow : SettingsWindowBase
 		}
 		catch (Exception ex)
 		{
-			Xceed.Wpf.Toolkit.MessageBox.Show(this, $"Could not import that theme.\n\n{ex.Message}",
-				"Import Custom Theme", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
-				MainWindow.Self.MessageBoxStyle);
+			ReduxMessageBox.Show(this, $"Could not import that theme.\n\n{ex.Message}",
+				"Import Custom Theme", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
 	}
 
@@ -452,9 +450,8 @@ public partial class SettingsWindow : SettingsWindowBase
 		}
 		catch (Exception ex)
 		{
-			Xceed.Wpf.Toolkit.MessageBox.Show(this, $"Could not export that theme.\n\n{ex.Message}",
-				"Export Custom Theme", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
-				MainWindow.Self.MessageBoxStyle);
+			ReduxMessageBox.Show(this, $"Could not export that theme.\n\n{ex.Message}",
+				"Export Custom Theme", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
 	}
 

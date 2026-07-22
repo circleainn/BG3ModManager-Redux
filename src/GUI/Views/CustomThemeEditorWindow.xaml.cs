@@ -80,8 +80,8 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 		if (dialog.ShowDialog(this) != true) return;
 		if (!ReduxCustomFontService.TryImport(dialog.FileName, out var choice, out var error))
 		{
-			Xceed.Wpf.Toolkit.MessageBox.Show(this, error, "Import Font", System.Windows.MessageBoxButton.OK,
-				System.Windows.MessageBoxImage.Error, System.Windows.MessageBoxResult.OK, MainWindow.Self.MessageBoxStyle);
+			ReduxMessageBox.Show(this, error, "Import Font", System.Windows.MessageBoxButton.OK,
+				System.Windows.MessageBoxImage.Error, System.Windows.MessageBoxResult.OK);
 			return;
 		}
 		RefreshTypographyChoices(choice.CustomReference);
@@ -121,9 +121,9 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 	{
 		if (!ReduxThemeService.TryValidate(Theme, out var error))
 		{
-			Xceed.Wpf.Toolkit.MessageBox.Show(this, error, "Custom Theme",
+			ReduxMessageBox.Show(this, error, "Custom Theme",
 				System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information,
-				System.Windows.MessageBoxResult.OK, MainWindow.Self.MessageBoxStyle);
+				System.Windows.MessageBoxResult.OK);
 			return;
 		}
 		ReduxThemeService.NormalizeColors(Theme);

@@ -9,39 +9,49 @@
 	Width="800"
 	Height="450"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
+	Background="{DynamicResource ReduxWindowBrush}"
+	TitleBarBackground="{DynamicResource ReduxWindowBrush}"
+	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
 	mc:Ignorable="d">
-	<Window.Style>
-		<Style BasedOn="{StaticResource {x:Type Window}}" TargetType="Window" />
-	</Window.Style>
 	<Window.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
+				<ResourceDictionary Source="../Themes/DefaultStyles/MarkdownStyle.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 		</ResourceDictionary>
 	</Window.Resources>
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto" />
-			<RowDefinition Height="*" />
-		</Grid.RowDefinitions>
-		<TextBlock
-			x:Name="HelpTitleText"
-			Grid.Row="0"
-			Padding="4"
-			FontSize="{DynamicResource Redux.FontSize.24}"
-			TextAlignment="Center" />
-		<FlowDocumentScrollViewer
-			x:Name="MarkdownViewer"
-			Grid.Row="1"
-			ScrollViewer.CanContentScroll="True"
-			ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-			ScrollViewer.VerticalScrollBarVisibility="Auto">
-			<FlowDocumentScrollViewer.Resources>
-				<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
-					<Setter Property="TextWrapping" Value="Wrap" />
-				</Style>
-			</FlowDocumentScrollViewer.Resources>
-		</FlowDocumentScrollViewer>
-	</Grid>
+	<Border Margin="12"
+		Padding="18"
+		Background="{DynamicResource ReduxSurfaceBrush}"
+		BorderBrush="{DynamicResource ReduxBorderBrush}"
+		BorderThickness="1"
+		CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
+			<TextBlock
+				x:Name="HelpTitleText"
+				Grid.Row="0"
+				Padding="4,4,4,12"
+				FontSize="{DynamicResource Redux.FontSize.24}"
+				FontWeight="SemiBold"
+				Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+				TextAlignment="Center" />
+			<FlowDocumentScrollViewer
+				x:Name="MarkdownViewer"
+				Grid.Row="1"
+				ScrollViewer.CanContentScroll="True"
+				ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+				ScrollViewer.VerticalScrollBarVisibility="Auto">
+				<FlowDocumentScrollViewer.Resources>
+					<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
+						<Setter Property="TextWrapping" Value="Wrap" />
+					</Style>
+				</FlowDocumentScrollViewer.Resources>
+			</FlowDocumentScrollViewer>
+		</Grid>
+	</Border>
 </local:HelpWindowBase>

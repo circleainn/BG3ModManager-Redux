@@ -163,10 +163,9 @@ public class SettingsWindowViewModel : ReactiveObject
 			if (gameCurrentVersion < gameMinVersion && _lastWarnedVersion != gameCurrentVersion)
 			{
 				_lastWarnedVersion = gameCurrentVersion;
-				Xceed.Wpf.Toolkit.MessageBox.Show(View,
+				ReduxMessageBox.Show(View,
 					$"Script Extender {version.Version} ({channel}) requires at minimum game version {version.MinGameVersion}. The current game version is {gameCurrentVersion}.",
-					"Old Game Detected", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
-					Main.Window.MessageBoxStyle);
+					"Old Game Detected", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 			}
 		}
 	}
@@ -459,8 +458,8 @@ public class SettingsWindowViewModel : ReactiveObject
 		ResetSettingsCommand = ReactiveCommand.Create(() =>
 		{
 			var tabName = TabToName(SelectedTabIndex);
-			MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show(View, $"Reset {tabName} to Default?\nCurrent settings will be lost.", $"Confirm {tabName} Reset",
-				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, Main.Window.MessageBoxStyle);
+			MessageBoxResult result = ReduxMessageBox.Show(View, $"Reset {tabName} to Default?\nCurrent settings will be lost.", $"Confirm {tabName} Reset",
+				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 			if (result == MessageBoxResult.Yes)
 			{
 				switch (SelectedTabIndex)
@@ -495,8 +494,8 @@ public class SettingsWindowViewModel : ReactiveObject
 
 		ClearCacheCommand = ReactiveCommand.Create(() =>
 		{
-			MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show(View, $"Delete local mod cache?\nThis cannot be undone.", "Confirm Delete Cache",
-				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, Main.Window.MessageBoxStyle);
+			MessageBoxResult result = ReduxMessageBox.Show(View, $"Delete local mod cache?\nThis cannot be undone.", "Confirm Delete Cache",
+				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 			if (result == MessageBoxResult.Yes)
 			{
 				try

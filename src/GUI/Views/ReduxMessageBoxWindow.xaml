@@ -1,0 +1,59 @@
+<adonisUI:AdonisWindow x:Class="DivinityModManager.Views.ReduxMessageBoxWindow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+	xmlns:controls="clr-namespace:DivinityModManager.Controls"
+	Width="480" MinWidth="480" MaxWidth="480"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}" FontWeight="{DynamicResource Redux.FontWeight.Body}"
+	ResizeMode="NoResize" SizeToContent="Height" ShowInTaskbar="False"
+	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
+	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
+	WindowStartupLocation="CenterOwner"
+	KeyDown="Window_KeyDown">
+	<Window.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
+		<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
+	</ResourceDictionary.MergedDictionaries></ResourceDictionary></Window.Resources>
+	<Border Padding="22" Background="{DynamicResource ReduxAppBackgroundBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+				<Border x:Name="IconBadge" Width="42" Height="42" Margin="0,0,14,0" VerticalAlignment="Top"
+					Background="{DynamicResource ReduxSurfaceElevatedBrush}" BorderThickness="1" CornerRadius="21">
+					<controls:ReduxIcon x:Name="SeverityIcon" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center" />
+				</Border>
+				<TextBlock x:Name="CaptionText" Grid.Column="1"
+					FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="{DynamicResource Redux.FontWeight.Title}"
+					Foreground="{DynamicResource ReduxTextPrimaryBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />
+			</Grid>
+
+			<Border Grid.Row="1" Margin="0,16,0,0" Padding="14,12"
+				Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}"
+				BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+				<ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
+					<TextBox x:Name="MessageTextBox"
+						Background="Transparent" BorderThickness="0"
+						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+						IsReadOnly="True" IsReadOnlyCaretVisible="True"
+						TextWrapping="Wrap" />
+				</ScrollViewer>
+			</Border>
+
+			<StackPanel Grid.Row="2" Margin="0,18,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
+				<StackPanel x:Name="ExtraActionsPanel" Orientation="Horizontal" />
+				<Button x:Name="NoButton" MinWidth="80" Margin="8,0,0,0" Content="No" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Click="NoButton_Click" Visibility="Collapsed" />
+				<Button x:Name="CancelButton" MinWidth="80" Margin="8,0,0,0" Content="Cancel" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Click="CancelButton_Click" Visibility="Collapsed" IsCancel="True" />
+				<Button x:Name="YesButton" MinWidth="80" Margin="8,0,0,0" Content="Yes" Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" Click="YesButton_Click" Visibility="Collapsed" />
+				<Button x:Name="OkButton" MinWidth="80" Margin="8,0,0,0" Content="OK" Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" Click="OkButton_Click" Visibility="Collapsed" />
+			</StackPanel>
+		</Grid>
+	</Border>
+</adonisUI:AdonisWindow>

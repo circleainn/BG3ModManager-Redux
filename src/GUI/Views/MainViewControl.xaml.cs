@@ -17,7 +17,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace DivinityModManager.Views;
 
@@ -65,11 +64,6 @@ public partial class MainViewControl : MainViewControlViewBase
 			[nameof(AppKeys.CheckForUpdates)] = ("Redux.Icon.Download", false, null),
 			[nameof(AppKeys.OpenAboutWindow)] = ("Redux.Icon.Information", false, null)
 		};
-
-	public static Brush MessageBoxDefaultBackgroundBrush =>
-		Application.Current?.TryFindResource("ReduxSurfaceElevatedBrush") as Brush ?? System.Windows.Media.Brushes.DimGray;
-	public static Brush MessageBoxErrorBackgroundBrush =>
-		Application.Current?.TryFindResource("ReduxErrorBrush") as Brush ?? System.Windows.Media.Brushes.Firebrick;
 
 	private void QuickLinksButton_Click(object sender, RoutedEventArgs e)
 	{
@@ -324,10 +318,10 @@ public partial class MainViewControl : MainViewControlViewBase
 						{
 							if (File.Exists(nextFilePath))
 							{
-								var result = Xceed.Wpf.Toolkit.MessageBox.Show(main,
+								var result = ReduxMessageBox.Show(main,
 									$"Overwrite '{nextFilePath}'?",
 									"Confirm Order Renaming (Overwriting File)",
-									MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.OK, main.MessageBoxStyle);
+									MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.OK);
 								if (result == MessageBoxResult.No)
 								{
 									AlertBar.SetInformationAlert($"Cancelled order renaming", 10);
@@ -347,10 +341,10 @@ public partial class MainViewControl : MainViewControlViewBase
 						catch (Exception ex)
 						{
 							AlertBar.SetDangerAlert($"Failed to rename file '{lastFilePath}' to '{nextFilePath}'", 20);
-							MainWindowMessageBox_OK.WindowBackground = MessageBoxErrorBackgroundBrush;
-							MainWindowMessageBox_OK.Closed += ViewModel.MainWindowMessageBox_Closed_ResetColor;
-							MainWindowMessageBox_OK.ShowMessageBox($"Failed to rename file '{lastFilePath}' to '{nextFilePath}':\n{ex}",
-								"Failed to Rename Order", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+							var message = $"Failed to rename file '{lastFilePath}' to '{nextFilePath}':\n{ex}";
+							ReduxMessageBox.ShowWithActions(main, message, "Failed to Rename Order",
+								MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
+								("Copy to Clipboard", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(message)));
 						}
 					}
 				}
