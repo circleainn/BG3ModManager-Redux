@@ -5,6 +5,10 @@ BG3 Mod Manager Redux is a modernized, community-driven fork of
 Redux preserves the established mod-management backend while developing a cleaner interface,
 safer file operations, richer metadata, and better organization for large mod lists.
 
+> [!NOTE]
+> Redux is a Windows-only WPF application. It does not support Linux, macOS, Wine, or Proton, and
+> there are no current plans to add cross-platform support.
+
 ## Current version
 
 **0.1.0-alpha.5 — private testing alpha**
@@ -67,13 +71,9 @@ incomplete or change between builds.
 
 ### Accessibility
 
-- A first-class **Accessibility** menu beside Settings provides immediate access to speech controls
-  and keyboard-shortcut settings without adding another Preferences page.
-- **Speak Active Order** reads the current active load order through the detected screen reader or
-  Windows speech fallback; **Stop Speaking** ends current output.
-- Speech commands remain available through configurable keyboard shortcuts.
-- Screen-reader automation and focus behavior are retained throughout the inherited mod-list
-  controls and extended by Redux's explicit labels and help text.
+- Speech controls (Speak Active Order, Stop Speaking) and keyboard-shortcut settings live in a
+  dedicated Accessibility menu beside Settings, via CrossSpeak integration and Windows speech
+  fallback.
 
 ### Organization
 
@@ -86,9 +86,8 @@ incomplete or change between builds.
 - Redux-only visual separators and collapsible sections with optional custom icons.
 - Draggable category ordering and optional filter-state persistence.
 
-Categories and separators are Redux organizational metadata. Separators are not mods, are never
-written to `modsettings.lsx`, and disappear from filtered or metadata-sorted views where their
-positions would be misleading.
+Categories and separators are Redux-only metadata, never written to `modsettings.lsx`. Separators
+disappear from filtered or metadata-sorted views where their position would be misleading.
 
 ### Mod information
 
@@ -122,8 +121,6 @@ Mod Fixer, but older packages may still contain its legacy recompilation techniq
 - Backups before replacing installed packages during updates.
 - Recoverable and permanent deletion paths that update the UI only after filesystem success.
 - Reordering protection while a metadata column sort is active.
-
-These safeguards reduce risk, but they do not replace independent user backups.
 
 ## Nexus Mods and mod.io
 
@@ -173,6 +170,9 @@ affect game files.
 ## Known alpha limitations
 
 - No supported public binary release or automatic Redux updating.
+- Redux ships as a framework-dependent build, so the .NET 8 Desktop Runtime must already be
+  installed on the target machine. There are no current plans to switch to a self-contained
+  deployment, which would substantially increase build size and update payload.
 - Nexus authentication currently relies on a personal API key rather than public SSO.
 - Provider matching, automatic categories, dependency data, and conflict data may be incomplete.
 - mod.io author profile links cannot always be resolved reliably.
@@ -196,6 +196,8 @@ the problem. Do not post API keys or private filesystem information.
 - [Redux issue tracker](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues)
 - [Baldur's Gate 3 on Nexus Mods](https://www.nexusmods.com/baldursgate3)
 - [BG3 Script Extender](https://github.com/Norbyte/bg3se)
+- [Building from source](docs/BUILDING.md)
+- [Changes from upstream BG3ModManager](docs/CHANGES_FROM_UPSTREAM.md)
 
 ## Upstream project and attribution
 
