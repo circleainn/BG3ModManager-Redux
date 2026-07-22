@@ -126,7 +126,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public string DocumentsFolderPathOverride { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Use colorblind-friendly indicators", "Show additional icons where Redux would otherwise communicate status mainly through color.")]
+	[SettingsEntry("Show Toolkit project markers", "Show a build icon beside mods detected as Toolkit or editor projects.")]
 	[DataMember, Reactive] public bool EnableColorblindSupport { get; set; }
 
 	[DefaultValue(true)]

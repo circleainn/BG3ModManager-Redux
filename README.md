@@ -143,7 +143,16 @@ must end at the game's `Data` directory, not merely the Baldur's Gate 3 installa
 - Safe custom themes with a preferred bundled typeface, live preview, duplication, JSON import,
   and JSON export.
 - Theme-aware vector iconography and consistent interaction feedback across Redux-owned controls.
-- Screen-reader and accessibility behavior inherited from the upstream manager.
+
+### Accessibility
+
+- A first-class **Accessibility** menu beside Settings provides immediate access to speech controls
+  and keyboard-shortcut settings without adding another Preferences page.
+- **Speak Active Order** reads the current active load order through the detected screen reader or
+  Windows speech fallback; **Stop Speaking** ends current output.
+- Speech commands remain available through configurable keyboard shortcuts.
+- Screen-reader automation and focus behavior are retained throughout the inherited mod-list
+  controls and extended by Redux's explicit labels and help text.
 
 ### Organization
 
@@ -161,6 +170,7 @@ positions would be misleading.
 
 ### Mod information
 
+- An optional Toolkit project marker adds a build icon beside detected editor or project mods.
 - Local package metadata with Nexus Mods and mod.io provider linking.
 - Manual Nexus project linking plus a bundled Redux mod database for conservative pre-existing-install matching.
 - Source-specific titles, authors, versions, dates, descriptions, requirements, files, and
@@ -253,11 +263,6 @@ affect game files.
 - Optional custom transparent PNG icons for categories and visual separators.
 - Compact, Default, and Large typography sizing presets with a clipping-safety pass.
 - Safe custom font import for typography and custom-theme defaults.
-
-### Planned accessibility follow-ups
-
-- Add a dedicated Accessibility preferences tab that consolidates related options and actions,
-  including Speak Load Order and Stop Speaking, while preserving the existing CrossSpeak behavior.
 
 Report reproducible problems through the
 [Redux issue tracker](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues). Include the

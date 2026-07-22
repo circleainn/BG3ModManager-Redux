@@ -285,12 +285,14 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 	public void OpenPreferences(bool switchToKeybindings = false, bool forceOpen = false)
 	{
+		if (switchToKeybindings)
+		{
+			OpenPreferences(SettingsWindowTab.Keybindings, forceOpen);
+			return;
+		}
+
 		if (!SettingsWindow.IsVisible)
 		{
-			if (switchToKeybindings == true)
-			{
-				SettingsWindow.ViewModel.SelectedTabIndex = SettingsWindowTab.Keybindings;
-			}
 			SettingsWindow.Show();
 			SettingsWindow.Owner = this;
 			ViewModel.Settings.SettingsWindowIsOpen = true;
@@ -299,6 +301,21 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		{
 			SettingsWindow.Hide();
 			ViewModel.Settings.SettingsWindowIsOpen = false;
+		}
+	}
+
+	public void OpenPreferences(SettingsWindowTab targetTab, bool forceOpen = true)
+	{
+		SettingsWindow.ViewModel.SelectedTabIndex = targetTab;
+		if (!SettingsWindow.IsVisible)
+		{
+			SettingsWindow.Show();
+			SettingsWindow.Owner = this;
+			ViewModel.Settings.SettingsWindowIsOpen = true;
+		}
+		else
+		{
+			SettingsWindow.Activate();
 		}
 	}
 
@@ -476,7 +493,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 			this.OneWayBind(ViewModel, vm => vm.MainProgressIsActive, view => view.TaskbarItemInfo.ProgressState, BoolToTaskbarItemProgressState);
 
 			ViewModel.Keys.OpenPreferences.AddAction(() => OpenPreferences(false));
-			ViewModel.Keys.OpenKeybindings.AddAction(() => OpenPreferences(true));
+			ViewModel.Keys.OpenKeybindings.AddAction(() => OpenPreferences(SettingsWindowTab.Keybindings));
 			ViewModel.Keys.OpenAboutWindow.AddAction(ToggleAboutWindow);
 
 			ViewModel.Keys.ToggleVersionGeneratorWindow.AddAction(() =>

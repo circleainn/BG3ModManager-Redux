@@ -210,6 +210,20 @@ public partial class MainViewControl : MainViewControlViewBase
 			menuItems.Add(prop.Name, newEntry);
 		}
 
+		if (menuItems.TryGetValue("Accessibility", out var accessibilityMenuItem))
+		{
+			var keyboardShortcutsItem = new MenuItem
+			{
+				Header = "Keyboard Shortcuts...",
+				Command = ViewModel.Keys.OpenKeybindings.Command,
+				ToolTip = "Open Preferences to customize keyboard shortcuts.",
+				Icon = ReduxIcon.FromResource("Redux.Icon.Key")
+			};
+
+			accessibilityMenuItem.Items.Add(new Separator());
+			accessibilityMenuItem.Items.Add(keyboardShortcutsItem);
+		}
+
 		// Keep attribution available without dedicating a second top-level menu to it.
 		if (menuItems.TryGetValue("Help", out var helpMenuItem))
 		{

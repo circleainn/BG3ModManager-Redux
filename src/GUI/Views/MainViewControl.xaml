@@ -228,6 +228,7 @@
 						<MenuItem x:Name="FileMenuItem" Header="File" />
 						<MenuItem x:Name="EditMenuItem" Header="Edit" />
 						<MenuItem x:Name="SettingsMenuItem" Header="Settings" />
+						<MenuItem x:Name="AccessibilityMenuItem" Header="Accessibility" />
 						<!--<MenuItem x:Name="ViewMenuItem" Header="View" />-->
 						<MenuItem x:Name="ToolsMenuItem" Header="Tools" Style="{StaticResource MenuItemHightlightBlink}" />
 						<MenuItem x:Name="HelpMenuItem" Header="Help" />

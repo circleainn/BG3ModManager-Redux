@@ -119,10 +119,10 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("Tools", "Download & Extract the Script Extender...")]
 	public Hotkey DownloadScriptExtender { get; private set; } = new Hotkey(Key.T, ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Alt);
 
-	[MenuSettings("Tools", "Speak Active Order")]
+	[MenuSettings("Accessibility", "Speak Active Order")]
 	public Hotkey SpeakActiveModOrder { get; private set; } = new Hotkey(Key.Home, ModifierKeys.Control);
 
-	[MenuSettings("Tools", "Stop Speaking")]
+	[MenuSettings("Accessibility", "Stop Speaking")]
 	public Hotkey StopSpeaking { get; private set; } = new Hotkey(Key.Home, ModifierKeys.Control | ModifierKeys.Alt);
 
 	[MenuSettings("Help", "Check for Updates")]
