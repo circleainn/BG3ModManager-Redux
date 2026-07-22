@@ -17,7 +17,6 @@ latest_path = ROOT / "BG3ModManager-Redux-Latest.zip"
 THIRD_PARTY_LICENSE_FILES = (
 	Path("CrossSpeak-LGPL-2.1.txt"),
 	Path("Lucide-ISC.txt"),
-	Path("Simple-Icons-CC0.txt"),
 	Path("LSLib-MIT.txt"),
 	Path("Manrope-OFL-1.1.txt"),
 	Path("Atkinson-Hyperlegible-OFL-1.1.txt"),

@@ -372,8 +372,6 @@
 		<LineGeometry StartPoint="15,12" EndPoint="15.01,12" />
 		<LineGeometry StartPoint="18,10" EndPoint="18.01,10" />
 	</GeometryGroup>
-	<!-- GitHub brand mark, sourced from Simple Icons (CC0) rather than Lucide - Lucide doesn't ship brand/logo icons. -->
-	<PathGeometry x:Key="Redux.Icon.Github" Figures="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
 	<GeometryGroup x:Key="Redux.Icon.LinkStroke">
 		<PathGeometry Figures="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
 		<PathGeometry Figures="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
@@ -1010,7 +1008,6 @@
 	<BitmapImage x:Key="OpenFolderImage" UriSource="pack://application:,,,/Resources/Icons/OpenFolder_16x.png" />
 	<BitmapImage x:Key="OpenGameImage" UriSource="pack://application:,,,/Resources/Icons/BG3_64x.png" />
 	<BitmapImage x:Key="OpenInBrowserImage" UriSource="pack://application:,,,/Resources/Icons/BrowserLink_16x.png" />
-	<BitmapImage x:Key="OpenRepoLinkImage" UriSource="pack://application:,,,/Resources/Icons/Github_16x.png" />
 	<BitmapImage x:Key="OpenSteamWorkshopFolderImage" UriSource="pack://application:,,,/Resources/Icons/Steam_16x.png" />
 	<BitmapImage x:Key="OsirisImage" UriSource="pack://application:,,,/Resources/Icons/Osiris_16x.png" />
 	<BitmapImage x:Key="OsirisModFixerImage" UriSource="pack://application:,,,/Resources/Icons/Osiris_ModFixer_16x.png" />
@@ -2358,6 +2355,16 @@
 			RenderOptions.BitmapScalingMode="HighQuality"
 			Source="/BG3ModManager;component/Resources/Icons/Platforms/modio.png"
 			Stretch="Uniform" />
+	</DataTemplate>
+	<DataTemplate x:Key="GithubPlatformIconTemplate">
+		<Border Width="18" Height="18"
+			Background="{DynamicResource ReduxGithubIconBrush}"
+			RenderOptions.BitmapScalingMode="HighQuality">
+			<Border.OpacityMask>
+				<ImageBrush ImageSource="/BG3ModManager;component/Resources/Icons/Platforms/github.png"
+					Stretch="Uniform" />
+			</Border.OpacityMask>
+		</Border>
 	</DataTemplate>
 	<DataTemplate x:Key="PlatformIconPresenterTemplate" DataType="{x:Type data:DivinityModData}">
 		<Grid Width="18" Height="18">

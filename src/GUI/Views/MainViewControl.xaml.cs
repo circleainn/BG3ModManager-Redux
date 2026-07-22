@@ -240,7 +240,10 @@ public partial class MainViewControl : MainViewControlViewBase
 			{
 				Header = "Original BG3 Mod Manager on GitHub",
 				Command = ViewModel.Keys.OpenRepositoryPage.Command,
-				Icon = ReduxIcon.FromResource("Redux.Icon.Github", foregroundResourceKey: "ReduxGithubIconBrush")
+				Icon = new ContentControl
+				{
+					ContentTemplate = FindResource("GithubPlatformIconTemplate") as DataTemplate
+				}
 			});
 			creditsMenu.Items.Add(new MenuItem
 			{

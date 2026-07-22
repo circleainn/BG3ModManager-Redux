@@ -45,7 +45,7 @@ incomplete or change between builds.
 - Added a reusable custom-font library for local TrueType and OpenType fonts, with immediate
   preview, custom-theme defaults, safe deferred deletion, and Manrope fallback when unavailable.
 - Replaced the mixed legacy icon set with a shared Lucide-based vector system, retaining official
-  Nexus Mods, mod.io, and GitHub brand marks where generic interface icons are inappropriate.
+  Nexus Mods, mod.io, and GitHub image assets where generic interface icons are inappropriate.
 - Consolidated Theme & Appearance controls into a more compact theme, typography, and custom-theme
   workflow with clearer semantic color previews and more consistent Redux dialogs.
 - Continued conservative UI cleanup without changing load-order behavior, package parsing,
@@ -223,8 +223,6 @@ Redux also depends on third-party projects including:
   [Minipax](https://github.com/ronotypo/Minipax), and
   [Chivo](https://github.com/Omnibus-Type/Chivo), distributed under the SIL Open Font License
 - [Lucide](https://github.com/lucide-icons/lucide), distributed under the ISC License
-- [Simple Icons](https://github.com/simple-icons/simple-icons) (GitHub brand mark only),
-  dedicated to the public domain under CC0 1.0
 - AdonisUI, ReactiveUI, GongSolutions.WPF.DragDrop, and other packages listed in the project files
 
 Baldur's Gate 3 is developed and published by Larian Studios. Redux is an unofficial community

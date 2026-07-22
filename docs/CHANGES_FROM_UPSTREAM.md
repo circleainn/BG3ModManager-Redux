@@ -57,8 +57,8 @@ version `0.1.0-alpha.5`.
   weapons, maps, resources, utilities, libraries, patches, overrides, and other BG3 use cases.
 - Official Nexus Mods and mod.io image assets remain in source pills and provider actions instead
   of being replaced by generic interface glyphs.
-- The GitHub brand mark is sourced separately from Simple Icons because Lucide does not provide
-  brand logos.
+- The official GitHub Invertocat image is bundled separately because Lucide does not provide brand
+  logos.
 - High-quality downscaling for imported bitmap icons.
 - Theme-dependent icon foregrounds, including Parchment's warm red identity where appropriate.
 

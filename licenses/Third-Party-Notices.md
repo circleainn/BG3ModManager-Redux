@@ -71,13 +71,13 @@ distribution in `THIRD-PARTY-NOTICES.md`.
 
 - Project: https://github.com/lucide-icons/lucide
 
-## Simple Icons
+## GitHub branding
 
-Redux includes the GitHub brand mark adapted from Simple Icons, dedicated to the public domain
-under CC0 1.0. Lucide does not include brand/logo icons, so the GitHub reference link icon is
-sourced separately.
+Redux uses the official GitHub Invertocat image to identify links to GitHub repositories and
+profiles. GitHub and the Invertocat are trademarks of GitHub, Inc. Their use does not imply
+affiliation with or endorsement by GitHub.
 
-- Project: https://github.com/simple-icons/simple-icons
+- Brand assets and usage guidance: https://brand.github.com/foundations/logo
 
 ## Other dependencies
 

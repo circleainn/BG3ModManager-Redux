@@ -711,10 +711,10 @@
 												<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" /></MenuItem.Icon>
 											</MenuItem>
 											<MenuItem Header="BG3 Script Extender on GitHub" Click="OpenScriptExtenderRepo_Click">
-												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" Foreground="{DynamicResource ReduxGithubIconBrush}" /></MenuItem.Icon>
+												<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource GithubPlatformIconTemplate}" /></MenuItem.Icon>
 											</MenuItem>
 											<MenuItem Header="BG3 Mod Manager Redux on GitHub" Click="OpenReduxRepo_Click">
-												<MenuItem.Icon><controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" Foreground="{DynamicResource ReduxGithubIconBrush}" /></MenuItem.Icon>
+												<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource GithubPlatformIconTemplate}" /></MenuItem.Icon>
 											</MenuItem>
 										</ContextMenu>
 									</Button.ContextMenu>
@@ -761,7 +761,7 @@
 								<Button x:Name="OpenRepoPageButton"
 									Visibility="Collapsed"
 									ToolTip="Open Project Page (Github)">
-									<controls:ReduxIcon Data="{StaticResource Redux.Icon.Github}" Foreground="{DynamicResource ReduxGithubIconBrush}" />
+									<ContentControl ContentTemplate="{DynamicResource GithubPlatformIconTemplate}" />
 								</Button>
 							</StackPanel>
 						</Grid>
