@@ -101,6 +101,7 @@
 					<StackPanel x:Name="IconChooserPanel" Margin="0,8,0,0">
 						<TextBlock x:Name="IconFieldLabel" Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
 							Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Icon" />
+						<WrapPanel HorizontalAlignment="Left">
 						<ComboBox x:Name="CategoryIconComboBox"
 							Width="92"
 							HorizontalAlignment="Left"
@@ -108,6 +109,7 @@
 							MaxDropDownHeight="239"
 							ScrollViewer.HorizontalScrollBarVisibility="Disabled"
 							ScrollViewer.VerticalScrollBarVisibility="Disabled"
+							SelectionChanged="CategoryIconComboBox_SelectionChanged"
 							ToolTip="Choose a category marker or icon. Hover an option to see its name.">
 							<ComboBox.ItemsPanel>
 								<ItemsPanelTemplate>
@@ -132,13 +134,37 @@
 										<Ellipse Width="8" Height="8"
 											Fill="{DynamicResource Redux.CategoryEditor.IconBrush}"
 											Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverter}}" />
-										<controls:ReduxIcon Width="18" Height="18" IconKey="{Binding Id}"
+						<controls:ReduxIcon Width="18" Height="18" IconKey="{Binding PreviewIconId}"
 											Foreground="{DynamicResource Redux.CategoryEditor.IconBrush}"
 											Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
 									</Grid>
 								</DataTemplate>
 							</ComboBox.ItemTemplate>
 						</ComboBox>
+						<Button Margin="6,0,0,0" MinWidth="98" Padding="9,4"
+							Style="{StaticResource ReduxRoundedSecondaryButtonStyle}"
+							Click="ImportCustomIcon_Click" ToolTip="Import a square transparent PNG into Redux">
+							<StackPanel Orientation="Horizontal">
+								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,5,0" Data="{StaticResource Redux.Icon.FolderOpen}" />
+								<TextBlock Text="Import PNG" />
+							</StackPanel>
+						</Button>
+						<Button x:Name="DeleteCustomIconButton" Margin="6,0,0,0" MinWidth="32" Padding="7,4"
+							Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Visibility="Collapsed"
+							Click="DeleteCustomIcon_Click" ToolTip="Remove the selected custom icon from Redux">
+							<controls:ReduxIcon Width="14" Height="14" Data="{StaticResource Redux.Icon.Trash}"
+								Foreground="{DynamicResource ReduxErrorBrush}" />
+						</Button>
+						</WrapPanel>
+						<CheckBox x:Name="TintCustomIconCheckBox" Margin="0,6,0,0"
+							Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed"
+							Checked="TintCustomIconCheckBox_Changed" Unchecked="TintCustomIconCheckBox_Changed"
+							ToolTip="Use the PNG transparency as a mask and apply this category or separator color.">
+							<TextBlock x:Name="TintCustomIconText" Text="Tint with category color" TextWrapping="Wrap" />
+						</CheckBox>
+						<TextBlock Margin="0,5,0,0" FontSize="{DynamicResource Redux.FontSize.10}"
+							Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap"
+							Text="Square transparent PNG, up to 1024 &#x00D7; 1024 and 2 MB." />
 					</StackPanel>
 				</StackPanel>
 				<Grid Grid.Row="2" Grid.ColumnSpan="3">

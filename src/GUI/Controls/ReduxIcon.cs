@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using DivinityModManager.Util;
 
 namespace DivinityModManager.Controls;
 
@@ -63,6 +64,18 @@ public sealed class ReduxIcon : Control
 		typeof(ReduxIcon),
 		new FrameworkPropertyMetadata(String.Empty, (dependencyObject, _) => ((ReduxIcon)dependencyObject).ApplyIconKey()));
 
+	public static readonly DependencyProperty ImageSourceProperty = DependencyProperty.Register(
+		nameof(ImageSource),
+		typeof(ImageSource),
+		typeof(ReduxIcon),
+		new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+
+	public static readonly DependencyProperty TintCustomImageProperty = DependencyProperty.Register(
+		nameof(TintCustomImage),
+		typeof(bool),
+		typeof(ReduxIcon),
+		new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender));
+
 	public Geometry Data
 	{
 		get => (Geometry)GetValue(DataProperty);
@@ -91,14 +104,60 @@ public sealed class ReduxIcon : Control
 		set => SetValue(IconKeyProperty, value);
 	}
 
+	public ImageSource ImageSource
+	{
+		get => (ImageSource)GetValue(ImageSourceProperty);
+		private set => SetValue(ImageSourceProperty, value);
+	}
+
+	public bool TintCustomImage
+	{
+		get => (bool)GetValue(TintCustomImageProperty);
+		private set => SetValue(TintCustomImageProperty, value);
+	}
+
 	private void ApplyIconKey()
 	{
-		// A default, unset IconKey must not erase geometry supplied directly by legacy callers.
-		if (ReadLocalValue(IconKeyProperty) == DependencyProperty.UnsetValue) return;
+		// A default, unset IconKey must not erase geometry supplied directly by legacy callers
+		// (ReduxIcon.FromResource sets Data/StrokeData directly and never touches IconKey).
+		// ReadLocalValue is not a reliable signal for that here: it reports UnsetValue even for
+		// IconKey values applied through a DataTemplate binding. An empty IconKey is the actual
+		// reliable "never set" signal.
+		if (String.IsNullOrEmpty(IconKey)) return;
 		// Catalog geometry is selected by the shared XAML style's IconKey triggers.
 		// Clearing local values lets those deterministic StaticResource setters win.
 		ClearValue(DataProperty);
 		ClearValue(StrokeDataProperty);
+		ClearValue(ImageSourceProperty);
+		ClearValue(TintCustomImageProperty);
+		TintCustomImage = ReduxCustomIconService.IsTintedReference(IconKey);
+		if (ReduxCustomIconService.IsCustomReference(IconKey) && ReduxCustomIconService.TryLoad(IconKey, out var imageSource))
+		{
+			ImageSource = imageSource;
+			// Imported PNGs are stored up to 1024x1024 but drawn at icon size (often under
+			// 20px), a >50x reduction where WPF's default scaling aliases badly. Match the
+			// HighQuality mode already used for other bitmap content in the app (mod thumbnails).
+			RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.HighQuality);
+		}
+	}
+
+	protected override void OnRender(DrawingContext drawingContext)
+	{
+		base.OnRender(drawingContext);
+		if (ImageSource == null || ActualWidth <= 0 || ActualHeight <= 0) return;
+
+		var bounds = new Rect(0, 0, ActualWidth, ActualHeight);
+		if (!TintCustomImage)
+		{
+			drawingContext.DrawImage(ImageSource, bounds);
+			return;
+		}
+
+		var mask = new ImageBrush(ImageSource) { Stretch = Stretch.Uniform };
+		if (mask.CanFreeze) mask.Freeze();
+		drawingContext.PushOpacityMask(mask);
+		drawingContext.DrawRectangle(Foreground, null, bounds);
+		drawingContext.Pop();
 	}
 }
 
@@ -195,5 +254,9 @@ public static class ReduxIconCatalog
 	public static bool TryGet(string id, out ReduxIconChoice choice) =>
 		ById.TryGetValue(id ?? String.Empty, out choice);
 
-	public static string Normalize(string id) => TryGet(id, out var choice) ? choice.Id : String.Empty;
+	public static string Normalize(string id)
+	{
+		if (TryGet(id, out var choice)) return choice.Id;
+		return ReduxCustomIconService.NormalizeReference(id);
+	}
 }

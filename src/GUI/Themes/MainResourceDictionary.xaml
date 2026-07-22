@@ -277,14 +277,16 @@
 			<Setter.Value>
 				<ControlTemplate TargetType="{x:Type controls:ReduxIcon}">
 					<Border Background="{TemplateBinding Background}">
-					<Viewbox Stretch="Uniform">
-						<Canvas Width="512" Height="512" Background="Transparent">
-							<Path Width="512" Height="512" Data="{TemplateBinding Data}" Fill="{TemplateBinding Foreground}" />
-							<Path Width="512" Height="512" Data="{TemplateBinding StrokeData}" Fill="Transparent"
-								Stroke="{TemplateBinding Foreground}" StrokeThickness="{TemplateBinding StrokeThickness}"
-								StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
-						</Canvas>
-					</Viewbox>
+						<Grid>
+							<Viewbox Stretch="Uniform">
+								<Canvas Width="512" Height="512" Background="Transparent">
+									<Path Width="512" Height="512" Data="{TemplateBinding Data}" Fill="{TemplateBinding Foreground}" />
+									<Path Width="512" Height="512" Data="{TemplateBinding StrokeData}" Fill="Transparent"
+										Stroke="{TemplateBinding Foreground}" StrokeThickness="{TemplateBinding StrokeThickness}"
+										StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+								</Canvas>
+							</Viewbox>
+						</Grid>
 					</Border>
 				</ControlTemplate>
 			</Setter.Value>

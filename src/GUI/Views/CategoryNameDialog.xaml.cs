@@ -4,6 +4,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Input;
+using DivinityModManager.Util;
+using Microsoft.Win32;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace DivinityModManager.Views;
 
@@ -17,23 +21,53 @@ public partial class CategoryNameDialog : AdonisWindow
 	private double _brightness;
 	private readonly bool _allowEmptyName;
 	private readonly List<string> _savedColors;
+	private readonly ObservableCollection<IconChooserChoice> _iconChoices;
 	public IReadOnlyList<string> SavedColors => _savedColors;
 	public bool ResetToDefaultRequested { get; private set; }
 	public string CategoryName => CategoryNameTextBox.Text?.Trim();
 	public string CategoryColor => CategoryColorPicker.SelectedColor is Color color
 		? $"#{color.R:X2}{color.G:X2}{color.B:X2}" : "#8A6AF1";
-	public string CategoryIconId => ReduxIconCatalog.Normalize(CategoryIconComboBox?.SelectedValue as string);
-
-	private sealed class IconChooserChoice
+	public string CategoryIconId
 	{
+		get
+		{
+			var iconId = ReduxIconCatalog.Normalize(CategoryIconComboBox?.SelectedValue as string);
+			return ReduxCustomIconService.IsCustomReference(iconId)
+				? ReduxCustomIconService.WithTint(iconId, TintCustomIconCheckBox?.IsChecked == true)
+				: iconId;
+		}
+	}
+
+	private sealed class IconChooserChoice : INotifyPropertyChanged
+	{
+		private string _previewIconId;
 		public string Id { get; }
 		public string DisplayName { get; }
+		public string PreviewIconId
+		{
+			get => _previewIconId;
+			set
+			{
+				if (_previewIconId.Equals(value, StringComparison.OrdinalIgnoreCase)) return;
+				_previewIconId = value ?? String.Empty;
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PreviewIconId)));
+			}
+		}
 		public bool IsNone => String.IsNullOrWhiteSpace(Id);
+		public event PropertyChangedEventHandler PropertyChanged;
 
 		public IconChooserChoice(ReduxIconChoice choice)
 		{
 			Id = choice.Id;
 			DisplayName = choice.DisplayName;
+			_previewIconId = choice.Id;
+		}
+
+		public IconChooserChoice(string id, string displayName)
+		{
+			Id = id ?? String.Empty;
+			DisplayName = displayName;
+			_previewIconId = Id;
 		}
 	}
 
@@ -54,10 +88,21 @@ public partial class CategoryNameDialog : AdonisWindow
 			.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 		CategoryNameTextBox.Text = categoryName;
 		CategoryNameTextBox.IsEnabled = canEditName;
-		CategoryIconComboBox.ItemsSource = ReduxIconCatalog.Choices
-			.Select(choice => new IconChooserChoice(choice))
-			.ToList();
-		CategoryIconComboBox.SelectedValue = ReduxIconCatalog.Normalize(iconId);
+		_iconChoices = new ObservableCollection<IconChooserChoice>(ReduxIconCatalog.Choices
+			.Select(choice => new IconChooserChoice(choice)));
+		foreach (var storedReference in ReduxCustomIconService.GetStoredReferences())
+			_iconChoices.Add(new IconChooserChoice(storedReference, "Custom PNG"));
+		var normalizedIconId = ReduxIconCatalog.Normalize(iconId);
+		var tintCustomIcon = ReduxCustomIconService.IsTintedReference(normalizedIconId);
+		if (ReduxCustomIconService.IsCustomReference(normalizedIconId))
+			normalizedIconId = ReduxCustomIconService.WithTint(normalizedIconId, false);
+		if (ReduxCustomIconService.IsCustomReference(normalizedIconId) &&
+			!_iconChoices.Any(choice => choice.Id.Equals(normalizedIconId, StringComparison.OrdinalIgnoreCase)))
+			_iconChoices.Add(new IconChooserChoice(normalizedIconId, "Imported PNG"));
+		CategoryIconComboBox.ItemsSource = _iconChoices;
+		CategoryIconComboBox.SelectedValue = normalizedIconId;
+		TintCustomIconCheckBox.IsChecked = tintCustomIcon;
+		UpdateCustomIconControls();
 		if (ColorConverter.ConvertFromString(color) is Color selectedColor) CategoryColorPicker.SelectedColor = selectedColor;
 		Title = visualDividerMode ? (String.IsNullOrEmpty(categoryName) ? "Add Separator" : "Edit Separator") : canEditName ? "Add Mod Category" : "Edit Category";
 		DialogHeading.Text = visualDividerMode ? "Style a separator" : canEditName ? "Create a custom mod category" : $"Edit {categoryName}";
@@ -77,6 +122,7 @@ public partial class CategoryNameDialog : AdonisWindow
 			ColorFieldLabel.Text = "Separator color";
 			IconFieldLabel.Text = "Icon";
 			CategoryIconComboBox.ToolTip = "Choose a separator marker or icon. Hover an option to see its name.";
+			TintCustomIconText.Text = "Tint with separator color";
 			CategoryNameTextBox.ToolTip = "Optional separator label";
 		}
 		UpdateColorPresentation();
@@ -242,5 +288,81 @@ public partial class CategoryNameDialog : AdonisWindow
 	{
 		ResetToDefaultRequested = true;
 		DialogResult = true;
+	}
+
+	private void ImportCustomIcon_Click(object sender, RoutedEventArgs e)
+	{
+		var dialog = new OpenFileDialog
+		{
+			Title = "Import Custom Icon",
+			Filter = "PNG images (*.png)|*.png",
+			CheckFileExists = true,
+			Multiselect = false
+		};
+		if (dialog.ShowDialog(this) != true) return;
+		if (!ReduxCustomIconService.TryImport(dialog.FileName, out var iconReference, out var error))
+		{
+			ShowReduxMessage(error, "Import Custom Icon", System.Windows.MessageBoxButton.OK,
+				System.Windows.MessageBoxImage.Information);
+			return;
+		}
+
+		var existing = _iconChoices.FirstOrDefault(choice => choice.Id.Equals(iconReference, StringComparison.OrdinalIgnoreCase));
+		if (existing == null)
+		{
+			existing = new IconChooserChoice(iconReference, $"Imported PNG: {Path.GetFileName(dialog.FileName)}");
+			_iconChoices.Add(existing);
+		}
+		CategoryIconComboBox.SelectedValue = existing.Id;
+		TintCustomIconCheckBox.IsChecked = false;
+		UpdateCustomIconControls();
+	}
+
+	private void DeleteCustomIcon_Click(object sender, RoutedEventArgs e)
+	{
+		if (CategoryIconComboBox.SelectedItem is not IconChooserChoice choice ||
+			!ReduxCustomIconService.IsCustomReference(choice.Id)) return;
+		var result = ShowReduxMessage(
+			"Remove this custom icon from Redux? Categories and separators using it will fall back to the default dot.",
+			"Remove Custom Icon", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
+		if (result != System.Windows.MessageBoxResult.Yes) return;
+		if (!ReduxCustomIconService.TryDelete(choice.Id, out var error))
+		{
+			ShowReduxMessage(error, "Remove Custom Icon", System.Windows.MessageBoxButton.OK,
+				System.Windows.MessageBoxImage.Information);
+			return;
+		}
+
+		_iconChoices.Remove(choice);
+		CategoryIconComboBox.SelectedValue = String.Empty;
+		TintCustomIconCheckBox.IsChecked = false;
+		UpdateCustomIconControls();
+	}
+
+	private void CategoryIconComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateCustomIconControls();
+
+	private System.Windows.MessageBoxResult ShowReduxMessage(string message, string caption,
+		System.Windows.MessageBoxButton buttons, System.Windows.MessageBoxImage image)
+	{
+		var defaultResult = buttons == System.Windows.MessageBoxButton.YesNo
+			? System.Windows.MessageBoxResult.No
+			: System.Windows.MessageBoxResult.OK;
+		return Xceed.Wpf.Toolkit.MessageBox.Show(this, message, caption, buttons, image,
+			defaultResult, MainWindow.Self?.MessageBoxStyle);
+	}
+
+	private void TintCustomIconCheckBox_Changed(object sender, RoutedEventArgs e) => UpdateCustomIconControls();
+
+	private void UpdateCustomIconControls()
+	{
+		if (CategoryIconComboBox == null || TintCustomIconCheckBox == null) return;
+		var selectedId = CategoryIconComboBox.SelectedValue as string;
+		var isCustom = ReduxCustomIconService.IsCustomReference(selectedId);
+		TintCustomIconCheckBox.Visibility = isCustom ? Visibility.Visible : Visibility.Collapsed;
+		DeleteCustomIconButton.Visibility = isCustom ? Visibility.Visible : Visibility.Collapsed;
+		if (CategoryIconComboBox.SelectedItem is IconChooserChoice choice && isCustom)
+		{
+			choice.PreviewIconId = ReduxCustomIconService.WithTint(selectedId, TintCustomIconCheckBox.IsChecked == true);
+		}
 	}
 }
