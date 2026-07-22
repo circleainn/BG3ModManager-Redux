@@ -251,8 +251,8 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 			var width = win.Width;
 			var height = win.Height;
 
-			if (width <= 0) win.Width = width = 1600;
-			if (height <= 0) win.Height = height = 800;
+			if (width <= 0) win.Width = width = 1440;
+			if (height <= 0) win.Height = height = 900;
 			if (winX < 0) winX = Left;
 			if (winY < 0) winY = Top;
 
@@ -292,8 +292,9 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 		if (!SettingsWindow.IsVisible)
 		{
-			SettingsWindow.Show();
 			SettingsWindow.Owner = this;
+			SettingsWindow.ApplyAdaptiveDefaultSize(this);
+			SettingsWindow.Show();
 			ViewModel.Settings.SettingsWindowIsOpen = true;
 		}
 		else if (!forceOpen)
@@ -422,6 +423,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 	public MainWindow()
 	{
 		InitializeComponent();
+		ApplyAdaptiveDefaultSize();
 		SizeChanged += OnWindowResizeFeedback;
 		self = this;
 
@@ -532,5 +534,14 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 			MainView.OnActivated();
 		});
+	}
+
+	private void ApplyAdaptiveDefaultSize()
+	{
+		var workArea = SystemParameters.WorkArea;
+		var targetWidth = Math.Clamp(workArea.Width * 0.72, 1100, 1800);
+		var targetHeight = Math.Clamp(workArea.Height * 0.80, 700, 1050);
+		Width = Math.Max(MinWidth, Math.Min(targetWidth, workArea.Width - 32));
+		Height = Math.Max(MinHeight, Math.Min(targetHeight, workArea.Height - 32));
 	}
 }

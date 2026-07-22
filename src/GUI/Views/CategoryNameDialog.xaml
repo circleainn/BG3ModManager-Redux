@@ -5,10 +5,10 @@
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
 	Title="Add Mod Category"
-	Width="580"
-	Height="700"
-	MinWidth="540"
-	MinHeight="660"
+	Width="720"
+	Height="720"
+	MinWidth="650"
+	MinHeight="600"
 	ResizeMode="CanResizeWithGrip"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
@@ -39,11 +39,50 @@
 				</Track>
 			</ControlTemplate></Setter.Value></Setter>
 		</Style>
+		<Style x:Key="CategoryIconChoiceStyle" TargetType="{x:Type ComboBoxItem}">
+			<Setter Property="Width" Value="34" />
+			<Setter Property="Height" Value="34" />
+			<Setter Property="Margin" Value="2" />
+			<Setter Property="Padding" Value="0" />
+			<Setter Property="HorizontalContentAlignment" Value="Center" />
+			<Setter Property="VerticalContentAlignment" Value="Center" />
+			<Setter Property="Background" Value="Transparent" />
+			<Setter Property="BorderBrush" Value="Transparent" />
+			<Setter Property="BorderThickness" Value="1" />
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="{x:Type ComboBoxItem}">
+						<Border x:Name="ChoiceChrome" Padding="{TemplateBinding Padding}"
+							Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="{DynamicResource Redux.CornerRadius.Small}">
+							<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+								VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="ChoiceChrome" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+								<Setter TargetName="ChoiceChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+							</Trigger>
+							<Trigger Property="IsSelected" Value="True">
+								<Setter TargetName="ChoiceChrome" Property="Background" Value="{DynamicResource ReduxAccentMutedBrush}" />
+								<Setter TargetName="ChoiceChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+								<Setter TargetName="ChoiceChrome" Property="BorderThickness" Value="2" />
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
 		</ResourceDictionary>
 	</adonisUi:AdonisWindow.Resources>
 	<Border Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
-	<Grid Margin="18">
+	<Grid>
+		<Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+	<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+	<Grid Margin="16,14">
 		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
@@ -52,138 +91,124 @@
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 		<TextBlock x:Name="DialogHeading" FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="Create a custom mod category" />
-		<TextBlock x:Name="DialogHelperText" Grid.Row="1" Margin="0,4,0,10" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+		<TextBlock x:Name="DialogHelperText" Grid.Row="1" Margin="0,3,0,8" Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap"
 			Text="You can assign installed mods to it from their right-click menu." />
 		<TextBox x:Name="CategoryNameTextBox" Grid.Row="2" MinHeight="32" VerticalAlignment="Top"
 			MaxLength="40" Padding="8,4" ToolTip="Category name" />
-		<TextBlock x:Name="ColorFieldLabel" Grid.Row="3" Margin="0,10,0,6" FontWeight="SemiBold"
+		<Border x:Name="SeparatorPreviewPanel" Grid.Row="3" Margin="0,8,0,0" Padding="10,8"
+			Background="{DynamicResource ReduxSurfaceElevatedBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}"
+			BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}" Visibility="Collapsed">
+			<Grid>
+				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+				<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" FontWeight="SemiBold"
+					Foreground="{DynamicResource ReduxTextMutedBrush}" Text="LIVE PREVIEW" />
+				<Grid Grid.Row="1" Margin="0,6,0,0" Height="24">
+					<Grid.ColumnDefinitions><ColumnDefinition Width="22" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+					<Path Width="7" Height="5" VerticalAlignment="Center" Fill="{DynamicResource ReduxTextSecondaryBrush}" Stretch="Uniform" Data="M 0,0 L 7,0 L 3.5,5 Z" />
+					<Grid Grid.Column="1" Width="15" Height="15" Margin="0,0,8,0" VerticalAlignment="Center">
+							<Ellipse Width="8" Height="8" VerticalAlignment="Center" Fill="{DynamicResource Redux.CategoryEditor.IconBrush}"
+								Visibility="{Binding SelectedItem.IsNone, ElementName=CategoryIconComboBox, Converter={StaticResource BoolToVisibilityConverter}}" />
+							<controls:ReduxIcon Width="15" Height="15" IconKey="{Binding SelectedItem.PreviewIconId, ElementName=CategoryIconComboBox}"
+								Foreground="{DynamicResource Redux.CategoryEditor.IconBrush}"
+								Visibility="{Binding SelectedItem.IsNone, ElementName=CategoryIconComboBox, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
+					</Grid>
+					<TextBlock Grid.Column="2" Margin="0,0,10,0" VerticalAlignment="Center" FontWeight="SemiBold"
+						Foreground="{DynamicResource Redux.CategoryEditor.IconBrush}" Text="{Binding Text, ElementName=CategoryNameTextBox}"
+						Visibility="{Binding Text, ElementName=CategoryNameTextBox, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
+					<Border Grid.Column="3" Height="1" VerticalAlignment="Center" Background="{DynamicResource Redux.CategoryEditor.IconBrush}" />
+				</Grid>
+			</Grid>
+		</Border>
+		<TextBlock x:Name="ColorFieldLabel" Grid.Row="4" Margin="0,8,0,5" FontWeight="SemiBold"
 			Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Category color" />
-		<Border Grid.Row="4" Padding="12" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+		<Border Grid.Row="5" Padding="10" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 			BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 			<Grid>
-				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="14" /><RowDefinition Height="Auto" /><RowDefinition Height="14" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-				<Grid.ColumnDefinitions><ColumnDefinition Width="295" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-				<Grid Width="295" Height="190" HorizontalAlignment="Left">
-					<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="18" /></Grid.ColumnDefinitions>
-					<Border x:Name="SpectrumSurface" ClipToBounds="True" Cursor="Cross"
-						BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
-						MouseLeftButtonDown="Spectrum_MouseLeftButtonDown" MouseMove="Spectrum_MouseMove" MouseLeftButtonUp="ColorSurface_MouseLeftButtonUp">
-						<Grid>
-							<Rectangle>
-								<Rectangle.Fill><LinearGradientBrush StartPoint="0,0" EndPoint="0,1"><GradientStop Color="#00FFFFFF" Offset="0" /><GradientStop Color="#FF000000" Offset="1" /></LinearGradientBrush></Rectangle.Fill>
-							</Rectangle>
-							<Ellipse x:Name="SpectrumMarker" Width="11" Height="11" HorizontalAlignment="Left" VerticalAlignment="Top"
-								Fill="Transparent" Stroke="White" StrokeThickness="2" IsHitTestVisible="False" />
-						</Grid>
-					</Border>
-					<Border x:Name="HueSurface" Grid.Column="2" Cursor="Hand" ClipToBounds="True"
-						BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Small}"
-						MouseLeftButtonDown="Hue_MouseLeftButtonDown" MouseMove="Hue_MouseMove" MouseLeftButtonUp="ColorSurface_MouseLeftButtonUp">
-						<Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-							<GradientStop Color="#FFFF0000" Offset="0" /><GradientStop Color="#FFFFFF00" Offset="0.167" />
-							<GradientStop Color="#FF00FF00" Offset="0.333" /><GradientStop Color="#FF00FFFF" Offset="0.5" />
-							<GradientStop Color="#FF0000FF" Offset="0.667" /><GradientStop Color="#FFFF00FF" Offset="0.833" />
-							<GradientStop Color="#FFFF0000" Offset="1" />
-						</LinearGradientBrush></Border.Background>
-						<Rectangle x:Name="HueMarker" Height="3" Margin="-2,0" VerticalAlignment="Top" Fill="White" Stroke="#FF17151C" StrokeThickness="1" IsHitTestVisible="False" />
-					</Border>
+				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="12" /><RowDefinition Height="Auto" /><RowDefinition Height="12" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+				<Grid.ColumnDefinitions><ColumnDefinition Width="214" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" MinWidth="250" /></Grid.ColumnDefinitions>
+				<Grid x:Name="SpectrumSurface" Width="200" Height="200" HorizontalAlignment="Center" Cursor="Cross"
+					AutomationProperties.Name="Hue and saturation color wheel"
+					MouseLeftButtonDown="Spectrum_MouseLeftButtonDown" MouseMove="Spectrum_MouseMove" MouseLeftButtonUp="ColorSurface_MouseLeftButtonUp">
+					<Ellipse Fill="{DynamicResource ReduxSurfaceBrush}" Stroke="{DynamicResource ReduxBorderStrongBrush}" StrokeThickness="1" />
+					<Image x:Name="ColorWheelImage" Width="198" Height="198" Stretch="Fill" IsHitTestVisible="False">
+						<Image.Clip><EllipseGeometry Center="99,99" RadiusX="99" RadiusY="99" /></Image.Clip>
+					</Image>
+					<Ellipse x:Name="SpectrumMarker" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+						Fill="Transparent" Stroke="White" StrokeThickness="2" IsHitTestVisible="False">
+						<Ellipse.Effect><DropShadowEffect BlurRadius="3" ShadowDepth="0" Opacity="0.8" Color="#FF111018" /></Ellipse.Effect>
+					</Ellipse>
 				</Grid>
 				<xctk:ColorCanvas x:Name="CategoryColorPicker" Visibility="Collapsed" UsingAlphaChannel="False" SelectedColorChanged="CategoryColorPicker_SelectedColorChanged" />
 				<StackPanel Grid.Column="2" VerticalAlignment="Top">
-					<TextBlock Margin="0,0,0,6" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
-						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Preview" />
-					<Border x:Name="SelectedColorPreview" Height="54" Background="#8A6AF1"
-						BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}" />
-					<TextBlock Margin="0,10,0,4" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
-						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Hex color" />
-					<TextBox x:Name="HexColorTextBox" MinHeight="30" Padding="7,3" Text="#8A6AF1"
-						LostFocus="HexColorTextBox_Commit" KeyDown="HexColorTextBox_KeyDown" />
-					<StackPanel x:Name="IconChooserPanel" Margin="0,8,0,0">
-						<TextBlock x:Name="IconFieldLabel" Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
-							Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Icon" />
-						<WrapPanel HorizontalAlignment="Left">
-						<ComboBox x:Name="CategoryIconComboBox"
-							Width="92"
-							HorizontalAlignment="Left"
-							SelectedValuePath="Id"
-							MaxDropDownHeight="239"
-							ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-							ScrollViewer.VerticalScrollBarVisibility="Disabled"
-							SelectionChanged="CategoryIconComboBox_SelectionChanged"
-							ToolTip="Choose a category marker or icon. Hover an option to see its name.">
-							<ComboBox.ItemsPanel>
-								<ItemsPanelTemplate>
-									<WrapPanel Width="297" IsItemsHost="True" />
-								</ItemsPanelTemplate>
-							</ComboBox.ItemsPanel>
-							<ComboBox.ItemContainerStyle>
-								<Style BasedOn="{StaticResource ReduxComboBoxItemStyle}" TargetType="{x:Type ComboBoxItem}">
-									<Setter Property="Width" Value="31" />
-									<Setter Property="Height" Value="31" />
-									<Setter Property="Margin" Value="1" />
-									<Setter Property="Padding" Value="0" />
-									<Setter Property="HorizontalContentAlignment" Value="Center" />
-									<Setter Property="VerticalContentAlignment" Value="Center" />
-									<Setter Property="ToolTip" Value="{Binding DisplayName}" />
-									<Setter Property="ToolTipService.InitialShowDelay" Value="250" />
-								</Style>
-							</ComboBox.ItemContainerStyle>
-							<ComboBox.ItemTemplate>
-								<DataTemplate>
-									<Grid Width="20" Height="20" VerticalAlignment="Center">
-										<Ellipse Width="8" Height="8"
-											Fill="{DynamicResource Redux.CategoryEditor.IconBrush}"
-											Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverter}}" />
-						<controls:ReduxIcon Width="18" Height="18" IconKey="{Binding PreviewIconId}"
-											Foreground="{DynamicResource Redux.CategoryEditor.IconBrush}"
-											Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
-									</Grid>
-								</DataTemplate>
-							</ComboBox.ItemTemplate>
-						</ComboBox>
-						<Button Margin="6,0,0,0" MinWidth="98" Padding="9,4"
-							Style="{StaticResource ReduxRoundedSecondaryButtonStyle}"
-							Click="ImportCustomIcon_Click" ToolTip="Import a square transparent PNG into Redux">
-							<StackPanel Orientation="Horizontal">
-								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,5,0" StrokeData="{StaticResource Redux.Icon.FolderOpen}" />
-								<TextBlock Text="Import PNG" />
-							</StackPanel>
-						</Button>
-						<Button x:Name="DeleteCustomIconButton" Margin="6,0,0,0" MinWidth="32" Padding="7,4"
-							Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Visibility="Collapsed"
-							Click="DeleteCustomIcon_Click" ToolTip="Remove the selected custom icon from Redux">
-							<controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Trash}"
-								Foreground="{DynamicResource ReduxErrorBrush}" />
-						</Button>
-						</WrapPanel>
-						<CheckBox x:Name="TintCustomIconCheckBox" Margin="0,6,0,0"
-							Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed"
-							Checked="TintCustomIconCheckBox_Changed" Unchecked="TintCustomIconCheckBox_Changed"
-							ToolTip="Use the PNG transparency as a mask and apply this category or separator color.">
-							<TextBlock x:Name="TintCustomIconText" Text="Tint with category color" TextWrapping="Wrap" />
-						</CheckBox>
-						<TextBlock Margin="0,5,0,0" FontSize="{DynamicResource Redux.FontSize.10}"
-							Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap"
-							Text="Square transparent PNG, up to 1024 &#x00D7; 1024 and 2 MB." />
-					</StackPanel>
+					<TextBlock Margin="0,0,0,5" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
+						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Selected color" />
+					<Grid>
+						<Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+						<Border x:Name="SelectedColorPreview" Height="32" Margin="0,0,7,0" Background="#8A6AF1"
+							BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" />
+						<TextBox x:Name="HexColorTextBox" Grid.Column="1" MinHeight="32" Padding="7,3" Text="#8A6AF1"
+							LostFocus="HexColorTextBox_Commit" KeyDown="HexColorTextBox_KeyDown" />
+					</Grid>
+					<Grid Margin="0,8,0,0">
+						<Grid.ColumnDefinitions><ColumnDefinition Width="74" /><ColumnDefinition Width="*" /><ColumnDefinition Width="42" /></Grid.ColumnDefinitions>
+						<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+						<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Saturation" />
+						<Slider x:Name="SaturationSlider" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="100"
+							ValueChanged="SaturationSlider_ValueChanged" />
+						<TextBlock Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+							Text="{Binding Value, ElementName=SaturationSlider, StringFormat={}{0:0}%}" />
+						<TextBlock Grid.Row="1" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Brightness" />
+						<Slider x:Name="BrightnessSlider" Grid.Row="1" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="100"
+							ValueChanged="BrightnessSlider_ValueChanged" />
+						<TextBlock Grid.Row="1" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+							Text="{Binding Value, ElementName=BrightnessSlider, StringFormat={}{0:0}%}" />
+					</Grid>
 				</StackPanel>
-				<Grid Grid.Row="2" Grid.ColumnSpan="3">
-					<Grid.ColumnDefinitions><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /><ColumnDefinition Width="38" /></Grid.ColumnDefinitions>
-					<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-					<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="R" />
-					<Slider x:Name="RedSlider" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Foreground="#EF4444" ValueChanged="RgbSlider_ValueChanged" />
-					<TextBlock Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{Binding Value, ElementName=RedSlider, StringFormat={}{0:0}}" />
-					<TextBlock Grid.Row="1" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="G" />
-					<Slider x:Name="GreenSlider" Grid.Row="1" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Foreground="#22C55E" ValueChanged="RgbSlider_ValueChanged" />
-					<TextBlock Grid.Row="1" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{Binding Value, ElementName=GreenSlider, StringFormat={}{0:0}}" />
-					<TextBlock Grid.Row="2" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="B" />
-					<Slider x:Name="BlueSlider" Grid.Row="2" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Foreground="#3B82F6" ValueChanged="RgbSlider_ValueChanged" />
-					<TextBlock Grid.Row="2" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{Binding Value, ElementName=BlueSlider, StringFormat={}{0:0}}" />
-				</Grid>
-				<StackPanel Grid.Row="4" Grid.ColumnSpan="3">
-					<TextBlock Margin="0,0,0,7" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
-						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Redux presets" />
-					<WrapPanel>
+				<Border Grid.Row="2" Grid.ColumnSpan="3" Padding="10,8" Background="{DynamicResource ReduxSurfaceBrush}"
+					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}">
+					<Grid x:Name="IconChooserPanel">
+						<Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+						<StackPanel VerticalAlignment="Center">
+							<TextBlock x:Name="IconFieldLabel" FontWeight="SemiBold" Text="Icon" />
+							<TextBlock Margin="0,3,12,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+								Text="Choose a built-in symbol or import a square transparent PNG." TextWrapping="Wrap" />
+						</StackPanel>
+						<StackPanel Grid.Column="1" VerticalAlignment="Center">
+							<WrapPanel>
+								<ComboBox x:Name="CategoryIconComboBox" Width="80" SelectedValuePath="Id" MaxDropDownHeight="420"
+									ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
+									SelectionChanged="CategoryIconComboBox_SelectionChanged">
+									<ComboBox.ItemsPanel><ItemsPanelTemplate><UniformGrid Width="380" Columns="10" Margin="6" IsItemsHost="True" /></ItemsPanelTemplate></ComboBox.ItemsPanel>
+									<ComboBox.ItemContainerStyle><StaticResource ResourceKey="CategoryIconChoiceStyle" /></ComboBox.ItemContainerStyle>
+									<ComboBox.ItemTemplate>
+										<DataTemplate>
+											<Grid Width="20" Height="20" AutomationProperties.Name="{Binding DisplayName}">
+												<Ellipse Width="8" Height="8" Fill="{DynamicResource Redux.CategoryEditor.IconBrush}" Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverter}}" />
+												<controls:ReduxIcon Width="18" Height="18" IconKey="{Binding PreviewIconId}" Foreground="{DynamicResource Redux.CategoryEditor.IconBrush}" Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
+											</Grid>
+										</DataTemplate>
+									</ComboBox.ItemTemplate>
+								</ComboBox>
+								<Button Margin="7,0,0,0" MinWidth="98" Padding="9,4" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Click="ImportCustomIcon_Click" ToolTip="Import a square transparent PNG into Redux">
+									<StackPanel Orientation="Horizontal"><controls:ReduxIcon Width="14" Height="14" Margin="0,0,5,0" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /><TextBlock Text="Import PNG" /></StackPanel>
+								</Button>
+								<Button x:Name="DeleteCustomIconButton" Margin="7,0,0,0" MinWidth="32" Padding="7,4" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Visibility="Collapsed" Click="DeleteCustomIcon_Click" ToolTip="Remove the selected custom icon from Redux">
+									<controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" />
+								</Button>
+							</WrapPanel>
+							<CheckBox x:Name="TintCustomIconCheckBox" Margin="0,6,0,0" Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed"
+								Checked="TintCustomIconCheckBox_Changed" Unchecked="TintCustomIconCheckBox_Changed"
+								ToolTip="Use the PNG transparency as a mask and apply this category or separator color.">
+								<TextBlock x:Name="TintCustomIconText" Text="Tint with category color" TextWrapping="Wrap" />
+							</CheckBox>
+						</StackPanel>
+					</Grid>
+				</Border>
+				<Grid Grid.Row="4" Grid.ColumnSpan="3">
+					<Grid.ColumnDefinitions><ColumnDefinition Width="1*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="1*" /></Grid.ColumnDefinitions>
+					<StackPanel>
+						<TextBlock Margin="0,0,0,7" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Redux presets" />
+						<WrapPanel>
 						<Border Style="{StaticResource CategoryColorSwatchStyle}" Background="#8A6AF1" Tag="#8A6AF1" ToolTip="Arcane Violet" MouseLeftButtonUp="ColorSwatch_Click" />
 						<Border Style="{StaticResource CategoryColorSwatchStyle}" Background="#3B82F6" Tag="#3B82F6" ToolTip="Electric Blue" MouseLeftButtonUp="ColorSwatch_Click" />
 						<Border Style="{StaticResource CategoryColorSwatchStyle}" Background="#22B8C5" Tag="#22B8C5" ToolTip="Cyan Tide" MouseLeftButtonUp="ColorSwatch_Click" />
@@ -194,8 +219,10 @@
 						<Border Style="{StaticResource CategoryColorSwatchStyle}" Background="#D66B55" Tag="#D66B55" ToolTip="Terracotta" MouseLeftButtonUp="ColorSwatch_Click" />
 						<Border Style="{StaticResource CategoryColorSwatchStyle}" Background="#D45A9E" Tag="#D45A9E" ToolTip="Rose" MouseLeftButtonUp="ColorSwatch_Click" />
 						<Border Style="{StaticResource CategoryColorSwatchStyle}" Background="#8F879E" Tag="#8F879E" ToolTip="Muted Lilac" MouseLeftButtonUp="ColorSwatch_Click" />
-					</WrapPanel>
-					<DockPanel Margin="0,12,0,7" LastChildFill="False">
+						</WrapPanel>
+					</StackPanel>
+					<StackPanel Grid.Column="2">
+					<DockPanel Margin="0,0,0,5" LastChildFill="False">
 						<TextBlock VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
 							Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Saved colors" />
 						<Button DockPanel.Dock="Right" MinWidth="96" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}"
@@ -210,9 +237,14 @@
 					<TextBlock x:Name="NoSavedColorsText" Foreground="{DynamicResource ReduxTextMutedBrush}"
 						FontSize="{DynamicResource Redux.FontSize.11}" Text="No saved colors yet." />
 				</StackPanel>
+				</Grid>
 			</Grid>
 		</Border>
-		<StackPanel Grid.Row="5" Margin="0,12,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
+	</Grid>
+	</ScrollViewer>
+		<Border Grid.Row="1" Padding="18,10" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+			BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="0,1,0,0">
+		<StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
 			<Button x:Name="ResetToDefaultButton" MinWidth="138" Margin="0,0,8,0"
 				Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Visibility="Collapsed"
 				Click="ResetToDefault_Click">
@@ -225,6 +257,7 @@
 			<Button x:Name="ConfirmButton" MinWidth="84" Margin="0,0,8,0" Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" IsDefault="True" Click="Add_Click" Content="Add" />
 			<Button MinWidth="84" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" IsCancel="True" Content="Cancel" />
 		</StackPanel>
+		</Border>
 	</Grid>
 	</Border>
 </adonisUi:AdonisWindow>

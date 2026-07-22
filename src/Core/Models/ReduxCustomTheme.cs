@@ -24,9 +24,9 @@ public class ReduxCustomTheme : ReactiveObject
 	[DataMember, Reactive] public string SurfaceColor { get; set; } = "#17121D";
 	[DataMember, Reactive] public string AccentColor { get; set; } = "#9676FF";
 	[DataMember, Reactive] public string TextColor { get; set; } = "#F2EDF7";
-	[DataMember, Reactive] public string SuccessColor { get; set; } = "#49B486";
-	[DataMember, Reactive] public string WarningColor { get; set; } = "#E0AA4B";
-	[DataMember, Reactive] public string ErrorColor { get; set; } = "#E46674";
+	[DataMember, Reactive] public string SuccessColor { get; set; } = "#3FC58B";
+	[DataMember, Reactive] public string WarningColor { get; set; } = "#F0B43C";
+	[DataMember, Reactive] public string ErrorColor { get; set; } = "#F05D70";
 	[DataMember, Reactive] public string InfoColor { get; set; } = "#74A8E5";
 
 	public ReduxCustomTheme Clone(bool createNewIdentity = false) => new()

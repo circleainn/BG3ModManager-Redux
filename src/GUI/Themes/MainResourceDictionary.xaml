@@ -581,6 +581,44 @@
 		<EllipseGeometry Center="12,12" RadiusX="6" RadiusY="6" />
 		<EllipseGeometry Center="12,12" RadiusX="2" RadiusY="2" />
 	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Axe">
+		<PathGeometry Figures="m14 12-8.381 8.38a1 1 0 0 1-3.001-3L11 9" />
+		<PathGeometry Figures="M15 15.5a.5.5 0 0 0 .5.5A6.5 6.5 0 0 0 22 9.5a.5.5 0 0 0-.5-.5h-1.672a2 2 0 0 1-1.414-.586l-5.062-5.062a1.205 1.205 0 0 0-1.704 0L9.352 5.648a1.205 1.205 0 0 0 0 1.704l5.062 5.062A2 2 0 0 1 15 13.828z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.BowArrow">
+		<PathGeometry Figures="M17 3h4v4" /><PathGeometry Figures="M18.575 11.082a13 13 0 0 1 1.048 9.027 1.17 1.17 0 0 1-1.914.597L14 17" />
+		<PathGeometry Figures="M7 10 3.29 6.29a1.17 1.17 0 0 1 .6-1.91 13 13 0 0 1 9.03 1.05" />
+		<PathGeometry Figures="M7 14a1.7 1.7 0 0 0-1.207.5l-2.646 2.646A.5.5 0 0 0 3.5 18H5a1 1 0 0 1 1 1v1.5a.5.5 0 0 0 .854.354L9.5 18.207A1.7 1.7 0 0 0 10 17v-2a1 1 0 0 0-1-1z" />
+		<PathGeometry Figures="M9.707 14.293 21 3" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Castle">
+		<PathGeometry Figures="M10 5V3" /><PathGeometry Figures="M14 5V3" /><PathGeometry Figures="M15 21v-3a3 3 0 0 0-6 0v3" />
+		<PathGeometry Figures="M18 3v8" /><PathGeometry Figures="M18 5H6" /><PathGeometry Figures="M22 11H2" />
+		<PathGeometry Figures="M22 9v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9" /><PathGeometry Figures="M6 3v8" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Anvil">
+		<PathGeometry Figures="M7 10H6a4 4 0 0 1-4-4 1 1 0 0 1 1-1h4" />
+		<PathGeometry Figures="M7 5a1 1 0 0 1 1-1h13a1 1 0 0 1 1 1 7 7 0 0 1-7 7H8a1 1 0 0 1-1-1z" />
+		<PathGeometry Figures="M9 12v5" /><PathGeometry Figures="M15 12v5" />
+		<PathGeometry Figures="M5 20a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3 1 1 0 0 1-1 1H6a1 1 0 0 1-1-1" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.ShieldCheck">
+		<PathGeometry Figures="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+		<PathGeometry Figures="m9 12 2 2 4-4" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.ScrollText">
+		<PathGeometry Figures="M15 12h-5" /><PathGeometry Figures="M15 8h-5" /><PathGeometry Figures="M19 17V5a2 2 0 0 0-2-2H4" />
+		<PathGeometry Figures="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.BookOpen">
+		<PathGeometry Figures="M12 7v14" />
+		<PathGeometry Figures="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.WandSparkles">
+		<PathGeometry Figures="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72" />
+		<PathGeometry Figures="m14 7 3 3" /><PathGeometry Figures="M5 6v4" /><PathGeometry Figures="M19 14v4" />
+		<PathGeometry Figures="M10 2v2" /><PathGeometry Figures="M7 8H3" /><PathGeometry Figures="M21 16h-4" /><PathGeometry Figures="M11 3H9" />
+	</GeometryGroup>
 	<Style TargetType="{x:Type controls:ReduxIcon}">
 		<Setter Property="Width" Value="18" />
 		<Setter Property="Height" Value="18" />
@@ -693,6 +731,14 @@
 			<Trigger Property="IconKey" Value="crown"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Crown}" /></Trigger>
 			<Trigger Property="IconKey" Value="compass"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Compass}" /></Trigger>
 			<Trigger Property="IconKey" Value="target"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Target}" /></Trigger>
+			<Trigger Property="IconKey" Value="axe"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Axe}" /></Trigger>
+			<Trigger Property="IconKey" Value="bow-arrow"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.BowArrow}" /></Trigger>
+			<Trigger Property="IconKey" Value="castle"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Castle}" /></Trigger>
+			<Trigger Property="IconKey" Value="anvil"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Anvil}" /></Trigger>
+			<Trigger Property="IconKey" Value="shield-check"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.ShieldCheck}" /></Trigger>
+			<Trigger Property="IconKey" Value="scroll-text"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.ScrollText}" /></Trigger>
+			<Trigger Property="IconKey" Value="book-open"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.BookOpen}" /></Trigger>
+			<Trigger Property="IconKey" Value="wand-sparkles"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.WandSparkles}" /></Trigger>
 		</Style.Triggers>
 	</Style>
 	<Style x:Key="ReduxPrimaryIconStyle" BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">

@@ -20,6 +20,8 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 
+using WpfScreenHelper;
+
 using Xceed.Wpf.Toolkit;
 
 namespace DivinityModManager.Views;
@@ -133,6 +135,15 @@ public partial class SettingsWindow : SettingsWindowBase
 	public SettingsWindow()
 	{
 		InitializeComponent();
+	}
+
+	public void ApplyAdaptiveDefaultSize(Window owner)
+	{
+		var workArea = owner != null ? Screen.FromWindow(owner).WorkingArea : SystemParameters.WorkArea;
+		var targetWidth = Math.Clamp(workArea.Width * 0.34, 820, 900);
+		var targetHeight = Math.Clamp(workArea.Height * 0.78, 720, 960);
+		Width = Math.Max(MinWidth, Math.Min(targetWidth, workArea.Width - 64));
+		Height = Math.Max(MinHeight, Math.Min(targetHeight, workArea.Height - 64));
 	}
 
 	/*private static readonly MethodInfo m_ItemInfoFromIndex = typeof(ItemsControl).GetMethod("ItemInfoFromIndex", BindingFlags.Instance | BindingFlags.NonPublic);

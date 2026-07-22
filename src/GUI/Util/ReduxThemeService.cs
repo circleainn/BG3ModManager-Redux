@@ -28,9 +28,9 @@ public static class ReduxThemeService
 	private static readonly IReadOnlyDictionary<ReduxThemeType, string[]> BaseColors =
 		new Dictionary<ReduxThemeType, string[]>
 		{
-			[ReduxThemeType.ReduxDark] = ["#0D0B10", "#17121D", "#9676FF", "#F2EDF7", "#49B486", "#E0AA4B", "#E46674", "#74A8E5"],
-			[ReduxThemeType.ReduxLight] = ["#EDE9F2", "#F7F4FA", "#7355E7", "#181321", "#27885E", "#AD6D14", "#BD3047", "#356CA8"],
-			[ReduxThemeType.Parchment] = ["#E8DDC7", "#EFE3CC", "#8F2E32", "#30251D", "#5E7D4B", "#B8791D", "#A82F37", "#4E7196"]
+			[ReduxThemeType.ReduxDark] = ["#0D0B10", "#17121D", "#9676FF", "#F2EDF7", "#3FC58B", "#F0B43C", "#F05D70", "#74A8E5"],
+			[ReduxThemeType.ReduxLight] = ["#EDE9F2", "#F7F4FA", "#7355E7", "#181321", "#168A59", "#B96A08", "#C92543", "#356CA8"],
+			[ReduxThemeType.Parchment] = ["#E8DDC7", "#EFE3CC", "#8F2E32", "#30251D", "#4F7F36", "#B86A0B", "#B82F3E", "#4E7196"]
 		};
 	private static readonly IReadOnlyDictionary<ReduxThemeType, string[]> BuiltInResourceValues =
 		new Dictionary<ReduxThemeType, string[]>
@@ -198,6 +198,10 @@ public static class ReduxThemeService
 
 	private static Dictionary<string, Color> CreateResourceColors(ReduxCustomTheme theme)
 	{
+		// An untouched custom theme should be visually identical to its selected Redux base.
+		// Preserve the hand-tuned built-in interaction and surface colors until a palette token changes.
+		if (MatchesBasePalette(theme)) return CreateBuiltInResourceColors(theme.BaseTheme);
+
 		var background = Parse(theme.BackgroundColor);
 		var surface = Parse(theme.SurfaceColor);
 		var accent = Parse(theme.AccentColor);
@@ -237,6 +241,17 @@ public static class ReduxThemeService
 				? System.Windows.Media.Colors.White
 				: System.Windows.Media.Colors.Black
 		};
+	}
+
+	private static bool MatchesBasePalette(ReduxCustomTheme theme)
+	{
+		if (!BaseColors.TryGetValue(theme.BaseTheme, out var colors)) return false;
+		var selected = new[]
+		{
+			theme.BackgroundColor, theme.SurfaceColor, theme.AccentColor, theme.TextColor,
+			theme.SuccessColor, theme.WarningColor, theme.ErrorColor, theme.InfoColor
+		};
+		return selected.Select(Normalize).SequenceEqual(colors, StringComparer.OrdinalIgnoreCase);
 	}
 
 	private static IEnumerable<(string Label, string Value)> GetEditableColors(ReduxCustomTheme theme)

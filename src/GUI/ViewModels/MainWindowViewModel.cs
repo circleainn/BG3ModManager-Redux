@@ -269,12 +269,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private static readonly Dictionary<string, string> ReduxCategoryDefaultIcons = new(StringComparer.OrdinalIgnoreCase)
 	{
 		[AllModsCategory] = "albums",
-		["User Interface"] = "eye", ["Classes"] = "school", ["Spells"] = "moon-star", ["Cosmetics"] = "paintbrush",
+		["User Interface"] = "eye", ["Classes"] = "book", ["Spells"] = "sparkles", ["Cosmetics"] = "palette",
 		["Accessories"] = "glasses", ["Animations"] = "film", ["Armor"] = "shield-half", ["Audio"] = "audio",
 		["Character Customization"] = "body", ["Clothing"] = "shirt", ["Companions"] = "people", ["Dice"] = "dice",
 		["Equipment"] = "package", ["Maps"] = "map", ["Photo Mode"] = "camera", ["Quests"] = "scroll",
 		["Races"] = "dna", ["Resources"] = "database", ["Visuals"] = "aperture", ["Weapons"] = "sword",
-		["Libraries"] = "blocks", ["Patches"] = "bandage", ["Overhauls"] = "planet", ["Utilities"] = "toolbox",
+		["Libraries"] = "blocks", ["Patches"] = "puzzle", ["Overhauls"] = "planet", ["Utilities"] = "toolbox",
 		["Gameplay"] = "gameplay", ["Miscellaneous"] = "shapes", ["Overrides"] = "shield-alert"
 	};
 	private static readonly string[] ReduxCustomCategoryPalette =
