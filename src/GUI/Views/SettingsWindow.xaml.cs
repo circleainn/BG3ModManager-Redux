@@ -12,6 +12,7 @@ using ReactiveMarbles.ObservableEvents;
 using Splat;
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -60,6 +61,7 @@ internal sealed record SettingsGroup(string Title, params string[] PropertyNames
 public partial class SettingsWindow : SettingsWindowBase
 {
 	private bool _updatingCustomThemeSelection;
+	private bool _updatingTypographySelection;
 	private static readonly SettingsGroup[] GeneralSettingsGroups =
 	[
 		new("Paths and storage",
@@ -175,8 +177,10 @@ public partial class SettingsWindow : SettingsWindowBase
 		{
 			ViewModel.Settings.ActiveCustomThemeId = String.Empty;
 			ViewModel.Settings.TypographyFont = ReduxTypographyFont.Manrope;
+			ViewModel.Settings.CustomTypographyFont = String.Empty;
 			ViewModel.Settings.TextSize = ReduxTextSize.Default;
 			ThemeComboBox.SelectedValue = theme;
+			RefreshTypographyChoices();
 			RefreshCustomThemeControls();
 		}
 	}
@@ -189,6 +193,105 @@ public partial class SettingsWindow : SettingsWindowBase
 		ReduxDarkThemeCard.IsChecked = !customThemeActive && theme == ReduxThemeType.ReduxDark;
 		ReduxLightThemeCard.IsChecked = !customThemeActive && theme == ReduxThemeType.ReduxLight;
 		ParchmentThemeCard.IsChecked = !customThemeActive && theme == ReduxThemeType.Parchment;
+	}
+
+	private void RefreshTypographyChoices(string preferredCustomReference = null)
+	{
+		if (TypographyComboBox == null) return;
+		_updatingTypographySelection = true;
+		var choices = ReduxCustomFontService.GetChoices();
+		TypographyComboBox.ItemsSource = choices;
+		var customReference = preferredCustomReference ?? ViewModel?.Settings?.CustomTypographyFont ?? String.Empty;
+		var selected = !String.IsNullOrWhiteSpace(customReference)
+			? choices.FirstOrDefault(choice => choice.CustomReference.Equals(customReference, StringComparison.OrdinalIgnoreCase))
+			: null;
+		selected ??= choices.FirstOrDefault(choice => !choice.IsCustom && choice.BuiltInFont == (ViewModel?.Settings?.TypographyFont ?? ReduxTypographyFont.Manrope));
+		selected ??= choices.First(choice => choice.BuiltInFont == ReduxTypographyFont.Manrope && !choice.IsCustom);
+		TypographyComboBox.SelectedItem = selected;
+		DeleteCustomFontButton.IsEnabled = selected.IsCustom;
+		_updatingTypographySelection = false;
+	}
+
+	private void TypographyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (_updatingTypographySelection || ViewModel?.Settings == null || TypographyComboBox.SelectedItem is not ReduxFontChoice choice) return;
+		ViewModel.Settings.CustomTypographyFont = choice.IsCustom ? choice.CustomReference : String.Empty;
+		ViewModel.Settings.TypographyFont = choice.IsCustom ? ReduxTypographyFont.Manrope : choice.BuiltInFont;
+		DeleteCustomFontButton.IsEnabled = choice.IsCustom;
+	}
+
+	private void ImportCustomFont_Click(object sender, RoutedEventArgs e)
+	{
+		var dialog = new Microsoft.Win32.OpenFileDialog
+		{
+			Title = "Import Redux Font",
+			Filter = "Font files (*.ttf;*.otf)|*.ttf;*.otf|TrueType font (*.ttf)|*.ttf|OpenType font (*.otf)|*.otf",
+			CheckFileExists = true,
+			Multiselect = false
+		};
+		if (dialog.ShowDialog(this) != true) return;
+		if (!ReduxCustomFontService.TryImport(dialog.FileName, out var choice, out var error))
+		{
+			Xceed.Wpf.Toolkit.MessageBox.Show(this, error, "Import Font", MessageBoxButton.OK,
+				MessageBoxImage.Error, MessageBoxResult.OK, MainWindow.Self.MessageBoxStyle);
+			return;
+		}
+		RefreshTypographyChoices(choice.CustomReference);
+		TypographyComboBox_SelectionChanged(TypographyComboBox, null);
+	}
+
+	private void DeleteCustomFont_Click(object sender, RoutedEventArgs e)
+	{
+		if (TypographyComboBox.SelectedItem is not ReduxFontChoice { IsCustom: true } choice) return;
+		if (!choice.CustomReference.StartsWith(ReduxCustomFontService.ReferencePrefix, StringComparison.OrdinalIgnoreCase)) return;
+		var affectedThemes = ViewModel.Settings.CustomThemes.Count(theme =>
+			theme.CustomTypographyFont.Equals(choice.CustomReference, StringComparison.OrdinalIgnoreCase));
+		var usageNote = affectedThemes == 0
+			? ""
+			: $"\n\n{affectedThemes} custom theme{(affectedThemes == 1 ? "" : "s")} will fall back to Manrope.";
+		var result = Xceed.Wpf.Toolkit.MessageBox.Show(this,
+			$"Remove '{choice.Name}' from Redux?{usageNote}", "Remove Custom Font",
+			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, MainWindow.Self.MessageBoxStyle);
+		if (result != MessageBoxResult.Yes) return;
+		if (!ReduxCustomFontService.TryDelete(choice.CustomReference, out var error))
+		{
+			Xceed.Wpf.Toolkit.MessageBox.Show(this, error, "Remove Custom Font", MessageBoxButton.OK,
+				MessageBoxImage.Error, MessageBoxResult.OK, MainWindow.Self.MessageBoxStyle);
+			return;
+		}
+
+		if (ViewModel.Settings.CustomTypographyFont.Equals(choice.CustomReference, StringComparison.OrdinalIgnoreCase))
+		{
+			ViewModel.Settings.CustomTypographyFont = String.Empty;
+			ViewModel.Settings.TypographyFont = ReduxTypographyFont.Manrope;
+		}
+		foreach (var theme in ViewModel.Settings.CustomThemes.Where(theme =>
+			theme.CustomTypographyFont.Equals(choice.CustomReference, StringComparison.OrdinalIgnoreCase)))
+		{
+			theme.CustomTypographyFont = String.Empty;
+			theme.TypographyFont = ReduxTypographyFont.Manrope;
+		}
+		ViewModel.Main.SaveSettings();
+		RefreshTypographyChoices();
+		RefreshCustomThemeControls();
+	}
+
+	private void OpenCustomFontsFolder_Click(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			Process.Start(new ProcessStartInfo
+			{
+				FileName = ReduxCustomFontService.GetLibraryDirectory(),
+				UseShellExecute = true
+			});
+		}
+		catch (Exception exception)
+		{
+			DivinityApp.Log($"Could not open the Redux custom fonts folder: {exception.Message}");
+			Xceed.Wpf.Toolkit.MessageBox.Show(this, "Redux could not open the custom fonts folder.", "Custom Fonts",
+				MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK, MainWindow.Self.MessageBoxStyle);
+		}
 	}
 
 	private ReduxCustomTheme SelectedCustomTheme => CustomThemeComboBox.SelectedItem as ReduxCustomTheme;
@@ -206,7 +309,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		DuplicateCustomThemeButton.IsEnabled = hasSelection;
 		ExportCustomThemeButton.IsEnabled = hasSelection;
 		CustomThemeStatusText.Text = activeTheme != null
-			? $"Active custom theme · {activeTheme.BaseTheme.GetDescription()} · {activeTheme.TypographyFont.GetDescription()} · {activeTheme.TextSize.GetDescription()} text"
+			? $"Active custom theme · {activeTheme.BaseTheme.GetDescription()} · {ReduxCustomFontService.GetDisplayName(activeTheme.TypographyFont, activeTheme.CustomTypographyFont)} · {activeTheme.TextSize.GetDescription()} text"
 			: ViewModel.Settings.CustomThemes.Count == 0
 				? "No custom themes yet. Create one from the current built-in palette."
 				: "Choose a custom theme above, or keep using a built-in theme.";
@@ -225,9 +328,11 @@ public partial class SettingsWindow : SettingsWindowBase
 		ViewModel.Settings.ActiveCustomThemeId = theme.Id;
 		ViewModel.Settings.ColorTheme = theme.BaseTheme;
 		ViewModel.Settings.TypographyFont = theme.TypographyFont;
+		ViewModel.Settings.CustomTypographyFont = theme.CustomTypographyFont;
 		ViewModel.Settings.TextSize = theme.TextSize;
 		MainWindow.Self.MainView.UpdateColorTheme(theme.BaseTheme);
 		ViewModel.Main.SaveSettings();
+		RefreshTypographyChoices();
 		RefreshCustomThemeControls();
 	}
 
@@ -235,6 +340,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		var previousTheme = ViewModel.Settings.ColorTheme;
 		var previousFont = ViewModel.Settings.TypographyFont;
+		var previousCustomFont = ViewModel.Settings.CustomTypographyFont;
 		var previousTextSize = ViewModel.Settings.TextSize;
 		var dialog = new CustomThemeEditorWindow(workingTheme) { Owner = this };
 		dialog.PreviewChanged += preview => MainWindow.Self.MainView.PreviewCustomTheme(preview);
@@ -242,7 +348,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		if (!accepted)
 		{
 			MainWindow.Self.MainView.UpdateColorTheme(previousTheme);
-			ReduxTypographyService.Apply(Application.Current.Resources, previousFont);
+			ReduxTypographyService.Apply(Application.Current.Resources, previousFont, previousCustomFont);
 			ReduxTypographyService.ApplyTextSize(Application.Current.Resources, previousTextSize);
 		}
 		return accepted;
@@ -251,7 +357,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	private void CreateCustomTheme_Click(object sender, RoutedEventArgs e)
 	{
 		var working = ReduxThemeService.CreateFromBase("My Custom Theme", ViewModel.Settings.ColorTheme,
-			ViewModel.Settings.TypographyFont, ViewModel.Settings.TextSize);
+			ViewModel.Settings.TypographyFont, ViewModel.Settings.TextSize, ViewModel.Settings.CustomTypographyFont);
 		if (!EditCustomTheme(working)) return;
 		ViewModel.Settings.CustomThemes.Add(working);
 		ActivateCustomTheme(working);
@@ -293,6 +399,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		{
 			ViewModel.Settings.ActiveCustomThemeId = String.Empty;
 			ViewModel.Settings.TypographyFont = ReduxTypographyFont.Manrope;
+			ViewModel.Settings.CustomTypographyFont = String.Empty;
 			ViewModel.Settings.TextSize = ReduxTextSize.Default;
 			MainWindow.Self.MainView.UpdateColorTheme(ViewModel.Settings.ColorTheme);
 		}
@@ -625,8 +732,8 @@ public partial class SettingsWindow : SettingsWindowBase
 		this.Bind(ViewModel, vm => vm.Settings.DebugModeEnabled, view => view.DebugModeCheckBox.IsChecked);
 		this.Bind(ViewModel, vm => vm.Settings.LogEnabled, view => view.LogEnabledCheckBox.IsChecked);
 		this.Bind(ViewModel, vm => vm.Settings.ColorTheme, view => view.ThemeComboBox.SelectedValue);
-		this.Bind(ViewModel, vm => vm.Settings.TypographyFont, view => view.TypographyComboBox.SelectedValue);
 		this.Bind(ViewModel, vm => vm.Settings.TextSize, view => view.TextSizeComboBox.SelectedValue);
+		RefreshTypographyChoices();
 		ViewModel.Settings.WhenAnyValue(settings => settings.ActiveCustomThemeId)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => RefreshCustomThemeControls());

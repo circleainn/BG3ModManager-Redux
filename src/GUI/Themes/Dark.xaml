@@ -21,10 +21,10 @@
 	<Color x:Key="ReduxAccentSoftColor">#322543</Color>
 	<Color x:Key="ReduxSelectionColor">#3D2C57</Color>
 	<Color x:Key="ReduxCyanColor">#2BD6C8</Color>
-	<Color x:Key="ReduxSuccessColor">#49B486</Color>
+	<Color x:Key="ReduxSuccessColor">#3FC58B</Color>
 	<Color x:Key="ReduxSuccessSoftColor">#193F32</Color>
-	<Color x:Key="ReduxWarningColor">#E0AA4B</Color>
-	<Color x:Key="ReduxErrorColor">#E46674</Color>
+	<Color x:Key="ReduxWarningColor">#F0B43C</Color>
+	<Color x:Key="ReduxErrorColor">#F05D70</Color>
 	<Color x:Key="ReduxInfoColor">#74A8E5</Color>
 	<Color x:Key="ReduxTextPrimaryColor">#F2EDF7</Color>
 	<Color x:Key="ReduxTextSecondaryColor">#C8BDD4</Color>

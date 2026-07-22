@@ -20,9 +20,10 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 		InitializeComponent();
 		DataContext = Theme;
 		BaseThemeComboBox.SelectedValue = Theme.BaseTheme;
-		TypographyFontComboBox.SelectedValue = Theme.TypographyFont;
+		RefreshTypographyChoices();
 		TextSizeComboBox.SelectedValue = Theme.TextSize;
 		ReduxThemeService.Apply(Resources, Theme.BaseTheme, Theme);
+		ReduxTypographyService.Apply(Application.Current.Resources, Theme.TypographyFont, Theme.CustomTypographyFont);
 		Loaded += (_, _) =>
 		{
 			_initializing = false;
@@ -48,10 +49,43 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 
 	private void TypographyFontComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 	{
-		if (_initializing || TypographyFontComboBox.SelectedValue is not ReduxTypographyFont typographyFont) return;
-		Theme.TypographyFont = typographyFont;
-		ReduxTypographyService.Apply(Application.Current.Resources, typographyFont);
+		if (_initializing || TypographyFontComboBox.SelectedItem is not ReduxFontChoice choice) return;
+		Theme.CustomTypographyFont = choice.IsCustom ? choice.CustomReference : String.Empty;
+		Theme.TypographyFont = choice.IsCustom ? ReduxTypographyFont.Manrope : choice.BuiltInFont;
+		ReduxTypographyService.Apply(Application.Current.Resources, Theme.TypographyFont, Theme.CustomTypographyFont);
 		PreviewChanged?.Invoke(Theme);
+	}
+
+	private void RefreshTypographyChoices(string preferredCustomReference = null)
+	{
+		var choices = ReduxCustomFontService.GetChoices();
+		TypographyFontComboBox.ItemsSource = choices;
+		var customReference = preferredCustomReference ?? Theme.CustomTypographyFont;
+		var selected = !String.IsNullOrWhiteSpace(customReference)
+			? choices.FirstOrDefault(choice => choice.CustomReference.Equals(customReference, StringComparison.OrdinalIgnoreCase))
+			: null;
+		selected ??= choices.FirstOrDefault(choice => !choice.IsCustom && choice.BuiltInFont == Theme.TypographyFont);
+		TypographyFontComboBox.SelectedItem = selected ?? choices.First(choice => !choice.IsCustom && choice.BuiltInFont == ReduxTypographyFont.Manrope);
+	}
+
+	private void ImportCustomFont_Click(object sender, RoutedEventArgs e)
+	{
+		var dialog = new Microsoft.Win32.OpenFileDialog
+		{
+			Title = "Import Redux Font",
+			Filter = "Font files (*.ttf;*.otf)|*.ttf;*.otf|TrueType font (*.ttf)|*.ttf|OpenType font (*.otf)|*.otf",
+			CheckFileExists = true,
+			Multiselect = false
+		};
+		if (dialog.ShowDialog(this) != true) return;
+		if (!ReduxCustomFontService.TryImport(dialog.FileName, out var choice, out var error))
+		{
+			Xceed.Wpf.Toolkit.MessageBox.Show(this, error, "Import Font", System.Windows.MessageBoxButton.OK,
+				System.Windows.MessageBoxImage.Error, System.Windows.MessageBoxResult.OK, MainWindow.Self.MessageBoxStyle);
+			return;
+		}
+		RefreshTypographyChoices(choice.CustomReference);
+		TypographyFontComboBox_SelectionChanged(TypographyFontComboBox, null);
 	}
 
 	private void ColorButton_Click(object sender, RoutedEventArgs e)
@@ -78,7 +112,7 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 	private void PreviewTheme()
 	{
 		ReduxThemeService.Apply(Resources, Theme.BaseTheme, Theme);
-		ReduxTypographyService.Apply(Application.Current.Resources, Theme.TypographyFont);
+		ReduxTypographyService.Apply(Application.Current.Resources, Theme.TypographyFont, Theme.CustomTypographyFont);
 		ReduxTypographyService.ApplyTextSize(Application.Current.Resources, Theme.TextSize);
 		PreviewChanged?.Invoke(Theme);
 	}

@@ -150,6 +150,9 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("App font", "Choose the typeface used throughout Redux. Text sizing is managed separately.", HideFromUI = true)]
 	[DataMember, Reactive] public ReduxTypographyFont TypographyFont { get; set; } = ReduxTypographyFont.Manrope;
 
+	[DefaultValue("")]
+	[DataMember, Reactive] public string CustomTypographyFont { get; set; } = String.Empty;
+
 	[DefaultValue(ReduxTextSize.Default)]
 	[SettingsEntry("Text size", "Choose a curated interface text-size preset.", HideFromUI = true)]
 	[DataMember, Reactive] public ReduxTextSize TextSize { get; set; } = ReduxTextSize.Default;
@@ -339,6 +342,7 @@ public class DivinityModManagerSettings : ReactiveObject
 		{
 			TypographyFont = ReduxTypographyFont.Manrope;
 		}
+		CustomTypographyFont ??= String.Empty;
 		if (!Enum.IsDefined(TextSize) || TextSize == 0)
 		{
 			TextSize = ReduxTextSize.Default;
@@ -352,6 +356,7 @@ public class DivinityModManagerSettings : ReactiveObject
 			{
 				theme.TypographyFont = ReduxTypographyFont.Manrope;
 			}
+			theme.CustomTypographyFont ??= String.Empty;
 			if (!Enum.IsDefined(theme.TextSize) || theme.TextSize == 0)
 			{
 				theme.TextSize = ReduxTextSize.Default;

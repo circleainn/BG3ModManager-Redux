@@ -16,6 +16,8 @@ public class ReduxCustomTheme : ReactiveObject
 	[DataMember, Reactive] public ReduxThemeType BaseTheme { get; set; } = ReduxThemeType.ReduxDark;
 	[DefaultValue(ReduxTypographyFont.Manrope)]
 	[DataMember, Reactive] public ReduxTypographyFont TypographyFont { get; set; } = ReduxTypographyFont.Manrope;
+	[DefaultValue("")]
+	[DataMember, Reactive] public string CustomTypographyFont { get; set; } = String.Empty;
 	[DefaultValue(ReduxTextSize.Default)]
 	[DataMember, Reactive] public ReduxTextSize TextSize { get; set; } = ReduxTextSize.Default;
 	[DataMember, Reactive] public string BackgroundColor { get; set; } = "#0D0B10";
@@ -33,6 +35,7 @@ public class ReduxCustomTheme : ReactiveObject
 		Name = Name,
 		BaseTheme = BaseTheme,
 		TypographyFont = TypographyFont,
+		CustomTypographyFont = CustomTypographyFont,
 		TextSize = TextSize,
 		BackgroundColor = BackgroundColor,
 		SurfaceColor = SurfaceColor,

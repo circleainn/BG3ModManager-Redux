@@ -2,6 +2,7 @@
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUi="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
 	xmlns:ext="clr-namespace:DivinityModManager.Controls.Extensions"
 	Title="Custom Theme Editor"
@@ -13,6 +14,7 @@
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
+	TextOptions.TextFormattingMode="Ideal" TextOptions.TextRenderingMode="ClearType"
 	Background="{DynamicResource ReduxSurfaceBrush}"
 	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
 	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}">
@@ -74,7 +76,7 @@
 					<ColumnDefinition Width="14" />
 					<ColumnDefinition Width="190" />
 					<ColumnDefinition Width="14" />
-					<ColumnDefinition Width="220" />
+					<ColumnDefinition Width="250" />
 				</Grid.ColumnDefinitions>
 				<StackPanel>
 					<TextBlock Margin="0,0,0,5" FontWeight="SemiBold" Text="Theme name" />
@@ -88,9 +90,15 @@
 				</StackPanel>
 				<StackPanel Grid.Column="4">
 					<TextBlock Margin="0,0,0,5" FontWeight="SemiBold" Text="Default typeface" />
-					<ComboBox x:Name="TypographyFontComboBox" DisplayMemberPath="Description"
-						ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxTypographyFont}}}"
-						SelectedValuePath="Value" SelectionChanged="TypographyFontComboBox_SelectionChanged" />
+					<Grid>
+						<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+						<ComboBox x:Name="TypographyFontComboBox" DisplayMemberPath="Name"
+							SelectionChanged="TypographyFontComboBox_SelectionChanged" />
+						<Button Grid.Column="1" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7"
+							Click="ImportCustomFont_Click" ToolTip="Import a TrueType or OpenType font">
+							<controls:ReduxIcon Width="14" Height="14" Data="{StaticResource Redux.Icon.Download}" />
+						</Button>
+					</Grid>
 					<TextBlock Margin="2,5,0,0" FontSize="{DynamicResource Redux.FontSize.15}" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 						Text="Aa Qg 0O 1Il" />
 					<TextBlock Margin="0,10,0,5" FontWeight="SemiBold" Text="Default text size" />

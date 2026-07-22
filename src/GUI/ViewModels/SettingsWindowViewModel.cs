@@ -166,7 +166,7 @@ public class SettingsWindowViewModel : ReactiveObject
 				Xceed.Wpf.Toolkit.MessageBox.Show(View,
 					$"Script Extender {version.Version} ({channel}) requires at minimum game version {version.MinGameVersion}. The current game version is {gameCurrentVersion}.",
 					"Old Game Detected", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
-					Main.View.MainWindowMessageBox_OK.Style);
+					Main.Window.MessageBoxStyle);
 			}
 		}
 	}
@@ -460,7 +460,7 @@ public class SettingsWindowViewModel : ReactiveObject
 		{
 			var tabName = TabToName(SelectedTabIndex);
 			MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show(View, $"Reset {tabName} to Default?\nCurrent settings will be lost.", $"Confirm {tabName} Reset",
-				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, Main.View.MainWindowMessageBox_OK.Style);
+				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, Main.Window.MessageBoxStyle);
 			if (result == MessageBoxResult.Yes)
 			{
 				switch (SelectedTabIndex)
@@ -472,6 +472,7 @@ public class SettingsWindowViewModel : ReactiveObject
 						Settings.ActiveCustomThemeId = String.Empty;
 						Settings.ColorTheme = ReduxThemeType.ReduxDark;
 						Settings.TypographyFont = ReduxTypographyFont.Manrope;
+						Settings.CustomTypographyFont = String.Empty;
 						Settings.TextSize = ReduxTextSize.Default;
 						break;
 					case SettingsWindowTab.Extender:
@@ -495,7 +496,7 @@ public class SettingsWindowViewModel : ReactiveObject
 		ClearCacheCommand = ReactiveCommand.Create(() =>
 		{
 			MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show(View, $"Delete local mod cache?\nThis cannot be undone.", "Confirm Delete Cache",
-				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, Main.View.MainWindowMessageBox_OK.Style);
+				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No, Main.Window.MessageBoxStyle);
 			if (result == MessageBoxResult.Yes)
 			{
 				try

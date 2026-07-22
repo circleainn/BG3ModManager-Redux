@@ -67,7 +67,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 	private readonly string _logFileName;
 
 	public AlertBar AlertBar => MainView.AlertBar;
-	public Style MessageBoxStyle => MainView.MainWindowMessageBox_OK.Style;
+	public Style MessageBoxStyle => (Style)FindResource("ReduxMessageBoxStyle");
 
 	public void ToggleLogging(bool enabled)
 	{

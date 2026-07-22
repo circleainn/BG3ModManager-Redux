@@ -45,7 +45,7 @@ public static class ReduxThemeService
 			theme.Id.Equals(settings.ActiveCustomThemeId, StringComparison.OrdinalIgnoreCase));
 
 	public static ReduxCustomTheme CreateFromBase(string name, ReduxThemeType baseTheme,
-		ReduxTypographyFont typographyFont = 0, ReduxTextSize textSize = 0)
+		ReduxTypographyFont typographyFont = 0, ReduxTextSize textSize = 0, string customTypographyFont = "")
 	{
 		if (!BaseColors.TryGetValue(baseTheme, out var colors))
 		{
@@ -57,6 +57,7 @@ public static class ReduxThemeService
 			Name = String.IsNullOrWhiteSpace(name) ? "Custom Theme" : name.Trim(),
 			BaseTheme = baseTheme,
 			TypographyFont = NormalizeTypography(typographyFont, baseTheme),
+			CustomTypographyFont = customTypographyFont ?? String.Empty,
 			TextSize = NormalizeTextSize(textSize),
 			BackgroundColor = colors[0],
 			SurfaceColor = colors[1],

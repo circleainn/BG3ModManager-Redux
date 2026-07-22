@@ -1098,9 +1098,9 @@ Directory the zip will be extracted to:
 
 		Settings.WhenAnyValue(x => x.LogEnabled).Subscribe(Window.ToggleLogging);
 
-		Settings.WhenAnyValue(x => x.TypographyFont).ObserveOn(RxApp.MainThreadScheduler).Subscribe((font) =>
+		Settings.WhenAnyValue(x => x.TypographyFont, x => x.CustomTypographyFont).ObserveOn(RxApp.MainThreadScheduler).Subscribe((selection) =>
 		{
-			ReduxTypographyService.Apply(Application.Current.Resources, font);
+			ReduxTypographyService.Apply(Application.Current.Resources, selection.Item1, selection.Item2);
 			if (IsInitialized) SaveSettings();
 		});
 

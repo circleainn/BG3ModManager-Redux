@@ -36,6 +36,12 @@ incomplete or change between builds.
 - Added Compact, Default, and Large interface text sizing with shared dynamic typography tokens.
 - Custom themes now preserve both their preferred bundled typeface and text-size preset across
   activation, duplication, import/export, and application restarts.
+- Added reusable custom PNG icons for categories and separators, including optional category-color
+  tinting, safe local storage, and explicit removal.
+- Added a reusable custom-font library for local TrueType and OpenType fonts, with immediate
+  preview, custom-theme defaults, safe deferred deletion, and Manrope fallback when unavailable.
+- Consolidated Theme & Appearance controls into a more compact theme, typography, and custom-theme
+  workflow with clearer semantic color previews and more consistent Redux dialogs.
 - Continued conservative UI cleanup without changing load-order behavior, package parsing,
   import/export behavior, game-path detection, or file-management semantics.
 
@@ -52,8 +58,11 @@ incomplete or change between builds.
 - Shortcuts to common game, mod, save, and log folders.
 - Dark, Light, and Parchment themes with bundled typography and text-size selectors plus refined semantic palettes.
   Redux Dark, Redux Light, and Parchment all default to Manrope.
-- Safe custom themes with a preferred bundled typeface and text size, live preview, duplication,
-  JSON import/export, and restart persistence.
+- Safe custom themes with a preferred bundled or locally imported typeface and text size, live
+  preview, duplication, JSON import/export, and restart persistence. Missing custom fonts fall
+  back to Manrope without preventing the theme from loading.
+- A reusable local font library accepts `.ttf` and `.otf` files up to 10 MB. Imported fonts can be
+  removed from Redux even when WPF has them loaded; locked files are recycled on the next launch.
 - Theme-aware vector iconography and consistent interaction feedback across Redux-owned controls.
 
 ### Accessibility
@@ -69,7 +78,8 @@ incomplete or change between builds.
 ### Organization
 
 - Persistent automatic and custom categories spanning common Nexus BG3 mod types, with conservative best-effort assignment.
-- Multiple categories per mod with custom colors and optional curated vector icons.
+- Multiple categories per mod with custom colors, curated vector icons, or reusable transparent
+  PNG icons. Custom PNGs may retain their original colors or be tinted to the category color.
 - Fixed Redux default category identities with per-category color/icon customization and reset.
 - Optional category icons in pills and optional category-colored mod-row hover feedback.
 - Category filtering without changing the underlying load order.
@@ -168,12 +178,12 @@ affect game files.
 - mod.io author profile links cannot always be resolved reliably.
 - The complete Mod Health tray, requirement validator, and Load Order Advisor are not implemented.
 - Some inherited dialogs or dense tab selections may still have minor visual inconsistencies.
+- Some user-imported fonts may expose incomplete metadata or render differently in WPF; Redux
+  falls back to Manrope when an imported font cannot be loaded.
 - Packaging and clean-machine behavior still require wider private testing.
 
-### Planned appearance follow-ups
-
-- Optional custom transparent PNG icons for categories and visual separators.
-- Safe custom font import for typography and custom-theme defaults.
+Users are responsible for ensuring they have permission to use and share any fonts or PNG icons
+they import. Local imported assets are runtime user data and are not included in Redux packages.
 
 Report reproducible problems through the
 [Redux issue tracker](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues). Include the

@@ -21,13 +21,13 @@
     xmlns:vm="clr-namespace:DivinityModManager.ViewModels"
     xmlns:xc="http://schemas.xceed.com/wpf/xaml/toolkit"
     Title="Preferences"
-    Width="980"
-    Height="900"
+    Width="940"
+    Height="780"
 	MinWidth="900"
 	MinHeight="700"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="{DynamicResource Redux.FontWeight.Body}"
-	TextOptions.TextFormattingMode="Display"
+	TextOptions.TextFormattingMode="Ideal"
 	TextOptions.TextRenderingMode="ClearType"
     TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
     TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
@@ -584,70 +584,47 @@
 							</UniformGrid>
 						</StackPanel>
 
-						<Grid Grid.Row="4" Margin="0,10,0,0">
-							<Grid.ColumnDefinitions><ColumnDefinition Width="3*" /><ColumnDefinition Width="2*" /></Grid.ColumnDefinitions>
-							<Border Margin="0,0,6,0" Style="{StaticResource CompactThemeSectionCardStyle}">
-								<StackPanel>
-									<StackPanel Margin="0" Orientation="Horizontal">
-										<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Theme tokens" />
-										<TextBlock Margin="6,0,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-											Text="{Binding SelectedItem.Description, ElementName=ThemeComboBox, StringFormat=(Current: {0})}" />
-									</StackPanel>
-									<UniformGrid Margin="0,8,0,0" Columns="6">
-										<StackPanel Margin="0,0,6,0"><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Background" /><Border Height="30" Background="{DynamicResource ReduxWindowBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
-										<StackPanel Margin="0,0,6,0"><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Surface" /><Border Height="30" Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
-										<StackPanel Margin="0,0,6,0"><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Accent" /><Border Height="30" Background="{DynamicResource ReduxAccentBrush}" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
-										<StackPanel Margin="0,0,6,0"><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Success" /><Border Height="30" Background="{DynamicResource ReduxSuccessBrush}" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
-										<StackPanel Margin="0,0,6,0"><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Warning" /><Border Height="30" Background="{DynamicResource ReduxWarningBrush}" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
-										<StackPanel><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Error" /><Border Height="30" Background="{DynamicResource ReduxErrorBrush}" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
-									</UniformGrid>
-									<TextBlock Margin="0,6,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Semantic colors used throughout Redux." TextWrapping="Wrap" />
+						<Border Grid.Row="4" Margin="0,10,0,0" Style="{StaticResource CompactThemeSectionCardStyle}">
+							<StackPanel>
+								<StackPanel Orientation="Horizontal">
+									<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Theme details" />
+									<TextBlock Margin="6,0,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
+										Text="{Binding SelectedItem.Description, ElementName=ThemeComboBox, StringFormat=(Current: {0})}" />
 								</StackPanel>
-							</Border>
-							<Border Grid.Column="1" Margin="6,0,0,0" Style="{StaticResource CompactThemeSectionCardStyle}">
-								<StackPanel>
-									<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Theme behavior" />
-									<CheckBox Margin="0,8,0,0"
+								<UniformGrid Margin="0,8,0,0" Columns="6">
+									<StackPanel Margin="0,0,6,0"><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Background" /><Border Height="26" Background="{DynamicResource ReduxWindowBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
+									<StackPanel Margin="0,0,6,0"><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Surface" /><Border Height="26" Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
+									<StackPanel Margin="0,0,6,0"><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Accent" /><Border Height="26" Background="{DynamicResource ReduxAccentBrush}" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
+									<StackPanel Margin="0,0,6,0"><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Success" /><Border Height="26" Background="{DynamicResource ReduxSuccessBrush}" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
+									<StackPanel Margin="0,0,6,0"><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Warning" /><Border Height="26" Background="{DynamicResource ReduxWarningBrush}" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
+									<StackPanel><TextBlock Margin="0,0,0,4" FontSize="{DynamicResource Redux.FontSize.10}" Text="Error" /><Border Height="26" Background="{DynamicResource ReduxErrorBrush}" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" /></StackPanel>
+								</UniformGrid>
+								<Border Height="1" Margin="0,10,0,8" Background="{DynamicResource ReduxBorderBrush}" />
+								<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Theme behavior" />
+								<UniformGrid Margin="0,7,0,0" Columns="3">
+									<CheckBox Margin="0,0,12,0" VerticalAlignment="Top"
 										IsChecked="{Binding Settings.UseCategoryColorsForHover, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-										<StackPanel Margin="6,0,0,0">
-											<TextBlock FontWeight="SemiBold" Text="Match mod hover to category" />
-											<TextBlock Margin="0,3,0,0"
-												Foreground="{DynamicResource ReduxTextMutedBrush}"
-												Text="Use the mod's category color instead of the Redux accent."
-												TextWrapping="Wrap" />
-										</StackPanel>
+										<StackPanel Margin="6,0,0,0"><TextBlock FontWeight="SemiBold" Text="Match hover to category" /><TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use the category color for mod-row hover." TextWrapping="Wrap" /></StackPanel>
 									</CheckBox>
-									<CheckBox Margin="0,10,0,0"
+									<CheckBox Margin="0,0,12,0" VerticalAlignment="Top"
 										IsChecked="{Binding Settings.ShowCategoryIconsInPills, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-										<StackPanel Margin="6,0,0,0">
-											<TextBlock FontWeight="SemiBold" Text="Show icons in category pills" />
-										<TextBlock Margin="0,3,0,0"
-											Foreground="{DynamicResource ReduxTextMutedBrush}"
-											Text="Add the selected category icon to mod-list and drawer pills."
-												TextWrapping="Wrap" />
-										</StackPanel>
+										<StackPanel Margin="6,0,0,0"><TextBlock FontWeight="SemiBold" Text="Icons in category pills" /><TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Show category icons in list and drawer pills." TextWrapping="Wrap" /></StackPanel>
 									</CheckBox>
-									<CheckBox Margin="0,10,0,0"
+									<CheckBox VerticalAlignment="Top"
 										IsChecked="{Binding Settings.UseCategoryColorsForSidebarText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-										<StackPanel Margin="6,0,0,0">
-											<TextBlock FontWeight="SemiBold" Text="Color category names" />
-											<TextBlock Margin="0,3,0,0"
-												Foreground="{DynamicResource ReduxTextMutedBrush}"
-												Text="Match category names in the Categories pane to their assigned colors."
-												TextWrapping="Wrap" />
-										</StackPanel>
+										<StackPanel Margin="6,0,0,0"><TextBlock FontWeight="SemiBold" Text="Color category names" /><TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Match sidebar names to category colors." TextWrapping="Wrap" /></StackPanel>
 									</CheckBox>
-								</StackPanel>
-							</Border>
-						</Grid>
+								</UniformGrid>
+							</StackPanel>
+						</Border>
 
 						<Border Grid.Row="5" Margin="0,10,0,0" Style="{StaticResource CompactThemeSectionCardStyle}">
 							<Grid>
 								<Grid.RowDefinitions>
 									<RowDefinition Height="Auto" />
-									<RowDefinition Height="1" />
+									<RowDefinition Height="10" />
 									<RowDefinition Height="Auto" />
-									<RowDefinition Height="1" />
+									<RowDefinition Height="10" />
 									<RowDefinition Height="Auto" />
 								</Grid.RowDefinitions>
 
@@ -661,32 +638,53 @@
 										<controls:ReduxIcon Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Center" Data="{StaticResource Redux.Icon.ColorPalette}" />
 									</Border>
 									<StackPanel Grid.Column="1" Margin="0" Orientation="Vertical">
-										<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Custom theme manager" />
+										<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Typography &amp; custom themes" />
 										<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-											Text="Choose the app typeface, then create, edit, import, and share custom palettes with their own preferred font."
+											Text="Tune Redux typography and manage reusable themes in one place."
 											TextWrapping="Wrap" />
 									</StackPanel>
 								</Grid>
 
-								<Border Grid.Row="1" Margin="0,10,0,0" Background="{DynamicResource ReduxBorderBrush}" />
-
-								<Grid Grid.Row="2" Margin="0,10,0,0">
+								<Border Grid.Row="2" Padding="12" Background="{DynamicResource ReduxSurfaceMutedBrush}"
+									BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+								<Grid>
 									<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
 									<StackPanel Margin="0,0,16,0" Orientation="Vertical">
-										<TextBlock FontWeight="SemiBold" Text="App typeface" />
+										<TextBlock FontWeight="SemiBold" Text="Typography" />
 										<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-										Text="Typeface and text-size changes apply throughout Redux." TextWrapping="Wrap" />
+										Text="Typeface and text size apply throughout Redux." TextWrapping="Wrap" />
 										<TextBlock x:Name="TypographyPreviewText" Margin="0,6,0,0" FontSize="{DynamicResource Redux.FontSize.22}"
 											FontFamily="{DynamicResource Redux.FontFamily.UI}"
-											Text="Aa Qg 0O 1Il — Typography preview" />
+											Text="Aa Qg 0O 1Il" />
+										<TextBlock Margin="0,7,0,0" FontSize="{DynamicResource Redux.FontSize.11}"
+											Foreground="{DynamicResource ReduxTextMutedBrush}"
+											Text="Imported fonts are provided as-is; some may render incorrectly or may not be compatible with Redux."
+											TextWrapping="Wrap" />
 									</StackPanel>
-									<StackPanel Grid.Column="1" Width="210" Margin="0,0,10,0" Orientation="Vertical">
+									<StackPanel Grid.Column="1" Width="306" Margin="0,0,10,0" Orientation="Vertical">
 										<TextBlock Margin="2,0,0,4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Typeface" />
-										<ComboBox x:Name="TypographyComboBox"
-										DisplayMemberPath="Description"
-										ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxTypographyFont}}}"
-										SelectedValuePath="Value"
-										ToolTip="Choose the typeface used throughout Redux" />
+										<Grid>
+											<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+											<ComboBox x:Name="TypographyComboBox" DisplayMemberPath="Name"
+												SelectionChanged="TypographyComboBox_SelectionChanged"
+												ToolTip="Choose a bundled or imported typeface" />
+											<Button Grid.Column="1" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7"
+												Style="{StaticResource SettingsActionButtonStyle}" Click="ImportCustomFont_Click"
+												ToolTip="Import a TrueType or OpenType font">
+												<controls:ReduxIcon Width="14" Height="14" Data="{StaticResource Redux.Icon.Download}" />
+											</Button>
+											<Button x:Name="DeleteCustomFontButton" Grid.Column="2" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7"
+												Style="{StaticResource SettingsActionButtonStyle}" Click="DeleteCustomFont_Click"
+												ToolTip="Remove the selected imported font">
+												<controls:ReduxIcon Width="14" Height="14" Data="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" />
+											</Button>
+											<Button Grid.Column="3" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7"
+												Style="{StaticResource SettingsActionButtonStyle}" Click="OpenCustomFontsFolder_Click"
+												ToolTip="Open the custom fonts folder">
+												<controls:ReduxIcon Width="14" Height="14" Data="{StaticResource Redux.Icon.FolderOpen}" />
+											</Button>
+										</Grid>
 									</StackPanel>
 									<StackPanel Grid.Column="2" Width="140" Orientation="Vertical">
 										<TextBlock Margin="2,0,0,4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Text size" />
@@ -697,16 +695,18 @@
 											ToolTip="Choose Compact, Default, or Large interface text" />
 									</StackPanel>
 								</Grid>
+								</Border>
 
-								<Border Grid.Row="3" Margin="0,10,0,0" Background="{DynamicResource ReduxBorderBrush}" />
-
-								<Grid Grid.Row="4" Margin="0,10,0,0">
+								<Border Grid.Row="4" Padding="12" Background="{DynamicResource ReduxSurfaceMutedBrush}"
+									BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+								<Grid>
 									<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 									<Grid>
 										<StackPanel Margin="0" Orientation="Vertical">
-											<TextBlock FontWeight="SemiBold" Text="Custom theme library" />
+											<TextBlock FontWeight="SemiBold" Text="Custom themes" />
 											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-												Text="Custom themes combine a Redux base palette, personalized colors, and a preferred typeface." TextWrapping="Wrap" />
+												Text="Save colors, typeface, and text size as a reusable theme." TextWrapping="Wrap" />
 											<TextBlock x:Name="CustomThemeStatusText" Margin="0,5,0,0"
 												Foreground="{DynamicResource ReduxTextMutedBrush}" Text="No custom themes yet." TextTrimming="CharacterEllipsis" />
 										</StackPanel>
@@ -729,8 +729,6 @@
 
 									<Grid Grid.Row="2" Margin="0,6,0,0">
 										<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-										<TextBlock Margin="0,0,8,0" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextMutedBrush}"
-											Text="Create from the active built-in theme, or import a shared Redux theme." TextWrapping="Wrap" />
 										<Button x:Name="DuplicateCustomThemeButton" Grid.Column="1" MinWidth="92" Margin="0" Style="{StaticResource SettingsActionButtonStyle}" Click="DuplicateCustomTheme_Click" Content="Duplicate" />
 										<Button Grid.Column="2" MinWidth="80" Margin="6,0,0,0" Style="{StaticResource SettingsActionButtonStyle}" Click="ImportCustomTheme_Click">
 											<StackPanel Margin="0" Orientation="Horizontal"><controls:ReduxIcon Margin="0,0,6,0" Data="{StaticResource Redux.Icon.Download}" /><TextBlock Text="Import" /></StackPanel>
@@ -740,6 +738,7 @@
 										</Button>
 									</Grid>
 								</Grid>
+								</Border>
 							</Grid>
 						</Border>
 					</Grid>

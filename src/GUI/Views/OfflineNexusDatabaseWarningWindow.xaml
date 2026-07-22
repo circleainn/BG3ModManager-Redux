@@ -8,7 +8,7 @@
 	MaxWidth="680"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="Medium"
-	TextOptions.TextFormattingMode="Display"
+	TextOptions.TextFormattingMode="Ideal"
 	TextOptions.TextRenderingMode="ClearType"
 	ResizeMode="NoResize"
 	SizeToContent="Height"

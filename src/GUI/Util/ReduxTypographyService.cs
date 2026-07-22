@@ -18,12 +18,22 @@ public static class ReduxTypographyService
 		10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 32, 34
 	];
 
-	public static void Apply(ResourceDictionary resources, ReduxTypographyFont selection)
+	public static void Apply(ResourceDictionary resources, ReduxTypographyFont selection, string customReference = "")
 	{
 		if (resources == null) return;
+		ReduxCustomFontService.ProcessPendingDeletions();
 		if (!Enum.IsDefined(selection)) selection = ReduxTypographyFont.Manrope;
 
-		var family = selection switch
+		FontFamily family;
+		if (!String.IsNullOrWhiteSpace(customReference))
+		{
+			// Custom-theme files intentionally carry only Redux's path-free reference.
+			// A font that is not installed locally must never prevent the theme loading.
+			family = ReduxCustomFontService.TryCreateFontFamily(customReference, out var customFamily)
+				? customFamily
+				: CreateBundledFont("Manrope");
+		}
+		else family = selection switch
 		{
 			ReduxTypographyFont.SegoeUI => new FontFamily("Segoe UI"),
 			ReduxTypographyFont.AtkinsonHyperlegible => CreateBundledFont("Atkinson Hyperlegible"),
