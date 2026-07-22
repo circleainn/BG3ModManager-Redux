@@ -96,7 +96,7 @@
 				<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
 				<Setter Property="Template" Value="{StaticResource ReduxDialogPrimaryButtonTemplate}" />
 			</Style>
-			<Style TargetType="{x:Type xc:MessageBox}">
+			<Style x:Key="ReduxMessageBoxStyle" TargetType="{x:Type xc:MessageBox}">
 				<Setter Property="Width" Value="600" />
 				<Setter Property="ext:RoundedMessageBoxChrome.Radius" Value="7" />
 				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceBrush}" />
@@ -161,7 +161,9 @@
 		    HorizontalAlignment="Stretch"
 		    VerticalAlignment="Stretch"
 		    Panel.ZIndex="99">
-			<xc:MessageBox x:Name="MainWindowMessageBox_OK" Template="{StaticResource MessageBoxSelectableText}" />
+			<xc:MessageBox x:Name="MainWindowMessageBox_OK"
+				Style="{StaticResource ReduxMessageBoxStyle}"
+				Template="{StaticResource MessageBoxSelectableText}" />
 		</xc:WindowContainer>
 		<xc:BusyIndicator x:Name="MainBusyIndicator" Style="{StaticResource BusyIndicatorProgressStyle}" Visibility="Hidden">
 			<xc:BusyIndicator.BusyContent>

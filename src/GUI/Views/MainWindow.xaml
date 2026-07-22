@@ -37,26 +37,6 @@
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-			<Style x:Key="ReduxMessageBoxStyle" TargetType="{x:Type xc:MessageBox}">
-				<Setter Property="Width" Value="600" />
-				<Setter Property="ext:RoundedMessageBoxChrome.Radius" Value="7" />
-				<Setter Property="FontFamily" Value="{DynamicResource Redux.FontFamily.UI}" />
-				<Setter Property="Background" Value="{DynamicResource {x:Static adonisUI:Brushes.Layer0BackgroundBrush}}" />
-				<Setter Property="ButtonRegionBackground" Value="{DynamicResource {x:Static adonisUI:Brushes.Layer0BackgroundBrush}}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource {x:Static adonisUI:Brushes.Layer1BorderBrush}}" />
-				<Setter Property="CaptionForeground" Value="{DynamicResource {x:Static adonisUI:Brushes.AccentForegroundBrush}}" />
-				<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUI:Brushes.ForegroundBrush}}" />
-				<Setter Property="WindowBackground" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
-				<Setter Property="WindowBorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-				<Setter Property="CloseButtonStyle">
-					<Setter.Value>
-						<Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
-							<Setter Property="IsEnabled" Value="False" />
-							<Setter Property="Opacity" Value="0" />
-						</Style>
-					</Setter.Value>
-				</Setter>
-			</Style>
 		</ResourceDictionary>
 	</Window.Resources>
 	<Window.TaskbarItemInfo>
