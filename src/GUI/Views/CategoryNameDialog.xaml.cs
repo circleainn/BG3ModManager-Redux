@@ -188,6 +188,9 @@ public partial class CategoryNameDialog : AdonisWindow
 		_updatingColorControls = true;
 		SaturationSlider.Value = _saturation * 100;
 		BrightnessSlider.Value = _brightness * 100;
+		RedSlider.Value = color.R;
+		GreenSlider.Value = color.G;
+		BlueSlider.Value = color.B;
 		_updatingColorControls = false;
 		UpdateModernColorSurface();
 	}
@@ -293,6 +296,15 @@ public partial class CategoryNameDialog : AdonisWindow
 		_brightness = BrightnessSlider.Value / 100d;
 		_renderedWheelBrightness = Double.NaN;
 		CategoryColorPicker.SelectedColor = HsvToRgb(_hue, _saturation, _brightness);
+	}
+
+	private void RgbSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+	{
+		if (_updatingColorControls || RedSlider == null || GreenSlider == null || BlueSlider == null) return;
+		CategoryColorPicker.SelectedColor = Color.FromRgb(
+			(byte)Math.Round(RedSlider.Value),
+			(byte)Math.Round(GreenSlider.Value),
+			(byte)Math.Round(BlueSlider.Value));
 	}
 
 	private void ApplyHexColor()

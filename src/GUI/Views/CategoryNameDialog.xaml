@@ -151,7 +151,10 @@
 					</Grid>
 					<Grid Margin="0,8,0,0">
 						<Grid.ColumnDefinitions><ColumnDefinition Width="74" /><ColumnDefinition Width="*" /><ColumnDefinition Width="42" /></Grid.ColumnDefinitions>
-						<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
 						<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Saturation" />
 						<Slider x:Name="SaturationSlider" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="100"
 							ValueChanged="SaturationSlider_ValueChanged" />
@@ -162,6 +165,21 @@
 							ValueChanged="BrightnessSlider_ValueChanged" />
 						<TextBlock Grid.Row="1" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="{Binding Value, ElementName=BrightnessSlider, StringFormat={}{0:0}%}" />
+						<TextBlock Grid.Row="2" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Red" />
+						<Slider x:Name="RedSlider" Grid.Row="2" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="255"
+							ValueChanged="RgbSlider_ValueChanged" />
+						<TextBlock Grid.Row="2" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+							Text="{Binding Value, ElementName=RedSlider, StringFormat={}{0:0}}" />
+						<TextBlock Grid.Row="3" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Green" />
+						<Slider x:Name="GreenSlider" Grid.Row="3" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="255"
+							ValueChanged="RgbSlider_ValueChanged" />
+						<TextBlock Grid.Row="3" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+							Text="{Binding Value, ElementName=GreenSlider, StringFormat={}{0:0}}" />
+						<TextBlock Grid.Row="4" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Blue" />
+						<Slider x:Name="BlueSlider" Grid.Row="4" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="255"
+							ValueChanged="RgbSlider_ValueChanged" />
+						<TextBlock Grid.Row="4" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+							Text="{Binding Value, ElementName=BlueSlider, StringFormat={}{0:0}}" />
 					</Grid>
 				</StackPanel>
 				<Border Grid.Row="2" Grid.ColumnSpan="3" Padding="10,8" Background="{DynamicResource ReduxSurfaceBrush}"
