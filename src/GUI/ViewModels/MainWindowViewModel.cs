@@ -670,6 +670,7 @@ Directory the zip will be extracted to:
 			});
 			var fullExtenderVersion = "";
 			int majorVersion = -1;
+			Version bestVersion = null;
 			var targetVersion = Settings.ExtenderUpdaterSettings.TargetVersion;
 
 			foreach (var f in files)
@@ -681,16 +682,19 @@ Directory the zip will be extracted to:
 					var extenderInfo = FileVersionInfo.GetVersionInfo(f);
 					if (extenderInfo != null)
 					{
-						var fileVersion = $"{extenderInfo.FileMajorPart}.{extenderInfo.FileMinorPart}.{extenderInfo.FileBuildPart}.{extenderInfo.FilePrivatePart}";
+						var currentVersion = new Version(extenderInfo.FileMajorPart, extenderInfo.FileMinorPart, extenderInfo.FileBuildPart, extenderInfo.FilePrivatePart);
+						var fileVersion = currentVersion.ToString();
 						if (fileVersion == targetVersion)
 						{
-							majorVersion = extenderInfo.FileMajorPart;
+							bestVersion = currentVersion;
 							fullExtenderVersion = fileVersion;
 							break;
 						}
-						if (extenderInfo.FileMajorPart > majorVersion)
+						// Compare the full version, not just the major part, so a newer minor/build/private
+						// release with an equal major version isn't silently ignored based on file enumeration order.
+						if (bestVersion == null || currentVersion > bestVersion)
 						{
-							majorVersion = extenderInfo.FileMajorPart;
+							bestVersion = currentVersion;
 							fullExtenderVersion = fileVersion;
 						}
 					}
@@ -700,8 +704,9 @@ Directory the zip will be extracted to:
 					DivinityApp.Log($"Error getting file info from: '{f}'\n\t{ex}");
 				}
 			}
-			if (majorVersion > -1)
+			if (bestVersion != null)
 			{
+				majorVersion = bestVersion.Major;
 				DivinityApp.Log($"Script Extender version found ({majorVersion})");
 				Settings.ExtenderSettings.ExtenderIsAvailable = true;
 				Settings.ExtenderSettings.ExtenderVersion = fullExtenderVersion;
@@ -1860,7 +1865,7 @@ Directory the zip will be extracted to:
 		{
 			DivinityApp.Log($"Profile folder not found at '{PathwayData.AppDataProfilesPath}'.");
 		}
-		return null;
+		return [];
 	}
 
 	private static readonly DivinityLoadOrder _fallbackOrder = new DivinityLoadOrder()
@@ -2320,66 +2325,70 @@ Directory the zip will be extracted to:
 		if (order == null) return false;
 
 		IsLoadingOrder = true;
-
-		var loadFrom = order.Order;
-
-		foreach (var mod in ActiveMods)
+		try
 		{
-			mod.IsActive = false;
-			mod.Index = -1;
-		}
+			var loadFrom = order.Order;
 
-		DeselectAllMods();
-
-		DivinityApp.Log($"Loading mod order '{order.Name}'.");
-
-		var loadOrderIndex = 0;
-
-		for (int i = 0; i < loadFrom.Count; i++)
-		{
-			var entry = loadFrom[i];
-			if (!DivinityModDataLoader.IgnoreMod(entry.UUID))
+			foreach (var mod in ActiveMods)
 			{
-				var modResult = mods.Lookup(entry.UUID);
-				if (modResult.HasValue)
+				mod.IsActive = false;
+				mod.Index = -1;
+			}
+
+			DeselectAllMods();
+
+			DivinityApp.Log($"Loading mod order '{order.Name}'.");
+
+			var loadOrderIndex = 0;
+
+			for (int i = 0; i < loadFrom.Count; i++)
+			{
+				var entry = loadFrom[i];
+				if (!DivinityModDataLoader.IgnoreMod(entry.UUID))
 				{
-					var mod = modResult.Value;
-					if (mod.ModType != "Adventure")
+					var modResult = mods.Lookup(entry.UUID);
+					if (modResult.HasValue)
 					{
-						mod.IsActive = true;
-						mod.Index = loadOrderIndex;
-						if (mod.IsForceLoaded)
+						var mod = modResult.Value;
+						if (mod.ModType != "Adventure")
 						{
-							mod.ForceAllowInLoadOrder = true;
+							mod.IsActive = true;
+							mod.Index = loadOrderIndex;
+							if (mod.IsForceLoaded)
+							{
+								mod.ForceAllowInLoadOrder = true;
+							}
+							loadOrderIndex += 1;
 						}
-						loadOrderIndex += 1;
-					}
-					else
-					{
-						var nextIndex = AdventureMods.IndexOf(mod);
-						if (nextIndex != -1) SelectedAdventureModIndex = nextIndex;
+						else
+						{
+							var nextIndex = AdventureMods.IndexOf(mod);
+							if (nextIndex != -1) SelectedAdventureModIndex = nextIndex;
+						}
 					}
 				}
 			}
+
+			ActiveMods.Clear();
+			ActiveMods.AddRange(addonMods.Where(x => x.CanAddToLoadOrder && x.IsActive).OrderBy(x => x.Index));
+			InactiveMods.Clear();
+			InactiveMods.AddRange(addonMods.Where(x => x.CanAddToLoadOrder && !x.IsActive));
+
+			OnFilterTextChanged(ActiveModFilterText, ActiveMods);
+			OnFilterTextChanged(InactiveModFilterText, InactiveMods);
+
+			if (Settings?.DisableMissingModWarnings == false)
+			{
+				DisplayMissingMods(order);
+			}
+
+			OrderJustLoaded = true;
+			return true;
 		}
-
-		ActiveMods.Clear();
-		ActiveMods.AddRange(addonMods.Where(x => x.CanAddToLoadOrder && x.IsActive).OrderBy(x => x.Index));
-		InactiveMods.Clear();
-		InactiveMods.AddRange(addonMods.Where(x => x.CanAddToLoadOrder && !x.IsActive));
-
-		OnFilterTextChanged(ActiveModFilterText, ActiveMods);
-		OnFilterTextChanged(InactiveModFilterText, InactiveMods);
-
-		if (Settings?.DisableMissingModWarnings == false)
+		finally
 		{
-			DisplayMissingMods(order);
+			IsLoadingOrder = false;
 		}
-
-		OrderJustLoaded = true;
-
-		IsLoadingOrder = false;
-		return true;
 	}
 
 	private void UpdateModExtenderStatus(DivinityModData mod)
@@ -2779,6 +2788,7 @@ Directory the zip will be extracted to:
 		}
 
 		var warningWindow = new ReduxPreviewWarningWindow { Owner = Window };
+		ReduxThemeService.Apply(warningWindow.Resources, Settings.ColorTheme, ReduxThemeService.GetActiveTheme(Settings));
 		if (warningWindow.ShowDialog() == true)
 		{
 			Settings.ReduxPreviewWarningAcknowledged = true;
@@ -2798,6 +2808,7 @@ Directory the zip will be extracted to:
 		{
 			Owner = Window
 		};
+		ReduxThemeService.Apply(warningWindow.Resources, Settings.ColorTheme, ReduxThemeService.GetActiveTheme(Settings));
 
 		if (warningWindow.ShowDialog() == true)
 		{
@@ -2821,6 +2832,7 @@ Directory the zip will be extracted to:
 		}
 
 		var warningWindow = new OfflineNexusDatabaseWarningWindow { Owner = Window };
+		ReduxThemeService.Apply(warningWindow.Resources, Settings.ColorTheme, ReduxThemeService.GetActiveTheme(Settings));
 		if (warningWindow.ShowDialog() == true)
 		{
 			Settings.OfflineNexusDatabaseWarningAcknowledged = true;
@@ -2939,6 +2951,11 @@ Directory the zip will be extracted to:
 				if ((loadedProfiles == null || loadedProfiles.Count == 0))
 				{
 					DivinityApp.Log("No profiles found?");
+					await Observable.Start(() =>
+					{
+						ShowAlert("No Baldur's Gate 3 profiles were found. If this is a fresh install, launch the game at least once so it creates your profile, then reopen the manager.", AlertType.Warning, 15);
+						return Unit.Default;
+					}, RxApp.MainThreadScheduler);
 				}
 				await IncreaseMainProgressValueAsync(taskStepAmount);
 			}
@@ -3153,12 +3170,7 @@ Directory the zip will be extracted to:
 		{
 			UpdateOrderFromActiveMods();
 
-			string outputDirectory = Settings.LoadOrderPath.ToRealPath();
-
-			if (String.IsNullOrWhiteSpace(outputDirectory))
-			{
-				outputDirectory = AppDomain.CurrentDomain.BaseDirectory;
-			}
+			string outputDirectory = GetOrdersDirectory();
 
 			if (!Directory.Exists(outputDirectory)) Directory.CreateDirectory(outputDirectory);
 
@@ -3195,6 +3207,11 @@ Directory the zip will be extracted to:
 			{
 				ShowAlert($"Saved mod load order to '{outputPath}'", AlertType.Success, 10);
 			}
+		}
+		else if (!skipSaveConfirmation)
+		{
+			ShowAlert("No profile or load order is currently selected, so there's nothing to save. " +
+				"If this is a fresh install, launch Baldur's Gate 3 at least once so it creates your profile.", AlertType.Warning, 15);
 		}
 
 		return result;
@@ -4017,8 +4034,6 @@ Directory the zip will be extracted to:
 			{
 				var info = NexusModFileVersionData.FromFilePath(archivePath);
 
-				await fileStream.ReadAsync(new byte[fileStream.Length], 0, (int)fileStream.Length);
-				fileStream.Position = 0;
 				IncreaseMainProgressValue(taskStepAmount);
 				using (var archive = ArchiveFactory.Open(fileStream, _importReaderOptions))
 				{
@@ -6351,6 +6366,18 @@ Directory the zip will be extracted to:
 		var canRefreshObservable = this.WhenAnyValue(x => x.IsRefreshing, b => !b).StartWith(true);
 		RefreshCommand = ReactiveCommand.Create(() =>
 		{
+			// Refreshing rebuilds Active/Inactive purely from what's saved on disk (modsettings.lsx),
+			// so any drag-and-drop changes the user hasn't saved/exported yet would otherwise be
+			// silently discarded with no warning.
+			if (!HasExported && ActiveMods.Count > 0)
+			{
+				var result = ReduxMessageBox.Show(Window,
+					"You have unsaved changes to your active mod order that haven't been saved or exported yet. Refreshing will discard them and reload from disk.\n\nContinue anyway?",
+					"Discard Unsaved Changes?",
+					MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+				if (result != MessageBoxResult.Yes) return;
+			}
+
 			ModUpdatesViewData?.Clear();
 			ModUpdatesViewVisible = ModUpdatesAvailable = false;
 			MainProgressTitle = !IsInitialized ? "Loading..." : "Refreshing...";

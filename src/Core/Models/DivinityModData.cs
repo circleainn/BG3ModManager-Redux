@@ -568,8 +568,8 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 			!string.IsNullOrEmpty(x.Item1) || x.Item2 || !string.IsNullOrEmpty(x.Item3)))
 			.ToUIPropertyImmediate(this, x => x.HasToolTip, initialValue: true);
 
-		this.WhenAnyValue(x => x.IsEditorMod, x => x.IsLarianMod, x => x.FilePath,
-			(isEditorMod, isLarianMod, path) => !isEditorMod && !isLarianMod && File.Exists(path))
+		this.WhenAnyValue(x => x.IsEditorMod, x => x.IsLarianMod,
+			(isEditorMod, isLarianMod) => !isEditorMod && !isLarianMod)
 			.ToUIPropertyImmediate(this, x => x.CanDelete);
 
 		this.WhenAnyValue(x => x.ModType, x => x.IsLarianMod, x => x.IsForceLoaded, x => x.IsForceLoadedMergedMod, x => x.ForceAllowInLoadOrder, CanAllowInLoadOrderCheck)
