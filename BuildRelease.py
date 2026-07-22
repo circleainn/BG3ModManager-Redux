@@ -70,7 +70,6 @@ REQUIRED_FILES = {
 	Path("LICENSE"),
 	Path("README.md"),
 	Path("THIRD-PARTY-NOTICES.md"),
-	Path("THIRD-PARTY-LICENSES.txt"),
 	Path("Resources/Fonts/Manrope-Regular.ttf"),
 	Path("Resources/Fonts/AtkinsonHyperlegible-Regular.ttf"),
 	Path("Resources/Fonts/MonaspaceNeon-Regular.otf"),
@@ -100,30 +99,34 @@ def prepare_publish_directory() -> None:
 	distribution_documents = {
 		ROOT / "README.md": PUBLISH_DIR / "README.md",
 		ROOT / "LICENSE": PUBLISH_DIR / "LICENSE",
-		ROOT / "licenses" / "Third-Party-Notices.md": PUBLISH_DIR / "THIRD-PARTY-NOTICES.md",
 	}
 	for source, destination in distribution_documents.items():
 		if not source.is_file():
 			raise SystemExit(f"Required distribution document is missing: {source}")
 		shutil.copy2(source, destination)
 
-	# Preserve each dependency's complete source license in one distribution document.
-	# Individual files remain in the repository for provenance and easy maintenance.
+	# Combine the readable attribution summary and every complete dependency license into one
+	# Markdown document. Individual source files remain in the repository for provenance and
+	# maintenance, while packaged builds expose one unambiguous third-party document.
+	notice_source = ROOT / "licenses" / "Third-Party-Notices.md"
+	if not notice_source.is_file():
+		raise SystemExit(f"Required third-party notice is missing: {notice_source}")
+
+	remove_path(PUBLISH_DIR / "THIRD-PARTY-LICENSES.txt")
 	license_sections = [
-		b"BG3 MOD MANAGER REDUX - THIRD-PARTY LICENSES\r\n"
-		b"The complete license text for each bundled dependency follows.\r\n"
+		notice_source.read_bytes().rstrip(b"\r\n")
+		+ b"\r\n\r\n# Complete Third-Party License Terms\r\n"
+		+ b"\r\nThe complete text of each bundled dependency license follows.\r\n"
 	]
 	for license_name in THIRD_PARTY_LICENSE_FILES:
 		source = ROOT / "licenses" / license_name
 		if not source.is_file():
 			raise SystemExit(f"Required dependency license is missing: {source}")
 		license_sections.append(
-			b"\r\n" + (b"=" * 80) + b"\r\n"
-			+ license_name.as_posix().encode("utf-8") + b"\r\n"
-			+ (b"=" * 80) + b"\r\n\r\n"
-			+ source.read_bytes().rstrip(b"\r\n") + b"\r\n"
+			b"\r\n## " + license_name.as_posix().encode("utf-8") + b"\r\n\r\n```text\r\n"
+			+ source.read_bytes().rstrip(b"\r\n") + b"\r\n```\r\n"
 		)
-	(PUBLISH_DIR / "THIRD-PARTY-LICENSES.txt").write_bytes(b"".join(license_sections))
+	(PUBLISH_DIR / "THIRD-PARTY-NOTICES.md").write_bytes(b"".join(license_sections))
 
 	# Keep the release layout unambiguous: all distribution documents live at root.
 	remove_path(PUBLISH_DIR / "licenses")

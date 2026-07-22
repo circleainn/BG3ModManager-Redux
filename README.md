@@ -44,6 +44,8 @@ incomplete or change between builds.
   tinting, safe local storage, and explicit removal.
 - Added a reusable custom-font library for local TrueType and OpenType fonts, with immediate
   preview, custom-theme defaults, safe deferred deletion, and Manrope fallback when unavailable.
+- Replaced the mixed legacy icon set with a shared Lucide-based vector system, retaining official
+  Nexus Mods, mod.io, and GitHub brand marks where generic interface icons are inappropriate.
 - Consolidated Theme & Appearance controls into a more compact theme, typography, and custom-theme
   workflow with clearer semantic color previews and more consistent Redux dialogs.
 - Continued conservative UI cleanup without changing load-order behavior, package parsing,
@@ -67,7 +69,8 @@ incomplete or change between builds.
   back to Manrope without preventing the theme from loading.
 - A reusable local font library accepts `.ttf` and `.otf` files up to 10 MB. Imported fonts can be
   removed from Redux even when WPF has them loaded; locked files are recycled on the next launch.
-- Theme-aware vector iconography and consistent interaction feedback across Redux-owned controls.
+- Theme-aware Lucide vector iconography and consistent interaction feedback across Redux-owned
+  controls, with official provider logos retained for source identification.
 
 ### Accessibility
 
@@ -177,7 +180,7 @@ affect game files.
 - Provider matching, automatic categories, dependency data, and conflict data may be incomplete.
 - mod.io author profile links cannot always be resolved reliably.
 - The complete Mod Health tray, requirement validator, and Load Order Advisor are not implemented.
-- Some inherited dialogs or dense tab selections may still have minor visual inconsistencies.
+- Dense layouts and uncommon Windows display scales may still expose minor visual inconsistencies.
 - Some user-imported fonts may expose incomplete metadata or render differently in WPF; Redux
   falls back to Manrope when an imported font cannot be loaded.
 - Packaging and clean-machine behavior still require wider private testing.
@@ -196,8 +199,8 @@ the problem. Do not post API keys or private filesystem information.
 - [Redux issue tracker](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues)
 - [Baldur's Gate 3 on Nexus Mods](https://www.nexusmods.com/baldursgate3)
 - [BG3 Script Extender](https://github.com/Norbyte/bg3se)
-- [Building from source](docs/BUILDING.md)
-- [Changes from upstream BG3ModManager](docs/CHANGES_FROM_UPSTREAM.md)
+- [Building from source](https://github.com/raincloudsfollow/BG3ModManager-Redux/blob/main/docs/BUILDING.md)
+- [Changes from upstream BG3ModManager](https://github.com/raincloudsfollow/BG3ModManager-Redux/blob/main/docs/CHANGES_FROM_UPSTREAM.md)
 
 ## Upstream project and attribution
 
@@ -227,11 +230,11 @@ Redux also depends on third-party projects including:
 Baldur's Gate 3 is developed and published by Larian Studios. Redux is an unofficial community
 project and is not affiliated with or endorsed by Larian Studios, Nexus Mods, or mod.io.
 
-See the repository [license](LICENSE) and [third-party notices](licenses/Third-Party-Notices.md)
-for complete terms and notices.
-Packaged builds combine the complete bundled dependency terms into one
-`THIRD-PARTY-LICENSES.txt` file; the repository keeps the original per-dependency files for
-provenance and maintenance.
+See the repository [license](LICENSE) and
+[third-party notices](https://github.com/raincloudsfollow/BG3ModManager-Redux/blob/main/licenses/Third-Party-Notices.md)
+for complete terms and notices. Packaged builds combine the attribution summary and complete
+bundled dependency terms into one `THIRD-PARTY-NOTICES.md` file; the repository keeps the editable
+notice and original per-dependency files for provenance and maintenance.
 
 ## License
 

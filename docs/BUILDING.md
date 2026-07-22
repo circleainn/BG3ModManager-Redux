@@ -2,42 +2,121 @@
 
 ## Prerequisites
 
-- Windows, with Visual Studio 2022+ (or the standalone Build Tools) including the .NET desktop
-  development and C++ desktop development workloads. Redux's native `LSLibNative` project needs the
-  C++ toolset even though the rest of the solution is C#.
-- .NET 8 SDK.
+- Windows with Visual Studio 2022 or newer, or the equivalent standalone Build Tools.
+- The **.NET desktop development** workload.
+- The **Desktop development with C++** workload. `LSLibNative` is a C++/CLI project and cannot be
+  produced by a managed-only build.
+- The .NET 8 SDK and .NET 8 Desktop Runtime.
+- Python 3 for release packaging.
 
-## Build command
+Redux is a Windows-only WPF application. Linux, macOS, Wine, and Proton are not supported build or
+runtime targets.
 
-Build the whole solution with MSBuild directly rather than the `dotnet` CLI:
+## Debug x64 build
 
+Build the complete solution with Visual Studio MSBuild:
+
+```powershell
+& 'C:\Program Files\Microsoft Visual Studio\<version>\<edition>\MSBuild\Current\Bin\MSBuild.exe' `
+  '.\BG3ModManager.sln' `
+  /t:Build `
+  /p:Configuration=Debug `
+  /p:Platform=x64 `
+  /m `
+  /v:minimal
 ```
-& 'C:\Program Files\Microsoft Visual Studio\<version>\<edition>\MSBuild\Current\Bin\MSBuild.exe' '.\BG3ModManager.sln' /t:Build /p:Configuration=Debug /p:Platform=x64 /m /v:minimal
+
+Use the installed Visual Studio version and edition in place of the placeholders. Building the
+solution through Visual Studio with **Debug | x64** selected is equivalent.
+
+Do not use `dotnet build` as the normal Redux build path. It does not build the native project graph
+the same way and can clean the C++/CLI loader shim from the final debug directory.
+
+## Required native loader shim
+
+After every build, verify:
+
+```powershell
+(Get-Item '.\bin\Debug\Ijwhost.dll').Length
 ```
 
-`dotnet build` will build the managed projects, but it deletes `bin\Debug\Ijwhost.dll` as part of
-its own output cleanup, which silently breaks `.pak` parsing (see below). MSBuild does not have
-this problem.
+The current expected result is:
 
-## Known gotcha: `Ijwhost.dll`
-
-After **every** build, re-copy `Ijwhost.dll` from `x64\Debug\Ijwhost.dll` to `bin\Debug\Ijwhost.dll`
-(should be 117,520 bytes). If this file is missing or stale, the app will start normally but every
-mod list will silently come back empty — there's no error, just no mods. This is the single most
-common "why are there no mods showing" cause during local development.
-
+```text
+117520
 ```
+
+The complete x64 MSBuild normally copies the correct file automatically. If another build path or
+an incremental cleanup removed it, restore it from the native output:
+
+```powershell
 Copy-Item -Path '.\x64\Debug\Ijwhost.dll' -Destination '.\bin\Debug\Ijwhost.dll' -Force
 ```
 
-## Running a locally-built debug binary
+`Ijwhost.dll` is required to load `LSLibNative.dll`. If it is missing or stale, Redux may launch
+normally while `.pak` parsing fails and the installed-mod lists appear empty.
 
-Close any previously-running `BG3ModManager.exe` before rebuilding — MSBuild will fail with
-`MSB3027`/`MSB3021` (file locked) if the previous build's exe is still running.
+## Running a debug build
 
-## Release packaging
+Close any running `BG3ModManager.exe` before rebuilding. MSBuild reports `MSB3027` or `MSB3021`
+when the previous process still holds an output file open.
 
-See `BuildRelease.py` for the release artifact list and packaging steps. Redux ships as a
-framework-dependent build — the .NET 8 Desktop Runtime must already be installed on the target
-machine. There are no current plans to switch to a self-contained deployment (see "Known alpha
-limitations" in the main README).
+The primary executable is:
+
+```text
+bin\Debug\BG3ModManager.exe
+```
+
+Local debug data, settings, imported fonts, imported icons, caches, and logs are runtime user state.
+Do not commit or distribute them.
+
+## Publish build
+
+Build the solution with `Configuration=Publish` and `Platform=x64`:
+
+```powershell
+& 'C:\Program Files\Microsoft Visual Studio\<version>\<edition>\MSBuild\Current\Bin\MSBuild.exe' `
+  '.\BG3ModManager.sln' `
+  /t:Build `
+  /p:Configuration=Publish `
+  /p:Platform=x64 `
+  /m `
+  /v:minimal
+```
+
+The GUI project invokes `BuildRelease.py` after assembling `bin\Publish`. The hook expects `python`
+to be available on `PATH`. If it is not, run the script directly with any Python 3 interpreter
+after the Publish binaries finish compiling:
+
+```powershell
+python '.\BuildRelease.py' '0.1.0-alpha.5'
+```
+
+Use the actual display version from the project when producing a later build.
+
+The release packager:
+
+- Removes settings, logs, caches, backups, development symbols, and other runtime user data.
+- Copies the public README and project license.
+- Produces one consolidated `THIRD-PARTY-NOTICES.md` containing attribution and complete license
+  texts.
+- Verifies `LSLib.dll`, `LSLibNative.dll`, and `Ijwhost.dll`.
+- Removes local workspace paths embedded in supported binaries.
+- Rejects forbidden files and private build metadata.
+- Creates a versioned ZIP and updates `BG3ModManager-Redux-Latest.zip`.
+
+Redux uses a framework-dependent deployment. Test machines must already have the .NET 8 Desktop
+Runtime installed.
+
+## Validation before publishing
+
+Before distributing a build:
+
+1. Confirm the solution built with zero errors.
+2. Confirm `bin\Debug\Ijwhost.dll` or `bin\Publish\_Lib\Ijwhost.dll` is present and correct.
+3. Launch Redux and confirm installed `.pak` files are detected.
+4. Test drag-and-drop, profile selection, load-order loading, and export.
+5. Test Redux Dark, Redux Light, and Parchment.
+6. Test dialogs, source pills, category icons, custom themes, and typography.
+7. Inspect the ZIP for settings, logs, keys, local paths, and development-only files.
+8. Test the ZIP in a clean folder before sharing it.
