@@ -43,6 +43,69 @@
 	<CornerRadius x:Key="Redux.CornerRadius.ControlInner">6</CornerRadius>
 	<CornerRadius x:Key="Redux.CornerRadius.Card">8</CornerRadius>
 	<CornerRadius x:Key="Redux.CornerRadius.Pill">10</CornerRadius>
+	<!--
+		Shared spatial rhythm. Keep scalar values available for dimensions and use the
+		inset resources for common padding/margin shapes. New presentation work should
+		prefer these tokens over introducing nearby one-off values.
+	-->
+	<sys:Double x:Key="Redux.Space.2">2</sys:Double>
+	<sys:Double x:Key="Redux.Space.4">4</sys:Double>
+	<sys:Double x:Key="Redux.Space.6">6</sys:Double>
+	<sys:Double x:Key="Redux.Space.8">8</sys:Double>
+	<sys:Double x:Key="Redux.Space.12">12</sys:Double>
+	<sys:Double x:Key="Redux.Space.16">16</sys:Double>
+	<sys:Double x:Key="Redux.Space.20">20</sys:Double>
+	<sys:Double x:Key="Redux.Space.24">24</sys:Double>
+	<sys:Double x:Key="Redux.Space.32">32</sys:Double>
+	<Thickness x:Key="Redux.Inset.Compact">6,3</Thickness>
+	<Thickness x:Key="Redux.Inset.Control">10,6</Thickness>
+	<Thickness x:Key="Redux.Inset.Surface">12</Thickness>
+	<Thickness x:Key="Redux.Inset.Card">16</Thickness>
+	<sys:Double x:Key="Redux.ControlHeight.Compact">28</sys:Double>
+	<sys:Double x:Key="Redux.ControlHeight.Standard">32</sys:Double>
+	<sys:Double x:Key="Redux.ControlHeight.Comfortable">36</sys:Double>
+	<sys:Double x:Key="Redux.PaneHeaderHeight">46</sys:Double>
+	<sys:Double x:Key="Redux.MarkerSize.Default">11</sys:Double>
+
+	<!-- Semantic typography roles. Font sizes remain runtime-scalable tokens. -->
+	<Style x:Key="Redux.Text.WindowTitle" TargetType="{x:Type TextBlock}">
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.16}" />
+		<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Title}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+	</Style>
+	<Style x:Key="Redux.Text.PageTitle" TargetType="{x:Type TextBlock}">
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.20}" />
+		<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Brand}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+	</Style>
+	<Style x:Key="Redux.Text.SectionTitle" TargetType="{x:Type TextBlock}">
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.14}" />
+		<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Title}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+	</Style>
+	<Style x:Key="Redux.Text.ListPrimary" TargetType="{x:Type TextBlock}">
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.12}" />
+		<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Control}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+	</Style>
+	<Style x:Key="Redux.Text.Body" TargetType="{x:Type TextBlock}">
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.12}" />
+		<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Body}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+	</Style>
+	<Style x:Key="Redux.Text.Metadata" TargetType="{x:Type TextBlock}">
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.11}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
+	</Style>
+	<Style x:Key="Redux.Text.Caption" TargetType="{x:Type TextBlock}">
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.10}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+	</Style>
+	<Style x:Key="Redux.Text.Overline" TargetType="{x:Type TextBlock}">
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.10}" />
+		<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Title}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+	</Style>
 	<Style BasedOn="{StaticResource {x:Type ContextMenu}}" TargetType="{x:Type ContextMenu}">
 		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
 		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
@@ -1220,6 +1283,144 @@
 		<Setter Property="Background" Value="{DynamicResource {x:Static adonisUI:Brushes.Layer0BackgroundBrush}}" />
 		<Setter Property="BorderThickness" Value="0" />
 	</Style>
+	<!--
+		Modern Redux scrollbars keep a generous transparent interaction lane while the
+		visible thumb remains thin and rounded. Hover changes contrast only; it never
+		expands into the full square WPF/Adonis scrollbar chrome.
+	-->
+	<Style x:Key="ReduxScrollPageButtonStyle" TargetType="{x:Type RepeatButton}">
+		<Setter Property="Focusable" Value="False" />
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type RepeatButton}">
+					<Border Background="Transparent" />
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<Style x:Key="ReduxVerticalScrollThumbStyle" TargetType="{x:Type Thumb}">
+		<Setter Property="MinHeight" Value="28" />
+		<Setter Property="Background" Value="{DynamicResource ReduxBorderStrongBrush}" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type Thumb}">
+					<Grid Background="Transparent">
+						<Border x:Name="ThumbVisual"
+							Width="5"
+							HorizontalAlignment="Center"
+							Background="{TemplateBinding Background}"
+							CornerRadius="3" />
+					</Grid>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter TargetName="ThumbVisual" Property="Background" Value="{DynamicResource ReduxAccentBrush}" />
+						</Trigger>
+						<Trigger Property="IsDragging" Value="True">
+							<Setter TargetName="ThumbVisual" Property="Background" Value="{DynamicResource ReduxAccentHoverBrush}" />
+						</Trigger>
+						<Trigger Property="IsEnabled" Value="False">
+							<Setter TargetName="ThumbVisual" Property="Opacity" Value="0.35" />
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<Style x:Key="ReduxHorizontalScrollThumbStyle" TargetType="{x:Type Thumb}">
+		<Setter Property="MinWidth" Value="28" />
+		<Setter Property="Background" Value="{DynamicResource ReduxBorderStrongBrush}" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type Thumb}">
+					<Grid Background="Transparent">
+						<Border x:Name="ThumbVisual"
+							Height="5"
+							VerticalAlignment="Center"
+							Background="{TemplateBinding Background}"
+							CornerRadius="3" />
+					</Grid>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter TargetName="ThumbVisual" Property="Background" Value="{DynamicResource ReduxAccentBrush}" />
+						</Trigger>
+						<Trigger Property="IsDragging" Value="True">
+							<Setter TargetName="ThumbVisual" Property="Background" Value="{DynamicResource ReduxAccentHoverBrush}" />
+						</Trigger>
+						<Trigger Property="IsEnabled" Value="False">
+							<Setter TargetName="ThumbVisual" Property="Opacity" Value="0.35" />
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+	<ControlTemplate x:Key="ReduxVerticalScrollBarTemplate" TargetType="{x:Type ScrollBar}">
+		<Grid Width="12" Background="Transparent">
+			<Border x:Name="TrackRail"
+				Width="3"
+				HorizontalAlignment="Center"
+				Background="{DynamicResource ReduxSurfaceMutedBrush}"
+				CornerRadius="2"
+				Opacity="0.45" />
+			<Track x:Name="PART_Track"
+				IsDirectionReversed="True"
+				Orientation="Vertical">
+				<Track.DecreaseRepeatButton>
+					<RepeatButton Command="{x:Static ScrollBar.PageUpCommand}" Style="{StaticResource ReduxScrollPageButtonStyle}" />
+				</Track.DecreaseRepeatButton>
+				<Track.Thumb>
+					<Thumb Style="{StaticResource ReduxVerticalScrollThumbStyle}" />
+				</Track.Thumb>
+				<Track.IncreaseRepeatButton>
+					<RepeatButton Command="{x:Static ScrollBar.PageDownCommand}" Style="{StaticResource ReduxScrollPageButtonStyle}" />
+				</Track.IncreaseRepeatButton>
+			</Track>
+		</Grid>
+		<ControlTemplate.Triggers>
+			<Trigger Property="IsMouseOver" Value="True">
+				<Setter TargetName="TrackRail" Property="Opacity" Value="0.8" />
+			</Trigger>
+		</ControlTemplate.Triggers>
+	</ControlTemplate>
+	<ControlTemplate x:Key="ReduxHorizontalScrollBarTemplate" TargetType="{x:Type ScrollBar}">
+		<Grid Height="12" Background="Transparent">
+			<Border x:Name="TrackRail"
+				Height="3"
+				VerticalAlignment="Center"
+				Background="{DynamicResource ReduxSurfaceMutedBrush}"
+				CornerRadius="2"
+				Opacity="0.45" />
+			<Track x:Name="PART_Track"
+				IsDirectionReversed="False"
+				Orientation="Horizontal">
+				<Track.DecreaseRepeatButton>
+					<RepeatButton Command="{x:Static ScrollBar.PageLeftCommand}" Style="{StaticResource ReduxScrollPageButtonStyle}" />
+				</Track.DecreaseRepeatButton>
+				<Track.Thumb>
+					<Thumb Style="{StaticResource ReduxHorizontalScrollThumbStyle}" />
+				</Track.Thumb>
+				<Track.IncreaseRepeatButton>
+					<RepeatButton Command="{x:Static ScrollBar.PageRightCommand}" Style="{StaticResource ReduxScrollPageButtonStyle}" />
+				</Track.IncreaseRepeatButton>
+			</Track>
+		</Grid>
+		<ControlTemplate.Triggers>
+			<Trigger Property="IsMouseOver" Value="True">
+				<Setter TargetName="TrackRail" Property="Opacity" Value="0.8" />
+			</Trigger>
+		</ControlTemplate.Triggers>
+	</ControlTemplate>
+	<Style TargetType="{x:Type ScrollBar}">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="Focusable" Value="False" />
+		<Setter Property="Template" Value="{StaticResource ReduxVerticalScrollBarTemplate}" />
+		<Style.Triggers>
+			<Trigger Property="Orientation" Value="Horizontal">
+				<Setter Property="Template" Value="{StaticResource ReduxHorizontalScrollBarTemplate}" />
+			</Trigger>
+		</Style.Triggers>
+	</Style>
 	<Style TargetType="{x:Type controls:AutoGrayableImage}">
 		<Setter Property="Width" Value="16" />
 		<Setter Property="Height" Value="16" />
@@ -1452,7 +1653,7 @@
 		<Setter Property="behavior:ScreenReaderHelperBehavior.Automatic" Value="True" />
 		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 		<Setter Property="MinHeight" Value="32" />
-		<Setter Property="Padding" Value="8,3" />
+		<Setter Property="Padding" Value="10,4" />
 		<Setter Property="Margin" Value="0,0,0,1" />
 		<Setter Property="VerticalContentAlignment" Value="Center" />
 		<Setter Property="BorderBrush" Value="Transparent" />
@@ -1661,7 +1862,8 @@
 								</ToggleButton>
 								<Grid Grid.Column="1" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center">
 									<!--  Stroke ring, not a filled dot: default markers follow the Lucide stroke icon language.  -->
-									<Ellipse Width="8" Height="8"
+									<Ellipse Width="{DynamicResource Redux.MarkerSize.Default}"
+										Height="{DynamicResource Redux.MarkerSize.Default}"
 										Fill="Transparent"
 										Stroke="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
 										StrokeThickness="1.5"
@@ -1876,13 +2078,35 @@
 							VerticalAlignment="Center"
 							IsHitTestVisible="False"
 							Visibility="Collapsed">
-							<StackPanel HorizontalAlignment="Center">
-								<TextBlock HorizontalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.14}" FontWeight="SemiBold" Text="No mods here yet" />
-								<TextBlock Margin="0,6,0,0"
-									HorizontalAlignment="Center"
-									Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Use Install Mod or move a mod into this list." />
-							</StackPanel>
+							<Border Padding="20,16"
+								Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+								BorderBrush="{DynamicResource ReduxBorderBrush}"
+								BorderThickness="1"
+								CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+								<StackPanel MinWidth="230" HorizontalAlignment="Center">
+									<Border Width="38" Height="38"
+										HorizontalAlignment="Center"
+										Background="{DynamicResource ReduxAccentSoftBrush}"
+										CornerRadius="19">
+										<controls:ReduxIcon Width="18" Height="18"
+											HorizontalAlignment="Center"
+											VerticalAlignment="Center"
+											Foreground="{DynamicResource ReduxAccentHoverBrush}"
+											StrokeData="{StaticResource Redux.Icon.Package}" />
+									</Border>
+									<TextBlock Margin="0,10,0,0"
+										HorizontalAlignment="Center"
+										Style="{StaticResource Redux.Text.SectionTitle}"
+										Text="No mods here yet" />
+									<TextBlock MaxWidth="280"
+										Margin="0,4,0,0"
+										HorizontalAlignment="Center"
+										Foreground="{DynamicResource ReduxTextMutedBrush}"
+										Text="Install a mod, move one into this list, or clear the current filter."
+										TextAlignment="Center"
+										TextWrapping="Wrap" />
+								</StackPanel>
+							</Border>
 						</Border>
 						<Rectangle Name="DisabledRect"
 						    HorizontalAlignment="Stretch"
@@ -2367,6 +2591,7 @@
 			</controls:ModEntryGrid.ColumnDefinitions>
 			<TextBlock x:Name="ModNameText"
 			    HorizontalAlignment="Stretch"
+			    Style="{StaticResource Redux.Text.ListPrimary}"
 			    Tag="{Binding}"
 				Text="{Binding DisplayTitle}"
 				TextTrimming="CharacterEllipsis"
@@ -2664,7 +2889,7 @@
 	<DataTemplate x:Key="ModAuthorTemplate" DataType="{x:Type data:DivinityModData}">
 		<TextBlock>
 			<TextBlock.Style>
-				<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+				<Style BasedOn="{StaticResource Redux.Text.Metadata}" TargetType="{x:Type TextBlock}">
 					<Setter Property="Text" Value="{Binding Author}" />
 					<Setter Property="ToolTip" Value="{Binding Author}" />
 					<Style.Triggers>
@@ -2686,11 +2911,13 @@
 		</TextBlock>
 	</DataTemplate>
 	<DataTemplate x:Key="ModLastUpdatedTemplate" DataType="{x:Type data:DivinityModData}">
-		<TextBlock Text="{Binding DisplayLastUpdated, StringFormat={x:Static dapp:DivinityApp.DateTimeColumnFormat}}"
+		<TextBlock Style="{StaticResource Redux.Text.Metadata}"
+		    Text="{Binding DisplayLastUpdated, StringFormat={x:Static dapp:DivinityApp.DateTimeColumnFormat}}"
 		    ToolTip="{Binding DisplayLastUpdated, StringFormat={x:Static dapp:DivinityApp.DateTimeTooltipFormat}}" />
 	</DataTemplate>
 	<DataTemplate x:Key="ModLastModifiedTemplate" DataType="{x:Type data:DivinityModData}">
-		<TextBlock Text="{Binding LastModified, StringFormat={x:Static dapp:DivinityApp.DateTimeColumnFormat}}"
+		<TextBlock Style="{StaticResource Redux.Text.Metadata}"
+		    Text="{Binding LastModified, StringFormat={x:Static dapp:DivinityApp.DateTimeColumnFormat}}"
 		    ToolTip="{Binding LastModified, StringFormat={x:Static dapp:DivinityApp.DateTimeTooltipFormat}}" />
 	</DataTemplate>
 	<DataTemplate x:Key="NexusPlatformIconTemplate">
@@ -2843,8 +3070,9 @@
 	</DataTemplate>
 	<Style x:Key="GridViewLeftContainerStyle" BasedOn="{StaticResource {x:Type GridViewColumnHeader}}" TargetType="{x:Type GridViewColumnHeader}">
 		<Setter Property="Height" Value="30" />
-		<Setter Property="Padding" Value="8,0" />
-		<Setter Property="FontWeight" Value="SemiBold" />
+		<Setter Property="Padding" Value="10,0" />
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.11}" />
+		<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Title}" />
 		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
 		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
 		<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
@@ -2872,7 +3100,10 @@
 			    HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate>
 					<DataTemplate>
-						<TextBlock Margin="2,0,2,0" Background="Transparent" Text="{Binding Index}" />
+						<TextBlock Margin="2,0,2,0"
+							Background="Transparent"
+							Style="{StaticResource Redux.Text.Metadata}"
+							Text="{Binding Index}" />
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
@@ -2883,13 +3114,13 @@
 			</GridViewColumn>
 			<GridViewColumn Width="190" Header="File Name" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate><DataTemplate>
-					<TextBlock Text="{Binding FileName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
+					<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
 				</DataTemplate></GridViewColumn.CellTemplate>
 			</GridViewColumn>
 			<GridViewColumn Width="90" Header="Version" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate>
 					<DataTemplate>
-						<TextBlock Text="{Binding DisplayVersion}" TextAlignment="Left" ToolTip="{Binding DisplayVersion}" />
+						<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding DisplayVersion}" TextAlignment="Left" ToolTip="{Binding DisplayVersion}" />
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
@@ -2930,13 +3161,13 @@
 			</GridViewColumn>
 			<GridViewColumn Width="190" Header="File Name" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate><DataTemplate>
-					<TextBlock Text="{Binding FileName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
+					<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
 				</DataTemplate></GridViewColumn.CellTemplate>
 			</GridViewColumn>
 			<GridViewColumn Width="90" Header="Version" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate>
 					<DataTemplate>
-						<TextBlock Text="{Binding DisplayVersion}" TextAlignment="Left" ToolTip="{Binding DisplayVersion}" />
+						<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding DisplayVersion}" TextAlignment="Left" ToolTip="{Binding DisplayVersion}" />
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
@@ -2958,13 +3189,13 @@
 			    HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="190" Header="File Name" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate><DataTemplate>
-					<TextBlock Text="{Binding FileName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
+					<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
 				</DataTemplate></GridViewColumn.CellTemplate>
 			</GridViewColumn>
 			<GridViewColumn Width="90" Header="Version" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate>
 					<DataTemplate>
-						<TextBlock Text="{Binding DisplayVersion}" TextAlignment="Left" ToolTip="{Binding DisplayVersion}" />
+						<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding DisplayVersion}" TextAlignment="Left" ToolTip="{Binding DisplayVersion}" />
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
