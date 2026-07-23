@@ -1763,6 +1763,16 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		};
 	}
 
+	/// <summary>
+	/// Resolves the live Redux.FontSize.11 token pills actually render at, rather than
+	/// assuming a literal 11 - that token scales with the Compact/Default/Large text-size
+	/// preset, so a hardcoded value under-measures pill content whenever the preset isn't Default.
+	/// </summary>
+	private static double GetPillFontSize(ModListView listView)
+	{
+		return listView?.TryFindResource("Redux.FontSize.11") is double size ? size : 11d;
+	}
+
 	private static double MeasureColumnText(ModListView listView, string text, double? fontSize = null, FontWeight? fontWeight = null)
 	{
 		if (String.IsNullOrEmpty(text))
@@ -1854,13 +1864,22 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					candidateWidth = MeasureColumnText(listView, author) + 24;
 					break;
 				case "Category":
-					candidateWidth = mod.DisplayCategories?.Sum(category => MeasureColumnText(listView, category.Name, 11, FontWeights.SemiBold) + 19) + 8 ?? 8;
+					// Per-pill overhead: 16 padding + 3 border + 5 margin, plus the 17px
+					// icon+margin reserve whenever category icons are shown (the pill's
+					// actual chrome, not a guess), plus a generous cushion - the pill's
+					// FontSize comes from the Redux.FontSize.11 token, which scales with the
+					// Compact/Default/Large text-size preset, so a hardcoded "11" here
+					// under-measures whenever text size isn't Default.
+					var categoryIconAllowance = ViewModel?.Settings.ShowCategoryIconsInPills == true ? 17 : 0;
+					var pillFontSize = GetPillFontSize(listView);
+					candidateWidth = (mod.DisplayCategories?.Sum(category => MeasureColumnText(listView, category.Name, pillFontSize, FontWeights.SemiBold) + 24 + categoryIconAllowance) ?? 0) + 20;
 					break;
 				case "Source":
-					candidateWidth = MeasureColumnText(listView, mod.DisplaySource, 11, FontWeights.SemiBold) + 55;
+					// 14px provider icon + 6 margin + 16 padding + 3 border + a generous cushion.
+					candidateWidth = MeasureColumnText(listView, mod.DisplaySource, GetPillFontSize(listView), FontWeights.SemiBold) + 60;
 					if (mod.Metadata.ModioWarningVisibility == Visibility.Visible && ViewModel?.Settings.HideModioSourceWarningIcons == false)
 					{
-						candidateWidth += 22;
+						candidateWidth += 24;
 					}
 					break;
 				default:

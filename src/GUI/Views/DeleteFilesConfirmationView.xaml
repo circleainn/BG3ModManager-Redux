@@ -81,6 +81,7 @@
 					</Trigger>
 					<Trigger Property="IsEnabled" Value="False">
 						<Setter TargetName="ButtonSurface" Property="Opacity" Value="0.45" />
+						<Setter Property="Cursor" Value="Arrow" />
 					</Trigger>
 				</ControlTemplate.Triggers>
 			</ControlTemplate>

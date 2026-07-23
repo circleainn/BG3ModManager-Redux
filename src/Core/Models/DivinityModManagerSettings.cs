@@ -178,10 +178,14 @@ public class DivinityModManagerSettings : ReactiveObject
 
 	// Redux mod-list column choices. These are managed from the column-header
 	// context menu, so they stay out of the main Settings window.
-	[DefaultValue(true)]
+	// File Name/Version/Last Modified default off: they're lookup-when-needed facts
+	// (largely redundant with Name/Last Updated), not scan-at-a-glance information,
+	// and showing all seven columns by default crowded out the ones that actually
+	// help a decision (Category, Source).
+	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ShowModListVersionColumn { get; set; }
 
-	[DefaultValue(true)]
+	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ShowModListFileNameColumn { get; set; }
 
 	[DefaultValue(true)]
@@ -190,7 +194,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DefaultValue(true)]
 	[DataMember, Reactive] public bool ShowModListLastUpdatedColumn { get; set; }
 
-	[DefaultValue(true)]
+	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ShowModListLastModifiedColumn { get; set; }
 
 	[DefaultValue(true)]
@@ -220,6 +224,15 @@ public class DivinityModManagerSettings : ReactiveObject
 
 	[DefaultValue(true)]
 	[DataMember, Reactive] public bool ShowCategoryIconsInPills { get; set; } = true;
+
+	[DefaultValue(true)]
+	[DataMember, Reactive] public bool CategoriesPanelExpanded { get; set; } = true;
+
+	[DefaultValue(true)]
+	[DataMember, Reactive] public bool InactiveModsPanelExpanded { get; set; } = true;
+
+	[DefaultValue(true)]
+	[DataMember, Reactive] public bool AlwaysLoadedPanelExpanded { get; set; } = true;
 
 	[DefaultValue("All Mods")]
 	[DataMember, Reactive] public string SavedModCategoryFilter { get; set; } = "All Mods";

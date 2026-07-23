@@ -56,6 +56,12 @@
 				<Setter Property="Height" Value="{DynamicResource Redux.PaneHeaderHeight}" />
 				<Setter Property="Margin" Value="12,0" />
 			</Style>
+			<!--
+				Invisible until hover, matching the selected-mod drawer's resize handle
+				(ModDetailsGridSplitter): a rail that's always faintly visible reads as
+				permanent chrome; fading it in only on hover keeps it discoverable without
+				adding a line to every pane at rest.
+			-->
 			<Style x:Key="ReduxVerticalSplitterStyle" TargetType="{x:Type GridSplitter}">
 				<Setter Property="Background" Value="Transparent" />
 				<Setter Property="Cursor" Value="SizeWE" />
@@ -64,18 +70,31 @@
 						<ControlTemplate TargetType="{x:Type GridSplitter}">
 							<Grid Background="Transparent">
 								<Border x:Name="SplitterLine"
-									Width="2"
+									Width="3"
 									HorizontalAlignment="Center"
-									Background="{DynamicResource ReduxBorderBrush}"
-									CornerRadius="1" />
+									Background="{DynamicResource ReduxAccentHoverBrush}"
+									CornerRadius="1.5"
+									Opacity="0" />
 							</Grid>
 							<ControlTemplate.Triggers>
-								<Trigger Property="IsMouseOver" Value="True">
-									<Setter TargetName="SplitterLine" Property="Background" Value="{DynamicResource ReduxAccentBrush}" />
-								</Trigger>
+								<EventTrigger RoutedEvent="MouseEnter">
+									<BeginStoryboard>
+										<Storyboard>
+											<DoubleAnimation Storyboard.TargetName="SplitterLine" Storyboard.TargetProperty="Opacity"
+												To="0.9" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+										</Storyboard>
+									</BeginStoryboard>
+								</EventTrigger>
+								<EventTrigger RoutedEvent="MouseLeave">
+									<BeginStoryboard>
+										<Storyboard>
+											<DoubleAnimation Storyboard.TargetName="SplitterLine" Storyboard.TargetProperty="Opacity"
+												To="0" Duration="{StaticResource Redux.Motion.Standard}" />
+										</Storyboard>
+									</BeginStoryboard>
+								</EventTrigger>
 								<Trigger Property="IsDragging" Value="True">
-									<Setter TargetName="SplitterLine" Property="Width" Value="3" />
-									<Setter TargetName="SplitterLine" Property="Background" Value="{DynamicResource ReduxAccentHoverBrush}" />
+									<Setter TargetName="SplitterLine" Property="Opacity" Value="1" />
 								</Trigger>
 							</ControlTemplate.Triggers>
 						</ControlTemplate>
@@ -90,18 +109,31 @@
 						<ControlTemplate TargetType="{x:Type GridSplitter}">
 							<Grid Background="Transparent">
 								<Border x:Name="SplitterLine"
-									Height="2"
+									Height="3"
 									VerticalAlignment="Center"
-									Background="{DynamicResource ReduxBorderBrush}"
-									CornerRadius="1" />
+									Background="{DynamicResource ReduxAccentHoverBrush}"
+									CornerRadius="1.5"
+									Opacity="0" />
 							</Grid>
 							<ControlTemplate.Triggers>
-								<Trigger Property="IsMouseOver" Value="True">
-									<Setter TargetName="SplitterLine" Property="Background" Value="{DynamicResource ReduxAccentBrush}" />
-								</Trigger>
+								<EventTrigger RoutedEvent="MouseEnter">
+									<BeginStoryboard>
+										<Storyboard>
+											<DoubleAnimation Storyboard.TargetName="SplitterLine" Storyboard.TargetProperty="Opacity"
+												To="0.9" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+										</Storyboard>
+									</BeginStoryboard>
+								</EventTrigger>
+								<EventTrigger RoutedEvent="MouseLeave">
+									<BeginStoryboard>
+										<Storyboard>
+											<DoubleAnimation Storyboard.TargetName="SplitterLine" Storyboard.TargetProperty="Opacity"
+												To="0" Duration="{StaticResource Redux.Motion.Standard}" />
+										</Storyboard>
+									</BeginStoryboard>
+								</EventTrigger>
 								<Trigger Property="IsDragging" Value="True">
-									<Setter TargetName="SplitterLine" Property="Height" Value="3" />
-									<Setter TargetName="SplitterLine" Property="Background" Value="{DynamicResource ReduxAccentHoverBrush}" />
+									<Setter TargetName="SplitterLine" Property="Opacity" Value="1" />
 								</Trigger>
 							</ControlTemplate.Triggers>
 						</ControlTemplate>
@@ -507,7 +539,7 @@
 						Background="{DynamicResource ReduxListInteriorBrush}"
 						BorderThickness="1"
 						ClipToBounds="True"
-						CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+						CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 						<Border.InputBindings>
 							<MouseBinding Command="{Binding Path=OpenModGalleryPageCommand, Source={x:Static dapp:DivinityApp.Commands}}"
 								CommandParameter="{Binding}"
@@ -521,18 +553,43 @@
 										<Setter Property="Cursor" Value="Hand" />
 										<Setter Property="ToolTip" Value="{Binding Metadata.GalleryTooltip}" />
 									</DataTrigger>
+									<!--  Hover glow matches the linked provider's brand color instead of always Redux purple.  -->
 									<MultiDataTrigger>
 										<MultiDataTrigger.Conditions>
 											<Condition Binding="{Binding Metadata.OnlineSourceVisibility}" Value="Visible" />
+											<Condition Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}" />
+											<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
+										</MultiDataTrigger.Conditions>
+										<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Nexus.Border}" />
+										<Setter Property="Effect">
+											<Setter.Value>
+												<DropShadowEffect BlurRadius="10" Color="#F9A332" Opacity="0.65" ShadowDepth="0" />
+											</Setter.Value>
+										</Setter>
+									</MultiDataTrigger>
+									<MultiDataTrigger>
+										<MultiDataTrigger.Conditions>
+											<Condition Binding="{Binding Metadata.OnlineSourceVisibility}" Value="Visible" />
+											<Condition Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}" />
+											<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
+										</MultiDataTrigger.Conditions>
+										<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Modio.Border}" />
+										<Setter Property="Effect">
+											<Setter.Value>
+												<DropShadowEffect BlurRadius="10" Color="#05C2D8" Opacity="0.65" ShadowDepth="0" />
+											</Setter.Value>
+										</Setter>
+									</MultiDataTrigger>
+									<MultiDataTrigger>
+										<MultiDataTrigger.Conditions>
+											<Condition Binding="{Binding Metadata.OnlineSourceVisibility}" Value="Visible" />
+											<Condition Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NONE}" />
 											<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
 										</MultiDataTrigger.Conditions>
 										<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
 										<Setter Property="Effect">
 											<Setter.Value>
-												<DropShadowEffect BlurRadius="10"
-													Color="{DynamicResource ReduxAccentColor}"
-													Opacity="0.65"
-													ShadowDepth="0" />
+												<DropShadowEffect BlurRadius="10" Color="{DynamicResource ReduxAccentColor}" Opacity="0.65" ShadowDepth="0" />
 											</Setter.Value>
 										</Setter>
 									</MultiDataTrigger>
@@ -540,10 +597,6 @@
 							</Style>
 						</Border.Style>
 						<Grid>
-							<Grid.RowDefinitions>
-								<RowDefinition Height="*" />
-								<RowDefinition Height="29" />
-							</Grid.RowDefinitions>
 							<!--  Future linked artwork belongs in this layer. Uniform preserves the complete image without aggressive cropping.  -->
 							<Image x:Name="ModDetailsPreviewImage"
 								Margin="6"
@@ -569,19 +622,16 @@
 									Margin="8"
 									HorizontalAlignment="Center"
 									VerticalAlignment="Center">
-									<Border Width="64"
-										Height="34"
+									<!--  Same circular icon-avatar language as ReduxMessageBoxWindow's severity badge.  -->
+									<Border Width="56" Height="56"
 										HorizontalAlignment="Center"
 										Background="{DynamicResource ReduxAccentSoftBrush}"
 										BorderBrush="{DynamicResource ReduxAccentBrush}"
 										BorderThickness="1"
-										CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-										<TextBlock HorizontalAlignment="Center"
-											VerticalAlignment="Center"
-											FontSize="{DynamicResource Redux.FontSize.15}"
-											FontWeight="Bold"
-											Foreground="{DynamicResource ReduxAccentHoverBrush}"
-											Text="MOD" />
+										CornerRadius="28">
+										<c:ReduxIcon Width="26" Height="26"
+											StrokeData="{StaticResource Redux.Icon.Package}"
+											Foreground="{DynamicResource ReduxAccentHoverBrush}" />
 									</Border>
 									<TextBlock Margin="0,6,0,0"
 										HorizontalAlignment="Center"
@@ -596,37 +646,6 @@
 										TextWrapping="Wrap" />
 								</StackPanel>
 							</Grid>
-							<Border Grid.Row="1"
-								Margin="6,0,6,6"
-								BorderThickness="1"
-								CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-								<Border.Style><Style TargetType="Border">
-									<Setter Property="Background" Value="{StaticResource Redux.Pill.Local.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Local.Border}" /><Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Local.Border}" />
-									<Style.Triggers>
-										<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}"><Setter Property="Background" Value="{StaticResource Redux.Pill.Nexus.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Nexus.Border}" /><Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Nexus.Border}" /></DataTrigger>
-										<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}"><Setter Property="Background" Value="{StaticResource Redux.Pill.Modio.Background}" /><Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Modio.Border}" /><Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Modio.Border}" /></DataTrigger>
-									</Style.Triggers>
-								</Style></Border.Style>
-								<StackPanel HorizontalAlignment="Center"
-									VerticalAlignment="Center"
-									Orientation="Horizontal">
-									<ContentControl Margin="0,0,5,0" Content="{Binding}" ContentTemplate="{StaticResource PlatformIconPresenterTemplate}" Visibility="{Binding Metadata.OnlineSourceVisibility}" />
-									<TextBlock VerticalAlignment="Center"
-										FontSize="{DynamicResource Redux.FontSize.10}"
-										FontWeight="SemiBold">
-									<TextBlock.Style>
-										<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
-											<Setter Property="Text" Value="Local" />
-											<Style.Triggers>
-										<DataTrigger Binding="{Binding Metadata.OnlineSourceVisibility}" Value="Visible">
-											<Setter Property="Text" Value="{Binding Metadata.SourceLabel}" />
-												</DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</TextBlock.Style>
-									</TextBlock>
-								</StackPanel>
-							</Border>
 						</Grid>
 					</Border>
 					<Grid Grid.Column="2">
@@ -865,91 +884,6 @@
 						<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="File path" />
 						<TextBlock Grid.Column="1" Text="{Binding FilePath}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" />
 					</Grid>
-				</Grid>
-			</DataTemplate>
-			<DataTemplate x:Key="ModDetailsMediaTemplate" DataType="{x:Type data:DivinityModData}">
-				<Grid Margin="18,12">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="*" />
-					</Grid.RowDefinitions>
-					<Grid>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="Auto" />
-						</Grid.ColumnDefinitions>
-						<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold">
-							<TextBlock.Style>
-								<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
-									<Setter Property="Text" Value="No linked media yet" />
-									<Style.Triggers>
-										<DataTrigger Binding="{Binding Metadata.PreviewImageVisibility}" Value="Visible">
-											<Setter Property="Text" Value="{Binding Metadata.SourceLabel, StringFormat='Media from {0}'}" />
-										</DataTrigger>
-									</Style.Triggers>
-								</Style>
-							</TextBlock.Style>
-						</TextBlock>
-						<Button Grid.Column="1"
-							Command="{Binding Path=OpenModSourcePageCommand, Source={x:Static dapp:DivinityApp.Commands}}"
-							CommandParameter="{Binding}"
-							Content="{Binding}"
-							ContentTemplate="{StaticResource PlatformSourceButtonTemplate}"
-							Style="{StaticResource ModDetailsSourceButtonStyle}"
-							Visibility="{Binding Metadata.OnlineSourceVisibility}" />
-					</Grid>
-					<TextBlock Grid.Row="1"
-						Margin="0,2,0,0"
-						Foreground="{DynamicResource ReduxTextMutedBrush}">
-						<TextBlock.Style>
-							<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
-								<Setter Property="Text" Value="Images from the linked mod source will appear here when its gallery is available." />
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding Metadata.PreviewImageVisibility}" Value="Visible">
-										<Setter Property="Text" Value="The linked source image is shown without cropping." />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</TextBlock.Style>
-					</TextBlock>
-					<Border Grid.Row="2"
-						MinHeight="120"
-						Margin="0,9,0,0"
-						Padding="8"
-						Background="{DynamicResource ReduxListInteriorBrush}"
-						BorderBrush="{DynamicResource ReduxBorderBrush}"
-						BorderThickness="1"
-						CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-						<Grid>
-							<Image HorizontalAlignment="Stretch"
-								VerticalAlignment="Stretch"
-								IsHitTestVisible="False"
-								RenderOptions.BitmapScalingMode="HighQuality"
-								Source="{Binding Metadata.PreviewImageUri, Converter={StaticResource UriToBitmapImageConverter}}"
-								Stretch="Uniform"
-								Visibility="{Binding Metadata.PreviewImageVisibility}" />
-							<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-								<StackPanel.Style>
-									<Style TargetType="StackPanel">
-										<Setter Property="Visibility" Value="Visible" />
-										<Style.Triggers>
-											<DataTrigger Binding="{Binding Metadata.PreviewImageVisibility}" Value="Visible">
-												<Setter Property="Visibility" Value="Collapsed" />
-											</DataTrigger>
-										</Style.Triggers>
-									</Style>
-								</StackPanel.Style>
-								<TextBlock HorizontalAlignment="Center" FontWeight="SemiBold" Text="No image available" />
-								<TextBlock MaxWidth="520"
-									Margin="0,5,0,0"
-									Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Local metadata remains available while Redux looks for a linked online source."
-									TextAlignment="Center"
-									TextWrapping="Wrap" />
-							</StackPanel>
-						</Grid>
-					</Border>
 				</Grid>
 			</DataTemplate>
 			<DataTemplate x:Key="ModDetailsRequirementsTemplate" DataType="{x:Type data:DivinityModData}">
@@ -1351,6 +1285,7 @@
 			HorizontalAlignment="Stretch"
 			VerticalAlignment="Stretch"
 			Style="{StaticResource ReduxVerticalSplitterStyle}"
+			Visibility="{Binding IsCategoriesExpanded, Converter={StaticResource BoolToVisibilityConverter}}"
 			ShowsPreview="False" />
 		<Border Grid.Column="2"
 			Margin="5,4,5,10"
@@ -1358,6 +1293,7 @@
 		<Grid HorizontalAlignment="Stretch">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
+				<RowDefinition Height="1" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
 			<Grid Style="{StaticResource ModPaneHeaderStyle}">
@@ -1430,7 +1366,8 @@
 					AutomationProperties.HelpText="{Binding Text, RelativeSource={RelativeSource Self}}"
 					AutomationProperties.Name="Active Mods" />
 			</Grid>
-			<Grid x:Name="ActiveModListGrid" Grid.Row="1">
+			<Border Grid.Row="1" Background="{DynamicResource ReduxBorderBrush}" />
+			<Grid x:Name="ActiveModListGrid" Grid.Row="2">
 				<Grid.RowDefinitions>
 					<RowDefinition Name="ActiveModsListRow" Height="10*" />
 					<RowDefinition Name="ActiveModsListGridRow" Height="Auto" />
@@ -1497,15 +1434,15 @@
 			Width="4"
 			HorizontalAlignment="Stretch"
 			VerticalAlignment="Stretch"
-			Style="{StaticResource ReduxVerticalSplitterStyle}" />
+			Style="{StaticResource ReduxVerticalSplitterStyle}"
+			Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}" />
 		<Border Grid.Column="4"
 			Margin="5,4,10,10"
 			Style="{StaticResource ModSectionCard}">
 		<Grid x:Name="InactiveModListGrid" HorizontalAlignment="Stretch">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
-				<!-- Keep the Inactive and Active GridView column headers on the same Y coordinate. -->
-				<RowDefinition Height="0" />
+				<RowDefinition Height="1" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
 			<Grid>
@@ -1828,10 +1765,9 @@
 					<ContentControl Grid.Column="2" Margin="9,0,0,0" VerticalAlignment="Center"
 						Content="{Binding Content, ElementName=ModDetailsContent}"
 						ContentTemplate="{StaticResource ModDetailsCategoryTemplate}" />
-					<Border Grid.Column="3" MaxWidth="360" Margin="9,0,8,0" Padding="8,3"
+					<Border Grid.Column="3" MaxWidth="360" Margin="9,0,8,0"
 						HorizontalAlignment="Left" VerticalAlignment="Center"
-						Background="{DynamicResource ReduxSurfaceMutedBrush}"
-						BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+						Style="{StaticResource ModDetailsMetadataChipStyle}"
 						ToolTip="{Binding Content.FileName, ElementName=ModDetailsContent}">
 						<TextBlock FontSize="{DynamicResource Redux.FontSize.11}" Foreground="{DynamicResource ReduxTextMutedBrush}"
 							Text="{Binding Content.FileName, ElementName=ModDetailsContent, TargetNullValue='Local package'}"

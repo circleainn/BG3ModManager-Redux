@@ -1104,6 +1104,27 @@ Directory the zip will be extracted to:
 
 		Settings.WhenAnyValue(x => x.LogEnabled).Subscribe(Window.ToggleLogging);
 
+		// Panel collapsed/expanded states live on the view model (the view binds to them
+		// directly for layout), so mirror them into Settings on change instead of the
+		// usual Settings-drives-view direction.
+		this.WhenAnyValue(x => x.IsCategoriesExpanded).ObserveOn(RxApp.MainThreadScheduler).Subscribe((expanded) =>
+		{
+			Settings.CategoriesPanelExpanded = expanded;
+			if (IsInitialized) SaveSettings();
+		});
+
+		this.WhenAnyValue(x => x.IsInactiveModsExpanded).ObserveOn(RxApp.MainThreadScheduler).Subscribe((expanded) =>
+		{
+			Settings.InactiveModsPanelExpanded = expanded;
+			if (IsInitialized) SaveSettings();
+		});
+
+		this.WhenAnyValue(x => x.IsAlwaysLoadedExpanded).ObserveOn(RxApp.MainThreadScheduler).Subscribe((expanded) =>
+		{
+			Settings.AlwaysLoadedPanelExpanded = expanded;
+			if (IsInitialized) SaveSettings();
+		});
+
 		Settings.WhenAnyValue(x => x.TypographyFont, x => x.CustomTypographyFont).ObserveOn(RxApp.MainThreadScheduler).Subscribe((selection) =>
 		{
 			ReduxTypographyService.Apply(Application.Current.Resources, selection.Item1, selection.Item2);
@@ -4753,6 +4774,9 @@ Directory the zip will be extracted to:
 		}
 
 		var loaded = LoadSettings();
+		IsCategoriesExpanded = Settings.CategoriesPanelExpanded;
+		IsInactiveModsExpanded = Settings.InactiveModsPanelExpanded;
+		IsAlwaysLoadedExpanded = Settings.AlwaysLoadedPanelExpanded;
 		Keys.LoadKeybindings(this);
 		SaveSettings();
 

@@ -7,7 +7,6 @@ public class ModDetailsMediaWidthConverter : IValueConverter
 {
 	private const double MinimumWidth = 250;
 	private const double MaximumWidth = 620;
-	private const double FooterHeight = 29;
 	private const double WidescreenAspectRatio = 16d / 9d;
 
 	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -17,8 +16,9 @@ public class ModDetailsMediaWidthConverter : IValueConverter
 			return MinimumWidth;
 		}
 
-		var previewHeight = Math.Max(0, cardHeight - FooterHeight);
-		return Math.Clamp(previewHeight * WidescreenAspectRatio, MinimumWidth, MaximumWidth);
+		// The source badge floats over the artwork now instead of occupying its own
+		// footer row, so the full card height is available to the 16:9 preview.
+		return Math.Clamp(cardHeight * WidescreenAspectRatio, MinimumWidth, MaximumWidth);
 	}
 
 	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

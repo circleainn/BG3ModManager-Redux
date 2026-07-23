@@ -1079,6 +1079,7 @@
 						</Trigger>
 						<Trigger Property="IsEnabled" Value="False">
 							<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
+							<Setter Property="Cursor" Value="Arrow" />
 						</Trigger>
 					</ControlTemplate.Triggers>
 				</ControlTemplate>
@@ -1123,6 +1124,7 @@
 						</Trigger>
 						<Trigger Property="IsEnabled" Value="False">
 							<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
+							<Setter Property="Cursor" Value="Arrow" />
 						</Trigger>
 					</ControlTemplate.Triggers>
 				</ControlTemplate>
@@ -1187,6 +1189,7 @@
 			</Trigger>
 			<Trigger Property="IsEnabled" Value="False">
 				<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
+				<Setter Property="Cursor" Value="Arrow" />
 			</Trigger>
 		</ControlTemplate.Triggers>
 	</ControlTemplate>
@@ -2209,6 +2212,8 @@
 		<Setter Property="VerticalAlignment" Value="Center" />
 		<Setter Property="BorderThickness" Value="1.5" />
 		<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Pill}" />
+		<!--  Pills are labels, not controls: stop the drag-source row's hand cursor from inheriting down.  -->
+		<Setter Property="Cursor" Value="Arrow" />
 		<Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
 		<Setter Property="RenderTransform">
 			<Setter.Value>
@@ -2921,19 +2926,19 @@
 		    ToolTip="{Binding LastModified, StringFormat={x:Static dapp:DivinityApp.DateTimeTooltipFormat}}" />
 	</DataTemplate>
 	<DataTemplate x:Key="NexusPlatformIconTemplate">
-		<Image Width="18" Height="18"
+		<Image Width="16" Height="16"
 			RenderOptions.BitmapScalingMode="HighQuality"
 			Source="/BG3ModManager;component/Resources/Icons/Platforms/nexus.png"
 			Stretch="Uniform" />
 	</DataTemplate>
 	<DataTemplate x:Key="ModioPlatformIconTemplate">
-		<Image Width="18" Height="18"
+		<Image Width="16" Height="16"
 			RenderOptions.BitmapScalingMode="HighQuality"
 			Source="/BG3ModManager;component/Resources/Icons/Platforms/modio.png"
 			Stretch="Uniform" />
 	</DataTemplate>
 	<DataTemplate x:Key="GithubPlatformIconTemplate">
-		<Border Width="18" Height="18"
+		<Border Width="16" Height="16"
 			Background="{DynamicResource ReduxGithubIconBrush}"
 			RenderOptions.BitmapScalingMode="HighQuality">
 			<Border.OpacityMask>
@@ -2943,7 +2948,7 @@
 		</Border>
 	</DataTemplate>
 	<DataTemplate x:Key="PlatformIconPresenterTemplate" DataType="{x:Type data:DivinityModData}">
-		<Grid Width="18" Height="18">
+		<Grid Width="16" Height="16">
 			<ContentControl ContentTemplate="{StaticResource NexusPlatformIconTemplate}">
 				<ContentControl.Style><Style TargetType="ContentControl"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></ContentControl.Style>
 			</ContentControl>
@@ -2954,29 +2959,39 @@
 	</DataTemplate>
 	<DataTemplate x:Key="ModSourceTemplate" DataType="{x:Type data:DivinityModData}">
 		<!--
-			ClipToBounds off: the pill's MaxWidth clamp already stops text spilling into the
-			next column (ellipsis inside the pill), and clipping here visibly cuts off the
-			shared 2% hover grow when the pill sits flush against the cell edge.
+			Icon + quiet text, not a capsule: this column answers a question users ask rarely
+			("where did this come from"), so it shouldn't out-shout status/category signals.
+			Provider brand color lives on the icon only; text stays a neutral secondary tone.
 		-->
-		<Grid HorizontalAlignment="Left" ClipToBounds="False">
+		<Grid HorizontalAlignment="Left" ToolTip="{Binding DisplaySource, StringFormat='Metadata source: {0}'}">
 			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-			<Border Grid.Column="0" Style="{StaticResource ReduxSourcePillStyle}"
-				ToolTip="{Binding DisplaySource, StringFormat='Metadata source: {0}'}">
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
-					<ContentControl Margin="0,0,5,0" Content="{Binding}" ContentTemplate="{StaticResource PlatformIconPresenterTemplate}" Visibility="{Binding Metadata.OnlineSourceVisibility}" />
-					<TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="Medium"
-						Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
-						Text="{Binding DisplaySource}" TextTrimming="CharacterEllipsis" />
-				</Grid>
-			</Border>
-			<Viewbox Grid.Column="1" Width="16" Height="16" Margin="5,0,0,0"
+			<Grid Width="14" Height="14" VerticalAlignment="Center">
+				<Viewbox Width="14" Height="14" Stretch="Uniform" Visibility="{Binding Metadata.OnlineSourceVisibility}">
+					<ContentControl Content="{Binding}" ContentTemplate="{StaticResource PlatformIconPresenterTemplate}" />
+				</Viewbox>
+				<controls:ReduxIcon Width="14" Height="14"
+					StrokeData="{StaticResource Redux.Icon.FolderOpen}"
+					Foreground="{DynamicResource ReduxTextMutedBrush}">
+					<controls:ReduxIcon.Style>
+						<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding Metadata.OnlineSourceVisibility}" Value="{x:Static Visibility.Visible}">
+									<Setter Property="Visibility" Value="Collapsed" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</controls:ReduxIcon.Style>
+				</controls:ReduxIcon>
+			</Grid>
+			<TextBlock Grid.Column="1" Margin="6,0,0,0" VerticalAlignment="Center"
+				FontSize="{DynamicResource Redux.FontSize.11}"
+				Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+				Text="{Binding DisplaySource}" TextTrimming="CharacterEllipsis" />
+			<Viewbox Grid.Column="2" Width="16" Height="16" Margin="5,0,0,0"
 				VerticalAlignment="Center" Stretch="Uniform">
 				<Viewbox.ToolTip>
 					<ToolTip Placement="Mouse" HorizontalOffset="12" VerticalOffset="10" Style="{StaticResource ReduxRichToolTipStyle}">
@@ -3112,6 +3127,10 @@
 					<TextBlock Text="Name" />
 				</GridViewColumn.Header>
 			</GridViewColumn>
+			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="190" Header="File Name" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate><DataTemplate>
 					<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
@@ -3124,11 +3143,7 @@
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
-			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastModifiedTemplate}" Header="Last Modified" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 		</GridView.Columns>
 	</GridView>
 	<Style x:Key="GridViewHiddenLeftContainerStyle" BasedOn="{StaticResource {x:Type GridViewColumnHeader}}" TargetType="{x:Type GridViewColumnHeader}">
@@ -3159,6 +3174,10 @@
 					<TextBlock Text="Name" />
 				</GridViewColumn.Header>
 			</GridViewColumn>
+			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="190" Header="File Name" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate><DataTemplate>
 					<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
@@ -3171,11 +3190,7 @@
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
-			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastModifiedTemplate}" Header="Last Modified" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 		</GridView.Columns>
 	</GridView>
 	<GridView x:Key="InactiveModGridView"
@@ -3187,6 +3202,10 @@
 			    CellTemplate="{StaticResource ModNameTemplate}"
 			    Header="Name"
 			    HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="190" Header="File Name" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate><DataTemplate>
 					<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FileName}" />
@@ -3199,11 +3218,7 @@
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
-			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastModifiedTemplate}" Header="Last Modified" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 		</GridView.Columns>
 	</GridView>
 

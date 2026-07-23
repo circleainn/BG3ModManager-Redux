@@ -68,6 +68,7 @@
 								</Trigger>
 								<Trigger Property="IsEnabled" Value="False">
 									<Setter Property="Opacity" Value="0.55" />
+									<Setter Property="Cursor" Value="Arrow" />
 								</Trigger>
 							</ControlTemplate.Triggers>
 						</ControlTemplate>
