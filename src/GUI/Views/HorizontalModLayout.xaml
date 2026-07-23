@@ -43,12 +43,18 @@
 				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
 				<Setter Property="BorderThickness" Value="1" />
-				<Setter Property="CornerRadius" Value="8" />
+				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Card}" />
 				<Setter Property="ClipToBounds" Value="True" />
 			</Style>
 			<Style x:Key="ModSectionTitle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
 				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.14}" />
 				<Setter Property="FontWeight" Value="SemiBold" />
+				<Setter Property="VerticalAlignment" Value="Center" />
+			</Style>
+			<!-- One vertical rhythm for Categories, Active Mods, and Inactive Mods. -->
+			<Style x:Key="ModPaneHeaderStyle" TargetType="{x:Type Grid}">
+				<Setter Property="Height" Value="46" />
+				<Setter Property="Margin" Value="12,0" />
 			</Style>
 			<Style x:Key="ModCategoryListItemStyle" TargetType="{x:Type ListBoxItem}">
 				<Setter Property="Margin" Value="0,1" />
@@ -126,52 +132,81 @@
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type ToggleButton}">
-							<Border x:Name="ToggleSurface" Padding="6,2" Background="Transparent" CornerRadius="{DynamicResource Redux.CornerRadius.Small}">
-								<Path x:Name="ToggleGlyph"
-									Width="12" Height="7"
-									Data="M 0,7 L 6,1 L 12,7"
-									Stroke="{TemplateBinding Foreground}"
-									StrokeEndLineCap="Round"
-									StrokeLineJoin="Round"
-									StrokeStartLineCap="Round"
-									StrokeThickness="1.5"
-									Stretch="Fill" />
+							<Border x:Name="ToggleChrome" Background="Transparent" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+								<Grid>
+									<Border x:Name="HoverSurface"
+										Background="{DynamicResource ReduxAccentSoftBrush}"
+										CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+										IsHitTestVisible="False"
+										Opacity="0" />
+									<Path x:Name="ToggleGlyph"
+										Width="12" Height="7"
+										HorizontalAlignment="Center"
+										VerticalAlignment="Center"
+										Data="M 0,7 L 6,1 L 12,7"
+										RenderTransformOrigin="0.5,0.5"
+										Stroke="{TemplateBinding Foreground}"
+										StrokeEndLineCap="Round"
+										StrokeLineJoin="Round"
+										StrokeStartLineCap="Round"
+										StrokeThickness="1.5"
+										Stretch="Fill">
+										<Path.RenderTransform>
+											<RotateTransform Angle="0" />
+										</Path.RenderTransform>
+									</Path>
+								</Grid>
 							</Border>
 							<ControlTemplate.Triggers>
+								<!--  Rotate rather than swap geometry so the flip animates smoothly.  -->
 								<Trigger Property="IsChecked" Value="False">
-									<Setter TargetName="ToggleGlyph" Property="Data" Value="M 0,1 L 6,7 L 12,1" />
+									<Trigger.EnterActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="ToggleGlyph" Storyboard.TargetProperty="RenderTransform.Angle"
+													To="180" Duration="{StaticResource Redux.Motion.Panel}" EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.EnterActions>
+									<Trigger.ExitActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="ToggleGlyph" Storyboard.TargetProperty="RenderTransform.Angle"
+													To="0" Duration="{StaticResource Redux.Motion.Panel}" EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.ExitActions>
 								</Trigger>
 								<Trigger Property="IsMouseOver" Value="True">
-									<Setter TargetName="ToggleSurface" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
 									<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
+									<Trigger.EnterActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
+													To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.EnterActions>
+									<Trigger.ExitActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
+													To="0" Duration="{StaticResource Redux.Motion.Standard}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.ExitActions>
+								</Trigger>
+								<Trigger Property="IsPressed" Value="True">
+									<Setter TargetName="HoverSurface" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
 								</Trigger>
 							</ControlTemplate.Triggers>
 						</ControlTemplate>
 					</Setter.Value>
 				</Setter>
 			</Style>
-			<Style x:Key="CategoryPanelToggleStyle" TargetType="{x:Type ToggleButton}">
-				<Setter Property="Background" Value="Transparent" />
-				<Setter Property="BorderThickness" Value="0" />
-				<Setter Property="Cursor" Value="Hand" />
-				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
-				<Setter Property="Template">
-					<Setter.Value>
-						<ControlTemplate TargetType="{x:Type ToggleButton}">
-							<Border x:Name="ToggleSurface" Padding="6,2" Background="Transparent" CornerRadius="{DynamicResource Redux.CornerRadius.Small}">
-								<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-							</Border>
-							<ControlTemplate.Triggers>
-								<Trigger Property="IsMouseOver" Value="True">
-									<Setter TargetName="ToggleSurface" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
-									<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
-								</Trigger>
-							</ControlTemplate.Triggers>
-						</ControlTemplate>
-					</Setter.Value>
-				</Setter>
-			</Style>
+			<Style x:Key="CategoryPanelToggleStyle"
+				BasedOn="{StaticResource ReduxChromeToggleStyle}"
+				TargetType="{x:Type ToggleButton}" />
 			<Style x:Key="ModDetailsTabControlStyle" TargetType="{x:Type TabControl}">
 				<Setter Property="Background" Value="Transparent" />
 				<Setter Property="BorderThickness" Value="0" />
@@ -315,13 +350,10 @@
 					</Setter.Value>
 				</Setter>
 			</Style>
-			<Style x:Key="ModDetailsMetadataChipStyle" TargetType="{x:Type Border}">
+			<Style x:Key="ModDetailsMetadataChipStyle" BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="{x:Type Border}">
 				<Setter Property="Margin" Value="0,0,6,5" />
-				<Setter Property="Padding" Value="9,3" />
 				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
-				<Setter Property="BorderThickness" Value="1.5" />
-				<Setter Property="CornerRadius" Value="10" />
 			</Style>
 			<Style x:Key="ModDetailsLegacyStatusChipStyle" BasedOn="{StaticResource ModDetailsMetadataChipStyle}" TargetType="{x:Type Border}">
 				<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
@@ -371,39 +403,13 @@
 					</ItemsControl.ItemsPanel>
 				</ItemsControl>
 			</DataTemplate>
-			<Style x:Key="ModDetailsSourceButtonStyle" TargetType="{x:Type Button}">
+			<Style x:Key="ModDetailsSourceButtonStyle" BasedOn="{StaticResource ReduxAccentPillButtonStyle}" TargetType="{x:Type Button}">
 				<Setter Property="Height" Value="27" />
 				<Setter Property="Margin" Value="0,0,6,5" />
 				<Setter Property="Padding" Value="9,3" />
-				<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-				<Setter Property="BorderThickness" Value="1.5" />
 				<Setter Property="Cursor" Value="Hand" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
 				<Setter Property="FontWeight" Value="SemiBold" />
 				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
-				<Setter Property="Template">
-					<Setter.Value>
-						<ControlTemplate TargetType="{x:Type Button}">
-							<Border x:Name="SourceButtonSurface"
-								Padding="{TemplateBinding Padding}"
-								Background="{TemplateBinding Background}"
-								BorderBrush="{TemplateBinding BorderBrush}"
-								BorderThickness="{TemplateBinding BorderThickness}"
-								CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
-								<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-							</Border>
-							<ControlTemplate.Triggers>
-								<Trigger Property="IsMouseOver" Value="True">
-									<Setter TargetName="SourceButtonSurface" Property="Opacity" Value="0.78" />
-								</Trigger>
-								<Trigger Property="IsPressed" Value="True">
-									<Setter TargetName="SourceButtonSurface" Property="Opacity" Value="0.75" />
-								</Trigger>
-							</ControlTemplate.Triggers>
-						</ControlTemplate>
-					</Setter.Value>
-				</Setter>
 				<Style.Triggers>
 					<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}">
 						<Setter Property="Background" Value="{StaticResource Redux.Pill.Nexus.Background}" />
@@ -1035,9 +1041,9 @@
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition x:Name="CategoriesColumn" Width="220" MinWidth="52" />
 			<ColumnDefinition Width="4" />
-			<ColumnDefinition Width="*" />
+			<ColumnDefinition x:Name="ActiveModsColumn" Width="*" />
 			<ColumnDefinition Width="4" />
-			<ColumnDefinition Width="*" />
+			<ColumnDefinition x:Name="InactiveModsColumn" Width="*" />
 		</Grid.ColumnDefinitions>
 		<Border x:Name="CategoriesPanel" Grid.Column="0"
 			Margin="10,4,5,10"
@@ -1086,11 +1092,10 @@
 				</Grid.RowDefinitions>
 				<Grid>
 					<Grid.Style>
-						<Style TargetType="{x:Type Grid}">
-							<Setter Property="Margin" Value="10,8" />
+						<Style BasedOn="{StaticResource ModPaneHeaderStyle}" TargetType="{x:Type Grid}">
 							<Style.Triggers>
 								<DataTrigger Binding="{Binding IsCategoriesExpanded}" Value="False">
-									<Setter Property="Margin" Value="3,8" />
+									<Setter Property="Margin" Value="3,0" />
 								</DataTrigger>
 							</Style.Triggers>
 						</Style>
@@ -1125,21 +1130,44 @@
 						IsChecked="{Binding IsCategoriesExpanded, Mode=TwoWay}"
 						Style="{StaticResource CategoryPanelToggleStyle}"
 						ToolTip="Collapse or expand categories">
-						<TextBlock HorizontalAlignment="Center"
-							VerticalAlignment="Center"
-							FontSize="{DynamicResource Redux.FontSize.18}"
-							Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}">
-							<TextBlock.Style>
-								<Style TargetType="{x:Type TextBlock}">
-									<Setter Property="Text" Value="&#x2039;" />
+						<Path Width="7" Height="12"
+							Data="M 7,0 L 1,6 L 7,12"
+							RenderTransformOrigin="0.5,0.5"
+							Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}"
+							StrokeEndLineCap="Round"
+							StrokeLineJoin="Round"
+							StrokeStartLineCap="Round"
+							StrokeThickness="1.5"
+							Stretch="Fill">
+							<Path.RenderTransform>
+								<RotateTransform Angle="0" />
+							</Path.RenderTransform>
+							<Path.Style>
+								<Style TargetType="{x:Type Path}">
 									<Style.Triggers>
-										<DataTrigger Binding="{Binding IsCategoriesExpanded}" Value="False">
-											<Setter Property="Text" Value="&#x203A;" />
+										<!--  Rotate rather than swap geometry so the flip animates smoothly.  -->
+										<DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="False">
+											<DataTrigger.EnterActions>
+												<BeginStoryboard>
+													<Storyboard>
+														<DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
+															To="180" Duration="{StaticResource Redux.Motion.Panel}" EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
+													</Storyboard>
+												</BeginStoryboard>
+											</DataTrigger.EnterActions>
+											<DataTrigger.ExitActions>
+												<BeginStoryboard>
+													<Storyboard>
+														<DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
+															To="0" Duration="{StaticResource Redux.Motion.Panel}" EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
+													</Storyboard>
+												</BeginStoryboard>
+											</DataTrigger.ExitActions>
 										</DataTrigger>
 									</Style.Triggers>
 								</Style>
-							</TextBlock.Style>
-						</TextBlock>
+							</Path.Style>
+						</Path>
 					</ToggleButton>
 				</Grid>
 				<Border Grid.Row="1" Background="{DynamicResource ReduxBorderBrush}" />
@@ -1183,8 +1211,9 @@
 									Height="14"
 									Margin="0,0,7,0"
 									VerticalAlignment="Center">
+									<!--  Stroke ring, not a filled dot: default markers follow the Lucide stroke icon language.  -->
 									<Border Width="9" Height="9" CornerRadius="5" BorderThickness="1.5"
-										Background="{Binding Color}" BorderBrush="{Binding Color}"
+										Background="Transparent" BorderBrush="{Binding Color}"
 										Visibility="{Binding HasIcon, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
 									<c:ReduxIcon Width="14" Height="14" IconKey="{Binding IconId}" Foreground="{Binding Color}"
 										Visibility="{Binding HasIcon, Converter={StaticResource BoolToVisibilityConverter}}" />
@@ -1273,7 +1302,7 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
-			<Grid Margin="12,10,12,8">
+			<Grid Style="{StaticResource ModPaneHeaderStyle}">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
@@ -1376,7 +1405,7 @@
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="*" />
 					</Grid.RowDefinitions>
-					<Grid Margin="8,4,8,3">
+					<Grid x:Name="AlwaysLoadedHeaderGrid" Margin="8,4,8,3">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="Auto" />
@@ -1387,23 +1416,9 @@
 								Text="Always loaded while installed; overrides built-in game files outside the normal load order" />
 						</StackPanel>
 						<ToggleButton x:Name="AlwaysLoadedToggleButton" Grid.Column="1"
-							Width="30" Height="28" Padding="0"
-							Style="{StaticResource CategoryPanelToggleStyle}"
+							Style="{StaticResource ModDetailsToggleStyle}"
 							IsChecked="{Binding IsAlwaysLoadedExpanded, Mode=TwoWay}"
-							ToolTip="Collapse or expand Override Mods">
-							<TextBlock Text="⌃" FontSize="{DynamicResource Redux.FontSize.15}">
-								<TextBlock.Style>
-									<Style TargetType="TextBlock">
-										<Setter Property="Text" Value="⌃" />
-										<Style.Triggers>
-											<DataTrigger Binding="{Binding IsAlwaysLoadedExpanded}" Value="False">
-												<Setter Property="Text" Value="⌄" />
-											</DataTrigger>
-										</Style.Triggers>
-									</Style>
-								</TextBlock.Style>
-							</TextBlock>
-						</ToggleButton>
+							ToolTip="Collapse or expand Override Mods" />
 					</Grid>
 					<c:ModListView x:Name="ForceLoadedModsListView"
 						Grid.Row="1"
@@ -1430,21 +1445,56 @@
 		<Grid x:Name="InactiveModListGrid" HorizontalAlignment="Stretch">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
-				<RowDefinition Height="2" />
+				<!-- Keep the Inactive and Active GridView column headers on the same Y coordinate. -->
+				<RowDefinition Height="0" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
-			<Grid Margin="12,10,12,8">
+			<Grid>
+				<Grid.Style>
+					<Style BasedOn="{StaticResource ModPaneHeaderStyle}" TargetType="{x:Type Grid}">
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsInactiveModsExpanded}" Value="False">
+								<Setter Property="Margin" Value="3,0" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Grid.Style>
 				<Grid.ColumnDefinitions>
+					<!--  Toggle first: this pane's inner edge is its LEFT side, mirroring the categories pane's right-edge toggle.  -->
+					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="8" />
-					<ColumnDefinition Width="220" />
+					<ColumnDefinition>
+						<ColumnDefinition.Style>
+							<Style TargetType="{x:Type ColumnDefinition}">
+								<Setter Property="Width" Value="8" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding IsInactiveModsExpanded}" Value="False">
+										<Setter Property="Width" Value="0" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</ColumnDefinition.Style>
+					</ColumnDefinition>
+					<ColumnDefinition>
+						<ColumnDefinition.Style>
+							<Style TargetType="{x:Type ColumnDefinition}">
+								<Setter Property="Width" Value="220" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding IsInactiveModsExpanded}" Value="False">
+										<Setter Property="Width" Value="0" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</ColumnDefinition.Style>
+					</ColumnDefinition>
 				</Grid.ColumnDefinitions>
-				<TextBlock Style="{StaticResource ModSectionTitle}" Text="Inactive Mods" />
+				<TextBlock Grid.Column="1" Margin="8,0,0,0" Style="{StaticResource ModSectionTitle}" Text="Inactive Mods"
+					Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}" />
 			<c:UnfocusableTextBox x:Name="InactiveModsFilterTextBox"
-					Grid.Column="5"
+					Grid.Column="6"
 					Height="28"
 					Padding="4,0"
 					HorizontalAlignment="Stretch"
@@ -1459,7 +1509,7 @@
 					TextAlignment="Left"
 					ToolTip="Filter Inactive Mods"
 					UpdateBindingOnFocusLost="True" />
-				<TextBlock Grid.Column="5"
+				<TextBlock Grid.Column="6"
 					Margin="0"
 					Padding="4,0"
 					HorizontalAlignment="Left"
@@ -1479,21 +1529,70 @@
 					</TextBlock.Style>
 				</TextBlock>
 				<TextBlock x:Name="InactiveModsFilterResultText"
-					Grid.Column="2"
+					Grid.Column="3"
 					Margin="0,0,8,0"
 					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
 					behavior:ScreenReaderHelperBehavior.Name="Total Hidden Inactive Mods"
 					AutomationProperties.HelpText="{Binding Text, RelativeSource={RelativeSource Self}}" />
 				<TextBlock x:Name="InactiveSelectedText"
-					Grid.Column="3"
+					Grid.Column="4"
 					Margin="0,0,8,0"
 					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
 					behavior:ScreenReaderHelperBehavior.Name="Total Inactive Mods Selected"
 					AutomationProperties.HelpText="{Binding Text, RelativeSource={RelativeSource Self}}"
 					AutomationProperties.Name="Inactive Mods" />
+				<ToggleButton Grid.Column="0"
+					Width="30"
+					Height="28"
+					Padding="0"
+					behavior:ScreenReaderHelperBehavior.Name="Collapse or expand inactive mods"
+					IsChecked="{Binding IsInactiveModsExpanded, Mode=TwoWay}"
+					Style="{StaticResource CategoryPanelToggleStyle}"
+					ToolTip="Collapse or expand inactive mods">
+					<!--  Right-edge pane: collapse pushes it rightward, so the chevron mirrors the categories pane.  -->
+					<Path Width="7" Height="12"
+						Data="M 0,0 L 6,6 L 0,12"
+						RenderTransformOrigin="0.5,0.5"
+						Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}"
+						StrokeEndLineCap="Round"
+						StrokeLineJoin="Round"
+						StrokeStartLineCap="Round"
+						StrokeThickness="1.5"
+						Stretch="Fill">
+						<Path.RenderTransform>
+							<RotateTransform Angle="0" />
+						</Path.RenderTransform>
+						<Path.Style>
+							<Style TargetType="{x:Type Path}">
+								<Style.Triggers>
+									<!--  Rotate rather than swap geometry so the flip animates smoothly.  -->
+									<DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="False">
+										<DataTrigger.EnterActions>
+											<BeginStoryboard>
+												<Storyboard>
+													<DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
+														To="180" Duration="{StaticResource Redux.Motion.Panel}" EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
+												</Storyboard>
+											</BeginStoryboard>
+										</DataTrigger.EnterActions>
+										<DataTrigger.ExitActions>
+											<BeginStoryboard>
+												<Storyboard>
+													<DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
+														To="0" Duration="{StaticResource Redux.Motion.Panel}" EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
+												</Storyboard>
+											</BeginStoryboard>
+										</DataTrigger.ExitActions>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</Path.Style>
+					</Path>
+				</ToggleButton>
 			</Grid>
+			<Border Grid.Row="1" Background="{DynamicResource ReduxBorderBrush}" />
 			<c:ModListView x:Name="InactiveModsListView"
 				Grid.Row="2"
 				MaxHeight="99999"
@@ -1505,12 +1604,42 @@
 				GridViewColumnHeader.PreviewMouseLeftButtonUp="ListViewColumnHeader_PreviewMouseLeftButtonUp"
 				GridViewColumnHeader.PreviewMouseRightButtonUp="ListViewColumnHeader_RightClick"
 				ItemContainerStyle="{StaticResource ListViewItemMouseEvents}"
-				Style="{StaticResource ModOrderListViewWithDrag}"
 				View="{DynamicResource InactiveModGridView}"
 				VirtualizingPanel.IsVirtualizing="True"
 				VirtualizingPanel.VirtualizationMode="Recycling">
+				<c:ModListView.Style>
+					<Style BasedOn="{StaticResource ModOrderListViewWithDrag}" TargetType="{x:Type c:ModListView}">
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsInactiveModsExpanded}" Value="False">
+								<Setter Property="Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</c:ModListView.Style>
 				<c:ModListView.ContextMenu><ContextMenu /></c:ModListView.ContextMenu>
 			</c:ModListView>
+			<TextBlock Grid.Row="2"
+				HorizontalAlignment="Center"
+				VerticalAlignment="Center"
+				FontSize="{DynamicResource Redux.FontSize.12}"
+				FontWeight="SemiBold"
+				Foreground="{DynamicResource ReduxTextMutedBrush}"
+				IsHitTestVisible="False"
+				Text="INACTIVE MODS">
+				<TextBlock.LayoutTransform>
+					<RotateTransform Angle="-90" />
+				</TextBlock.LayoutTransform>
+				<TextBlock.Style>
+					<Style TargetType="{x:Type TextBlock}">
+						<Setter Property="Visibility" Value="Collapsed" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsInactiveModsExpanded}" Value="False">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</TextBlock.Style>
+			</TextBlock>
 		</Grid>
 		</Border>
 		<GridSplitter x:Name="ModDetailsGridSplitter"
@@ -1573,7 +1702,8 @@
 									<DoubleAnimation Storyboard.TargetName="InteractionGlow"
 										Storyboard.TargetProperty="Opacity"
 										To="0.9"
-										Duration="0:0:0.14" />
+										Duration="{StaticResource Redux.Motion.Fast}"
+										EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 								</Storyboard>
 							</BeginStoryboard>
 						</EventTrigger>
@@ -1583,7 +1713,7 @@
 									<DoubleAnimation Storyboard.TargetName="InteractionGlow"
 										Storyboard.TargetProperty="Opacity"
 										To="0"
-										Duration="0:0:0.18" />
+										Duration="{StaticResource Redux.Motion.Standard}" />
 								</Storyboard>
 							</BeginStoryboard>
 						</EventTrigger>
@@ -1617,8 +1747,8 @@
 					</Grid.ColumnDefinitions>
 					<Grid Width="14" Height="14" Margin="2,0,10,0" VerticalAlignment="Center" ToolTip="Primary mod category">
 						<Ellipse Width="9" Height="9"
-							Fill="{Binding Content.DisplayCategories[0].Color, ElementName=ModDetailsContent, FallbackValue=#8F879E}"
-							Stroke="{DynamicResource ReduxBorderStrongBrush}" StrokeThickness="1">
+							Fill="Transparent"
+							Stroke="{Binding Content.DisplayCategories[0].Color, ElementName=ModDetailsContent, FallbackValue=#8F879E}" StrokeThickness="1.5">
 							<Ellipse.Style><Style TargetType="Ellipse"><Setter Property="Visibility" Value="Visible" /><Style.Triggers><DataTrigger Binding="{Binding Content.DisplayCategories[0].HasIcon, ElementName=ModDetailsContent}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers></Style></Ellipse.Style>
 						</Ellipse>
 						<c:ReduxIcon Width="14" Height="14"
@@ -1655,18 +1785,7 @@
 				</Grid>
 				<ContentControl x:Name="ModDetailsContent"
 					Grid.Row="1"
-					ContentTemplate="{StaticResource ModDetailsTabbedTemplate}">
-					<ContentControl.Style>
-						<Style TargetType="{x:Type ContentControl}">
-							<Setter Property="Visibility" Value="Visible" />
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding IsChecked, ElementName=ModDetailsToggleButton}" Value="False">
-									<Setter Property="Visibility" Value="Collapsed" />
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-					</ContentControl.Style>
-				</ContentControl>
+					ContentTemplate="{StaticResource ModDetailsTabbedTemplate}" />
 			</Grid>
 		</Border>
 	</Grid>

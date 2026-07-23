@@ -41,52 +41,9 @@
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-			<SolidColorBrush x:Key="SettingsWarningSoftBrush" Color="{DynamicResource ReduxWarningColor}" Opacity="0.14" />
-			<SolidColorBrush x:Key="SettingsWarningHoverBrush" Color="{DynamicResource ReduxWarningColor}" Opacity="0.23" />
-			<ControlTemplate x:Key="SettingsActionButtonTemplate" TargetType="{x:Type Button}">
-				<Border x:Name="ButtonChrome"
-					Background="{TemplateBinding Background}"
-					BorderBrush="{TemplateBinding BorderBrush}"
-					BorderThickness="{TemplateBinding BorderThickness}"
-					CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
-					SnapsToDevicePixels="True">
-					<ContentPresenter Margin="{TemplateBinding Padding}"
-						HorizontalAlignment="Center"
-						VerticalAlignment="Center"
-						Content="{TemplateBinding Content}"
-						ContentTemplate="{TemplateBinding ContentTemplate}" />
-				</Border>
-				<ControlTemplate.Triggers>
-					<Trigger Property="IsMouseOver" Value="True">
-						<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxHoverBrush}" />
-						<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
-					</Trigger>
-					<Trigger Property="IsPressed" Value="True">
-						<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
-						<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-					</Trigger>
-					<Trigger Property="IsEnabled" Value="False">
-						<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
-					</Trigger>
-					<MultiTrigger>
-						<MultiTrigger.Conditions>
-							<Condition Property="Tag" Value="Warning" />
-							<Condition Property="IsMouseOver" Value="True" />
-						</MultiTrigger.Conditions>
-						<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
-						<Setter TargetName="ButtonChrome" Property="Background" Value="{StaticResource SettingsWarningHoverBrush}" />
-					</MultiTrigger>
-				</ControlTemplate.Triggers>
-			</ControlTemplate>
-			<Style x:Key="SettingsActionButtonStyle" TargetType="{x:Type Button}">
+			<Style x:Key="SettingsActionButtonStyle" BasedOn="{StaticResource ReduxAccentPillButtonStyle}" TargetType="{x:Type Button}">
 				<Setter Property="Height" Value="31" />
-				<Setter Property="Padding" Value="12,3" />
 				<Setter Property="Margin" Value="0,0,8,0" />
-				<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-				<Setter Property="BorderThickness" Value="1.5" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
-				<Setter Property="Template" Value="{StaticResource SettingsActionButtonTemplate}" />
 			</Style>
 			<Style x:Key="SettingsTabControlStyle" TargetType="{x:Type TabControl}">
 				<Setter Property="Background" Value="Transparent" />
@@ -252,7 +209,7 @@
 				<Setter Property="Background" Value="{DynamicResource ReduxListInteriorBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
 				<Setter Property="BorderThickness" Value="1" />
-				<Setter Property="CornerRadius" Value="8" />
+				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Card}" />
 			</Style>
 			<Style x:Key="CompactThemeSectionCardStyle" BasedOn="{StaticResource SettingsSectionCardStyle}" TargetType="{x:Type Border}">
 				<Setter Property="Margin" Value="0,10,0,0" />
@@ -318,8 +275,7 @@
 				</Setter>
 			</Style>
 			<Style x:Key="SettingsWarningButtonStyle" BasedOn="{StaticResource SettingsActionButtonStyle}" TargetType="{x:Type Button}">
-				<Setter Property="Tag" Value="Warning" />
-				<Setter Property="Background" Value="{StaticResource SettingsWarningSoftBrush}" />
+				<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 			</Style>

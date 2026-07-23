@@ -23,35 +23,11 @@
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-			<Style x:Key="ThemeColorButtonStyle" TargetType="Button">
+			<Style x:Key="ThemeColorButtonStyle" BasedOn="{StaticResource ReduxRoundedSecondaryButtonStyle}" TargetType="Button">
 				<Setter Property="Height" Value="52" />
 				<Setter Property="Margin" Value="0,0,10,10" />
 				<Setter Property="Padding" Value="10,7" />
 				<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
-				<Setter Property="BorderThickness" Value="1" />
-				<Setter Property="Template">
-					<Setter.Value>
-						<ControlTemplate TargetType="Button">
-							<Border x:Name="ColorTileChrome" Padding="{TemplateBinding Padding}"
-								Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-								BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-								<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
-							</Border>
-							<ControlTemplate.Triggers>
-								<Trigger Property="IsMouseOver" Value="True">
-									<Setter TargetName="ColorTileChrome" Property="Background" Value="{DynamicResource ReduxHoverBrush}" />
-									<Setter TargetName="ColorTileChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-								</Trigger>
-								<Trigger Property="IsPressed" Value="True">
-									<Setter TargetName="ColorTileChrome" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
-								</Trigger>
-							</ControlTemplate.Triggers>
-						</ControlTemplate>
-					</Setter.Value>
-				</Setter>
 			</Style>
 		</ResourceDictionary>
 	</adonisUi:AdonisWindow.Resources>

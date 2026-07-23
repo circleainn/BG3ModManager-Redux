@@ -214,6 +214,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	[Reactive] public string SelectedModCategory { get; set; } = AllModsCategory;
 	[Reactive] public bool IsCategoriesExpanded { get; set; } = true;
 	[Reactive] public bool IsAlwaysLoadedExpanded { get; set; } = true;
+	[Reactive] public bool IsInactiveModsExpanded { get; set; } = true;
 
 	private static readonly (string Name, string[] Keywords)[] ReduxCategoryRules =
 	[

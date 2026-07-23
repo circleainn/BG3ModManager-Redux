@@ -49,10 +49,79 @@
 		<Setter Property="BorderThickness" Value="1" />
 		<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
 	</Style>
-	<!--  Short, functional motion only: hover feedback and state transitions.  -->
+	<!--
+		Short, functional motion only: hover feedback and state transitions. StaticResource
+		only in Storyboards/Timelines - DynamicResource there crashes when the owning
+		Style/ControlTemplate is sealed (WPF cannot freeze a Timeline holding an expression).
+	-->
 	<Duration x:Key="Redux.Motion.Fast">0:0:0.12</Duration>
 	<Duration x:Key="Redux.Motion.Standard">0:0:0.16</Duration>
+	<Duration x:Key="Redux.Motion.Panel">0:0:0.30</Duration>
+	<sys:Int32 x:Key="Redux.Motion.PanelMilliseconds">300</sys:Int32>
+	<Duration x:Key="Redux.Motion.DialogEnter">0:0:0.18</Duration>
+	<Duration x:Key="Redux.Motion.StatusPulseDuration">0:0:1.8</Duration>
 	<QuadraticEase x:Key="Redux.Motion.EaseOut" EasingMode="EaseOut" />
+	<CubicEase x:Key="Redux.Motion.EaseInOut" EasingMode="EaseInOut" />
+	<SineEase x:Key="Redux.Motion.PanelEase" EasingMode="EaseInOut" />
+	<sys:Double x:Key="Redux.Motion.HoverTranslateNegative">-1</sys:Double>
+	<sys:Double x:Key="Redux.Motion.PressScale">0.98</sys:Double>
+	<!-- Shared chrome for compact collapse/expand controls. Each caller supplies its directional chevron. -->
+	<Style x:Key="ReduxChromeToggleStyle" TargetType="{x:Type ToggleButton}">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Cursor" Value="Hand" />
+		<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type ToggleButton}">
+					<Border Background="Transparent" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+						<Grid>
+							<Border x:Name="HoverSurface"
+								Width="24"
+								Height="24"
+								HorizontalAlignment="Center"
+								VerticalAlignment="Center"
+								Background="{DynamicResource ReduxAccentSoftBrush}"
+								CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
+								IsHitTestVisible="False"
+								Opacity="0" />
+							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+						</Grid>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
+							<Trigger.EnterActions>
+								<BeginStoryboard>
+									<Storyboard>
+										<DoubleAnimation Storyboard.TargetName="HoverSurface"
+											Storyboard.TargetProperty="Opacity"
+											To="1"
+											Duration="{StaticResource Redux.Motion.Fast}"
+											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+									</Storyboard>
+								</BeginStoryboard>
+							</Trigger.EnterActions>
+							<Trigger.ExitActions>
+								<BeginStoryboard>
+									<Storyboard>
+										<DoubleAnimation Storyboard.TargetName="HoverSurface"
+											Storyboard.TargetProperty="Opacity"
+											To="0"
+											Duration="{StaticResource Redux.Motion.Standard}" />
+									</Storyboard>
+								</BeginStoryboard>
+							</Trigger.ExitActions>
+						</Trigger>
+						<Trigger Property="IsPressed" Value="True">
+							<Setter TargetName="HoverSurface" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
 	<!--  Shared source-pill palette. Keep list, drawer, and preview treatments visually identical.  -->
 	<SolidColorBrush x:Key="Redux.Pill.Local.Background" Color="#168F879E" />
 	<SolidColorBrush x:Key="Redux.Pill.Local.Border" Color="#668F879E" />
@@ -60,6 +129,9 @@
 	<SolidColorBrush x:Key="Redux.Pill.Nexus.Border" Color="#F9A332" />
 	<SolidColorBrush x:Key="Redux.Pill.Modio.Background" Color="#2E05C2D8" />
 	<SolidColorBrush x:Key="Redux.Pill.Modio.Border" Color="#05C2D8" />
+	<!--  Warning tint for chips/buttons; ReduxAccentSoftBrush/ReduxSuccessSoftBrush have hand-tuned per-theme colors, warning does not yet, so this derives from the semantic warning color instead.  -->
+	<SolidColorBrush x:Key="ReduxWarningSoftBrush" Color="{DynamicResource ReduxWarningColor}" Opacity="0.14" />
+	<SolidColorBrush x:Key="ReduxWarningHoverSoftBrush" Color="{DynamicResource ReduxWarningColor}" Opacity="0.23" />
 
 	<!-- Lucide vector icons, normalized to Lucide's native 24x24 view box. -->
 	<!-- Curated fantasy/category glyphs. Keep these readable at 12-16px. -->
@@ -994,6 +1066,75 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
+	<!--
+		Shared "accent-soft pill" button chrome (Settings action buttons, drawer source/author
+		buttons). Variants set only sizing (Height/Padding/Margin) and color-trigger overrides
+		via BasedOn; do not redeclare the template.
+	-->
+	<ControlTemplate x:Key="ReduxAccentPillButtonTemplate" TargetType="{x:Type Button}">
+		<Border x:Name="ButtonChrome"
+			Padding="{TemplateBinding Padding}"
+			Background="{TemplateBinding Background}"
+			BorderBrush="{TemplateBinding BorderBrush}"
+			BorderThickness="{TemplateBinding BorderThickness}"
+			CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
+			RenderTransformOrigin="0.5,0.5"
+			SnapsToDevicePixels="True">
+			<Border.RenderTransform>
+				<ScaleTransform ScaleX="1" ScaleY="1" />
+			</Border.RenderTransform>
+			<ContentPresenter HorizontalAlignment="Center"
+				VerticalAlignment="Center"
+				Content="{TemplateBinding Content}"
+				ContentTemplate="{TemplateBinding ContentTemplate}" />
+		</Border>
+		<ControlTemplate.Triggers>
+			<!--
+				Opacity, not a color swap: variants set their own identity color (accent,
+				Nexus orange, mod.io cyan, warning red) via Background/BorderBrush, and a
+				hardcoded hover color here would stomp whichever one is active.
+				Hover grow matches ReduxPillBaseStyle so pill-shaped buttons and static
+				pills feel like one family.
+			-->
+			<Trigger Property="IsMouseOver" Value="True">
+				<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.85" />
+				<Trigger.EnterActions>
+					<BeginStoryboard>
+						<Storyboard>
+							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="RenderTransform.ScaleX"
+								To="1.02" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="RenderTransform.ScaleY"
+								To="1.02" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+						</Storyboard>
+					</BeginStoryboard>
+				</Trigger.EnterActions>
+				<Trigger.ExitActions>
+					<BeginStoryboard>
+						<Storyboard>
+							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="RenderTransform.ScaleX"
+								To="1" Duration="{StaticResource Redux.Motion.Standard}" />
+							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="RenderTransform.ScaleY"
+								To="1" Duration="{StaticResource Redux.Motion.Standard}" />
+						</Storyboard>
+					</BeginStoryboard>
+				</Trigger.ExitActions>
+			</Trigger>
+			<Trigger Property="IsPressed" Value="True">
+				<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.72" />
+			</Trigger>
+			<Trigger Property="IsEnabled" Value="False">
+				<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
+			</Trigger>
+		</ControlTemplate.Triggers>
+	</ControlTemplate>
+	<Style x:Key="ReduxAccentPillButtonStyle" TargetType="{x:Type Button}">
+		<Setter Property="Padding" Value="12,3" />
+		<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+		<Setter Property="BorderThickness" Value="1.5" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
+		<Setter Property="Template" Value="{StaticResource ReduxAccentPillButtonTemplate}" />
+	</Style>
 	<SolidColorBrush x:Key="{x:Static adonisUI:Brushes.Layer4InteractionBrush}" Color="{DynamicResource ReduxAccentSoftColor}" />
 	<SolidColorBrush x:Key="{x:Static adonisUI:Brushes.Layer4InteractionBorderBrush}" Color="{DynamicResource ReduxAccentColor}" />
 	<SolidColorBrush x:Key="{x:Static adonisUI:Brushes.Layer4InteractionForegroundBrush}" Color="{DynamicResource ReduxTextPrimaryColor}" />
@@ -1473,15 +1614,57 @@
 							Visibility="{Binding ShowVisualDivider, Converter={StaticResource BoolToVisibilityConverter}}">
 							<Grid>
 								<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-								<ToggleButton Width="22" Height="22" Margin="0,0,5,0" Padding="0" Background="Transparent" BorderThickness="0"
+								<ToggleButton Width="22" Height="22" Margin="0,0,5,0" Padding="0"
+									Style="{StaticResource ReduxChromeToggleStyle}"
 									Tag="ReduxDividerToggle" ToolTip="Collapse or expand this separator section" IsChecked="{Binding IsVisualDividerCollapsed, Mode=OneWay}">
-									<Path Width="8" Height="5" Fill="{DynamicResource ReduxTextSecondaryBrush}" Stretch="Uniform">
-										<Path.Style><Style TargetType="Path"><Setter Property="Data" Value="M 0,0 L 8,0 L 4,5 Z" /><Style.Triggers><DataTrigger Binding="{Binding IsVisualDividerCollapsed}" Value="True"><Setter Property="Data" Value="M 0,0 L 5,4 L 0,8 Z" /><Setter Property="Width" Value="5" /><Setter Property="Height" Value="8" /></DataTrigger></Style.Triggers></Style></Path.Style>
+									<Path Width="8" Height="8"
+										Data="M 0,2 L 4,6 L 8,2"
+										RenderTransformOrigin="0.5,0.5"
+										Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}"
+										StrokeEndLineCap="Round"
+										StrokeLineJoin="Round"
+										StrokeStartLineCap="Round"
+										StrokeThickness="1.5"
+										Stretch="Fill">
+										<Path.RenderTransform>
+											<RotateTransform Angle="0" />
+										</Path.RenderTransform>
+										<Path.Style>
+											<Style TargetType="{x:Type Path}">
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding IsVisualDividerCollapsed}" Value="True">
+														<DataTrigger.EnterActions>
+															<BeginStoryboard>
+																<Storyboard>
+																	<DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
+																		To="-90"
+																		Duration="{StaticResource Redux.Motion.Panel}"
+																		EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
+																</Storyboard>
+															</BeginStoryboard>
+														</DataTrigger.EnterActions>
+														<DataTrigger.ExitActions>
+															<BeginStoryboard>
+																<Storyboard>
+																	<DoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle"
+																		To="0"
+																		Duration="{StaticResource Redux.Motion.Panel}"
+																		EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
+																</Storyboard>
+															</BeginStoryboard>
+														</DataTrigger.ExitActions>
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</Path.Style>
 									</Path>
 								</ToggleButton>
 								<Grid Grid.Column="1" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center">
+									<!--  Stroke ring, not a filled dot: default markers follow the Lucide stroke icon language.  -->
 									<Ellipse Width="8" Height="8"
-										Fill="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
+										Fill="Transparent"
+										Stroke="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
+										StrokeThickness="1.5"
 										Visibility="{Binding HasVisualDividerIcon, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
 									<controls:ReduxIcon Width="14" Height="14" IconKey="{Binding VisualDividerIconId}"
 										Foreground="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
@@ -1790,29 +1973,73 @@
 			</Border.Effect>
 		</Border>
 	</DataTemplate>
-	<!-- Shared pill chrome used by list cells, the selected-mod drawer, and mod hover cards. -->
-	<Style x:Key="ReduxCategoryPillBaseStyle" TargetType="{x:Type Border}">
+	<!--
+		Single source of truth for pill/chip chrome (category pills, source pills, drawer
+		metadata chips). Variants set only Background/BorderBrush/coloring logic via BasedOn;
+		do not redeclare Padding/MinHeight/CornerRadius locally.
+	-->
+	<Style x:Key="ReduxPillBaseStyle" TargetType="{x:Type Border}">
 		<Setter Property="MinHeight" Value="21" />
 		<Setter Property="Padding" Value="8,2" />
 		<Setter Property="HorizontalAlignment" Value="Left" />
 		<Setter Property="VerticalAlignment" Value="Center" />
-		<Setter Property="Background" Value="{Binding SoftColor}" />
-		<Setter Property="BorderBrush" Value="{Binding Color}" />
 		<Setter Property="BorderThickness" Value="1.5" />
 		<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Pill}" />
+		<Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+		<Setter Property="RenderTransform">
+			<Setter.Value>
+				<ScaleTransform x:Name="PillHoverScale" ScaleX="1" ScaleY="1" />
+			</Setter.Value>
+		</Setter>
+		<Style.Resources>
+			<Style TargetType="{x:Type TextBlock}">
+				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.11}" />
+			</Style>
+		</Style.Resources>
+		<!--
+			Opacity, not an Effect: a Effect (DropShadowEffect etc.) forces the whole subtree
+			through an intermediate bitmap, which disables ClearType and makes the pill's own
+			text render blurry while hovered. Plain opacity gives hover feedback without that.
+			Scale is kept small (1.02): several pill containers (ModSourceTemplate,
+			ModCategoryTemplate) set ClipToBounds="True" on their own root to stop overflowing
+			pill text from spilling into the next list column, so a RenderTransform grow here
+			has to stay inside that clip region rather than assuming free space.
+		-->
+		<Style.Triggers>
+			<Trigger Property="IsMouseOver" Value="True">
+				<Setter Property="Opacity" Value="0.85" />
+				<Trigger.EnterActions>
+					<BeginStoryboard>
+						<Storyboard>
+							<DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" To="1.02"
+								Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+							<DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" To="1.02"
+								Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+						</Storyboard>
+					</BeginStoryboard>
+				</Trigger.EnterActions>
+				<Trigger.ExitActions>
+					<BeginStoryboard>
+						<Storyboard>
+							<DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" To="1" Duration="{StaticResource Redux.Motion.Standard}" />
+							<DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" To="1" Duration="{StaticResource Redux.Motion.Standard}" />
+						</Storyboard>
+					</BeginStoryboard>
+				</Trigger.ExitActions>
+			</Trigger>
+		</Style.Triggers>
+	</Style>
+	<!-- Shared pill chrome used by list cells, the selected-mod drawer, and mod hover cards. -->
+	<Style x:Key="ReduxCategoryPillBaseStyle" BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="{x:Type Border}">
+		<Setter Property="Background" Value="{Binding SoftColor}" />
+		<Setter Property="BorderBrush" Value="{Binding Color}" />
 		<Style.Triggers>
 			<DataTrigger Binding="{Binding Name}" Value="No Category">
 				<Setter Property="Visibility" Value="Collapsed" />
 			</DataTrigger>
 		</Style.Triggers>
 	</Style>
-	<Style x:Key="ReduxSourcePillStyle" TargetType="{x:Type Border}">
-		<Setter Property="MinHeight" Value="21" />
-		<Setter Property="Padding" Value="8,2" />
-		<Setter Property="HorizontalAlignment" Value="Left" />
-		<Setter Property="VerticalAlignment" Value="Center" />
-		<Setter Property="BorderThickness" Value="1.5" />
-		<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Pill}" />
+	<Style x:Key="ReduxSourcePillStyle" BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="{x:Type Border}">
 		<Setter Property="Background" Value="{StaticResource Redux.Pill.Local.Background}" />
 		<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Local.Border}" />
 		<Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Local.Border}" />
@@ -1929,8 +2156,8 @@
 					ItemTemplate="{StaticResource ModTooltipCategoryPillItemTemplate}">
 					<ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
 				</ItemsControl>
-				<Border MinHeight="21" Margin="0,0,6,0" Padding="8,2" BorderThickness="1.5" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
-					<Border.Style><Style TargetType="Border">
+				<Border Margin="0,0,6,0">
+					<Border.Style><Style BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="Border">
 						<Setter Property="Background" Value="{DynamicResource ReduxSuccessSoftBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
 						<Style.Triggers>
 							<DataTrigger Binding="{Binding IsActive}" Value="False">
@@ -2162,6 +2389,19 @@
 						Opacity="0.85"
 						ShadowDepth="0" />
 				</Border.Effect>
+				<!--  Brief entrance emphasis only: a capped pulse, not a permanent decoration.  -->
+				<Border.Triggers>
+					<EventTrigger RoutedEvent="Loaded">
+						<BeginStoryboard>
+							<Storyboard AutoReverse="True" RepeatBehavior="3x">
+								<DoubleAnimation Storyboard.TargetProperty="Opacity"
+									From="1" To="0.5"
+									Duration="{StaticResource Redux.Motion.StatusPulseDuration}"
+									EasingFunction="{StaticResource Redux.Motion.EaseInOut}" />
+							</Storyboard>
+						</BeginStoryboard>
+					</EventTrigger>
+				</Border.Triggers>
 			</Border>
 			<Border Grid.Column="2" Padding="0,0,4,0" BorderThickness="0">
 				<StackPanel Orientation="Horizontal">
@@ -2271,16 +2511,78 @@
 					    IsHitTestVisible="True"
 					    ToolTip="Toolkit Mod Project"
 					    Visibility="{Binding ToolkitIconVisibility, FallbackValue=Collapsed}" />
-					<controls:ReduxIcon Width="16"
+					<Grid Margin="2,0"
+					    HorizontalAlignment="Center"
+					    VerticalAlignment="Center"
+					    DataContext="{Binding}"
+					    Visibility="{Binding ExtenderStatusVisibility, FallbackValue=Collapsed}">
+						<!--
+							Restrained status glow: a small translucent ring bounded to the icon,
+							never washed over surrounding text. Missing (urgent, required) gets a
+							slow continuous pulse; Warning stays a static glow per the established
+							severity distinction (missing required SE is an error, warning is not).
+						-->
+						<Border x:Name="ExtenderGlowWarning"
+						    Width="22" Height="22"
+						    Background="Transparent"
+						    CornerRadius="{DynamicResource Redux.CornerRadius.Small}"
+						    IsHitTestVisible="False"
+						    Opacity="0">
+							<Border.Effect>
+								<DropShadowEffect BlurRadius="10" Color="{DynamicResource ReduxWarningColor}" Opacity="0.9" ShadowDepth="0" />
+							</Border.Effect>
+							<Border.Style>
+								<Style TargetType="{x:Type Border}">
+									<Setter Property="Opacity" Value="0" />
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Warning}">
+											<Setter Property="Opacity" Value="0.5" />
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</Border.Style>
+						</Border>
+						<Border x:Name="ExtenderGlowMissing"
+						    Width="22" Height="22"
+						    Background="Transparent"
+						    CornerRadius="{DynamicResource Redux.CornerRadius.Small}"
+						    IsHitTestVisible="False"
+						    Opacity="0">
+							<Border.Effect>
+								<DropShadowEffect BlurRadius="10" Color="{DynamicResource ReduxErrorColor}" Opacity="0.9" ShadowDepth="0" />
+							</Border.Effect>
+							<Border.Style>
+								<Style TargetType="{x:Type Border}">
+									<Setter Property="Opacity" Value="0" />
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Missing}">
+											<Setter Property="Opacity" Value="0.85" />
+											<DataTrigger.EnterActions>
+												<BeginStoryboard Name="ExtenderGlowMissingPulse">
+													<Storyboard AutoReverse="True" RepeatBehavior="Forever">
+														<DoubleAnimation Storyboard.TargetProperty="Opacity"
+															To="0.45"
+															Duration="{StaticResource Redux.Motion.StatusPulseDuration}"
+															EasingFunction="{StaticResource Redux.Motion.EaseInOut}" />
+													</Storyboard>
+												</BeginStoryboard>
+											</DataTrigger.EnterActions>
+											<DataTrigger.ExitActions>
+												<StopStoryboard BeginStoryboardName="ExtenderGlowMissingPulse" />
+											</DataTrigger.ExitActions>
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</Border.Style>
+						</Border>
+						<controls:ReduxIcon Width="16"
 					    Height="16"
 					    MaxWidth="16"
 					    MaxHeight="16"
-					    Margin="2,0"
 					    HorizontalAlignment="Center"
 					    VerticalAlignment="Center"
 					    IsHitTestVisible="True"
-					    DataContext="{Binding}"
-					    Visibility="{Binding ExtenderStatusVisibility, FallbackValue=Collapsed}">
+					    DataContext="{Binding}">
 						<controls:ReduxIcon.ToolTip>
 							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
 								<Border MaxWidth="390" Padding="12,10"
@@ -2354,6 +2656,7 @@
 							</Style>
 						</controls:ReduxIcon.Style>
 					</controls:ReduxIcon>
+					</Grid>
 				</StackPanel>
 			</Border>
 		</controls:ModEntryGrid>
@@ -2423,7 +2726,12 @@
 		</Grid>
 	</DataTemplate>
 	<DataTemplate x:Key="ModSourceTemplate" DataType="{x:Type data:DivinityModData}">
-		<Grid HorizontalAlignment="Left" ClipToBounds="True">
+		<!--
+			ClipToBounds off: the pill's MaxWidth clamp already stops text spilling into the
+			next column (ellipsis inside the pill), and clipping here visibly cuts off the
+			shared 2% hover grow when the pill sits flush against the cell edge.
+		-->
+		<Grid HorizontalAlignment="Left" ClipToBounds="False">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
@@ -2525,7 +2833,8 @@
 		</Border>
 	</DataTemplate>
 	<DataTemplate x:Key="ModCategoryTemplate" DataType="{x:Type data:DivinityModData}">
-		<ItemsControl ClipToBounds="True"
+		<!--  ClipToBounds off: see ModSourceTemplate - the per-item MaxWidth clamp handles overflow.  -->
+		<ItemsControl ClipToBounds="False"
 			ItemTemplate="{StaticResource ModCategoryPillItemTemplate}"
 			ItemsSource="{Binding DisplayCategories}"
 			ToolTip="{Binding DisplayCategory}">

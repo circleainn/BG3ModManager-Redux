@@ -27,30 +27,6 @@ incomplete or change between builds.
 - Source code is public for transparency and development, but this alpha is not yet intended for
   inexperienced users.
 
-### Alpha.5 highlights
-
-- Added shared dot and diamond markers for categories and visual separators, with the dot as the
-  consistent default and custom icons still supported.
-- Refined the Categories pane with stronger color-aware borders and an optional setting for
-  category-colored names.
-- Unified secondary buttons, editor wording, spacing, and interaction feedback across category and
-  custom-theme workflows.
-- Replaced the stale bug-report template with a Redux-specific issue form and added direct
-  **Report a Bug** links to the Help menu and About window.
-- Added Compact, Default, and Large interface text sizing with shared dynamic typography tokens.
-- Custom themes now preserve both their preferred bundled typeface and text-size preset across
-  activation, duplication, import/export, and application restarts.
-- Added reusable custom PNG icons for categories and separators, including optional category-color
-  tinting, safe local storage, and explicit removal.
-- Added a reusable custom-font library for local TrueType and OpenType fonts, with immediate
-  preview, custom-theme defaults, safe deferred deletion, and Manrope fallback when unavailable.
-- Replaced the mixed legacy icon set with a shared Lucide-based vector system, retaining official
-  Nexus Mods, mod.io, and GitHub image assets where generic interface icons are inappropriate.
-- Consolidated Theme & Appearance controls into a more compact theme, typography, and custom-theme
-  workflow with clearer semantic color previews and more consistent Redux dialogs.
-- Continued conservative UI cleanup without changing load-order behavior, package parsing,
-  import/export behavior, game-path detection, or file-management semantics.
-
 ## Redux features
 
 ### Core mod management

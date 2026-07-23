@@ -13,7 +13,27 @@
 	<Window.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 	</ResourceDictionary.MergedDictionaries></ResourceDictionary></Window.Resources>
-	<Border Padding="22" Background="{DynamicResource ReduxAppBackgroundBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
+	<Border Padding="22" Background="{DynamicResource ReduxAppBackgroundBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
+		RenderTransformOrigin="0.5,0.5">
+		<Border.RenderTransform>
+			<ScaleTransform x:Name="DialogEntranceScale" ScaleX="0.98" ScaleY="0.98" />
+		</Border.RenderTransform>
+		<Border.Opacity>0</Border.Opacity>
+		<!--  Entrance only: doesn't delay focus/default-button behavior, which runs independently of this storyboard.  -->
+		<Border.Triggers>
+			<EventTrigger RoutedEvent="FrameworkElement.Loaded">
+				<BeginStoryboard>
+					<Storyboard>
+						<DoubleAnimation Storyboard.TargetProperty="Opacity" To="1"
+							Duration="{StaticResource Redux.Motion.DialogEnter}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+						<DoubleAnimation Storyboard.TargetName="DialogEntranceScale" Storyboard.TargetProperty="ScaleX" To="1"
+							Duration="{StaticResource Redux.Motion.DialogEnter}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+						<DoubleAnimation Storyboard.TargetName="DialogEntranceScale" Storyboard.TargetProperty="ScaleY" To="1"
+							Duration="{StaticResource Redux.Motion.DialogEnter}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+					</Storyboard>
+				</BeginStoryboard>
+			</EventTrigger>
+		</Border.Triggers>
 		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />

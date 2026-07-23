@@ -66,8 +66,13 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private object _focusedList = null;
 	private double _lastExpandedModDetailsRowHeight = DefaultModDetailsRowHeight;
 	private double _lastExpandedCategoriesWidth = DefaultExpandedCategoriesWidth;
+	private double _lastExpandedInactiveModsWidth;
 	private double _minimumExpandedCategoriesWidth = MinimumExpandedCategoriesWidth;
 	private double _lastExpandedOverrideModsRowHeight = DefaultOverrideModsRowHeight;
+	private System.Threading.CancellationTokenSource _categoriesTransition;
+	private System.Threading.CancellationTokenSource _inactiveModsTransition;
+	private System.Threading.CancellationTokenSource _modDetailsTransition;
+	private System.Threading.CancellationTokenSource _overrideModsTransition;
 	private readonly Dictionary<GridViewColumn, double> _visibleModListColumnWidths = new();
 	private readonly Dictionary<GridView, Dictionary<string, (GridViewColumn Column, int Index)>> _modListColumnRegistry = new();
 	private static readonly string[] OptionalModListColumns =
@@ -761,8 +766,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		if (e.OriginalSource is ButtonBase { Tag: "ReduxDividerToggle", DataContext: DivinityModData item } && item.IsVisualDivider)
 		{
-			ViewModel.ToggleVisualDividerCollapsed(item);
 			e.Handled = true;
+			ViewModel.ToggleVisualDividerCollapsed(item);
 		}
 	}
 
@@ -834,15 +839,87 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ModDetailsRow.Height = new GridLength(Math.Max(MinimumExpandedModDetailsRowHeight, _lastExpandedModDetailsRowHeight));
 	}
 
-	private void ModDetailsToggleButton_Checked(object sender, RoutedEventArgs e)
+	private async void ModDetailsToggleButton_Checked(object sender, RoutedEventArgs e)
 	{
-		UpdateModDetailsLayout(ModDetailsPanel.Visibility == Visibility.Visible);
+		await AnimateModDetailsLayoutAsync(true);
 	}
 
-	private void ModDetailsToggleButton_Unchecked(object sender, RoutedEventArgs e)
+	private async void ModDetailsToggleButton_Unchecked(object sender, RoutedEventArgs e)
 	{
 		RememberExpandedModDetailsHeight();
-		UpdateModDetailsLayout(ModDetailsPanel.Visibility == Visibility.Visible);
+		await AnimateModDetailsLayoutAsync(false);
+	}
+
+	private async System.Threading.Tasks.Task AnimateModDetailsLayoutAsync(bool isExpanded)
+	{
+		if (ModDetailsPanel.Visibility != Visibility.Visible || !IsLoaded)
+		{
+			UpdateModDetailsLayout(ModDetailsPanel.Visibility == Visibility.Visible);
+			return;
+		}
+
+		_modDetailsTransition?.Cancel();
+		_modDetailsTransition = new System.Threading.CancellationTokenSource();
+		var token = _modDetailsTransition.Token;
+		var startHeight = Math.Max(CollapsedModDetailsRowHeight, ModDetailsRow.ActualHeight);
+		var targetHeight = isExpanded
+			? Math.Max(MinimumExpandedModDetailsRowHeight, _lastExpandedModDetailsRowHeight)
+			: CollapsedModDetailsRowHeight;
+
+		ModDetailsRow.MinHeight = 0;
+		if (isExpanded)
+		{
+			ModDetailsGridSplitter.Visibility = Visibility.Visible;
+			ModDetailsSplitterRow.Height = new GridLength(ModDetailsSplitterHeight);
+		}
+
+		var completed = await AnimatePanelValueAsync(
+			startHeight,
+			targetHeight,
+			value => ModDetailsRow.Height = new GridLength(value),
+			token);
+		if (!completed) return;
+
+		UpdateModDetailsLayout(true);
+	}
+
+	private static int GetPanelMotionMilliseconds()
+	{
+		return Application.Current?.TryFindResource("Redux.Motion.PanelMilliseconds") is int duration
+			? duration
+			: 200;
+	}
+
+	private static System.Threading.Tasks.Task<bool> AnimatePanelValueAsync(
+		double from,
+		double to,
+		Action<double> update,
+		System.Threading.CancellationToken token)
+	{
+		var duration = GetPanelMotionMilliseconds();
+		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+		var completion = new System.Threading.Tasks.TaskCompletionSource<bool>();
+		EventHandler renderingHandler = null;
+		renderingHandler = (_, _) =>
+		{
+			if (token.IsCancellationRequested)
+			{
+				CompositionTarget.Rendering -= renderingHandler;
+				completion.TrySetResult(false);
+				return;
+			}
+
+			var progress = Math.Clamp(stopwatch.Elapsed.TotalMilliseconds / duration, 0, 1);
+			// Sine ease-in/out avoids the sharper acceleration change of the former cubic loop.
+			var eased = 0.5 - (Math.Cos(Math.PI * progress) / 2);
+			update(from + ((to - from) * eased));
+			if (progress < 1) return;
+
+			CompositionTarget.Rendering -= renderingHandler;
+			completion.TrySetResult(true);
+		};
+		CompositionTarget.Rendering += renderingHandler;
+		return completion.Task;
 	}
 
 	private void ModDetailsGridSplitter_DragCompleted(object sender, DragCompletedEventArgs e)
@@ -861,13 +938,162 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		Dispatcher.BeginInvoke(new Action(RememberExpandedOverrideModsHeight));
 	}
 
-	private void UpdateCategoriesLayout(bool isExpanded)
+	private async void UpdateOverrideModsLayout(bool hasAlwaysLoadedMods, bool isExpanded)
+	{
+		var showContents = hasAlwaysLoadedMods && isExpanded;
+		if (!IsLoaded || !hasAlwaysLoadedMods || ActiveModsListForcedModsRow.ActualHeight <= 0)
+		{
+			ApplyOverrideModsLayout(hasAlwaysLoadedMods, showContents);
+			return;
+		}
+
+		if (!showContents)
+			RememberExpandedOverrideModsHeight();
+
+		_overrideModsTransition?.Cancel();
+		_overrideModsTransition = new System.Threading.CancellationTokenSource();
+		var token = _overrideModsTransition.Token;
+		var startHeight = ActiveModsListForcedModsRow.ActualHeight;
+		var targetHeight = showContents
+			? Math.Max(MinimumExpandedOverrideModsRowHeight, _lastExpandedOverrideModsRowHeight)
+			: Math.Max(1, AlwaysLoadedHeaderGrid.ActualHeight);
+
+		ActiveModsListRow.Height = new GridLength(1, GridUnitType.Star);
+		ActiveModsListForcedModsRow.MinHeight = 0;
+		if (showContents)
+		{
+			ForceLoadedModsListView.Visibility = Visibility.Visible;
+			ActiveModListViewGridSplitter.Visibility = Visibility.Visible;
+			ActiveModsListGridRow.Height = GridLength.Auto;
+		}
+
+		var completed = await AnimatePanelValueAsync(
+			startHeight,
+			targetHeight,
+			value => ActiveModsListForcedModsRow.Height = new GridLength(value),
+			token);
+		if (completed) ApplyOverrideModsLayout(hasAlwaysLoadedMods, showContents);
+	}
+
+	private void ApplyOverrideModsLayout(bool hasAlwaysLoadedMods, bool showContents)
+	{
+		ForceLoadedModsListView.Visibility = BoolToVisibilityConverter.FromBool(showContents);
+		ActiveModListViewGridSplitter.Visibility = BoolToVisibilityConverter.FromBool(showContents);
+		ActiveModsListForcedModsRow.MinHeight = showContents ? MinimumExpandedOverrideModsRowHeight : 0;
+		ActiveModsListRow.Height = new GridLength(1, GridUnitType.Star);
+
+		if (!hasAlwaysLoadedMods)
+		{
+			ActiveModsListGridRow.Height = new GridLength(0);
+			ActiveModsListForcedModsRow.Height = new GridLength(0);
+			ActiveModListViewGridSplitter.IsEnabled = false;
+			return;
+		}
+
+		ActiveModsListGridRow.Height = showContents ? GridLength.Auto : new GridLength(0);
+		ActiveModsListForcedModsRow.Height = showContents
+			? new GridLength(Math.Max(MinimumExpandedOverrideModsRowHeight, _lastExpandedOverrideModsRowHeight))
+			: GridLength.Auto;
+		ActiveModListViewGridSplitter.IsEnabled = showContents;
+	}
+
+	private async void UpdateInactiveModsLayout(bool isExpanded)
+	{
+		if (!IsLoaded || ActiveModsColumn.ActualWidth <= 0 || InactiveModsColumn.ActualWidth <= 0)
+		{
+			ApplyInactiveModsLayout(isExpanded);
+			return;
+		}
+
+		_inactiveModsTransition?.Cancel();
+		_inactiveModsTransition = new System.Threading.CancellationTokenSource();
+		var token = _inactiveModsTransition.Token;
+		var startActiveWidth = ActiveModsColumn.ActualWidth;
+		var startInactiveWidth = InactiveModsColumn.ActualWidth;
+		var availableWidth = startActiveWidth + startInactiveWidth;
+		if (!isExpanded && startInactiveWidth > CollapsedCategoriesWidth)
+			_lastExpandedInactiveModsWidth = startInactiveWidth;
+
+		var desiredExpandedWidth = _lastExpandedInactiveModsWidth > CollapsedCategoriesWidth
+			? _lastExpandedInactiveModsWidth
+			: availableWidth / 2;
+		var minimumPaneWidth = Math.Min(MinimumExpandedCategoriesWidth, availableWidth / 2);
+		var maximumInactiveWidth = Math.Max(minimumPaneWidth, availableWidth - MinimumExpandedCategoriesWidth);
+		var restoredInactiveWidth = Math.Clamp(desiredExpandedWidth, minimumPaneWidth, maximumInactiveWidth);
+		var targetInactiveWidth = isExpanded ? restoredInactiveWidth : CollapsedCategoriesWidth;
+		var targetActiveWidth = availableWidth - targetInactiveWidth;
+
+		InactiveModsColumn.MaxWidth = Double.PositiveInfinity;
+		InactiveModsColumn.MinWidth = 0;
+		var completed = await AnimatePanelValueAsync(
+			0,
+			1,
+			progress =>
+			{
+				ActiveModsColumn.Width = new GridLength(startActiveWidth + ((targetActiveWidth - startActiveWidth) * progress));
+				InactiveModsColumn.Width = new GridLength(startInactiveWidth + ((targetInactiveWidth - startInactiveWidth) * progress));
+			},
+			token);
+		if (completed)
+		{
+			if (isExpanded)
+				_lastExpandedInactiveModsWidth = targetInactiveWidth;
+			ApplyInactiveModsLayout(isExpanded, targetActiveWidth, targetInactiveWidth);
+		}
+	}
+
+	private void ApplyInactiveModsLayout(bool isExpanded, double activeWeight = 1, double inactiveWeight = 1)
 	{
 		if (!isExpanded)
 		{
-			if (CategoriesColumn.ActualWidth >= _minimumExpandedCategoriesWidth)
-				_lastExpandedCategoriesWidth = CategoriesColumn.ActualWidth;
+			InactiveModsColumn.MinWidth = CollapsedCategoriesWidth;
+			InactiveModsColumn.MaxWidth = CollapsedCategoriesWidth;
+			InactiveModsColumn.Width = new GridLength(CollapsedCategoriesWidth);
+			ActiveModsColumn.Width = new GridLength(1, GridUnitType.Star);
+			return;
+		}
 
+		InactiveModsColumn.MaxWidth = Double.PositiveInfinity;
+		InactiveModsColumn.MinWidth = 0;
+		// Preserve the user's splitter ratio while retaining responsive star sizing.
+		ActiveModsColumn.Width = new GridLength(Math.Max(1, activeWeight), GridUnitType.Star);
+		InactiveModsColumn.Width = new GridLength(Math.Max(1, inactiveWeight), GridUnitType.Star);
+	}
+
+	private async void UpdateCategoriesLayout(bool isExpanded)
+	{
+		if (!IsLoaded || CategoriesColumn.ActualWidth <= 0)
+		{
+			ApplyCategoriesLayout(isExpanded);
+			return;
+		}
+
+		if (!isExpanded && CategoriesColumn.ActualWidth >= _minimumExpandedCategoriesWidth)
+			_lastExpandedCategoriesWidth = CategoriesColumn.ActualWidth;
+
+		_categoriesTransition?.Cancel();
+		_categoriesTransition = new System.Threading.CancellationTokenSource();
+		var token = _categoriesTransition.Token;
+		var startWidth = CategoriesColumn.ActualWidth;
+		var targetWidth = isExpanded
+			? Math.Max(_minimumExpandedCategoriesWidth, _lastExpandedCategoriesWidth)
+			: CollapsedCategoriesWidth;
+
+		CategoriesGridSplitter.IsEnabled = false;
+		CategoriesColumn.MinWidth = 0;
+		CategoriesColumn.MaxWidth = Double.PositiveInfinity;
+		var completed = await AnimatePanelValueAsync(
+			startWidth,
+			targetWidth,
+			value => CategoriesColumn.Width = new GridLength(value),
+			token);
+		if (completed) ApplyCategoriesLayout(isExpanded);
+	}
+
+	private void ApplyCategoriesLayout(bool isExpanded)
+	{
+		if (!isExpanded)
+		{
 			CategoriesGridSplitter.IsEnabled = false;
 			CategoriesColumn.MinWidth = CollapsedCategoriesWidth;
 			CategoriesColumn.MaxWidth = CollapsedCategoriesWidth;
@@ -1177,6 +1403,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				d(this.ViewModel.WhenAnyValue(x => x.IsCategoriesExpanded)
 					.ObserveOn(RxApp.MainThreadScheduler)
 					.Subscribe(UpdateCategoriesLayout));
+				d(this.ViewModel.WhenAnyValue(x => x.IsInactiveModsExpanded)
+					.ObserveOn(RxApp.MainThreadScheduler)
+					.Subscribe(UpdateInactiveModsLayout));
 				d(Observable.FromEventPattern<NotifyCollectionChangedEventHandler, NotifyCollectionChangedEventArgs>(
 					h => ((INotifyCollectionChanged)CategoryListBox.Items).CollectionChanged += h,
 					h => ((INotifyCollectionChanged)CategoryListBox.Items).CollectionChanged -= h)
@@ -1247,15 +1476,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				d(this.OneWayBind(ViewModel, vm => vm.ForceLoadedMods, v => v.ForceLoadedModsListView.ItemsSource));
 
 				d(this.OneWayBind(ViewModel, vm => vm.HasForceLoadedMods, v => v.AlwaysLoadedSectionGrid.Visibility, BoolToVisibilityConverter.FromBool));
-				d(ViewModel.WhenAnyValue(x => x.HasForceLoadedMods, x => x.IsAlwaysLoadedExpanded)
-					.ObserveOn(RxApp.MainThreadScheduler)
-					.Subscribe(state =>
-					{
-						var showContents = state.Item1 && state.Item2;
-						ForceLoadedModsListView.Visibility = BoolToVisibilityConverter.FromBool(showContents);
-						ActiveModListViewGridSplitter.Visibility = BoolToVisibilityConverter.FromBool(showContents);
-					}));
-
 				d(this.Bind(ViewModel, vm => vm.ActiveModFilterText, v => v.ActiveModsFilterTextBox.Text));
 				d(this.Bind(ViewModel, vm => vm.InactiveModFilterText, v => v.InactiveModsFilterTextBox.Text));
 
@@ -1269,35 +1489,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				d(this.OneWayBind(ViewModel, vm => vm.InactiveSelectedText, v => v.InactiveSelectedText.Text));
 				d(this.OneWayBind(ViewModel, vm => vm.InactiveSelected, v => v.InactiveSelectedText.Visibility, IntToVisibilityConverter.FromInt));
 
-				var gridLengthConverter = new GridLengthConverter();
-				var zeroHeight = (GridLength)gridLengthConverter.ConvertFrom(0);
-				var activeModsFullHeight = (GridLength)gridLengthConverter.ConvertFrom("1*");
-
 				d(ViewModel.WhenAnyValue(x => x.HasForceLoadedMods, x => x.IsAlwaysLoadedExpanded)
 					.ObserveOn(RxApp.MainThreadScheduler).Subscribe((state) =>
 				{
-					var hasAlwaysLoadedMods = state.Item1;
-					var showAlwaysLoadedContents = hasAlwaysLoadedMods && state.Item2;
-					ActiveModsListForcedModsRow.MinHeight = showAlwaysLoadedContents ? MinimumExpandedOverrideModsRowHeight : 0;
-					if (!showAlwaysLoadedContents)
-						RememberExpandedOverrideModsHeight();
-					// Keep the main list flexible and restore the exact user-sized Override
-					// Mods height. This also clears fixed heights left by the GridSplitter.
-					ActiveModsListRow.Height = activeModsFullHeight;
-					if (hasAlwaysLoadedMods)
-					{
-						ActiveModsListGridRow.Height = showAlwaysLoadedContents ? GridLength.Auto : zeroHeight;
-						ActiveModsListForcedModsRow.Height = showAlwaysLoadedContents
-							? new GridLength(Math.Max(MinimumExpandedOverrideModsRowHeight, _lastExpandedOverrideModsRowHeight))
-							: GridLength.Auto;
-						ActiveModListViewGridSplitter.IsEnabled = showAlwaysLoadedContents;
-					}
-					else
-					{
-						ActiveModsListGridRow.Height = zeroHeight;
-						ActiveModsListForcedModsRow.Height = zeroHeight;
-						ActiveModListViewGridSplitter.IsEnabled = false;
-					}
+					UpdateOverrideModsLayout(state.Item1, state.Item2);
 				}));
 
 				ViewModel.Keys.MoveFocusLeft.AddAction(() =>

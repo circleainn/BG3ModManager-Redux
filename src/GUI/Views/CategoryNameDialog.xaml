@@ -106,7 +106,8 @@
 					<Grid.ColumnDefinitions><ColumnDefinition Width="22" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 					<Path Width="7" Height="5" VerticalAlignment="Center" Fill="{DynamicResource ReduxTextSecondaryBrush}" Stretch="Uniform" Data="M 0,0 L 7,0 L 3.5,5 Z" />
 					<Grid Grid.Column="1" Width="15" Height="15" Margin="0,0,8,0" VerticalAlignment="Center">
-							<Ellipse Width="8" Height="8" VerticalAlignment="Center" Fill="{DynamicResource Redux.CategoryEditor.IconBrush}"
+							<Ellipse Width="8" Height="8" VerticalAlignment="Center" Fill="Transparent"
+								Stroke="{DynamicResource Redux.CategoryEditor.IconBrush}" StrokeThickness="1.5"
 								Visibility="{Binding SelectedItem.IsNone, ElementName=CategoryIconComboBox, Converter={StaticResource BoolToVisibilityConverter}}" />
 							<controls:ReduxIcon Width="15" Height="15" IconKey="{Binding SelectedItem.PreviewIconId, ElementName=CategoryIconComboBox}"
 								Foreground="{DynamicResource Redux.CategoryEditor.IconBrush}"
@@ -201,7 +202,7 @@
 									<ComboBox.ItemTemplate>
 										<DataTemplate>
 											<Grid Width="20" Height="20" AutomationProperties.Name="{Binding DisplayName}">
-												<Ellipse Width="8" Height="8" Fill="{DynamicResource Redux.CategoryEditor.IconBrush}" Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverter}}" />
+												<Ellipse Width="8" Height="8" Fill="Transparent" Stroke="{DynamicResource Redux.CategoryEditor.IconBrush}" StrokeThickness="1.5" Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverter}}" />
 												<controls:ReduxIcon Width="18" Height="18" IconKey="{Binding PreviewIconId}" Foreground="{DynamicResource Redux.CategoryEditor.IconBrush}" Visibility="{Binding IsNone, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
 											</Grid>
 										</DataTemplate>
