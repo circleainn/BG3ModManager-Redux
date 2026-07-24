@@ -3128,7 +3128,6 @@
 				</GridViewColumn.Header>
 			</GridViewColumn>
 			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="190" Header="File Name" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
@@ -3144,6 +3143,7 @@
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastModifiedTemplate}" Header="Last Modified" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 		</GridView.Columns>
 	</GridView>
 	<Style x:Key="GridViewHiddenLeftContainerStyle" BasedOn="{StaticResource {x:Type GridViewColumnHeader}}" TargetType="{x:Type GridViewColumnHeader}">
@@ -3175,7 +3175,6 @@
 				</GridViewColumn.Header>
 			</GridViewColumn>
 			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="190" Header="File Name" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
@@ -3191,6 +3190,7 @@
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastModifiedTemplate}" Header="Last Modified" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 		</GridView.Columns>
 	</GridView>
 	<GridView x:Key="InactiveModGridView"
@@ -3203,7 +3203,6 @@
 			    Header="Name"
 			    HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
-			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="190" Header="File Name" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
@@ -3219,6 +3218,7 @@
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastModifiedTemplate}" Header="Last Modified" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
+			<GridViewColumn Width="150" CellTemplate="{StaticResource ModSourceTemplate}" Header="Source" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 		</GridView.Columns>
 	</GridView>
 

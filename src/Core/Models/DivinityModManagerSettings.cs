@@ -166,9 +166,9 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("Match category hover colors", "Use a mod's primary category color when hovering its row. Disable this to use the standard Redux accent.", HideFromUI = true)]
 	[DataMember, Reactive] public bool UseCategoryColorsForHover { get; set; }
 
-	[DefaultValue(false)]
+	[DefaultValue(true)]
 	[SettingsEntry("Color category names", "Use each category's color for its name in the Categories pane.", HideFromUI = true)]
-	[DataMember, Reactive] public bool UseCategoryColorsForSidebarText { get; set; }
+	[DataMember, Reactive] public bool UseCategoryColorsForSidebarText { get; set; } = true;
 
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ReduxPreviewWarningAcknowledged { get; set; }
@@ -224,6 +224,10 @@ public class DivinityModManagerSettings : ReactiveObject
 
 	[DefaultValue(true)]
 	[DataMember, Reactive] public bool ShowCategoryIconsInPills { get; set; } = true;
+
+	[SettingsEntry("Hide toolbar", "Hide the main command toolbar. Restore it with Ctrl+Shift+B or the Toolbar menu.")]
+	[DefaultValue(false)]
+	[DataMember, Reactive] public bool HideToolbar { get; set; }
 
 	[DefaultValue(true)]
 	[DataMember, Reactive] public bool CategoriesPanelExpanded { get; set; } = true;

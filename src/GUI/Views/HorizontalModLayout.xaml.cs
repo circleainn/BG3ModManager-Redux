@@ -1465,6 +1465,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					{
 						this.AutoSizeNameColumn_ActiveMods();
 						this.AutoSizeNameColumn_InactiveMods();
+						this.AutoSizeInitialCategoryColumns();
 					}
 				}));
 
@@ -1740,7 +1741,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			"Last Updated" => 115,
 			"Last Modified" => 115,
 			"Author" => 130,
-			"Category" => 135,
+			"Category" => 175,
 			"Source" => 150,
 			_ => 100
 		};
@@ -1922,6 +1923,51 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		}
 	}
 
+	private static bool IsModListColumnVisibleByDefault(string columnName)
+	{
+		return columnName switch
+		{
+			"Author" => true,
+			"Last Updated" => true,
+			"Category" => true,
+			"Source" => true,
+			_ => false
+		};
+	}
+
+	private double GetInitialCategoryColumnWidth(ModListView listView)
+	{
+		var iconAllowance = ViewModel?.Settings.ShowCategoryIconsInPills == true ? 17 : 0;
+		var pillFontSize = GetPillFontSize(listView);
+		var widestPill = listView.Items
+			.OfType<DivinityModData>()
+			.Where(mod => !mod.IsVisualDivider && mod.Visibility == Visibility.Visible)
+			.SelectMany(mod => mod.DisplayCategories ?? Enumerable.Empty<ModCategoryDisplayData>())
+			.Select(category => MeasureColumnText(listView, category.Name, pillFontSize, FontWeights.SemiBold) + 44 + iconAllowance)
+			.DefaultIfEmpty(GetDefaultColumnWidth("Category"))
+			.Max();
+
+		return Math.Ceiling(Math.Min(Math.Max(widestPill, GetHeaderMinimumColumnWidth(listView, "Category")), 260d));
+	}
+
+	private void AutoSizeInitialCategoryColumns()
+	{
+		RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(350), () =>
+		{
+			foreach (var listView in new[] { ActiveModsListView, InactiveModsListView })
+			{
+				if (listView.UserResizedColumns || listView.View is not GridView gridView) continue;
+				var categoryColumn = gridView.Columns.FirstOrDefault(column => GetColumnName(column) == "Category");
+				if (categoryColumn == null) continue;
+
+				// Initial sizing may grow the default width to fit a real pill, but never
+				// shrinks a restored/user-selected layout.
+				categoryColumn.Width = Math.Max(categoryColumn.Width, GetInitialCategoryColumnWidth(listView));
+				_visibleModListColumnWidths[categoryColumn] = categoryColumn.Width;
+			}
+		});
+	}
+
 	private void ListViewColumnHeader_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 	{
 		if (e.OriginalSource is not DependencyObject source)
@@ -1982,6 +2028,51 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				SetGridViewColumnVisibility(gridView, columnName, IsModListColumnVisible(columnName));
 			}
 		}
+	}
+
+	private void ResetModListColumnsToDefaults()
+	{
+		CaptureModListColumnWidths();
+
+		foreach (var columnName in OptionalModListColumns)
+		{
+			SetModListColumnSetting(columnName, IsModListColumnVisibleByDefault(columnName));
+		}
+
+		foreach (var gridView in GetModListGridViews())
+		{
+			if (!_modListColumnRegistry.TryGetValue(gridView, out var registry))
+			{
+				continue;
+			}
+
+			var registeredColumns = registry.Values
+				.Select(entry => entry.Column)
+				.ToHashSet();
+			var defaultOrder = registry.Values
+				.Select(entry => (entry.Column, entry.Index))
+				.Concat(gridView.Columns
+					.Cast<GridViewColumn>()
+					.Where(column => !registeredColumns.Contains(column))
+					.Select((column, index) => (Column: column, Index: index)))
+				.OrderBy(entry => entry.Index)
+				.Select(entry => entry.Column)
+				.ToList();
+
+			gridView.Columns.Clear();
+			foreach (var column in defaultOrder)
+			{
+				gridView.Columns.Add(column);
+				var columnName = GetColumnName(column);
+				if (!String.IsNullOrWhiteSpace(columnName))
+				{
+					column.Width = GetDefaultColumnWidth(columnName);
+					_visibleModListColumnWidths[column] = column.Width;
+				}
+			}
+		}
+
+		ApplyModListColumnVisibility();
 	}
 
 	private static MenuItem CreateFixedColumnMenuItem(string header)
@@ -2070,11 +2161,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		};
 		resetItem.Click += (_, _) =>
 		{
-			foreach (var columnName in OptionalModListColumns)
-			{
-				SetModListColumnSetting(columnName, true);
-			}
-			ApplyModListColumnVisibility();
+			ResetModListColumnsToDefaults();
 			ViewModel.QueueSave();
 		};
 		menu.Items.Add(resetItem);

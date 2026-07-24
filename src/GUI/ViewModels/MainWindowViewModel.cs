@@ -257,15 +257,15 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	];
 	private static readonly Dictionary<string, string> ReduxCategoryDefaultColors = new(StringComparer.OrdinalIgnoreCase)
 	{
-		[AllModsCategory] = "#8A6FE8", [UncategorizedModsCategory] = "#828A98",
-		["User Interface"] = "#2FAFC0", ["Classes"] = "#4B7FD8", ["Spells"] = "#936FE5", ["Cosmetics"] = "#DC609B",
-		["Accessories"] = "#C38A3F", ["Animations"] = "#7087D8", ["Armor"] = "#627F9F", ["Audio"] = "#A767C3",
-		["Character Customization"] = "#D764AA", ["Clothing"] = "#C96B7F", ["Dice"] = "#AE68CC", ["Equipment"] = "#A77C55",
-		["Maps"] = "#3C9A79", ["Miscellaneous"] = "#798392", ["Photo Mode"] = "#4D9ED0", ["Quests"] = "#C47A43",
-		["Races"] = "#7769C5", ["Resources"] = "#399B8E", ["Visuals"] = "#4C89BE", ["Weapons"] = "#C45F55",
-		["Libraries"] = "#3E9668", ["Patches"] = "#72A956", ["Overhauls"] = "#D66843",
-		["Companions"] = "#C59632", ["Utilities"] = "#22A99D", ["Gameplay"] = "#D5A13A",
-		["Overrides"] = "#D55061"
+		[AllModsCategory] = "#9A7BFF", [UncategorizedModsCategory] = "#8B93A3",
+		["User Interface"] = "#22B8CF", ["Classes"] = "#4F86F7", ["Spells"] = "#A678F2", ["Cosmetics"] = "#E05286",
+		["Accessories"] = "#E0A13A", ["Animations"] = "#7187E8", ["Armor"] = "#7392B7", ["Audio"] = "#B56BD6",
+		["Character Customization"] = "#E76FAD", ["Clothing"] = "#E27883", ["Dice"] = "#BC69E2", ["Equipment"] = "#B98757",
+		["Maps"] = "#38A77D", ["Miscellaneous"] = "#8791A3", ["Photo Mode"] = "#42A9DF", ["Quests"] = "#D8873F",
+		["Races"] = "#7C72D8", ["Resources"] = "#2DA899", ["Visuals"] = "#438FD0", ["Weapons"] = "#DE6259",
+		["Libraries"] = "#42A66F", ["Patches"] = "#7CBF55", ["Overhauls"] = "#E06B3F",
+		["Companions"] = "#D2A238", ["Utilities"] = "#22B7A6", ["Gameplay"] = "#E0AA35",
+		["Overrides"] = "#E05368"
 	};
 	private static readonly Dictionary<string, string> ReduxCategoryDefaultIcons = new(StringComparer.OrdinalIgnoreCase)
 	{
@@ -6464,8 +6464,11 @@ Directory the zip will be extracted to:
 			};
 			Settings.TypographyFont = ReduxTypographyFont.Manrope;
 			Settings.TextSize = ReduxTextSize.Default;
+			ReduxThemeService.ApplyBuiltInCategoryPresentation(Settings, nextTheme);
 			Settings.ColorTheme = nextTheme;
 		});
+
+		Keys.ToggleToolbar.AddAction(() => Settings.HideToolbar = !Settings.HideToolbar);
 
 		Keys.ToggleFileNameDisplay.AddAction(() =>
 		{

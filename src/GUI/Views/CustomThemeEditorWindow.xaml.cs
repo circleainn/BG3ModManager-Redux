@@ -18,6 +18,7 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 	{
 		Theme = theme ?? throw new ArgumentNullException(nameof(theme));
 		InitializeComponent();
+		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
 		DataContext = Theme;
 		BaseThemeComboBox.SelectedValue = Theme.BaseTheme;
 		RefreshTypographyChoices();

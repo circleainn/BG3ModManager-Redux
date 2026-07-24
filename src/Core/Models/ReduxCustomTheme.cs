@@ -20,6 +20,12 @@ public class ReduxCustomTheme : ReactiveObject
 	[DataMember, Reactive] public string CustomTypographyFont { get; set; } = String.Empty;
 	[DefaultValue(ReduxTextSize.Default)]
 	[DataMember, Reactive] public ReduxTextSize TextSize { get; set; } = ReduxTextSize.Default;
+	[DefaultValue(false)]
+	[DataMember, Reactive] public bool UseCategoryColorsForHover { get; set; }
+	[DefaultValue(true)]
+	[DataMember, Reactive] public bool ShowCategoryIconsInPills { get; set; } = true;
+	[DefaultValue(false)]
+	[DataMember, Reactive] public bool UseCategoryColorsForSidebarText { get; set; }
 	[DataMember, Reactive] public string BackgroundColor { get; set; } = "#0D0B10";
 	[DataMember, Reactive] public string SurfaceColor { get; set; } = "#17121D";
 	[DataMember, Reactive] public string AccentColor { get; set; } = "#9676FF";
@@ -37,6 +43,9 @@ public class ReduxCustomTheme : ReactiveObject
 		TypographyFont = TypographyFont,
 		CustomTypographyFont = CustomTypographyFont,
 		TextSize = TextSize,
+		UseCategoryColorsForHover = UseCategoryColorsForHover,
+		ShowCategoryIconsInPills = ShowCategoryIconsInPills,
+		UseCategoryColorsForSidebarText = UseCategoryColorsForSidebarText,
 		BackgroundColor = BackgroundColor,
 		SurfaceColor = SurfaceColor,
 		AccentColor = AccentColor,

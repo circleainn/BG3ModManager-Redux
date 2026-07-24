@@ -1,5 +1,7 @@
 ﻿using AdonisUI.Controls;
 
+using DivinityModManager.Util;
+
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,6 +11,7 @@ namespace DivinityModManager.Views;
 
 public class HideWindowBase<TViewModel> : AdonisWindow, IViewFor<TViewModel> where TViewModel : class
 {
+	private bool _hideAnimationRunning;
 	/// <summary>
 	/// The view model dependency property.
 	/// </summary>
@@ -40,26 +43,49 @@ public class HideWindowBase<TViewModel> : AdonisWindow, IViewFor<TViewModel> whe
 	public HideWindowBase()
 	{
 		Closing += HideWindow_Closing;
+		ReduxWindowBehavior.AttachAdaptiveSizing(this);
 		KeyDown += (o, e) =>
 		{
 			if (!e.Handled && e.Key == System.Windows.Input.Key.Escape)
 			{
 				if (Keyboard.FocusedElement == null || Keyboard.FocusedElement.GetType() != typeof(TextBox))
 				{
-					Hide();
+					HideWithTransition();
 				}
 			}
 		};
 	}
 
-	protected override void OnSourceInitialized(EventArgs e)
-	{
-		base.OnSourceInitialized(e);
-	}
-
 	public virtual void HideWindow_Closing(object sender, CancelEventArgs e)
 	{
 		e.Cancel = true;
-		Hide();
+		HideWithTransition();
+	}
+
+	public void HideWithTransition()
+	{
+		if (_hideAnimationRunning || !IsVisible) return;
+		_hideAnimationRunning = true;
+		ReduxWindowBehavior.AnimateExit(this, () =>
+		{
+			Hide();
+			_hideAnimationRunning = false;
+		});
+	}
+
+	public void ShowWithTransition()
+	{
+		if (IsVisible)
+		{
+			Activate();
+			return;
+		}
+
+		BeginAnimation(OpacityProperty, null);
+		Opacity = SystemParameters.ClientAreaAnimation ? 0 : 1;
+		Show();
+		Dispatcher.BeginInvoke(
+			() => ReduxWindowBehavior.AnimateEntrance(this, 0),
+			System.Windows.Threading.DispatcherPriority.Render);
 	}
 }

@@ -17,6 +17,7 @@ public sealed class ModCategoryFilterItem : ReactiveObject
 	public string IconId { get; }
 	public bool HasIcon => !String.IsNullOrWhiteSpace(IconId);
 	public string SoftColor => String.IsNullOrWhiteSpace(Color) ? "#243A3346" : $"#33{Color.TrimStart('#')}";
+	public string CountHoverColor => String.IsNullOrWhiteSpace(Color) ? "#333A3346" : $"#4D{Color.TrimStart('#')}";
 	public bool HasNewMods
 	{
 		get => _hasNewMods;

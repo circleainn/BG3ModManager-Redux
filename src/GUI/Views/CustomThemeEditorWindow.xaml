@@ -6,10 +6,10 @@
 	xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
 	xmlns:ext="clr-namespace:DivinityModManager.Controls.Extensions"
 	Title="Custom Theme Editor"
-	Width="860"
-	Height="670"
-	MinWidth="780"
-	MinHeight="600"
+	Width="820"
+	Height="650"
+	MinWidth="720"
+	MinHeight="540"
 	ResizeMode="CanResizeWithGrip"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
@@ -43,7 +43,7 @@
 			</Grid.RowDefinitions>
 			<TextBlock FontSize="{DynamicResource Redux.FontSize.19}" FontWeight="SemiBold" Text="Design a custom Redux palette" />
 			<TextBlock Grid.Row="1" Margin="0,5,0,16" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-				Text="Choose default typography and eight semantic colors. Redux derives hover, selection, borders, muted text, and contrast-safe button text automatically."
+				Text="Choose typography, category presentation, and eight semantic colors. Redux derives hover, selection, borders, muted text, and contrast-safe button text automatically."
 				TextWrapping="Wrap" />
 
 			<Grid Grid.Row="2">
@@ -84,23 +84,56 @@
 				</StackPanel>
 			</Grid>
 
-			<Border Grid.Row="3" Margin="0,16,0,14" Padding="10" Background="{DynamicResource ReduxSurfaceMutedBrush}"
-				BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
-						<ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
-					<Border Height="30" Background="{Binding BackgroundColor}" CornerRadius="6,0,0,6" />
-					<Border Grid.Column="1" Height="30" Background="{Binding SurfaceColor}" />
-					<Border Grid.Column="2" Height="30" Background="{Binding AccentColor}" />
-					<Border Grid.Column="3" Height="30" Background="{Binding TextColor}" />
-					<Border Grid.Column="4" Height="30" Background="{Binding SuccessColor}" />
-					<Border Grid.Column="5" Height="30" Background="{Binding WarningColor}" />
-					<Border Grid.Column="6" Height="30" Background="{Binding ErrorColor}" />
-					<Border Grid.Column="7" Height="30" Background="{Binding InfoColor}" CornerRadius="0,6,6,0" />
-				</Grid>
-			</Border>
+			<StackPanel Grid.Row="3" Margin="0,16,0,14">
+				<Border Padding="10" Background="{DynamicResource ReduxSurfaceMutedBrush}"
+					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+							<ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Border Height="30" Background="{Binding BackgroundColor}" CornerRadius="6,0,0,6" />
+						<Border Grid.Column="1" Height="30" Background="{Binding SurfaceColor}" />
+						<Border Grid.Column="2" Height="30" Background="{Binding AccentColor}" />
+						<Border Grid.Column="3" Height="30" Background="{Binding TextColor}" />
+						<Border Grid.Column="4" Height="30" Background="{Binding SuccessColor}" />
+						<Border Grid.Column="5" Height="30" Background="{Binding WarningColor}" />
+						<Border Grid.Column="6" Height="30" Background="{Binding ErrorColor}" />
+						<Border Grid.Column="7" Height="30" Background="{Binding InfoColor}" CornerRadius="0,6,6,0" />
+					</Grid>
+				</Border>
+				<Border Margin="0,10,0,0" Padding="12,9" Background="{DynamicResource ReduxSurfaceMutedBrush}"
+					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<CheckBox IsChecked="{Binding UseCategoryColorsForHover}" Style="{StaticResource ReduxCheckBoxStyle}">
+							<StackPanel Margin="5,0,12,0">
+								<TextBlock FontWeight="SemiBold" Text="Category hover" />
+								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Tint mod-row hover with its category." TextWrapping="Wrap" />
+							</StackPanel>
+						</CheckBox>
+						<CheckBox Grid.Column="1" IsChecked="{Binding ShowCategoryIconsInPills}" Style="{StaticResource ReduxCheckBoxStyle}">
+							<StackPanel Margin="5,0,12,0">
+								<TextBlock FontWeight="SemiBold" Text="Category icons" />
+								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Show icons inside category pills." TextWrapping="Wrap" />
+							</StackPanel>
+						</CheckBox>
+						<CheckBox Grid.Column="2" IsChecked="{Binding UseCategoryColorsForSidebarText}" Style="{StaticResource ReduxCheckBoxStyle}">
+							<StackPanel Margin="5,0,0,0">
+								<TextBlock FontWeight="SemiBold" Text="Colored names" />
+								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Color category names in the sidebar." TextWrapping="Wrap" />
+							</StackPanel>
+						</CheckBox>
+					</Grid>
+				</Border>
+			</StackPanel>
 
 			<ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
 				<UniformGrid Columns="2">

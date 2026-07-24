@@ -83,6 +83,7 @@ public partial class CategoryNameDialog : AdonisWindow
 	public CategoryNameDialog(string categoryName = "", string color = "#8A6AF1", bool canEditName = true, IEnumerable<string> savedColors = null, bool visualDividerMode = false, string iconId = "", bool canResetToDefault = false)
 	{
 		InitializeComponent();
+		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
 		_allowEmptyName = visualDividerMode;
 		_savedColors = (savedColors ?? Enumerable.Empty<string>())
 			.Where(IsValidHexColor).Select(value => value.ToUpperInvariant())
@@ -201,12 +202,13 @@ public partial class CategoryNameDialog : AdonisWindow
 		RenderColorWheel();
 		if (SpectrumSurface.ActualWidth > 0 && SpectrumSurface.ActualHeight > 0)
 		{
-			var radius = Math.Min(SpectrumSurface.ActualWidth, SpectrumSurface.ActualHeight) / 2;
+			var centerX = SpectrumSurface.ActualWidth / 2;
+			var centerY = SpectrumSurface.ActualHeight / 2;
+			var ringRadius = Math.Min(SpectrumSurface.ActualWidth, SpectrumSurface.ActualHeight) * 0.40;
 			var angle = _hue * Math.PI / 180d;
-			var distance = _saturation * radius;
 			SpectrumMarker.Margin = new Thickness(
-				SpectrumSurface.ActualWidth / 2 + Math.Cos(angle) * distance - SpectrumMarker.Width / 2,
-				SpectrumSurface.ActualHeight / 2 + Math.Sin(angle) * distance - SpectrumMarker.Height / 2, 0, 0);
+				centerX + Math.Cos(angle) * ringRadius - SpectrumMarker.Width / 2,
+				centerY + Math.Sin(angle) * ringRadius - SpectrumMarker.Height / 2, 0, 0);
 		}
 	}
 
@@ -216,7 +218,8 @@ public partial class CategoryNameDialog : AdonisWindow
 		const int size = 198;
 		var pixels = new byte[size * size * 4];
 		var center = (size - 1) / 2d;
-		var radius = center;
+		var outerRadius = center;
+		var innerRadius = center * 0.62;
 		for (var y = 0; y < size; y++)
 		{
 			for (var x = 0; x < size; x++)
@@ -224,10 +227,10 @@ public partial class CategoryNameDialog : AdonisWindow
 				var dx = x - center;
 				var dy = y - center;
 				var distance = Math.Sqrt(dx * dx + dy * dy);
-				if (distance > radius) continue;
+				if (distance < innerRadius || distance > outerRadius) continue;
 				var hue = Math.Atan2(dy, dx) * 180d / Math.PI;
 				if (hue < 0) hue += 360;
-				var color = HsvToRgb(hue, distance / radius, _brightness);
+				var color = HsvToRgb(hue, 1, 1);
 				var offset = (y * size + x) * 4;
 				pixels[offset] = color.B;
 				pixels[offset + 1] = color.G;
@@ -246,11 +249,7 @@ public partial class CategoryNameDialog : AdonisWindow
 	{
 		var centerX = SpectrumSurface.ActualWidth / 2;
 		var centerY = SpectrumSurface.ActualHeight / 2;
-		var dx = point.X - centerX;
-		var dy = point.Y - centerY;
-		var radius = Math.Max(1, Math.Min(centerX, centerY));
-		_saturation = Math.Clamp(Math.Sqrt(dx * dx + dy * dy) / radius, 0, 1);
-		_hue = Math.Atan2(dy, dx) * 180d / Math.PI;
+		_hue = Math.Atan2(point.Y - centerY, point.X - centerX) * 180d / Math.PI;
 		if (_hue < 0) _hue += 360;
 		CategoryColorPicker.SelectedColor = HsvToRgb(_hue, _saturation, _brightness);
 	}

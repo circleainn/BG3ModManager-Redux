@@ -21,6 +21,7 @@ public class Hotkey : ReactiveObject, IHotkey
 	public string ID { get; set; }
 
 	[Reactive] public string DisplayName { get; set; }
+	[Reactive] public string Category { get; set; }
 
 	private readonly ObservableAsPropertyHelper<string> _tooltip;
 	public string ToolTip => _tooltip.Value;
@@ -107,6 +108,7 @@ public class Hotkey : ReactiveObject, IHotkey
 	public Hotkey(Key key = Key.None, ModifierKeys modifiers = ModifierKeys.None)
 	{
 		DisplayName = "";
+		Category = "";
 		Key = key;
 		Modifiers = modifiers;
 		_defaultKey = key;
@@ -133,7 +135,7 @@ public class Hotkey : ReactiveObject, IHotkey
 			.ToProperty(this, nameof(ModifiedText), "", scheduler: RxApp.MainThreadScheduler);
 
 		_tooltip = this.WhenAnyValue(x => x.DisplayName, x => x.IsDefault)
-			.Select(x => x.Item2 ? $"{x.Item1} (Modified)" : x.Item1)
+			.Select(x => !x.Item2 ? $"{x.Item1} (Modified)" : x.Item1)
 			.ToProperty(this, nameof(ToolTip), scheduler: RxApp.MainThreadScheduler);
 
 		var canReset = isDefaultObservable.Select(b => !b);

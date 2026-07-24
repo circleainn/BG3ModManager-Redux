@@ -1,5 +1,6 @@
 ﻿using DivinityModManager.Controls;
 using DivinityModManager.Models;
+using DivinityModManager.Models.App;
 using DivinityModManager.Models.Extender;
 using DivinityModManager.Models.View;
 using DivinityModManager.Util;
@@ -11,9 +12,9 @@ using ReactiveMarbles.ObservableEvents;
 
 using Splat;
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -62,6 +63,8 @@ internal sealed record SettingsGroup(string Title, params string[] PropertyNames
 /// </summary>
 public partial class SettingsWindow : SettingsWindowBase
 {
+	private ICollectionView _keybindingsView;
+
 	private bool _updatingCustomThemeSelection;
 	private bool _updatingTypographySelection;
 	private static readonly SettingsGroup[] GeneralSettingsGroups =
@@ -85,7 +88,8 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(DivinityModManagerSettings.HideEmptyModCategories),
 			nameof(DivinityModManagerSettings.ShiftListFocusOnSwap),
 			nameof(DivinityModManagerSettings.SaveWindowLocation),
-			nameof(DivinityModManagerSettings.EnableColorblindSupport)),
+			nameof(DivinityModManagerSettings.EnableColorblindSupport),
+			nameof(DivinityModManagerSettings.HideToolbar)),
 		new("Metadata services",
 			nameof(DivinityModManagerSettings.NexusModsAPIKey),
 			nameof(DivinityModManagerSettings.ModioAPIKey),
@@ -146,34 +150,6 @@ public partial class SettingsWindow : SettingsWindowBase
 		Height = Math.Max(MinHeight, Math.Min(targetHeight, workArea.Height - 64));
 	}
 
-	/*private static readonly MethodInfo m_ItemInfoFromIndex = typeof(ItemsControl).GetMethod("ItemInfoFromIndex", BindingFlags.Instance | BindingFlags.NonPublic);
-
-	private void SetComboBoxToolTips(object sender, EventArgs e)
-	{
-		if(sender is ComboBox combo)
-		{
-			combo.DropDownOpened -= SetComboBoxToolTips;
-			RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(50), () =>
-			{
-				for (var i = 0; i < combo.Items.Count; i++)
-				{
-					var data = combo.Items.GetItemAt(i) as EnumEntry;
-					var item = m_ItemInfoFromIndex.Invoke(combo, [i]);
-					if (item != null)
-					{
-						var itemType = item.GetType();
-						var fieldInfo = itemType.GetProperty("Container", BindingFlags.NonPublic | BindingFlags.Instance);
-						var itemContainer = fieldInfo.GetMethod?.Invoke(item, []);
-						if (itemContainer is ComboBoxItem cbItem && !string.IsNullOrEmpty(data.Description))
-						{
-							ToolTipService.SetToolTip(cbItem, data.Description);
-						}
-					}
-				}
-			});
-		}
-	}*/
-
 	private void SetComboBoxMainToolTip(object sender, SelectionChangedEventArgs e)
 	{
 		if(sender is ComboBox combo && combo.SelectedItem is EnumEntry enumEntry && !string.IsNullOrWhiteSpace(enumEntry.Description))
@@ -190,6 +166,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			ViewModel.Settings.TypographyFont = ReduxTypographyFont.Manrope;
 			ViewModel.Settings.CustomTypographyFont = String.Empty;
 			ViewModel.Settings.TextSize = ReduxTextSize.Default;
+			ReduxThemeService.ApplyBuiltInCategoryPresentation(ViewModel.Settings, theme);
 			ThemeComboBox.SelectedValue = theme;
 			RefreshTypographyChoices();
 			RefreshCustomThemeControls();
@@ -341,6 +318,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		ViewModel.Settings.TypographyFont = theme.TypographyFont;
 		ViewModel.Settings.CustomTypographyFont = theme.CustomTypographyFont;
 		ViewModel.Settings.TextSize = theme.TextSize;
+		ReduxThemeService.ApplyCustomCategoryPresentation(ViewModel.Settings, theme);
 		MainWindow.Self.MainView.UpdateColorTheme(theme.BaseTheme);
 		ViewModel.Main.SaveSettings();
 		RefreshTypographyChoices();
@@ -368,7 +346,9 @@ public partial class SettingsWindow : SettingsWindowBase
 	private void CreateCustomTheme_Click(object sender, RoutedEventArgs e)
 	{
 		var working = ReduxThemeService.CreateFromBase("My Custom Theme", ViewModel.Settings.ColorTheme,
-			ViewModel.Settings.TypographyFont, ViewModel.Settings.TextSize, ViewModel.Settings.CustomTypographyFont);
+			ViewModel.Settings.TypographyFont, ViewModel.Settings.TextSize, ViewModel.Settings.CustomTypographyFont,
+			ViewModel.Settings.UseCategoryColorsForHover, ViewModel.Settings.ShowCategoryIconsInPills,
+			ViewModel.Settings.UseCategoryColorsForSidebarText);
 		if (!EditCustomTheme(working)) return;
 		ViewModel.Settings.CustomThemes.Add(working);
 		ActivateCustomTheme(working);
@@ -411,6 +391,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			ViewModel.Settings.TypographyFont = ReduxTypographyFont.Manrope;
 			ViewModel.Settings.CustomTypographyFont = String.Empty;
 			ViewModel.Settings.TextSize = ReduxTextSize.Default;
+			ReduxThemeService.ApplyBuiltInCategoryPresentation(ViewModel.Settings, ViewModel.Settings.ColorTheme);
 			MainWindow.Self.MainView.UpdateColorTheme(ViewModel.Settings.ColorTheme);
 		}
 		ViewModel.Main.SaveSettings();
@@ -734,7 +715,11 @@ public partial class SettingsWindow : SettingsWindowBase
 		CreateSettingsElements(ViewModel.ExtenderSettings, typeof(ScriptExtenderSettings), ExtenderSettingsAutoGrid);
 		CreateSettingsElements(ViewModel.ExtenderUpdaterSettings, typeof(ScriptExtenderUpdateConfig), ExtenderUpdaterSettingsAutoGrid);
 
-		this.OneWayBind(ViewModel, vm => vm.Main.Keys.All, view => view.KeybindingsListView.ItemsSource);
+		_keybindingsView = CollectionViewSource.GetDefaultView(ViewModel.Main.Keys.All);
+		_keybindingsView.GroupDescriptions.Clear();
+		_keybindingsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(Hotkey.Category)));
+		_keybindingsView.Filter = FilterHotkey;
+		KeybindingsListView.ItemsSource = _keybindingsView;
 		this.Bind(ViewModel, vm => vm.SelectedHotkey, view => view.KeybindingsListView.SelectedItem);
 
 		this.Bind(ViewModel, vm => vm.Settings.DebugModeEnabled, view => view.DebugModeCheckBox.IsChecked);
@@ -779,6 +764,27 @@ public partial class SettingsWindow : SettingsWindowBase
 	}
 
 	private bool isSettingKeybinding = false;
+
+	private bool FilterHotkey(object item)
+	{
+		if (item is not Hotkey hotkey)
+			return false;
+
+		var query = KeybindingsSearchTextBox?.Text?.Trim();
+		if (String.IsNullOrWhiteSpace(query))
+			return true;
+
+		return hotkey.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+			hotkey.Category.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+			hotkey.DisplayBindingText.Contains(query, StringComparison.OrdinalIgnoreCase);
+	}
+
+	private void KeybindingsSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		_keybindingsView?.Refresh();
+		if (KeybindingsListView.Items.Count > 0 && KeybindingsListView.SelectedIndex < 0)
+			KeybindingsListView.SelectedIndex = 0;
+	}
 
 	private void ClearFocus()
 	{

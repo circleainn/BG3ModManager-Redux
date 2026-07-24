@@ -3,7 +3,8 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUi="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	Title="Link Nexus Mods Project"
-	Width="520" Height="245" MinWidth="460" MinHeight="225"
+	Width="520" MinWidth="440" MinHeight="210" MaxHeight="480"
+	SizeToContent="Height"
 	ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
@@ -23,7 +24,7 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
+				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 			<TextBlock FontSize="{DynamicResource Redux.FontSize.17}" FontWeight="SemiBold" Text="Link this installed package to Nexus Mods" />

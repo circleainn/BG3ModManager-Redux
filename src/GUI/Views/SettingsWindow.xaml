@@ -42,8 +42,26 @@
 				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<Style x:Key="SettingsActionButtonStyle" BasedOn="{StaticResource ReduxAccentPillButtonStyle}" TargetType="{x:Type Button}">
-				<Setter Property="Height" Value="31" />
-				<Setter Property="Margin" Value="0,0,8,0" />
+				<Setter Property="Height" Value="30" />
+				<Setter Property="Margin" Value="0,0,6,0" />
+				<Setter Property="Padding" Value="11,4" />
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+			</Style>
+			<Style x:Key="SettingsPrimaryActionButtonStyle" BasedOn="{StaticResource SettingsActionButtonStyle}" TargetType="{x:Type Button}">
+				<Setter Property="Background" Value="{DynamicResource ReduxAccentBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
+			</Style>
+			<Style x:Key="HotkeyRowActionButtonStyle" BasedOn="{StaticResource ReduxAccentPillButtonStyle}" TargetType="{x:Type Button}">
+				<Setter Property="Width" Value="24" />
+				<Setter Property="Height" Value="24" />
+				<Setter Property="Margin" Value="2,0,0,0" />
+				<Setter Property="Padding" Value="0" />
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="BorderBrush" Value="Transparent" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
 			</Style>
 			<Style x:Key="SettingsTabControlStyle" TargetType="{x:Type TabControl}">
 				<Setter Property="Background" Value="Transparent" />
@@ -53,15 +71,14 @@
 						<ControlTemplate TargetType="{x:Type TabControl}">
 							<Grid>
 								<Grid.RowDefinitions>
-									<RowDefinition Height="46" />
+									<RowDefinition Height="37" />
 									<RowDefinition Height="*" />
 								</Grid.RowDefinitions>
-								<Border Margin="12,0,12,6"
-									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+								<Border Margin="12,0,12,5"
+									Background="Transparent"
 									BorderBrush="{DynamicResource ReduxBorderBrush}"
-									BorderThickness="1"
-									CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-								<TabPanel Margin="6,4,6,6" ClipToBounds="False" IsItemsHost="True" />
+									BorderThickness="0,0,0,1">
+								<TabPanel Margin="0,0,0,3" ClipToBounds="False" IsItemsHost="True" />
 								</Border>
 								<Border Grid.Row="1"
 									Margin="12,0,12,12"
@@ -376,19 +393,17 @@
 			<RowDefinition Height="*" />
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
-		<Border Margin="12,10,12,8"
-			Padding="10,8"
-			Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-			BorderBrush="{DynamicResource ReduxBorderBrush}"
-			BorderThickness="1"
-			CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+		<Border Margin="12,7,12,1"
+			Padding="0,4"
+			Background="Transparent"
+			BorderThickness="0">
 		<Grid>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="2*" />
 				<ColumnDefinition Width="1*" />
 			</Grid.ColumnDefinitions>
 			<StackPanel Margin="0" HorizontalAlignment="Left" Orientation="Horizontal">
-				<Button x:Name="SaveSettingsButton" Style="{StaticResource SettingsActionButtonStyle}" ToolTip="Save all Preferences now (Ctrl+S)">
+				<Button x:Name="SaveSettingsButton" Style="{StaticResource SettingsPrimaryActionButtonStyle}" ToolTip="Save all Preferences now (Ctrl+S)">
 					<StackPanel Margin="0" Orientation="Horizontal">
 						<controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Save}" />
 						<TextBlock Text="Save Preferences" />
@@ -738,6 +753,10 @@
 					    ToolTip="Mod Manager Settings (Data/keybindings.json)" />
 				</TabItem.Header>
 				<Grid Margin="18,14">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="216" />
+					</Grid.ColumnDefinitions>
 					<Grid.RowDefinitions>
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="Auto" />
@@ -746,69 +765,204 @@
 					<TextBlock Style="{StaticResource SettingsPageTitleStyle}" Text="Keyboard shortcuts" />
 					<TextBlock Grid.Row="1"
 						Style="{StaticResource SettingsPageDescriptionStyle}"
-						Text="Double-click a shortcut to edit it, or right-click for reset and remove options." />
+						Text="Select a shortcut and press Enter, or double-click its row to record a new key combination." />
+					<Grid Grid.Column="1"
+						Grid.RowSpan="2"
+						Height="28"
+						Margin="12,0,8,10"
+						VerticalAlignment="Center">
+						<TextBox x:Name="KeybindingsSearchTextBox"
+							Padding="8,2"
+							VerticalContentAlignment="Center"
+							adonisExtensions:CornerRadiusExtension.CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+							Background="{DynamicResource ReduxSurfaceMutedBrush}"
+							BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
+							TextChanged="KeybindingsSearchTextBox_TextChanged"
+							ToolTip="Filter commands, categories, or shortcuts" />
+						<TextBlock Margin="9,0"
+							VerticalAlignment="Center"
+							Foreground="{DynamicResource ReduxTextMutedBrush}"
+							IsHitTestVisible="False"
+							Text="Filter shortcuts">
+							<TextBlock.Style>
+								<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+									<Setter Property="Visibility" Value="Collapsed" />
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding Text, ElementName=KeybindingsSearchTextBox}" Value="">
+											<Setter Property="Visibility" Value="Visible" />
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</TextBlock.Style>
+						</TextBlock>
+					</Grid>
 					<Border Grid.Row="2"
+						Grid.ColumnSpan="2"
 						Padding="0"
 						ClipToBounds="True"
 						Style="{StaticResource SettingsSectionCardStyle}">
-						<ListView x:Name="KeybindingsListView"
-				    KeyboardNavigation.TabNavigation="Continue"
-				    MouseDoubleClick="HotkeyListViewItem_MouseDoubleClick"
-				    ScrollViewer.VerticalScrollBarVisibility="Auto"
-				    Style="{StaticResource SettingsListViewStyle}">
-					<ListView.ItemContainerStyle>
-						<Style BasedOn="{StaticResource {x:Type ListViewItem}}" TargetType="ListViewItem">
-							<Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-							<Setter Property="Tag" Value="{Binding}" />
-							<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-							<Setter Property="VerticalContentAlignment" Value="Stretch" />
-							<Setter Property="ToolTip" Value="{Binding ToolTip}" />
-							<Setter Property="ContextMenu">
-								<Setter.Value>
-									<ContextMenu>
-										<MenuItem x:Name="ResetHotkeyMenuItem" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.DataContext.ResetCommand}" Header="Reset Keybinding">
-											<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
-										</MenuItem>
-										<MenuItem x:Name="ClearHotkeyMenuItem" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.DataContext.ClearCommand}" Header="Remove Keybinding">
-											<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RemoveCircle}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
-										</MenuItem>
-									</ContextMenu>
-								</Setter.Value>
-							</Setter>
-						</Style>
-					</ListView.ItemContainerStyle>
-					<ListView.View>
-						<GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewLeftContainerStyle}">
-							<GridView.Columns>
-								<GridViewColumn Width="450" Header="Command" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
-									<GridViewColumn.CellTemplate>
-										<DataTemplate>
-											<TextBlock Margin="0,4"
-											    Padding="0"
-											    HorizontalAlignment="Stretch"
-											    VerticalAlignment="Bottom"
-											    IsHitTestVisible="False"
-											    TextAlignment="Left">
-												<Run Foreground="{DynamicResource ReduxSuccessBrush}" Text="{Binding ModifiedText, Mode=OneWay}" />
-												<Run Text="{Binding DisplayName, Mode=OneWay}" /></TextBlock>
-										</DataTemplate>
-									</GridViewColumn.CellTemplate>
-								</GridViewColumn>
-								<GridViewColumn Width="200" Header="Keybinding" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
-									<GridViewColumn.CellTemplate>
-										<DataTemplate>
-											<controls:HotkeyEditorControl HorizontalAlignment="Left"
-											    FocusReturnTarget="{Binding ElementName=KeybindingsListView}"
-											    GotFocus="HotkeyEditorControl_GotFocus"
-											    Hotkey="{Binding}"
-											    LostFocus="HotkeyEditorControl_LostFocus" />
-										</DataTemplate>
-									</GridViewColumn.CellTemplate>
-								</GridViewColumn>
-							</GridView.Columns>
-						</GridView>
-					</ListView.View>
-						</ListView>
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="1" />
+								<RowDefinition Height="*" />
+							</Grid.RowDefinitions>
+							<Grid Margin="12,6,8,6">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="166" />
+									<ColumnDefinition Width="54" />
+								</Grid.ColumnDefinitions>
+								<TextBlock Style="{StaticResource Redux.Text.Overline}" Text="Command" />
+								<TextBlock Grid.Column="1" Style="{StaticResource Redux.Text.Overline}" Text="Shortcut" />
+								<TextBlock Grid.Column="2" HorizontalAlignment="Center" Style="{StaticResource Redux.Text.Overline}" Text="Actions" />
+							</Grid>
+							<Border Grid.Row="1" Background="{DynamicResource ReduxBorderBrush}" />
+							<ListView x:Name="KeybindingsListView"
+								Grid.Row="2"
+								KeyboardNavigation.TabNavigation="Continue"
+								MouseDoubleClick="HotkeyListViewItem_MouseDoubleClick"
+								ScrollViewer.VerticalScrollBarVisibility="Auto"
+								Style="{StaticResource SettingsListViewStyle}">
+								<ListView.GroupStyle>
+									<GroupStyle>
+										<GroupStyle.HeaderTemplate>
+											<DataTemplate>
+												<Grid Margin="4,5,4,2">
+													<Grid.ColumnDefinitions>
+														<ColumnDefinition Width="*" />
+														<ColumnDefinition Width="Auto" />
+													</Grid.ColumnDefinitions>
+													<TextBlock Margin="8,2"
+														Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+														Style="{StaticResource Redux.Text.Overline}"
+														Text="{Binding Name}" />
+													<Border Grid.Column="1"
+														MinWidth="22"
+														Margin="0,0,6,0"
+														Padding="5,1"
+														Background="{DynamicResource ReduxSurfaceMutedBrush}"
+														CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
+														<TextBlock HorizontalAlignment="Center"
+															Foreground="{DynamicResource ReduxTextMutedBrush}"
+															Text="{Binding ItemCount}" />
+													</Border>
+												</Grid>
+											</DataTemplate>
+										</GroupStyle.HeaderTemplate>
+									</GroupStyle>
+								</ListView.GroupStyle>
+								<ListView.ItemContainerStyle>
+									<Style BasedOn="{StaticResource {x:Type ListViewItem}}" TargetType="ListViewItem">
+										<Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+										<Setter Property="Tag" Value="{Binding}" />
+										<Setter Property="Background" Value="Transparent" />
+										<Setter Property="BorderBrush" Value="Transparent" />
+										<Setter Property="BorderThickness" Value="0" />
+										<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+										<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+										<Setter Property="VerticalContentAlignment" Value="Center" />
+										<Setter Property="ToolTip" Value="{Binding ToolTip}" />
+										<Setter Property="Template">
+											<Setter.Value>
+												<ControlTemplate TargetType="{x:Type ListViewItem}">
+													<Grid Background="Transparent" SnapsToDevicePixels="True">
+														<Border x:Name="RowChrome"
+															Margin="4,1"
+															Background="{TemplateBinding Background}"
+															BorderBrush="{TemplateBinding BorderBrush}"
+															BorderThickness="{TemplateBinding BorderThickness}"
+															CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
+														<Border x:Name="SelectionRail"
+															Width="2"
+															Margin="4,5,0,5"
+															HorizontalAlignment="Left"
+															Background="{DynamicResource ReduxAccentBrush}"
+															CornerRadius="1"
+															Opacity="0" />
+														<ContentPresenter
+															HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+															VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+															Content="{TemplateBinding Content}"
+															ContentTemplate="{TemplateBinding ContentTemplate}"
+															ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
+													</Grid>
+													<ControlTemplate.Triggers>
+														<MultiTrigger>
+															<MultiTrigger.Conditions>
+																<Condition Property="IsMouseOver" Value="True" />
+																<Condition Property="IsSelected" Value="False" />
+															</MultiTrigger.Conditions>
+															<Setter TargetName="RowChrome" Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+														</MultiTrigger>
+														<Trigger Property="IsSelected" Value="True">
+															<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+															<Setter TargetName="RowChrome" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+															<Setter TargetName="SelectionRail" Property="Opacity" Value="1" />
+														</Trigger>
+														<Trigger Property="IsEnabled" Value="False">
+															<Setter Property="Opacity" Value="0.55" />
+														</Trigger>
+													</ControlTemplate.Triggers>
+												</ControlTemplate>
+											</Setter.Value>
+										</Setter>
+										<Setter Property="ContextMenu">
+											<Setter.Value>
+												<ContextMenu>
+													<MenuItem x:Name="ResetHotkeyMenuItem" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.DataContext.ResetCommand}" Header="Reset Keybinding">
+														<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
+													</MenuItem>
+													<MenuItem x:Name="ClearHotkeyMenuItem" Command="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}, Path=PlacementTarget.DataContext.ClearCommand}" Header="Remove Keybinding">
+														<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RemoveCircle}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
+													</MenuItem>
+												</ContextMenu>
+											</Setter.Value>
+										</Setter>
+									</Style>
+								</ListView.ItemContainerStyle>
+								<ListView.ItemTemplate>
+									<DataTemplate>
+										<Grid MinHeight="32" Margin="12,0,8,0">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="*" />
+												<ColumnDefinition Width="166" />
+												<ColumnDefinition Width="27" />
+												<ColumnDefinition Width="27" />
+											</Grid.ColumnDefinitions>
+											<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+												<TextBlock Margin="0,0,5,0" Foreground="{DynamicResource ReduxSuccessBrush}" FontWeight="Bold"
+													Text="{Binding ModifiedText, Mode=OneWay}" />
+												<TextBlock VerticalAlignment="Center"
+													Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+													Text="{Binding DisplayName, Mode=OneWay}"
+													TextTrimming="CharacterEllipsis" />
+											</StackPanel>
+											<controls:HotkeyEditorControl Grid.Column="1"
+												Margin="0,0,8,0"
+												HorizontalAlignment="Stretch"
+												VerticalAlignment="Center"
+												FocusReturnTarget="{Binding ElementName=KeybindingsListView}"
+												GotFocus="HotkeyEditorControl_GotFocus"
+												Hotkey="{Binding}"
+												LostFocus="HotkeyEditorControl_LostFocus" />
+											<Button Grid.Column="2"
+												Command="{Binding ResetCommand}"
+												Style="{StaticResource HotkeyRowActionButtonStyle}"
+												ToolTip="Reset to default">
+												<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" />
+											</Button>
+											<Button Grid.Column="3"
+												Command="{Binding ClearCommand}"
+												Style="{StaticResource HotkeyRowActionButtonStyle}"
+												ToolTip="Remove shortcut">
+												<controls:ReduxIcon Foreground="{DynamicResource ReduxErrorBrush}" StrokeData="{StaticResource Redux.Icon.RemoveCircle}" />
+											</Button>
+										</Grid>
+									</DataTemplate>
+								</ListView.ItemTemplate>
+							</ListView>
+						</Grid>
 					</Border>
 				</Grid>
 			</TabItem>

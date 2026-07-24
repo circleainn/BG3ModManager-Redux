@@ -141,8 +141,8 @@
 				</Setter>
 			</Style>
 			<Style x:Key="ModCategoryListItemStyle" TargetType="{x:Type ListBoxItem}">
-				<Setter Property="Margin" Value="0,1" />
-				<Setter Property="Padding" Value="10,7" />
+				<Setter Property="Margin" Value="1,2" />
+				<Setter Property="Padding" Value="10,6" />
 				<Setter Property="Background" Value="Transparent" />
 				<Setter Property="BorderBrush" Value="Transparent" />
 				<Setter Property="BorderThickness" Value="1.5" />
@@ -156,19 +156,22 @@
 								Background="{TemplateBinding Background}"
 								BorderBrush="{TemplateBinding BorderBrush}"
 								BorderThickness="{TemplateBinding BorderThickness}"
-								CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+								CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
 								<Grid>
 									<Border x:Name="CategoryHoverSurface"
 										Background="{Binding SoftColor}"
 										BorderBrush="{Binding Color}"
 										BorderThickness="1.5"
-										CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+										CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
 										IsHitTestVisible="False"
 										Opacity="0" />
 									<ContentPresenter Margin="{TemplateBinding Padding}" />
 								</Grid>
 							</Border>
 							<ControlTemplate.Triggers>
+								<DataTrigger Binding="{Binding Count}" Value="0">
+									<Setter TargetName="CategorySurface" Property="Opacity" Value="0.58" />
+								</DataTrigger>
 								<MultiTrigger>
 									<MultiTrigger.Conditions>
 										<Condition Property="IsMouseOver" Value="True" />
@@ -196,7 +199,11 @@
 										</BeginStoryboard>
 									</MultiTrigger.ExitActions>
 								</MultiTrigger>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter TargetName="CategorySurface" Property="Opacity" Value="1" />
+								</Trigger>
 								<Trigger Property="IsSelected" Value="True">
+									<Setter TargetName="CategorySurface" Property="Opacity" Value="1" />
 									<Setter TargetName="CategorySurface" Property="Background" Value="{Binding SoftColor}" />
 									<Setter TargetName="CategorySurface" Property="BorderBrush" Value="{Binding Color}" />
 								</Trigger>
@@ -1245,12 +1252,35 @@
 									MinWidth="28"
 									Margin="8,0,0,0"
 									Padding="6,2"
-									Background="{DynamicResource ReduxSurfaceMutedBrush}"
-									CornerRadius="9">
+									BorderThickness="1"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
+									<Border.Style>
+										<Style TargetType="{x:Type Border}">
+											<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+											<Setter Property="BorderBrush" Value="Transparent" />
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}" Value="True">
+													<Setter Property="Background" Value="{Binding CountHoverColor}" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</Border.Style>
 									<TextBlock HorizontalAlignment="Center"
 										FontSize="{DynamicResource Redux.FontSize.11}"
-										Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-										Text="{Binding Count}" />
+										FontWeight="SemiBold"
+										Text="{Binding Count}">
+										<TextBlock.Style>
+											<Style TargetType="{x:Type TextBlock}">
+												<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding Count}" Value="0">
+														<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+														<Setter Property="Opacity" Value="0.72" />
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</TextBlock.Style>
+									</TextBlock>
 								</Border>
 							</Grid>
 						</DataTemplate>
@@ -1400,21 +1430,30 @@
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="*" />
 					</Grid.RowDefinitions>
-					<Grid x:Name="AlwaysLoadedHeaderGrid" Margin="8,4,8,3">
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="Auto" />
-						</Grid.ColumnDefinitions>
-						<StackPanel VerticalAlignment="Center">
-							<TextBlock FontSize="{DynamicResource Redux.FontSize.14}" FontWeight="SemiBold" Text="Override Mods" />
-							<TextBlock FontSize="{DynamicResource Redux.FontSize.11}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-								Text="Always loaded while installed; overrides built-in game files outside the normal load order" />
-						</StackPanel>
-						<ToggleButton x:Name="AlwaysLoadedToggleButton" Grid.Column="1"
-							Style="{StaticResource ModDetailsToggleStyle}"
-							IsChecked="{Binding IsAlwaysLoadedExpanded, Mode=TwoWay}"
-							ToolTip="Collapse or expand Override Mods" />
-					</Grid>
+					<Border x:Name="AlwaysLoadedHeaderGrid" Margin="6,5,6,4" Padding="10,7"
+						Background="{DynamicResource ReduxSurfaceMutedBrush}"
+						BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
+						CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<c:ReduxIcon Width="16" Height="16" Margin="0,0,9,0" VerticalAlignment="Center"
+								IconKey="shield-alert" Foreground="{DynamicResource ReduxErrorBrush}" />
+							<StackPanel Grid.Column="1" VerticalAlignment="Center">
+								<TextBlock FontSize="{DynamicResource Redux.FontSize.14}" FontWeight="SemiBold" Text="Override Mods" />
+								<TextBlock Margin="0,1,0,0" FontSize="{DynamicResource Redux.FontSize.11}"
+									Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Always loaded while installed · outside the normal load order" />
+							</StackPanel>
+							<ToggleButton x:Name="AlwaysLoadedToggleButton" Grid.Column="2"
+								Style="{StaticResource ModDetailsToggleStyle}"
+								IsChecked="{Binding IsAlwaysLoadedExpanded, Mode=TwoWay}"
+								ToolTip="Collapse or expand Override Mods" />
+						</Grid>
+					</Border>
 					<c:ModListView x:Name="ForceLoadedModsListView"
 						Grid.Row="1"
 						MaxHeight="99999"

@@ -89,7 +89,7 @@ to be available on `PATH`. If it is not, run the script directly with any Python
 after the Publish binaries finish compiling:
 
 ```powershell
-python '.\BuildRelease.py' '0.1.0-alpha.5'
+python '.\BuildRelease.py' '0.1.0-alpha.6'
 ```
 
 Use the actual display version from the project when producing a later build.

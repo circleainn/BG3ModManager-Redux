@@ -294,12 +294,12 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		{
 			SettingsWindow.Owner = this;
 			SettingsWindow.ApplyAdaptiveDefaultSize(this);
-			SettingsWindow.Show();
+			SettingsWindow.ShowWithTransition();
 			ViewModel.Settings.SettingsWindowIsOpen = true;
 		}
 		else if (!forceOpen)
 		{
-			SettingsWindow.Hide();
+			SettingsWindow.HideWithTransition();
 			ViewModel.Settings.SettingsWindowIsOpen = false;
 		}
 	}
@@ -309,8 +309,9 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		SettingsWindow.ViewModel.SelectedTabIndex = targetTab;
 		if (!SettingsWindow.IsVisible)
 		{
-			SettingsWindow.Show();
 			SettingsWindow.Owner = this;
+			SettingsWindow.ApplyAdaptiveDefaultSize(this);
+			SettingsWindow.ShowWithTransition();
 			ViewModel.Settings.SettingsWindowIsOpen = true;
 		}
 		else
@@ -330,12 +331,12 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		if (!AboutWindow.IsVisible)
 		{
 			AboutWindow.DataContext = ViewModel;
-			AboutWindow.Show();
 			AboutWindow.Owner = this;
+			AboutWindow.ShowWithTransition();
 		}
 		else
 		{
-			AboutWindow.Hide();
+			AboutWindow.HideWithTransition();
 		}
 	}
 
@@ -352,8 +353,8 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 		if (!HelpWindow.IsVisible)
 		{
-			HelpWindow.Show();
 			HelpWindow.Owner = this;
+			HelpWindow.ShowWithTransition();
 		}
 	}
 
@@ -476,13 +477,13 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 			{
 				if (!UpdateWindow.IsVisible)
 				{
-					UpdateWindow.Show();
 					UpdateWindow.Owner = this;
+					UpdateWindow.ShowWithTransition();
 				}
 			}
 			else if (UpdateWindow.IsVisible)
 			{
-				UpdateWindow.Hide();
+				UpdateWindow.HideWithTransition();
 			}
 		});
 		UpdateWindow.Hide();
@@ -521,12 +522,12 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 				if (!VersionGeneratorWindow.IsVisible)
 				{
-					VersionGeneratorWindow.Show();
 					VersionGeneratorWindow.Owner = this;
+					VersionGeneratorWindow.ShowWithTransition();
 				}
 				else
 				{
-					VersionGeneratorWindow.Hide();
+					VersionGeneratorWindow.HideWithTransition();
 				}
 			});
 

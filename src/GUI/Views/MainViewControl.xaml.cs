@@ -6,6 +6,7 @@ using DivinityModManager.Controls;
 using DivinityModManager.Converters;
 using DivinityModManager.Models;
 using DivinityModManager.Models.App;
+using DivinityModManager.Models.View;
 using DivinityModManager.Util;
 using DivinityModManager.Util.ScreenReader;
 using DivinityModManager.ViewModels;
@@ -55,6 +56,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			[nameof(AppKeys.OpenPreferences)] = ("Redux.Icon.Settings", true, null),
 			[nameof(AppKeys.OpenKeybindings)] = ("Redux.Icon.Key", true, null),
 			[nameof(AppKeys.ToggleViewTheme)] = ("Redux.Icon.ColorPalette", true, null),
+			[nameof(AppKeys.ToggleToolbar)] = ("Redux.Icon.Desktop", true, null),
 			[nameof(AppKeys.ExtractSelectedMods)] = ("Redux.Icon.Archive", true, null),
 			[nameof(AppKeys.ExtractSelectedAdventure)] = ("Redux.Icon.Archive", true, null),
 			[nameof(AppKeys.ToggleVersionGeneratorWindow)] = ("Redux.Icon.Build", true, null),
@@ -65,23 +67,76 @@ public partial class MainViewControl : MainViewControlViewBase
 			[nameof(AppKeys.OpenAboutWindow)] = ("Redux.Icon.Information", true, null)
 		};
 
-	private void QuickLinksButton_Click(object sender, RoutedEventArgs e)
-	{
-		if (sender is Button button && button.ContextMenu != null)
-		{
-			button.ContextMenu.PlacementTarget = button;
-			button.ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-			button.ContextMenu.IsOpen = true;
-		}
-	}
-
 	private void OpenBg3Nexus_Click(object sender, RoutedEventArgs e) => ProcessHelper.TryOpenUrl(DivinityApp.URL_BG3_NEXUS);
 	private void OpenScriptExtenderRepo_Click(object sender, RoutedEventArgs e) => ProcessHelper.TryOpenUrl(DivinityApp.URL_EXTENDER_REPO);
 	private void OpenReduxRepo_Click(object sender, RoutedEventArgs e) => ProcessHelper.TryOpenUrl(DivinityApp.URL_REDUX_REPO);
 
-	private void OpenModsFolderQuickLink_Click(object sender, RoutedEventArgs e)
+	private static void UpdateCheckedMenuItems(MenuItem parent, Func<object, bool> isSelected)
 	{
-		ProcessHelper.TryOpenPath(ViewModel.PathwayData.AppDataModsPath, Directory.Exists);
+		foreach (var item in parent.Items)
+		{
+			if (parent.ItemContainerGenerator.ContainerFromItem(item) is MenuItem menuItem)
+			{
+				menuItem.IsCheckable = true;
+				menuItem.IsChecked = isSelected(item);
+			}
+		}
+	}
+
+	private void ToolbarProfileMenu_SubmenuOpened(object sender, RoutedEventArgs e)
+		=> UpdateCheckedMenuItems(ToolbarProfileMenu, item => Equals(item, ViewModel.SelectedProfile));
+
+	private void ToolbarProfileMenuItem_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is MenuItem { DataContext: DivinityProfileData profile })
+		{
+			var index = ViewModel.Profiles.IndexOf(profile);
+			if (index >= 0) ViewModel.SelectedProfileIndex = index;
+		}
+	}
+
+	private void ToolbarCampaignMenu_SubmenuOpened(object sender, RoutedEventArgs e)
+		=> UpdateCheckedMenuItems(ToolbarCampaignMenu, item => Equals(item, ViewModel.SelectedAdventureMod));
+
+	private void ToolbarCampaignMenuItem_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is MenuItem { DataContext: DivinityModData campaign })
+		{
+			var index = ViewModel.AdventureMods.IndexOf(campaign);
+			if (index >= 0) ViewModel.SelectedAdventureModIndex = index;
+		}
+	}
+
+	private void ToolbarLoadOrderMenu_SubmenuOpened(object sender, RoutedEventArgs e)
+		=> UpdateCheckedMenuItems(ToolbarLoadOrderMenu, item => Equals(item, ViewModel.SelectedModOrder));
+
+	private void ToolbarLoadOrderMenuItem_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is MenuItem { DataContext: DivinityLoadOrder order })
+		{
+			var index = ViewModel.ModOrderList.IndexOf(order);
+			if (index < 0) return;
+
+			ViewModel.SelectedModOrderIndex = index;
+			if (ViewModel.Settings != null && ViewModel.Settings.LastOrder != order.Name)
+			{
+				ViewModel.Settings.LastOrder = order.Name;
+				ViewModel.SaveSettings();
+			}
+		}
+	}
+
+	private void ToolbarAfterLaunchMenu_SubmenuOpened(object sender, RoutedEventArgs e)
+		=> UpdateCheckedMenuItems(
+			ToolbarAfterLaunchMenu,
+			item => item is EnumEntry entry && Equals(entry.Value, ViewModel.Settings.ActionOnGameLaunch));
+
+	private void ToolbarAfterLaunchMenuItem_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is MenuItem { DataContext: EnumEntry { Value: DivinityGameLaunchWindowAction action } })
+		{
+			ViewModel.Settings.ActionOnGameLaunch = action;
+		}
 	}
 
 	private void OpenSaveGamesFolder_Click(object sender, RoutedEventArgs e)
@@ -170,16 +225,19 @@ public partial class MainViewControl : MainViewControlViewBase
 			MenuItem newEntry = new MenuItem
 			{
 				Header = menuSettings.DisplayName,
-				InputGestureText = key.ToString(),
 				Command = key.Command
 			};
+			BindingOperations.SetBinding(
+				newEntry,
+				MenuItem.InputGestureTextProperty,
+				new Binding { Path = new PropertyPath(nameof(Hotkey.DisplayBindingText)), Source = key });
 			if (MenuIconMap.TryGetValue(prop.Name, out var iconSpec))
 			{
 				newEntry.Icon = ReduxIcon.FromResource(iconSpec.Resource, iconSpec.UseStroke, iconSpec.Foreground);
 			}
-			if(key == ViewModel.Keys.DownloadScriptExtender && TryFindResource("MenuItemHightlightBlink") is Style blinKStyle)
+			if(key == ViewModel.Keys.DownloadScriptExtender && TryFindResource("MenuItemHighlightBlink") is Style blinkStyle)
 			{
-				newEntry.Style = blinKStyle;
+				newEntry.Style = blinkStyle;
 			}
 			BindingOperations.SetBinding(newEntry, MenuItem.CommandProperty, new Binding { Path = new PropertyPath("Command"), Source = key });
 			parentMenuItem.Items.Add(newEntry);

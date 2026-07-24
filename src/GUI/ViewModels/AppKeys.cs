@@ -15,10 +15,22 @@ namespace DivinityModManager.ViewModels;
 
 public class AppKeys : ReactiveObject
 {
+	private static readonly IReadOnlyDictionary<string, string> ShortcutCategoryNames =
+		new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+		{
+			["File"] = "Load orders and files",
+			["Edit"] = "Mod lists",
+			["Settings"] = "Workspace and appearance",
+			["Go"] = "Folders and launch",
+			["Tools"] = "Tools",
+			["Accessibility"] = "Accessibility",
+			["Help"] = "Help and updates"
+		};
+
 	[MenuSettings("File", "Import Mod...", true)]
 	public Hotkey ImportMod { get; private set; } = new Hotkey(Key.O, ModifierKeys.Control);
 
-	[MenuSettings("File", "Add New Order", true)]
+	[MenuSettings("File", "Create Load Order", true)]
 	public Hotkey NewOrder { get; private set; } = new Hotkey(Key.N, ModifierKeys.Control);
 
 	[MenuSettings("File", "Save Order")]
@@ -27,37 +39,37 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Save Order As...", true)]
 	public Hotkey SaveAs { get; private set; } = new Hotkey(Key.S, ModifierKeys.Control | ModifierKeys.Alt);
 
-	[MenuSettings("File", "Import Order from Save...")]
+	[MenuSettings("File", "Import Load Order from Save...")]
 	public Hotkey ImportOrderFromSave { get; private set; } = new Hotkey(Key.I, ModifierKeys.Control);
 
-	[MenuSettings("File", "Import Order from Save As New Order...")]
+	[MenuSettings("File", "Import Save as New Load Order...")]
 	public Hotkey ImportOrderFromSaveAsNew { get; private set; } = new Hotkey(Key.I, ModifierKeys.Control | ModifierKeys.Shift);
 
-	[MenuSettings("File", "Import Order from File...")]
+	[MenuSettings("File", "Import Load Order from File...")]
 	public Hotkey ImportOrderFromFile { get; private set; } = new Hotkey(Key.O, ModifierKeys.Control | ModifierKeys.Shift);
 
-	[MenuSettings("File", "Import Order & Mods from Archive...", true)]
+	[MenuSettings("File", "Import Load Order and Mods from Archive...", true)]
 	public Hotkey ImportOrderFromZipFile { get; private set; } = new Hotkey(Key.None);
 
-	[MenuSettings("File", "Export Order to Game")]
+	[MenuSettings("File", "Export Load Order to Game")]
 	public Hotkey ExportOrderToGame { get; private set; } = new Hotkey(Key.E, ModifierKeys.Control);
 
-	[MenuSettings("File", "Export Order to Text File...")]
+	[MenuSettings("File", "Export Load Order to Text File...")]
 	public Hotkey ExportOrderToList { get; private set; } = new Hotkey(Key.E, ModifierKeys.Control | ModifierKeys.Shift);
 
-	[MenuSettings("File", "Export Order to Archive (.zip)")]
+	[MenuSettings("File", "Export Active Mods to ZIP...")]
 	public Hotkey ExportOrderToZip { get; private set; } = new Hotkey(Key.R, ModifierKeys.Control);
 
-	[MenuSettings("File", "Export Order to Archive As...", true)]
+	[MenuSettings("File", "Export Active Mods to ZIP As...", true)]
 	public Hotkey ExportOrderToArchiveAs { get; private set; } = new Hotkey(Key.R, ModifierKeys.Control | ModifierKeys.Shift);
 
-	[MenuSettings("File", "Reload All")]
+	[MenuSettings("File", "Refresh Mods")]
 	public Hotkey Refresh { get; private set; } = new Hotkey(Key.F5);
 
 	//[MenuSettings("File", "Refresh Mod Updates")]
 	public Hotkey RefreshModUpdates { get; private set; } = new Hotkey(Key.None);
 
-	[MenuSettings("Edit", "Moved Selected Mods to Opposite List", true)]
+	[MenuSettings("Edit", "Move Selected Mods to Opposite List", true)]
 	public Hotkey Confirm { get; private set; } = new Hotkey(Key.Enter);
 
 	[MenuSettings("Edit", "Focus Active Mods List")]
@@ -66,7 +78,7 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("Edit", "Focus Inactive Mods List")]
 	public Hotkey MoveFocusRight { get; private set; } = new Hotkey(Key.Right);
 
-	[MenuSettings("Edit", "Go to Other List")]
+	[MenuSettings("Edit", "Switch Between Mod Lists")]
 	public Hotkey SwapListFocus { get; private set; } = new Hotkey(Key.Tab);
 
 	[MenuSettings("Edit", "Move to Top of Active List")]
@@ -75,7 +87,7 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("Edit", "Move to Bottom of Active List", true)]
 	public Hotkey MoveToBottom { get; private set; } = new Hotkey(Key.PageDown, ModifierKeys.Control);
 
-	[MenuSettings("Edit", "Toggle Focus Filter for Current List", AddSeparator = true)]
+	[MenuSettings("Edit", "Focus Current Mod-List Filter", AddSeparator = true)]
 	public Hotkey ToggleFilterFocus { get; private set; } = new Hotkey(Key.F, ModifierKeys.Control);
 
 	public Hotkey ToggleFileNameDisplay { get; private set; } = new Hotkey(Key.None);
@@ -92,6 +104,9 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("Settings", "Cycle Theme")]
 	public Hotkey ToggleViewTheme { get; private set; } = new Hotkey(Key.L, ModifierKeys.Control);
 
+	[MenuSettings("Settings", "Toggle Toolbar")]
+	public Hotkey ToggleToolbar { get; private set; } = new Hotkey(Key.B, ModifierKeys.Control | ModifierKeys.Shift);
+
 	//[MenuSettings("View", "Toggle Updates View")]
 	public Hotkey ToggleUpdatesView { get; private set; } = new Hotkey();
 
@@ -101,28 +116,28 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("Go", "Open Game Folder")]
 	public Hotkey OpenGameFolder { get; private set; } = new Hotkey(Key.D2, ModifierKeys.Control);
 
-	[MenuSettings("Go", "Open Extender Logs Folder")]
+	[MenuSettings("Go", "Open Script Extender Logs Folder")]
 	public Hotkey OpenLogsFolder { get; private set; } = new Hotkey(Key.D4, ModifierKeys.Control);
 
 	[MenuSettings("Go", "Launch Game")]
 	public Hotkey LaunchGame { get; private set; } = new Hotkey(Key.G, ModifierKeys.Control | ModifierKeys.Shift);
 
-	[MenuSettings("Tools", "Extract Selected Mods To...")]
+	[MenuSettings("Tools", "Extract Selected Mods to...")]
 	public Hotkey ExtractSelectedMods { get; private set; } = new Hotkey(Key.OemPeriod, ModifierKeys.Control);
 
-	[MenuSettings("Tools", "Extract Active Adventure Mod To...")]
+	[MenuSettings("Tools", "Extract Active Adventure Mod to...")]
 	public Hotkey ExtractSelectedAdventure { get; private set; } = new Hotkey(Key.None);
 
-	[MenuSettings("Tools", "Toggle Version Generator Window", Tooltip = "A tool for mod authors to generate version numbers for a mod's meta.lsx")]
+	[MenuSettings("Tools", "Open Version Generator", Tooltip = "A tool for mod authors to generate version numbers for a mod's meta.lsx")]
 	public Hotkey ToggleVersionGeneratorWindow { get; private set; } = new Hotkey(Key.G, ModifierKeys.Control);
 
 	[MenuSettings("Tools", "Download & Extract the Script Extender...")]
 	public Hotkey DownloadScriptExtender { get; private set; } = new Hotkey(Key.T, ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Alt);
 
-	[MenuSettings("Accessibility", "Speak Active Order")]
+	[MenuSettings("Accessibility", "Read Active Load Order")]
 	public Hotkey SpeakActiveModOrder { get; private set; } = new Hotkey(Key.Home, ModifierKeys.Control);
 
-	[MenuSettings("Accessibility", "Stop Speaking")]
+	[MenuSettings("Accessibility", "Stop Reading Load Order")]
 	public Hotkey StopSpeaking { get; private set; } = new Hotkey(Key.Home, ModifierKeys.Control | ModifierKeys.Alt);
 
 	[MenuSettings("Help", "Check for Updates")]
@@ -134,7 +149,7 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("Help", "About")]
 	public Hotkey OpenAboutWindow { get; private set; } = new Hotkey(Key.F1);
 
-	[MenuSettings("Help", "Open Home Page (Github)...")]
+	[MenuSettings("Help", "Open Redux on GitHub...")]
 	public Hotkey OpenRepositoryPage { get; private set; } = new Hotkey(Key.None);
 
 	private readonly SourceCache<Hotkey, string> keyMap = new((hk) => hk.ID);
@@ -241,8 +256,13 @@ public class AppKeys : ReactiveObject
 		foreach (var prop in keyProps)
 		{
 			var hotkey = (Hotkey)t.GetProperty(prop.Name).GetValue(this);
+			var menuSettings = prop.GetCustomAttribute<MenuSettingsAttribute>();
 			hotkey.AddCanExecuteCondition(baseCanExecute);
 			hotkey.ID = prop.Name;
+			hotkey.DisplayName = menuSettings.DisplayName;
+			hotkey.Category = ShortcutCategoryNames.TryGetValue(menuSettings.Parent, out var categoryName)
+				? categoryName
+				: menuSettings.Parent;
 			keyMap.AddOrUpdate(hotkey);
 		}
 	}

@@ -473,6 +473,7 @@ public class SettingsWindowViewModel : ReactiveObject
 						Settings.TypographyFont = ReduxTypographyFont.Manrope;
 						Settings.CustomTypographyFont = String.Empty;
 						Settings.TextSize = ReduxTextSize.Default;
+						ReduxThemeService.ApplyBuiltInCategoryPresentation(Settings, ReduxThemeType.ReduxDark);
 						break;
 					case SettingsWindowTab.Extender:
 						Settings.ExtenderSettings.SetToDefault();

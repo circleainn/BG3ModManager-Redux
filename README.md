@@ -11,7 +11,7 @@ safer file operations, richer metadata, and better organization for large mod li
 
 ## Current version
 
-**0.1.0-alpha.5 — private testing alpha**
+**0.1.0-alpha.6 — private testing alpha**
 
 Redux is still experimental. Current builds are intended for careful personal use and a small
 group of private testers. Features, metadata matching, themes, and interface details may be
@@ -36,8 +36,10 @@ incomplete or change between builds.
 - Profile, campaign, and saved load-order management.
 - Importing `.pak` files and supported archives.
 - Exporting load orders to the game, text files, JSON, and archives where supported.
-- Filtering and configurable list columns.
+- Filtering and configurable list columns with reliable Redux-default visibility and sizing resets.
 - Shortcuts to common game, mod, save, and log folders.
+- A compact grouped command toolbar with an equivalent top-menu workflow when the toolbar is
+  hidden, plus a configurable Toggle Toolbar shortcut.
 - Dark, Light, and Parchment themes with bundled typography and text-size selectors plus refined semantic palettes.
   Redux Dark, Redux Light, and Parchment all default to Manrope.
 - Safe custom themes with a preferred bundled or locally imported typeface and text size, live
@@ -60,7 +62,8 @@ incomplete or change between builds.
 - Multiple categories per mod with custom colors, curated vector icons, or reusable transparent
   PNG icons. Custom PNGs may retain their original colors or be tinted to the category color.
 - Fixed Redux default category identities with per-category color/icon customization and reset.
-- Optional category icons in pills and optional category-colored mod-row hover feedback.
+- Theme-aware category presentation options for icons in pills, category-colored names, and
+  category-colored mod-row hover feedback. These settings can be stored with custom themes.
 - Category filtering without changing the underlying load order.
 - Redux-only visual separators and collapsible sections with optional custom icons.
 - Draggable category ordering and optional filter-state persistence.

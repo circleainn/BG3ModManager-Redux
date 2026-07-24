@@ -1,5 +1,7 @@
 using AdonisUI.Controls;
 
+using DivinityModManager.Util;
+
 using System.Windows;
 
 namespace DivinityModManager.Views;
@@ -11,6 +13,7 @@ public partial class NexusManualLinkDialog : AdonisWindow
 	public NexusManualLinkDialog(string currentLink = null)
 	{
 		InitializeComponent();
+		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
 		NexusLinkTextBox.Text = currentLink ?? String.Empty;
 		Loaded += (_, _) =>
 		{

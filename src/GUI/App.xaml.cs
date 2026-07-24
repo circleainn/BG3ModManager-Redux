@@ -64,6 +64,7 @@ public partial class App : Application
 			new FrameworkPropertyMetadata(XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag)));
 
 		EventManager.RegisterClassHandler(typeof(Window), Window.PreviewMouseDownEvent, new MouseButtonEventHandler(OnPreviewMouseDown));
+		EventManager.RegisterClassHandler(typeof(Window), Keyboard.PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown));
 
 		var mainWindow = new MainWindow();
 		mainWindow.Show();
@@ -72,5 +73,14 @@ public partial class App : Application
 	private static void OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
 	{
 		DivinityApp.IsKeyboardNavigating = false;
+	}
+
+	private static void OnPreviewKeyDown(object sender, KeyEventArgs e)
+	{
+		if (e.Key is Key.Tab or Key.Left or Key.Right or Key.Up or Key.Down
+			or Key.Home or Key.End or Key.PageUp or Key.PageDown)
+		{
+			DivinityApp.IsKeyboardNavigating = true;
+		}
 	}
 }

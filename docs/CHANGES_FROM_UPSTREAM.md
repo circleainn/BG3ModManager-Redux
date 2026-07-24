@@ -7,7 +7,7 @@ parsing through LSLib, game-path detection, and launch behavior. Confirmed inher
 received targeted correctness and safety fixes without redesigning those core formats or workflows.
 
 This document inventories the major Redux additions and the inherited issues addressed through
-version `0.1.0-alpha.5`.
+version `0.1.0-alpha.6`.
 
 ## Redux interface and design system
 
@@ -15,9 +15,11 @@ version `0.1.0-alpha.5`.
   text, accent, success, information, warning, error, and disabled states.
 - Redux Dark, Redux Light, and Parchment themes with theme-specific palettes and contrast behavior.
 - Shared corner-radius, spacing, typography, control-height, and interaction tokens.
-- A grouped command toolbar for Install/Profile, Load Order, Order Actions, Export, Campaign, Tools,
-  and Launch workflows.
-- A consolidated Open menu for common game, mod, save, order, log, and project locations.
+- A compact grouped command toolbar for setup, load-order, export, and launch workflows, with
+  consistent workflow-button styling and restrained accent interaction feedback.
+- A top-level Shortcuts menu for common game, mod, save, order, log, project, and online locations.
+- A complete compact Toolbar menu when the visual toolbar is hidden, plus a configurable Toggle
+  Toolbar shortcut.
 - Redux-styled buttons, text fields, combo boxes, check boxes, tabs, tooltips, menus, context menus,
   notifications, cards, pills, list rows, scrollbars, and secondary windows.
 - Animated hover, press, selection, tab-indicator, drawer, and category interactions designed to
@@ -44,7 +46,8 @@ version `0.1.0-alpha.5`.
   launch instead of producing a Windows retry loop.
 - Manrope fallback when an imported font is missing, invalid, or unavailable on another machine.
 - An Open Fonts Folder action and protection against deleting Redux-shipped fonts.
-- Optional category-colored row hover, category icons in pills, and category-colored names.
+- Theme-aware category-colored row hover, category icons in pills, and category-colored names.
+  Built-in themes provide deliberate defaults, and custom themes preserve all three preferences.
 
 ## Shared icon system and branding
 
