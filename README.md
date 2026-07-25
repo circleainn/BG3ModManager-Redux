@@ -36,6 +36,13 @@ incomplete or change between builds.
 - Profile, campaign, and saved load-order management.
 - Importing `.pak` files and supported archives.
 - Exporting load orders to the game, text files, JSON, and archives where supported.
+- Portable `.bg3redux` Redux bundles that can carry a saved load order, custom categories,
+  assignments, active-list separators, and reusable custom PNG icons between Redux installations.
+- A compact export review that shows exactly which Redux organization data will be shared and
+  confirms that mod `.pak` files and `modsettings.lsx` are not included, with an optional shortcut
+  to reveal the completed bundle in File Explorer.
+- Import previews report local mod availability, category-name conflicts, export time, and the
+  originating Redux version before any selected bundle component is applied.
 - Filtering and configurable list columns with reliable Redux-default visibility and sizing resets.
 - Shortcuts to common game, mod, save, and log folders.
 - A compact grouped command toolbar with an equivalent top-menu workflow when the toolbar is
@@ -68,7 +75,8 @@ incomplete or change between builds.
 - Redux-only visual separators and collapsible sections with optional custom icons.
 - Draggable category ordering and optional filter-state persistence.
 
-Categories and separators are Redux-only metadata, never written to `modsettings.lsx`. Separators
+Categories and separators are Redux-only metadata, never written to `modsettings.lsx`. They can be
+shared through a Redux bundle without changing the game export format. Separators
 disappear from filtered or metadata-sorted views where their position would be misleading.
 
 ### Mod information
@@ -78,7 +86,9 @@ disappear from filtered or metadata-sorted views where their position would be m
 - Manual Nexus project linking plus a bundled Redux mod database for conservative pre-existing-install matching.
 - Source-specific titles, authors, versions, dates, descriptions, requirements, files, and
   changelogs when available.
-- A resizable details drawer and quick-glance hover cards using shared Redux pill and status styles.
+- A resizable details drawer with Overview, Description, Requirements, Files, and Changelog tabs,
+  plus background health notices that stay hidden when no attention is needed and quick-glance
+  hover cards using shared Redux pill and status styles.
 - Separate display names and local `.pak` filenames for projects with multiple downloadable files.
 - Local metadata fallback when no online source can be matched.
 
@@ -123,14 +133,25 @@ share, or commit personal API keys.
 A registered Nexus SSO application slug and a reviewed authentication flow will be required before
 Redux can offer a polished public Nexus sign-in experience.
 
-## Mod Health status
+## Mod Health
 
-Redux contains a read-only Mod Health analysis foundation for future diagnostics. It can inspect
-conditions such as missing or inactive dependencies, duplicate/invalid UUIDs, Script Extender
-status, declared conflicts, bundled Mod Fixer content, override behavior, and mod.io safety state.
+Mod Health runs quietly in the background. When the selected mod has a warning or error, Overview
+shows a compact status pill whose tooltip explains missing or inactive dependencies, duplicate or
+invalid UUIDs, declared dependencies positioned after the mods that require them, Script Extender
+status, confirmed active declared conflicts, bundled Mod Fixer content, override behavior, and
+mod.io safety state.
+Healthy mods add no extra interface.
 
-The final user-facing Health tray and Load Order Advisor are not implemented. Current findings are
-diagnostic and conservative; Redux does not automatically repair, install, or reorder mods.
+When one or more active mods need attention, the Active Mods header shows a compact load-order
+summary. Opening it lists affected mods in severity order; choosing one focuses it in the list.
+Duplicate UUIDs, inactive dependencies, and declared conflicts also receive a compact row-level
+health indicator so they remain visible without opening the selected-mod drawer.
+Health findings are diagnostic and conservative, and Redux does not automatically repair, install,
+or reorder mods. The experimental Load Order Advisor is opt-in and disabled by default. Its first
+rule relies only on declared package dependencies; broader category- or compatibility-based
+recommendations remain future work. When Debug Mode is enabled, each changed active order writes a
+`[LoadOrderAdvisor]` diagnostic
+summary to the Redux log, including a clear result when no reversed dependencies are detected.
 
 ## Features for mod authors
 
@@ -158,7 +179,8 @@ affect game files.
 - Nexus authentication currently relies on a personal API key rather than public SSO.
 - Provider matching, automatic categories, dependency data, and conflict data may be incomplete.
 - mod.io author profile links cannot always be resolved reliably.
-- The complete Mod Health tray, requirement validator, and Load Order Advisor are not implemented.
+- The requirement validator and broader compatibility-aware Load Order Advisor are not
+  implemented. Current order advice is limited to declared dependencies that load too late.
 - Dense layouts and uncommon Windows display scales may still expose minor visual inconsistencies.
 - Some user-imported fonts may expose incomplete metadata or render differently in WPF; Redux
   falls back to Manrope when an imported font cannot be loaded.

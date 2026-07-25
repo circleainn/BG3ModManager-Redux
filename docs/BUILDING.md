@@ -117,6 +117,6 @@ Before distributing a build:
 3. Launch Redux and confirm installed `.pak` files are detected.
 4. Test drag-and-drop, profile selection, load-order loading, and export.
 5. Test Redux Dark, Redux Light, and Parchment.
-6. Test dialogs, source pills, category icons, custom themes, and typography.
+6. Test dialogs, source indicators and provider actions, category icons, custom themes, and typography.
 7. Inspect the ZIP for settings, logs, keys, local paths, and development-only files.
 8. Test the ZIP in a clean folder before sharing it.

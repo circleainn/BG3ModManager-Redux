@@ -98,6 +98,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(DivinityModManagerSettings.CheckForUpdates),
 			nameof(DivinityModManagerSettings.DeleteModCrashSanityCheck),
 			nameof(DivinityModManagerSettings.DisableMissingModWarnings),
+			nameof(DivinityModManagerSettings.EnableLoadOrderAdvisor),
 			nameof(DivinityModManagerSettings.ResetModioSupportWarningAcknowledgement),
 			nameof(DivinityModManagerSettings.ResetOfflineNexusDatabaseWarningAcknowledgement),
 			nameof(DivinityModManagerSettings.ResetReduxPreviewWarningAcknowledgement))

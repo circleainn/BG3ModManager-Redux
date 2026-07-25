@@ -48,6 +48,13 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Import Load Order from File...")]
 	public Hotkey ImportOrderFromFile { get; private set; } = new Hotkey(Key.O, ModifierKeys.Control | ModifierKeys.Shift);
 
+	[MenuSettings(
+		"File",
+		"Import Redux Bundle...",
+		false,
+		"Import a portable .bg3redux bundle containing a saved load order and optional Redux categories, separators, and icons.")]
+	public Hotkey ImportReduxLoadOrder { get; private set; } = new Hotkey(Key.None);
+
 	[MenuSettings("File", "Import Load Order and Mods from Archive...", true)]
 	public Hotkey ImportOrderFromZipFile { get; private set; } = new Hotkey(Key.None);
 
@@ -56,6 +63,13 @@ public class AppKeys : ReactiveObject
 
 	[MenuSettings("File", "Export Load Order to Text File...")]
 	public Hotkey ExportOrderToList { get; private set; } = new Hotkey(Key.E, ModifierKeys.Control | ModifierKeys.Shift);
+
+	[MenuSettings(
+		"File",
+		"Export Redux Bundle...",
+		false,
+		"Share the active load order together with Redux categories, separators, and reusable custom icons in a portable .bg3redux file.")]
+	public Hotkey ExportReduxLoadOrder { get; private set; } = new Hotkey(Key.None);
 
 	[MenuSettings("File", "Export Active Mods to ZIP...")]
 	public Hotkey ExportOrderToZip { get; private set; } = new Hotkey(Key.R, ModifierKeys.Control);

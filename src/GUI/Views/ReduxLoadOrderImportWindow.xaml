@@ -1,0 +1,101 @@
+<adonisUI:AdonisWindow x:Class="DivinityModManager.Views.ReduxLoadOrderImportWindow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+	xmlns:controls="clr-namespace:DivinityModManager.Controls"
+	Title="Import Redux Bundle"
+	Width="540" MinWidth="540" MaxWidth="540"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
+	ResizeMode="NoResize" SizeToContent="Height" ShowInTaskbar="False"
+	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
+	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
+	WindowStartupLocation="CenterOwner">
+	<Window.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
+		<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
+	</ResourceDictionary.MergedDictionaries></ResourceDictionary></Window.Resources>
+	<Border Padding="22" Background="{DynamicResource ReduxAppBackgroundBrush}"
+		BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
+			</Grid.RowDefinitions>
+			<Grid>
+				<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+				<Border Width="42" Height="42" Margin="0,0,14,0"
+					Background="{DynamicResource ReduxAccentSoftBrush}" BorderBrush="{DynamicResource ReduxAccentBrush}"
+					BorderThickness="1" CornerRadius="21">
+					<controls:ReduxIcon Width="21" Height="21" HorizontalAlignment="Center" VerticalAlignment="Center"
+						Foreground="{DynamicResource ReduxAccentBrush}" StrokeData="{StaticResource Redux.Icon.Download}" />
+				</Border>
+				<StackPanel Grid.Column="1" VerticalAlignment="Center">
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold"
+						Text="Choose bundle contents" />
+					<TextBlock x:Name="BundleSummaryText" Margin="0,4,0,0"
+						Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap" />
+					<TextBlock x:Name="BundleMetadataText" Margin="0,3,0,0"
+						Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap" />
+				</StackPanel>
+			</Grid>
+
+			<StackPanel Grid.Row="1" Margin="0,18,0,0">
+				<Border Padding="14,12" Background="{DynamicResource ReduxSurfaceBrush}"
+					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+					<CheckBox x:Name="ImportLoadOrderCheckBox" IsChecked="True" Style="{StaticResource ReduxCheckBoxStyle}"
+						Checked="ImportOption_Changed" Unchecked="ImportOption_Changed">
+						<StackPanel Margin="5,0,0,0">
+							<TextBlock FontWeight="SemiBold" Text="Load order" />
+							<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+								Text="Create a saved load order from the mod sequence in this bundle." TextWrapping="Wrap" />
+							<TextBlock x:Name="LoadOrderAvailabilityText" Margin="0,5,0,0"
+								Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap" />
+						</StackPanel>
+					</CheckBox>
+				</Border>
+				<Border Margin="0,8,0,0" Padding="14,12" Background="{DynamicResource ReduxSurfaceBrush}"
+					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+					<CheckBox x:Name="ImportPresentationCheckBox" IsChecked="True" Style="{StaticResource ReduxCheckBoxStyle}"
+						Checked="ImportOption_Changed" Unchecked="ImportOption_Changed">
+						<StackPanel Margin="5,0,0,0">
+							<TextBlock FontWeight="SemiBold" Text="Categories and separators" />
+							<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+								Text="Merge Redux-only categories, assignments, custom icons, and active-list separators." TextWrapping="Wrap" />
+							<TextBlock x:Name="PresentationContentsText" Margin="0,5,0,0"
+								Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap" />
+						</StackPanel>
+					</CheckBox>
+				</Border>
+			</StackPanel>
+
+			<Border x:Name="ImportImpactBorder" Grid.Row="2" Margin="0,12,0,0" Padding="12,10"
+				Background="{DynamicResource ReduxWarningSoftBrush}"
+				BorderBrush="{DynamicResource ReduxWarningBrush}" BorderThickness="1"
+				CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+				Visibility="Collapsed">
+				<StackPanel Orientation="Horizontal">
+					<controls:ReduxIcon Width="17" Height="17" Margin="0,1,8,0"
+						VerticalAlignment="Top" Foreground="{DynamicResource ReduxWarningBrush}"
+						IconKey="warning" />
+					<TextBlock x:Name="ImportImpactText" Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+						TextWrapping="Wrap" />
+				</StackPanel>
+			</Border>
+
+			<TextBlock Grid.Row="3" Margin="0,14,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
+				Text="This does not export to the game or write modsettings.lsx. Export to Game remains a separate action."
+				TextWrapping="Wrap" />
+
+			<StackPanel Grid.Row="4" Margin="0,18,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
+				<Button MinWidth="86" Content="Cancel" IsCancel="True"
+					Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Click="CancelButton_Click" />
+				<Button x:Name="ImportButton" MinWidth="86" Margin="8,0,0,0" Content="Import" IsDefault="True"
+					Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" Click="ImportButton_Click" />
+			</StackPanel>
+		</Grid>
+	</Border>
+</adonisUI:AdonisWindow>

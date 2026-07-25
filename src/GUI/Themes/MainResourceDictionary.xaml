@@ -741,6 +741,10 @@
 		<PathGeometry Figures="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
 		<PathGeometry Figures="m9 12 2 2 4-4" />
 	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Flag">
+		<PathGeometry Figures="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+		<LineGeometry StartPoint="4,15" EndPoint="4,22" />
+	</GeometryGroup>
 	<GeometryGroup x:Key="Redux.Icon.ScrollText">
 		<PathGeometry Figures="M15 12h-5" /><PathGeometry Figures="M15 8h-5" /><PathGeometry Figures="M19 17V5a2 2 0 0 0-2-2H4" />
 		<PathGeometry Figures="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" />
@@ -2201,8 +2205,8 @@
 		</Border>
 	</DataTemplate>
 	<!--
-		Single source of truth for pill/chip chrome (category pills, source pills, drawer
-		metadata chips). Variants set only Background/BorderBrush/coloring logic via BasedOn;
+		Single source of truth for pill/chip chrome (category pills and drawer metadata
+		chips). Variants set only Background/BorderBrush/coloring logic via BasedOn;
 		do not redeclare Padding/MinHeight/CornerRadius locally.
 	-->
 	<Style x:Key="ReduxPillBaseStyle" TargetType="{x:Type Border}">
@@ -2229,8 +2233,8 @@
 			Opacity, not an Effect: a Effect (DropShadowEffect etc.) forces the whole subtree
 			through an intermediate bitmap, which disables ClearType and makes the pill's own
 			text render blurry while hovered. Plain opacity gives hover feedback without that.
-			Scale is kept small (1.02): several pill containers (ModSourceTemplate,
-			ModCategoryTemplate) set ClipToBounds="True" on their own root to stop overflowing
+			Scale is kept small (1.02): category-pill containers set ClipToBounds="True"
+			on their own root to stop overflowing
 			pill text from spilling into the next list column, so a RenderTransform grow here
 			has to stay inside that clip region rather than assuming free space.
 		-->
@@ -2265,23 +2269,6 @@
 		<Style.Triggers>
 			<DataTrigger Binding="{Binding Name}" Value="No Category">
 				<Setter Property="Visibility" Value="Collapsed" />
-			</DataTrigger>
-		</Style.Triggers>
-	</Style>
-	<Style x:Key="ReduxSourcePillStyle" BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="{x:Type Border}">
-		<Setter Property="Background" Value="{StaticResource Redux.Pill.Local.Background}" />
-		<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Local.Border}" />
-		<Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Local.Border}" />
-		<Style.Triggers>
-			<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}">
-				<Setter Property="Background" Value="{StaticResource Redux.Pill.Nexus.Background}" />
-				<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Nexus.Border}" />
-				<Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Nexus.Border}" />
-			</DataTrigger>
-			<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}">
-				<Setter Property="Background" Value="{StaticResource Redux.Pill.Modio.Background}" />
-				<Setter Property="BorderBrush" Value="{StaticResource Redux.Pill.Modio.Border}" />
-				<Setter Property="TextElement.Foreground" Value="{StaticResource Redux.Pill.Modio.Border}" />
 			</DataTrigger>
 		</Style.Triggers>
 	</Style>
@@ -2424,27 +2411,6 @@
 						</Style></TextBlock.Style>
 					</TextBlock>
 				</Border>
-				<Border Margin="0,0,6,0" Style="{StaticResource ReduxSourcePillStyle}">
-					<StackPanel Orientation="Horizontal">
-						<Grid Width="14" Height="14" Margin="0,0,5,0" Visibility="{Binding Metadata.OnlineSourceVisibility}">
-							<Image RenderOptions.BitmapScalingMode="HighQuality"
-								Source="/BG3ModManager;component/Resources/Icons/Platforms/nexus.png" Stretch="Uniform">
-								<Image.Style><Style TargetType="Image"><Setter Property="Visibility" Value="Collapsed" />
-									<Style.Triggers><DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers>
-								</Style></Image.Style>
-							</Image>
-							<Image RenderOptions.BitmapScalingMode="HighQuality"
-								Source="/BG3ModManager;component/Resources/Icons/Platforms/modio.png" Stretch="Uniform">
-								<Image.Style><Style TargetType="Image"><Setter Property="Visibility" Value="Collapsed" />
-									<Style.Triggers><DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers>
-								</Style></Image.Style>
-							</Image>
-						</Grid>
-						<TextBlock Margin="0" VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="Medium"
-							Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
-							Text="{Binding DisplaySource}" />
-					</StackPanel>
-				</Border>
 			</WrapPanel>
 
 			<Separator Margin="4,0" Background="{DynamicResource ReduxBorderBrush}" />
@@ -2479,8 +2445,16 @@
 
 			<StackPanel Visibility="{Binding Metadata.OnlineSourceVisibility}">
 				<Separator Margin="4,0" Background="{DynamicResource ReduxBorderBrush}" />
-				<TextBlock Margin="4,8,4,5" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxAccentHoverBrush}"
-					Text="{Binding Metadata.SourceLabel, StringFormat='Source · {0}'}" />
+				<StackPanel Margin="4,8,4,5" Orientation="Horizontal">
+					<Viewbox Width="12" Height="12" Margin="0,0,6,0" VerticalAlignment="Center" Stretch="Uniform">
+						<ContentControl Content="{Binding}" ContentTemplate="{DynamicResource PlatformIconPresenterTemplate}" />
+					</Viewbox>
+					<TextBlock VerticalAlignment="Center"
+						FontSize="{DynamicResource Redux.FontSize.11}"
+						FontWeight="SemiBold"
+						Foreground="{DynamicResource ReduxAccentHoverBrush}"
+						Text="{Binding Metadata.SourceLabel, StringFormat='Source · {0}'}" />
+				</StackPanel>
 				<Grid Margin="6,0,6,6">
 					<Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 					<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
@@ -2737,10 +2711,68 @@
 					    Margin="2,0"
 					    HorizontalAlignment="Center"
 					    VerticalAlignment="Center"
+					    IsHitTestVisible="True"
+					    ToolTip="{Binding HealthSnapshot.GeneralHealthTooltip}">
+						<controls:ReduxIcon.Style>
+							<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
+								<Setter Property="StrokeData" Value="{StaticResource Redux.Icon.ShieldAlert}" />
+								<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+								<Setter Property="Visibility" Value="Collapsed" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding HealthSnapshot.HasGeneralHealthAttention}" Value="True">
+										<Setter Property="Visibility" Value="Visible" />
+									</DataTrigger>
+									<DataTrigger Binding="{Binding HealthSnapshot.HasGeneralHealthErrors}" Value="True">
+										<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</controls:ReduxIcon.Style>
+					</controls:ReduxIcon>
+					<controls:ReduxIcon Width="16"
+					    Height="16"
+					    MaxWidth="16"
+					    MaxHeight="16"
+					    Margin="2,0"
+					    HorizontalAlignment="Center"
+					    VerticalAlignment="Center"
 					    StrokeData="{StaticResource Redux.Icon.Build}"
 					    IsHitTestVisible="True"
 					    ToolTip="Toolkit Mod Project"
 					    Visibility="{Binding ToolkitIconVisibility, FallbackValue=Collapsed}" />
+					<controls:ReduxIcon Width="16"
+					    Height="16"
+					    MaxWidth="16"
+					    MaxHeight="16"
+					    Margin="2,0"
+					    HorizontalAlignment="Center"
+					    VerticalAlignment="Center"
+					    IsHitTestVisible="True"
+					    ToolTip="{Binding HealthSnapshot.LoadOrderAdviceTooltip}">
+						<controls:ReduxIcon.Style>
+							<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
+								<Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Flag}" />
+								<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+								<Setter Property="Opacity" Value="0.72" />
+								<Setter Property="Visibility" Value="Collapsed" />
+								<Style.Triggers>
+									<MultiDataTrigger>
+										<MultiDataTrigger.Conditions>
+											<Condition Binding="{Binding IsActive}" Value="True" />
+											<Condition Binding="{Binding DataContext.Settings.DebugModeEnabled, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True" />
+											<Condition Binding="{Binding DataContext.Settings.EnableLoadOrderAdvisor, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True" />
+										</MultiDataTrigger.Conditions>
+										<Setter Property="Visibility" Value="Visible" />
+									</MultiDataTrigger>
+									<DataTrigger Binding="{Binding HealthSnapshot.HasLoadOrderAdvice}" Value="True">
+										<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+										<Setter Property="Opacity" Value="1" />
+										<Setter Property="Visibility" Value="Visible" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</controls:ReduxIcon.Style>
+					</controls:ReduxIcon>
 					<Grid Margin="2,0"
 					    HorizontalAlignment="Center"
 					    VerticalAlignment="Center"
@@ -2822,6 +2854,9 @@
 										<Style TargetType="{x:Type Border}">
 											<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
 											<Style.Triggers>
+												<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.FulfilledRequired}">
+													<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
+												</DataTrigger>
 												<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Warning}">
 													<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 												</DataTrigger>
@@ -2838,6 +2873,10 @@
 													<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
 													<Setter Property="Text" Value="Script Extender status" />
 													<Style.Triggers>
+														<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.FulfilledRequired}">
+															<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+															<Setter Property="Text" Value="Script Extender ready" />
+														</DataTrigger>
 														<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Warning}">
 															<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 															<Setter Property="Text" Value="Script Extender warning" />
@@ -2963,7 +3002,7 @@
 			("where did this come from"), so it shouldn't out-shout status/category signals.
 			Provider brand color lives on the icon only; text stays a neutral secondary tone.
 		-->
-		<Grid HorizontalAlignment="Left" ToolTip="{Binding DisplaySource, StringFormat='Metadata source: {0}'}">
+		<Grid HorizontalAlignment="Left">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="*" />
@@ -3078,8 +3117,7 @@
 		<!--  ClipToBounds off: see ModSourceTemplate - the per-item MaxWidth clamp handles overflow.  -->
 		<ItemsControl ClipToBounds="False"
 			ItemTemplate="{StaticResource ModCategoryPillItemTemplate}"
-			ItemsSource="{Binding DisplayCategories}"
-			ToolTip="{Binding DisplayCategory}">
+			ItemsSource="{Binding DisplayCategories}">
 			<ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
 		</ItemsControl>
 	</DataTemplate>
@@ -3138,7 +3176,7 @@
 			<GridViewColumn Width="90" Header="Version" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate>
 					<DataTemplate>
-						<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding DisplayVersion}" TextAlignment="Left" ToolTip="{Binding DisplayVersion}" />
+						<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding DisplayVersion}" TextAlignment="Left" />
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
@@ -3185,7 +3223,7 @@
 			<GridViewColumn Width="90" Header="Version" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate>
 					<DataTemplate>
-						<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding DisplayVersion}" TextAlignment="Left" ToolTip="{Binding DisplayVersion}" />
+						<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding DisplayVersion}" TextAlignment="Left" />
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
@@ -3213,7 +3251,7 @@
 			<GridViewColumn Width="90" Header="Version" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate>
 					<DataTemplate>
-						<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding DisplayVersion}" TextAlignment="Left" ToolTip="{Binding DisplayVersion}" />
+						<TextBlock Style="{StaticResource Redux.Text.Metadata}" Text="{Binding DisplayVersion}" TextAlignment="Left" />
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>

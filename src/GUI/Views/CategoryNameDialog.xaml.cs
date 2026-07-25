@@ -215,7 +215,8 @@ public partial class CategoryNameDialog : AdonisWindow
 	private void RenderColorWheel()
 	{
 		if (ColorWheelImage == null || Math.Abs(_renderedWheelBrightness - _brightness) < 0.001) return;
-		const int size = 198;
+		// Render at 2x and let WPF downsample it for a smoother ring on scaled displays.
+		const int size = 396;
 		var pixels = new byte[size * size * 4];
 		var center = (size - 1) / 2d;
 		var outerRadius = center;
@@ -249,7 +250,16 @@ public partial class CategoryNameDialog : AdonisWindow
 	{
 		var centerX = SpectrumSurface.ActualWidth / 2;
 		var centerY = SpectrumSurface.ActualHeight / 2;
-		_hue = Math.Atan2(point.Y - centerY, point.X - centerX) * 180d / Math.PI;
+		var dx = point.X - centerX;
+		var dy = point.Y - centerY;
+		var radius = Math.Min(centerX, centerY);
+		var distance = Math.Sqrt(dx * dx + dy * dy);
+
+		// The center is a read-only preview. Only the visible hue ring changes hue.
+		if (distance < radius * 0.60 || distance > radius)
+			return;
+
+		_hue = Math.Atan2(dy, dx) * 180d / Math.PI;
 		if (_hue < 0) _hue += 360;
 		CategoryColorPicker.SelectedColor = HsvToRgb(_hue, _saturation, _brightness);
 	}

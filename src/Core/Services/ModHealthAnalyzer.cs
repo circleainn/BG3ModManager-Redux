@@ -11,15 +11,20 @@ public sealed class ModHealthAnalyzer
 	public IReadOnlyList<ModHealthSnapshot> AnalyzeAll(
 		IEnumerable<DivinityModData> installedMods,
 		IEnumerable<DivinityModData> activeMods,
-		IEnumerable<DivinityModData> duplicateMods = null)
+		IEnumerable<DivinityModData> duplicateMods = null,
+		bool enableLoadOrderAdvisor = false)
 	{
 		var installed = (installedMods ?? Enumerable.Empty<DivinityModData>())
 			.Where(mod => mod != null && !mod.IsVisualDivider)
 			.ToArray();
-		var activeUuids = (activeMods ?? Enumerable.Empty<DivinityModData>())
-			.Where(mod => mod != null && !String.IsNullOrWhiteSpace(mod.UUID))
+		var active = (activeMods ?? Enumerable.Empty<DivinityModData>())
+			.Where(mod => mod != null && !mod.IsVisualDivider)
+			.ToArray();
+		var activeUuids = active
+			.Where(mod => !String.IsNullOrWhiteSpace(mod.UUID))
 			.Select(mod => mod.UUID)
 			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var activePositions = BuildActivePositions(active);
 		var installedByUuid = installed
 			.Where(mod => !String.IsNullOrWhiteSpace(mod.UUID))
 			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
@@ -27,7 +32,7 @@ public sealed class ModHealthAnalyzer
 		var duplicateUuids = FindDuplicateUuids(installed, duplicateMods);
 
 		return installed
-			.Select(mod => Analyze(mod, installedByUuid, activeUuids, duplicateUuids))
+			.Select(mod => Analyze(mod, installedByUuid, activeUuids, activePositions, duplicateUuids, enableLoadOrderAdvisor))
 			.ToArray();
 	}
 
@@ -35,12 +40,14 @@ public sealed class ModHealthAnalyzer
 		DivinityModData mod,
 		IReadOnlyDictionary<string, DivinityModData> installedByUuid,
 		IReadOnlySet<string> activeUuids,
-		IReadOnlySet<string> duplicateUuids)
+		IReadOnlyDictionary<string, int> activePositions,
+		IReadOnlySet<string> duplicateUuids,
+		bool enableLoadOrderAdvisor)
 	{
 		var findings = new List<ModHealthFinding>();
 
 		AddIdentityFindings(mod, duplicateUuids, findings);
-		AddDependencyFindings(mod, installedByUuid, activeUuids, findings);
+		AddDependencyFindings(mod, installedByUuid, activeUuids, activePositions, enableLoadOrderAdvisor, findings);
 		AddScriptExtenderFindings(mod, findings);
 		AddLegacyAndOverrideFindings(mod, findings);
 		AddSourceFindings(mod, findings);
@@ -77,6 +84,8 @@ public sealed class ModHealthAnalyzer
 		DivinityModData mod,
 		IReadOnlyDictionary<string, DivinityModData> installedByUuid,
 		IReadOnlySet<string> activeUuids,
+		IReadOnlyDictionary<string, int> activePositions,
+		bool enableLoadOrderAdvisor,
 		ICollection<ModHealthFinding> findings)
 	{
 		foreach (var dependency in mod.MissingDependencies.Items)
@@ -109,15 +118,49 @@ public sealed class ModHealthAnalyzer
 					$"{dependency.Name} is installed but is not currently in the active load order.",
 					new[] { dependency.UUID }));
 			}
+
+			if (enableLoadOrderAdvisor
+				&& !String.IsNullOrWhiteSpace(mod.UUID)
+				&& activePositions.TryGetValue(mod.UUID, out var modPosition))
+			{
+				foreach (var dependency in mod.Dependencies.Items)
+				{
+					if (String.IsNullOrWhiteSpace(dependency.UUID)
+						|| String.Equals(dependency.UUID, mod.UUID, StringComparison.OrdinalIgnoreCase)
+						|| !installedByUuid.TryGetValue(dependency.UUID, out var installedDependency)
+						|| installedDependency.IsForceLoaded
+						|| installedDependency.IsLarianMod
+						|| !activePositions.TryGetValue(dependency.UUID, out var dependencyPosition)
+						|| dependencyPosition < modPosition)
+					{
+						continue;
+					}
+
+					findings.Add(new ModHealthFinding(
+						ModHealthFindingCode.DependencyLoadsLater,
+						ModHealthSeverity.Warning,
+						"Dependency loads later",
+						$"{dependency.Name} is positioned after {mod.DisplayName}. Declared dependencies should normally load earlier; review the mod author's instructions before moving it.",
+						new[] { dependency.UUID }));
+				}
+			}
 		}
 
 		foreach (var conflict in mod.Conflicts.Items)
 		{
+			if (!mod.IsActive ||
+				String.IsNullOrWhiteSpace(conflict.UUID) ||
+				String.Equals(conflict.UUID, mod.UUID, StringComparison.OrdinalIgnoreCase) ||
+				!activeUuids.Contains(conflict.UUID))
+			{
+				continue;
+			}
+
 			findings.Add(new ModHealthFinding(
 				ModHealthFindingCode.DeclaredConflict,
 				ModHealthSeverity.Warning,
-				"Declared conflict",
-				$"The package declares a conflict with {conflict.Name}.",
+				"Active declared conflict",
+				$"{mod.DisplayName} and {conflict.Name} are both active, and this package declares them incompatible.",
 				new[] { conflict.UUID }));
 		}
 	}
@@ -219,5 +262,22 @@ public sealed class ModHealthAnalyzer
 		}
 
 		return duplicates;
+	}
+
+	private static Dictionary<string, int> BuildActivePositions(IEnumerable<DivinityModData> activeMods)
+	{
+		var positions = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+		var position = 0;
+		foreach (var mod in activeMods ?? Enumerable.Empty<DivinityModData>())
+		{
+			if (mod == null || mod.IsVisualDivider || String.IsNullOrWhiteSpace(mod.UUID))
+			{
+				continue;
+			}
+
+			positions.TryAdd(mod.UUID, position);
+			position++;
+		}
+		return positions;
 	}
 }

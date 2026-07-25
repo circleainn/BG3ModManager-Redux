@@ -10,6 +10,7 @@
 	xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
 	xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
 	xmlns:dd="urn:gong-wpf-dragdrop"
+	xmlns:health="clr-namespace:DivinityModManager.Models.Health;assembly=DivinityModManagerCore"
 	xmlns:local="clr-namespace:DivinityModManager.Views"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:reactiveui="clr-namespace:ReactiveUI;assembly=ReactiveUI"
@@ -450,6 +451,133 @@
 				<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 			</Style>
+			<SolidColorBrush x:Key="ModHealth.InfoSoftBrush" Color="{DynamicResource ReduxInfoColor}" Opacity="0.14" />
+			<SolidColorBrush x:Key="ModHealth.ErrorSoftBrush" Color="{DynamicResource ReduxErrorColor}" Opacity="0.14" />
+			<Style x:Key="ModHealthSummaryCardStyle" TargetType="{x:Type Border}">
+				<Setter Property="Background" Value="{StaticResource ModHealth.InfoSoftBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
+				<Setter Property="BorderThickness" Value="1.5" />
+				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Card}" />
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding HealthSnapshot.IsClear}" Value="True">
+						<Setter Property="Background" Value="{DynamicResource ReduxSuccessSoftBrush}" />
+						<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding HealthSnapshot.HasWarnings}" Value="True">
+						<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
+						<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding HealthSnapshot.HasErrors}" Value="True">
+						<Setter Property="Background" Value="{StaticResource ModHealth.ErrorSoftBrush}" />
+						<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+			<Style x:Key="ModHealthSummaryIconStyle" BasedOn="{StaticResource {x:Type c:ReduxIcon}}" TargetType="{x:Type c:ReduxIcon}">
+				<Setter Property="IconKey" Value="info" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding HealthSnapshot.IsClear}" Value="True">
+						<Setter Property="IconKey" Value="shield-check" />
+						<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding HealthSnapshot.HasWarnings}" Value="True">
+						<Setter Property="IconKey" Value="warning" />
+						<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding HealthSnapshot.HasErrors}" Value="True">
+						<Setter Property="IconKey" Value="error" />
+						<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+			<Style x:Key="ModHealthFindingCardStyle" TargetType="{x:Type Border}">
+				<Setter Property="Margin" Value="0,0,0,8" />
+				<Setter Property="Padding" Value="12,10" />
+				<Setter Property="Background" Value="{StaticResource ModHealth.InfoSoftBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
+				<Setter Property="BorderThickness" Value="1" />
+				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding Severity}" Value="{x:Static health:ModHealthSeverity.Warning}">
+						<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
+						<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding Severity}" Value="{x:Static health:ModHealthSeverity.Error}">
+						<Setter Property="Background" Value="{StaticResource ModHealth.ErrorSoftBrush}" />
+						<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+			<Style x:Key="ModHealthAttentionButtonStyle" BasedOn="{StaticResource ReduxAccentPillButtonStyle}" TargetType="{x:Type Button}">
+				<Setter Property="Height" Value="26" />
+				<Setter Property="Padding" Value="9,2" />
+				<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
+						<Setter Property="Background" Value="{StaticResource ModHealth.ErrorSoftBrush}" />
+						<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
+						<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+			<Style x:Key="LoadOrderAdvisorDebugButtonStyle" BasedOn="{StaticResource ReduxAccentPillButtonStyle}" TargetType="{x:Type Button}">
+				<Setter Property="Height" Value="26" />
+				<Setter Property="Padding" Value="9,2" />
+				<Setter Property="Focusable" Value="False" />
+				<Setter Property="IsTabStop" Value="False" />
+				<Setter Property="Background" Value="{DynamicResource ReduxSuccessSoftBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding Settings.EnableLoadOrderAdvisor}" Value="False">
+						<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+						<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+						<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding LoadOrderAdvisorDebugHasWarnings}" Value="True">
+						<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
+						<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+						<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+			<Style x:Key="ModHealthAttentionMenuItemStyle" BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
+				<EventSetter Event="Click" Handler="ModHealthAttentionMenuItem_Click" />
+			</Style>
+			<DataTemplate x:Key="ModHealthAttentionMenuItemTemplate" DataType="{x:Type health:ModHealthSnapshot}">
+				<Grid MinWidth="310" Margin="2,1">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+					<c:ReduxIcon Width="17" Height="17" Margin="0,2,9,0">
+						<c:ReduxIcon.Style>
+							<Style BasedOn="{StaticResource {x:Type c:ReduxIcon}}" TargetType="{x:Type c:ReduxIcon}">
+								<Setter Property="IconKey" Value="warning" />
+								<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding HasErrors}" Value="True">
+										<Setter Property="IconKey" Value="error" />
+										<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</c:ReduxIcon.Style>
+					</c:ReduxIcon>
+					<StackPanel Grid.Column="1">
+						<TextBlock FontWeight="SemiBold"
+							Text="{Binding Mod.DisplayName}"
+							TextTrimming="CharacterEllipsis" />
+						<TextBlock Margin="0,2,0,0"
+							FontSize="{DynamicResource Redux.FontSize.11}"
+							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+							Text="{Binding FindingCountSummary}" />
+					</StackPanel>
+				</Grid>
+			</DataTemplate>
 			<Style x:Key="ModDetailsAuthorChipStyle" BasedOn="{StaticResource ModDetailsMetadataChipStyle}" TargetType="{x:Type Border}">
 				<Style.Triggers>
 					<DataTrigger Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}">
@@ -487,8 +615,7 @@
 			<DataTemplate x:Key="ModDetailsCategoryTemplate" DataType="{x:Type data:DivinityModData}">
 				<ItemsControl ClipToBounds="False"
 					ItemTemplate="{StaticResource ModDetailsTitleCategoryPillItemTemplate}"
-					ItemsSource="{Binding DisplayCategories}"
-					ToolTip="{Binding DisplayCategory}">
+					ItemsSource="{Binding DisplayCategories}">
 					<ItemsControl.ItemsPanel>
 						<ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
 					</ItemsControl.ItemsPanel>
@@ -664,6 +791,63 @@
 						</Grid.RowDefinitions>
 						<StackPanel>
 							<WrapPanel Margin="0,1,0,0">
+								<Border Margin="0,0,6,5"
+									Padding="8,4"
+									Style="{StaticResource ModHealthSummaryCardStyle}"
+									Visibility="{Binding HealthSnapshot.NeedsAttention, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+									<Border.ToolTip>
+										<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
+											<Border MaxWidth="440"
+												Padding="12,10"
+												Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+												BorderBrush="{DynamicResource ReduxBorderBrush}"
+												BorderThickness="1"
+												CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+												<StackPanel>
+													<StackPanel Orientation="Horizontal">
+														<c:ReduxIcon Width="17"
+															Height="17"
+															Margin="0,0,7,0"
+															Style="{StaticResource ModHealthSummaryIconStyle}" />
+														<TextBlock VerticalAlignment="Center"
+															FontSize="{DynamicResource Redux.FontSize.13}"
+															FontWeight="SemiBold"
+															Text="{Binding HealthSnapshot.StatusTitle}" />
+													</StackPanel>
+													<TextBlock Margin="0,6,0,0"
+														Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+														Text="{Binding HealthSnapshot.StatusDescription}"
+														TextWrapping="Wrap" />
+													<ItemsControl Margin="0,8,0,0" ItemsSource="{Binding HealthSnapshot.Findings}">
+														<ItemsControl.ItemTemplate>
+															<DataTemplate DataType="{x:Type health:ModHealthFinding}">
+																<Border Style="{StaticResource ModHealthFindingCardStyle}">
+																	<StackPanel>
+																		<TextBlock FontWeight="SemiBold" Text="{Binding Title}" />
+																		<TextBlock Margin="0,2,0,0"
+																			Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+																			Text="{Binding Message}"
+																			TextWrapping="Wrap" />
+																	</StackPanel>
+																</Border>
+															</DataTemplate>
+														</ItemsControl.ItemTemplate>
+													</ItemsControl>
+												</StackPanel>
+											</Border>
+										</ToolTip>
+									</Border.ToolTip>
+									<StackPanel Orientation="Horizontal">
+										<c:ReduxIcon Width="15"
+											Height="15"
+											Margin="0,0,5,0"
+											Style="{StaticResource ModHealthSummaryIconStyle}" />
+										<TextBlock VerticalAlignment="Center"
+											FontWeight="SemiBold"
+											Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
+											Text="{Binding HealthSnapshot.StatusTitle}" />
+									</StackPanel>
+								</Border>
 								<Border>
 									<Border.ToolTip>
 										<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
@@ -1332,6 +1516,7 @@
 					<ColumnDefinition Width="*" />
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="8" />
 					<ColumnDefinition Width="220" />
 				</Grid.ColumnDefinitions>
@@ -1346,8 +1531,55 @@
 					TextTrimming="CharacterEllipsis"
 					ToolTip="The active list is sorted by metadata, so visible rows no longer match load-order positions. Click the # column to restore load-order editing and drag-and-drop."
 					Visibility="{Binding IsActiveListMetadataSorted, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
-			<c:UnfocusableTextBox x:Name="ActiveModsFilterTextBox"
-					Grid.Column="5"
+				<StackPanel Grid.Column="2" Margin="0,0,8,0" Orientation="Horizontal">
+					<Button x:Name="ActiveModHealthSummaryButton"
+						Margin="0,0,6,0"
+						Click="ActiveModHealthSummaryButton_Click"
+						Style="{StaticResource ModHealthAttentionButtonStyle}"
+						Visibility="{Binding HasActiveModHealthAttention, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+						<Button.ContextMenu>
+							<ContextMenu ItemContainerStyle="{StaticResource ModHealthAttentionMenuItemStyle}"
+								ItemTemplate="{StaticResource ModHealthAttentionMenuItemTemplate}"
+								ItemsSource="{Binding PlacementTarget.DataContext.ActiveModHealthAttentionSnapshots, RelativeSource={RelativeSource Self}}" />
+						</Button.ContextMenu>
+						<StackPanel Orientation="Horizontal">
+							<c:ReduxIcon Width="15" Height="15"
+								Margin="0,0,5,0"
+								IconKey="warning"
+								Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+							<TextBlock VerticalAlignment="Center"
+								FontWeight="SemiBold"
+								Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+								Text="{Binding ActiveModHealthSummaryText}" />
+						</StackPanel>
+					</Button>
+					<Button Style="{StaticResource LoadOrderAdvisorDebugButtonStyle}"
+						ToolTip="{Binding LoadOrderAdvisorDebugTooltip}"
+						Visibility="{Binding IsLoadOrderAdvisorDebugVisible, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+						<StackPanel Orientation="Horizontal">
+							<c:ReduxIcon Width="14" Height="14"
+								Margin="0,0,5,0"
+								Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}">
+								<c:ReduxIcon.Style>
+									<Style BasedOn="{StaticResource {x:Type c:ReduxIcon}}" TargetType="{x:Type c:ReduxIcon}">
+										<Setter Property="IconKey" Value="shield-check" />
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding LoadOrderAdvisorDebugHasWarnings}" Value="True">
+												<Setter Property="IconKey" Value="warning" />
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</c:ReduxIcon.Style>
+							</c:ReduxIcon>
+							<TextBlock VerticalAlignment="Center"
+								FontWeight="SemiBold"
+								Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+								Text="{Binding LoadOrderAdvisorDebugText}" />
+						</StackPanel>
+					</Button>
+				</StackPanel>
+				<c:UnfocusableTextBox x:Name="ActiveModsFilterTextBox"
+					Grid.Column="6"
 					Height="28"
 					Padding="4,0"
 					HorizontalAlignment="Stretch"
@@ -1362,7 +1594,7 @@
 					TextAlignment="Left"
 					ToolTip="Filter Active Mods"
 					UpdateBindingOnFocusLost="True" />
-				<TextBlock Grid.Column="5"
+				<TextBlock Grid.Column="6"
 					Margin="0"
 					Padding="4,0"
 					HorizontalAlignment="Left"
@@ -1382,14 +1614,14 @@
 					</TextBlock.Style>
 				</TextBlock>
 				<TextBlock x:Name="ActiveModsFilterResultText"
-					Grid.Column="2"
+					Grid.Column="3"
 					Margin="0,0,8,0"
 					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
 					behavior:ScreenReaderHelperBehavior.Name="Total Hidden Active Mods"
 					AutomationProperties.HelpText="{Binding Text, RelativeSource={RelativeSource Self}}" />
 				<TextBlock x:Name="ActiveSelectedText"
-					Grid.Column="3"
+					Grid.Column="4"
 					Margin="0,0,8,0"
 					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
@@ -1400,8 +1632,7 @@
 			<Grid x:Name="ActiveModListGrid" Grid.Row="2">
 				<Grid.RowDefinitions>
 					<RowDefinition Name="ActiveModsListRow" Height="10*" />
-					<RowDefinition Name="ActiveModsListGridRow" Height="Auto" />
-					<RowDefinition Name="ActiveModsListForcedModsRow" Height="2*" />
+					<RowDefinition Name="ActiveModsListForcedModsRow" Height="Auto" />
 				</Grid.RowDefinitions>
 				<c:ModListView x:Name="ActiveModsListView"
 					MaxHeight="99999"
@@ -1419,35 +1650,26 @@
 					VirtualizingPanel.VirtualizationMode="Recycling">
 					<c:ModListView.ContextMenu><ContextMenu /></c:ModListView.ContextMenu>
 				</c:ModListView>
-				<GridSplitter x:Name="ActiveModListViewGridSplitter"
-					Grid.Row="1"
-					Height="4"
-					HorizontalAlignment="Stretch"
-					VerticalAlignment="Stretch"
-					Style="{StaticResource ReduxHorizontalSplitterStyle}" />
-				<Grid x:Name="AlwaysLoadedSectionGrid" Grid.Row="2">
+				<Grid x:Name="AlwaysLoadedSectionGrid" Grid.Row="1">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="Auto" />
-						<RowDefinition Height="*" />
+						<RowDefinition Height="Auto" />
 					</Grid.RowDefinitions>
-					<Border x:Name="AlwaysLoadedHeaderGrid" Margin="6,5,6,4" Padding="10,7"
+					<Border x:Name="AlwaysLoadedHeaderGrid" Margin="5,3,5,2" Padding="8,3"
 						Background="{DynamicResource ReduxSurfaceMutedBrush}"
 						BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
-						CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+						CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+						ToolTip="Always loaded while installed - outside the normal load order">
 						<Grid>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="*" />
 								<ColumnDefinition Width="Auto" />
 							</Grid.ColumnDefinitions>
-							<c:ReduxIcon Width="16" Height="16" Margin="0,0,9,0" VerticalAlignment="Center"
+							<c:ReduxIcon Width="12" Height="12" Margin="0,0,6,0" VerticalAlignment="Center"
 								IconKey="shield-alert" Foreground="{DynamicResource ReduxErrorBrush}" />
-							<StackPanel Grid.Column="1" VerticalAlignment="Center">
-								<TextBlock FontSize="{DynamicResource Redux.FontSize.14}" FontWeight="SemiBold" Text="Override Mods" />
-								<TextBlock Margin="0,1,0,0" FontSize="{DynamicResource Redux.FontSize.11}"
-									Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Always loaded while installed · outside the normal load order" />
-							</StackPanel>
+							<TextBlock Grid.Column="1" VerticalAlignment="Center"
+								FontSize="{DynamicResource Redux.FontSize.12}" FontWeight="SemiBold" Text="Override Mods" />
 							<ToggleButton x:Name="AlwaysLoadedToggleButton" Grid.Column="2"
 								Style="{StaticResource ModDetailsToggleStyle}"
 								IsChecked="{Binding IsAlwaysLoadedExpanded, Mode=TwoWay}"
@@ -1456,7 +1678,6 @@
 					</Border>
 					<c:ModListView x:Name="ForceLoadedModsListView"
 						Grid.Row="1"
-						MaxHeight="99999"
 						behavior:ScreenReaderHelperBehavior.Name="Force-Loaded Mods"
 						ContextMenuOpening="ModListView_ContextMenuOpening"
 						HideHeader="True"

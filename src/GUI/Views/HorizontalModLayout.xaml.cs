@@ -1,6 +1,7 @@
 ﻿using DivinityModManager.Controls;
 using DivinityModManager.Converters;
 using DivinityModManager.Models;
+using DivinityModManager.Models.Health;
 using DivinityModManager.Util;
 using DivinityModManager.Util.ScreenReader;
 using DivinityModManager.ViewModels;
@@ -60,15 +61,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	// Fallback seed only, used before the panel has real category data to measure against.
 	private const double MinimumExpandedCategoriesWidth = 180;
 	private const double DefaultExpandedCategoriesWidth = 220;
-	private const double DefaultOverrideModsRowHeight = 160;
-	private const double MinimumExpandedOverrideModsRowHeight = 90;
-
 	private object _focusedList = null;
 	private double _lastExpandedModDetailsRowHeight = DefaultModDetailsRowHeight;
 	private double _lastExpandedCategoriesWidth = DefaultExpandedCategoriesWidth;
 	private double _lastExpandedInactiveModsWidth;
 	private double _minimumExpandedCategoriesWidth = MinimumExpandedCategoriesWidth;
-	private double _lastExpandedOverrideModsRowHeight = DefaultOverrideModsRowHeight;
 	private System.Threading.CancellationTokenSource _categoriesTransition;
 	private System.Threading.CancellationTokenSource _inactiveModsTransition;
 	private System.Threading.CancellationTokenSource _modDetailsTransition;
@@ -697,6 +694,32 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		this.ForceLoadedModsListView.ClearSelectedItems();
 	}
 
+	private void ActiveModHealthSummaryButton_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is Button { ContextMenu: { } menu } button)
+		{
+			menu.PlacementTarget = button;
+			menu.Placement = PlacementMode.Bottom;
+			menu.IsOpen = true;
+			e.Handled = true;
+		}
+	}
+
+	private void ModHealthAttentionMenuItem_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is not MenuItem { DataContext: ModHealthSnapshot snapshot }) return;
+
+		ViewModel.SelectedModCategory = MainWindowViewModel.AllModsCategory;
+		ViewModel.ActiveModFilterText = String.Empty;
+		Dispatcher.BeginInvoke(new Action(() =>
+		{
+			DeselectAll();
+			ActiveModsListView.SelectedItem = snapshot.Mod;
+			ActiveModsListView.ScrollIntoView(snapshot.Mod);
+			ActiveModsListView.Focus();
+		}));
+	}
+
 	public void SelectMods(IEnumerable<DivinityModData> mods)
 	{
 		if (mods != null)
@@ -927,17 +950,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		Dispatcher.BeginInvoke(new Action(RememberExpandedModDetailsHeight));
 	}
 
-	private void RememberExpandedOverrideModsHeight()
-	{
-		if (ActiveModsListForcedModsRow.ActualHeight >= MinimumExpandedOverrideModsRowHeight)
-			_lastExpandedOverrideModsRowHeight = ActiveModsListForcedModsRow.ActualHeight;
-	}
-
-	private void OverrideModsGridSplitter_DragCompleted(object sender, DragCompletedEventArgs e)
-	{
-		Dispatcher.BeginInvoke(new Action(RememberExpandedOverrideModsHeight));
-	}
-
 	private async void UpdateOverrideModsLayout(bool hasAlwaysLoadedMods, bool isExpanded)
 	{
 		var showContents = hasAlwaysLoadedMods && isExpanded;
@@ -947,25 +959,24 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			return;
 		}
 
-		if (!showContents)
-			RememberExpandedOverrideModsHeight();
-
 		_overrideModsTransition?.Cancel();
 		_overrideModsTransition = new System.Threading.CancellationTokenSource();
 		var token = _overrideModsTransition.Token;
 		var startHeight = ActiveModsListForcedModsRow.ActualHeight;
-		var targetHeight = showContents
-			? Math.Max(MinimumExpandedOverrideModsRowHeight, _lastExpandedOverrideModsRowHeight)
-			: Math.Max(1, AlwaysLoadedHeaderGrid.ActualHeight);
 
 		ActiveModsListRow.Height = new GridLength(1, GridUnitType.Star);
 		ActiveModsListForcedModsRow.MinHeight = 0;
 		if (showContents)
-		{
 			ForceLoadedModsListView.Visibility = Visibility.Visible;
-			ActiveModListViewGridSplitter.Visibility = Visibility.Visible;
-			ActiveModsListGridRow.Height = GridLength.Auto;
-		}
+
+		var availableWidth = Math.Max(1, ActiveModListGrid.ActualWidth);
+		AlwaysLoadedSectionGrid.Measure(new Size(availableWidth, double.PositiveInfinity));
+		var headerHeight = AlwaysLoadedHeaderGrid.ActualHeight
+			+ AlwaysLoadedHeaderGrid.Margin.Top
+			+ AlwaysLoadedHeaderGrid.Margin.Bottom;
+		var targetHeight = showContents
+			? Math.Max(headerHeight, AlwaysLoadedSectionGrid.DesiredSize.Height)
+			: Math.Max(1, headerHeight);
 
 		var completed = await AnimatePanelValueAsync(
 			startHeight,
@@ -978,23 +989,16 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private void ApplyOverrideModsLayout(bool hasAlwaysLoadedMods, bool showContents)
 	{
 		ForceLoadedModsListView.Visibility = BoolToVisibilityConverter.FromBool(showContents);
-		ActiveModListViewGridSplitter.Visibility = BoolToVisibilityConverter.FromBool(showContents);
-		ActiveModsListForcedModsRow.MinHeight = showContents ? MinimumExpandedOverrideModsRowHeight : 0;
+		ActiveModsListForcedModsRow.MinHeight = 0;
 		ActiveModsListRow.Height = new GridLength(1, GridUnitType.Star);
 
 		if (!hasAlwaysLoadedMods)
 		{
-			ActiveModsListGridRow.Height = new GridLength(0);
 			ActiveModsListForcedModsRow.Height = new GridLength(0);
-			ActiveModListViewGridSplitter.IsEnabled = false;
 			return;
 		}
 
-		ActiveModsListGridRow.Height = showContents ? GridLength.Auto : new GridLength(0);
-		ActiveModsListForcedModsRow.Height = showContents
-			? new GridLength(Math.Max(MinimumExpandedOverrideModsRowHeight, _lastExpandedOverrideModsRowHeight))
-			: GridLength.Auto;
-		ActiveModListViewGridSplitter.IsEnabled = showContents;
+		ActiveModsListForcedModsRow.Height = GridLength.Auto;
 	}
 
 	private async void UpdateInactiveModsLayout(bool isExpanded)
@@ -1200,6 +1204,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		if (ForceLoadedModsListView.ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
 		{
+			// Keep the informational list compact, but measure its real rows instead of
+			// assuming a fixed height. The extra chrome allowance preserves the linked
+			// horizontal scrollbar at every text scale and Windows DPI.
+			Dispatcher.BeginInvoke(new Action(UpdateForceLoadedModsListHeight),
+				System.Windows.Threading.DispatcherPriority.Loaded);
+
 			if (updatingForcedViewSelection == null)
 			{
 				updatingForcedViewSelection = RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(25), () =>
@@ -1211,6 +1221,25 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			}
 
 		}
+	}
+
+	private void UpdateForceLoadedModsListHeight()
+	{
+		const int maximumVisibleRows = 3;
+		const double fallbackRowHeight = 32;
+
+		var visibleRows = Math.Clamp(ForceLoadedModsListView.Items.Count, 1, maximumVisibleRows);
+		var measuredRowsHeight = 0d;
+		for (var index = 0; index < visibleRows; index++)
+		{
+			if (ForceLoadedModsListView.ItemContainerGenerator.ContainerFromIndex(index) is FrameworkElement row)
+				measuredRowsHeight += Math.Max(row.ActualHeight, row.DesiredSize.Height);
+			else
+				measuredRowsHeight += fallbackRowHeight;
+		}
+
+		var horizontalScrollChrome = SystemParameters.HorizontalScrollBarHeight + 3;
+		ForceLoadedModsListView.Height = Math.Ceiling(measuredRowsHeight + horizontalScrollChrome);
 	}
 
 	private IDisposable _updateScroll;
@@ -1389,8 +1418,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ModDetailsToggleButton.Checked += ModDetailsToggleButton_Checked;
 		ModDetailsToggleButton.Unchecked += ModDetailsToggleButton_Unchecked;
 		ModDetailsGridSplitter.DragCompleted += ModDetailsGridSplitter_DragCompleted;
-		ActiveModListViewGridSplitter.DragCompleted += OverrideModsGridSplitter_DragCompleted;
-
 		SetupListView(ActiveModsListView);
 		SetupListView(InactiveModsListView);
 

@@ -94,6 +94,27 @@ public static partial class ReduxCustomIconService
 			}
 
 			var bytes = File.ReadAllBytes(sourcePath);
+			return TryImportBytes(bytes, tint: false, out iconReference, out error);
+		}
+		catch (Exception exception)
+		{
+			DivinityApp.Log($"Failed to import a custom Redux icon: {exception}");
+			error = "Redux could not import that PNG. Check that the file is readable and try again.";
+			return false;
+		}
+	}
+
+	public static bool TryImportBytes(byte[] bytes, bool tint, out string iconReference, out string error)
+	{
+		iconReference = String.Empty;
+		error = String.Empty;
+		try
+		{
+			if (bytes == null || bytes.Length is <= 0 or > MaximumFileBytes)
+			{
+				error = "Choose a PNG smaller than 2 MB.";
+				return false;
+			}
 			if (!TryValidatePng(bytes, out error)) return false;
 
 			var fileName = $"{Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant()}.png";
@@ -114,13 +135,32 @@ public static partial class ReduxCustomIconService
 				}
 			}
 
-			iconReference = ReferencePrefix + fileName;
+			iconReference = (tint ? TintedReferencePrefix : ReferencePrefix) + fileName;
 			return true;
 		}
 		catch (Exception exception)
 		{
-			DivinityApp.Log($"Failed to import a custom Redux icon: {exception}");
-			error = "Redux could not import that PNG. Check that the file is readable and try again.";
+			DivinityApp.Log($"Failed to import a bundled Redux icon: {exception}");
+			error = "Redux could not import that PNG.";
+			return false;
+		}
+	}
+
+	public static bool TryReadBytes(string iconReference, out byte[] bytes)
+	{
+		bytes = null;
+		try
+		{
+			if (!TryResolvePath(iconReference, out var path) || !File.Exists(path)) return false;
+			var file = new FileInfo(path);
+			if (file.Length is <= 0 or > MaximumFileBytes) return false;
+			bytes = File.ReadAllBytes(path);
+			return TryValidatePng(bytes, out _);
+		}
+		catch (Exception exception)
+		{
+			DivinityApp.Log($"Failed to read a custom Redux icon for export: {exception.Message}");
+			bytes = null;
 			return false;
 		}
 	}

@@ -270,6 +270,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool DisableMissingModWarnings { get; set; }
 
 	[DefaultValue(false)]
+	[SettingsEntry("Enable Load Order Advisor", "Show experimental, read-only load-order guidance based on declared dependencies. Disabled by default because valid placement can vary by mod and author instructions should take priority.")]
+	[DataMember, Reactive] public bool EnableLoadOrderAdvisor { get; set; }
+
+	[DefaultValue(false)]
 	[Reactive] public bool DisplayFileNames { get; set; }
 
 	[DefaultValue(false)]

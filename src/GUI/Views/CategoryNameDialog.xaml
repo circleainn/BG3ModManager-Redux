@@ -129,10 +129,12 @@
 			<Grid>
 				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="12" /><RowDefinition Height="Auto" /><RowDefinition Height="12" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 				<Grid.ColumnDefinitions><ColumnDefinition Width="214" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" MinWidth="250" /></Grid.ColumnDefinitions>
-				<Grid x:Name="SpectrumSurface" Width="200" Height="200" HorizontalAlignment="Center" Cursor="Cross"
+				<Grid x:Name="SpectrumSurface" Width="200" Height="200" HorizontalAlignment="Center"
+					Background="Transparent" Cursor="Cross" SnapsToDevicePixels="True"
 					AutomationProperties.Name="Hue color ring"
 					MouseLeftButtonDown="Spectrum_MouseLeftButtonDown" MouseMove="Spectrum_MouseMove" MouseLeftButtonUp="ColorSurface_MouseLeftButtonUp">
-					<Image x:Name="ColorWheelImage" Width="198" Height="198" Stretch="Fill" IsHitTestVisible="False">
+					<Image x:Name="ColorWheelImage" Width="198" Height="198" Stretch="Fill"
+						IsHitTestVisible="False" RenderOptions.BitmapScalingMode="HighQuality">
 						<Image.Clip>
 							<GeometryGroup FillRule="EvenOdd">
 								<EllipseGeometry Center="99,99" RadiusX="98" RadiusY="98" />
@@ -140,10 +142,10 @@
 							</GeometryGroup>
 						</Image.Clip>
 					</Image>
-					<Border Width="112" Height="112" HorizontalAlignment="Center" VerticalAlignment="Center"
+					<Border Width="120" Height="120" HorizontalAlignment="Center" VerticalAlignment="Center"
 						Background="{Binding Background, ElementName=SelectedColorPreview}"
-						BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1.5"
-						CornerRadius="56" IsHitTestVisible="False">
+						BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1"
+						CornerRadius="60" IsHitTestVisible="False">
 						<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
 							<TextBlock HorizontalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.10}"
 								Foreground="{DynamicResource ReduxAccentForegroundBrush}" Text="SELECTED" />
@@ -152,9 +154,9 @@
 								Text="{Binding Text, ElementName=HexColorTextBox}" />
 						</StackPanel>
 					</Border>
-					<Ellipse x:Name="SpectrumMarker" Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Top"
-						Fill="Transparent" Stroke="White" StrokeThickness="2" IsHitTestVisible="False">
-						<Ellipse.Effect><DropShadowEffect BlurRadius="3" ShadowDepth="0" Opacity="0.8" Color="#FF111018" /></Ellipse.Effect>
+					<Ellipse x:Name="SpectrumMarker" Width="11" Height="11" HorizontalAlignment="Left" VerticalAlignment="Top"
+						Fill="{DynamicResource ReduxSurfaceBrush}" Stroke="White" StrokeThickness="2" IsHitTestVisible="False">
+						<Ellipse.Effect><DropShadowEffect BlurRadius="2" ShadowDepth="0" Opacity="0.7" Color="#FF111018" /></Ellipse.Effect>
 					</Ellipse>
 				</Grid>
 				<xctk:ColorCanvas x:Name="CategoryColorPicker" Visibility="Collapsed" UsingAlphaChannel="False" SelectedColorChanged="CategoryColorPicker_SelectedColorChanged" />
@@ -212,7 +214,7 @@
 						</StackPanel>
 						<StackPanel Grid.Column="1" VerticalAlignment="Center">
 							<WrapPanel>
-								<ComboBox x:Name="CategoryIconComboBox" Width="80" SelectedValuePath="Id" MaxDropDownHeight="420"
+								<ComboBox x:Name="CategoryIconComboBox" Width="62" SelectedValuePath="Id" MaxDropDownHeight="420"
 									ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
 									SelectionChanged="CategoryIconComboBox_SelectionChanged">
 									<ComboBox.ItemsPanel><ItemsPanelTemplate><UniformGrid Width="380" Columns="10" Margin="6" IsItemsHost="True" /></ItemsPanelTemplate></ComboBox.ItemsPanel>

@@ -405,7 +405,10 @@
 			<StackPanel Margin="0" HorizontalAlignment="Left" Orientation="Horizontal">
 				<Button x:Name="SaveSettingsButton" Style="{StaticResource SettingsPrimaryActionButtonStyle}" ToolTip="Save all Preferences now (Ctrl+S)">
 					<StackPanel Margin="0" Orientation="Horizontal">
-						<controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Save}" />
+						<controls:ReduxIcon
+							Margin="0,0,6,0"
+							Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+							StrokeData="{StaticResource Redux.Icon.Save}" />
 						<TextBlock Text="Save Preferences" />
 					</StackPanel>
 				</Button>

@@ -1,6 +1,7 @@
 
 
 using DivinityModManager.Models.Github;
+using DivinityModManager.Models.Health;
 using DivinityModManager.Models.Metadata;
 using DivinityModManager.Models.Modio;
 using DivinityModManager.Models.NexusMods;
@@ -40,6 +41,7 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 
 	[Reactive] public string ModType { get; set; }
 	[Reactive] public bool IsNewlyDetected { get; set; }
+	[Reactive] public ModHealthSnapshot HealthSnapshot { get; set; }
 	[Reactive] public string DisplayCategory { get; set; }
 	[Reactive] public List<ModCategoryDisplayData> DisplayCategories { get; set; } = new();
 	[Reactive] public int SourceComponentCount { get; set; } = 1;

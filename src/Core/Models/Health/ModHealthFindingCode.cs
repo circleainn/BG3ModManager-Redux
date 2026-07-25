@@ -7,6 +7,7 @@ public enum ModHealthFindingCode
 {
 	MissingDependency,
 	InactiveDependency,
+	DependencyLoadsLater,
 	InvalidUuid,
 	DuplicateUuid,
 	ScriptExtenderUnavailable,

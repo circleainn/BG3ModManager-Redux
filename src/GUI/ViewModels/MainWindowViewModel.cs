@@ -167,10 +167,21 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public ObservableCollectionExtended<DivinityModData> InactiveMods => _inactiveMods;
 	private readonly ModHealthAnalyzer _modHealthAnalyzer = new();
 	private readonly ObservableCollectionExtended<ModHealthSnapshot> _modHealthSnapshotItems = new();
+	private readonly ObservableCollectionExtended<ModHealthSnapshot> _activeModHealthAttentionItems = new();
 	private IReadOnlyList<DivinityModData> _lastDetectedDuplicateMods = Array.Empty<DivinityModData>();
 	private IDisposable _modHealthRefreshTask;
 	private string _lastModHealthDiagnosticSignature = String.Empty;
+	private string _lastLoadOrderAdvisorDiagnosticSignature;
 	public ReadOnlyObservableCollection<ModHealthSnapshot> ModHealthSnapshots { get; }
+	public ReadOnlyObservableCollection<ModHealthSnapshot> ActiveModHealthAttentionSnapshots { get; }
+	[Reactive] public bool HasActiveModHealthAttention { get; set; }
+	[Reactive] public bool HasActiveModHealthErrors { get; set; }
+	[Reactive] public string ActiveModHealthSummaryText { get; set; } = String.Empty;
+	[Reactive] public bool IsLoadOrderAdvisorDebugVisible { get; set; }
+	[Reactive] public bool LoadOrderAdvisorDebugHasWarnings { get; set; }
+	[Reactive] public string LoadOrderAdvisorDebugText { get; set; } = "Advisor clear";
+	[Reactive] public string LoadOrderAdvisorDebugTooltip { get; set; } =
+		"Debug indicator: the Load Order Advisor completed without finding a reversed declared dependency.";
 	public ObservableCollectionExtended<DivinityModData> DisplayActiveMods { get; } = new();
 	public ObservableCollectionExtended<DivinityModData> DisplayInactiveMods { get; } = new();
 	private bool _updatingVisualModLists;
@@ -4589,7 +4600,7 @@ Directory the zip will be extracted to:
 						SelectedModOrder.SetOrder(newOrder);
 						if (LoadModOrder(SelectedModOrder))
 						{
-							ShowAlert($"Successfully overwrote order '{SelectedModOrder.Name}' with with imported order", AlertType.Success, 20);
+							ShowAlert($"Successfully overwrote order '{SelectedModOrder.Name}' with the imported order.", AlertType.Success, 20);
 						}
 						else
 						{
@@ -4614,6 +4625,597 @@ Directory the zip will be extracted to:
 			{
 				ShowAlert($"Failed to import order from '{dialog.FileName}'", AlertType.Danger, 60);
 			}
+		}
+	}
+
+	private static string NormalizeReduxBundleColor(string color, string fallback = "#8A6AF1") =>
+		Regex.IsMatch(color ?? String.Empty, "^#[0-9A-Fa-f]{6}$")
+			? color.ToUpperInvariant()
+			: fallback;
+
+	private string PrepareReduxBundleIconForExport(string iconId, ReduxLoadOrderPresentation presentation,
+		IDictionary<string, byte[]> assets)
+	{
+		var normalized = ReduxIconCatalog.Normalize(iconId);
+		if (!ReduxCustomIconService.IsCustomReference(normalized)) return normalized;
+		if (!ReduxCustomIconService.TryReadBytes(normalized, out var bytes)) return String.Empty;
+
+		var separatorIndex = normalized.LastIndexOf(':');
+		if (separatorIndex < 0 || separatorIndex >= normalized.Length - 1) return String.Empty;
+		var assetPath = $"assets/{Path.GetFileName(normalized[(separatorIndex + 1)..])}";
+		presentation.CustomIconAssets[normalized] = assetPath;
+		assets[assetPath] = bytes;
+		return normalized;
+	}
+
+	private List<ReduxLoadOrderDivider> BuildReduxBundleDividers(ReduxLoadOrderPresentation presentation,
+		IDictionary<string, byte[]> assets)
+	{
+		var dividers = (Settings.VisualModListDividers ?? new List<ModListVisualDividerData>())
+			.Where(divider => divider.IsActiveList)
+			.OrderBy(divider => divider.Position)
+			.ToList();
+		var sequence = ActiveMods
+			.Select(mod => (Mod: mod, Divider: (ModListVisualDividerData)null))
+			.ToList();
+		foreach (var divider in dividers)
+		{
+			sequence.Insert(Math.Clamp(divider.Position, 0, sequence.Count), (null, divider));
+		}
+
+		var exported = new List<ReduxLoadOrderDivider>();
+		foreach (var divider in dividers)
+		{
+			var visualIndex = sequence.FindIndex(item => ReferenceEquals(item.Divider, divider));
+			if (visualIndex < 0) continue;
+			var before = sequence.Skip(visualIndex + 1).FirstOrDefault(item => item.Mod != null).Mod;
+			var after = sequence.Take(visualIndex).LastOrDefault(item => item.Mod != null).Mod;
+			exported.Add(new ReduxLoadOrderDivider
+			{
+				Title = divider.Title?.Trim() ?? String.Empty,
+				Color = NormalizeReduxBundleColor(divider.Color),
+				IconId = PrepareReduxBundleIconForExport(divider.IconId, presentation, assets),
+				IsCollapsed = divider.IsCollapsed,
+				FallbackPosition = sequence.Take(visualIndex).Count(item => item.Mod != null),
+				BeforeModUuid = before?.UUID ?? String.Empty,
+				AfterModUuid = after?.UUID ?? String.Empty
+			});
+		}
+		return exported;
+	}
+
+	private void ExportReduxLoadOrder()
+	{
+		var orderEntries = ActiveMods
+			.Where(mod => mod != null && !mod.IsVisualDivider)
+			.Select(mod => mod.ToOrderEntry())
+			.ToList();
+		if (orderEntries.Count == 0)
+		{
+			ShowAlert("The active load order is empty.", AlertType.Warning, 10);
+			return;
+		}
+
+		var orderName = String.IsNullOrWhiteSpace(SelectedModOrder?.Name)
+			? "Redux Load Order"
+			: SelectedModOrder.Name.Trim();
+		var loadOrder = new DivinityLoadOrder
+		{
+			Name = orderName,
+			Order = orderEntries
+		};
+		var presentation = new ReduxLoadOrderPresentation
+		{
+			LoadOrderName = orderName,
+			OrderedModUuids = loadOrder.Order.Select(entry => entry.UUID).ToList(),
+			CreatorVersion = DivinityApp.REDUX_DISPLAY_VERSION,
+			CreatorInternalVersion = DivinityApp.REDUX_INTERNAL_VERSION
+		};
+		var assets = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+
+		foreach (var category in Settings.CustomModCategories ?? Enumerable.Empty<string>())
+		{
+			if (String.IsNullOrWhiteSpace(category)) continue;
+			presentation.CustomCategories.Add(new ReduxLoadOrderCategory
+			{
+				Name = category.Trim(),
+				Color = GetCategoryColor(category),
+				IconId = PrepareReduxBundleIconForExport(GetCategoryIcon(category), presentation, assets)
+			});
+		}
+		presentation.CustomCategoryDisplayOrder = (Settings.ModCategoryDisplayOrder ?? new List<string>())
+			.Where(category => presentation.CustomCategories.Any(item =>
+				item.Name.Equals(category, StringComparison.OrdinalIgnoreCase)))
+			.Distinct(StringComparer.OrdinalIgnoreCase)
+			.ToList();
+		foreach (var entry in loadOrder.Order)
+		{
+			if (Settings.ModCategoryAssignments?.TryGetValue(entry.UUID, out var categories) == true &&
+				categories?.Count > 0)
+			{
+				presentation.CategoryAssignments[entry.UUID] = categories
+					.Where(category => !String.IsNullOrWhiteSpace(category))
+					.Distinct(StringComparer.OrdinalIgnoreCase)
+					.ToList();
+			}
+		}
+		presentation.Dividers = BuildReduxBundleDividers(presentation, assets);
+		var unavailableCustomIconCount = (Settings.CustomModCategories ?? Enumerable.Empty<string>())
+			.Select(GetCategoryIcon)
+			.Concat((Settings.VisualModListDividers ?? new List<ModListVisualDividerData>())
+				.Where(divider => divider.IsActiveList)
+				.Select(divider => divider.IconId))
+			.Where(ReduxCustomIconService.IsCustomReference)
+			.Distinct(StringComparer.OrdinalIgnoreCase)
+			.Count(icon =>
+			{
+				var normalized = ReduxCustomIconService.NormalizeReference(icon);
+				return String.IsNullOrWhiteSpace(normalized) ||
+					!presentation.CustomIconAssets.ContainsKey(normalized);
+			});
+
+		var reviewWindow = new ReduxLoadOrderExportWindow(
+			Window,
+			orderName,
+			loadOrder.Order.Count,
+			presentation.CustomCategories.Count,
+			presentation.Dividers.Count,
+			presentation.CustomIconAssets.Count,
+			unavailableCustomIconCount);
+		reviewWindow.ShowDialog();
+		if (!reviewWindow.Accepted) return;
+
+		var dialog = new SaveFileDialog
+		{
+			AddExtension = true,
+			DefaultExt = ReduxLoadOrderBundleService.FileExtension,
+			Filter = "Redux bundle (*.bg3redux)|*.bg3redux",
+			Title = "Export Redux Bundle...",
+			InitialDirectory = GetInitialStartingDirectory(GetOrdersDirectory()),
+			FileName = DivinityModDataLoader.MakeSafeFilename($"{orderName}{ReduxLoadOrderBundleService.FileExtension}", '_'),
+			OverwritePrompt = true
+		};
+		if (dialog.ShowDialog(Window) != true) return;
+
+		if (ReduxLoadOrderBundleService.TryExport(dialog.FileName, loadOrder, presentation, assets, out var error))
+		{
+			DivinityApp.Log(
+				$"[ReduxBundle] Exported '{dialog.FileName}': {loadOrder.Order.Count} mod(s), " +
+				$"{presentation.CustomCategories.Count} custom categories, {presentation.Dividers.Count} separator(s), " +
+				$"{presentation.CustomIconAssets.Count} custom icon(s), creator {presentation.CreatorVersion} " +
+				$"({presentation.CreatorInternalVersion}).");
+			ShowAlert($"Exported Redux bundle '{Path.GetFileName(dialog.FileName)}'.", AlertType.Success, 15);
+			if (reviewWindow.OpenContainingFolder)
+			{
+				try
+				{
+					Process.Start(new ProcessStartInfo
+					{
+						FileName = "explorer.exe",
+						Arguments = $"/select,\"{dialog.FileName}\"",
+						UseShellExecute = true
+					});
+				}
+				catch (Exception exception)
+				{
+					DivinityApp.Log($"[ReduxBundle] Could not open the exported bundle location: {exception}");
+				}
+			}
+		}
+		else
+		{
+			ShowAlert(error, AlertType.Danger, 30);
+		}
+	}
+
+	private static string GetUniqueImportedCategoryName(string requestedName, ISet<string> existingNames)
+	{
+		const int maximumLength = 80;
+		var baseName = String.IsNullOrWhiteSpace(requestedName) ? "Imported Category" : requestedName.Trim();
+		if (baseName.Length > maximumLength) baseName = baseName[..maximumLength].TrimEnd();
+		var suffixNumber = 1;
+		while (true)
+		{
+			var suffix = suffixNumber == 1 ? " (Imported)" : $" (Imported {suffixNumber})";
+			var availableLength = Math.Max(1, maximumLength - suffix.Length);
+			var candidate = $"{baseName[..Math.Min(baseName.Length, availableLength)].TrimEnd()}{suffix}";
+			if (!existingNames.Contains(candidate)) return candidate;
+			suffixNumber++;
+		}
+	}
+
+	private Dictionary<string, string> ImportReduxBundleIcons(ReduxLoadOrderBundleContents contents,
+		ICollection<string> warnings)
+	{
+		var imported = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		foreach (var asset in contents.Presentation.CustomIconAssets)
+		{
+			var error = String.Empty;
+			var localReference = String.Empty;
+			var importedSuccessfully = contents.Assets.TryGetValue(asset.Value, out var bytes) &&
+				ReduxCustomIconService.TryImportBytes(bytes, ReduxCustomIconService.IsTintedReference(asset.Key),
+					out localReference, out error);
+			if (!importedSuccessfully)
+			{
+				imported[asset.Key] = String.Empty;
+				warnings.Add(String.IsNullOrWhiteSpace(error)
+					? "One custom icon could not be restored."
+					: error);
+				continue;
+			}
+			imported[asset.Key] = localReference;
+		}
+		return imported;
+	}
+
+	private static string ResolveReduxBundleIcon(string iconId, IReadOnlyDictionary<string, string> importedIcons)
+	{
+		if (ReduxCustomIconService.IsCustomReference(iconId))
+			return importedIcons.TryGetValue(iconId, out var imported) ? imported : String.Empty;
+		return ReduxIconCatalog.Normalize(iconId);
+	}
+
+	private static string NormalizeReduxBundleIconForComparison(string iconId) =>
+		ReduxCustomIconService.IsCustomReference(iconId)
+			? iconId?.Trim() ?? String.Empty
+			: ReduxIconCatalog.Normalize(iconId);
+
+	private int ResolveReduxBundleDividerPosition(ReduxLoadOrderDivider divider,
+		IList<ModListVisualDividerData> proposedDividers)
+	{
+		var sequence = ActiveMods
+			.Select(mod => (ModUuid: mod.UUID, IsDivider: false))
+			.ToList();
+		foreach (var existing in proposedDividers.Where(item => item.IsActiveList).OrderBy(item => item.Position))
+		{
+			sequence.Insert(Math.Clamp(existing.Position, 0, sequence.Count), (String.Empty, true));
+		}
+
+		if (!String.IsNullOrWhiteSpace(divider.BeforeModUuid))
+		{
+			var beforeIndex = sequence.FindIndex(item => !item.IsDivider &&
+				item.ModUuid.Equals(divider.BeforeModUuid, StringComparison.OrdinalIgnoreCase));
+			if (beforeIndex >= 0) return beforeIndex;
+		}
+		if (!String.IsNullOrWhiteSpace(divider.AfterModUuid))
+		{
+			var afterIndex = sequence.FindIndex(item => !item.IsDivider &&
+				item.ModUuid.Equals(divider.AfterModUuid, StringComparison.OrdinalIgnoreCase));
+			if (afterIndex >= 0) return afterIndex + 1;
+		}
+
+		var requestedRealPosition = Math.Clamp(divider.FallbackPosition, 0, ActiveMods.Count);
+		if (requestedRealPosition >= ActiveMods.Count) return sequence.Count;
+		var fallbackUuid = ActiveMods[requestedRealPosition].UUID;
+		var fallbackIndex = sequence.FindIndex(item => !item.IsDivider &&
+			item.ModUuid.Equals(fallbackUuid, StringComparison.OrdinalIgnoreCase));
+		return fallbackIndex >= 0 ? fallbackIndex : sequence.Count;
+	}
+
+	private bool ImportReduxBundlePresentation(ReduxLoadOrderBundleContents contents, ICollection<string> warnings)
+	{
+		var presentation = contents.Presentation;
+		var importedIcons = ImportReduxBundleIcons(contents, warnings);
+
+		var customCategories = (Settings.CustomModCategories ?? new List<string>()).ToList();
+		var displayOrder = (Settings.ModCategoryDisplayOrder ?? new List<string>()).ToList();
+		var colors = new Dictionary<string, string>(
+			Settings.ModCategoryColors ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
+		var icons = new Dictionary<string, string>(
+			Settings.ModCategoryIcons ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
+		var assignments = (Settings.ModCategoryAssignments ?? new Dictionary<string, List<string>>())
+			.ToDictionary(entry => entry.Key, entry => entry.Value?.ToList() ?? new List<string>(),
+				StringComparer.OrdinalIgnoreCase);
+		var dividers = (Settings.VisualModListDividers ?? new List<ModListVisualDividerData>())
+			.Select(item => new ModListVisualDividerData
+			{
+				Id = item.Id,
+				Title = item.Title,
+				Color = item.Color,
+				IconId = item.IconId,
+				IsActiveList = item.IsActiveList,
+				Position = item.Position,
+				IsCollapsed = item.IsCollapsed
+			})
+			.ToList();
+
+		var existingNames = GetAllModCategories().ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var categoryMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		foreach (var importedCategory in presentation.CustomCategories)
+		{
+			var requestedName = importedCategory.Name?.Trim();
+			if (String.IsNullOrWhiteSpace(requestedName)) continue;
+			var importedColor = NormalizeReduxBundleColor(importedCategory.Color);
+			var importedIcon = ResolveReduxBundleIcon(importedCategory.IconId, importedIcons);
+			var matchingCustom = customCategories.FirstOrDefault(category =>
+				category.Equals(requestedName, StringComparison.OrdinalIgnoreCase));
+
+			string effectiveName;
+			if (matchingCustom != null &&
+				String.Equals(GetCategoryColor(matchingCustom), importedColor, StringComparison.OrdinalIgnoreCase) &&
+				String.Equals(GetCategoryIcon(matchingCustom), importedIcon, StringComparison.OrdinalIgnoreCase))
+			{
+				effectiveName = matchingCustom;
+			}
+			else if (existingNames.Contains(requestedName))
+			{
+				effectiveName = GetUniqueImportedCategoryName(requestedName, existingNames);
+			}
+			else
+			{
+				effectiveName = requestedName.Length > 80 ? requestedName[..80].TrimEnd() : requestedName;
+				if (existingNames.Contains(effectiveName))
+					effectiveName = GetUniqueImportedCategoryName(effectiveName, existingNames);
+			}
+
+			if (!customCategories.Contains(effectiveName, StringComparer.OrdinalIgnoreCase))
+				customCategories.Add(effectiveName);
+			existingNames.Add(effectiveName);
+			colors[effectiveName] = importedColor;
+			icons[effectiveName] = importedIcon;
+			categoryMap[requestedName] = effectiveName;
+		}
+
+		foreach (var importedName in presentation.CustomCategoryDisplayOrder)
+		{
+			if (categoryMap.TryGetValue(importedName, out var effectiveName) &&
+				!displayOrder.Contains(effectiveName, StringComparer.OrdinalIgnoreCase))
+			{
+				displayOrder.Add(effectiveName);
+			}
+		}
+		foreach (var effectiveName in categoryMap.Values)
+		{
+			if (!displayOrder.Contains(effectiveName, StringComparer.OrdinalIgnoreCase))
+				displayOrder.Add(effectiveName);
+		}
+
+		var knownCategories = existingNames;
+		foreach (var assignment in presentation.CategoryAssignments)
+		{
+			var mapped = new List<string>();
+			foreach (var categoryValue in assignment.Value ?? new List<string>())
+			{
+				var category = categoryValue;
+				if (category.Equals(NoCategoryAssignment, StringComparison.OrdinalIgnoreCase))
+				{
+					mapped.Clear();
+					mapped.Add(NoCategoryAssignment);
+					break;
+				}
+				if (categoryMap.TryGetValue(category, out var mappedCategory))
+					category = mappedCategory;
+				if (knownCategories.Contains(category) &&
+					!mapped.Contains(category, StringComparer.OrdinalIgnoreCase))
+					mapped.Add(category);
+			}
+			if (mapped.Count > 0) assignments[assignment.Key] = mapped;
+		}
+
+		foreach (var importedDivider in presentation.Dividers)
+		{
+			var position = ResolveReduxBundleDividerPosition(importedDivider, dividers);
+			foreach (var existing in dividers.Where(item => item.IsActiveList && item.Position >= position))
+				existing.Position++;
+			dividers.Add(new ModListVisualDividerData
+			{
+				Id = Guid.NewGuid().ToString("N"),
+				Title = importedDivider.Title?.Trim() ?? String.Empty,
+				Color = NormalizeReduxBundleColor(importedDivider.Color),
+				IconId = ResolveReduxBundleIcon(importedDivider.IconId, importedIcons),
+				IsActiveList = true,
+				Position = position,
+				IsCollapsed = importedDivider.IsCollapsed
+			});
+		}
+
+		var previousCustomCategories = Settings.CustomModCategories;
+		var previousDisplayOrder = Settings.ModCategoryDisplayOrder;
+		var previousColors = Settings.ModCategoryColors;
+		var previousIcons = Settings.ModCategoryIcons;
+		var previousAssignments = Settings.ModCategoryAssignments;
+		var previousDividers = Settings.VisualModListDividers;
+		try
+		{
+			Settings.CustomModCategories = customCategories
+				.Distinct(StringComparer.OrdinalIgnoreCase)
+				.OrderBy(category => category, StringComparer.CurrentCultureIgnoreCase)
+				.ToList();
+			Settings.ModCategoryDisplayOrder = displayOrder.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+			Settings.ModCategoryColors = colors;
+			Settings.ModCategoryIcons = icons;
+			Settings.ModCategoryAssignments = assignments;
+			Settings.VisualModListDividers = dividers;
+			if (!SaveSettings()) throw new IOException("Redux could not save the imported presentation.");
+			RefreshModCategories();
+			RefreshVisualDividers();
+			return true;
+		}
+		catch (Exception exception)
+		{
+			Settings.CustomModCategories = previousCustomCategories;
+			Settings.ModCategoryDisplayOrder = previousDisplayOrder;
+			Settings.ModCategoryColors = previousColors;
+			Settings.ModCategoryIcons = previousIcons;
+			Settings.ModCategoryAssignments = previousAssignments;
+			Settings.VisualModListDividers = previousDividers;
+			DivinityApp.Log($"Failed to import Redux presentation: {exception}");
+			return false;
+		}
+	}
+
+	private string GetUniqueImportedOrderName(string requestedName)
+	{
+		var baseName = String.IsNullOrWhiteSpace(requestedName) ? "Imported Redux Order" : requestedName.Trim();
+		if (baseName.Length > 100) baseName = baseName[..100].TrimEnd();
+		var existingNames = ModOrderList.Select(order => order.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+		if (!existingNames.Contains(baseName)) return baseName;
+		var number = 1;
+		while (true)
+		{
+			var suffix = number == 1 ? " (Imported)" : $" (Imported {number})";
+			var availableLength = Math.Max(1, 100 - suffix.Length);
+			var candidate = $"{baseName[..Math.Min(baseName.Length, availableLength)].TrimEnd()}{suffix}";
+			if (!existingNames.Contains(candidate)) return candidate;
+			number++;
+		}
+	}
+
+	private bool ImportReduxBundleOrder(DivinityLoadOrder bundledOrder, out DivinityLoadOrder importedOrder)
+	{
+		importedOrder = null;
+		try
+		{
+			var name = GetUniqueImportedOrderName(bundledOrder.Name);
+			var order = new DivinityLoadOrder
+			{
+				Name = name,
+				Order = bundledOrder.Order.Select(entry => entry.Clone()).ToList()
+			};
+			var ordersDirectory = GetOrdersDirectory();
+			var fileName = DivinityModDataLoader.MakeSafeFilename($"{name}.json", '_');
+			var outputPath = Path.Combine(ordersDirectory, fileName);
+			var number = 2;
+			while (File.Exists(outputPath))
+			{
+				fileName = DivinityModDataLoader.MakeSafeFilename($"{name} {number}.json", '_');
+				outputPath = Path.Combine(ordersDirectory, fileName);
+				number++;
+			}
+			order.FilePath = outputPath;
+			var json = JsonConvert.SerializeObject(order, Formatting.Indented);
+			AtomicFileWriter.WriteAllText(outputPath, json, validateTemporaryFile: temporaryPath =>
+				JsonConvert.DeserializeObject<DivinityLoadOrder>(File.ReadAllText(temporaryPath))?.Order != null);
+			AddNewModOrder(order);
+			LoadModOrder(order);
+			importedOrder = order;
+			return true;
+		}
+		catch (Exception exception)
+		{
+			DivinityApp.Log($"Failed to import bundled Redux order: {exception}");
+			return false;
+		}
+	}
+
+	private void ImportReduxLoadOrder()
+	{
+		var dialog = new OpenFileDialog
+		{
+			CheckFileExists = true,
+			CheckPathExists = true,
+			DefaultExt = ReduxLoadOrderBundleService.FileExtension,
+			Filter = "Redux bundle (*.bg3redux)|*.bg3redux",
+			Title = "Import Redux Bundle...",
+			InitialDirectory = GetInitialStartingDirectory(GetOrdersDirectory())
+		};
+		if (dialog.ShowDialog(Window) != true) return;
+		if (!ReduxLoadOrderBundleService.TryRead(dialog.FileName, out var contents, out var readError))
+		{
+			ShowAlert(readError, AlertType.Danger, 30);
+			return;
+		}
+		DivinityApp.Log(
+			$"[ReduxBundle] Validated '{dialog.FileName}': schema {contents.Presentation.SchemaVersion}, " +
+			$"{contents.LoadOrder.Order.Count} mod(s), {contents.Presentation.CustomCategories.Count} custom categories, " +
+			$"{contents.Presentation.Dividers.Count} separator(s), {contents.Presentation.CustomIconAssets.Count} custom icon(s), " +
+			$"creator {contents.Presentation.CreatorVersion} ({contents.Presentation.CreatorInternalVersion}), " +
+			$"exported {contents.Presentation.ExportedAtUtc:O}.");
+
+		var installedUuids = ActiveMods
+			.Concat(InactiveMods)
+			.Where(mod => !String.IsNullOrWhiteSpace(mod.UUID))
+			.Select(mod => mod.UUID)
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var missingModNames = contents.LoadOrder.Order
+			.Where(entry => !installedUuids.Contains(entry.UUID))
+			.Select(entry => String.IsNullOrWhiteSpace(entry.Name) ? entry.UUID : entry.Name.Trim())
+			.ToList();
+		var existingCategories = GetAllModCategories().ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var customCategories = (Settings.CustomModCategories ?? new List<string>())
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var categoryConflictNames = contents.Presentation.CustomCategories
+			.Where(category =>
+			{
+				if (!existingCategories.Contains(category.Name)) return false;
+				if (!customCategories.Contains(category.Name)) return true;
+				return !String.Equals(
+						GetCategoryColor(category.Name),
+						NormalizeReduxBundleColor(category.Color),
+						StringComparison.OrdinalIgnoreCase) ||
+					!String.Equals(
+						GetCategoryIcon(category.Name),
+						NormalizeReduxBundleIconForComparison(category.IconId),
+						StringComparison.OrdinalIgnoreCase);
+			})
+			.Select(category => category.Name)
+			.ToList();
+
+		var importWindow = new ReduxLoadOrderImportWindow(
+			Window,
+			contents,
+			missingModNames,
+			categoryConflictNames);
+		importWindow.ShowDialog();
+		if (!importWindow.Accepted) return;
+
+		var orderImported = !importWindow.ImportLoadOrder;
+		var presentationImported = !importWindow.ImportPresentation;
+		DivinityLoadOrder importedOrder = null;
+		if (importWindow.ImportLoadOrder)
+			orderImported = ImportReduxBundleOrder(contents.LoadOrder, out importedOrder);
+
+		var warnings = new List<string>();
+		if (importWindow.ImportPresentation)
+			presentationImported = ImportReduxBundlePresentation(contents, warnings);
+		foreach (var warning in warnings)
+			DivinityApp.Log($"[ReduxBundle][Warning] {warning}");
+
+		var importedParts = new List<string>();
+		var failedParts = new List<string>();
+		if (importWindow.ImportLoadOrder)
+		{
+			if (orderImported)
+				importedParts.Add($"saved order '{importedOrder?.Name ?? contents.LoadOrder.Name}'");
+			else
+				failedParts.Add("the saved order");
+		}
+		if (importWindow.ImportPresentation)
+		{
+			if (presentationImported)
+				importedParts.Add("categories and separators");
+			else
+				failedParts.Add("categories and separators");
+		}
+
+		if (failedParts.Count == 0)
+		{
+			var warningSuffix = warnings.Count > 0
+				? $" {warnings.Count} custom icon{(warnings.Count == 1 ? String.Empty : "s")} used the default marker."
+				: String.Empty;
+			ShowAlert(
+				$"Imported {String.Join(" and ", importedParts)}.{warningSuffix}",
+				warnings.Count > 0 ? AlertType.Warning : AlertType.Success,
+				20);
+			DivinityApp.Log($"[ReduxBundle] Import completed: {String.Join(" and ", importedParts)}.");
+		}
+		else if (importedParts.Count > 0)
+		{
+			ShowAlert(
+				$"Imported {String.Join(" and ", importedParts)}, but Redux could not import {String.Join(" and ", failedParts)}. Check the log for details.",
+				AlertType.Warning,
+				30);
+			DivinityApp.Log(
+				$"[ReduxBundle] Import partially completed. Succeeded: {String.Join(", ", importedParts)}. " +
+				$"Failed: {String.Join(", ", failedParts)}.");
+		}
+		else
+		{
+			ShowAlert(
+				$"Redux could not import {String.Join(" or ", failedParts)}. Check the log for details.",
+				AlertType.Danger,
+				30);
+			DivinityApp.Log($"[ReduxBundle] Import failed: {String.Join(", ", failedParts)}.");
 		}
 	}
 
@@ -6247,9 +6849,48 @@ Directory the zip will be extracted to:
 
 	private void RecomputeModHealthSnapshots()
 	{
-		var snapshots = _modHealthAnalyzer.AnalyzeAll(mods.Items, ActiveMods, _lastDetectedDuplicateMods);
+		var snapshots = _modHealthAnalyzer.AnalyzeAll(
+			mods.Items,
+			ActiveMods,
+			_lastDetectedDuplicateMods,
+			Settings.EnableLoadOrderAdvisor);
+		foreach (var snapshot in snapshots)
+		{
+			snapshot.Mod.HealthSnapshot = snapshot;
+		}
 		_modHealthSnapshotItems.Clear();
 		_modHealthSnapshotItems.AddRange(snapshots);
+
+		var activeModUuids = ActiveMods
+			.Select(mod => mod.UUID)
+			.Where(uuid => !String.IsNullOrWhiteSpace(uuid))
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var activeAttentionSnapshots = snapshots
+			.Where(snapshot => snapshot.NeedsAttention && activeModUuids.Contains(snapshot.Mod.UUID))
+			.OrderByDescending(snapshot => snapshot.HighestSeverity)
+			.ThenBy(snapshot => snapshot.Mod.Index)
+			.ToArray();
+		_activeModHealthAttentionItems.Clear();
+		_activeModHealthAttentionItems.AddRange(activeAttentionSnapshots);
+		HasActiveModHealthAttention = activeAttentionSnapshots.Length > 0;
+		HasActiveModHealthErrors = activeAttentionSnapshots.Any(snapshot => snapshot.HasErrors);
+		ActiveModHealthSummaryText = activeAttentionSnapshots.Length == 1
+			? "1 mod needs attention"
+			: $"{activeAttentionSnapshots.Length} mods need attention";
+		var advisorWarningCount = snapshots.Sum(snapshot =>
+			snapshot.Findings.Count(finding => finding.Code == ModHealthFindingCode.DependencyLoadsLater));
+		IsLoadOrderAdvisorDebugVisible = Settings.DebugModeEnabled;
+		LoadOrderAdvisorDebugHasWarnings = advisorWarningCount > 0;
+		LoadOrderAdvisorDebugText = !Settings.EnableLoadOrderAdvisor
+			? "Advisor off"
+			: advisorWarningCount > 0
+			? $"Advisor: {advisorWarningCount} warning{(advisorWarningCount == 1 ? String.Empty : "s")}"
+			: "Advisor clear";
+		LoadOrderAdvisorDebugTooltip = !Settings.EnableLoadOrderAdvisor
+			? "Debug indicator: the experimental Load Order Advisor is disabled. Enable it in Preferences to evaluate declared dependency placement."
+			: advisorWarningCount > 0
+			? $"Debug indicator: the Load Order Advisor found {advisorWarningCount} reversed declared dependency relationship{(advisorWarningCount == 1 ? String.Empty : "s")}."
+			: "Debug indicator: the Load Order Advisor completed without finding a reversed declared dependency.";
 
 		if (Settings.DebugModeEnabled)
 		{
@@ -6260,10 +6901,21 @@ Directory the zip will be extracted to:
 				_lastModHealthDiagnosticSignature = diagnosticSignature;
 				LogModHealthDiagnostics(snapshots);
 			}
+
+			var advisorDiagnosticSignature = BuildLoadOrderAdvisorDiagnosticSignature(
+				ActiveMods,
+				snapshots,
+				Settings.EnableLoadOrderAdvisor);
+			if (!String.Equals(_lastLoadOrderAdvisorDiagnosticSignature, advisorDiagnosticSignature, StringComparison.Ordinal))
+			{
+				_lastLoadOrderAdvisorDiagnosticSignature = advisorDiagnosticSignature;
+				LogLoadOrderAdvisorDiagnostics(ActiveMods, snapshots, Settings.EnableLoadOrderAdvisor);
+			}
 		}
 		else
 		{
 			_lastModHealthDiagnosticSignature = String.Empty;
+			_lastLoadOrderAdvisorDiagnosticSignature = null;
 		}
 	}
 
@@ -6302,9 +6954,111 @@ Directory the zip will be extracted to:
 		}
 	}
 
+	private static string BuildLoadOrderAdvisorDiagnosticSignature(
+		IEnumerable<DivinityModData> activeMods,
+		IEnumerable<ModHealthSnapshot> snapshots,
+		bool advisorEnabled)
+	{
+		var activeOrder = (activeMods ?? Enumerable.Empty<DivinityModData>())
+			.Where(mod => mod != null && !mod.IsVisualDivider)
+			.Select((mod, position) => $"{position}:{mod.UUID}")
+			.ToArray();
+		var orderFindings = (snapshots ?? Enumerable.Empty<ModHealthSnapshot>())
+			.SelectMany(snapshot => snapshot.Findings
+				.Where(finding => finding.Code == ModHealthFindingCode.DependencyLoadsLater)
+				.Select(finding => $"{snapshot.Mod.UUID}:{String.Join(",", finding.RelatedModUuids)}"))
+			.OrderBy(value => value, StringComparer.OrdinalIgnoreCase);
+		return $"{advisorEnabled}|{String.Join("|", activeOrder)}||{String.Join("|", orderFindings)}";
+	}
+
+	private static void LogLoadOrderAdvisorDiagnostics(
+		IEnumerable<DivinityModData> activeMods,
+		IEnumerable<ModHealthSnapshot> snapshots,
+		bool advisorEnabled)
+	{
+		if (!advisorEnabled)
+		{
+			DivinityApp.Log(
+				"[LoadOrderAdvisor] Disabled. No load-order guidance was evaluated. " +
+				"Enable the experimental advisor in Preferences to inspect declared dependency placement.");
+			return;
+		}
+
+		var active = (activeMods ?? Enumerable.Empty<DivinityModData>())
+			.Where(mod => mod != null && !mod.IsVisualDivider)
+			.ToArray();
+		var activeByUuid = active
+			.Where(mod => !String.IsNullOrWhiteSpace(mod.UUID))
+			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
+			.ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+		var evaluatedRelationships = active.Sum(mod => mod.Dependencies.Items.Count(dependency =>
+			!String.IsNullOrWhiteSpace(dependency.UUID)
+			&& !String.Equals(dependency.UUID, mod.UUID, StringComparison.OrdinalIgnoreCase)
+			&& activeByUuid.TryGetValue(dependency.UUID, out var dependencyMod)
+			&& !dependencyMod.IsForceLoaded
+			&& !dependencyMod.IsLarianMod));
+		var orderFindings = (snapshots ?? Enumerable.Empty<ModHealthSnapshot>())
+			.SelectMany(snapshot => snapshot.Findings
+				.Where(finding => finding.Code == ModHealthFindingCode.DependencyLoadsLater)
+				.Select(finding => (snapshot.Mod, Finding: finding)))
+			.ToArray();
+
+		DivinityApp.Log(
+			$"[LoadOrderAdvisor] Diagnostic pass: {active.Length} active mod(s), " +
+			$"{evaluatedRelationships} declared active dependency relationship(s), " +
+			$"{orderFindings.Length} reversed relationship(s). Read-only; no actions were performed.");
+		var activePositions = active
+			.Select((mod, position) => (mod, position))
+			.Where(entry => !String.IsNullOrWhiteSpace(entry.mod.UUID))
+			.GroupBy(entry => entry.mod.UUID, StringComparer.OrdinalIgnoreCase)
+			.ToDictionary(group => group.Key, group => group.First().position, StringComparer.OrdinalIgnoreCase);
+		foreach (var dependent in active)
+		{
+			if (String.IsNullOrWhiteSpace(dependent.UUID)
+				|| !activePositions.TryGetValue(dependent.UUID, out var dependentPosition))
+			{
+				continue;
+			}
+
+			foreach (var dependency in dependent.Dependencies.Items)
+			{
+				if (String.IsNullOrWhiteSpace(dependency.UUID)
+					|| String.Equals(dependency.UUID, dependent.UUID, StringComparison.OrdinalIgnoreCase)
+					|| !activeByUuid.TryGetValue(dependency.UUID, out var dependencyMod)
+					|| dependencyMod.IsForceLoaded
+					|| dependencyMod.IsLarianMod
+					|| !activePositions.TryGetValue(dependency.UUID, out var dependencyPosition))
+				{
+					continue;
+				}
+
+				var result = dependencyPosition < dependentPosition ? "OK" : "REVERSED";
+				DivinityApp.Log(
+					$"[LoadOrderAdvisor][Relationship][{result}] Dependency='{dependencyMod.DisplayName}' " +
+					$"Position={dependencyPosition} Dependent='{dependent.DisplayName}' Position={dependentPosition}");
+			}
+		}
+		if (orderFindings.Length == 0)
+		{
+			DivinityApp.Log("[LoadOrderAdvisor] Result: no declared active dependencies were found loading later than the mods that require them.");
+			return;
+		}
+
+		foreach (var entry in orderFindings)
+		{
+			var related = entry.Finding.RelatedModUuids.Count > 0
+				? String.Join(", ", entry.Finding.RelatedModUuids)
+				: "none";
+			DivinityApp.Log(
+				$"[LoadOrderAdvisor][Warning] Mod='{entry.Mod.DisplayName}' UUID='{entry.Mod.UUID}' " +
+				$"DependencyUUID='{related}' Message='{entry.Finding.Message.Replace(Environment.NewLine, " ")}'");
+		}
+	}
+
 	public MainWindowViewModel() : base()
 	{
 		ModHealthSnapshots = new ReadOnlyObservableCollection<ModHealthSnapshot>(_modHealthSnapshotItems);
+		ActiveModHealthAttentionSnapshots = new ReadOnlyObservableCollection<ModHealthSnapshot>(_activeModHealthAttentionItems);
 		Services.RegisterSingleton<IModRegistryService>(new ModRegistryService(mods));
 
 		_settings.InitSubscriptions();
@@ -6436,11 +7190,13 @@ Directory the zip will be extracted to:
 
 		var anyActiveObservable = this.WhenAnyValue(x => x.ActiveMods.Count, (c) => c > 0);
 		Keys.ExportOrderToList.AddAction(ExportLoadOrderToTextFileAs, anyActiveObservable);
+		Keys.ExportReduxLoadOrder.AddAction(ExportReduxLoadOrder, anyActiveObservable);
 
 		var canOpenDialogWindow = this.WhenAnyValue(x => x.MainProgressIsActive).Select(x => !x);
 		Keys.ImportOrderFromSave.AddAction(ImportOrderFromSaveToCurrent, canOpenDialogWindow);
 		Keys.ImportOrderFromSaveAsNew.AddAction(ImportOrderFromSaveAsNew, canOpenDialogWindow);
 		Keys.ImportOrderFromFile.AddAction(ImportOrderFromFile, canOpenDialogWindow);
+		Keys.ImportReduxLoadOrder.AddAction(ImportReduxLoadOrder, canOpenDialogWindow);
 		Keys.ImportOrderFromZipFile.AddAction(ImportOrderFromArchive, canOpenDialogWindow);
 
 		Keys.OpenDonationLink.AddAction(() =>
@@ -6693,7 +7449,7 @@ Directory the zip will be extracted to:
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ScheduleModHealthRefresh());
 
-		Settings.WhenAnyValue(x => x.DebugModeEnabled)
+		Settings.WhenAnyValue(x => x.DebugModeEnabled, x => x.EnableLoadOrderAdvisor)
 			.Skip(1)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ScheduleModHealthRefresh());

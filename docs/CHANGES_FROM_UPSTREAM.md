@@ -58,7 +58,7 @@ version `0.1.0-alpha.6`.
   behavior of relative SVG path commands and prevents stray lines or off-canvas artifacts.
 - Curated category-friendly glyphs covering clothing, armor, spells, races, companions, quests,
   weapons, maps, resources, utilities, libraries, patches, overrides, and other BG3 use cases.
-- Official Nexus Mods and mod.io image assets remain in source pills and provider actions instead
+- Official Nexus Mods and mod.io image assets remain in source indicators and provider actions instead
   of being replaced by generic interface glyphs.
 - The official GitHub Invertocat image is bundled separately because Lucide does not provide brand
   logos.
@@ -103,6 +103,30 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 - Presentation-only behavior: separators are never written to `modsettings.lsx` or exported as
   mods.
 
+## Portable Redux bundles
+
+- A Redux-only `.bg3redux` archive format containing a normal saved-order description plus a
+  separately versioned presentation manifest.
+- Optional transfer of custom categories, explicit category assignments, category display order,
+  active-list separators, collapsed states, and reusable custom PNG icons.
+- Choice of importing the saved order, its Redux presentation metadata, or both.
+- A pre-export review summarizing the saved order, custom categories, separators, and custom icons,
+  with an explicit reminder that mod `.pak` files and `modsettings.lsx` are never included and an
+  opt-in action to reveal the finished bundle in File Explorer.
+- Creator-version and export-time metadata, including a compatibility warning when a bundle was
+  created by a newer Redux build while still rejecting unsupported bundle schemas.
+- A pre-import impact summary that reports locally available and missing mods by name, identifies
+  category-name conflicts that will be renamed, and summarizes the presentation contents before
+  either selected component is applied.
+- Conflict-safe custom-category import that preserves an existing local category and gives a
+  differing imported category a unique name instead of overwriting local styling.
+- Separator anchors stored relative to neighboring mod UUIDs, with a validated fallback position
+  when a neighboring mod is unavailable.
+- Size, expanded-size, entry-count, duplicate-entry, path, schema, UUID, color, category-order,
+  and custom-icon cross-reference validation before an archive is accepted.
+- Complete separation from the game export path: Redux bundles never contain or write
+  `modsettings.lsx`.
+
 ## Selected-mod details and hover information
 
 - A resizable bottom details drawer with Overview, Description, Requirements, Files, and Changelog
@@ -120,7 +144,7 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 
 - Nexus Mods and mod.io source identification and metadata presentation.
 - Manual Nexus project linking when automatic association is unavailable.
-- Provider-specific source pills, colors, icons, actions, versions, authors, update dates, files,
+- Provider-specific source indicators, colors, icons, actions, versions, authors, update dates, files,
   requirements, descriptions, and changelogs.
 - A bundled Redux mod database for conservative matching of some pre-existing Nexus installs.
 - Exact installed `.pak` size plus xxHash64 matching.
@@ -144,11 +168,19 @@ See [REDUX_MOD_DATABASE.md](REDUX_MOD_DATABASE.md) for the database schema and m
   order.
 - Missing-mod and dependency reporting.
 - An optional Toolkit project marker for detected editor/project packages.
-- A read-only Mod Health foundation for missing or inactive dependencies, duplicate or invalid
-  UUIDs, Script Extender requirements, declared conflicts, bundled Mod Fixer content, override
-  behavior, and mod.io safety state.
-- No automatic repair, installation, conflict resolution, or load-order reordering. The complete
-  Mod Health tray and Load Order Advisor remain future work.
+- Background Mod Health checks for missing or inactive dependencies, duplicate or invalid UUIDs,
+  Script Extender requirements, confirmed active declared conflicts, bundled Mod Fixer content,
+  override behavior, and mod.io safety state.
+- An opt-in, disabled-by-default Load Order Advisor that can show a conservative read-only warning
+  when an active mod's declared dependency is positioned later in the numbered load order.
+- A compact warning or error pill in the selected-mod Overview when attention is needed, with
+  severity-ranked details in its tooltip. Healthy mods add no extra interface.
+- A load-order-wide Active Mods health summary that appears only when active mods need attention
+  and focuses an affected mod when selected.
+- A compact row-level health indicator for duplicate UUIDs, inactive dependencies, and declared
+  conflicts that otherwise have no dedicated status icon.
+- No automatic repair, installation, conflict resolution, or load-order reordering. Broader
+  category- and compatibility-based load-order recommendations remain future work.
 
 ## Dialogs, warnings, notifications, and help
 
@@ -226,10 +258,23 @@ tracking discussion is [issue #11](https://github.com/raincloudsfollow/BG3ModMan
 - Manager-launched game crashes that do not occur through Steam (#456).
 - "Extension not found" reports that appear to originate from the Script Extender runtime (#461).
 - Application localization (#475).
-- The complete Mod Health tray and Load Order Advisor.
+- Broader category-, compatibility-, and author-rule-based Load Order Advisor guidance beyond the
+  current opt-in declared-dependency placement check.
+- An optional built-in Redux onboarding and feature tour. On first start, Redux should ask
+  "Would you like a tour of Redux and its features?" with clear Yes and No choices; declining must
+  immediately continue into the app without additional prompts. The tour should remain replayable
+  from Help and introduce active/inactive lists, safe exporting, categories and separators, the
+  selected-mod drawer, Mod Health, themes and typography, accessibility tools, source warnings,
+  and Redux-specific import/export without changing the user's load order or files.
 - Public Nexus SSO authentication.
 - Automatic Redux self-updating during the private alpha.
 - Linux, macOS, Wine, Proton, and self-contained .NET deployment are not planned targets.
+
+## Low-priority ideas
+
+- Optional Coolors URL import for custom themes. A future implementation could parse palette colors
+  from a shared `coolors.co` URL, suggest mappings to Redux's semantic theme tokens, preserve
+  accessible status colors by default, and let the user review the result before saving.
 
 ## Compatibility boundaries
 
