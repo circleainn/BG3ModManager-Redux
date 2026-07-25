@@ -1,5 +1,6 @@
 ﻿using DivinityModManager.Models;
 using DivinityModManager.ModUpdater.Cache;
+using DivinityModManager.Models.NexusMods;
 using DivinityModManager.Util;
 
 using Newtonsoft.Json;
@@ -119,9 +120,17 @@ public class ModUpdateHandler : ReactiveObject
 						mod.NexusModsData.Update(nexusData);
 					}
 				}
-				if (Modio.IsEnabled && Modio.CacheData.Mods.TryGetValue(mod.UUID, out var modioData))
+				if (Modio.IsEnabled
+					&& Modio.CacheData.Mods.TryGetValue(mod.UUID, out var modioData))
 				{
-					mod.ModioData.Update(modioData);
+					if (ModioCacheHandler.IsCachedAssociationCompatible(mod, modioData))
+					{
+						mod.ModioData.Update(modioData);
+					}
+					else
+					{
+						Modio.CacheData.Mods.Remove(mod.UUID);
+					}
 				}
 				if (Github.IsEnabled)
 				{

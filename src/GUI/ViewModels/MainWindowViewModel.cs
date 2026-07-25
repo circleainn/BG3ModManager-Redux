@@ -1199,6 +1199,9 @@ Directory the zip will be extracted to:
 			}
 		});
 
+		Settings.WhenAnyValue(x => x.ModioAPIKey)
+			.Subscribe(key => UpdateHandler.Modio.APIKey = key);
+
 		Modules.WhenAnyValue(x => x.SourceIntegrationsEnabled)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(sourceIntegrationsEnabled =>
@@ -1301,7 +1304,10 @@ Directory the zip will be extracted to:
 		}
 
 		UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled && Modules.SourceIntegrationsEnabled;
-		UpdateHandler.Modio.IsEnabled = Modules.SourceIntegrationsEnabled && !String.IsNullOrWhiteSpace(Settings.ModioAPIKey);
+		// Keep the provider/cache layer available without a key. The key gates
+		// live requests inside ModioCacheHandler.Update, not previously cached
+		// metadata that can still provide a stable source association offline.
+		UpdateHandler.Modio.IsEnabled = Modules.SourceIntegrationsEnabled;
 
 		if (Settings.LogEnabled)
 		{
@@ -1664,7 +1670,7 @@ Directory the zip will be extracted to:
 	private void ApplySourceLinkingMode(bool sourceIntegrationsEnabled)
 	{
 		UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled && sourceIntegrationsEnabled;
-		UpdateHandler.Modio.IsEnabled = sourceIntegrationsEnabled && !String.IsNullOrWhiteSpace(Settings.ModioAPIKey);
+		UpdateHandler.Modio.IsEnabled = sourceIntegrationsEnabled;
 		foreach (var mod in mods.Items)
 		{
 			ApplySourceLinkingMode(mod);
@@ -2564,7 +2570,7 @@ Directory the zip will be extracted to:
 			UpdateHandler.Nexus.AppVersion = Version.ToString();
 
 			UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled && Modules.SourceIntegrationsEnabled;
-			UpdateHandler.Modio.IsEnabled = Modules.SourceIntegrationsEnabled && !String.IsNullOrWhiteSpace(Settings.ModioAPIKey);
+			UpdateHandler.Modio.IsEnabled = Modules.SourceIntegrationsEnabled;
 
 			await UpdateHandler.LoadAsync(UserMods, Version.ToString(), cts);
 			await UpdateHandler.UpdateAsync(UserMods, cts);
@@ -2732,6 +2738,21 @@ Directory the zip will be extracted to:
 		var changed = false;
 		foreach (var mod in mods)
 		{
+			var current = mod.NexusModsData;
+			var source = mod.CreatorManifest?.IsValid == true
+				? mod.CreatorManifest.Sources.FirstOrDefault(candidate =>
+					candidate.Service == ReduxCreatorManifestService.NexusSourceService)
+				: null;
+
+			if (current.MetadataOrigin == NexusMetadataOrigin.CreatorManifest
+				&& (source == null || current.ModId != source.ProjectId))
+			{
+				current.ResetSourceAssociation();
+				UpdateHandler.Nexus.CacheData.Mods.Remove(mod.UUID);
+				changed = true;
+				DivinityApp.Log($"Removed a stale creator-manifest Nexus association for '{mod.FileName}'.");
+			}
+
 			if (mod.CreatorManifest?.IsValid != true
 				|| mod.ModioData?.HasMetadata == true
 				|| mod.NexusModsData.MetadataOrigin is NexusMetadataOrigin.Manual or NexusMetadataOrigin.ManualUnlinked)
@@ -2739,14 +2760,11 @@ Directory the zip will be extracted to:
 				continue;
 			}
 
-			var source = mod.CreatorManifest.Sources.FirstOrDefault(candidate =>
-				candidate.Service == ReduxCreatorManifestService.NexusSourceService);
 			if (source == null || source.ProjectId < DivinityApp.NEXUSMODS_MOD_ID_START)
 			{
 				continue;
 			}
 
-			var current = mod.NexusModsData;
 			if (current.ModId == source.ProjectId && current.IsUpdated)
 			{
 				if (source.FileId is > 0 && current.LastFileId != source.FileId.Value)
@@ -2796,7 +2814,7 @@ Directory the zip will be extracted to:
 			error = "No mod was selected.";
 			return false;
 		}
-		if (mod.ModioData?.HasMetadata == true)
+		if (mod.Metadata.SourceType == ModSourceType.MODIO)
 		{
 			error = "This mod has a native mod.io identity. Redux will not replace that stronger source association with a Nexus link.";
 			return false;
@@ -2832,7 +2850,7 @@ Directory the zip will be extracted to:
 
 	public void UnlinkNexusMod(DivinityModData mod)
 	{
-		if (!Modules.SourceIntegrationsEnabled || mod == null || mod.ModioData?.HasMetadata == true) return;
+		if (!Modules.SourceIntegrationsEnabled || mod == null || mod.Metadata.SourceType == ModSourceType.MODIO) return;
 		mod.NexusModsData.ResetSourceAssociation();
 		mod.NexusModsData.MetadataOrigin = NexusMetadataOrigin.ManualUnlinked;
 		UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
@@ -2865,7 +2883,7 @@ Directory the zip will be extracted to:
 
 	private void LoadModioMetadataBackground(Action onCompleted = null)
 	{
-		if (!Modules.SourceIntegrationsEnabled || String.IsNullOrWhiteSpace(Settings.ModioAPIKey))
+		if (!Modules.SourceIntegrationsEnabled)
 		{
 			onCompleted?.Invoke();
 			return;
@@ -2880,6 +2898,7 @@ Directory the zip will be extracted to:
 				UpdateHandler.Modio.IsEnabled = true;
 
 				var cachedData = await UpdateHandler.Modio.LoadCacheAsync(Version.ToString(), cancellationToken);
+				var cacheChanged = false;
 				if (cachedData != null)
 				{
 					UpdateHandler.Modio.CacheData = cachedData;
@@ -2889,13 +2908,28 @@ Directory the zip will be extracted to:
 						{
 							if (cachedData.Mods.TryGetValue(mod.UUID, out var modioData))
 							{
-								mod.ModioData.Update(modioData);
+								if (ModioCacheHandler.IsCachedAssociationCompatible(mod, modioData))
+								{
+									mod.ModioData.Update(modioData);
+								}
+								else
+								{
+									cachedData.Mods.Remove(mod.UUID);
+									cacheChanged = true;
+									DivinityApp.Log($"Removed a stale creator-manifest mod.io association for '{mod.FileName}'.");
+								}
 							}
 						}
 					}, RxApp.MainThreadScheduler);
 				}
 
-				if (await UpdateHandler.Modio.Update(loadedUserMods, cancellationToken))
+				if (!String.IsNullOrWhiteSpace(Settings.ModioAPIKey)
+					&& await UpdateHandler.Modio.Update(loadedUserMods, cancellationToken))
+				{
+					cacheChanged = true;
+				}
+
+				if (cacheChanged)
 				{
 					await UpdateHandler.Modio.SaveCacheAsync(false, Version.ToString(), cancellationToken);
 				}

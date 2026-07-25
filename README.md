@@ -169,6 +169,8 @@ below.
 - A mod can be manually linked to its Nexus project when automatic association is unavailable.
 - mod.io metadata is used for packages recognized as BG3 in-game/mod.io installations.
 - There is no bundled mod.io database; a mod.io API key is required for live mod.io details.
+- Previously cached mod.io associations remain available without an API key; removing the key stops
+  live requests rather than discarding an already established source identity.
 - Local metadata remains available when neither provider can be matched.
 - mod.io support displays an additional warning because subscriptions can restore removed files.
 - Private testers can generate a reviewable `.bg3redux-report` containing conservative mod identity

@@ -19,13 +19,24 @@ public sealed class ModMetadataViewData : ReactiveObject
 	private readonly DivinityModData _mod;
 	private INotifyPropertyChanged _nexusMetadata;
 	private INotifyPropertyChanged _modioMetadata;
-	private IExternalModMetadata Provider => !_mod.OnlineMetadataEnabled
-		? null
-		: _mod.ModioData?.HasMetadata == true
-		? _mod.ModioData
-		: _mod.CanOpenNexusModsLink
-			? _mod.NexusModsData
-			: null;
+	private IExternalModMetadata Provider
+	{
+		get
+		{
+			if (!_mod.OnlineMetadataEnabled) return null;
+
+			// An explicit user association is authoritative even if older
+			// automatic mod.io metadata remains in the local cache.
+			if (_mod.NexusModsData?.MetadataOrigin == NexusMetadataOrigin.Manual
+				&& _mod.NexusModsData.HasMetadata)
+			{
+				return _mod.NexusModsData;
+			}
+
+			if (_mod.ModioData?.HasMetadata == true) return _mod.ModioData;
+			return _mod.CanOpenNexusModsLink ? _mod.NexusModsData : null;
+		}
+	}
 	private bool HasOnlineMetadata => Provider?.HasMetadata == true;
 
 	public string Title => HasOnlineMetadata && !String.IsNullOrWhiteSpace(Provider?.Name)

@@ -2,6 +2,7 @@ using DivinityModManager.Models;
 using DivinityModManager.AppServices;
 using DivinityModManager.Models.Cache;
 using DivinityModManager.Models.Modio;
+using DivinityModManager.Models.NexusMods;
 using DivinityModManager.Util;
 
 using Newtonsoft.Json;
@@ -27,8 +28,10 @@ public class ModioCacheHandler : IExternalModCacheHandler<ModioCachedData>
 
 		var candidates = mods
 			.Where(mod => !mod.ModioData.HasMetadata
+				&& mod.NexusModsData.MetadataOrigin != NexusMetadataOrigin.Manual
 				&& (mod.PublishHandle > 0
-					|| mod.CreatorManifest?.IsValid == true
+					|| mod.NexusModsData.MetadataOrigin != NexusMetadataOrigin.ManualUnlinked
+					&& mod.CreatorManifest?.IsValid == true
 						&& mod.CreatorManifest.Sources.Any(source =>
 							source.Service == ReduxCreatorManifestService.ModioSourceService)))
 			.ToList();
@@ -62,6 +65,9 @@ public class ModioCacheHandler : IExternalModCacheHandler<ModioCachedData>
 				else continue;
 				if (data != null)
 				{
+					data.MetadataOrigin = mod.PublishHandle > 0
+						? ModioMetadataOrigin.NativePackage
+						: ModioMetadataOrigin.CreatorManifest;
 					mod.ModioData.Update(data);
 					CacheData.Mods[mod.UUID] = data;
 					changed = true;
@@ -75,5 +81,25 @@ public class ModioCacheHandler : IExternalModCacheHandler<ModioCachedData>
 		}
 
 		return changed;
+	}
+
+	public static bool IsCachedAssociationCompatible(DivinityModData mod, ModioModData data)
+	{
+		if (mod == null || data == null || data.MetadataOrigin != ModioMetadataOrigin.CreatorManifest)
+		{
+			return true;
+		}
+
+		if (mod.NexusModsData.MetadataOrigin is NexusMetadataOrigin.Manual
+			or NexusMetadataOrigin.ManualUnlinked)
+		{
+			return false;
+		}
+
+		var source = mod.CreatorManifest?.IsValid == true
+			? mod.CreatorManifest.Sources.FirstOrDefault(candidate =>
+				candidate.Service == ReduxCreatorManifestService.ModioSourceService)
+			: null;
+		return source != null && source.ProjectId == data.ModId;
 	}
 }

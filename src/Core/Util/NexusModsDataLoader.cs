@@ -221,6 +221,7 @@ public static class NexusModsDataLoader
 					{
 						NexusMetadataOrigin.Manual => NexusMetadataOrigin.Manual,
 						NexusMetadataOrigin.BundledProvenance => NexusMetadataOrigin.BundledProvenance,
+						NexusMetadataOrigin.CreatorManifest => NexusMetadataOrigin.CreatorManifest,
 						_ => NexusMetadataOrigin.LiveApi
 					};
 					taskResult.UpdatedMods.Add(mod);

@@ -24,7 +24,9 @@ invalid manifest is ignored and appears as a non-destructive Mod Health finding.
 Validated source claims participate in Redux's normal provider-resolution pipeline. They supply a
 stable project identity; cached or live provider data supplies the user-facing metadata when
 available. Explicit manual links and manual unlinks take precedence, and source claims never alter
-load-order state. Manifest dependency claims remain informational.
+load-order state. Cached creator-supplied associations are rechecked against the currently installed
+PAK and discarded if its manifest is removed, becomes invalid, or claims a different project.
+Manifest dependency claims remain informational.
 
 ## Trust model
 

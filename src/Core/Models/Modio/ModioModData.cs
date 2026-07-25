@@ -6,6 +6,13 @@ using System.ComponentModel;
 
 namespace DivinityModManager.Models.Modio;
 
+public enum ModioMetadataOrigin
+{
+	Unknown = 0,
+	NativePackage = 1,
+	CreatorManifest = 2
+}
+
 /// <summary>
 /// Cached read-only metadata returned by mod.io. This model contains no
 /// subscription, download, installation, or file-management behavior.
@@ -17,6 +24,9 @@ public class ModioModData : IExternalModMetadata
 
 	[JsonProperty("id")]
 	public long ModId { get; set; }
+
+	[JsonProperty("metadata_origin", DefaultValueHandling = DefaultValueHandling.Ignore)]
+	public ModioMetadataOrigin MetadataOrigin { get; set; }
 
 	[JsonProperty("game_id")]
 	public long GameId { get; set; }
@@ -106,6 +116,7 @@ public class ModioModData : IExternalModMetadata
 
 		UUID = data.UUID;
 		ModId = data.ModId;
+		MetadataOrigin = data.MetadataOrigin;
 		GameId = data.GameId;
 		NameId = data.NameId;
 		Name = data.Name;

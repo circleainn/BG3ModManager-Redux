@@ -424,7 +424,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				Tag = SourceLinkMenuTag,
 				Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true)
 			};
-			if (mod.ModioData?.HasMetadata == true)
+			if (mod.Metadata.SourceType == ModSourceType.MODIO)
 			{
 				sourceMenu.Items.Add(new MenuItem
 				{

@@ -308,6 +308,7 @@ public static class ReduxCreatorManifestService
 	{
 		var array = RequireArray(value[property], property, minimum, maximum);
 		var unique = new HashSet<string>(StringComparer.Ordinal);
+		var results = new List<string>(array.Count);
 		foreach (var token in array)
 		{
 			if (token.Type != JTokenType.String)
@@ -317,8 +318,9 @@ public static class ReduxCreatorManifestService
 				throw new InvalidDataException($"{property} contains an invalid entry.");
 			if (!unique.Add(entry))
 				throw new InvalidDataException($"{property} contains a duplicate entry.");
+			results.Add(entry);
 		}
-		return unique.ToArray();
+		return results;
 	}
 
 	private static int RequireInteger(JObject value, string property)
