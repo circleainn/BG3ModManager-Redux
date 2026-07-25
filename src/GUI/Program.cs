@@ -7,6 +7,7 @@ namespace DivinityModManager;
 internal class Program
 {
 	private static string _libDirectory;
+	private static int _fatalStartupExceptionState;
 
 	private static Assembly ResolveAssembly(object sender, ResolveEventArgs args)
 	{
@@ -50,6 +51,15 @@ internal class Program
 
 	private static void ReportFatalStartupException(Exception ex)
 	{
+		// Dispatcher rendering failures can be raised repeatedly while the first
+		// modal error is open. Never allow one fatal startup failure to create an
+		// unbounded cascade of MessageBox windows.
+		if (Interlocked.CompareExchange(ref _fatalStartupExceptionState, 1, 0) != 0)
+		{
+			Environment.Exit(1);
+			return;
+		}
+
 		try
 		{
 			var logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "_Logs");

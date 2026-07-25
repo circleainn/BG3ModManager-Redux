@@ -584,11 +584,13 @@
 											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use each mod's category color when hovering its row." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
-									<CheckBox Margin="0,0,10,0" ToolTip="Show category icons in list and drawer pills"
-										IsChecked="{Binding Settings.ShowCategoryIconsInPills, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+									<CheckBox x:Name="InterfaceIconsCheckBox" Margin="0,0,10,0"
+										ToolTip="Show category and source icons throughout Redux"
+										IsChecked="{Binding Settings.ShowCategoryIconsInPills, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+										Unchecked="InterfaceIconsCheckBox_Unchecked">
 										<StackPanel Margin="6,0,0,0">
-											<TextBlock FontWeight="SemiBold" Text="Category icons" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Show category icons in mod-list and drawer pills." TextWrapping="Wrap" />
+											<TextBlock FontWeight="SemiBold" Text="Interface icons" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Show category and source icons in lists and details." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
 									<CheckBox ToolTip="Match sidebar category names to their assigned colors"
@@ -606,7 +608,8 @@
 										</StackPanel>
 									</CheckBox>
 									<CheckBox Margin="0,8,10,0" ToolTip="Show only provider icons in source columns"
-										IsChecked="{Binding Settings.UseSourceIconsOnly, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+										IsChecked="{Binding Settings.UseSourceIconsOnly, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+										IsEnabled="{Binding IsChecked, ElementName=InterfaceIconsCheckBox}">
 										<StackPanel Margin="6,0,0,0">
 											<TextBlock FontWeight="SemiBold" Text="Source icons only" />
 											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Hide source label text in mod lists." TextWrapping="Wrap" />

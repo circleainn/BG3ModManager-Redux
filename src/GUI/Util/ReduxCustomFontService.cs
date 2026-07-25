@@ -24,7 +24,9 @@ public static partial class ReduxCustomFontService
 	private const int MaximumFileBytes = 10 * 1024 * 1024;
 	private const string PendingDeletionFileName = ".pending-delete";
 	private static readonly object DeletionSync = new();
+	private static readonly object SessionFontSync = new();
 	private static readonly ConcurrentDictionary<string, string> KnownFamilyNames = new(StringComparer.OrdinalIgnoreCase);
+	private static readonly ConcurrentDictionary<string, string> SessionFontPaths = new(StringComparer.OrdinalIgnoreCase);
 	private static int _pendingDeletionPassCompleted;
 
 	[GeneratedRegex("^[0-9a-f]{64}\\.(ttf|otf)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
@@ -128,10 +130,15 @@ public static partial class ReduxCustomFontService
 		if (!TryResolvePath(reference, out var path) || !File.Exists(path) || !TryGetFamilyName(path, out var familyName)) return false;
 		try
 		{
-			var directory = Path.GetDirectoryName(path) + Path.DirectorySeparatorChar;
+			// WPF resolves glyph data lazily. Pointing FontFamily directly at the
+			// user library means a rebuild, sync, or queued deletion can remove the
+			// file after it was selected and crash later when a new page measures
+			// text. A process-owned copy remains stable for this entire session.
+			if (!TryGetSessionFontPath(path, out var sessionPath)) return false;
+			var directory = Path.GetDirectoryName(sessionPath) + Path.DirectorySeparatorChar;
 			// WPF caches directory-wide font discovery. Address the imported file
 			// explicitly so a font added during this session is available immediately.
-			var candidate = new FontFamily(new Uri(directory, UriKind.Absolute), $"./{Path.GetFileName(path)}#{familyName}");
+			var candidate = new FontFamily(new Uri(directory, UriKind.Absolute), $"./{Path.GetFileName(sessionPath)}#{familyName}");
 			if (!candidate.GetTypefaces().Any(typeface => typeface.TryGetGlyphTypeface(out _))) return false;
 			family = candidate;
 			return true;
@@ -140,6 +147,43 @@ public static partial class ReduxCustomFontService
 		{
 			DivinityApp.Log($"Failed to load custom Redux font '{reference}': {exception.Message}");
 			return false;
+		}
+	}
+
+	private static bool TryGetSessionFontPath(string sourcePath, out string sessionPath)
+	{
+		sessionPath = String.Empty;
+		var fileName = Path.GetFileName(sourcePath);
+		if (SessionFontPaths.TryGetValue(fileName, out var existingPath) && File.Exists(existingPath))
+		{
+			sessionPath = existingPath;
+			return true;
+		}
+
+		lock (SessionFontSync)
+		{
+			if (SessionFontPaths.TryGetValue(fileName, out existingPath) && File.Exists(existingPath))
+			{
+				sessionPath = existingPath;
+				return true;
+			}
+
+			try
+			{
+				var directory = Path.Combine(Path.GetTempPath(), "BG3ModManagerRedux", "Fonts",
+					Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
+				Directory.CreateDirectory(directory);
+				var destinationPath = Path.Combine(directory, fileName);
+				File.Copy(sourcePath, destinationPath, true);
+				SessionFontPaths[fileName] = destinationPath;
+				sessionPath = destinationPath;
+				return true;
+			}
+			catch (Exception exception)
+			{
+				DivinityApp.Log($"Failed to create a stable session copy for custom font '{fileName}': {exception.Message}");
+				return false;
+			}
 		}
 	}
 

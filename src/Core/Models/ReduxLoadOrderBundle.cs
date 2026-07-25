@@ -30,6 +30,7 @@ public sealed class ReduxLoadOrderCategory
 	[DataMember(Order = 1)] public string Name { get; set; } = String.Empty;
 	[DataMember(Order = 2)] public string Color { get; set; } = "#8A6AF1";
 	[DataMember(Order = 3)] public string IconId { get; set; } = String.Empty;
+	[DataMember(Order = 4)] public string Description { get; set; } = String.Empty;
 }
 
 [DataContract]

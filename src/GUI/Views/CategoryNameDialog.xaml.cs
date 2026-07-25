@@ -26,6 +26,7 @@ public partial class CategoryNameDialog : AdonisWindow
 	public IReadOnlyList<string> SavedColors => _savedColors;
 	public bool ResetToDefaultRequested { get; private set; }
 	public string CategoryName => CategoryNameTextBox.Text?.Trim();
+	public string CategoryDescription => CategoryDescriptionTextBox.Text?.Trim() ?? String.Empty;
 	public string CategoryColor => CategoryColorPicker.SelectedColor is Color color
 		? $"#{color.R:X2}{color.G:X2}{color.B:X2}" : "#8A6AF1";
 	public string CategoryIconId
@@ -78,9 +79,15 @@ public partial class CategoryNameDialog : AdonisWindow
 		DialogHelperText.Text = helperText;
 		ColorFieldLabel.Text = fieldLabel;
 		IconChooserPanel.Visibility = Visibility.Collapsed;
+		DescriptionEditorPanel.Visibility = Visibility.Collapsed;
+		CategoryPreviewPanel.Visibility = Visibility.Collapsed;
 	}
 
-	public CategoryNameDialog(string categoryName = "", string color = "#8A6AF1", bool canEditName = true, IEnumerable<string> savedColors = null, bool visualDividerMode = false, string iconId = "", bool canResetToDefault = false)
+	public CategoryNameDialog(string categoryName = "", string color = "#8A6AF1", bool canEditName = true,
+		IEnumerable<string> savedColors = null, bool visualDividerMode = false, string iconId = "",
+		bool canResetToDefault = false, bool useCategoryColorsForHover = false, string description = "",
+		bool useCategoryColorsForSidebarSelection = false, bool useCategoryColorsForSidebarText = false,
+		bool showInterfaceIcons = true)
 	{
 		InitializeComponent();
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
@@ -89,6 +96,10 @@ public partial class CategoryNameDialog : AdonisWindow
 			.Where(IsValidHexColor).Select(value => value.ToUpperInvariant())
 			.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 		CategoryNameTextBox.Text = categoryName;
+		CategoryDescriptionTextBox.Text = description ?? String.Empty;
+		CategoryPreviewPanel.Tag = useCategoryColorsForSidebarSelection;
+		CategoryPreviewName.Tag = useCategoryColorsForSidebarText;
+		CategoryPreviewIconHost.Visibility = showInterfaceIcons ? Visibility.Visible : Visibility.Collapsed;
 		CategoryNameTextBox.IsEnabled = canEditName;
 		_iconChoices = new ObservableCollection<IconChooserChoice>(ReduxIconCatalog.Choices
 			.Select(choice => new IconChooserChoice(choice)));
@@ -111,7 +122,7 @@ public partial class CategoryNameDialog : AdonisWindow
 		DialogHelperText.Text = visualDividerMode
 			? "Choose a color, marker or icon, and optional label. Leave the name empty for a line-only separator."
 			: canEditName
-			? "Choose a unique name, color, and marker or icon. Dot is the default."
+			? "Choose a unique name, optional description, color, and marker or icon. Dot is the default."
 			: canResetToDefault
 			? "Redux category names stay fixed. Customize its color and marker or icon, or restore the Redux defaults."
 			: "Choose a color and marker or icon. Dot is the default.";
@@ -121,7 +132,10 @@ public partial class CategoryNameDialog : AdonisWindow
 			CategoryNameTextBox.ToolTip = "Redux category names are fixed. Create a custom category for a different name.";
 		if (visualDividerMode)
 		{
+			DescriptionEditorPanel.Visibility = Visibility.Collapsed;
+			CategoryPreviewPanel.Visibility = Visibility.Collapsed;
 			SeparatorPreviewPanel.Visibility = Visibility.Visible;
+			SeparatorPreviewPanel.Tag = useCategoryColorsForHover;
 			ColorFieldLabel.Text = "Separator color";
 			IconFieldLabel.Text = "Icon";
 			TintCustomIconText.Text = "Tint with separator color";
@@ -185,6 +199,10 @@ public partial class CategoryNameDialog : AdonisWindow
 		HexColorTextBox.Text = hex;
 		SelectedColorPreview.Background = new SolidColorBrush(color);
 		Resources["Redux.CategoryEditor.IconBrush"] = new SolidColorBrush(color);
+		Resources["Redux.CategoryEditor.HoverBrush"] =
+			new SolidColorBrush(Color.FromArgb(0x1F, color.R, color.G, color.B));
+		Resources["Redux.CategoryEditor.CountHoverBrush"] =
+			new SolidColorBrush(Color.FromArgb(0x24, color.R, color.G, color.B));
 		RgbToHsv(color, out _hue, out _saturation, out _brightness);
 		_updatingColorControls = true;
 		SaturationSlider.Value = _saturation * 100;

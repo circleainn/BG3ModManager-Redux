@@ -128,8 +128,17 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private void CategoryListBox_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 	{
+		_draggedCategory = null;
+		ClearCategoryDropIndicator();
 		if (e.OriginalSource is DependencyObject source && source.FindVisualParent<ListBoxItem>()?.DataContext is ModCategoryFilterItem category)
 			ViewModel.MarkModCategorySeen(category.Name);
+	}
+
+	private void CategoryListBox_LostMouseCapture(object sender, MouseEventArgs e)
+	{
+		if (e.LeftButton == MouseButtonState.Pressed) return;
+		_draggedCategory = null;
+		ClearCategoryDropIndicator();
 	}
 
 	private void CategoryListBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -247,11 +256,16 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private void AddCustomCategoryMenuItem_Click(object sender, RoutedEventArgs e)
 	{
-		var dialog = new CategoryNameDialog(color: ViewModel.GetSuggestedCustomCategoryColor(), savedColors: ViewModel.Settings.SavedCategoryColors) { Owner = Window.GetWindow(this) };
+		var dialog = new CategoryNameDialog(color: ViewModel.GetSuggestedCustomCategoryColor(),
+			savedColors: ViewModel.Settings.SavedCategoryColors,
+			useCategoryColorsForSidebarSelection: ViewModel.Settings.UseCategoryColorsForSidebarSelection,
+			useCategoryColorsForSidebarText: ViewModel.Settings.UseCategoryColorsForSidebarText,
+			showInterfaceIcons: ViewModel.Settings.ShowCategoryIconsInPills) { Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		var result = dialog.ShowDialog();
 		SaveCategoryDialogColors(dialog);
-		if (result == true && !ViewModel.TryAddCustomModCategory(dialog.CategoryName, dialog.CategoryColor, dialog.CategoryIconId, out var error))
+		if (result == true && !ViewModel.TryAddCustomModCategory(dialog.CategoryName, dialog.CategoryColor,
+			dialog.CategoryIconId, dialog.CategoryDescription, out var error))
 		{
 			ShowCategoryMessage(error, "Add Mod Category", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
@@ -271,7 +285,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (String.IsNullOrWhiteSpace(category) || category.Equals(MainWindowViewModel.AllModsCategory, StringComparison.OrdinalIgnoreCase)) return;
 		var dialog = new CategoryNameDialog(category, ViewModel.GetCurrentCategoryColor(category), false, ViewModel.Settings.SavedCategoryColors,
 			iconId: ViewModel.GetCurrentCategoryIcon(category),
-			canResetToDefault: ViewModel.CanResetCategoryStyle(category)) { Owner = Window.GetWindow(this) };
+			canResetToDefault: ViewModel.CanResetCategoryStyle(category),
+			description: ViewModel.GetCurrentCategoryDescription(category),
+			useCategoryColorsForSidebarSelection: ViewModel.Settings.UseCategoryColorsForSidebarSelection,
+			useCategoryColorsForSidebarText: ViewModel.Settings.UseCategoryColorsForSidebarText,
+			showInterfaceIcons: ViewModel.Settings.ShowCategoryIconsInPills) { Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		var result = dialog.ShowDialog();
 		SaveCategoryDialogColors(dialog);
@@ -281,7 +299,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			ViewModel.ResetCategoryStyle(category);
 			return;
 		}
-		if (!ViewModel.TrySetCategoryStyle(category, dialog.CategoryColor, dialog.CategoryIconId, out var error))
+		if (!ViewModel.TrySetCategoryStyle(category, dialog.CategoryColor, dialog.CategoryIconId,
+			dialog.CategoryDescription, out var error))
 		{
 			ShowCategoryMessage(error, "Edit Category", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
@@ -369,7 +388,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			Header = "No Category",
 			IsCheckable = true,
 			IsChecked = ViewModel.HasNoCategoryAssignment(mod),
-			Icon = CreateCategoryAssignmentIcon(MainWindowViewModel.UncategorizedModsCategory)
+			Icon = ViewModel.Settings.ShowCategoryIconsInPills
+				? CreateCategoryAssignmentIcon(MainWindowViewModel.UncategorizedModsCategory)
+				: null
 		};
 		noCategoryItem.Click += (_, _) => ViewModel.ToggleModCategoryAssignment(mod, MainWindowViewModel.NoCategoryAssignment);
 		categoryMenu.Items.Add(noCategoryItem);
@@ -382,7 +403,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				Header = category,
 				IsCheckable = true,
 				IsChecked = ViewModel.HasModCategoryOverride(mod, category),
-				Icon = CreateCategoryAssignmentIcon(category)
+				Icon = ViewModel.Settings.ShowCategoryIconsInPills ? CreateCategoryAssignmentIcon(category) : null
 			};
 			categoryItem.Click += (_, _) => ViewModel.ToggleModCategoryAssignment(mod, category);
 			categoryMenu.Items.Add(categoryItem);
@@ -535,7 +556,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private void ShowAddVisualDividerDialog(bool activeList, int position)
 	{
 		if (!activeList) return;
-		var dialog = new CategoryNameDialog(color: ViewModel.GetSuggestedCustomCategoryColor(), savedColors: ViewModel.Settings.SavedCategoryColors, visualDividerMode: true)
+		var dialog = new CategoryNameDialog(color: ViewModel.GetSuggestedCustomCategoryColor(),
+			savedColors: ViewModel.Settings.SavedCategoryColors, visualDividerMode: true,
+			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForHover)
 			{ Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
@@ -547,7 +570,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		var divider = ViewModel.GetVisualDivider(item);
 		if (divider == null) return;
-		var dialog = new CategoryNameDialog(divider.Title, divider.Color, true, ViewModel.Settings.SavedCategoryColors, true, divider.IconId)
+		var dialog = new CategoryNameDialog(divider.Title, divider.Color, true,
+			ViewModel.Settings.SavedCategoryColors, true, divider.IconId,
+			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForHover)
 			{ Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
@@ -2077,7 +2102,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		var headerWidth = listView != null
 			? MeasureColumnText(listView, columnName, fontWeight: FontWeights.SemiBold) + 28
 			: 0d;
-		var fallbackWidth = columnName == "Source" && ViewModel?.Settings.UseSourceIconsOnly == true
+		var sourceIconsOnly = ViewModel?.Settings.ShowCategoryIconsInPills == true &&
+			ViewModel.Settings.UseSourceIconsOnly;
+		var fallbackWidth = columnName == "Source" && sourceIconsOnly
 			? 64d
 			: GetFallbackMinimumColumnWidth(columnName);
 		return Math.Ceiling(Math.Max(headerWidth, fallbackWidth));
@@ -2149,9 +2176,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					break;
 				case "Source":
 					// 14px provider icon + 6 margin + 16 padding + 3 border + a generous cushion.
-					candidateWidth = ViewModel?.Settings.UseSourceIconsOnly == true
+					var sourceIconsOnly = ViewModel?.Settings.ShowCategoryIconsInPills == true &&
+						ViewModel.Settings.UseSourceIconsOnly;
+					candidateWidth = sourceIconsOnly
 						? 40
-						: MeasureColumnText(listView, mod.DisplaySource, GetPillFontSize(listView), FontWeights.SemiBold) + 60;
+						: MeasureColumnText(listView, mod.DisplaySource, GetPillFontSize(listView), FontWeights.SemiBold) +
+							(ViewModel?.Settings.ShowCategoryIconsInPills == true ? 60 : 36);
 					if (mod.Metadata.ModioWarningVisibility == Visibility.Visible && ViewModel?.Settings.HideModioSourceWarningIcons == false)
 					{
 						candidateWidth += 24;

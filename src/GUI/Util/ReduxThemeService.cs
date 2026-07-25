@@ -62,11 +62,11 @@ public static class ReduxThemeService
 			TypographyFont = NormalizeTypography(typographyFont, baseTheme),
 			CustomTypographyFont = customTypographyFont ?? String.Empty,
 			TextSize = NormalizeTextSize(textSize),
-			UseCategoryColorsForHover = useCategoryColorsForHover ?? false,
+			UseCategoryColorsForHover = useCategoryColorsForHover ?? baseTheme == ReduxThemeType.ReduxDark,
 			ShowCategoryIconsInPills = showCategoryIconsInPills ?? true,
 			UseCategoryColorsForSidebarText = useCategoryColorsForSidebarText ?? baseTheme == ReduxThemeType.ReduxDark,
 			UseCategoryColorsForSidebarSelection = useCategoryColorsForSidebarSelection ?? baseTheme == ReduxThemeType.ReduxDark,
-			UseSourceIconsOnly = useSourceIconsOnly ?? false,
+			UseSourceIconsOnly = (showCategoryIconsInPills ?? true) && (useSourceIconsOnly ?? false),
 			BackgroundColor = colors[0],
 			SurfaceColor = colors[1],
 			AccentColor = colors[2],
@@ -100,7 +100,7 @@ public static class ReduxThemeService
 	public static void ApplyBuiltInCategoryPresentation(DivinityModManagerSettings settings, ReduxThemeType theme)
 	{
 		if (settings == null) return;
-		settings.UseCategoryColorsForHover = false;
+		settings.UseCategoryColorsForHover = theme == ReduxThemeType.ReduxDark;
 		settings.ShowCategoryIconsInPills = true;
 		settings.UseCategoryColorsForSidebarText = theme == ReduxThemeType.ReduxDark;
 		settings.UseCategoryColorsForSidebarSelection = theme == ReduxThemeType.ReduxDark;
@@ -114,7 +114,7 @@ public static class ReduxThemeService
 		settings.ShowCategoryIconsInPills = theme.ShowCategoryIconsInPills;
 		settings.UseCategoryColorsForSidebarText = theme.UseCategoryColorsForSidebarText;
 		settings.UseCategoryColorsForSidebarSelection = theme.UseCategoryColorsForSidebarSelection;
-		settings.UseSourceIconsOnly = theme.UseSourceIconsOnly;
+		settings.UseSourceIconsOnly = theme.ShowCategoryIconsInPills && theme.UseSourceIconsOnly;
 	}
 
 	public static bool TryValidate(ReduxCustomTheme theme, out string error)

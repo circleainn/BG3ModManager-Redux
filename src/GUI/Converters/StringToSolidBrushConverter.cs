@@ -11,6 +11,11 @@ public class StringToSolidBrushConverter : IValueConverter
 		if (value is string str)
 		{
 			var color = (Color)ColorConverter.ConvertFromString(str);
+			if (parameter is string alphaText &&
+				Byte.TryParse(alphaText, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var alpha))
+			{
+				color.A = alpha;
+			}
 			return new SolidColorBrush(color);
 		}
 		return null;

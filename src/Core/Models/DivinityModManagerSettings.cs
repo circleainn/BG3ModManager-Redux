@@ -166,9 +166,9 @@ public class DivinityModManagerSettings : ReactiveObject
 
 	[DataMember, Reactive] public ObservableCollection<ReduxCustomTheme> CustomThemes { get; set; } = new();
 
-	[DefaultValue(false)]
+	[DefaultValue(true)]
 	[SettingsEntry("Match category hover colors", "Use a mod's primary category color when hovering its row. Disable this to use the standard Redux accent.", HideFromUI = true)]
-	[DataMember, Reactive] public bool UseCategoryColorsForHover { get; set; }
+	[DataMember, Reactive] public bool UseCategoryColorsForHover { get; set; } = true;
 
 	[DefaultValue(true)]
 	[SettingsEntry("Color category names", "Use each category's color for its name in the Categories pane.", HideFromUI = true)]
@@ -233,6 +233,8 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public Dictionary<string, string> ModCategoryColors { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	// Optional Redux presentation icon per category. Empty values explicitly retain the dot fallback.
 	[DataMember, Reactive] public Dictionary<string, string> ModCategoryIcons { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+	// Optional user-authored sidebar tooltip. Blank values intentionally produce no tooltip.
+	[DataMember, Reactive] public Dictionary<string, string> ModCategoryDescriptions { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	[DataMember, Reactive] public List<string> SavedCategoryColors { get; set; } = new();
 	[DataMember, Reactive] public List<string> DisabledModCategories { get; set; } = new();
 
@@ -421,6 +423,9 @@ public class DivinityModManagerSettings : ReactiveObject
 			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 		ModCategoryIcons = ModCategoryIcons != null
 			? new Dictionary<string, string>(ModCategoryIcons, StringComparer.OrdinalIgnoreCase)
+			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		ModCategoryDescriptions = ModCategoryDescriptions != null
+			? new Dictionary<string, string>(ModCategoryDescriptions, StringComparer.OrdinalIgnoreCase)
 			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 		ActiveModListColumnWidths = ActiveModListColumnWidths != null
 			? new Dictionary<string, double>(ActiveModListColumnWidths, StringComparer.OrdinalIgnoreCase)

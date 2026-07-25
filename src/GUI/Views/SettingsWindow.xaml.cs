@@ -67,6 +67,14 @@ public partial class SettingsWindow : SettingsWindowBase
 
 	private bool _updatingCustomThemeSelection;
 	private bool _updatingTypographySelection;
+
+	private void InterfaceIconsCheckBox_Unchecked(object sender, RoutedEventArgs e)
+	{
+		if (ViewModel?.Settings != null)
+		{
+			ViewModel.Settings.UseSourceIconsOnly = false;
+		}
+	}
 	private static readonly SettingsGroup[] GeneralSettingsGroups =
 	[
 		new("Paths and storage",

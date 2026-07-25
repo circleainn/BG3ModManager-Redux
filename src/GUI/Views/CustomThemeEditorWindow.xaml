@@ -109,6 +109,10 @@
 				<Border Margin="0,10,0,0" Padding="12,9" Background="{DynamicResource ReduxSurfaceMutedBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="*" />
@@ -121,11 +125,13 @@
 									Text="Tint mod-row hover with its category." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
-						<CheckBox Grid.Column="1" IsChecked="{Binding ShowCategoryIconsInPills}" Style="{StaticResource ReduxCheckBoxStyle}">
+						<CheckBox x:Name="InterfaceIconsCheckBox" Grid.Column="1"
+							IsChecked="{Binding ShowCategoryIconsInPills}" Style="{StaticResource ReduxCheckBoxStyle}"
+							Unchecked="InterfaceIconsCheckBox_Unchecked">
 							<StackPanel Margin="5,0,12,0">
-								<TextBlock FontWeight="SemiBold" Text="Category icons" />
+								<TextBlock FontWeight="SemiBold" Text="Interface icons" />
 								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Show icons inside category pills." TextWrapping="Wrap" />
+									Text="Show category and source icons." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
 						<CheckBox Grid.Column="2" IsChecked="{Binding UseCategoryColorsForSidebarText}" Style="{StaticResource ReduxCheckBoxStyle}">
@@ -142,7 +148,9 @@
 									Text="Tint sidebar hover and selection with category colors." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
-						<CheckBox Grid.Row="1" Grid.Column="1" Margin="0,10,0,0" IsChecked="{Binding UseSourceIconsOnly}" Style="{StaticResource ReduxCheckBoxStyle}">
+						<CheckBox Grid.Row="1" Grid.Column="1" Margin="0,10,0,0"
+							IsChecked="{Binding UseSourceIconsOnly}" IsEnabled="{Binding IsChecked, ElementName=InterfaceIconsCheckBox}"
+							Style="{StaticResource ReduxCheckBoxStyle}">
 							<StackPanel Margin="5,0,12,0">
 								<TextBlock FontWeight="SemiBold" Text="Source icons only" />
 								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"

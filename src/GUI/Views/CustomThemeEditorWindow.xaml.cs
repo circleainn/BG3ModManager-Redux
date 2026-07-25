@@ -89,6 +89,11 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 		TypographyFontComboBox_SelectionChanged(TypographyFontComboBox, null);
 	}
 
+	private void InterfaceIconsCheckBox_Unchecked(object sender, RoutedEventArgs e)
+	{
+		Theme.UseSourceIconsOnly = false;
+	}
+
 	private void ColorButton_Click(object sender, RoutedEventArgs e)
 	{
 		if (sender is not Button { Tag: string propertyName }) return;

@@ -4773,7 +4773,8 @@ Directory the zip will be extracted to:
 			{
 				Name = category.Trim(),
 				Color = GetCategoryColor(category),
-				IconId = PrepareReduxBundleIconForExport(GetCategoryIcon(category), presentation, assets)
+				IconId = PrepareReduxBundleIconForExport(GetCategoryIcon(category), presentation, assets),
+				Description = GetCategoryDescription(category)
 			});
 		}
 		presentation.CustomCategoryDisplayOrder = (Settings.ModCategoryDisplayOrder ?? new List<string>())
@@ -4956,6 +4957,8 @@ Directory the zip will be extracted to:
 			Settings.ModCategoryColors ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
 		var icons = new Dictionary<string, string>(
 			Settings.ModCategoryIcons ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
+		var descriptions = new Dictionary<string, string>(
+			Settings.ModCategoryDescriptions ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
 		var assignments = (Settings.ModCategoryAssignments ?? new Dictionary<string, List<string>>())
 			.ToDictionary(entry => entry.Key, entry => entry.Value?.ToList() ?? new List<string>(),
 				StringComparer.OrdinalIgnoreCase);
@@ -4980,13 +4983,15 @@ Directory the zip will be extracted to:
 			if (String.IsNullOrWhiteSpace(requestedName)) continue;
 			var importedColor = NormalizeReduxBundleColor(importedCategory.Color);
 			var importedIcon = ResolveReduxBundleIcon(importedCategory.IconId, importedIcons);
+			var importedDescription = NormalizeCategoryDescription(importedCategory.Description);
 			var matchingCustom = customCategories.FirstOrDefault(category =>
 				category.Equals(requestedName, StringComparison.OrdinalIgnoreCase));
 
 			string effectiveName;
 			if (matchingCustom != null &&
 				String.Equals(GetCategoryColor(matchingCustom), importedColor, StringComparison.OrdinalIgnoreCase) &&
-				String.Equals(GetCategoryIcon(matchingCustom), importedIcon, StringComparison.OrdinalIgnoreCase))
+				String.Equals(GetCategoryIcon(matchingCustom), importedIcon, StringComparison.OrdinalIgnoreCase) &&
+				String.Equals(GetCategoryDescription(matchingCustom), importedDescription, StringComparison.Ordinal))
 			{
 				effectiveName = matchingCustom;
 			}
@@ -5006,6 +5011,8 @@ Directory the zip will be extracted to:
 			existingNames.Add(effectiveName);
 			colors[effectiveName] = importedColor;
 			icons[effectiveName] = importedIcon;
+			if (String.IsNullOrWhiteSpace(importedDescription)) descriptions.Remove(effectiveName);
+			else descriptions[effectiveName] = importedDescription;
 			categoryMap[requestedName] = effectiveName;
 		}
 
@@ -5066,6 +5073,7 @@ Directory the zip will be extracted to:
 		var previousDisplayOrder = Settings.ModCategoryDisplayOrder;
 		var previousColors = Settings.ModCategoryColors;
 		var previousIcons = Settings.ModCategoryIcons;
+		var previousDescriptions = Settings.ModCategoryDescriptions;
 		var previousAssignments = Settings.ModCategoryAssignments;
 		var previousDividers = Settings.VisualModListDividers;
 		try
@@ -5077,6 +5085,7 @@ Directory the zip will be extracted to:
 			Settings.ModCategoryDisplayOrder = displayOrder.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 			Settings.ModCategoryColors = colors;
 			Settings.ModCategoryIcons = icons;
+			Settings.ModCategoryDescriptions = descriptions;
 			Settings.ModCategoryAssignments = assignments;
 			Settings.VisualModListDividers = dividers;
 			if (!SaveSettings()) throw new IOException("Redux could not save the imported presentation.");
@@ -5090,6 +5099,7 @@ Directory the zip will be extracted to:
 			Settings.ModCategoryDisplayOrder = previousDisplayOrder;
 			Settings.ModCategoryColors = previousColors;
 			Settings.ModCategoryIcons = previousIcons;
+			Settings.ModCategoryDescriptions = previousDescriptions;
 			Settings.ModCategoryAssignments = previousAssignments;
 			Settings.VisualModListDividers = previousDividers;
 			DivinityApp.Log($"Failed to import Redux presentation: {exception}");
@@ -5741,6 +5751,22 @@ Directory the zip will be extracted to:
 			: String.Empty;
 	}
 
+	private string GetCategoryDescription(string category)
+	{
+		if (String.IsNullOrWhiteSpace(category) ||
+			Settings.ModCategoryDescriptions?.TryGetValue(category, out var description) != true)
+		{
+			return String.Empty;
+		}
+		return NormalizeCategoryDescription(description);
+	}
+
+	private static string NormalizeCategoryDescription(string description)
+	{
+		var normalized = Regex.Replace(description?.Trim() ?? String.Empty, @"\s+", " ");
+		return normalized.Length <= 240 ? normalized : normalized[..240].TrimEnd();
+	}
+
 	private string GetNextCustomCategoryColor()
 	{
 		var used = GetAllModCategories().Select(GetCategoryColor).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -5979,6 +6005,7 @@ Directory the zip will be extracted to:
 		Settings.ModCategoryDisplayOrder?.RemoveAll(item => item.Equals(existing, StringComparison.OrdinalIgnoreCase));
 		Settings.ModCategoryColors.Remove(existing);
 		Settings.ModCategoryIcons.Remove(existing);
+		Settings.ModCategoryDescriptions.Remove(existing);
 		Settings.DisabledModCategories.RemoveAll(item => item.Equals(existing, StringComparison.OrdinalIgnoreCase));
 		Settings.UnseenCategoryModIds.Remove(existing);
 		foreach (var assignment in Settings.ModCategoryAssignments.Values)
@@ -6039,7 +6066,7 @@ Directory the zip will be extracted to:
 			? Settings.UnseenCategoryModIds.Values.Any(ids => ids.Count > 0)
 			: Settings.UnseenCategoryModIds.TryGetValue(category, out var ids) && ids.Count > 0);
 
-	public bool TryAddCustomModCategory(string categoryName, string color, string iconId, out string error)
+	public bool TryAddCustomModCategory(string categoryName, string color, string iconId, string description, out string error)
 	{
 		categoryName = categoryName?.Trim();
 		error = String.Empty;
@@ -6062,6 +6089,8 @@ Directory the zip will be extracted to:
 			.ToList();
 		Settings.ModCategoryColors[categoryName] = color;
 		Settings.ModCategoryIcons[categoryName] = ReduxIconCatalog.Normalize(iconId);
+		description = NormalizeCategoryDescription(description);
+		if (!String.IsNullOrWhiteSpace(description)) Settings.ModCategoryDescriptions[categoryName] = description;
 		SaveSettings();
 		ScheduleRefreshModCategories();
 		return true;
@@ -6069,7 +6098,7 @@ Directory the zip will be extracted to:
 
 	public string GetSuggestedCustomCategoryColor() => GetNextCustomCategoryColor();
 
-	public bool TrySetCategoryStyle(string category, string color, string iconId, out string error)
+	public bool TrySetCategoryStyle(string category, string color, string iconId, string description, out string error)
 	{
 		error = String.Empty;
 		if (String.IsNullOrWhiteSpace(category) || !Regex.IsMatch(color ?? String.Empty, "^#[0-9A-Fa-f]{6}$"))
@@ -6080,6 +6109,9 @@ Directory the zip will be extracted to:
 		Settings.ModCategoryColors[category] = color.ToUpperInvariant();
 		// An explicit empty value overrides built-in defaults with the original dot.
 		Settings.ModCategoryIcons[category] = ReduxIconCatalog.Normalize(iconId);
+		description = NormalizeCategoryDescription(description);
+		if (String.IsNullOrWhiteSpace(description)) Settings.ModCategoryDescriptions.Remove(category);
+		else Settings.ModCategoryDescriptions[category] = description;
 		SaveSettings();
 		RefreshModCategories();
 		return true;
@@ -6087,6 +6119,7 @@ Directory the zip will be extracted to:
 
 	public string GetCurrentCategoryColor(string category) => GetCategoryColor(category);
 	public string GetCurrentCategoryIcon(string category) => GetCategoryIcon(category);
+	public string GetCurrentCategoryDescription(string category) => GetCategoryDescription(category);
 	public bool CanResetCategoryStyle(string category) =>
 		!String.IsNullOrWhiteSpace(category) &&
 		(ReduxCategoryDefaultColors.ContainsKey(category) || ReduxCategoryDefaultIcons.ContainsKey(category));
@@ -6096,6 +6129,7 @@ Directory the zip will be extracted to:
 		if (!CanResetCategoryStyle(category)) return;
 		Settings.ModCategoryColors.Remove(category);
 		Settings.ModCategoryIcons.Remove(category);
+		Settings.ModCategoryDescriptions.Remove(category);
 		SaveSettings();
 		RefreshModCategories();
 	}
@@ -6244,7 +6278,9 @@ Directory the zip will be extracted to:
 		ModCategoryFilters.Clear();
 		var uncategorizedCount = allMods.Count(mod => mod.DisplayCategories.Count == 0 ||
 			mod.DisplayCategories.Any(item => item.Name.Equals(UncategorizedModsCategory, StringComparison.OrdinalIgnoreCase)));
-		ModCategoryFilters.Add(new ModCategoryFilterItem(AllModsCategory, allMods.Count, GetCategoryColor(AllModsCategory), GetCategoryIcon(AllModsCategory), CategoryHasNewMods(AllModsCategory)));
+		ModCategoryFilters.Add(new ModCategoryFilterItem(AllModsCategory, allMods.Count,
+			GetCategoryColor(AllModsCategory), GetCategoryIcon(AllModsCategory),
+			CategoryHasNewMods(AllModsCategory), GetCategoryDescription(AllModsCategory)));
 		foreach (var category in GetSidebarCategoryOrder())
 		{
 			if (!IsModCategoryEnabled(category)) continue;
@@ -6252,7 +6288,8 @@ Directory the zip will be extracted to:
 				? uncategorizedCount
 				: allMods.Count(mod => mod.DisplayCategories.Any(item => item.Name.Equals(category, StringComparison.OrdinalIgnoreCase)));
 			if (!Settings.HideEmptyModCategories || count > 0)
-				ModCategoryFilters.Add(new ModCategoryFilterItem(category, count, GetCategoryColor(category), GetCategoryIcon(category), CategoryHasNewMods(category)));
+				ModCategoryFilters.Add(new ModCategoryFilterItem(category, count, GetCategoryColor(category),
+					GetCategoryIcon(category), CategoryHasNewMods(category), GetCategoryDescription(category)));
 		}
 
 		SelectedModCategory = ModCategoryFilters.Any(category => category.Name.Equals(previousSelection, StringComparison.OrdinalIgnoreCase))

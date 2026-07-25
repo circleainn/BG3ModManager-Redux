@@ -193,7 +193,8 @@ public static class ReduxLoadOrderBundleService
 
 		if (presentation.CustomCategories.Any(category =>
 				category == null || String.IsNullOrWhiteSpace(category.Name) || category.Name.Length > 80 ||
-				!IsValidColor(category.Color) || (category.IconId?.Length ?? 0) > 160) ||
+				!IsValidColor(category.Color) || (category.IconId?.Length ?? 0) > 160 ||
+				(category.Description?.Length ?? 0) > 240) ||
 			presentation.CustomCategories.Select(category => category.Name)
 				.Distinct(StringComparer.OrdinalIgnoreCase).Count() != presentation.CustomCategories.Count)
 			throw new InvalidDataException("The Redux presentation contains an invalid custom category.");
