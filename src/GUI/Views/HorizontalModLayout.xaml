@@ -577,6 +577,11 @@
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 				<Style.Triggers>
+					<DataTrigger Binding="{Binding HasOnlyActiveModLoadOrderAdvice}" Value="True">
+						<Setter Property="Background" Value="{StaticResource ModHealth.InfoSoftBrush}" />
+						<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
+						<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
+					</DataTrigger>
 					<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
 						<Setter Property="Background" Value="{StaticResource ModHealth.ErrorSoftBrush}" />
 						<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
@@ -620,6 +625,10 @@
 								<Setter Property="IconKey" Value="warning" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 								<Style.Triggers>
+									<DataTrigger Binding="{Binding HasOnlyLoadOrderAdvice}" Value="True">
+										<Setter Property="IconKey" Value="flag" />
+										<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
+									</DataTrigger>
 									<DataTrigger Binding="{Binding HasErrors}" Value="True">
 										<Setter Property="IconKey" Value="error" />
 										<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
@@ -635,7 +644,7 @@
 						<TextBlock Margin="0,2,0,0"
 							FontSize="{DynamicResource Redux.FontSize.11}"
 							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="{Binding FindingCountSummary}" />
+							Text="{Binding AttentionCountSummary}" />
 					</StackPanel>
 				</Grid>
 			</DataTemplate>
@@ -1639,8 +1648,21 @@
 						<StackPanel Orientation="Horizontal">
 							<c:ReduxIcon Width="15" Height="15"
 								Margin="0,0,5,0"
-								IconKey="warning"
-								Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+								Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}">
+								<c:ReduxIcon.Style>
+									<Style BasedOn="{StaticResource {x:Type c:ReduxIcon}}" TargetType="{x:Type c:ReduxIcon}">
+										<Setter Property="IconKey" Value="warning" />
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding HasOnlyActiveModLoadOrderAdvice}" Value="True">
+												<Setter Property="IconKey" Value="flag" />
+											</DataTrigger>
+											<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
+												<Setter Property="IconKey" Value="error" />
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</c:ReduxIcon.Style>
+							</c:ReduxIcon>
 							<TextBlock VerticalAlignment="Center"
 								FontWeight="SemiBold"
 								Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
@@ -2087,10 +2109,10 @@
 			<Grid>
 				<Grid.RowDefinitions>
 					<!-- RowDefinition.Height requires a GridLength; a dynamic Double resource throws during XAML load. -->
-					<RowDefinition Height="46" />
+					<RowDefinition Height="Auto" />
 					<RowDefinition Height="*" />
 				</Grid.RowDefinitions>
-				<Grid Margin="12,0">
+				<Grid MinHeight="46" Margin="12,3">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="Auto" />

@@ -8,28 +8,46 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
-if (!(Test-Path -LiteralPath $vswhere))
-{
-	throw "Visual Studio Installer could not be found. Install Visual Studio or Build Tools with .NET desktop, Desktop C++, and C++/CLI support."
-}
-
-$requirements = @(
-	"Microsoft.VisualStudio.Workload.ManagedDesktop",
-	"Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-	"Microsoft.VisualStudio.Component.VC.CLI.Support"
+$vswhereCandidates = @(
+	(Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"),
+	(Join-Path $env:ProgramFiles "Microsoft Visual Studio\Installer\vswhere.exe")
 )
-$vswhereArguments = @("-latest", "-products", "*")
-foreach ($requirement in $requirements)
-{
-	$vswhereArguments += @("-requires", $requirement)
-}
-$vswhereArguments += @("-property", "installationPath")
+$vswhere = $vswhereCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+$installationPath = $null
 
-$installationPath = (& $vswhere @vswhereArguments | Select-Object -First 1)
+if ($vswhere)
+{
+	$requirements = @(
+		"Microsoft.VisualStudio.Workload.ManagedDesktop",
+		"Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+		"Microsoft.VisualStudio.Component.VC.CLI.Support"
+	)
+	$vswhereArguments = @("-latest", "-products", "*")
+	foreach ($requirement in $requirements)
+	{
+		$vswhereArguments += @("-requires", $requirement)
+	}
+	$vswhereArguments += @("-property", "installationPath")
+	$installationPath = (& $vswhere @vswhereArguments | Select-Object -First 1)
+}
+
 if ([String]::IsNullOrWhiteSpace($installationPath))
 {
-	throw "No Visual Studio installation contains all required Redux build components: .NET desktop, MSVC x64/x86, and C++/CLI support."
+	$msbuildCandidate = Get-ChildItem `
+		-Path (Join-Path $env:ProgramFiles "Microsoft Visual Studio\*\*\MSBuild\Current\Bin\MSBuild.exe") `
+		-File `
+		-ErrorAction SilentlyContinue |
+		Sort-Object FullName -Descending |
+		Select-Object -First 1
+	if ($msbuildCandidate)
+	{
+		$installationPath = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $msbuildCandidate.FullName)))
+	}
+}
+
+if ([String]::IsNullOrWhiteSpace($installationPath))
+{
+	throw "Visual Studio with .NET desktop, Desktop C++, and C++/CLI support could not be found."
 }
 
 $msbuild = Join-Path $installationPath "MSBuild\Current\Bin\MSBuild.exe"

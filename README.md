@@ -187,9 +187,10 @@ Redux can offer a polished public Nexus sign-in experience.
 
 Mod Health runs quietly in the background. When the selected mod has a warning or error, Overview
 shows a compact status pill whose tooltip explains missing or inactive dependencies, duplicate or
-invalid UUIDs, Script Extender status, confirmed active declared conflicts, bundled Mod Fixer
-content, override behavior, and mod.io safety state. Mod Health is an optional Redux module and can
-be disabled in Preferences; disabling it stops analysis and removes its indicators.
+invalid UUIDs, self-dependencies, installed dependencies below declared minimum versions, Script
+Extender status, confirmed active declared conflicts, embedded creator-manifest validation,
+bundled Mod Fixer content, override behavior, and mod.io safety state. Mod Health is an optional
+Redux module and can be disabled in Preferences; disabling it stops analysis and removes its indicators.
 Healthy mods add no extra interface.
 
 When one or more active mods need attention, the Active Mods header shows a compact load-order
@@ -198,8 +199,10 @@ Duplicate UUIDs, inactive dependencies, and declared conflicts also receive a co
 health indicator so they remain visible without opening the selected-mod drawer.
 Health findings are diagnostic and conservative, and Redux does not automatically repair, install,
 or reorder mods. The experimental Load Order Advisor is a separate opt-in extension of Mod Health
-and is disabled by default. Its first rule relies only on declared package dependencies; broader
-category- or compatibility-based recommendations remain future work. When Debug Mode is enabled,
+and is disabled by default. Its rules rely only on declared package dependencies; broader
+category- or compatibility-based recommendations remain future work. It reports dependencies that
+load later than their dependents and declared dependency cycles that cannot be satisfied by a
+linear order. When Debug Mode is enabled,
 each changed active order writes a `[LoadOrderAdvisor]` diagnostic summary to the Redux log,
 including a clear result when no reversed dependencies are detected.
 
@@ -220,6 +223,13 @@ Redux retains inherited BG3MM tools useful for mod development, including:
 Custom `meta.lsx` tags are separated with semicolons. Metadata quality directly affects how well
 Redux and other tools can describe, categorize, and validate a mod.
 
+Mod authors may also embed an optional root-level
+[`redux.mod.json`](docs/REDUX_CREATOR_MANIFEST.md) in each PAK. Redux validates its module identity
+claims against the package's parsed `meta.lsx` during the normal scan. A validated source identity
+feeds the same Nexus Mods or mod.io metadata pipeline used by other matches, while explicit manual
+source choices retain precedence. Invalid claims are ignored, produce a read-only diagnostic, and
+never change the user's load order or files.
+
 Developer utilities should be used carefully. Extracted or edited projects placed in the game's
 `Data` folder can behave differently from ordinary user Mods-folder packages and may directly
 affect game files.
@@ -233,8 +243,8 @@ affect game files.
 - Nexus authentication currently relies on a personal API key rather than public SSO.
 - Provider matching, automatic categories, dependency data, and conflict data may be incomplete.
 - mod.io author profile links cannot always be resolved reliably.
-- The requirement validator and broader compatibility-aware Load Order Advisor are not
-  implemented. Current order advice is limited to declared dependencies that load too late.
+- Broader compatibility-, category-, framework-, and author-specific Load Order Advisor rules are
+  not implemented. Current advice is limited to exact declared dependency placement and cycles.
 - Dense layouts and uncommon Windows display scales may still expose minor visual inconsistencies.
 - Some user-imported fonts may expose incomplete metadata or render differently in WPF; Redux
   falls back to Manrope when an imported font cannot be loaded.

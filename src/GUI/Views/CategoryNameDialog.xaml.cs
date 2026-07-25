@@ -141,6 +141,7 @@ public partial class CategoryNameDialog : AdonisWindow
 			TintCustomIconText.Text = "Tint with separator color";
 			CategoryNameTextBox.ToolTip = "Optional separator label";
 		}
+		UpdateCategoryPreviewToolTip();
 		UpdateColorPresentation();
 		RefreshSavedColors();
 		Loaded += (_, _) => { CategoryNameTextBox.Focus(); UpdateModernColorSurface(); };
@@ -149,6 +150,16 @@ public partial class CategoryNameDialog : AdonisWindow
 
 	private static bool IsValidHexColor(string value) =>
 		!String.IsNullOrWhiteSpace(value) && System.Text.RegularExpressions.Regex.IsMatch(value, "^#[0-9A-Fa-f]{6}$");
+
+	private void CategoryDescriptionTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
+		UpdateCategoryPreviewToolTip();
+
+	private void UpdateCategoryPreviewToolTip()
+	{
+		if (CategoryPreviewRow == null || CategoryDescriptionTextBox == null) return;
+		var description = CategoryDescriptionTextBox.Text?.Trim();
+		CategoryPreviewRow.ToolTip = String.IsNullOrWhiteSpace(description) ? null : description;
+	}
 
 	private void RefreshSavedColors()
 	{

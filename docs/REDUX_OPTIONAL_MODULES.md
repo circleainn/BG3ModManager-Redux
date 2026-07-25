@@ -45,16 +45,22 @@ Checks implement `IModHealthRule` and receive an immutable `ModHealthAnalysisCon
 `IModHealthAnalyzer` composes those rules into display snapshots. This keeps diagnostic rules
 separate from the main window and makes individual rule families removable.
 
+Current checks cover invalid or duplicate UUIDs, missing or inactive dependencies, self-dependency
+metadata, installed dependencies below a declared minimum version, declared conflicts, Script
+Extender availability, legacy Mod Fixer and override behavior, provider-specific safety notes, and
+invalid embedded Redux creator manifests.
+
 ## Load Order Advisor
 
 Load Order Advisor is an experimental extension of Mod Health, not an automatic sorting system. It
 is disabled by default and does not run unless both **Enable Mod Health** and **Enable Load Order
 Advisor** are enabled.
 
-The current advisor rule only reports when an active package's explicitly declared dependency is
-positioned later in the numbered order. It does not infer category, author, framework, patch, or
-compatibility ordering and does not move mods. The advisor is registered separately from the
-general health rules so it can be omitted without changing the rest of Mod Health.
+The advisor reports when an active package's explicitly declared dependency is positioned later in
+the numbered order and when active declared dependency metadata forms a cycle that no linear order
+can satisfy. It does not infer category, author, framework, patch, or compatibility ordering and
+does not move mods. Advisor rules are registered separately from the general health rules so the
+module can be omitted without changing the rest of Mod Health.
 
 ## Extension requirements
 

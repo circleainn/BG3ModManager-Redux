@@ -146,7 +146,6 @@
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</None>
 		<Resource Include="FodyWeavers.xml" />
-		<Resource Include="Resources\BG3MMSplashScreen.png" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Publish' or '$(Configuration)' == 'PublishTest'">

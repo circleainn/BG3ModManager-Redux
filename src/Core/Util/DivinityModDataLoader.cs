@@ -1,8 +1,10 @@
 ﻿
 
+using DivinityModManager.AppServices;
 using DivinityModManager.Extensions;
 using DivinityModManager.Models;
 using DivinityModManager.Models.App;
+using DivinityModManager.Models.Metadata;
 
 using DynamicData;
 
@@ -665,6 +667,49 @@ public static partial class DivinityModDataLoader
 				else
 				{
 					DivinityApp.Log($"Failed to parse {extenderConfigPath} for '{pakPath}'.");
+				}
+			}
+
+			if (ReduxCreatorManifestService.ContainsManifest(pak?.Files))
+			{
+				var parsedPackageModules = new List<DivinityModData> { modData };
+				foreach (var additionalMetaFile in metaFiles.Where(file => !ReferenceEquals(file, metaFile)))
+				{
+					try
+					{
+						using var stream = additionalMetaFile.CreateContentReader();
+						using var reader = new StreamReader(stream);
+						var additionalModule = ParseMetaFile(await reader.ReadToEndAsync());
+						if (additionalModule?.HasMetadata == true
+							&& !parsedPackageModules.Any(existing =>
+								String.Equals(existing.UUID, additionalModule.UUID, StringComparison.OrdinalIgnoreCase)))
+						{
+							parsedPackageModules.Add(additionalModule);
+						}
+					}
+					catch (Exception ex) when (ex is IOException or InvalidDataException or XmlException)
+					{
+						DivinityApp.Log($"Could not inspect an additional meta.lsx while validating embedded creator metadata for '{pakName}': {ex.GetType().Name}");
+					}
+				}
+
+				try
+				{
+					modData.CreatorManifest = await ReduxCreatorManifestService.DiscoverAndValidateAsync(
+						pak?.Files,
+						pakPath,
+						parsedPackageModules);
+					var result = modData.CreatorManifest.IsValid ? "validated" : "ignored";
+					DivinityApp.Log($"Embedded creator manifest {result} for '{pakName}': {modData.CreatorManifest.Diagnostic}");
+				}
+				catch (Exception ex)
+				{
+					modData.CreatorManifest = new ReduxCreatorManifestData
+					{
+						State = ReduxCreatorManifestState.Invalid,
+						Diagnostic = $"redux.mod.json could not be validated safely ({ex.GetType().Name})."
+					};
+					DivinityApp.Log($"Embedded creator manifest ignored for '{pakName}': {ex.GetType().Name}");
 				}
 			}
 

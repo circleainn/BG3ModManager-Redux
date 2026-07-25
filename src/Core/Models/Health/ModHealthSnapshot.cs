@@ -8,25 +8,35 @@ public sealed class ModHealthSnapshot
 	public DivinityModData Mod { get; }
 	public IReadOnlyList<ModHealthFinding> Findings { get; }
 	public IReadOnlyList<ModHealthFinding> GeneralHealthFindings { get; }
+	public IReadOnlyList<ModHealthFinding> HealthAttentionFindings { get; }
+	public IReadOnlyList<ModHealthFinding> LoadOrderAdviceFindings { get; }
 	public bool HasFindings => Findings.Count > 0;
 	public int ErrorCount => Findings.Count(finding => finding.Severity == ModHealthSeverity.Error);
 	public int WarningCount => Findings.Count(finding => finding.Severity == ModHealthSeverity.Warning);
 	public int InfoCount => Findings.Count(finding => finding.Severity == ModHealthSeverity.Info);
+	public int HealthErrorCount => HealthAttentionFindings.Count(finding => finding.Severity == ModHealthSeverity.Error);
+	public int HealthWarningCount => HealthAttentionFindings.Count(finding => finding.Severity == ModHealthSeverity.Warning);
+	public int LoadOrderAdviceCount => LoadOrderAdviceFindings.Count;
 	public bool HasErrors => ErrorCount > 0;
 	public bool HasWarnings => WarningCount > 0;
 	public bool HasInfo => InfoCount > 0;
+	public bool HasHealthErrors => HealthErrorCount > 0;
+	public bool HasHealthWarnings => HealthWarningCount > 0;
+	public bool HasOnlyLoadOrderAdvice =>
+		LoadOrderAdviceCount > 0
+		&& HealthErrorCount == 0
+		&& HealthWarningCount == 0;
 	public bool HasGeneralHealthAttention => GeneralHealthFindings.Count > 0;
 	public bool HasGeneralHealthErrors => GeneralHealthFindings.Any(finding => finding.Severity == ModHealthSeverity.Error);
 	public string GeneralHealthTooltip => String.Join(
 		Environment.NewLine + Environment.NewLine,
 		GeneralHealthFindings.Select(finding => $"{finding.Title}{Environment.NewLine}{finding.Message}"));
-	public bool HasLoadOrderAdvice => Findings.Any(finding => finding.Code == ModHealthFindingCode.DependencyLoadsLater);
+	public bool HasLoadOrderAdvice => LoadOrderAdviceCount > 0;
 	public string LoadOrderAdviceTooltip
 	{
 		get
 		{
-			var advice = Findings
-				.Where(finding => finding.Code == ModHealthFindingCode.DependencyLoadsLater)
+			var advice = LoadOrderAdviceFindings
 				.Select(finding => finding.Message)
 				.ToArray();
 			var position = String.IsNullOrWhiteSpace(Mod.LoadOrderDisplayText)
@@ -68,6 +78,20 @@ public sealed class ModHealthSnapshot
 			return String.Join(" · ", parts);
 		}
 	}
+	public string AttentionCountSummary
+	{
+		get
+		{
+			var parts = new List<string>();
+			if (HealthErrorCount > 0)
+				parts.Add($"{HealthErrorCount} health error{(HealthErrorCount == 1 ? String.Empty : "s")}");
+			if (HealthWarningCount > 0)
+				parts.Add($"{HealthWarningCount} health warning{(HealthWarningCount == 1 ? String.Empty : "s")}");
+			if (LoadOrderAdviceCount > 0)
+				parts.Add($"{LoadOrderAdviceCount} advisor note{(LoadOrderAdviceCount == 1 ? String.Empty : "s")}");
+			return parts.Count == 0 ? FindingCountSummary : String.Join(" · ", parts);
+		}
+	}
 
 	public ModHealthSnapshot(DivinityModData mod, IEnumerable<ModHealthFinding> findings)
 	{
@@ -76,11 +100,25 @@ public sealed class ModHealthSnapshot
 			.OrderByDescending(finding => finding.Severity)
 			.ThenBy(finding => finding.Code)
 			.ToArray();
+		LoadOrderAdviceFindings = Findings
+			.Where(IsLoadOrderAdvice)
+			.ToArray();
+		HealthAttentionFindings = Findings
+			.Where(finding =>
+				!IsLoadOrderAdvice(finding)
+				&& finding.Severity is ModHealthSeverity.Error or ModHealthSeverity.Warning)
+			.ToArray();
 		GeneralHealthFindings = Findings
 			.Where(finding => finding.Code is
 				ModHealthFindingCode.DuplicateUuid or
 				ModHealthFindingCode.InactiveDependency or
-				ModHealthFindingCode.DeclaredConflict)
+				ModHealthFindingCode.SelfDependency or
+				ModHealthFindingCode.DependencyVersionTooOld or
+				ModHealthFindingCode.DeclaredConflict or
+				ModHealthFindingCode.InvalidCreatorManifest)
 			.ToArray();
 	}
+
+	private static bool IsLoadOrderAdvice(ModHealthFinding finding) =>
+		finding.Code is ModHealthFindingCode.DependencyLoadsLater or ModHealthFindingCode.DependencyCycle;
 }

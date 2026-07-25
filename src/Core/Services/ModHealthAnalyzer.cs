@@ -13,13 +13,15 @@ public sealed class ModHealthAnalyzer : IModHealthAnalyzer
 	{
 		new ModIdentityHealthRule(),
 		new ModDependencyHealthRule(),
+		new CreatorManifestHealthRule(),
 		new ScriptExtenderHealthRule(),
 		new LegacyAndOverrideHealthRule(),
 		new ModSourceHealthRule()
 	};
 	private static readonly IReadOnlyList<IModHealthRule> DefaultAdvisorRules = new IModHealthRule[]
 	{
-		new LoadOrderAdvisorRule()
+		new LoadOrderAdvisorRule(),
+		new LoadOrderDependencyCycleRule()
 	};
 
 	private readonly IReadOnlyList<IModHealthRule> _healthRules;

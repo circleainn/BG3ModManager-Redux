@@ -284,8 +284,8 @@ public partial class MainViewControl : MainViewControlViewBase
 			if (toolsMenuItem.Items.Count > 0) toolsMenuItem.Items.Add(new Separator());
 			var contributionItem = new MenuItem
 			{
-				Header = "Generate Redux Database Contribution...",
-				ToolTip = "Create a privacy-limited report of installed mod identities and exact PAK fingerprints.",
+				Header = "Export Redux Database Contribution...",
+				ToolTip = "Scan every installed user mod and create one privacy-limited, shareable report.",
 				Icon = ReduxIcon.FromResource("Redux.Icon.Database", true)
 			};
 			contributionItem.Click += GenerateReduxDatabaseContribution_Click;
@@ -343,7 +343,7 @@ public partial class MainViewControl : MainViewControlViewBase
 		}
 
 		var consent = ReduxMessageBox.Show(main,
-			$"Create a contribution report for {installedMods.Count} installed mod package(s)?\n\n" +
+			$"Create one contribution report for all {installedMods.Count} installed mod package(s)?\n\n" +
 			"The report includes mod names, authors, versions, module UUIDs, PAK filenames, exact file sizes and fingerprints, " +
 			"and source IDs already known to Redux.\n\n" +
 			"It does not include absolute paths, load order, profile names, settings, API keys, or other credentials. " +

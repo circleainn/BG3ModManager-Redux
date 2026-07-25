@@ -177,6 +177,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public ReadOnlyObservableCollection<ModHealthSnapshot> ActiveModHealthAttentionSnapshots { get; }
 	[Reactive] public bool HasActiveModHealthAttention { get; set; }
 	[Reactive] public bool HasActiveModHealthErrors { get; set; }
+	[Reactive] public bool HasOnlyActiveModLoadOrderAdvice { get; set; }
 	[Reactive] public string ActiveModHealthSummaryText { get; set; } = String.Empty;
 	[Reactive] public bool IsLoadOrderAdvisorDebugVisible { get; set; }
 	[Reactive] public bool LoadOrderAdvisorDebugHasWarnings { get; set; }
@@ -2623,6 +2624,11 @@ Directory the zip will be extracted to:
 					}, RxApp.MainThreadScheduler);
 				}
 
+				var creatorManifestMatches = await Observable.Start(
+					() => ApplyCreatorManifestNexusAssociations(loadedUserMods),
+					RxApp.MainThreadScheduler);
+				cacheChanged |= creatorManifestMatches;
+
 				var databaseMatches = new List<(DivinityModData Mod, ReduxModDatabaseMatch Match)>();
 				var databaseCandidates = loadedUserMods
 					.Where(mod => mod.NexusModsData.ModId < DivinityApp.NEXUSMODS_MOD_ID_START
@@ -2719,6 +2725,62 @@ Directory the zip will be extracted to:
 				});
 			}
 		});
+	}
+
+	private bool ApplyCreatorManifestNexusAssociations(IEnumerable<DivinityModData> mods)
+	{
+		var changed = false;
+		foreach (var mod in mods)
+		{
+			if (mod.CreatorManifest?.IsValid != true
+				|| mod.ModioData?.HasMetadata == true
+				|| mod.NexusModsData.MetadataOrigin is NexusMetadataOrigin.Manual or NexusMetadataOrigin.ManualUnlinked)
+			{
+				continue;
+			}
+
+			var source = mod.CreatorManifest.Sources.FirstOrDefault(candidate =>
+				candidate.Service == ReduxCreatorManifestService.NexusSourceService);
+			if (source == null || source.ProjectId < DivinityApp.NEXUSMODS_MOD_ID_START)
+			{
+				continue;
+			}
+
+			var current = mod.NexusModsData;
+			if (current.ModId == source.ProjectId && current.IsUpdated)
+			{
+				if (source.FileId is > 0 && current.LastFileId != source.FileId.Value)
+				{
+					current.SetModVersion(source.ProjectId, source.FileId.Value);
+					UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = current;
+					changed = true;
+				}
+				continue;
+			}
+
+			var manifest = mod.CreatorManifest;
+			var fallback = new NexusModsModData
+			{
+				UUID = mod.UUID,
+				ModId = source.ProjectId,
+				LastFileId = source.FileId ?? -1,
+				Name = manifest.Name,
+				Version = manifest.Version,
+				Author = manifest.Authors.FirstOrDefault(),
+				Summary = manifest.Description,
+				Description = manifest.Description,
+				DescriptionLoaded = !String.IsNullOrWhiteSpace(manifest.Description),
+				Available = true,
+				MetadataOrigin = NexusMetadataOrigin.CreatorManifest
+			};
+			current.ResetSourceAssociation();
+			current.Update(fallback);
+			UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = current;
+			changed = true;
+			DivinityApp.Log($"Linked '{mod.FileName}' to Nexus Mods project {source.ProjectId} using its embedded creator metadata.");
+		}
+
+		return changed;
 	}
 
 	public bool TryManuallyLinkNexusMod(DivinityModData mod, string linkOrId, out string error)
@@ -7023,12 +7085,24 @@ Directory the zip will be extracted to:
 		_activeModHealthAttentionItems.Clear();
 		_activeModHealthAttentionItems.AddRange(activeAttentionSnapshots);
 		HasActiveModHealthAttention = activeAttentionSnapshots.Length > 0;
-		HasActiveModHealthErrors = activeAttentionSnapshots.Any(snapshot => snapshot.HasErrors);
-		ActiveModHealthSummaryText = activeAttentionSnapshots.Length == 1
-			? "1 mod needs attention"
-			: $"{activeAttentionSnapshots.Length} mods need attention";
+		var activeHealthErrorCount = activeAttentionSnapshots.Sum(snapshot => snapshot.HealthErrorCount);
+		var activeHealthWarningCount = activeAttentionSnapshots.Sum(snapshot => snapshot.HealthWarningCount);
+		var activeAdvisorCount = activeAttentionSnapshots.Sum(snapshot => snapshot.LoadOrderAdviceCount);
+		HasActiveModHealthErrors = activeHealthErrorCount > 0;
+		HasOnlyActiveModLoadOrderAdvice =
+			activeAdvisorCount > 0
+			&& activeHealthErrorCount == 0
+			&& activeHealthWarningCount == 0;
+		var activeAttentionSummaryParts = new List<string>();
+		if (activeHealthErrorCount > 0)
+			activeAttentionSummaryParts.Add($"{activeHealthErrorCount} error{(activeHealthErrorCount == 1 ? String.Empty : "s")}");
+		if (activeHealthWarningCount > 0)
+			activeAttentionSummaryParts.Add($"{activeHealthWarningCount} warning{(activeHealthWarningCount == 1 ? String.Empty : "s")}");
+		if (activeAdvisorCount > 0)
+			activeAttentionSummaryParts.Add($"{activeAdvisorCount} advisor note{(activeAdvisorCount == 1 ? String.Empty : "s")}");
+		ActiveModHealthSummaryText = String.Join(" · ", activeAttentionSummaryParts);
 		var advisorWarningCount = snapshots.Sum(snapshot =>
-			snapshot.Findings.Count(finding => finding.Code == ModHealthFindingCode.DependencyLoadsLater));
+			snapshot.Findings.Count(IsLoadOrderAdvisorFinding));
 		IsLoadOrderAdvisorDebugVisible = Modules.ModHealthEnabled && Settings.DebugModeEnabled;
 		LoadOrderAdvisorDebugHasWarnings = advisorWarningCount > 0;
 		LoadOrderAdvisorDebugText = !Modules.LoadOrderAdvisorEnabled
@@ -7039,8 +7113,8 @@ Directory the zip will be extracted to:
 		LoadOrderAdvisorDebugTooltip = !Modules.LoadOrderAdvisorEnabled
 			? "Debug indicator: the experimental Load Order Advisor is disabled. Enable it in Preferences to evaluate declared dependency placement."
 			: advisorWarningCount > 0
-			? $"Debug indicator: the Load Order Advisor found {advisorWarningCount} reversed declared dependency relationship{(advisorWarningCount == 1 ? String.Empty : "s")}."
-			: "Debug indicator: the Load Order Advisor completed without finding a reversed declared dependency.";
+			? $"Debug indicator: the Load Order Advisor found {advisorWarningCount} declared dependency placement or cycle warning{(advisorWarningCount == 1 ? String.Empty : "s")}."
+			: "Debug indicator: the Load Order Advisor completed without finding a declared dependency placement or cycle warning.";
 
 		if (Settings.DebugModeEnabled)
 		{
@@ -7079,6 +7153,7 @@ Directory the zip will be extracted to:
 		_activeModHealthAttentionItems.Clear();
 		HasActiveModHealthAttention = false;
 		HasActiveModHealthErrors = false;
+		HasOnlyActiveModLoadOrderAdvice = false;
 		ActiveModHealthSummaryText = String.Empty;
 		IsLoadOrderAdvisorDebugVisible = false;
 		LoadOrderAdvisorDebugHasWarnings = false;
@@ -7134,7 +7209,7 @@ Directory the zip will be extracted to:
 			.ToArray();
 		var orderFindings = (snapshots ?? Enumerable.Empty<ModHealthSnapshot>())
 			.SelectMany(snapshot => snapshot.Findings
-				.Where(finding => finding.Code == ModHealthFindingCode.DependencyLoadsLater)
+				.Where(IsLoadOrderAdvisorFinding)
 				.Select(finding => $"{snapshot.Mod.UUID}:{String.Join(",", finding.RelatedModUuids)}"))
 			.OrderBy(value => value, StringComparer.OrdinalIgnoreCase);
 		return $"{advisorEnabled}|{String.Join("|", activeOrder)}||{String.Join("|", orderFindings)}";
@@ -7168,14 +7243,14 @@ Directory the zip will be extracted to:
 			&& !dependencyMod.IsLarianMod));
 		var orderFindings = (snapshots ?? Enumerable.Empty<ModHealthSnapshot>())
 			.SelectMany(snapshot => snapshot.Findings
-				.Where(finding => finding.Code == ModHealthFindingCode.DependencyLoadsLater)
+				.Where(IsLoadOrderAdvisorFinding)
 				.Select(finding => (snapshot.Mod, Finding: finding)))
 			.ToArray();
 
 		DivinityApp.Log(
 			$"[LoadOrderAdvisor] Diagnostic pass: {active.Length} active mod(s), " +
 			$"{evaluatedRelationships} declared active dependency relationship(s), " +
-			$"{orderFindings.Length} reversed relationship(s). Read-only; no actions were performed.");
+			$"{orderFindings.Length} placement or cycle warning(s). Read-only; no actions were performed.");
 		var activePositions = active
 			.Select((mod, position) => (mod, position))
 			.Where(entry => !String.IsNullOrWhiteSpace(entry.mod.UUID))
@@ -7209,7 +7284,7 @@ Directory the zip will be extracted to:
 		}
 		if (orderFindings.Length == 0)
 		{
-			DivinityApp.Log("[LoadOrderAdvisor] Result: no declared active dependencies were found loading later than the mods that require them.");
+			DivinityApp.Log("[LoadOrderAdvisor] Result: no declared active dependency placement or cycle warnings were found.");
 			return;
 		}
 
@@ -7223,6 +7298,9 @@ Directory the zip will be extracted to:
 				$"DependencyUUID='{related}' Message='{entry.Finding.Message.Replace(Environment.NewLine, " ")}'");
 		}
 	}
+
+	private static bool IsLoadOrderAdvisorFinding(ModHealthFinding finding) =>
+		finding.Code is ModHealthFindingCode.DependencyLoadsLater or ModHealthFindingCode.DependencyCycle;
 
 	public MainWindowViewModel() : base()
 	{

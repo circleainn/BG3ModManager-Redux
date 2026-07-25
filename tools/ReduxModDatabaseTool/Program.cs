@@ -7,7 +7,7 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace ReduxModDatabaseTool;
 
-internal static class Program
+public static class Program
 {
 	private const string RelativeDatabasePath = "src/GUI/Resources/ReduxModDatabase.json";
 	private static readonly JsonSerializerOptions JsonOptions = new()
@@ -109,7 +109,7 @@ internal static class Program
 		else
 		{
 			foreach (var item in RequiredArray(review, "items").OfType<JsonObject>())
-				Console.WriteLine($"  [{GetString(item, "status")}] {GetString(item, "displayName")} — {GetString(item, "reason")}");
+				Console.WriteLine($"  [{GetString(item, "status")}] {GetString(item, "displayName")} - {GetString(item, "reason")}");
 		}
 
 		foreach (var warning in validation.Warnings) Console.WriteLine($"Warning: {warning}");
@@ -120,7 +120,18 @@ internal static class Program
 	{
 		var reportPath = ResolveArtifactPath(options);
 		var databasePath = ResolveDatabasePath(options);
-		var modId = options.RequiredLong("mod-id");
+		var modIds = options
+			.Csv("mod-ids", options.Optional("mod-id"))
+			.Select(value =>
+				Int64.TryParse(value, out var parsed) && parsed > 0
+					? parsed
+					: throw new ArgumentException("--mod-id and --mod-ids values must be positive integers."))
+			.Distinct()
+			.OrderBy(value => value)
+			.ToArray();
+		if (modIds.Length == 0)
+			throw new ArgumentException("Supply --mod-id or --mod-ids.");
+
 		var report = LoadJsonObject(reportPath, "Contribution report");
 		var database = LoadDatabase(databasePath);
 		var reportValidation = ValidateContributionReport(report);
@@ -137,6 +148,36 @@ internal static class Program
 			return Fail("The database already contains validation errors; the report was not accepted.");
 		}
 
+		var changes = new List<string>();
+		foreach (var modId in modIds)
+			ApplyAcceptedReportProject(report, database, modId, changes);
+
+		UpdateCounts(database);
+		var after = ValidateDatabase(database);
+		Console.WriteLine($"Report: {reportPath}");
+		Console.WriteLine($"Database: {databasePath}");
+		Console.WriteLine($"Reviewed Nexus project(s): {String.Join(", ", modIds)}");
+		foreach (var change in changes) Console.WriteLine($"  + {change}");
+		PrintValidation(databasePath, after);
+		if (after.Errors.Count > 0) return Fail("Accepted records failed validation; the database was not changed.");
+		if (!options.Flag("write"))
+		{
+			Console.WriteLine();
+			Console.WriteLine("Preview only. Re-run with --write after reviewing the values above.");
+			return 0;
+		}
+
+		WriteDatabaseAtomically(databasePath, database);
+		Console.WriteLine($"Updated {databasePath}");
+		return 0;
+	}
+
+	private static void ApplyAcceptedReportProject(
+		JsonObject report,
+		JsonObject database,
+		long modId,
+		ICollection<string> changes)
+	{
 		var records = RequiredArray(report, "mods").OfType<JsonObject>()
 			.Where(mod => GetNestedLong(mod, "nexus", "modId") == modId)
 			.Where(mod => String.Equals(GetString(mod, "fingerprintStatus"), "exact", StringComparison.Ordinal))
@@ -145,11 +186,13 @@ internal static class Program
 			.Select(group => group.First())
 			.ToList();
 		if (records.Count == 0)
-			return Fail($"The report has no exact PAK fingerprints for Nexus project {modId}.");
+			throw new InvalidDataException($"The report has no exact PAK fingerprints for Nexus project {modId}.");
 
 		var incomplete = records.Where(mod => GetNestedLong(mod, "nexus", "fileId") <= 0).ToList();
 		if (incomplete.Count > 0)
-			return Fail($"{incomplete.Count} selected record(s) have no Nexus file ID. Review and add those artifacts manually.");
+			throw new InvalidDataException(
+				$"{incomplete.Count} selected record(s) for Nexus project {modId} have no Nexus file ID. "
+				+ "Review and add those artifacts manually.");
 
 		var first = records[0];
 		var projectName = GetNestedString(first, "nexus", "name")
@@ -162,7 +205,6 @@ internal static class Program
 		var pictureUrl = GetNestedString(first, "nexus", "pictureUrl") ?? String.Empty;
 		var projects = RequiredArray(database, "projects");
 		var project = projects.OfType<JsonObject>().SingleOrDefault(item => GetLong(item, "modId") == modId);
-		var changes = new List<string>();
 		if (project is null)
 		{
 			project = new JsonObject
@@ -225,24 +267,6 @@ internal static class Program
 			});
 			changes.Add($"added exact PAK fingerprint {hash} ({size} bytes)");
 		}
-
-		UpdateCounts(database);
-		var after = ValidateDatabase(database);
-		Console.WriteLine($"Report: {reportPath}");
-		Console.WriteLine($"Database: {databasePath}");
-		foreach (var change in changes) Console.WriteLine($"  + {change}");
-		PrintValidation(databasePath, after);
-		if (after.Errors.Count > 0) return Fail("Accepted records failed validation; the database was not changed.");
-		if (!options.Flag("write"))
-		{
-			Console.WriteLine();
-			Console.WriteLine("Preview only. Re-run with --write after reviewing the values above.");
-			return 0;
-		}
-
-		WriteDatabaseAtomically(databasePath, database);
-		Console.WriteLine($"Updated {databasePath}");
-		return 0;
 	}
 
 	private static async Task<int> AddCommandAsync(CommandOptions options)
@@ -920,8 +944,9 @@ Commands:
   review-report --file <report> [--database <path>] [--output <path>]
       Privacy-audit a tester contribution report and classify records against the database.
 
-  accept-report --file <report> --mod-id <id> [--database <path>] [--write]
-      Preview exact fingerprints for one reviewed Nexus project. Nothing is written without --write.
+  accept-report --file <report> (--mod-id <id> | --mod-ids <id,id,...>) [--database <path>] [--write]
+      Preview exact fingerprints for one or more reviewed Nexus projects. A selected batch is
+      validated and written as one atomic database update. Nothing is written without --write.
 
   add --file <artifact> --mod-id <id> --file-id <id> --name <name> --author <author> [options]
       Preview a validated project/fingerprint addition. Nothing is written unless --write is supplied.

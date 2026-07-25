@@ -1,6 +1,6 @@
 # Redux creator manifest
 
-`redux.mod.json` is a proposed, optional metadata file for mod authors who want Redux to identify
+`redux.mod.json` is an optional metadata file for mod authors who want Redux to identify
 their releases without relying on filenames or a network lookup. It is declarative metadata, not an
 installer or executable format.
 
@@ -16,29 +16,37 @@ An archive may also contain a root-level copy as an import-time convenience, but
 non-authoritative and does not replace the embedded manifest. If archive and PAK metadata conflict,
 Redux should reject the archive claim and validate the embedded PAK metadata independently.
 
-Runtime PAK-manifest discovery is planned work; this document and its JSON Schema establish the
-format before Redux begins consuming it.
+Redux discovers a root-level manifest while it is already scanning the PAK, then validates the
+claim against the package's parsed `meta.lsx` module metadata. Discovery is read-only and does not
+perform a second package scan. A valid manifest is retained as verified runtime metadata. An
+invalid manifest is ignored and appears as a non-destructive Mod Health finding.
+
+Validated source claims participate in Redux's normal provider-resolution pipeline. They supply a
+stable project identity; cached or live provider data supplies the user-facing metadata when
+available. Explicit manual links and manual unlinks take precedence, and source claims never alter
+load-order state. Manifest dependency claims remain informational.
 
 ## Trust model
 
 A manifest is a claim supplied by the package author. Redux must validate it before use:
 
 - module UUIDs, folders, names, and versions must agree with metadata parsed from the PAK;
-- source IDs may create a review candidate, but must not silently replace an existing conflicting
-  source link;
+- source IDs may establish a provider association, but must not replace an explicit manual link or
+  manual unlink;
 - dependencies remain informational unless the referenced module UUID is present and valid;
 - unknown properties or future schema versions must fail closed;
 - manifests cannot contain commands, absolute paths, credentials, executable hooks, deletion
   instructions, or changes to `modsettings.lsx`;
 - a manifest cannot directly move mods or modify a user's load order.
 
-Invalid or conflicting manifests should leave the mod Local and surface a non-destructive diagnostic.
+Invalid or conflicting manifest claims are ignored and surface a non-destructive diagnostic.
+Explicit user source choices remain unchanged.
 
 ## Example
 
 ```json
 {
-  "$schema": "./redux.mod.schema.json",
+  "$schema": "https://raw.githubusercontent.com/raincloudsfollow/BG3ModManager-Redux/main/docs/schemas/redux.mod.schema.json",
   "schemaVersion": 1,
   "manifestType": "bg3-redux-mod",
   "mod": {

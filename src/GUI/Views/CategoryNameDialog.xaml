@@ -102,6 +102,7 @@
 				Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Description (optional)" />
 			<TextBox x:Name="CategoryDescriptionTextBox" MinHeight="48" MaxLength="240"
 				AcceptsReturn="True" Padding="8,6" TextWrapping="Wrap"
+				TextChanged="CategoryDescriptionTextBox_TextChanged"
 				ToolTip="Shown when the category is hovered in the Categories pane" />
 		</StackPanel>
 		<Border x:Name="CategoryPreviewPanel" Grid.Row="4" Margin="0,8,0,0" Padding="10,8"
@@ -113,7 +114,8 @@
 					Foreground="{DynamicResource ReduxTextMutedBrush}" Text="LIVE PREVIEW" />
 				<Border x:Name="CategoryPreviewRow" Grid.Row="1" Margin="0,6,0,0"
 					Background="Transparent" BorderBrush="Transparent" BorderThickness="1.5"
-					CornerRadius="{DynamicResource Redux.CornerRadius.Pill}" Cursor="Hand">
+					CornerRadius="{DynamicResource Redux.CornerRadius.Pill}" Cursor="Hand"
+					ToolTipService.ShowDuration="12000">
 					<Grid>
 						<Border x:Name="CategoryPreviewHoverSurface"
 							BorderThickness="1.5"

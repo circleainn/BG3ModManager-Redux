@@ -1,5 +1,7 @@
 using DivinityModManager.Models;
+using DivinityModManager.AppServices;
 using DivinityModManager.Models.Cache;
+using DivinityModManager.Models.Modio;
 using DivinityModManager.Util;
 
 using Newtonsoft.Json;
@@ -23,7 +25,13 @@ public class ModioCacheHandler : IExternalModCacheHandler<ModioCachedData>
 			return false;
 		}
 
-		var candidates = mods.Where(mod => mod.PublishHandle > 0 && !mod.ModioData.HasMetadata).ToList();
+		var candidates = mods
+			.Where(mod => !mod.ModioData.HasMetadata
+				&& (mod.PublishHandle > 0
+					|| mod.CreatorManifest?.IsValid == true
+						&& mod.CreatorManifest.Sources.Any(source =>
+							source.Service == ReduxCreatorManifestService.ModioSourceService)))
+			.ToList();
 		DivinityApp.Log($"mod.io metadata lookup found {candidates.Count} candidate mod(s).");
 
 		var changed = false;
@@ -32,8 +40,26 @@ public class ModioCacheHandler : IExternalModCacheHandler<ModioCachedData>
 			cancellationToken.ThrowIfCancellationRequested();
 			try
 			{
-				DivinityApp.Log($"Requesting mod.io metadata for '{mod.DisplayName}' using PublishHandle {mod.PublishHandle}.");
-				var data = await ModioDataLoader.LoadModDataAsync(mod, APIKey, cancellationToken);
+				var creatorSource = mod.CreatorManifest?.IsValid == true
+					? mod.CreatorManifest.Sources.FirstOrDefault(source =>
+						source.Service == ReduxCreatorManifestService.ModioSourceService)
+					: null;
+				ModioModData data;
+				if (mod.PublishHandle > 0)
+				{
+					DivinityApp.Log($"Requesting mod.io metadata for '{mod.DisplayName}' using PublishHandle {mod.PublishHandle}.");
+					data = await ModioDataLoader.LoadModDataAsync(mod, APIKey, cancellationToken);
+				}
+				else if (creatorSource != null)
+				{
+					DivinityApp.Log($"Requesting mod.io metadata for '{mod.DisplayName}' using its embedded project identity.");
+					data = await ModioDataLoader.LoadModDataByProjectIdAsync(
+						mod,
+						creatorSource.ProjectId,
+						APIKey,
+						cancellationToken);
+				}
+				else continue;
 				if (data != null)
 				{
 					mod.ModioData.Update(data);

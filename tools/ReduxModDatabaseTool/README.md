@@ -35,18 +35,46 @@ fingerprint states, then compares exact fingerprints with the current database. 
 separates new project candidates, candidates for known projects, already-known packages, conflicts,
 non-Nexus records, and packages whose fingerprints were unavailable. It never changes the database.
 
-After independently confirming a candidate's Nexus project and file records, accept one project at
-a time:
+After independently confirming candidate Nexus projects and file records, preview one project or a
+selected batch:
 
 ```powershell
 dotnet run --project tools/ReduxModDatabaseTool -- accept-report `
   --file "C:\Reports\Redux-Mod-Database-Contribution.bg3redux-report" `
   --mod-id 123
+
+dotnet run --project tools/ReduxModDatabaseTool -- accept-report `
+  --file "C:\Reports\Redux-Mod-Database-Contribution.bg3redux-report" `
+  --mod-ids 123,456,789
 ```
 
 This is also preview-only by default. It requires exact fingerprints and Nexus file IDs, rejects
-fingerprint conflicts, and does not promote module UUIDs into reviewed identities. Repeat it with
-`--write` only after reviewing the proposed records.
+fingerprint conflicts, and does not promote module UUIDs into reviewed identities. A selected batch
+is validated and written as one atomic update. Repeat it with `--write` only after reviewing the
+proposed records.
+
+## Private desktop reviewer
+
+The repository also contains a compact maintainer interface that wraps the same commands:
+
+```powershell
+dotnet run --project tools/ReduxModDatabaseTool.Desktop
+```
+
+It opens a contribution report, shows duplicate/conflict classifications, lets a maintainer select
+independently verified Nexus projects, previews the exact batch, and exposes the write action only
+after that preview succeeds. This utility is not part of Redux tester packages.
+
+When launched from a repository checkout, the reviewer finds
+`src/GUI/Resources/ReduxModDatabase.json` automatically. A portable copy can keep
+`ReduxModDatabase.json` beside the executable or in a `Resources` subfolder. Paths can also be
+provided explicitly:
+
+```powershell
+ReduxModDatabaseReviewer.exe `
+  --report "C:\Reports\Contribution.bg3redux-report" `
+  --database "C:\Redux\ReduxModDatabase.json"
+```
 
 Use `--help` for the full option list, including aliases, categories, picture URLs, and reviewed
 module identities.

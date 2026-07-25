@@ -1,4 +1,5 @@
 using DivinityModManager.Models;
+using DivinityModManager.Models.Metadata;
 
 namespace DivinityModManager.Models.Health;
 
@@ -39,8 +40,43 @@ public sealed class ModDependencyHealthRule : IModHealthRule
 	public void Evaluate(ModHealthAnalysisContext context, ICollection<ModHealthFinding> findings)
 	{
 		var mod = context.Mod;
+		foreach (var dependency in mod.Dependencies.Items)
+		{
+			if (String.IsNullOrWhiteSpace(dependency.UUID))
+			{
+				continue;
+			}
+
+			if (String.Equals(dependency.UUID, mod.UUID, StringComparison.OrdinalIgnoreCase))
+			{
+				findings.Add(new ModHealthFinding(
+					ModHealthFindingCode.SelfDependency,
+					ModHealthSeverity.Error,
+					"Invalid self-dependency",
+					$"{mod.DisplayName} declares its own UUID as a dependency. Redux is reporting the package metadata and has not altered it.",
+					new[] { dependency.UUID }));
+				continue;
+			}
+
+			if (dependency.Version?.VersionInt > 0
+				&& context.InstalledByUuid.TryGetValue(dependency.UUID, out var installedDependency)
+				&& installedDependency.Version?.VersionInt < dependency.Version.VersionInt)
+			{
+				findings.Add(new ModHealthFinding(
+					ModHealthFindingCode.DependencyVersionTooOld,
+					ModHealthSeverity.Warning,
+					"Dependency version is older than declared",
+					$"{dependency.Name} {dependency.Version.Version} or newer is declared, but installed version {installedDependency.Version?.Version ?? "unknown"} was detected.",
+					new[] { dependency.UUID }));
+			}
+		}
+
 		foreach (var dependency in mod.MissingDependencies.Items)
 		{
+			if (String.Equals(dependency.UUID, mod.UUID, StringComparison.OrdinalIgnoreCase))
+			{
+				continue;
+			}
 			findings.Add(new ModHealthFinding(
 				ModHealthFindingCode.MissingDependency,
 				ModHealthSeverity.Error,
@@ -135,6 +171,88 @@ public sealed class LoadOrderAdvisorRule : IModHealthRule
 				$"{dependency.Name} is positioned after {mod.DisplayName}. Declared dependencies should normally load earlier; review the mod author's instructions before moving it.",
 				new[] { dependency.UUID }));
 		}
+	}
+}
+
+/// <summary>
+/// Reports exact cycles in active, declared dependency metadata. A cycle has no
+/// linear arrangement that can satisfy every declaration, so Redux only reports it.
+/// </summary>
+public sealed class LoadOrderDependencyCycleRule : IModHealthRule
+{
+	public void Evaluate(ModHealthAnalysisContext context, ICollection<ModHealthFinding> findings)
+	{
+		var mod = context.Mod;
+		if (!mod.IsActive
+			|| String.IsNullOrWhiteSpace(mod.UUID)
+			|| !context.ActiveUuids.Contains(mod.UUID))
+		{
+			return;
+		}
+
+		foreach (var dependency in mod.Dependencies.Items)
+		{
+			if (String.IsNullOrWhiteSpace(dependency.UUID)
+				|| !context.ActiveUuids.Contains(dependency.UUID)
+				|| !HasDependencyPathTo(
+					dependency.UUID,
+					mod.UUID,
+					context,
+					new HashSet<string>(StringComparer.OrdinalIgnoreCase)))
+			{
+				continue;
+			}
+
+			findings.Add(new ModHealthFinding(
+				ModHealthFindingCode.DependencyCycle,
+				ModHealthSeverity.Warning,
+				"Declared dependency cycle",
+				$"{mod.DisplayName} and its active dependency chain refer back to one another. No linear load order can satisfy every declaration; review the mod authors' instructions.",
+				new[] { dependency.UUID }));
+			return;
+		}
+	}
+
+	private static bool HasDependencyPathTo(
+		string currentUuid,
+		string targetUuid,
+		ModHealthAnalysisContext context,
+		ISet<string> visited)
+	{
+		if (String.Equals(currentUuid, targetUuid, StringComparison.OrdinalIgnoreCase))
+		{
+			return true;
+		}
+		if (!visited.Add(currentUuid)
+			|| !context.ActiveUuids.Contains(currentUuid)
+			|| !context.InstalledByUuid.TryGetValue(currentUuid, out var current))
+		{
+			return false;
+		}
+
+		return current.Dependencies.Items.Any(dependency =>
+			!String.IsNullOrWhiteSpace(dependency.UUID)
+			&& HasDependencyPathTo(dependency.UUID, targetUuid, context, visited));
+	}
+}
+
+public sealed class CreatorManifestHealthRule : IModHealthRule
+{
+	public void Evaluate(ModHealthAnalysisContext context, ICollection<ModHealthFinding> findings)
+	{
+		var manifest = context.Mod.CreatorManifest;
+		if (manifest?.State != ReduxCreatorManifestState.Invalid)
+		{
+			return;
+		}
+
+		findings.Add(new ModHealthFinding(
+			ModHealthFindingCode.InvalidCreatorManifest,
+			ModHealthSeverity.Warning,
+			"Embedded creator manifest ignored",
+			String.IsNullOrWhiteSpace(manifest.Diagnostic)
+				? "This package contains a redux.mod.json file that could not be validated. Redux did not apply its claims or change any existing source association."
+				: $"{manifest.Diagnostic} Redux did not apply its claims or change any existing source association."));
 	}
 }
 

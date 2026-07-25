@@ -18,7 +18,8 @@ public enum NexusMetadataOrigin
 	BundledProvenance = 1,
 	LiveApi = 2,
 	Manual = 3,
-	ManualUnlinked = 4
+	ManualUnlinked = 4,
+	CreatorManifest = 5
 }
 
 public class NexusModsModData : INotifyPropertyChanged, IExternalModMetadata

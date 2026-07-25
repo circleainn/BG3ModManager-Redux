@@ -86,6 +86,45 @@ public static class ModioDataLoader
 		return result;
 	}
 
+	public static async Task<ModioModData> LoadModDataByProjectIdAsync(
+		DivinityModData mod,
+		long projectId,
+		string apiKey,
+		CancellationToken cancellationToken)
+	{
+		if (mod == null || projectId <= 0 || String.IsNullOrWhiteSpace(apiKey))
+		{
+			return null;
+		}
+
+		var gameId = await GetBg3GameIdAsync(apiKey, cancellationToken);
+		if (gameId <= 0)
+		{
+			return null;
+		}
+
+		var apiKeyParameter = Uri.EscapeDataString(apiKey);
+		var gameApiBaseUrl = $"https://g-{gameId}.modapi.io/v1";
+		var directLookupUrl = $"{gameApiBaseUrl}/games/{gameId}/mods/{projectId}?api_key={apiKeyParameter}";
+		using var response = await Client.GetAsync(directLookupUrl, cancellationToken);
+		if (!response.IsSuccessStatusCode)
+		{
+			DivinityApp.Log($"mod.io creator-manifest lookup failed for project {projectId}: HTTP {(int)response.StatusCode}");
+			return null;
+		}
+
+		var json = await response.Content.ReadAsStringAsync(cancellationToken);
+		var result = JsonConvert.DeserializeObject<ModioModData>(json);
+		if (result == null || result.ModId != projectId || (result.GameId > 0 && result.GameId != gameId))
+		{
+			DivinityApp.Log($"Rejected an invalid mod.io creator-manifest response for project {projectId}.");
+			return null;
+		}
+
+		result.UUID = mod.UUID;
+		return result;
+	}
+
 	private static async Task<long> GetBg3GameIdAsync(string apiKey, CancellationToken cancellationToken)
 	{
 		if (_bg3GameId > 0)

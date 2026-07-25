@@ -851,6 +851,7 @@
 			<Trigger Property="IconKey" Value="settings"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Settings}" /></Trigger>
 			<Trigger Property="IconKey" Value="download"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Download}" /></Trigger>
 			<Trigger Property="IconKey" Value="warning"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Warning}" /></Trigger>
+			<Trigger Property="IconKey" Value="flag"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Flag}" /></Trigger>
 			<Trigger Property="IconKey" Value="info"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.Information}" /></Trigger>
 			<Trigger Property="IconKey" Value="error"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.CloseCircle}" /></Trigger>
 			<Trigger Property="IconKey" Value="question"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.HelpCircle}" /></Trigger>
@@ -2143,15 +2144,6 @@
 				<MultiDataTrigger.Setters>
 					<Setter Property="Background" Value="{Binding SelectedColor, Converter={StaticResource StringToLinearBrushConverter}}" />
 				</MultiDataTrigger.Setters>
-			</MultiDataTrigger>
-			<MultiDataTrigger>
-				<MultiDataTrigger.Conditions>
-					<Condition Binding="{Binding IsForceLoaded}" Value="True" />
-					<Condition Binding="{Binding IsForceLoadedMergedMod}" Value="False" />
-					<Condition Binding="{Binding ForceAllowInLoadOrder}" Value="False" />
-				</MultiDataTrigger.Conditions>
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
-				<Setter Property="BorderThickness" Value="2,0,0,0" />
 			</MultiDataTrigger>
 		</Style.Triggers>
 	</Style>
