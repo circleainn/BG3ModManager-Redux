@@ -18,7 +18,9 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 using WpfScreenHelper;
 
@@ -174,7 +176,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 	private void UpdateWindowSettings()
 	{
-		if (ViewModel?.Settings?.Loaded == true)
+		if (!_isPreparingStartup && ViewModel?.Settings?.Loaded == true)
 		{
 			var win = ViewModel.Settings.Window;
 			win.Maximized = WindowState == WindowState.Maximized;
@@ -190,6 +192,8 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 	private static IDisposable _saveWindowPositionTask = null;
 	private IDisposable _resizeGlowFadeTask = null;
+	private bool _isPreparingStartup;
+	private WindowSettings _deferredStartupWindowSettings;
 
 	private void SaveWindowSettings()
 	{
@@ -199,6 +203,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 	private void OnWindowSettingsChanged(object sender, EventArgs e)
 	{
+		if (_isPreparingStartup) return;
 		_saveWindowPositionTask?.Dispose();
 		_saveWindowPositionTask = RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(500), SaveWindowSettings);
 	}
@@ -229,6 +234,12 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 	public void ApplyWindowPosition(WindowSettings win)
 	{
+		if (_isPreparingStartup)
+		{
+			_deferredStartupWindowSettings = win;
+			return;
+		}
+
 		WindowStartupLocation = WindowStartupLocation.Manual;
 
 		if (win.Maximized)
@@ -535,6 +546,59 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 			MainView.OnActivated();
 		});
+	}
+
+	public void PrepareForStartup()
+	{
+		_isPreparingStartup = true;
+		ShowActivated = false;
+		ShowInTaskbar = false;
+		WindowStartupLocation = WindowStartupLocation.Manual;
+		Left = -32000;
+		Top = -32000;
+	}
+
+	public async Task PrepareVisualTreeForRevealAsync()
+	{
+		// The native window remains fully opaque but off-screen. This avoids the
+		// black surface Windows presents for a transparent top-level WPF window,
+		// while still allowing the complete visual tree to measure and render.
+		MainGrid.UpdateLayout();
+		await Dispatcher.InvokeAsync(() => MainGrid.UpdateLayout(), DispatcherPriority.ContextIdle);
+		await WaitForRenderingAsync();
+		await WaitForRenderingAsync();
+	}
+
+	public void RevealAfterStartup()
+	{
+		_isPreparingStartup = false;
+		if (_deferredStartupWindowSettings != null)
+		{
+			var settings = _deferredStartupWindowSettings;
+			_deferredStartupWindowSettings = null;
+			ApplyWindowPosition(settings);
+		}
+		else
+		{
+			var workArea = SystemParameters.WorkArea;
+			Left = workArea.Left + Math.Max(0, (workArea.Width - ActualWidth) / 2);
+			Top = workArea.Top + Math.Max(0, (workArea.Height - ActualHeight) / 2);
+		}
+
+		ShowInTaskbar = true;
+	}
+
+	private static Task WaitForRenderingAsync()
+	{
+		var completion = new TaskCompletionSource();
+		EventHandler handler = null;
+		handler = (_, _) =>
+		{
+			CompositionTarget.Rendering -= handler;
+			completion.TrySetResult();
+		};
+		CompositionTarget.Rendering += handler;
+		return completion.Task;
 	}
 
 	private void ApplyAdaptiveDefaultSize()

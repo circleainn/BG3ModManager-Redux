@@ -15,9 +15,9 @@
 		<AssemblyName>BG3ModManager</AssemblyName>
 		<AssemblyTitle>Baldur's Gate 3 Mod Manager Redux</AssemblyTitle>
 
-		<AssemblyVersion>0.1.0.6</AssemblyVersion>
-		<FileVersion>0.1.0.6</FileVersion>
-		<InformationalVersion>0.1.0-alpha.6</InformationalVersion>
+		<AssemblyVersion>0.1.0.7</AssemblyVersion>
+		<FileVersion>0.1.0.7</FileVersion>
+		<InformationalVersion>0.1.0-alpha.7</InformationalVersion>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
 		<Product>Baldur's Gate 3 Mod Manager Redux</Product>

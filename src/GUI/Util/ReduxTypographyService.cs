@@ -8,6 +8,14 @@ using System.Windows.Media;
 namespace DivinityModManager.Util;
 
 /// <summary>
+/// Marks a short-lived window whose typography must remain visually stable while
+/// the application's persisted typography selection is being restored.
+/// </summary>
+public interface IReduxTypographyIsolated
+{
+}
+
+/// <summary>
 /// Applies the user-selected Redux UI family through the application-level
 /// dynamic typography token. Color themes intentionally do not own typography.
 /// </summary>
@@ -22,26 +30,7 @@ public static class ReduxTypographyService
 	{
 		if (resources == null) return;
 		ReduxCustomFontService.ProcessPendingDeletions();
-		if (!Enum.IsDefined(selection)) selection = ReduxTypographyFont.Manrope;
-
-		FontFamily family;
-		if (!String.IsNullOrWhiteSpace(customReference))
-		{
-			// Custom-theme files intentionally carry only Redux's path-free reference.
-			// A font that is not installed locally must never prevent the theme loading.
-			family = ReduxCustomFontService.TryCreateFontFamily(customReference, out var customFamily)
-				? customFamily
-				: CreateBundledFont("Manrope");
-		}
-		else family = selection switch
-		{
-			ReduxTypographyFont.SegoeUI => new FontFamily("Segoe UI"),
-			ReduxTypographyFont.AtkinsonHyperlegible => CreateBundledFont("Atkinson Hyperlegible"),
-			ReduxTypographyFont.MonaspaceNeon => CreateBundledFont("Monaspace Neon"),
-			ReduxTypographyFont.Minipax => CreateBundledFont("Minipax"),
-			ReduxTypographyFont.Chivo => CreateBundledFont("Chivo"),
-			_ => CreateBundledFont("Manrope")
-		};
+		var family = ResolveFontFamily(selection, customReference);
 
 		// Replace the value in the dictionary that owns each token. Adding a new
 		// shadowing key at the application root does not reliably invalidate controls
@@ -56,9 +45,34 @@ public static class ReduxTypographyService
 		{
 			foreach (Window window in Application.Current.Windows)
 			{
-				window.FontFamily = family;
+				if (window is not IReduxTypographyIsolated)
+					window.FontFamily = family;
 			}
 		}
+	}
+
+	public static FontFamily ResolveFontFamily(ReduxTypographyFont selection, string customReference = "")
+	{
+		if (!Enum.IsDefined(selection)) selection = ReduxTypographyFont.Manrope;
+
+		if (!String.IsNullOrWhiteSpace(customReference))
+		{
+			// Custom-theme files intentionally carry only Redux's path-free reference.
+			// A font that is not installed locally must never prevent the theme loading.
+			return ReduxCustomFontService.TryCreateFontFamily(customReference, out var customFamily)
+				? customFamily
+				: CreateBundledFont("Manrope");
+		}
+
+		return selection switch
+		{
+			ReduxTypographyFont.SegoeUI => new FontFamily("Segoe UI"),
+			ReduxTypographyFont.AtkinsonHyperlegible => CreateBundledFont("Atkinson Hyperlegible"),
+			ReduxTypographyFont.MonaspaceNeon => CreateBundledFont("Monaspace Neon"),
+			ReduxTypographyFont.Minipax => CreateBundledFont("Minipax"),
+			ReduxTypographyFont.Chivo => CreateBundledFont("Chivo"),
+			_ => CreateBundledFont("Manrope")
+		};
 	}
 
 	public static void ApplyTextSize(ResourceDictionary resources, ReduxTextSize selection)
@@ -84,7 +98,8 @@ public static class ReduxTypographyService
 			var bodySize = Math.Round(12 * scale * 2, MidpointRounding.AwayFromZero) / 2;
 			foreach (Window window in Application.Current.Windows)
 			{
-				window.FontSize = bodySize;
+				if (window is not IReduxTypographyIsolated)
+					window.FontSize = bodySize;
 			}
 		}
 	}

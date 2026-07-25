@@ -7,7 +7,7 @@ parsing through LSLib, game-path detection, and launch behavior. Confirmed inher
 received targeted correctness and safety fixes without redesigning those core formats or workflows.
 
 This document inventories the major Redux additions and the inherited issues addressed through
-version `0.1.0-alpha.6`.
+version `0.1.0-alpha.7`.
 
 ## Redux interface and design system
 
@@ -28,6 +28,9 @@ version `0.1.0-alpha.6`.
   column at an excessive size.
 - Content-aware category-pane sizing based on visible labels and the active application typeface.
 - Updated application branding, executable metadata, version display, and Redux iconography.
+- A Redux-owned startup surface with live initialization status. The main window is prepared
+  off-screen and revealed only after its visual tree and workspace initialization are ready,
+  avoiding the legacy blank-window loading phase.
 
 ## Themes, typography, and appearance
 

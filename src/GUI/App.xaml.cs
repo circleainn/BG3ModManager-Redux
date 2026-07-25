@@ -8,10 +8,12 @@ using DivinityModManager.Views;
 using AutoUpdaterDotNET;
 
 using System.Globalization;
+using System.ComponentModel;
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Markup;
+using System.Windows.Threading;
 
 namespace DivinityModManager;
 
@@ -66,8 +68,44 @@ public partial class App : Application
 		EventManager.RegisterClassHandler(typeof(Window), Window.PreviewMouseDownEvent, new MouseButtonEventHandler(OnPreviewMouseDown));
 		EventManager.RegisterClassHandler(typeof(Window), Keyboard.PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown));
 
-		var mainWindow = new MainWindow();
-		mainWindow.Show();
+		var startupWindow = new ReduxStartupWindow();
+		MainWindow = startupWindow;
+		startupWindow.Show();
+
+		// Let the compact startup surface render before constructing the much larger
+		// main visual tree. The main window still drives the existing initialization
+		// pipeline; it is simply prepared out of sight until that pipeline completes.
+		Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() =>
+		{
+			var mainWindow = new MainWindow();
+			mainWindow.PrepareForStartup();
+			startupWindow.Attach(mainWindow.ViewModel);
+
+			var revealStarted = false;
+			PropertyChangedEventHandler initializedHandler = null;
+			initializedHandler = async (_, args) =>
+			{
+				if (args.PropertyName != nameof(MainWindowViewModel.IsInitialized) ||
+					!mainWindow.ViewModel.IsInitialized ||
+					revealStarted)
+				{
+					return;
+				}
+
+				revealStarted = true;
+				mainWindow.ViewModel.PropertyChanged -= initializedHandler;
+				await mainWindow.PrepareVisualTreeForRevealAsync();
+				mainWindow.RevealAfterStartup();
+				await startupWindow.CloseWithTransitionAsync();
+				mainWindow.Activate();
+			};
+			mainWindow.ViewModel.PropertyChanged += initializedHandler;
+
+			MainWindow = mainWindow;
+			mainWindow.Show();
+			startupWindow.Owner = mainWindow;
+			startupWindow.Activate();
+		}));
 	}
 
 	private static void OnPreviewMouseDown(object sender, MouseButtonEventArgs e)

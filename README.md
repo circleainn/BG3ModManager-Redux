@@ -11,7 +11,7 @@ safer file operations, richer metadata, and better organization for large mod li
 
 ## Current version
 
-**0.1.0-alpha.6 — private testing alpha**
+**0.1.0-alpha.7 — private testing alpha**
 
 Redux is still experimental. Current builds are intended for careful personal use and a small
 group of private testers. Features, metadata matching, themes, and interface details may be
@@ -47,6 +47,8 @@ incomplete or change between builds.
 - Shortcuts to common game, mod, save, and log folders.
 - A compact grouped command toolbar with an equivalent top-menu workflow when the toolbar is
   hidden, plus a configurable Toggle Toolbar shortcut.
+- A compact Redux startup surface with live initialization status; the main window remains staged
+  out of sight until its layout and mod-management workspace are ready to reveal.
 - Dark, Light, and Parchment themes with bundled typography and text-size selectors plus refined semantic palettes.
   Redux Dark, Redux Light, and Parchment all default to Manrope.
 - Safe custom themes with a preferred bundled or locally imported typeface and text size, live

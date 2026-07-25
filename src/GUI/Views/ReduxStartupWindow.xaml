@@ -1,0 +1,190 @@
+<Window x:Class="DivinityModManager.Views.ReduxStartupWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:DivinityModManager.Controls"
+    Width="560"
+    Height="304"
+    ResizeMode="NoResize"
+    ShowActivated="True"
+    ShowInTaskbar="False"
+    WindowStartupLocation="CenterScreen"
+    WindowStyle="None"
+    AllowsTransparency="True"
+    Background="Transparent"
+    FontFamily="{DynamicResource Redux.FontFamily.UI}"
+    FontSize="{DynamicResource Redux.FontSize.12}"
+    FontWeight="{DynamicResource Redux.FontWeight.Body}"
+    TextOptions.TextFormattingMode="Ideal"
+    TextOptions.TextRenderingMode="ClearType"
+    AutomationProperties.Name="BG3 Mod Manager Redux is starting">
+	<Window.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Window.Resources>
+
+	<Grid x:Name="StartupContent" Margin="18">
+		<Grid.RenderTransform>
+			<ScaleTransform ScaleX="1" ScaleY="1" CenterX="262" CenterY="134" />
+		</Grid.RenderTransform>
+
+		<Border Background="Transparent"
+		    BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
+		    BorderThickness="1"
+		    CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+			<Border.Effect>
+				<DropShadowEffect BlurRadius="32"
+				    Direction="270"
+				    Opacity="0.5"
+				    ShadowDepth="9"
+				    Color="#000000" />
+			</Border.Effect>
+		</Border>
+
+		<Border Margin="1"
+		    Background="Transparent"
+		    CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+
+				<!--
+					The splash is an opaque Redux surface. Layered semantic colors add
+					depth without allowing the desktop to compete with startup content.
+				-->
+				<Border Grid.RowSpan="3"
+				    CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+				    Opacity="1">
+					<Border.Background>
+						<LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+							<GradientStop Offset="0" Color="{DynamicResource ReduxSurfaceElevatedColor}" />
+							<GradientStop Offset="0.48" Color="{DynamicResource ReduxSurfaceColor}" />
+							<GradientStop Offset="1" Color="{DynamicResource ReduxListInteriorColor}" />
+						</LinearGradientBrush>
+					</Border.Background>
+				</Border>
+				<Border Grid.RowSpan="3"
+				    IsHitTestVisible="False"
+				    CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+				    Opacity="0.075">
+					<Border.Background>
+						<RadialGradientBrush Center="0.05,0"
+						    GradientOrigin="0.05,0"
+						    RadiusX="0.78"
+						    RadiusY="1.25">
+							<GradientStop Offset="0" Color="{DynamicResource ReduxAccentColor}" />
+							<GradientStop Offset="0.72" Color="Transparent" />
+						</RadialGradientBrush>
+					</Border.Background>
+				</Border>
+				<Border Grid.RowSpan="3"
+				    Margin="1"
+				    BorderBrush="{DynamicResource ReduxBorderBrush}"
+				    BorderThickness="1"
+				    CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+				    IsHitTestVisible="False"
+				    Opacity="0.9" />
+
+				<Border Height="2"
+				    VerticalAlignment="Top"
+				    Background="{DynamicResource ReduxAccentBrush}"
+				    CornerRadius="7,7,0,0" />
+
+				<Grid Margin="28,25,28,0">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+
+					<Border Width="42"
+					    Height="42"
+					    Background="{DynamicResource ReduxAccentSoftBrush}"
+					    BorderBrush="{DynamicResource ReduxAccentBrush}"
+					    BorderThickness="1"
+					    CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+						<Border.Effect>
+							<DropShadowEffect BlurRadius="12"
+							    Color="{DynamicResource ReduxAccentColor}"
+							    Opacity="0.24"
+							    ShadowDepth="0" />
+						</Border.Effect>
+						<controls:ReduxIcon Width="23"
+						    Height="23"
+						    HorizontalAlignment="Center"
+						    VerticalAlignment="Center"
+						    Foreground="{DynamicResource ReduxAccentHoverBrush}"
+						    StrokeData="{StaticResource Redux.Icon.Sparkles}" />
+					</Border>
+
+					<StackPanel Grid.Column="1" Margin="13,0,0,0" VerticalAlignment="Center">
+						<TextBlock FontSize="{DynamicResource Redux.FontSize.15}"
+						    FontWeight="{DynamicResource Redux.FontWeight.Title}"
+						    Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+						    Text="Baldur's Gate 3 Mod Manager Redux" />
+						<TextBlock Margin="0,3,0,0"
+						    FontSize="{DynamicResource Redux.FontSize.11}"
+						    Foreground="{DynamicResource ReduxTextMutedBrush}"
+						    Text="Preparing your modding workspace" />
+					</StackPanel>
+
+					<Border Grid.Column="2"
+					    Padding="9,4"
+					    VerticalAlignment="Top"
+					    Background="{DynamicResource ReduxSurfaceMutedBrush}"
+					    BorderBrush="{DynamicResource ReduxBorderBrush}"
+					    BorderThickness="1"
+					    CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
+						<TextBlock FontSize="{DynamicResource Redux.FontSize.10}"
+						    Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+						    Text="{Binding VersionText, RelativeSource={RelativeSource AncestorType=Window}}" />
+					</Border>
+				</Grid>
+
+				<StackPanel Grid.Row="1" Margin="28,20,28,18" VerticalAlignment="Center">
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.21}"
+					    FontWeight="{DynamicResource Redux.FontWeight.Title}"
+					    Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+					    Text="Starting Redux" />
+					<TextBlock MinHeight="20"
+					    Margin="0,7,0,0"
+					    Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+					    Text="{Binding MainProgressWorkText, FallbackValue='Preparing startup services…', TargetNullValue='Preparing startup services…'}"
+					    TextTrimming="CharacterEllipsis" />
+				</StackPanel>
+
+				<Grid Grid.Row="2" Margin="28,0,28,25">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<TextBlock FontSize="{DynamicResource Redux.FontSize.10}"
+						    Foreground="{DynamicResource ReduxTextMutedBrush}"
+						    Text="Loading application data" />
+						<TextBlock Grid.Column="1"
+						    FontSize="{DynamicResource Redux.FontSize.10}"
+						    FontWeight="{DynamicResource Redux.FontWeight.Control}"
+						    Foreground="{DynamicResource ReduxAccentHoverBrush}"
+						    Text="{Binding MainProgressValue, StringFormat={}{0:P0}}" />
+					</Grid>
+					<ProgressBar Grid.Row="1"
+					    Height="7"
+					    Margin="0,8,0,0"
+					    Maximum="1"
+					    Style="{StaticResource ReduxProgressBarStyle}"
+					    Value="{Binding MainProgressValue}" />
+				</Grid>
+			</Grid>
+		</Border>
+	</Grid>
+</Window>
