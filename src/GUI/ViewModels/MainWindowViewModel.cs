@@ -2864,7 +2864,7 @@ Directory the zip will be extracted to:
 
 		var warningWindow = new ReduxPreviewWarningWindow { Owner = Window };
 		ReduxThemeService.Apply(warningWindow.Resources, Settings.ColorTheme, ReduxThemeService.GetActiveTheme(Settings));
-		if (warningWindow.ShowDialog() == true)
+		if (ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(warningWindow, Window) == true)
 		{
 			Settings.ReduxPreviewWarningAcknowledged = true;
 			SaveSettings();
@@ -2880,13 +2880,19 @@ Directory the zip will be extracted to:
 			return;
 		}
 
+		if (!_startupPresentationReady)
+		{
+			_pendingModioWarningMods = loadedUserMods.ToList();
+			return;
+		}
+
 		var warningWindow = new ModioSupportWarningWindow
 		{
 			Owner = Window
 		};
 		ReduxThemeService.Apply(warningWindow.Resources, Settings.ColorTheme, ReduxThemeService.GetActiveTheme(Settings));
 
-		if (warningWindow.ShowDialog() == true)
+		if (ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(warningWindow, Window) == true)
 		{
 			Settings.ModioSupportWarningAcknowledged = true;
 			SaveSettings();
@@ -2907,12 +2913,51 @@ Directory the zip will be extracted to:
 			return;
 		}
 
+		if (!_startupPresentationReady)
+		{
+			_pendingOfflineWarningMods = loadedUserMods?.ToList() ?? [];
+			_pendingOfflineWarningIsApplicationLaunch |= isApplicationLaunch;
+			return;
+		}
+
 		var warningWindow = new OfflineNexusDatabaseWarningWindow { Owner = Window };
 		ReduxThemeService.Apply(warningWindow.Resources, Settings.ColorTheme, ReduxThemeService.GetActiveTheme(Settings));
-		if (warningWindow.ShowDialog() == true)
+		if (ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(warningWindow, Window) == true)
 		{
 			Settings.OfflineNexusDatabaseWarningAcknowledged = true;
 			SaveSettings();
+		}
+	}
+
+	/// <summary>
+	/// Releases startup-only modal UI after the staged main window has reached
+	/// its final monitor position and is ready to own centered dialogs.
+	/// </summary>
+	public void CompleteStartupPresentation()
+	{
+		if (_startupPresentationReady)
+		{
+			return;
+		}
+
+		_startupPresentationReady = true;
+		ShowReduxPreviewWarningIfRequired();
+		ShowOfflineNexusDatabaseWarningIfRequired(UserMods, true);
+
+		if (_pendingOfflineWarningMods != null)
+		{
+			var pendingMods = _pendingOfflineWarningMods;
+			var isApplicationLaunch = _pendingOfflineWarningIsApplicationLaunch;
+			_pendingOfflineWarningMods = null;
+			_pendingOfflineWarningIsApplicationLaunch = false;
+			ShowOfflineNexusDatabaseWarningIfRequired(pendingMods, isApplicationLaunch);
+		}
+
+		if (_pendingModioWarningMods != null)
+		{
+			var pendingMods = _pendingModioWarningMods;
+			_pendingModioWarningMods = null;
+			ShowModioSupportWarningIfRequired(pendingMods);
 		}
 	}
 
@@ -2971,6 +3016,10 @@ Directory the zip will be extracted to:
 	}
 
 	private bool _firstRun = true;
+	private bool _startupPresentationReady;
+	private IReadOnlyList<DivinityModData> _pendingModioWarningMods;
+	private IReadOnlyList<DivinityModData> _pendingOfflineWarningMods;
+	private bool _pendingOfflineWarningIsApplicationLaunch;
 
 	private async Task<Unit> RefreshAsync(IScheduler ctrl, CancellationToken t)
 	{
@@ -3171,8 +3220,6 @@ Directory the zip will be extracted to:
 			IsRefreshing = false;
 			IsLoadingOrder = false;
 			IsInitialized = true;
-			ShowReduxPreviewWarningIfRequired();
-			ShowOfflineNexusDatabaseWarningIfRequired(UserMods, true);
 			// Resolve the strongest provider identity first. The bundled Nexus
 			// provenance database is only a fallback for mods not identified by mod.io.
 			LoadModioMetadataBackground(LoadNexusModsMetadataBackground);

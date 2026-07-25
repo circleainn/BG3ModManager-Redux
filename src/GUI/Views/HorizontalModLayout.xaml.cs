@@ -2129,12 +2129,25 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		var headerWidth = MeasureColumnText(listView, columnName, fontWeight: FontWeights.SemiBold) + 28;
 		var contentWidth = 0d;
+		IEnumerable<DivinityModData> measurementMods = listView.Items
+			.OfType<DivinityModData>()
+			.Where(item => !item.IsVisualDivider);
+
+		// Override mods render in a separate headerless list whose columns are linked
+		// to the Active list. Include those rows when sizing the shared Active columns
+		// so override category/source pills and other values are not clipped.
+		if (ReferenceEquals(listView, ActiveModsListView) && ViewModel?.ForceLoadedMods != null)
+		{
+			measurementMods = measurementMods
+				.Concat(ViewModel.ForceLoadedMods.Where(item => !item.IsVisualDivider))
+				.Distinct();
+		}
 
 		// Measure every real row represented by the list, including rows temporarily
 		// collapsed by a separator or still completing their first visibility binding.
 		// Otherwise the first auto-size pass after startup can measure only a partial
 		// set and produce a narrower result than a second click.
-		foreach (var mod in listView.Items.OfType<DivinityModData>().Where(item => !item.IsVisualDivider))
+		foreach (var mod in measurementMods)
 		{
 			double candidateWidth;
 			switch (columnName)

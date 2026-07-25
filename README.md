@@ -27,15 +27,40 @@ incomplete or change between builds.
 - Source code is public for transparency and development, but this alpha is not yet intended for
   inexperienced users.
 
-## Redux features
+## Built on BG3 Mod Manager
 
-### Core mod management
+Redux is not a from-scratch mod manager. It inherits the following foundations from
+LaughingLeader's BG3 Mod Manager:
 
-- Active and inactive mod management with preserved BG3 load-order behavior.
-- Drag-and-drop reordering, including multi-selection where supported.
-- Profile, campaign, and saved load-order management.
-- Importing `.pak` files and supported archives.
-- Exporting load orders to the game, text files, JSON, and archives where supported.
+- Active and inactive mod management, drag-and-drop multi-selection, profiles, campaigns, saved
+  orders, filtering, and BG3 load-order export.
+- `.pak` and archive import through the established LSLib-backed package pipeline, plus load-order
+  import/export to the game, JSON, text, save files, and archives.
+- Automatic game-path detection, launch behavior, folder shortcuts, override/force-loaded package
+  handling, and mod-development utilities.
+- Mod descriptions, dependencies, custom `meta.lsx` tags, Nexus Mods metadata/update support,
+  Script Extender installation and requirement status, Osiris/Mod Fixer detection, missing
+  dependency and invalid-UUID indicators, and rich hover information.
+- Configurable keyboard shortcuts, screen-reader detection and automation helpers, CrossSpeak
+  integration with Windows speech fallback, Speak Active Order, Stop Speaking, and the original
+  narrowly scoped option labeled **Colorblind Support**, which exposed a Toolkit/editor-project
+  marker instead of relying only on its row background.
+- The original dark/light theme support and WPF application architecture.
+
+These systems were built by LaughingLeader and the upstream contributors. Redux preserves them
+while rebuilding and extending many of their interfaces and supporting systems.
+
+See [Changes from upstream BG3ModManager](docs/CHANGES_FROM_UPSTREAM.md) for a fuller breakdown of
+what Redux changes, adds, and fixes.
+
+## Redux additions and extensions
+
+### Interface and workflow
+
+- A semantic Redux design system, rebuilt Dark and Light palettes, a Parchment theme, bundled
+  typography, text-size presets, and reusable custom themes.
+- A resizable selected-mod details drawer and redesigned hover information that extend the
+  upstream metadata already available for mods.
 - Portable `.bg3redux` Redux bundles that can carry a saved load order, custom categories,
   assignments, active-list separators, and reusable custom PNG icons between Redux installations.
 - A compact export review that shows exactly which Redux organization data will be shared and
@@ -44,13 +69,12 @@ incomplete or change between builds.
 - Import previews report local mod availability, category-name conflicts, export time, and the
   originating Redux version before any selected bundle component is applied.
 - Filtering and configurable list columns with reliable Redux-default visibility and sizing resets.
-- Shortcuts to common game, mod, save, and log folders.
+- A reorganized top-level Shortcuts menu that brings inherited game, mod, save, log, project, and
+  online shortcuts into one consistently styled location.
 - A compact grouped command toolbar with an equivalent top-menu workflow when the toolbar is
   hidden, plus a configurable Toggle Toolbar shortcut.
 - A compact Redux startup surface with live initialization status; the main window remains staged
   out of sight until its layout and mod-management workspace are ready to reveal.
-- Dark, Light, and Parchment themes with bundled typography and text-size selectors plus refined semantic palettes.
-  Redux Dark, Redux Light, and Parchment all default to Manrope.
 - Safe custom themes with a preferred bundled or locally imported typeface and text size, live
   preview, duplication, JSON import/export, and restart persistence. Missing custom fonts fall
   back to Manrope without preventing the theme from loading.
@@ -59,11 +83,14 @@ incomplete or change between builds.
 - Theme-aware Lucide vector iconography and consistent interaction feedback across Redux-owned
   controls, with official provider logos retained for source identification.
 
-### Accessibility
+### Accessibility presentation
 
-- Speech controls (Speak Active Order, Stop Speaking) and keyboard-shortcut settings live in a
-  dedicated Accessibility menu beside Settings, via CrossSpeak integration and Windows speech
-  fallback.
+- The inherited Speak Active Order and Stop Speaking commands are surfaced in a dedicated
+  Accessibility menu instead of remaining under Tools.
+- Redux adds scalable Compact, Default, and Large interface text, an Atkinson Hyperlegible option,
+  selectable dialog text, and refreshed keyboard-accessible Redux dialogs. CrossSpeak, Windows
+  speech fallback, the speech commands themselves, hotkey infrastructure, screen-reader helpers,
+  and the original Toolkit-marker accessibility option originate upstream.
 
 ### Organization
 
@@ -83,9 +110,11 @@ disappear from filtered or metadata-sorted views where their position would be m
 
 ### Mod information
 
-- An optional Toolkit project marker adds a build icon beside detected editor or project mods.
-- Local package metadata with Nexus Mods and mod.io provider linking.
-- Manual Nexus project linking plus a bundled Redux mod database for conservative pre-existing-install matching.
+- The inherited Toolkit/editor-project marker is retained with a clearer preference name and
+  Redux icon treatment; it is not described as a comprehensive colorblind mode.
+- Redux extends the inherited Nexus Mods metadata/update foundation with mod.io support, manual
+  Nexus project linking, Local presentation, and a bundled database for conservative
+  pre-existing-install matching.
 - Source-specific titles, authors, versions, dates, descriptions, requirements, files, and
   changelogs when available.
 - A resizable details drawer with Overview, Description, Requirements, Files, and Changelog tabs,
@@ -101,9 +130,13 @@ author's installation instructions on the source page.
 
 ### Override Mods and Mod Fixer
 
-Pure override packages are displayed in **Override Mods** because they replace built-in game files
-outside the normal numbered load order. Their `.pak` presence can keep those overrides active even
-when they do not have a normal `modsettings.lsx` entry.
+Override/force-loaded package handling and Osiris/Mod Fixer detection originate in upstream BG3MM.
+Redux retains that behavior while giving it a clearer **Override Mods** presentation and treating
+Mod Fixer as compatibility information rather than a missing dependency.
+
+Pure override packages replace built-in game files outside the normal numbered load order. Their
+`.pak` presence can keep those overrides active even when they do not have a normal
+`modsettings.lsx` entry.
 
 Redux can also detect Mod Fixer files bundled inside a package. This is compatibility information,
 not an instruction to install Mod Fixer separately. Modern BG3 versions generally do not require
@@ -122,6 +155,11 @@ Mod Fixer, but older packages may still contain its legacy recompilation techniq
 
 Nexus Mods and mod.io API keys can be entered in Preferences for private testing. Never publish,
 share, or commit personal API keys.
+
+Nexus Mods API, cache, update, link, image, and tooltip support existed upstream. Redux retains that
+foundation and adds the bundled provenance database, manual relinking workflow, mod.io provider,
+provider-rich details drawer, contribution reports, and reversible Local-only mode described
+below.
 
 - Nexus Mods is the preferred online metadata source when a reliable match is available.
 - Redux includes a bundled Nexus mod database for some pre-existing installs. Exact package hashes

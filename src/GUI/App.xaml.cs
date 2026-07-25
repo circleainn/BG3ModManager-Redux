@@ -98,6 +98,8 @@ public partial class App : Application
 				mainWindow.RevealAfterStartup();
 				await startupWindow.CloseWithTransitionAsync();
 				mainWindow.Activate();
+				await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
+				mainWindow.ViewModel.CompleteStartupPresentation();
 			};
 			mainWindow.ViewModel.PropertyChanged += initializedHandler;
 

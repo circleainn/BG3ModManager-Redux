@@ -38,6 +38,10 @@ public partial class ReduxStartupWindow : Window, IReduxTypographyIsolated
 
 	public void Attach(MainWindowViewModel viewModel)
 	{
+		ReduxThemeService.Apply(
+			Resources,
+			viewModel.Settings.ColorTheme,
+			ReduxThemeService.GetActiveTheme(viewModel.Settings));
 		DataContext = viewModel;
 	}
 

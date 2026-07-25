@@ -4,14 +4,20 @@
 their releases without relying on filenames or a network lookup. It is declarative metadata, not an
 installer or executable format.
 
-The initial placement convention is:
+The canonical placement is:
 
-- at the root of a distributed ZIP, 7z, or RAR archive; or
-- at the virtual root of a standalone PAK.
+- `redux.mod.json` at the virtual root of every distributed PAK.
 
-Archive-root manifests are the preferred form because they can describe every PAK in a multi-file
-release. Runtime manifest discovery is planned work; this document and its JSON Schema establish
-the format before Redux begins consuming it.
+Embedding the manifest keeps the metadata attached to the installed package after its original ZIP,
+7z, or RAR archive has been extracted or discarded. A multi-PAK release should embed a manifest in
+each PAK, and each manifest should describe only the modules contained by that PAK.
+
+An archive may also contain a root-level copy as an import-time convenience, but that copy is
+non-authoritative and does not replace the embedded manifest. If archive and PAK metadata conflict,
+Redux should reject the archive claim and validate the embedded PAK metadata independently.
+
+Runtime PAK-manifest discovery is planned work; this document and its JSON Schema establish the
+format before Redux begins consuming it.
 
 ## Trust model
 

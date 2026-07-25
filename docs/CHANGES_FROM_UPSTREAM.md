@@ -6,18 +6,38 @@ the upstream load-order model, profile and campaign workflows, import/export for
 parsing through LSLib, game-path detection, and launch behavior. Confirmed inherited defects have
 received targeted correctness and safety fixes without redesigning those core formats or workflows.
 
-This document inventories the major Redux additions and the inherited issues addressed through
-version `0.1.0-alpha.7`.
+This page tracks what Redux inherits, what it reworks or extends, and what it adds through version
+`0.1.0-alpha.7`.
+
+## Inherited foundation
+
+These core systems come from LaughingLeader's BG3 Mod Manager:
+
+- active/inactive mod lists, multi-selection drag and drop, profiles, campaigns, saved orders, list
+  filtering, and normal BG3 load-order management;
+- `.pak` and archive import, LSLib-backed package parsing, game/save/archive/text/JSON load-order
+  import and export, path detection, launch behavior, and common folder actions;
+- override/force-loaded package behavior, missing dependencies, invalid UUID reporting, Osiris and
+  Mod Fixer detection, and Script Extender installation, update, requirement, and status handling;
+- Nexus Mods API, cache, update checks, links, images, metadata, and rich mod hover information;
+- configurable hotkeys and mod-author utilities such as package extraction, UUID/folder copying,
+  custom metadata tags, and version generation; and
+- screen-reader detection and automation helpers, CrossSpeak, Windows speech fallback, Speak
+  Active Order, Stop Speaking, and the original setting labeled **Colorblind Support**, whose
+  implementation exposed a Toolkit/editor-project marker rather than a broad colorblind mode.
 
 ## Redux interface and design system
 
-- A modern WPF interface built around shared semantic resources for backgrounds, surfaces, borders,
-  text, accent, success, information, warning, error, and disabled states.
-- Redux Dark, Redux Light, and Parchment themes with theme-specific palettes and contrast behavior.
+- A broad rewrite of the inherited WPF presentation layer around shared semantic resources for
+  backgrounds, surfaces, borders, text, accent, success, information, warning, error, and disabled
+  states.
+- Rebuilt Dark and Light themes based on the inherited theme capability, plus the new Parchment
+  theme and theme-specific contrast behavior.
 - Shared corner-radius, spacing, typography, control-height, and interaction tokens.
-- A compact grouped command toolbar for setup, load-order, export, and launch workflows, with
-  consistent workflow-button styling and restrained accent interaction feedback.
-- A top-level Shortcuts menu for common game, mod, save, order, log, project, and online locations.
+- A full recomposition of the inherited toolbar into compact setup, load-order, export, and launch
+  groups, with consistent workflow-button styling and restrained accent interaction feedback.
+- A top-level Shortcuts menu that reorganizes inherited location actions and Redux links for common
+  game, mod, save, order, log, project, and online destinations.
 - A complete compact Toolbar menu when the visual toolbar is hidden, plus a configurable Toggle
   Toolbar shortcut.
 - Redux-styled buttons, text fields, combo boxes, check boxes, tabs, tooltips, menus, context menus,
@@ -132,6 +152,9 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 
 ## Selected-mod details and hover information
 
+- Upstream already exposed descriptions, dependencies, Nexus data, and status information through
+  rich mod tooltips. Redux replaces that tooltip-centered presentation with a reworked quick-glance
+  card and a persistent detail surface.
 - A resizable bottom details drawer with Overview, Description, Requirements, Files, and Changelog
   tabs.
 - Source image, display name, local package filename, categories, provider, author/uploader,
@@ -145,10 +168,13 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 
 ## Nexus Mods, mod.io, and provenance
 
-- Nexus Mods and mod.io source identification and metadata presentation.
-- Manual Nexus project linking when automatic association is unavailable.
-- Provider-specific source indicators, colors, icons, actions, versions, authors, update dates, files,
-  requirements, descriptions, and changelogs.
+Upstream already included Nexus Mods API access, caching, update information, links, images, and
+tooltip metadata. Redux reworked that presentation into a provider model and extended it with:
+
+- Mod.io source identification and live metadata.
+- Manual Nexus project relinking when automatic association is unavailable.
+- Provider-specific Redux indicators, colors, icons, actions, versions, authors, update dates,
+  files, requirements, descriptions, and changelogs.
 - A bundled Redux mod database for conservative matching of some pre-existing Nexus installs.
 - Exact installed `.pak` size plus xxHash64 matching.
 - Exact downloaded archive size plus MD5 matching.
@@ -160,8 +186,9 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 - A standalone, preview-first maintainer utility for validating the bundled database, reviewing
   contribution reports, accepting independently confirmed Nexus records, and writing changes
   atomically only after an explicit `--write`.
-- A proposed, schema-backed `redux.mod.json` creator-manifest format whose runtime discovery remains
-  future work.
+- A proposed, schema-backed `redux.mod.json` creator-manifest format designed to live inside each
+  PAK so identity metadata remains attached after installation; runtime discovery remains future
+  work.
 - A reversible Local-only mode that suppresses Nexus Mods and mod.io requests, pauses bundled
   database enrichment, hides the Source column and source-assignment actions, and presents
   installed packages as Local without deleting their stored associations.
@@ -172,16 +199,22 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 
 See [REDUX_MOD_DATABASE.md](REDUX_MOD_DATABASE.md) for the database schema and matching rules.
 
-## Mod status and diagnostics
+## Mod status presentation and Redux diagnostics
 
-- Script Extender requirement detection and version comparison.
-- Distinct states for installed, missing, disabled, outdated, or incomplete Script Extender setups.
-- Osiris scripting indicators.
-- Mod Fixer content detection presented as compatibility information rather than a dependency.
-- Override Mods and Always Loaded presentation for packages that operate outside the numbered load
-  order.
-- Missing-mod and dependency reporting.
-- An optional Toolkit project marker for detected editor/project packages.
+Script Extender requirement detection and installation status, Osiris scripting indicators,
+Mod Fixer detection, override/force-loaded behavior, and missing-mod/dependency reporting all
+originate upstream. Redux retains those checks while reworking how they are interpreted and shown:
+
+- Fuller Script Extender version comparison and clearer installed, missing, disabled, outdated, or
+  incomplete states.
+- Redesigned Script Extender and Osiris row indicators and status tooltips.
+- Mod Fixer content presented as compatibility information rather than a missing requirement.
+- A dedicated, compact Override Mods presentation for packages outside the numbered load order.
+- A clearer **Show Toolkit project markers** preference name and Redux icon treatment for the
+  inherited editor-project marker.
+
+Redux additionally adds:
+
 - Background Mod Health checks for missing or inactive dependencies, duplicate or invalid UUIDs,
   Script Extender requirements, confirmed active declared conflicts, bundled Mod Fixer content,
   override behavior, and mod.io safety state.
@@ -217,14 +250,17 @@ See [REDUX_MOD_DATABASE.md](REDUX_MOD_DATABASE.md) for the database schema and m
 - A Redux-specific GitHub issue form requesting useful reproduction information while warning users
   not to publish API keys or private paths.
 
-## Accessibility
+## Accessibility presentation and extensions
 
-- A top-level Accessibility menu beside Settings so speech tools are not buried in Preferences.
-- Speak Active Order and Stop Speaking commands.
-- CrossSpeak integration with Windows speech fallback.
-- Configurable keyboard shortcuts, including direct accessibility navigation.
-- Colorblind-friendly status indicators that add shape/toolkit information rather than relying only
-  on color.
+CrossSpeak, Windows speech fallback, Speak Active Order, Stop Speaking, screen-reader detection and
+automation helpers, configurable hotkeys, and the narrowly scoped Toolkit-marker option originally
+labeled **Colorblind Support** all originate in LaughingLeader's BG3 Mod Manager. Redux keeps that
+foundation and reworks or extends its presentation through:
+
+- A top-level Accessibility menu beside Settings so the inherited speech tools are no longer buried
+  under Tools.
+- A rebuilt keyboard-shortcut editor and direct accessibility navigation.
+- A renamed and visually rebuilt Toolkit-project marker that more accurately describes its scope.
 - Atkinson Hyperlegible as a bundled typeface option.
 - Compact, Default, and Large interface text sizes.
 - Selectable dialog text, keyboard-operable dialogs, and theme-aware contrast resources.
@@ -250,8 +286,8 @@ See [REDUX_MOD_DATABASE.md](REDUX_MOD_DATABASE.md) for the database schema and m
 
 ## Inherited issues corrected in Redux
 
-Open upstream issues were audited against Redux's inherited code rather than assumed fixed. The
-tracking discussion is [issue #11](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues/11).
+The following upstream issues were confirmed in the inherited code and fixed in Redux. The tracking
+discussion is [issue #11](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues/11).
 
 - **Large archive imports failing** (#383): removed an unnecessary whole-file allocation whose
   length cast overflowed for archives larger than roughly 2.1 GB.
@@ -285,6 +321,10 @@ tracking discussion is [issue #11](https://github.com/raincloudsfollow/BG3ModMan
   from Help and introduce active/inactive lists, safe exporting, categories and separators, the
   selected-mod drawer, Mod Health, themes and typography, accessibility tools, source warnings,
   and Redux-specific import/export without changing the user's load order or files. The tour should
+  fold the current Redux preview, mod.io support, and offline Nexus database explanations into a
+  coherent guided sequence instead of stacking separate startup dialogs, while preserving any
+  acknowledgement that is still required for an enabled feature.
+  The tour should
   also explain optional source linking and offer a clear choice between enabling integrations or
   starting in **Local-only mode**. It should identify Mod Health as optional, keep the experimental
   Load Order Advisor disabled unless the user deliberately enables it, and make every choice

@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 
 using WpfScreenHelper;
 
@@ -57,6 +58,33 @@ public static class ReduxWindowBehavior
 		PrepareEntrance(window);
 		window.Loaded += (_, _) => AnimateEntrance(window, 0);
 		window.Closing += (_, e) => AnimateDialogClosing(window, state, e);
+	}
+
+	public static bool? ShowDialogWithOwnerBackdrop(Window dialog, Window owner)
+	{
+		if (owner?.Content is not UIElement ownerContent)
+		{
+			return dialog.ShowDialog();
+		}
+
+		var previousEffect = ownerContent.Effect;
+		var previousOpacity = ownerContent.Opacity;
+		ownerContent.Effect = new BlurEffect
+		{
+			Radius = 2.5,
+			RenderingBias = RenderingBias.Performance
+		};
+		ownerContent.Opacity = 0.88;
+
+		try
+		{
+			return dialog.ShowDialog();
+		}
+		finally
+		{
+			ownerContent.Effect = previousEffect;
+			ownerContent.Opacity = previousOpacity;
+		}
 	}
 
 	// Windows are not layered (AllowsTransparency=False), so animating Window.Opacity directly

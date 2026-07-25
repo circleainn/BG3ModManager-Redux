@@ -12,8 +12,10 @@ preference values independently.
 
 ## Source integrations
 
-Source integrations add Nexus Mods and mod.io metadata, links, images, update information, and the
-reviewed Redux database fallback. They can be disabled with **Local-only mode** in Preferences.
+Source integrations retain BG3MM's inherited Nexus Mods metadata, links, images, and update
+foundation, then extend it with mod.io, manual relinking, richer Redux presentation, and the
+reviewed Redux database fallback. The complete provider layer can be disabled with **Local-only
+mode** in Preferences.
 
 While Local-only mode is enabled, Redux:
 
