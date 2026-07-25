@@ -160,12 +160,23 @@
 								CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
 								<Grid>
 									<Border x:Name="CategoryHoverSurface"
-										Background="{Binding SoftColor}"
-										BorderBrush="{Binding Color}"
 										BorderThickness="1.5"
 										CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
 										IsHitTestVisible="False"
-										Opacity="0" />
+										Opacity="0">
+										<Border.Style>
+											<Style TargetType="{x:Type Border}">
+												<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+												<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarSelection, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
+														<Setter Property="Background" Value="{Binding SoftColor}" />
+														<Setter Property="BorderBrush" Value="{Binding Color}" />
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</Border.Style>
+									</Border>
 									<ContentPresenter Margin="{TemplateBinding Padding}" />
 								</Grid>
 							</Border>
@@ -205,9 +216,17 @@
 								</Trigger>
 								<Trigger Property="IsSelected" Value="True">
 									<Setter TargetName="CategorySurface" Property="Opacity" Value="1" />
+									<Setter TargetName="CategorySurface" Property="Background" Value="{DynamicResource ReduxSelectionBrush}" />
+									<Setter TargetName="CategorySurface" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+								</Trigger>
+								<MultiDataTrigger>
+									<MultiDataTrigger.Conditions>
+										<Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource TemplatedParent}}" Value="True" />
+										<Condition Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarSelection, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True" />
+									</MultiDataTrigger.Conditions>
 									<Setter TargetName="CategorySurface" Property="Background" Value="{Binding SoftColor}" />
 									<Setter TargetName="CategorySurface" Property="BorderBrush" Value="{Binding Color}" />
-								</Trigger>
+								</MultiDataTrigger>
 							</ControlTemplate.Triggers>
 						</ControlTemplate>
 					</Setter.Value>
@@ -232,16 +251,16 @@
 										IsHitTestVisible="False"
 										Opacity="0" />
 									<Path x:Name="ToggleGlyph"
-										Width="12" Height="7"
+										Width="10" Height="5"
 										HorizontalAlignment="Center"
 										VerticalAlignment="Center"
-										Data="M 0,7 L 6,1 L 12,7"
+										Data="{StaticResource Redux.Icon.ChevronUpStroke}"
 										RenderTransformOrigin="0.5,0.5"
 										Stroke="{TemplateBinding Foreground}"
 										StrokeEndLineCap="Round"
 										StrokeLineJoin="Round"
 										StrokeStartLineCap="Round"
-										StrokeThickness="1.5"
+										StrokeThickness="1.25"
 										Stretch="Fill">
 										<Path.RenderTransform>
 											<RotateTransform Angle="0" />
@@ -532,7 +551,7 @@
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
 				<Style.Triggers>
-					<DataTrigger Binding="{Binding Settings.EnableLoadOrderAdvisor}" Value="False">
+					<DataTrigger Binding="{Binding Modules.LoadOrderAdvisorEnabled}" Value="False">
 						<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
 						<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
 						<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
@@ -1307,14 +1326,14 @@
 						IsChecked="{Binding IsCategoriesExpanded, Mode=TwoWay}"
 						Style="{StaticResource CategoryPanelToggleStyle}"
 						ToolTip="Collapse or expand categories">
-						<Path Width="7" Height="12"
-							Data="M 7,0 L 1,6 L 7,12"
+						<Path Width="5" Height="10"
+							Data="{StaticResource Redux.Icon.ChevronLeftStroke}"
 							RenderTransformOrigin="0.5,0.5"
 							Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}"
 							StrokeEndLineCap="Round"
 							StrokeLineJoin="Round"
 							StrokeStartLineCap="Round"
-							StrokeThickness="1.5"
+							StrokeThickness="1.25"
 							Stretch="Fill">
 							<Path.RenderTransform>
 								<RotateTransform Angle="0" />
@@ -1444,8 +1463,15 @@
 											<Setter Property="BorderBrush" Value="Transparent" />
 											<Style.Triggers>
 												<DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}" Value="True">
-													<Setter Property="Background" Value="{Binding CountHoverColor}" />
+													<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
 												</DataTrigger>
+												<MultiDataTrigger>
+													<MultiDataTrigger.Conditions>
+														<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}" Value="True" />
+														<Condition Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarSelection, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True" />
+													</MultiDataTrigger.Conditions>
+													<Setter Property="Background" Value="{Binding CountHoverColor}" />
+												</MultiDataTrigger>
 											</Style.Triggers>
 										</Style>
 									</Border.Style>
@@ -1644,6 +1670,7 @@
 					GridViewColumnHeader.PreviewMouseLeftButtonUp="ListViewColumnHeader_PreviewMouseLeftButtonUp"
 					GridViewColumnHeader.PreviewMouseRightButtonUp="ListViewColumnHeader_RightClick"
 					ItemContainerStyle="{StaticResource ListViewItemMouseEvents}"
+					ScrollViewer.VerticalScrollBarVisibility="Visible"
 					Style="{StaticResource ModOrderListViewWithDrag}"
 					View="{DynamicResource ModGridView}"
 					VirtualizingPanel.IsVirtualizing="True"
@@ -1808,14 +1835,14 @@
 					Style="{StaticResource CategoryPanelToggleStyle}"
 					ToolTip="Collapse or expand inactive mods">
 					<!--  Right-edge pane: collapse pushes it rightward, so the chevron mirrors the categories pane.  -->
-					<Path Width="7" Height="12"
-						Data="M 0,0 L 6,6 L 0,12"
+					<Path Width="5" Height="10"
+						Data="{StaticResource Redux.Icon.ChevronRightStroke}"
 						RenderTransformOrigin="0.5,0.5"
 						Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}"
 						StrokeEndLineCap="Round"
 						StrokeLineJoin="Round"
 						StrokeStartLineCap="Round"
-						StrokeThickness="1.5"
+						StrokeThickness="1.25"
 						Stretch="Fill">
 						<Path.RenderTransform>
 							<RotateTransform Angle="0" />
@@ -1860,6 +1887,7 @@
 				GridViewColumnHeader.PreviewMouseLeftButtonUp="ListViewColumnHeader_PreviewMouseLeftButtonUp"
 				GridViewColumnHeader.PreviewMouseRightButtonUp="ListViewColumnHeader_RightClick"
 				ItemContainerStyle="{StaticResource ListViewItemMouseEvents}"
+				ScrollViewer.VerticalScrollBarVisibility="Visible"
 				View="{DynamicResource InactiveModGridView}"
 				VirtualizingPanel.IsVirtualizing="True"
 				VirtualizingPanel.VirtualizationMode="Recycling">

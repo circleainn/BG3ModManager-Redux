@@ -88,6 +88,10 @@
 				<Border Padding="10" Background="{DynamicResource ReduxSurfaceMutedBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
 							<ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
@@ -129,6 +133,20 @@
 								<TextBlock FontWeight="SemiBold" Text="Colored names" />
 								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
 									Text="Color category names in the sidebar." TextWrapping="Wrap" />
+							</StackPanel>
+						</CheckBox>
+						<CheckBox Grid.Row="1" Margin="0,10,0,0" IsChecked="{Binding UseCategoryColorsForSidebarSelection}" Style="{StaticResource ReduxCheckBoxStyle}">
+							<StackPanel Margin="5,0,12,0">
+								<TextBlock FontWeight="SemiBold" Text="Category selection" />
+								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Tint sidebar hover and selection with category colors." TextWrapping="Wrap" />
+							</StackPanel>
+						</CheckBox>
+						<CheckBox Grid.Row="1" Grid.Column="1" Margin="0,10,0,0" IsChecked="{Binding UseSourceIconsOnly}" Style="{StaticResource ReduxCheckBoxStyle}">
+							<StackPanel Margin="5,0,12,0">
+								<TextBlock FontWeight="SemiBold" Text="Source icons only" />
+								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Hide source label text in mod lists." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
 					</Grid>

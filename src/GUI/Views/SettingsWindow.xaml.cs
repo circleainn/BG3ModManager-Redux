@@ -94,11 +94,14 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(DivinityModManagerSettings.NexusModsAPIKey),
 			nameof(DivinityModManagerSettings.ModioAPIKey),
 			nameof(DivinityModManagerSettings.HideModioSourceWarningIcons)),
+		new("Optional Redux modules",
+			nameof(DivinityModManagerSettings.LocalOnlyMode),
+			nameof(DivinityModManagerSettings.EnableModHealth),
+			nameof(DivinityModManagerSettings.EnableLoadOrderAdvisor)),
 		new("Warnings and maintenance",
 			nameof(DivinityModManagerSettings.CheckForUpdates),
 			nameof(DivinityModManagerSettings.DeleteModCrashSanityCheck),
 			nameof(DivinityModManagerSettings.DisableMissingModWarnings),
-			nameof(DivinityModManagerSettings.EnableLoadOrderAdvisor),
 			nameof(DivinityModManagerSettings.ResetModioSupportWarningAcknowledgement),
 			nameof(DivinityModManagerSettings.ResetOfflineNexusDatabaseWarningAcknowledgement),
 			nameof(DivinityModManagerSettings.ResetReduxPreviewWarningAcknowledgement))
@@ -349,7 +352,8 @@ public partial class SettingsWindow : SettingsWindowBase
 		var working = ReduxThemeService.CreateFromBase("My Custom Theme", ViewModel.Settings.ColorTheme,
 			ViewModel.Settings.TypographyFont, ViewModel.Settings.TextSize, ViewModel.Settings.CustomTypographyFont,
 			ViewModel.Settings.UseCategoryColorsForHover, ViewModel.Settings.ShowCategoryIconsInPills,
-			ViewModel.Settings.UseCategoryColorsForSidebarText);
+			ViewModel.Settings.UseCategoryColorsForSidebarText, ViewModel.Settings.UseCategoryColorsForSidebarSelection,
+			ViewModel.Settings.UseSourceIconsOnly);
 		if (!EditCustomTheme(working)) return;
 		ViewModel.Settings.CustomThemes.Add(working);
 		ActivateCustomTheme(working);
@@ -578,6 +582,20 @@ public partial class SettingsWindow : SettingsWindowBase
 					if (prop.Attribute.IsDebug)
 					{
 						cb.SetBinding(CheckBox.VisibilityProperty, debugModeBinding);
+					}
+					if (prop.Property.Name == nameof(DivinityModManagerSettings.EnableLoadOrderAdvisor))
+					{
+						var modHealthEnabledBinding = new Binding(nameof(DivinityModManagerSettings.EnableModHealth))
+						{
+							Source = source,
+							Mode = BindingMode.OneWay
+						};
+						cb.SetBinding(CheckBox.IsEnabledProperty, modHealthEnabledBinding);
+						tb.SetBinding(TextBlock.IsEnabledProperty, new Binding(nameof(DivinityModManagerSettings.EnableModHealth))
+						{
+							Source = source,
+							Mode = BindingMode.OneWay
+						});
 					}
 					targetGrid.Children.Add(cb);
 					Grid.SetRow(cb, targetRow);

@@ -1,0 +1,50 @@
+[CmdletBinding()]
+param(
+	[ValidateSet("Debug", "Publish")]
+	[string]$Configuration = "Debug",
+
+	[switch]$Rebuild
+)
+
+$ErrorActionPreference = "Stop"
+
+$vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
+if (!(Test-Path -LiteralPath $vswhere))
+{
+	throw "Visual Studio Installer could not be found. Install Visual Studio or Build Tools with .NET desktop, Desktop C++, and C++/CLI support."
+}
+
+$requirements = @(
+	"Microsoft.VisualStudio.Workload.ManagedDesktop",
+	"Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+	"Microsoft.VisualStudio.Component.VC.CLI.Support"
+)
+$vswhereArguments = @("-latest", "-products", "*")
+foreach ($requirement in $requirements)
+{
+	$vswhereArguments += @("-requires", $requirement)
+}
+$vswhereArguments += @("-property", "installationPath")
+
+$installationPath = (& $vswhere @vswhereArguments | Select-Object -First 1)
+if ([String]::IsNullOrWhiteSpace($installationPath))
+{
+	throw "No Visual Studio installation contains all required Redux build components: .NET desktop, MSVC x64/x86, and C++/CLI support."
+}
+
+$msbuild = Join-Path $installationPath "MSBuild\Current\Bin\MSBuild.exe"
+if (!(Test-Path -LiteralPath $msbuild))
+{
+	throw "MSBuild was not found under the detected Visual Studio installation: $installationPath"
+}
+
+$repositoryRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$solution = Join-Path $repositoryRoot "BG3ModManager.sln"
+$target = if ($Rebuild) { "Rebuild" } else { "Build" }
+
+Write-Host "Building Redux $Configuration x64 with $msbuild"
+& $msbuild $solution "/t:$target" "/p:Configuration=$Configuration" "/p:Platform=x64" "/m" "/v:minimal"
+if ($LASTEXITCODE -ne 0)
+{
+	exit $LASTEXITCODE
+}

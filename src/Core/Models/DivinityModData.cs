@@ -56,6 +56,7 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 	[Reactive] public string VisualDividerIconId { get; set; } = String.Empty;
 	public bool HasVisualDividerIcon => !String.IsNullOrWhiteSpace(VisualDividerIconId);
 	[Reactive] public bool IsVisualDividerCollapsed { get; set; }
+	[Reactive] public double VisualDividerChevronAngle { get; set; }
 	[Reactive] public bool IsHiddenByVisualDivider { get; set; }
 
 	[Reactive] public DateTime? LastUpdated { get; set; }
@@ -261,6 +262,11 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 	[Reactive] public NexusModsModData NexusModsData { get; set; }
 	[Reactive] public ModioModData ModioData { get; set; }
 	[Reactive] public GithubModData GithubData { get; set; }
+	/// <summary>
+	/// Runtime presentation gate for Local-only mode. Provider associations remain
+	/// stored on the mod and become visible again when online metadata is re-enabled.
+	/// </summary>
+	[Reactive] public bool OnlineMetadataEnabled { get; set; } = true;
 	public ModMetadataViewData Metadata { get; }
 
 	public string GetURL(ModSourceType modSourceType, bool asProtocol = false)

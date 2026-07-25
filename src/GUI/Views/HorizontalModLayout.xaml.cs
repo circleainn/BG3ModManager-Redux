@@ -70,6 +70,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private System.Threading.CancellationTokenSource _inactiveModsTransition;
 	private System.Threading.CancellationTokenSource _modDetailsTransition;
 	private System.Threading.CancellationTokenSource _overrideModsTransition;
+	private System.Threading.CancellationTokenSource _visualDividerTransition;
 	private readonly Dictionary<GridViewColumn, double> _visibleModListColumnWidths = new();
 	private readonly Dictionary<GridView, Dictionary<string, (GridViewColumn Column, int Index)>> _modListColumnRegistry = new();
 	private static readonly string[] OptionalModListColumns =
@@ -394,51 +395,54 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			menu.Items.Remove(generatedItem);
 		}
 
-		var sourceMenu = new MenuItem
+		if (ViewModel.Modules.SourceIntegrationsEnabled)
 		{
-			Header = "Source Link",
-			Tag = SourceLinkMenuTag,
-			Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true)
-		};
-		if (mod.ModioData?.HasMetadata == true)
-		{
-			sourceMenu.Items.Add(new MenuItem
+			var sourceMenu = new MenuItem
 			{
-				Header = "Native mod.io identity detected",
-				IsEnabled = false,
-				ToolTip = "Redux keeps the stronger mod.io identity for this package.",
-				Icon = ReduxIcon.FromResource("Redux.Icon.Information", true, "ReduxInfoBrush")
-			});
-		}
-		else
-		{
-			var hasNexusLink = mod.NexusModsData?.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START;
-			var linkItem = new MenuItem
-			{
-				Header = hasNexusLink ? "Change Nexus Mods Link..." : "Link to Nexus Mods...",
+				Header = "Source Link",
+				Tag = SourceLinkMenuTag,
 				Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true)
 			};
-			linkItem.Click += (_, _) => ShowManualNexusLinkDialog(mod);
-			sourceMenu.Items.Add(linkItem);
-			if (hasNexusLink)
+			if (mod.ModioData?.HasMetadata == true)
 			{
-				sourceMenu.Items.Add(new Separator());
-				var unlinkItem = new MenuItem
+				sourceMenu.Items.Add(new MenuItem
 				{
-					Header = "Unlink Nexus Mods",
-					Icon = ReduxIcon.FromResource("Redux.Icon.UnlinkStroke", true, "ReduxErrorBrush")
-				};
-				unlinkItem.Click += (_, _) =>
-				{
-					var result = ShowCategoryMessage(
-						$"Remove the Nexus Mods source link from '{mod.DisplayName}'?\n\nThe installed package and its load-order position will not be changed.",
-						"Unlink Nexus Mods", MessageBoxButton.YesNo, MessageBoxImage.Question);
-					if (result == MessageBoxResult.Yes) ViewModel.UnlinkNexusMod(mod);
-				};
-				sourceMenu.Items.Add(unlinkItem);
+					Header = "Native mod.io identity detected",
+					IsEnabled = false,
+					ToolTip = "Redux keeps the stronger mod.io identity for this package.",
+					Icon = ReduxIcon.FromResource("Redux.Icon.Information", true, "ReduxInfoBrush")
+				});
 			}
+			else
+			{
+				var hasNexusLink = mod.NexusModsData?.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START;
+				var linkItem = new MenuItem
+				{
+					Header = hasNexusLink ? "Change Nexus Mods Link..." : "Link to Nexus Mods...",
+					Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true)
+				};
+				linkItem.Click += (_, _) => ShowManualNexusLinkDialog(mod);
+				sourceMenu.Items.Add(linkItem);
+				if (hasNexusLink)
+				{
+					sourceMenu.Items.Add(new Separator());
+					var unlinkItem = new MenuItem
+					{
+						Header = "Unlink Nexus Mods",
+						Icon = ReduxIcon.FromResource("Redux.Icon.UnlinkStroke", true, "ReduxErrorBrush")
+					};
+					unlinkItem.Click += (_, _) =>
+					{
+						var result = ShowCategoryMessage(
+							$"Remove the Nexus Mods source link from '{mod.DisplayName}'?\n\nThe installed package and its load-order position will not be changed.",
+							"Unlink Nexus Mods", MessageBoxButton.YesNo, MessageBoxImage.Question);
+						if (result == MessageBoxResult.Yes) ViewModel.UnlinkNexusMod(mod);
+					};
+					sourceMenu.Items.Add(unlinkItem);
+				}
+			}
+			menu.Items.Insert(Math.Min(3, menu.Items.Count), sourceMenu);
 		}
-		menu.Items.Insert(Math.Min(3, menu.Items.Count), sourceMenu);
 
 		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, VisualDividerMenuTag)).ToList())
 		{
@@ -785,13 +789,144 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (!ReferenceEquals(selectedList, ForceLoadedModsListView)) ForceLoadedModsListView.ClearSelectedItems();
 	}
 
-	private void ModListView_ButtonClick(object sender, RoutedEventArgs e)
+	private async void ModListView_ButtonClick(object sender, RoutedEventArgs e)
 	{
 		if (e.OriginalSource is ButtonBase { Tag: "ReduxDividerToggle", DataContext: DivinityModData item } && item.IsVisualDivider)
 		{
 			e.Handled = true;
-			ViewModel.ToggleVisualDividerCollapsed(item);
+			await AnimateVisualDividerSectionAsync(item);
 		}
+	}
+
+	private async System.Threading.Tasks.Task AnimateVisualDividerSectionAsync(DivinityModData dividerItem)
+	{
+		var listView = ActiveModsListView.Items.Contains(dividerItem)
+			? ActiveModsListView
+			: InactiveModsListView.Items.Contains(dividerItem)
+				? InactiveModsListView
+				: null;
+		if (listView == null)
+		{
+			ViewModel.ToggleVisualDividerCollapsed(dividerItem);
+			return;
+		}
+
+		_visualDividerTransition?.Cancel();
+		_visualDividerTransition = new System.Threading.CancellationTokenSource();
+		var token = _visualDividerTransition.Token;
+		var dividerId = dividerItem.VisualDividerId;
+		var isExpanding = dividerItem.IsVisualDividerCollapsed;
+
+		DivinityModData GetCurrentDividerItem() =>
+			listView.Items.OfType<DivinityModData>()
+				.FirstOrDefault(candidate => candidate.IsVisualDivider &&
+					String.Equals(candidate.VisualDividerId, dividerId, StringComparison.OrdinalIgnoreCase));
+
+		List<ListViewItem> GetRealizedSectionRows()
+		{
+			var rows = new List<ListViewItem>();
+			var dividerIndex = listView.Items.IndexOf(GetCurrentDividerItem());
+			if (dividerIndex < 0) return rows;
+
+			for (var index = dividerIndex + 1; index < listView.Items.Count; index++)
+			{
+				if (listView.Items[index] is DivinityModData { IsVisualDivider: true }) break;
+				if (listView.ItemContainerGenerator.ContainerFromIndex(index) is ListViewItem row)
+					rows.Add(row);
+			}
+			return rows;
+		}
+
+		static void ClearAnimatedRows(IEnumerable<ListViewItem> rows)
+		{
+			foreach (var row in rows)
+			{
+				row.ClearValue(FrameworkElement.HeightProperty);
+				row.ClearValue(FrameworkElement.MinHeightProperty);
+				row.ClearValue(FrameworkElement.MarginProperty);
+				row.ClearValue(UIElement.OpacityProperty);
+				row.ClearValue(UIElement.ClipToBoundsProperty);
+			}
+		}
+
+		if (!isExpanding)
+		{
+			var rows = GetRealizedSectionRows();
+			var heights = rows.Select(row => Math.Max(1, row.ActualHeight)).ToArray();
+			var margins = rows.Select(row => row.Margin).ToArray();
+			foreach (var row in rows)
+			{
+				row.ClipToBounds = true;
+				row.MinHeight = 0;
+				row.Height = Math.Max(1, row.ActualHeight);
+			}
+			var startingChevronAngle = dividerItem.VisualDividerChevronAngle;
+
+			var completed = await AnimatePanelValueAsync(0, 1, progress =>
+			{
+				dividerItem.VisualDividerChevronAngle =
+					startingChevronAngle + ((-90d - startingChevronAngle) * progress);
+				for (var index = 0; index < rows.Count; index++)
+				{
+					rows[index].Height = heights[index] * (1 - progress);
+					rows[index].Margin = new Thickness(
+						margins[index].Left,
+						margins[index].Top,
+						margins[index].Right,
+						margins[index].Bottom * (1 - progress));
+					rows[index].Opacity = 1 - progress;
+				}
+			}, token);
+			if (!completed)
+			{
+				dividerItem.VisualDividerChevronAngle = 0;
+				ClearAnimatedRows(rows);
+				return;
+			}
+			dividerItem.VisualDividerChevronAngle = -90;
+			ViewModel.ToggleVisualDividerCollapsed(dividerItem);
+			// Recycling virtualization reuses these containers for unrelated rows later;
+			// without this, a completed (not just a cancelled) collapse leaves Height=0/
+			// Opacity=0/ClipToBounds=true permanently set, so a later row silently
+			// inheriting one of these containers would render invisible.
+			ClearAnimatedRows(rows);
+			return;
+		}
+
+		ViewModel.ToggleVisualDividerCollapsed(dividerItem);
+		listView.UpdateLayout();
+		var expandedDividerItem = GetCurrentDividerItem();
+		if (expandedDividerItem != null) expandedDividerItem.VisualDividerChevronAngle = -90;
+		var expandedRows = GetRealizedSectionRows();
+		var expandedHeights = expandedRows.Select(row => Math.Max(1, row.ActualHeight)).ToArray();
+		var expandedMargins = expandedRows.Select(row => row.Margin).ToArray();
+		foreach (var row in expandedRows)
+		{
+			row.ClipToBounds = true;
+			row.MinHeight = 0;
+			row.Height = 0;
+			row.Margin = new Thickness(row.Margin.Left, row.Margin.Top, row.Margin.Right, 0);
+			row.Opacity = 0;
+		}
+
+		var expanded = await AnimatePanelValueAsync(0, 1, progress =>
+		{
+			if (expandedDividerItem != null)
+				expandedDividerItem.VisualDividerChevronAngle = -90d * (1 - progress);
+			for (var index = 0; index < expandedRows.Count; index++)
+			{
+				expandedRows[index].Height = expandedHeights[index] * progress;
+				expandedRows[index].Margin = new Thickness(
+					expandedMargins[index].Left,
+					expandedMargins[index].Top,
+					expandedMargins[index].Right,
+					expandedMargins[index].Bottom * progress);
+				expandedRows[index].Opacity = progress;
+			}
+		}, token);
+		ClearAnimatedRows(expandedRows);
+		if (expandedDividerItem != null) expandedDividerItem.VisualDividerChevronAngle = 0;
+		if (!expanded) return;
 	}
 
 	private DivinityModData GetSelectedModForDetails()
@@ -1497,7 +1632,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				}));
 
 				ViewModel.Layout = this;
+				RestorePersistedModListColumnWidths();
 				ApplyModListColumnVisibility();
+				d(ViewModel.Modules.WhenAnyValue(x => x.SourceIntegrationsEnabled)
+					.Skip(1)
+					.ObserveOn(RxApp.MainThreadScheduler)
+					.Subscribe(_ => ApplyModListColumnVisibility()));
 
 				d(this.OneWayBind(ViewModel, vm => vm.DisplayActiveMods, v => v.ActiveModsListView.ItemsSource));
 				d(this.OneWayBind(ViewModel, vm => vm.DisplayInactiveMods, v => v.InactiveModsListView.ItemsSource));
@@ -1704,6 +1844,89 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		}
 	}
 
+	private Dictionary<string, double> GetPersistedColumnWidths(ModListView listView)
+	{
+		if (ViewModel?.Settings == null)
+		{
+			return null;
+		}
+
+		if (ReferenceEquals(listView, InactiveModsListView))
+		{
+			return ViewModel.Settings.InactiveModListColumnWidths ??=
+				new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+		}
+
+		return ViewModel.Settings.ActiveModListColumnWidths ??=
+			new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+	}
+
+	private ModListView GetOwningModListView(GridView gridView)
+	{
+		if (ReferenceEquals(ActiveModsListView.View, gridView) || ReferenceEquals(ForceLoadedModsListView.View, gridView))
+		{
+			return ActiveModsListView;
+		}
+		return ReferenceEquals(InactiveModsListView.View, gridView) ? InactiveModsListView : null;
+	}
+
+	private void RestorePersistedModListColumnWidths()
+	{
+		CaptureModListColumnWidths();
+		foreach (var (gridView, registry) in _modListColumnRegistry)
+		{
+			var listView = GetOwningModListView(gridView);
+			var persisted = GetPersistedColumnWidths(listView);
+			if (listView == null || persisted == null || persisted.Count == 0)
+			{
+				continue;
+			}
+
+			foreach (var (columnName, entry) in registry)
+			{
+				if (persisted.TryGetValue(columnName, out var width) && Double.IsFinite(width) && width > 0)
+				{
+					entry.Column.Width = width;
+					_visibleModListColumnWidths[entry.Column] = width;
+				}
+			}
+			listView.UserResizedColumns = true;
+		}
+	}
+
+	private void PersistModListColumnWidths(ModListView listView, bool queueSave = true)
+	{
+		if (listView?.View is not GridView gridView)
+		{
+			return;
+		}
+
+		CaptureModListColumnWidths();
+		var persisted = GetPersistedColumnWidths(listView);
+		if (persisted == null || !_modListColumnRegistry.TryGetValue(gridView, out var registry))
+		{
+			return;
+		}
+
+		foreach (var (columnName, entry) in registry)
+		{
+			var width = gridView.Columns.Contains(entry.Column)
+				? entry.Column.Width
+				: _visibleModListColumnWidths.TryGetValue(entry.Column, out var hiddenWidth)
+					? hiddenWidth
+					: entry.Column.Width;
+			if (Double.IsFinite(width) && width > 0)
+			{
+				persisted[columnName] = width;
+			}
+		}
+
+		if (queueSave)
+		{
+			ViewModel.QueueSave();
+		}
+	}
+
 	private bool IsModListColumnVisible(string columnName)
 	{
 		if (ViewModel?.Settings == null)
@@ -1719,7 +1942,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			"Last Updated" => ViewModel.Settings.ShowModListLastUpdatedColumn,
 			"Last Modified" => ViewModel.Settings.ShowModListLastModifiedColumn,
 			"Category" => ViewModel.Settings.ShowModListCategoryColumn,
-			"Source" => ViewModel.Settings.ShowModListSourceColumn,
+			"Source" => ViewModel.Modules.SourceIntegrationsEnabled && ViewModel.Settings.ShowModListSourceColumn,
 			_ => true
 		};
 	}
@@ -1816,7 +2039,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			fontSize ?? listView.FontSize).Width;
 	}
 
-	private static int GetModNameIconCount(DivinityModData mod)
+	private int GetModNameIconCount(DivinityModData mod)
 	{
 		var count = 0;
 		if (mod.OsirisStatusVisibility == Visibility.Visible) count++;
@@ -1824,7 +2047,22 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (mod.ToolkitIconVisibility == Visibility.Visible) count++;
 		if (mod.HasInvalidUUIDVisibility == Visibility.Visible) count++;
 		if (mod.MissingDependencyIconVisibility == Visibility.Visible) count++;
+		if (mod.HealthSnapshot?.HasGeneralHealthAttention == true) count++;
+		if (mod.HealthSnapshot?.HasLoadOrderAdvice == true ||
+			(mod.IsActive &&
+			 ViewModel?.Settings.DebugModeEnabled == true &&
+			 ViewModel.Modules?.LoadOrderAdvisorEnabled == true))
+		{
+			count++;
+		}
 		return count;
+	}
+
+	private double GetModNameAdornmentWidth(DivinityModData mod)
+	{
+		// Each status glyph occupies 16px plus 2px horizontal margin per side.
+		// The newly-detected marker has its own 8px surface and 10px of spacing.
+		return (GetModNameIconCount(mod) * 20d) + (mod.IsNewlyDetected ? 18d : 0d);
 	}
 
 	/// <summary>
@@ -1839,7 +2077,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		var headerWidth = listView != null
 			? MeasureColumnText(listView, columnName, fontWeight: FontWeights.SemiBold) + 28
 			: 0d;
-		return Math.Ceiling(Math.Max(headerWidth, GetFallbackMinimumColumnWidth(columnName)));
+		var fallbackWidth = columnName == "Source" && ViewModel?.Settings.UseSourceIconsOnly == true
+			? 64d
+			: GetFallbackMinimumColumnWidth(columnName);
+		return Math.Ceiling(Math.Max(headerWidth, fallbackWidth));
 	}
 
 	/// <summary>
@@ -1862,7 +2103,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		var headerWidth = MeasureColumnText(listView, columnName, fontWeight: FontWeights.SemiBold) + 28;
 		var contentWidth = 0d;
 
-		foreach (var mod in listView.Items.OfType<DivinityModData>().Where(item => !item.IsVisualDivider && item.Visibility == Visibility.Visible))
+		// Measure every real row represented by the list, including rows temporarily
+		// collapsed by a separator or still completing their first visibility binding.
+		// Otherwise the first auto-size pass after startup can measure only a partial
+		// set and produce a narrower result than a second click.
+		foreach (var mod in listView.Items.OfType<DivinityModData>().Where(item => !item.IsVisualDivider))
 		{
 			double candidateWidth;
 			switch (columnName)
@@ -1871,7 +2116,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					candidateWidth = MeasureColumnText(listView, mod.Index.ToString(CultureInfo.CurrentCulture)) + 20;
 					break;
 				case "Name":
-					candidateWidth = MeasureColumnText(listView, mod.DisplayTitle) + 28 + (GetModNameIconCount(mod) * 20);
+					candidateWidth = MeasureColumnText(listView, mod.DisplayTitle) + 28 + GetModNameAdornmentWidth(mod);
 					break;
 				case "File Name":
 					candidateWidth = MeasureColumnText(listView, mod.FileName) + 24;
@@ -1904,7 +2149,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					break;
 				case "Source":
 					// 14px provider icon + 6 margin + 16 padding + 3 border + a generous cushion.
-					candidateWidth = MeasureColumnText(listView, mod.DisplaySource, GetPillFontSize(listView), FontWeights.SemiBold) + 60;
+					candidateWidth = ViewModel?.Settings.UseSourceIconsOnly == true
+						? 40
+						: MeasureColumnText(listView, mod.DisplaySource, GetPillFontSize(listView), FontWeights.SemiBold) + 60;
 					if (mod.Metadata.ModioWarningVisibility == Visibility.Visible && ViewModel?.Settings.HideModioSourceWarningIcons == false)
 					{
 						candidateWidth += 24;
@@ -1968,7 +2215,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		var pillFontSize = GetPillFontSize(listView);
 		var widestPill = listView.Items
 			.OfType<DivinityModData>()
-			.Where(mod => !mod.IsVisualDivider && mod.Visibility == Visibility.Visible)
+			.Where(mod => !mod.IsVisualDivider)
 			.SelectMany(mod => mod.DisplayCategories ?? Enumerable.Empty<ModCategoryDisplayData>())
 			.Select(category => MeasureColumnText(listView, category.Name, pillFontSize, FontWeights.SemiBold) + 44 + iconAllowance)
 			.DefaultIfEmpty(GetDefaultColumnWidth("Category"))
@@ -2010,7 +2257,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		var resizedColumn = header.Column;
 		var listView = sender as ModListView ?? header.FindVisualParent<ModListView>();
-		Dispatcher.BeginInvoke(new Action(() => ClampModListColumnWidth(listView, resizedColumn)), System.Windows.Threading.DispatcherPriority.Background);
+		Dispatcher.BeginInvoke(new Action(() =>
+		{
+			ClampModListColumnWidth(listView, resizedColumn);
+			PersistModListColumnWidths(listView);
+		}), System.Windows.Threading.DispatcherPriority.Background);
 	}
 
 	private void SetGridViewColumnVisibility(GridView gridView, string columnName, bool isVisible)
@@ -2100,6 +2351,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		}
 
 		ApplyModListColumnVisibility();
+		ActiveModsListView.UserResizedColumns = false;
+		InactiveModsListView.UserResizedColumns = false;
+		PersistModListColumnWidths(ActiveModsListView, false);
+		PersistModListColumnWidths(InactiveModsListView, false);
 	}
 
 	private static MenuItem CreateFixedColumnMenuItem(string header)
@@ -2150,6 +2405,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		foreach (var columnName in OptionalModListColumns)
 		{
+			if (columnName == "Source" && !ViewModel.Modules.SourceIntegrationsEnabled)
+			{
+				continue;
+			}
+
 			var item = new MenuItem
 			{
 				Header = columnName,
@@ -2173,12 +2433,17 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		};
 		autoSizeItem.Click += (_, _) =>
 		{
-			if (listView.View is not GridView visibleGridView) return;
-			foreach (var column in visibleGridView.Columns)
+			// Let WPF finish the current menu/layout transaction before measuring,
+			// then quietly verify once more after late row bindings have settled.
+			Dispatcher.BeginInvoke(new Action(() => AutoSizeModListColumns(listView, false)),
+				System.Windows.Threading.DispatcherPriority.Render);
+			RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(140), () =>
 			{
-				column.Width = GetContentAutoSizeColumnWidth(listView, GetColumnName(column));
-				_visibleModListColumnWidths[column] = column.Width;
-			}
+				if (listView.IsLoaded)
+				{
+					AutoSizeModListColumns(listView, true);
+				}
+			});
 		};
 		menu.Items.Add(autoSizeItem);
 		var resetItem = new MenuItem
@@ -2195,6 +2460,26 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		menu.IsOpen = true;
 		e.Handled = true;
+	}
+
+	private void AutoSizeModListColumns(ModListView listView, bool persist)
+	{
+		if (listView?.View is not GridView gridView)
+		{
+			return;
+		}
+
+		listView.UpdateLayout();
+		foreach (var column in gridView.Columns)
+		{
+			column.Width = GetContentAutoSizeColumnWidth(listView, GetColumnName(column));
+			_visibleModListColumnWidths[column] = column.Width;
+		}
+		listView.UserResizedColumns = true;
+		if (persist)
+		{
+			PersistModListColumnWidths(listView);
+		}
 	}
 
 	GridViewColumnHeader _lastHeaderClicked = null;
@@ -2323,61 +2608,22 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(250), () =>
 			{
+				if (ActiveModsListView.UserResizedColumns) return;
 				count = Math.Max(ViewModel.ActiveMods.Count, ViewModel.ForceLoadedMods.Count);
 				if (count > 0)
 				{
-					//var longestName = ViewModel.ActiveMods.OrderByDescending(m => m.Name.Length).FirstOrDefault()?.Name ?? "";
-					//var longestOverrideName = ViewModel.ForceLoadedMods.OrderByDescending(m => m.Name.Length).FirstOrDefault()?.Name ?? "";
-					var longestName = "";
-					var iconPadding = 0;
+					var targetWidth = ViewModel.Mods
+						.Where(mod => mod.IsActive || mod.IsForceLoaded)
+						.Where(mod => !String.IsNullOrWhiteSpace(mod.DisplayTitle))
+						.Select(mod =>
+							MeasureColumnText(ActiveModsListView, mod.DisplayTitle) +
+							_FontSizeMeasurePadding +
+							GetModNameAdornmentWidth(mod))
+						.DefaultIfEmpty(0d)
+						.Max();
 
-					foreach(var mod in ViewModel.Mods)
+					if (targetWidth > 0)
 					{
-						if(mod.IsActive || mod.IsForceLoaded)
-						{
-							if(!String.IsNullOrEmpty(mod.Name) && mod.Name.Length > longestName.Length)
-							{
-								longestName = mod.Name;
-							}
-							var modIcons = 0;
-							if(mod.OsirisStatusVisibility == Visibility.Visible)
-							{
-								modIcons++;
-							}
-							if(mod.ExtenderStatusVisibility == Visibility.Visible)
-							{
-								modIcons++;
-							}
-							if(mod.ToolkitIconVisibility == Visibility.Visible)
-							{
-								modIcons++;
-							}
-							if(mod.HasInvalidUUIDVisibility == Visibility.Visible)
-							{
-								modIcons++;
-							}
-							if(mod.MissingDependencyIconVisibility == Visibility.Visible)
-							{
-								modIcons++;
-							}
-							if(modIcons > iconPadding)
-							{
-								iconPadding = modIcons;
-							}
-						}
-					}
-
-					if (iconPadding > 0) iconPadding *= 16;
-
-					if (!String.IsNullOrEmpty(longestName))
-					{
-						//DivinityApp.LogMessage($"Autosizing active mods grid for name {longestName}");
-						var targetWidth = ElementHelper.MeasureText(ActiveModsListView, longestName,
-							ActiveModsListView.FontFamily,
-							ActiveModsListView.FontStyle,
-							ActiveModsListView.FontWeight,
-							ActiveModsListView.FontStretch,
-							ActiveModsListView.FontSize).Width + _FontSizeMeasurePadding + iconPadding;
 						if (Math.Abs(gridView.Columns[1].Width - targetWidth) >= 30)
 						{
 							ActiveModsListView.Resizing = true;
@@ -2394,54 +2640,19 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (ViewModel == null || InactiveModsListView.UserResizedColumns) return;
 		if (ViewModel.InactiveMods.Count > 0 && InactiveModsListView.View is GridView gridView && gridView.Columns.Count >= 2)
 		{
-			var longestName = "";
-			var iconPadding = 0;
+			var targetWidth = ViewModel.InactiveMods
+				.Where(mod => !String.IsNullOrWhiteSpace(mod.DisplayTitle))
+				.Select(mod =>
+					MeasureColumnText(InactiveModsListView, mod.DisplayTitle) +
+					_FontSizeMeasurePadding +
+					GetModNameAdornmentWidth(mod))
+				.DefaultIfEmpty(0d)
+				.Max();
 
-			foreach (var mod in ViewModel.InactiveMods)
-			{
-				if (!String.IsNullOrEmpty(mod.Name) && mod.Name.Length > longestName.Length)
-				{
-					longestName = mod.Name;
-				}
-				var modIcons = 0;
-				if (mod.OsirisStatusVisibility == Visibility.Visible)
-				{
-					modIcons++;
-				}
-				if (mod.ExtenderStatusVisibility == Visibility.Visible)
-				{
-					modIcons++;
-				}
-				if (mod.ToolkitIconVisibility == Visibility.Visible)
-				{
-					modIcons++;
-				}
-				if (mod.HasInvalidUUIDVisibility == Visibility.Visible)
-				{
-					modIcons++;
-				}
-				if (mod.MissingDependencyIconVisibility == Visibility.Visible)
-				{
-					modIcons++;
-				}
-				if (modIcons > iconPadding)
-				{
-					iconPadding = modIcons;
-				}
-			}
-
-			if (iconPadding > 0) iconPadding *= 16;
-
-			if (!String.IsNullOrEmpty(longestName))
+			if (targetWidth > 0)
 			{
 				InactiveModsListView.Resizing = true;
-				//DivinityApp.LogMessage($"Autosizing inactive mods grid for name {longestName}");
-				gridView.Columns[0].Width = ElementHelper.MeasureText(InactiveModsListView, longestName,
-					InactiveModsListView.FontFamily,
-					InactiveModsListView.FontStyle,
-					InactiveModsListView.FontWeight,
-					InactiveModsListView.FontStretch,
-					InactiveModsListView.FontSize).Width + _FontSizeMeasurePadding + iconPadding;
+				gridView.Columns[0].Width = targetWidth;
 			}
 		}
 	}

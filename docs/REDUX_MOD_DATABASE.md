@@ -33,6 +33,42 @@ Anything that doesn't clear one of these stays **Local**.
 
 ## Adding an exact `.pak` or archive fingerprint
 
+The repository includes a validation-first developer utility at
+`tools/ReduxModDatabaseTool`. It computes the same hashes Redux uses, validates the full database,
+and previews additions without writing by default:
+
+```powershell
+dotnet run --project tools/ReduxModDatabaseTool -- validate
+dotnet run --project tools/ReduxModDatabaseTool -- fingerprint --file "C:\Mods\Example.pak"
+```
+
+See `tools/ReduxModDatabaseTool/README.md` for the guarded `add` workflow.
+
+Private tester builds can generate a privacy-limited `.bg3redux-report` from
+**Tools → Generate Redux Database Contribution**. Reports omit absolute paths, load-order positions,
+profile names, application settings, and credentials. Maintainers can audit and classify a report
+without changing the database:
+
+```powershell
+dotnet run --project tools/ReduxModDatabaseTool -- review-report `
+  --file "Redux-Mod-Database-Contribution.bg3redux-report" `
+  --output "Redux-Mod-Database-Review.json"
+```
+
+Contribution reports are evidence for review, not an automatic trust source. Conflicts must be
+resolved manually. A confirmed Nexus project can be previewed from the report with
+`accept-report --mod-id <id>` and written only with an additional `--write`; individual local
+artifacts still use the preview-first `add` workflow.
+
+The exporter removes embedded path-shaped metadata and strips credentials, query strings, and
+fragments from provider URLs before writing. It validates the privacy contract both before and
+after the temporary report is serialized. The maintainer utility independently repeats those
+checks and rejects older or altered reports that contain invalid UUID fallbacks, embedded paths,
+non-public provider URLs, or inconsistent fingerprint states.
+
+Reports produced before these privacy checks were introduced should be regenerated rather than
+shared.
+
 1. Confirm the Nexus mod ID and file ID from the actual file page.
 2. Get the exact file (installed `.pak`, or the downloaded archive) that produced it.
 3. Record its byte length and hash (xxHash64/Base64 for a `.pak`, MD5/hex for an archive).

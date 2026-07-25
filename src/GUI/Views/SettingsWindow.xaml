@@ -598,6 +598,20 @@
 											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Match category names in the sidebar to their colors." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
+									<CheckBox Margin="0,8,10,0" ToolTip="Match category hover and selection to each category color"
+										IsChecked="{Binding Settings.UseCategoryColorsForSidebarSelection, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+										<StackPanel Margin="6,0,0,0">
+											<TextBlock FontWeight="SemiBold" Text="Category selection" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use category colors for sidebar hover and selection." TextWrapping="Wrap" />
+										</StackPanel>
+									</CheckBox>
+									<CheckBox Margin="0,8,10,0" ToolTip="Show only provider icons in source columns"
+										IsChecked="{Binding Settings.UseSourceIconsOnly, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+										<StackPanel Margin="6,0,0,0">
+											<TextBlock FontWeight="SemiBold" Text="Source icons only" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Hide source label text in mod lists." TextWrapping="Wrap" />
+										</StackPanel>
+									</CheckBox>
 								</UniformGrid>
 							</Grid>
 						</Border>
@@ -825,8 +839,12 @@
 								Grid.Row="2"
 								KeyboardNavigation.TabNavigation="Continue"
 								MouseDoubleClick="HotkeyListViewItem_MouseDoubleClick"
+								ScrollViewer.CanContentScroll="True"
 								ScrollViewer.VerticalScrollBarVisibility="Auto"
-								Style="{StaticResource SettingsListViewStyle}">
+								Style="{StaticResource SettingsListViewStyle}"
+								VirtualizingPanel.IsVirtualizing="True"
+								VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+								VirtualizingPanel.VirtualizationMode="Recycling">
 								<ListView.GroupStyle>
 									<GroupStyle>
 										<GroupStyle.HeaderTemplate>
@@ -965,6 +983,35 @@
 									</DataTemplate>
 								</ListView.ItemTemplate>
 							</ListView>
+							<StackPanel Grid.Row="2"
+								Margin="24"
+								HorizontalAlignment="Center"
+								VerticalAlignment="Center"
+								IsHitTestVisible="False">
+								<StackPanel.Style>
+									<Style TargetType="{x:Type StackPanel}">
+										<Setter Property="Visibility" Value="Collapsed" />
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding Items.Count, ElementName=KeybindingsListView}" Value="0">
+												<Setter Property="Visibility" Value="Visible" />
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</StackPanel.Style>
+								<controls:ReduxIcon Width="20"
+									Height="20"
+									HorizontalAlignment="Center"
+									Foreground="{DynamicResource ReduxTextMutedBrush}"
+									StrokeData="{StaticResource Redux.Icon.Funnel}" />
+								<TextBlock Margin="0,8,0,0"
+									HorizontalAlignment="Center"
+									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+									Text="No matching shortcuts" />
+								<TextBlock Margin="0,3,0,0"
+									HorizontalAlignment="Center"
+									Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Try a command name, category, or key combination." />
+							</StackPanel>
 						</Grid>
 					</Border>
 				</Grid>

@@ -54,9 +54,22 @@ public static class ReduxWindowBehavior
 	{
 		AttachAdaptiveSizing(window, workAreaMargin);
 		var state = AnimatedCloseStates.GetOrCreateValue(window);
-		window.Opacity = SystemParameters.ClientAreaAnimation ? 0 : 1;
+		PrepareEntrance(window);
 		window.Loaded += (_, _) => AnimateEntrance(window, 0);
 		window.Closing += (_, e) => AnimateDialogClosing(window, state, e);
+	}
+
+	// Windows are not layered (AllowsTransparency=False), so animating Window.Opacity directly
+	// routes through OS-level layered-window compositing instead of WPF's own render pipeline,
+	// producing choppy, black-flashing fades. Animating the content root keeps the fade entirely
+	// inside WPF while the native frame/shadow stays solid.
+	private static UIElement GetAnimationTarget(Window window) => window.Content as UIElement ?? window;
+
+	public static void PrepareEntrance(Window window)
+	{
+		var target = GetAnimationTarget(window);
+		target.BeginAnimation(UIElement.OpacityProperty, null);
+		target.Opacity = SystemParameters.ClientAreaAnimation ? 0 : 1;
 	}
 
 	private static void AnimateDialogClosing(Window window, AnimatedCloseState state, CancelEventArgs e)
@@ -109,14 +122,15 @@ public static class ReduxWindowBehavior
 
 	public static void AnimateEntrance(Window window, double fromOpacity = 0.92)
 	{
-		window.BeginAnimation(UIElement.OpacityProperty, null);
+		var target = GetAnimationTarget(window);
+		target.BeginAnimation(UIElement.OpacityProperty, null);
 		if (!SystemParameters.ClientAreaAnimation)
 		{
-			window.Opacity = 1;
+			target.Opacity = 1;
 			return;
 		}
 
-		window.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(fromOpacity, 1, EntranceDuration)
+		target.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(fromOpacity, 1, EntranceDuration)
 		{
 			EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
 		});
@@ -124,22 +138,23 @@ public static class ReduxWindowBehavior
 
 	public static void AnimateExit(Window window, Action completed)
 	{
+		var target = GetAnimationTarget(window);
 		if (!window.IsVisible || !SystemParameters.ClientAreaAnimation)
 		{
 			completed();
 			return;
 		}
 
-		var animation = new DoubleAnimation(window.Opacity, 0, ExitDuration)
+		var animation = new DoubleAnimation(target.Opacity, 0, ExitDuration)
 		{
 			EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
 		};
 		animation.Completed += (_, _) =>
 		{
-			window.BeginAnimation(UIElement.OpacityProperty, null);
-			window.Opacity = 1;
+			target.BeginAnimation(UIElement.OpacityProperty, null);
+			target.Opacity = 1;
 			completed();
 		};
-		window.BeginAnimation(UIElement.OpacityProperty, animation);
+		target.BeginAnimation(UIElement.OpacityProperty, animation);
 	}
 }

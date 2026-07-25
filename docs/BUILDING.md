@@ -14,20 +14,16 @@ runtime targets.
 
 ## Debug x64 build
 
-Build the complete solution with Visual Studio MSBuild:
+Use the repository build helper. It locates the newest compatible Visual Studio installation with
+`vswhere`, verifies that the managed desktop, MSVC, and C++/CLI components are installed, and then
+builds the complete native and managed solution:
 
 ```powershell
-& 'C:\Program Files\Microsoft Visual Studio\<version>\<edition>\MSBuild\Current\Bin\MSBuild.exe' `
-  '.\BG3ModManager.sln' `
-  /t:Build `
-  /p:Configuration=Debug `
-  /p:Platform=x64 `
-  /m `
-  /v:minimal
+& '.\Build-Redux.ps1' -Configuration Debug
 ```
 
-Use the installed Visual Studio version and edition in place of the placeholders. Building the
-solution through Visual Studio with **Debug | x64** selected is equivalent.
+This avoids hardcoding a Visual Studio release or edition. Building the solution through Visual
+Studio with **Debug | x64** selected is equivalent.
 
 Do not use `dotnet build` as the normal Redux build path. It does not build the native project graph
 the same way and can clean the C++/CLI loader shim from the final debug directory.
@@ -75,13 +71,7 @@ Do not commit or distribute them.
 Build the solution with `Configuration=Publish` and `Platform=x64`:
 
 ```powershell
-& 'C:\Program Files\Microsoft Visual Studio\<version>\<edition>\MSBuild\Current\Bin\MSBuild.exe' `
-  '.\BG3ModManager.sln' `
-  /t:Build `
-  /p:Configuration=Publish `
-  /p:Platform=x64 `
-  /m `
-  /v:minimal
+& '.\Build-Redux.ps1' -Configuration Publish
 ```
 
 The GUI project invokes `BuildRelease.py` after assembling `bin\Publish`. The hook expects `python`

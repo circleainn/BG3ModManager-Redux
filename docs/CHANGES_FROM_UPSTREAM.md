@@ -151,6 +151,17 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 - Exact downloaded archive size plus MD5 matching.
 - Reviewed module UUID identities and tightly constrained normalized name/author fallback.
 - Unknown or ambiguous packages remain Local rather than being assigned speculatively.
+- An opt-in database-contribution report generator that exports reviewable identity evidence and
+  exact PAK fingerprints without load-order positions, profiles, settings, credentials, or private
+  paths.
+- A standalone, preview-first maintainer utility for validating the bundled database, reviewing
+  contribution reports, accepting independently confirmed Nexus records, and writing changes
+  atomically only after an explicit `--write`.
+- A proposed, schema-backed `redux.mod.json` creator-manifest format whose runtime discovery remains
+  future work.
+- A reversible Local-only mode that suppresses Nexus Mods and mod.io requests, pauses bundled
+  database enrichment, hides the Source column and source-assignment actions, and presents
+  installed packages as Local without deleting their stored associations.
 - mod.io matching validated against package `PublishHandle` information.
 - A mod.io warning and acknowledgement flow explaining that BG3 subscriptions may restore removed
   files.
@@ -171,8 +182,11 @@ See [REDUX_MOD_DATABASE.md](REDUX_MOD_DATABASE.md) for the database schema and m
 - Background Mod Health checks for missing or inactive dependencies, duplicate or invalid UUIDs,
   Script Extender requirements, confirmed active declared conflicts, bundled Mod Fixer content,
   override behavior, and mod.io safety state.
+- A master Mod Health preference that stops scheduled analysis and removes health indicators
+  without affecting installed mods, load orders, exports, or core manager behavior.
 - An opt-in, disabled-by-default Load Order Advisor that can show a conservative read-only warning
-  when an active mod's declared dependency is positioned later in the numbered load order.
+  when an active mod's declared dependency is positioned later in the numbered load order. Advisor
+  checks are registered separately from general health checks and do not run when Mod Health is off.
 - A compact warning or error pill in the selected-mod Overview when attention is needed, with
   severity-ranked details in its tooltip. Healthy mods add no extra interface.
 - A load-order-wide Active Mods health summary that appears only when active mods need attention
@@ -181,6 +195,8 @@ See [REDUX_MOD_DATABASE.md](REDUX_MOD_DATABASE.md) for the database schema and m
   conflicts that otherwise have no dedicated status icon.
 - No automatic repair, installation, conflict resolution, or load-order reordering. Broader
   category- and compatibility-based load-order recommendations remain future work.
+- Rule-level Mod Health extension boundaries (`IModHealthAnalyzer` and `IModHealthRule`) so
+  diagnostics can be added, disabled, or removed without coupling them to list loading or export.
 
 ## Dialogs, warnings, notifications, and help
 
@@ -265,7 +281,11 @@ tracking discussion is [issue #11](https://github.com/raincloudsfollow/BG3ModMan
   immediately continue into the app without additional prompts. The tour should remain replayable
   from Help and introduce active/inactive lists, safe exporting, categories and separators, the
   selected-mod drawer, Mod Health, themes and typography, accessibility tools, source warnings,
-  and Redux-specific import/export without changing the user's load order or files.
+  and Redux-specific import/export without changing the user's load order or files. The tour should
+  also explain optional source linking and offer a clear choice between enabling integrations or
+  starting in **Local-only mode**. It should identify Mod Health as optional, keep the experimental
+  Load Order Advisor disabled unless the user deliberately enables it, and make every choice
+  reversible from Preferences.
 - Public Nexus SSO authentication.
 - Automatic Redux self-updating during the private alpha.
 - Linux, macOS, Wine, Proton, and self-contained .NET deployment are not planned targets.

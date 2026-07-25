@@ -80,7 +80,7 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Refresh Mods")]
 	public Hotkey Refresh { get; private set; } = new Hotkey(Key.F5);
 
-	//[MenuSettings("File", "Refresh Mod Updates")]
+	[MenuSettings("File", "Refresh Mod Updates")]
 	public Hotkey RefreshModUpdates { get; private set; } = new Hotkey(Key.None);
 
 	[MenuSettings("Edit", "Move Selected Mods to Opposite List", true)]
@@ -104,6 +104,7 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("Edit", "Focus Current Mod-List Filter", AddSeparator = true)]
 	public Hotkey ToggleFilterFocus { get; private set; } = new Hotkey(Key.F, ModifierKeys.Control);
 
+	[MenuSettings("Edit", "Toggle Mod File Names")]
 	public Hotkey ToggleFileNameDisplay { get; private set; } = new Hotkey(Key.None);
 
 	[MenuSettings("Edit", "Delete Selected Mods...", AddSeparator = true)]
@@ -121,7 +122,7 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("Settings", "Toggle Toolbar")]
 	public Hotkey ToggleToolbar { get; private set; } = new Hotkey(Key.B, ModifierKeys.Control | ModifierKeys.Shift);
 
-	//[MenuSettings("View", "Toggle Updates View")]
+	[MenuSettings("Settings", "Toggle Updates View")]
 	public Hotkey ToggleUpdatesView { get; private set; } = new Hotkey();
 
 	[MenuSettings("Go", "Open Mods Folder")]
@@ -265,12 +266,18 @@ public class AppKeys : ReactiveObject
 		keyMap.Connect().Bind(out allKeys).Subscribe();
 		var baseCanExecute = vm.WhenAnyValue(x => x.IsLocked, b => !b);
 		Type t = typeof(AppKeys);
-		// Building a list of keys / key names from properties, because lazy
-		var keyProps = t.GetRuntimeProperties().Where(prop => Attribute.IsDefined(prop, typeof(MenuSettingsAttribute)) && prop.GetGetMethod() != null).ToList();
+		// Every public Hotkey is user-configurable. Requiring menu metadata here prevents
+		// a newly registered command from silently disappearing from the shortcut editor.
+		var keyProps = t.GetRuntimeProperties()
+			.Where(prop => prop.PropertyType == typeof(Hotkey) && prop.GetGetMethod() != null)
+			.OrderBy(prop => prop.MetadataToken)
+			.ToList();
 		foreach (var prop in keyProps)
 		{
 			var hotkey = (Hotkey)t.GetProperty(prop.Name).GetValue(this);
-			var menuSettings = prop.GetCustomAttribute<MenuSettingsAttribute>();
+			var menuSettings = prop.GetCustomAttribute<MenuSettingsAttribute>()
+				?? throw new InvalidOperationException(
+					$"{nameof(AppKeys)}.{prop.Name} must declare {nameof(MenuSettingsAttribute)} so it can appear in Keyboard Shortcuts.");
 			hotkey.AddCanExecuteCondition(baseCanExecute);
 			hotkey.ID = prop.Name;
 			hotkey.DisplayName = menuSettings.DisplayName;

@@ -2,6 +2,7 @@
 
 
 
+using DivinityModManager.AppServices;
 using DivinityModManager.Controls;
 using DivinityModManager.Converters;
 using DivinityModManager.Models;
@@ -278,6 +279,19 @@ public partial class MainViewControl : MainViewControlViewBase
 			accessibilityMenuItem.Items.Add(keyboardShortcutsItem);
 		}
 
+		if (menuItems.TryGetValue("Tools", out var toolsMenuItem))
+		{
+			if (toolsMenuItem.Items.Count > 0) toolsMenuItem.Items.Add(new Separator());
+			var contributionItem = new MenuItem
+			{
+				Header = "Generate Redux Database Contribution...",
+				ToolTip = "Create a privacy-limited report of installed mod identities and exact PAK fingerprints.",
+				Icon = ReduxIcon.FromResource("Redux.Icon.Database", true)
+			};
+			contributionItem.Click += GenerateReduxDatabaseContribution_Click;
+			toolsMenuItem.Items.Add(contributionItem);
+		}
+
 		// Keep attribution available without dedicating a second top-level menu to it.
 		if (menuItems.TryGetValue("Help", out var helpMenuItem))
 		{
@@ -312,6 +326,73 @@ public partial class MainViewControl : MainViewControlViewBase
 				Icon = ReduxIcon.FromResource("Redux.Icon.Heart", true)
 			});
 			helpMenuItem.Items.Add(creditsMenu);
+		}
+	}
+
+	private async void GenerateReduxDatabaseContribution_Click(object sender, RoutedEventArgs e)
+	{
+		var installedMods = ViewModel.UserMods?.Where(mod => mod != null && !mod.IsVisualDivider).ToList()
+			?? new List<DivinityModData>();
+		if (installedMods.Count == 0)
+		{
+			ReduxMessageBox.Show(main,
+				"Redux has not detected any installed user mods to include.",
+				"Redux Database Contribution",
+				MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK);
+			return;
+		}
+
+		var consent = ReduxMessageBox.Show(main,
+			$"Create a contribution report for {installedMods.Count} installed mod package(s)?\n\n" +
+			"The report includes mod names, authors, versions, module UUIDs, PAK filenames, exact file sizes and fingerprints, " +
+			"and source IDs already known to Redux.\n\n" +
+			"It does not include absolute paths, load order, profile names, settings, API keys, or other credentials. " +
+			"Generating exact fingerprints may take a while for a large mod library.",
+			"Generate Redux Database Contribution?",
+			MessageBoxButton.YesNo, MessageBoxImage.Information, MessageBoxResult.No);
+		if (consent != MessageBoxResult.Yes) return;
+
+		var dialog = new Microsoft.Win32.SaveFileDialog
+		{
+			Title = "Save Redux Database Contribution",
+			Filter = "Redux database contribution (*.bg3redux-report)|*.bg3redux-report|JSON files (*.json)|*.json",
+			DefaultExt = ".bg3redux-report",
+			AddExtension = true,
+			OverwritePrompt = true,
+			FileName = $"Redux-Mod-Database-Contribution-{DateTime.Now:yyyy-MM-dd}"
+		};
+		if (dialog.ShowDialog(main) != true) return;
+
+		try
+		{
+			ViewModel.ShowAlert($"Generating fingerprints for {installedMods.Count} installed mod package(s)...", AlertType.Info);
+			var result = await ReduxDatabaseContributionService.CreateAsync(installedMods);
+			ReduxDatabaseContributionService.Save(dialog.FileName, result.Report);
+
+			var unavailableText = result.UnavailableFingerprintCount > 0
+				? $"\n\n{result.UnavailableFingerprintCount} package(s) had identity metadata but no readable PAK fingerprint."
+				: String.Empty;
+			var outputDirectory = Path.GetDirectoryName(dialog.FileName);
+			ReduxMessageBox.ShowWithActions(main,
+				$"Saved a contribution report containing {result.Report.Mods.Count} mod package(s) and " +
+				$"{result.FingerprintedCount} exact PAK fingerprint(s).{unavailableText}\n\n" +
+				"You can review this text-based report before sharing it.",
+				"Redux Database Contribution Saved",
+				MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK,
+				("Open Folder", () =>
+				{
+					if (!String.IsNullOrWhiteSpace(outputDirectory))
+						ProcessHelper.TryOpenPath(outputDirectory, Directory.Exists);
+				}));
+			ViewModel.ShowAlert("Saved Redux database contribution report.", AlertType.Success, 20);
+		}
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Failed to generate a Redux database contribution report:\n{ex}");
+			ReduxMessageBox.Show(main,
+				$"Redux could not create the contribution report.\n\n{ex.Message}",
+				"Redux Database Contribution",
+				MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
 	}
 

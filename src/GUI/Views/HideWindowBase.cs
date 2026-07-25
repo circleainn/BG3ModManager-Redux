@@ -81,8 +81,7 @@ public class HideWindowBase<TViewModel> : AdonisWindow, IViewFor<TViewModel> whe
 			return;
 		}
 
-		BeginAnimation(OpacityProperty, null);
-		Opacity = SystemParameters.ClientAreaAnimation ? 0 : 1;
+		ReduxWindowBehavior.PrepareEntrance(this);
 		Show();
 		Dispatcher.BeginInvoke(
 			() => ReduxWindowBehavior.AnimateEntrance(this, 0),

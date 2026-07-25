@@ -91,6 +91,8 @@ disappear from filtered or metadata-sorted views where their position would be m
   hover cards using shared Redux pill and status styles.
 - Separate display names and local `.pak` filenames for projects with multiple downloadable files.
 - Local metadata fallback when no online source can be matched.
+- An optional Local-only mode suppresses Nexus Mods and mod.io requests, hides source-linking UI,
+  and presents installed packages as Local without deleting their saved source associations.
 
 Provider matching is a convenience, not proof that two packages are compatible. Always read the
 author's installation instructions on the source page.
@@ -129,6 +131,14 @@ share, or commit personal API keys.
 - There is no bundled mod.io database; a mod.io API key is required for live mod.io details.
 - Local metadata remains available when neither provider can be matched.
 - mod.io support displays an additional warning because subscriptions can restore removed files.
+- Private testers can generate a reviewable `.bg3redux-report` containing conservative mod identity
+  evidence and exact PAK fingerprints for database maintenance. Reports exclude load-order
+  positions, profiles, settings, credentials, and private paths; they never update the bundled
+  database automatically.
+- Users who do not want source integrations can enable **Local-only mode** in Preferences. Redux
+  then pauses provider requests and bundled-database enrichment, hides the Source column and
+  source-assignment actions, and presents packages as Local. Turning the option off restores the
+  saved associations.
 
 A registered Nexus SSO application slug and a reviewed authentication flow will be required before
 Redux can offer a polished public Nexus sign-in experience.
@@ -137,9 +147,9 @@ Redux can offer a polished public Nexus sign-in experience.
 
 Mod Health runs quietly in the background. When the selected mod has a warning or error, Overview
 shows a compact status pill whose tooltip explains missing or inactive dependencies, duplicate or
-invalid UUIDs, declared dependencies positioned after the mods that require them, Script Extender
-status, confirmed active declared conflicts, bundled Mod Fixer content, override behavior, and
-mod.io safety state.
+invalid UUIDs, Script Extender status, confirmed active declared conflicts, bundled Mod Fixer
+content, override behavior, and mod.io safety state. Mod Health is an optional Redux module and can
+be disabled in Preferences; disabling it stops analysis and removes its indicators.
 Healthy mods add no extra interface.
 
 When one or more active mods need attention, the Active Mods header shows a compact load-order
@@ -147,11 +157,15 @@ summary. Opening it lists affected mods in severity order; choosing one focuses 
 Duplicate UUIDs, inactive dependencies, and declared conflicts also receive a compact row-level
 health indicator so they remain visible without opening the selected-mod drawer.
 Health findings are diagnostic and conservative, and Redux does not automatically repair, install,
-or reorder mods. The experimental Load Order Advisor is opt-in and disabled by default. Its first
-rule relies only on declared package dependencies; broader category- or compatibility-based
-recommendations remain future work. When Debug Mode is enabled, each changed active order writes a
-`[LoadOrderAdvisor]` diagnostic
-summary to the Redux log, including a clear result when no reversed dependencies are detected.
+or reorder mods. The experimental Load Order Advisor is a separate opt-in extension of Mod Health
+and is disabled by default. Its first rule relies only on declared package dependencies; broader
+category- or compatibility-based recommendations remain future work. When Debug Mode is enabled,
+each changed active order writes a `[LoadOrderAdvisor]` diagnostic summary to the Redux log,
+including a clear result when no reversed dependencies are detected.
+
+Source integrations, Mod Health, and Load Order Advisor are deliberately layered over the preserved
+manager core. See [Optional Redux modules](docs/REDUX_OPTIONAL_MODULES.md) for their boundaries and
+disabled behavior.
 
 ## Features for mod authors
 

@@ -19,7 +19,9 @@ public sealed class ModMetadataViewData : ReactiveObject
 	private readonly DivinityModData _mod;
 	private INotifyPropertyChanged _nexusMetadata;
 	private INotifyPropertyChanged _modioMetadata;
-	private IExternalModMetadata Provider => _mod.ModioData?.HasMetadata == true
+	private IExternalModMetadata Provider => !_mod.OnlineMetadataEnabled
+		? null
+		: _mod.ModioData?.HasMetadata == true
 		? _mod.ModioData
 		: _mod.CanOpenNexusModsLink
 			? _mod.NexusModsData

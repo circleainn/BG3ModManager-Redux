@@ -74,6 +74,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public string ModioAPIKey { get; set; }
 
 	[DefaultValue(false)]
+	[SettingsEntry("Local-only mode", "Disable Nexus Mods and mod.io requests and present installed mods as Local. Existing source links remain saved and return when this is turned off.")]
+	[DataMember, Reactive] public bool LocalOnlyMode { get; set; }
+
+	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ModioSupportWarningAcknowledged { get; set; }
 
 	[DefaultValue(false)]
@@ -170,6 +174,14 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("Color category names", "Use each category's color for its name in the Categories pane.", HideFromUI = true)]
 	[DataMember, Reactive] public bool UseCategoryColorsForSidebarText { get; set; } = true;
 
+	[DefaultValue(true)]
+	[SettingsEntry("Match category selection colors", "Use each category's color for hover and selection in the Categories pane.", HideFromUI = true)]
+	[DataMember, Reactive] public bool UseCategoryColorsForSidebarSelection { get; set; } = true;
+
+	[DefaultValue(false)]
+	[SettingsEntry("Source icons only", "Show provider icons without source text in mod-list source columns.", HideFromUI = true)]
+	[DataMember, Reactive] public bool UseSourceIconsOnly { get; set; }
+
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ReduxPreviewWarningAcknowledged { get; set; }
 
@@ -202,6 +214,11 @@ public class DivinityModManagerSettings : ReactiveObject
 
 	[DefaultValue(true)]
 	[DataMember, Reactive] public bool ShowModListCategoryColumn { get; set; }
+
+	// Widths are stored independently because active and inactive lists can be sized
+	// for different content. Hidden columns retain their last useful width.
+	[DataMember, Reactive] public Dictionary<string, double> ActiveModListColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+	[DataMember, Reactive] public Dictionary<string, double> InactiveModListColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
 	[DefaultValue(true)]
 	[SettingsEntry("Hide empty categories", "Hide categories with no matching installed mods from the Categories sidebar.")]
@@ -269,8 +286,12 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("Suppress missing-mod warnings", "Do not display a warning when the selected load order references mods that are not installed.")]
 	[DataMember, Reactive] public bool DisableMissingModWarnings { get; set; }
 
+	[DefaultValue(true)]
+	[SettingsEntry("Enable Mod Health", "Run optional, read-only checks for clearly detectable package, dependency, conflict, Script Extender, and override conditions. Disabling this stops analysis and removes Mod Health indicators.")]
+	[DataMember, Reactive] public bool EnableModHealth { get; set; } = true;
+
 	[DefaultValue(false)]
-	[SettingsEntry("Enable Load Order Advisor", "Show experimental, read-only load-order guidance based on declared dependencies. Disabled by default because valid placement can vary by mod and author instructions should take priority.")]
+	[SettingsEntry("Enable Load Order Advisor", "Add experimental load-order guidance to Mod Health using declared dependencies. Requires Mod Health and remains disabled by default because valid placement can vary by mod.")]
 	[DataMember, Reactive] public bool EnableLoadOrderAdvisor { get; set; }
 
 	[DefaultValue(false)]
@@ -401,6 +422,12 @@ public class DivinityModManagerSettings : ReactiveObject
 		ModCategoryIcons = ModCategoryIcons != null
 			? new Dictionary<string, string>(ModCategoryIcons, StringComparer.OrdinalIgnoreCase)
 			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		ActiveModListColumnWidths = ActiveModListColumnWidths != null
+			? new Dictionary<string, double>(ActiveModListColumnWidths, StringComparer.OrdinalIgnoreCase)
+			: new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+		InactiveModListColumnWidths = InactiveModListColumnWidths != null
+			? new Dictionary<string, double>(InactiveModListColumnWidths, StringComparer.OrdinalIgnoreCase)
+			: new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
 		SavedCategoryColors ??= new List<string>();
 		DisabledModCategories ??= new List<string>();
 		KnownCategorizedModIds ??= new List<string>();

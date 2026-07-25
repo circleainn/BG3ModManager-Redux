@@ -26,6 +26,10 @@ public class ReduxCustomTheme : ReactiveObject
 	[DataMember, Reactive] public bool ShowCategoryIconsInPills { get; set; } = true;
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool UseCategoryColorsForSidebarText { get; set; }
+	[DefaultValue(false)]
+	[DataMember, Reactive] public bool UseCategoryColorsForSidebarSelection { get; set; }
+	[DefaultValue(false)]
+	[DataMember, Reactive] public bool UseSourceIconsOnly { get; set; }
 	[DataMember, Reactive] public string BackgroundColor { get; set; } = "#0D0B10";
 	[DataMember, Reactive] public string SurfaceColor { get; set; } = "#17121D";
 	[DataMember, Reactive] public string AccentColor { get; set; } = "#9676FF";
@@ -46,6 +50,8 @@ public class ReduxCustomTheme : ReactiveObject
 		UseCategoryColorsForHover = UseCategoryColorsForHover,
 		ShowCategoryIconsInPills = ShowCategoryIconsInPills,
 		UseCategoryColorsForSidebarText = UseCategoryColorsForSidebarText,
+		UseCategoryColorsForSidebarSelection = UseCategoryColorsForSidebarSelection,
+		UseSourceIconsOnly = UseSourceIconsOnly,
 		BackgroundColor = BackgroundColor,
 		SurfaceColor = SurfaceColor,
 		AccentColor = AccentColor,

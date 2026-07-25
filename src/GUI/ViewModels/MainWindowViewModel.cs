@@ -159,13 +159,14 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private readonly DivinityModManagerSettings _settings = new();
 	public DivinityModManagerSettings Settings => _settings;
+	public ReduxModuleState Modules { get; }
 
 	private readonly ObservableCollectionExtended<DivinityModData> _activeMods = new();
 	public ObservableCollectionExtended<DivinityModData> ActiveMods => _activeMods;
 
 	private readonly ObservableCollectionExtended<DivinityModData> _inactiveMods = new();
 	public ObservableCollectionExtended<DivinityModData> InactiveMods => _inactiveMods;
-	private readonly ModHealthAnalyzer _modHealthAnalyzer = new();
+	private readonly IModHealthAnalyzer _modHealthAnalyzer = new ModHealthAnalyzer();
 	private readonly ObservableCollectionExtended<ModHealthSnapshot> _modHealthSnapshotItems = new();
 	private readonly ObservableCollectionExtended<ModHealthSnapshot> _activeModHealthAttentionItems = new();
 	private IReadOnlyList<DivinityModData> _lastDetectedDuplicateMods = Array.Empty<DivinityModData>();
@@ -1197,6 +1198,21 @@ Directory the zip will be extracted to:
 			}
 		});
 
+		Modules.WhenAnyValue(x => x.SourceIntegrationsEnabled)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(sourceIntegrationsEnabled =>
+			{
+				ApplySourceLinkingMode(sourceIntegrationsEnabled);
+				if (IsInitialized)
+				{
+					SaveSettings();
+					if (sourceIntegrationsEnabled)
+					{
+						LoadModioMetadataBackground(LoadNexusModsMetadataBackground);
+					}
+				}
+			});
+
 		Settings.WhenAnyValue(x => x.SaveWindowLocation).Subscribe(Window.ToggleWindowPositionSaving);
 
 		Settings.WhenAnyValue(x => x.EnableColorblindSupport).Skip(1).ObserveOn(RxApp.MainThreadScheduler).Subscribe(b =>
@@ -1279,11 +1295,12 @@ Directory the zip will be extracted to:
 
 			foreach (var mod in mods.Items)
 			{
-				mod.NexusModsEnabled = DivinityApp.NexusModsEnabled;
+				ApplySourceLinkingMode(mod);
 			}
 		}
 
-		UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled;
+		UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled && Modules.SourceIntegrationsEnabled;
+		UpdateHandler.Modio.IsEnabled = Modules.SourceIntegrationsEnabled && !String.IsNullOrWhiteSpace(Settings.ModioAPIKey);
 
 		if (Settings.LogEnabled)
 		{
@@ -1643,13 +1660,32 @@ Directory the zip will be extracted to:
 		}
 	}
 
+	private void ApplySourceLinkingMode(bool sourceIntegrationsEnabled)
+	{
+		UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled && sourceIntegrationsEnabled;
+		UpdateHandler.Modio.IsEnabled = sourceIntegrationsEnabled && !String.IsNullOrWhiteSpace(Settings.ModioAPIKey);
+		foreach (var mod in mods.Items)
+		{
+			ApplySourceLinkingMode(mod);
+		}
+		ScheduleRefreshModCategories();
+		ScheduleModHealthRefresh();
+	}
+
+	private void ApplySourceLinkingMode(DivinityModData mod)
+	{
+		if (mod == null) return;
+		mod.OnlineMetadataEnabled = Modules.SourceIntegrationsEnabled;
+		mod.NexusModsEnabled = DivinityApp.NexusModsEnabled && Modules.SourceIntegrationsEnabled;
+	}
+
 	private void SetLoadedMods(IEnumerable<DivinityModData> loadedMods)
 	{
 		var uuids = loadedMods.Select(x => x.UUID).ToHashSet();
 		mods.Clear();
 		foreach (var mod in loadedMods)
 		{
-			mod.NexusModsEnabled = DivinityApp.NexusModsEnabled;
+			ApplySourceLinkingMode(mod);
 			mod.HasColorblindSupport = Settings.EnableColorblindSupport;
 
 			if (mod.IsLarianMod)
@@ -2154,7 +2190,7 @@ Directory the zip will be extracted to:
 					await AddModFromFile(builtinMods, result, f, MainProgressToken.Token, toActiveList);
 				}
 
-				if (UpdateHandler.Nexus.IsEnabled && result.Mods.Count > 0 && result.Mods.Any(x => x.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
+				if (Modules.SourceIntegrationsEnabled && UpdateHandler.Nexus.IsEnabled && result.Mods.Count > 0 && result.Mods.Any(x => x.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
 				{
 					var cacheChanged = await UpdateHandler.Nexus.Update(result.Mods, MainProgressToken.Token);
 					cacheChanged |= await NexusModsDataLoader.LoadChangelogsAsync(result.Mods, MainProgressToken.Token);
@@ -2526,7 +2562,8 @@ Directory the zip will be extracted to:
 			UpdateHandler.Nexus.AppName = AppTitle;
 			UpdateHandler.Nexus.AppVersion = Version.ToString();
 
-			UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled;
+			UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled && Modules.SourceIntegrationsEnabled;
+			UpdateHandler.Modio.IsEnabled = Modules.SourceIntegrationsEnabled && !String.IsNullOrWhiteSpace(Settings.ModioAPIKey);
 
 			await UpdateHandler.LoadAsync(UserMods, Version.ToString(), cts);
 			await UpdateHandler.UpdateAsync(UserMods, cts);
@@ -2538,7 +2575,7 @@ Directory the zip will be extracted to:
 
 	private void LoadNexusModsMetadataBackground()
 	{
-		if (!UpdateHandler.Nexus.IsEnabled || IsRefreshingModUpdates)
+		if (!Modules.SourceIntegrationsEnabled || !UpdateHandler.Nexus.IsEnabled || IsRefreshingModUpdates)
 		{
 			return;
 		}
@@ -2687,6 +2724,11 @@ Directory the zip will be extracted to:
 	public bool TryManuallyLinkNexusMod(DivinityModData mod, string linkOrId, out string error)
 	{
 		error = null;
+		if (!Modules.SourceIntegrationsEnabled)
+		{
+			error = "Source linking is unavailable while Local-only mode is enabled.";
+			return false;
+		}
 		if (mod == null)
 		{
 			error = "No mod was selected.";
@@ -2728,7 +2770,7 @@ Directory the zip will be extracted to:
 
 	public void UnlinkNexusMod(DivinityModData mod)
 	{
-		if (mod == null || mod.ModioData?.HasMetadata == true) return;
+		if (!Modules.SourceIntegrationsEnabled || mod == null || mod.ModioData?.HasMetadata == true) return;
 		mod.NexusModsData.ResetSourceAssociation();
 		mod.NexusModsData.MetadataOrigin = NexusMetadataOrigin.ManualUnlinked;
 		UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
@@ -2761,7 +2803,7 @@ Directory the zip will be extracted to:
 
 	private void LoadModioMetadataBackground(Action onCompleted = null)
 	{
-		if (String.IsNullOrWhiteSpace(Settings.ModioAPIKey))
+		if (!Modules.SourceIntegrationsEnabled || String.IsNullOrWhiteSpace(Settings.ModioAPIKey))
 		{
 			onCompleted?.Invoke();
 			return;
@@ -2831,7 +2873,8 @@ Directory the zip will be extracted to:
 
 	private void ShowModioSupportWarningIfRequired(IEnumerable<DivinityModData> loadedUserMods)
 	{
-		if (Settings.ModioSupportWarningAcknowledged
+		if (!Modules.SourceIntegrationsEnabled
+			|| Settings.ModioSupportWarningAcknowledged
 			|| !loadedUserMods.Any(mod => mod.Metadata.SourceType == ModSourceType.MODIO))
 		{
 			return;
@@ -2852,7 +2895,7 @@ Directory the zip will be extracted to:
 
 	private void ShowOfflineNexusDatabaseWarningIfRequired(IEnumerable<DivinityModData> loadedUserMods, bool isApplicationLaunch)
 	{
-		if (Settings.OfflineNexusDatabaseWarningAcknowledged)
+		if (!Modules.SourceIntegrationsEnabled || Settings.OfflineNexusDatabaseWarningAcknowledged)
 		{
 			return;
 		}
@@ -3684,7 +3727,7 @@ Directory the zip will be extracted to:
 				var builtinMods = DivinityApp.IgnoredMods.Items.SafeToDictionary(x => x.Folder, x => x);
 				MainProgressToken = new CancellationTokenSource();
 				await ImportArchiveAsync(builtinMods, result, dialog.FileName, false, MainProgressToken.Token);
-				if (result.Mods.Count > 0 && result.Mods.Any(x => x.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
+				if (Modules.SourceIntegrationsEnabled && UpdateHandler.Nexus.IsEnabled && result.Mods.Count > 0 && result.Mods.Any(x => x.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
 				{
 					var cacheChanged = await UpdateHandler.Nexus.Update(result.Mods, MainProgressToken.Token);
 					cacheChanged |= await NexusModsDataLoader.LoadChangelogsAsync(result.Mods, MainProgressToken.Token);
@@ -3772,7 +3815,7 @@ Directory the zip will be extracted to:
 
 	private void AddImportedMod(DivinityModData mod, bool? toActiveList = null)
 	{
-		mod.NexusModsEnabled = DivinityApp.NexusModsEnabled;
+		ApplySourceLinkingMode(mod);
 
 		if (mod.IsForceLoaded && !mod.IsForceLoadedMergedMod)
 		{
@@ -3842,6 +3885,11 @@ Directory the zip will be extracted to:
 
 	private bool ApplyImportedNexusAssociation(DivinityModData mod, NexusModFileVersionData fileNameInfo, ReduxModDatabaseMatch archiveMatch)
 	{
+		if (!Modules.SourceIntegrationsEnabled)
+		{
+			return false;
+		}
+
 		if (fileNameInfo.Success)
 		{
 			// A Nexus-aware imported filename is an explicit source association and
@@ -3864,6 +3912,11 @@ Directory the zip will be extracted to:
 
 	private async Task<ReduxModDatabaseMatch> TryResolveImportedArchiveAsync(string filePath, CancellationToken cancellationToken)
 	{
+		if (!Modules.SourceIntegrationsEnabled)
+		{
+			return null;
+		}
+
 		try
 		{
 			return ReduxModDatabaseService.CouldMatchArchive(filePath)
@@ -5854,6 +5907,7 @@ Directory the zip will be extracted to:
 		VisualDividerColor = divider.Color,
 		VisualDividerIconId = ReduxIconCatalog.Normalize(divider.IconId),
 		IsVisualDividerCollapsed = divider.IsCollapsed,
+		VisualDividerChevronAngle = divider.IsCollapsed ? -90d : 0d,
 		IsVisualDivider = true,
 		ShowVisualDivider = true,
 		CanDrag = true
@@ -6842,6 +6896,12 @@ Directory the zip will be extracted to:
 	private void ScheduleModHealthRefresh()
 	{
 		_modHealthRefreshTask?.Dispose();
+		if (!Modules.ModHealthEnabled)
+		{
+			ClearModHealthState();
+			return;
+		}
+
 		_modHealthRefreshTask = RxApp.MainThreadScheduler.Schedule(
 			TimeSpan.FromMilliseconds(300),
 			RecomputeModHealthSnapshots);
@@ -6849,11 +6909,17 @@ Directory the zip will be extracted to:
 
 	private void RecomputeModHealthSnapshots()
 	{
+		if (!Modules.ModHealthEnabled)
+		{
+			ClearModHealthState();
+			return;
+		}
+
 		var snapshots = _modHealthAnalyzer.AnalyzeAll(
 			mods.Items,
 			ActiveMods,
 			_lastDetectedDuplicateMods,
-			Settings.EnableLoadOrderAdvisor);
+			Modules.LoadOrderAdvisorEnabled);
 		foreach (var snapshot in snapshots)
 		{
 			snapshot.Mod.HealthSnapshot = snapshot;
@@ -6879,14 +6945,14 @@ Directory the zip will be extracted to:
 			: $"{activeAttentionSnapshots.Length} mods need attention";
 		var advisorWarningCount = snapshots.Sum(snapshot =>
 			snapshot.Findings.Count(finding => finding.Code == ModHealthFindingCode.DependencyLoadsLater));
-		IsLoadOrderAdvisorDebugVisible = Settings.DebugModeEnabled;
+		IsLoadOrderAdvisorDebugVisible = Modules.ModHealthEnabled && Settings.DebugModeEnabled;
 		LoadOrderAdvisorDebugHasWarnings = advisorWarningCount > 0;
-		LoadOrderAdvisorDebugText = !Settings.EnableLoadOrderAdvisor
+		LoadOrderAdvisorDebugText = !Modules.LoadOrderAdvisorEnabled
 			? "Advisor off"
 			: advisorWarningCount > 0
 			? $"Advisor: {advisorWarningCount} warning{(advisorWarningCount == 1 ? String.Empty : "s")}"
 			: "Advisor clear";
-		LoadOrderAdvisorDebugTooltip = !Settings.EnableLoadOrderAdvisor
+		LoadOrderAdvisorDebugTooltip = !Modules.LoadOrderAdvisorEnabled
 			? "Debug indicator: the experimental Load Order Advisor is disabled. Enable it in Preferences to evaluate declared dependency placement."
 			: advisorWarningCount > 0
 			? $"Debug indicator: the Load Order Advisor found {advisorWarningCount} reversed declared dependency relationship{(advisorWarningCount == 1 ? String.Empty : "s")}."
@@ -6905,11 +6971,11 @@ Directory the zip will be extracted to:
 			var advisorDiagnosticSignature = BuildLoadOrderAdvisorDiagnosticSignature(
 				ActiveMods,
 				snapshots,
-				Settings.EnableLoadOrderAdvisor);
+				Modules.LoadOrderAdvisorEnabled);
 			if (!String.Equals(_lastLoadOrderAdvisorDiagnosticSignature, advisorDiagnosticSignature, StringComparison.Ordinal))
 			{
 				_lastLoadOrderAdvisorDiagnosticSignature = advisorDiagnosticSignature;
-				LogLoadOrderAdvisorDiagnostics(ActiveMods, snapshots, Settings.EnableLoadOrderAdvisor);
+				LogLoadOrderAdvisorDiagnostics(ActiveMods, snapshots, Modules.LoadOrderAdvisorEnabled);
 			}
 		}
 		else
@@ -6917,6 +6983,25 @@ Directory the zip will be extracted to:
 			_lastModHealthDiagnosticSignature = String.Empty;
 			_lastLoadOrderAdvisorDiagnosticSignature = null;
 		}
+	}
+
+	private void ClearModHealthState()
+	{
+		foreach (var mod in mods.Items)
+		{
+			mod.HealthSnapshot = null;
+		}
+		_modHealthSnapshotItems.Clear();
+		_activeModHealthAttentionItems.Clear();
+		HasActiveModHealthAttention = false;
+		HasActiveModHealthErrors = false;
+		ActiveModHealthSummaryText = String.Empty;
+		IsLoadOrderAdvisorDebugVisible = false;
+		LoadOrderAdvisorDebugHasWarnings = false;
+		LoadOrderAdvisorDebugText = "Advisor off";
+		LoadOrderAdvisorDebugTooltip = "Mod Health is disabled.";
+		_lastModHealthDiagnosticSignature = String.Empty;
+		_lastLoadOrderAdvisorDiagnosticSignature = null;
 	}
 
 	private static string BuildModHealthDiagnosticSignature(IEnumerable<ModHealthSnapshot> snapshots)
@@ -7057,6 +7142,8 @@ Directory the zip will be extracted to:
 
 	public MainWindowViewModel() : base()
 	{
+		Modules = new ReduxModuleState(_settings);
+		Modules.DisposeWith(Disposables);
 		ModHealthSnapshots = new ReadOnlyObservableCollection<ModHealthSnapshot>(_modHealthSnapshotItems);
 		ActiveModHealthAttentionSnapshots = new ReadOnlyObservableCollection<ModHealthSnapshot>(_activeModHealthAttentionItems);
 		Services.RegisterSingleton<IModRegistryService>(new ModRegistryService(mods));
@@ -7449,7 +7536,7 @@ Directory the zip will be extracted to:
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ScheduleModHealthRefresh());
 
-		Settings.WhenAnyValue(x => x.DebugModeEnabled, x => x.EnableLoadOrderAdvisor)
+		this.WhenAnyValue(x => x.Settings.DebugModeEnabled, x => x.Modules.ModHealthEnabled, x => x.Modules.LoadOrderAdvisorEnabled)
 			.Skip(1)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ScheduleModHealthRefresh());
