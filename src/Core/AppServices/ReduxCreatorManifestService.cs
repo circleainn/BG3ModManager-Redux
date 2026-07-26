@@ -22,7 +22,11 @@ public static class ReduxCreatorManifestService
 
 	private static readonly HashSet<string> RootProperties = new(StringComparer.Ordinal)
 	{
-		"$schema", "schemaVersion", "manifestType", "mod"
+		"$schema", "schemaVersion", "manifestType", "moduleUuid", "nexus", "mod"
+	};
+	private static readonly HashSet<string> CompactNexusProperties = new(StringComparer.Ordinal)
+	{
+		"projectId", "fileId"
 	};
 	private static readonly HashSet<string> ModProperties = new(StringComparer.Ordinal)
 	{
@@ -114,6 +118,12 @@ public static class ReduxCreatorManifestService
 			if (!String.Equals(RequireString(root, "manifestType", 64), "bg3-redux-mod", StringComparison.Ordinal))
 				throw new InvalidDataException("manifestType must be 'bg3-redux-mod'.");
 
+			if (root["mod"] != null && (root["moduleUuid"] != null || root["nexus"] != null))
+				throw new InvalidDataException("Use either the compact Nexus manifest or the detailed mod manifest, not both.");
+
+			if (root["mod"] == null)
+				return ValidateCompactNexusManifest(root, pakFileName, parsedModules);
+
 			var modObject = RequireObject(root["mod"], "mod");
 			RejectUnknownProperties(modObject, ModProperties, "mod");
 			var name = RequireString(modObject, "name", 512);
@@ -145,6 +155,54 @@ public static class ReduxCreatorManifestService
 		{
 			return Invalid(ex.Message);
 		}
+	}
+
+	private static ReduxCreatorManifestData ValidateCompactNexusManifest(
+		JObject root,
+		string pakFileName,
+		IReadOnlyCollection<DivinityModData> parsedModules)
+	{
+		var moduleUuid = RequireUuid(root, "moduleUuid");
+		var nexus = RequireObject(root["nexus"], "nexus");
+		RejectUnknownProperties(nexus, CompactNexusProperties, "nexus");
+		var projectId = RequirePositiveInteger(nexus, "projectId");
+		long? fileId = nexus["fileId"] == null ? null : RequirePositiveInteger(nexus, "fileId");
+
+		var actualModules = (parsedModules ?? Array.Empty<DivinityModData>())
+			.Where(module => module?.HasMetadata == true && Guid.TryParse(module.UUID, out _))
+			.ToArray();
+		if (actualModules.Length == 0)
+			throw new InvalidDataException("The creator manifest cannot be verified because the PAK has no valid module metadata.");
+
+		var actual = actualModules.FirstOrDefault(module =>
+			String.Equals(module.UUID, moduleUuid, StringComparison.OrdinalIgnoreCase));
+		if (actual == null)
+			throw new InvalidDataException($"Manifest module UUID {moduleUuid} does not exist in this PAK.");
+
+		var primaryUuid = actualModules[0].UUID;
+		if (!String.Equals(primaryUuid, moduleUuid, StringComparison.OrdinalIgnoreCase))
+			throw new InvalidDataException("The compact creator manifest must identify the primary module loaded from this PAK.");
+
+		return new ReduxCreatorManifestData
+		{
+			State = ReduxCreatorManifestState.Valid,
+			Diagnostic = "Embedded Nexus project identity was validated against this PAK.",
+			Name = actual.Name,
+			Version = actual.Version?.Version,
+			Sources = new[]
+			{
+				new ReduxCreatorSourceClaim(NexusSourceService, projectId, fileId)
+			},
+			Modules = new[]
+			{
+				new ReduxCreatorModuleClaim(
+					moduleUuid,
+					actual.Name,
+					actual.Folder,
+					actual.Version?.Version,
+					pakFileName)
+			}
+		};
 	}
 
 	private static void ValidateModuleClaims(

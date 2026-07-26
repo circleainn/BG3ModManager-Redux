@@ -6,18 +6,57 @@
   "additionalProperties": false,
   "required": [
     "schemaVersion",
-    "manifestType",
-    "mod"
+    "manifestType"
+  ],
+  "oneOf": [
+    {
+      "required": [
+        "moduleUuid",
+        "nexus"
+      ],
+      "not": {
+        "required": [
+          "mod"
+        ]
+      }
+    },
+    {
+      "required": [
+        "mod"
+      ],
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "moduleUuid"
+            ]
+          },
+          {
+            "required": [
+              "nexus"
+            ]
+          }
+        ]
+      }
+    }
   ],
   "properties": {
     "$schema": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 2048
     },
     "schemaVersion": {
       "const": 1
     },
     "manifestType": {
       "const": "bg3-redux-mod"
+    },
+    "moduleUuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "nexus": {
+      "$ref": "#/$defs/compactNexus"
     },
     "mod": {
       "$ref": "#/$defs/mod"
@@ -101,6 +140,23 @@
             "modio"
           ]
         },
+        "projectId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fileId": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "compactNexus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "projectId"
+      ],
+      "properties": {
         "projectId": {
           "type": "integer",
           "minimum": 1

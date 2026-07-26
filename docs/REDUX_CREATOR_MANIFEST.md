@@ -1,8 +1,8 @@
 # Redux creator manifest
 
-`redux.mod.json` is an optional metadata file for mod authors who want Redux to identify
-their releases without relying on filenames or a network lookup. It is declarative metadata, not an
-installer or executable format.
+`redux.mod.json` is an optional identity link for mod authors who want Redux to connect an installed
+PAK directly to its Nexus Mods project. It is declarative metadata, not an installer or executable
+format.
 
 The canonical placement is:
 
@@ -21,12 +21,12 @@ claim against the package's parsed `meta.lsx` module metadata. Discovery is read
 perform a second package scan. A valid manifest is retained as verified runtime metadata. An
 invalid manifest is ignored and appears as a non-destructive Mod Health finding.
 
-Validated source claims participate in Redux's normal provider-resolution pipeline. They supply a
-stable project identity; cached or live provider data supplies the user-facing metadata when
-available. Explicit manual links and manual unlinks take precedence, and source claims never alter
-load-order state. Cached creator-supplied associations are rechecked against the currently installed
-PAK and discarded if its manifest is removed, becomes invalid, or claims a different project.
-Manifest dependency claims remain informational.
+Validated source claims participate in Redux's normal provider-resolution pipeline. The embedded
+file only needs to establish the stable project identity; cached or live Nexus data supplies the
+name, author, description, images, version history, and other user-facing metadata when available.
+Explicit manual links and manual unlinks take precedence, and source claims never alter load-order
+state. Cached creator-supplied associations are rechecked against the currently installed PAK and
+discarded if its manifest is removed, becomes invalid, or claims a different project.
 
 ## Trust model
 
@@ -44,7 +44,34 @@ A manifest is a claim supplied by the package author. Redux must validate it bef
 Invalid or conflicting manifest claims are ignored and surface a non-destructive diagnostic.
 Explicit user source choices remain unchanged.
 
-## Example
+## Recommended Nexus manifest
+
+For most Nexus Mods releases, this compact form is all that is needed:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/raincloudsfollow/BG3ModManager-Redux/main/docs/schemas/redux.mod.schema.json",
+  "schemaVersion": 1,
+  "manifestType": "bg3-redux-mod",
+  "moduleUuid": "11111111-2222-3333-4444-555555555555",
+  "nexus": {
+    "projectId": 12345
+  }
+}
+```
+
+`moduleUuid` must match the primary module UUID in the PAK's `meta.lsx`. `projectId` is the number
+at the end of the Nexus Mods page URL, such as `12345` in
+`https://www.nexusmods.com/baldursgate3/mods/12345`. Redux uses that identity to construct the page
+link and retrieve current Nexus metadata through its normal source-integration pipeline.
+
+`fileId` may be added inside `nexus` when a release author wants to identify a specific Nexus file,
+but it is not required for the project connection.
+
+## Detailed manifest
+
+The original detailed form remains supported for compatibility and for authors who intentionally
+want to include offline fallback metadata or informational dependency claims:
 
 ```json
 {

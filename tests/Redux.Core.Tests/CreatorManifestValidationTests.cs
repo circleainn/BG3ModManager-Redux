@@ -26,6 +26,31 @@ public sealed class CreatorManifestValidationTests
 			manifest.Authors.ToArray());
 	}
 
+	public void CompactNexusManifestLinksThePrimaryModule()
+	{
+		var manifest = ReduxCreatorManifestService.Validate(
+			CreateCompactManifest(ModuleUuid, 23799).ToString(),
+			"Example.pak",
+			new[] { CreateParsedModule() });
+
+		RegressionAssert.Equal(ReduxCreatorManifestState.Valid, manifest.State);
+		RegressionAssert.Equal("Example Mod", manifest.Name);
+		RegressionAssert.Equal(1, manifest.Sources.Count);
+		RegressionAssert.Equal(23799L, manifest.Sources[0].ProjectId);
+		RegressionAssert.Equal(ModuleUuid, manifest.Modules[0].Uuid);
+	}
+
+	public void CompactNexusManifestRejectsAnUnrelatedModule()
+	{
+		var manifest = ReduxCreatorManifestService.Validate(
+			CreateCompactManifest("79dacebf-7f07-45f0-84b2-1bd5a13194b7", 23799).ToString(),
+			"Example.pak",
+			new[] { CreateParsedModule() });
+
+		RegressionAssert.Equal(ReduxCreatorManifestState.Invalid, manifest.State);
+		RegressionAssert.Contains(manifest.Diagnostic, "does not exist");
+	}
+
 	public void DuplicateAuthorsAreRejected()
 	{
 		var manifest = ReduxCreatorManifestService.Validate(
@@ -77,6 +102,17 @@ public sealed class CreatorManifestValidationTests
 					["pak"] = "Example.pak"
 				}
 			}
+		}
+	};
+
+	private static JObject CreateCompactManifest(string moduleUuid, long nexusProjectId) => new()
+	{
+		["schemaVersion"] = 1,
+		["manifestType"] = "bg3-redux-mod",
+		["moduleUuid"] = moduleUuid,
+		["nexus"] = new JObject
+		{
+			["projectId"] = nexusProjectId
 		}
 	};
 
