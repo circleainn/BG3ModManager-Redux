@@ -31,23 +31,29 @@ public class ModUpdateHandler : ReactiveObject
 	public async Task<bool> UpdateAsync(IEnumerable<DivinityModData> mods, CancellationToken cts)
 	{
 		IsRefreshing = true;
-		if (Workshop.IsEnabled)
+		try
 		{
-			await Workshop.Update(mods, cts);
+			if (Workshop.IsEnabled)
+			{
+				await Workshop.Update(mods, cts);
+			}
+			if (Nexus.IsEnabled)
+			{
+				await Nexus.Update(mods, cts);
+			}
+			if (Modio.IsEnabled)
+			{
+				await Modio.Update(mods, cts);
+			}
+			if (Github.IsEnabled)
+			{
+				await Github.Update(mods, cts);
+			}
 		}
-		if (Nexus.IsEnabled)
+		finally
 		{
-			await Nexus.Update(mods, cts);
+			IsRefreshing = false;
 		}
-		if (Modio.IsEnabled)
-		{
-			await Modio.Update(mods, cts);
-		}
-		if (Github.IsEnabled)
-		{
-			await Github.Update(mods, cts);
-		}
-		IsRefreshing = false;
 		return false;
 	}
 

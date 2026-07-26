@@ -20,12 +20,19 @@ mode** in Preferences.
 While Local-only mode is enabled, Redux:
 
 - does not request Nexus Mods or mod.io metadata;
+- cancels dedicated provider metadata work already in progress;
 - does not enrich imports from the bundled source database;
 - hides source-linking actions and the Source column;
+- disables provider API-key and provider-warning controls without clearing their saved values;
 - presents installed packages as Local; and
 - retains existing provider associations so they return if integrations are re-enabled.
 
 Package scanning and core manager behavior continue normally.
+
+The inherited **Refresh Mod Updates** operation also services Workshop and GitHub metadata. Switching
+to Local-only mode does not cancel that whole shared operation: source-provider stages that have not
+started are skipped, and an already-running provider request is allowed to finish disposal without
+interrupting the unrelated inherited providers.
 
 Local-only mode does not disable Mod Health or Load Order Advisor. Those modules use locally parsed
 package metadata and remain useful without provider integration. Provider-specific findings, such

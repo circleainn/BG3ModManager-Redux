@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Windows.Threading;
 
 using DivinityModManager;
 using DivinityModManager.Models;
 using DivinityModManager.Models.Health;
 using DivinityModManager.Models.Metadata;
+using DivinityModManager.Models.Modio;
 using DynamicData;
 
 namespace Redux.Core.Tests;
@@ -50,8 +54,68 @@ internal sealed class ModHealthTests
 			FindSnapshot(enabled, dependent.UUID),
 			ModHealthFindingCode.DependencyLoadsLater));
 		RegressionAssert.SequenceEqual(
-			new[] { "dependent", "dependency" },
-			activeOrder.Select(mod => mod.UUID));
+			new[] { "Dependent", "Dependency" },
+			activeOrder.Select(mod => mod.Name));
+	}
+
+	public void CorrectDependencyPlacementDoesNotProduceAdvisorNoise()
+	{
+		var dependency = CreateMod("dependency", "Dependency", isActive: true);
+		var dependent = CreateMod("dependent", "Dependent", isActive: true);
+		dependent.Dependencies.AddOrUpdate(ToDependency(dependency));
+		var activeOrder = new[] { dependency, dependent };
+
+		var snapshot = FindSnapshot(
+			new ModHealthAnalyzer().AnalyzeAll(
+				activeOrder,
+				activeOrder,
+				enableLoadOrderAdvisor: true),
+			dependent.UUID);
+
+		RegressionAssert.False(HasFinding(
+			snapshot,
+			ModHealthFindingCode.DependencyLoadsLater));
+		RegressionAssert.Equal(0, snapshot.LoadOrderAdviceCount);
+		RegressionAssert.SequenceEqual(
+			new[] { "Dependency", "Dependent" },
+			activeOrder.Select(mod => mod.Name));
+	}
+
+	public void InvalidUuidIsReportedAsAReadOnlyHealthError()
+	{
+		var mod = CreateMod("invalid", "Invalid UUID", isActive: true);
+		mod.UUID = "not-a-valid-guid";
+		Dispatcher.CurrentDispatcher.Invoke(
+			() => { },
+			DispatcherPriority.Background);
+
+		var snapshot = new ModHealthAnalyzer()
+			.AnalyzeAll(new[] { mod }, new[] { mod })
+			.Single();
+		var finding = snapshot.Findings.Single(item =>
+			item.Code == ModHealthFindingCode.InvalidUuid);
+
+		RegressionAssert.Equal(ModHealthSeverity.Error, finding.Severity);
+		RegressionAssert.True(snapshot.HasHealthErrors);
+		RegressionAssert.Equal("not-a-valid-guid", mod.UUID);
+	}
+
+	public void SelfDependencyIsReportedWithoutDuplicateMissingDependencyNoise()
+	{
+		var mod = CreateMod("self", "Self Referencing Mod", isActive: true);
+		var selfDependency = ToDependency(mod);
+		mod.Dependencies.AddOrUpdate(selfDependency);
+		mod.MissingDependencies.AddOrUpdate(selfDependency);
+
+		var snapshot = FindSnapshot(
+			new ModHealthAnalyzer().AnalyzeAll(new[] { mod }, new[] { mod }),
+			mod.UUID);
+
+		var finding = snapshot.Findings.Single(item =>
+			item.Code == ModHealthFindingCode.SelfDependency);
+		RegressionAssert.Equal(ModHealthSeverity.Error, finding.Severity);
+		RegressionAssert.False(HasFinding(snapshot, ModHealthFindingCode.MissingDependency));
+		RegressionAssert.Equal(1, mod.Dependencies.Count);
 	}
 
 	public void DependencyCyclesAreReportedOnlyByTheOptInAdvisor()
@@ -193,16 +257,51 @@ internal sealed class ModHealthTests
 		RegressionAssert.True(installed.All(mod => mod.IsActive));
 	}
 
+	public void LocalOnlyPresentationSuppressesProviderFindingsWithoutDeletingMetadata()
+	{
+		var mod = CreateMod("modio", "mod.io Mod", isActive: true);
+		mod.ModioData = new ModioModData
+		{
+			ModId = 12345,
+			Name = "Linked mod.io project",
+			MetadataOrigin = ModioMetadataOrigin.NativePackage
+		};
+		var analyzer = new ModHealthAnalyzer();
+
+		var linkedSnapshot = FindSnapshot(
+			analyzer.AnalyzeAll(new[] { mod }, new[] { mod }),
+			mod.UUID);
+		RegressionAssert.True(HasFinding(
+			linkedSnapshot,
+			ModHealthFindingCode.ModioManagedSource));
+
+		mod.OnlineMetadataEnabled = false;
+		var localSnapshot = FindSnapshot(
+			analyzer.AnalyzeAll(new[] { mod }, new[] { mod }),
+			mod.UUID);
+
+		RegressionAssert.False(HasFinding(
+			localSnapshot,
+			ModHealthFindingCode.ModioManagedSource));
+		RegressionAssert.True(mod.ModioData.HasMetadata);
+	}
+
 	private static RegressionModData CreateMod(string uuid, string name, bool isActive)
 	{
 		return new RegressionModData
 		{
-			UUID = uuid,
+			UUID = CreateStableUuid(uuid),
 			Name = name,
 			Folder = name,
 			IsActive = isActive,
 			Version = DivinityModVersion2.FromInt(1)
 		};
+	}
+
+	private static string CreateStableUuid(string seed)
+	{
+		var hash = MD5.HashData(Encoding.UTF8.GetBytes(seed ?? String.Empty));
+		return new Guid(hash).ToString();
 	}
 
 	private static ModuleShortDesc ToDependency(DivinityModData mod)

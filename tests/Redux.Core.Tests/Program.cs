@@ -18,6 +18,7 @@ internal static class Program
 		var source = new SourceAssociationTests();
 		var manifest = new CreatorManifestValidationTests();
 		var health = new ModHealthTests();
+		var modules = new ReduxModuleStateTests();
 		var bundle = new ReduxBundleTests();
 		var tests = new (string Name, Action Run)[]
 		{
@@ -32,6 +33,9 @@ internal static class Program
 			(nameof(manifest.MismatchedPakClaimIsRejected), manifest.MismatchedPakClaimIsRejected),
 			(nameof(health.MissingAndInactiveDependenciesRemainIndependentOfTheAdvisor), health.MissingAndInactiveDependenciesRemainIndependentOfTheAdvisor),
 			(nameof(health.AdvisorFindingsAreAbsentUntilTheAdvisorIsEnabled), health.AdvisorFindingsAreAbsentUntilTheAdvisorIsEnabled),
+			(nameof(health.CorrectDependencyPlacementDoesNotProduceAdvisorNoise), health.CorrectDependencyPlacementDoesNotProduceAdvisorNoise),
+			(nameof(health.InvalidUuidIsReportedAsAReadOnlyHealthError), health.InvalidUuidIsReportedAsAReadOnlyHealthError),
+			(nameof(health.SelfDependencyIsReportedWithoutDuplicateMissingDependencyNoise), health.SelfDependencyIsReportedWithoutDuplicateMissingDependencyNoise),
 			(nameof(health.DependencyCyclesAreReportedOnlyByTheOptInAdvisor), health.DependencyCyclesAreReportedOnlyByTheOptInAdvisor),
 			(nameof(health.InvalidCreatorManifestIsReportedWithoutApplyingItsClaims), health.InvalidCreatorManifestIsReportedWithoutApplyingItsClaims),
 			(nameof(health.DuplicateUuidsAreReportedWithoutRemovingEitherPackage), health.DuplicateUuidsAreReportedWithoutRemovingEitherPackage),
@@ -39,6 +43,12 @@ internal static class Program
 			(nameof(health.OlderInstalledDependencyVersionsAreReportedWithoutUpdatingThem), health.OlderInstalledDependencyVersionsAreReportedWithoutUpdatingThem),
 			(nameof(health.ScriptExtenderErrorsAndWarningsRemainDistinct), health.ScriptExtenderErrorsAndWarningsRemainDistinct),
 			(nameof(health.ForceLoadedVariantsRemainInformationalAndReadOnly), health.ForceLoadedVariantsRemainInformationalAndReadOnly),
+			(nameof(health.LocalOnlyPresentationSuppressesProviderFindingsWithoutDeletingMetadata), health.LocalOnlyPresentationSuppressesProviderFindingsWithoutDeletingMetadata),
+			(nameof(modules.DefaultsKeepHealthOnAndExperimentalFeaturesOptIn), modules.DefaultsKeepHealthOnAndExperimentalFeaturesOptIn),
+			(nameof(modules.LocalOnlyModeChangesOnlySourceIntegrations), modules.LocalOnlyModeChangesOnlySourceIntegrations),
+			(nameof(modules.AdvisorRequiresHealthWithoutLosingItsPreference), modules.AdvisorRequiresHealthWithoutLosingItsPreference),
+			(nameof(modules.DisposedModuleStateStopsTrackingSettings), modules.DisposedModuleStateStopsTrackingSettings),
+			(nameof(modules.DisabledNexusProviderCannotInitializeItsClient), modules.DisabledNexusProviderCannotInitializeItsClient),
 			(nameof(bundle.BundleRoundTripPreservesOrderAndReduxPresentation), bundle.BundleRoundTripPreservesOrderAndReduxPresentation),
 			(nameof(bundle.BundleNeverContainsModsettingsLsx), bundle.BundleNeverContainsModsettingsLsx),
 			(nameof(bundle.MismatchedOrderAndPresentationAreRejected), bundle.MismatchedOrderAndPresentationAreRejected),

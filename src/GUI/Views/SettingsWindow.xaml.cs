@@ -98,13 +98,13 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(DivinityModManagerSettings.SaveWindowLocation),
 			nameof(DivinityModManagerSettings.EnableColorblindSupport),
 			nameof(DivinityModManagerSettings.HideToolbar)),
-		new("Metadata services",
-			nameof(DivinityModManagerSettings.NexusModsAPIKey),
-			nameof(DivinityModManagerSettings.ModioAPIKey)),
-		new("Optional Redux modules",
+		new("Optional features",
 			nameof(DivinityModManagerSettings.LocalOnlyMode),
 			nameof(DivinityModManagerSettings.EnableModHealth),
 			nameof(DivinityModManagerSettings.EnableLoadOrderAdvisor)),
+		new("Metadata services",
+			nameof(DivinityModManagerSettings.NexusModsAPIKey),
+			nameof(DivinityModManagerSettings.ModioAPIKey)),
 		new("Warnings and maintenance",
 			nameof(DivinityModManagerSettings.CheckForUpdates),
 			nameof(DivinityModManagerSettings.DeleteModCrashSanityCheck),
@@ -146,6 +146,41 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(ScriptExtenderSettings.DefaultToClientConsole),
 			nameof(ScriptExtenderSettings.ShowPerfWarnings))
 	];
+
+	private static readonly IReadOnlyDictionary<string, string> SettingsGroupDescriptions =
+		new Dictionary<string, string>
+		{
+			["Optional features"] =
+				"Control source linking, read-only health checks, and experimental guidance independently. These features never change mods or reorder the load order."
+		};
+
+	private static bool IsSourceIntegrationSetting(string propertyName)
+	{
+		return propertyName == nameof(DivinityModManagerSettings.NexusModsAPIKey)
+			|| propertyName == nameof(DivinityModManagerSettings.ModioAPIKey)
+			|| propertyName == nameof(DivinityModManagerSettings.ResetModioSupportWarningAcknowledgement)
+			|| propertyName == nameof(DivinityModManagerSettings.ResetOfflineNexusDatabaseWarningAcknowledgement);
+	}
+
+	private void ApplyModuleAvailability(string propertyName, TextBlock label, FrameworkElement control)
+	{
+		if (!IsSourceIntegrationSetting(propertyName) || ViewModel?.Main?.Modules == null)
+		{
+			return;
+		}
+
+		var sourceIntegrationsEnabled = new Binding(nameof(ReduxModuleState.SourceIntegrationsEnabled))
+		{
+			Source = ViewModel.Main.Modules,
+			Mode = BindingMode.OneWay
+		};
+		control.SetBinding(IsEnabledProperty, sourceIntegrationsEnabled);
+		label.SetBinding(IsEnabledProperty, new Binding(nameof(ReduxModuleState.SourceIntegrationsEnabled))
+		{
+			Source = ViewModel.Main.Modules,
+			Mode = BindingMode.OneWay
+		});
+	}
 
 	public SettingsWindow()
 	{
@@ -504,11 +539,28 @@ public partial class SettingsWindow : SettingsWindowBase
 			if (group != null && group.Title != currentGroupTitle)
 			{
 				currentGroupTitle = group.Title;
-				var heading = new TextBlock
+				var heading = new StackPanel
+				{
+					Orientation = Orientation.Vertical,
+					HorizontalAlignment = HorizontalAlignment.Stretch
+				};
+				heading.Children.Add(new TextBlock
 				{
 					Text = currentGroupTitle,
 					Style = FindResource("SettingsSubsectionTitleStyle") as Style
-				};
+				});
+				if (SettingsGroupDescriptions.TryGetValue(currentGroupTitle, out var groupDescription))
+				{
+					heading.Children.Add(new TextBlock
+					{
+						Text = groupDescription,
+						Margin = new Thickness(0, 3, 0, 0),
+						Foreground = FindResource("ReduxTextMutedBrush") as System.Windows.Media.Brush,
+						FontSize = (double)FindResource("Redux.FontSize.11"),
+						TextWrapping = TextWrapping.Wrap,
+						HorizontalAlignment = HorizontalAlignment.Stretch
+					});
+				}
 				targetGrid.Children.Add(heading);
 				Grid.SetRow(heading, row++);
 				Grid.SetColumnSpan(heading, 2);
@@ -681,6 +733,10 @@ public partial class SettingsWindow : SettingsWindowBase
 			}
 
 			SetTooltip:
+			if (createdObject != null)
+			{
+				ApplyModuleAvailability(prop.Property.Name, tb, createdObject);
+			}
 			if (createdObject != null && !string.IsNullOrWhiteSpace(tooltip))
 			{
 				ToolTipService.SetToolTip(tb, tooltip);

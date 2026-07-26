@@ -25,6 +25,12 @@ public class NexusModsCacheHandler : IExternalModCacheHandler<NexusModsCachedDat
 
 	public async Task<bool> Update(IEnumerable<DivinityModData> mods, CancellationToken cts)
 	{
+		if (!IsEnabled)
+		{
+			DivinityApp.Log("Nexus Mods metadata lookup skipped because the provider is disabled.");
+			return false;
+		}
+
 		if (!NexusModsDataLoader.IsInitialized && !string.IsNullOrEmpty(APIKey))
 		{
 			NexusModsDataLoader.Init(APIKey, AppName, AppVersion);

@@ -74,7 +74,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public string ModioAPIKey { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Local-only mode", "Disable Nexus Mods and mod.io requests and present installed mods as Local. Existing source links remain saved and return when this is turned off.")]
+	[SettingsEntry("Disable source integrations (local-only mode)", "Stop Nexus Mods and mod.io requests, hide source-linking controls, and present installed mods as Local. Existing source links and API keys remain saved and return when this is turned off.")]
 	[DataMember, Reactive] public bool LocalOnlyMode { get; set; }
 
 	[DefaultValue(false)]
@@ -285,11 +285,11 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool DisableMissingModWarnings { get; set; }
 
 	[DefaultValue(true)]
-	[SettingsEntry("Enable Mod Health", "Run optional, read-only checks for clearly detectable package, dependency, conflict, Script Extender, and override conditions. Disabling this stops analysis and removes Mod Health indicators.")]
+	[SettingsEntry("Enable Mod Health", "Run read-only checks for clearly detectable package, dependency, conflict, Script Extender, and override conditions. This does not edit mods or the load order. Disabling it stops analysis and removes its indicators.")]
 	[DataMember, Reactive] public bool EnableModHealth { get; set; } = true;
 
 	[DefaultValue(false)]
-	[SettingsEntry("Enable Load Order Advisor", "Add experimental load-order guidance to Mod Health using declared dependencies. Requires Mod Health and remains disabled by default because valid placement can vary by mod.")]
+	[SettingsEntry("Enable Load Order Advisor (experimental)", "Add conservative guidance to Mod Health using declared dependencies. Requires Mod Health, never reorders mods automatically, and remains disabled by default because valid placement can vary by mod.")]
 	[DataMember, Reactive] public bool EnableLoadOrderAdvisor { get; set; }
 
 	[DefaultValue(false)]

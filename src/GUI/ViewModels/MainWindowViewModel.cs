@@ -173,6 +173,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private IDisposable _modHealthRefreshTask;
 	private string _lastModHealthDiagnosticSignature = String.Empty;
 	private string _lastLoadOrderAdvisorDiagnosticSignature;
+	private string _lastOptionalModuleDiagnosticSignature;
 	public ReadOnlyObservableCollection<ModHealthSnapshot> ModHealthSnapshots { get; }
 	public ReadOnlyObservableCollection<ModHealthSnapshot> ActiveModHealthAttentionSnapshots { get; }
 	[Reactive] public bool HasActiveModHealthAttention { get; set; }
@@ -384,6 +385,14 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	[Reactive] public CancellationTokenSource MainProgressToken { get; set; }
 	[Reactive] public bool CanCancelProgress { get; set; }
+	private readonly SerialDisposable _allModUpdatesRefreshTask = new();
+	private readonly SerialDisposable _nexusMetadataRefreshTask = new();
+	private readonly SerialDisposable _modioMetadataRefreshTask = new();
+	private readonly SerialDisposable _manualNexusAssociationTasks = new()
+	{
+		Disposable = new CompositeDisposable()
+	};
+	private int _modUpdateRefreshGeneration;
 
 	#endregion
 	[Reactive] public bool IsRenamingOrder { get; set; }
@@ -1188,15 +1197,7 @@ Directory the zip will be extracted to:
 			UpdateHandler.Nexus.APIKey = key;
 			UpdateHandler.Nexus.AppName = AppTitle;
 			UpdateHandler.Nexus.AppVersion = Version.ToString();
-
-			if (String.IsNullOrEmpty(key))
-			{
-				NexusModsDataLoader.Dispose();
-			}
-			else
-			{
-				NexusModsDataLoader.Init(key, AppTitle, Version.ToString());
-			}
+			ApplyNexusDataLoaderMode();
 		});
 
 		Settings.WhenAnyValue(x => x.ModioAPIKey)
@@ -1215,7 +1216,21 @@ Directory the zip will be extracted to:
 						LoadModioMetadataBackground(LoadNexusModsMetadataBackground);
 					}
 				}
-			});
+			})
+			.DisposeWith(Disposables);
+
+		this.WhenAnyValue(
+				x => x.Settings.DebugModeEnabled,
+				x => x.Modules.SourceIntegrationsEnabled,
+				x => x.Modules.ModHealthEnabled,
+				x => x.Modules.LoadOrderAdvisorEnabled)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(state => LogOptionalModuleState(
+				state.Item1,
+				state.Item2,
+				state.Item3,
+				state.Item4))
+			.DisposeWith(Disposables);
 
 		Settings.WhenAnyValue(x => x.SaveWindowLocation).Subscribe(Window.ToggleWindowPositionSaving);
 
@@ -1669,14 +1684,83 @@ Directory the zip will be extracted to:
 
 	private void ApplySourceLinkingMode(bool sourceIntegrationsEnabled)
 	{
+		if (!sourceIntegrationsEnabled)
+		{
+			CancelSourceMetadataRefreshes();
+		}
+
 		UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled && sourceIntegrationsEnabled;
 		UpdateHandler.Modio.IsEnabled = sourceIntegrationsEnabled;
+		ApplyNexusDataLoaderMode();
 		foreach (var mod in mods.Items)
 		{
 			ApplySourceLinkingMode(mod);
 		}
 		ScheduleRefreshModCategories();
 		ScheduleModHealthRefresh();
+	}
+
+	private void ApplyNexusDataLoaderMode()
+	{
+		if (!Modules.SourceIntegrationsEnabled
+			|| !DivinityApp.NexusModsEnabled
+			|| String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey))
+		{
+			NexusModsDataLoader.Dispose();
+			return;
+		}
+
+		NexusModsDataLoader.Init(Settings.NexusModsAPIKey, AppTitle, Version.ToString());
+	}
+
+	private void CancelSourceMetadataRefreshes()
+	{
+		var hadModUpdateRefresh = _nexusMetadataRefreshTask.Disposable != null;
+
+		_nexusMetadataRefreshTask.Disposable = null;
+		_modioMetadataRefreshTask.Disposable = null;
+		_manualNexusAssociationTasks.Disposable = new CompositeDisposable();
+
+		if (hadModUpdateRefresh)
+		{
+			_modUpdateRefreshGeneration++;
+			IsRefreshingModUpdates = false;
+		}
+	}
+
+	private void ThrowIfSourceMetadataRefreshCanceled(CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		if (!Modules.SourceIntegrationsEnabled)
+		{
+			throw new OperationCanceledException("Source integrations were disabled.", cancellationToken);
+		}
+	}
+
+	private void LogOptionalModuleState(
+		bool debugModeEnabled,
+		bool sourceIntegrationsEnabled,
+		bool modHealthEnabled,
+		bool loadOrderAdvisorEnabled)
+	{
+		if (!debugModeEnabled)
+		{
+			_lastOptionalModuleDiagnosticSignature = null;
+			return;
+		}
+
+		var signature =
+			$"sources={sourceIntegrationsEnabled};health={modHealthEnabled};advisor={loadOrderAdvisorEnabled}";
+		if (String.Equals(_lastOptionalModuleDiagnosticSignature, signature, StringComparison.Ordinal))
+		{
+			return;
+		}
+
+		_lastOptionalModuleDiagnosticSignature = signature;
+		DivinityApp.Log(
+			$"[Redux modules] Source integrations: {(sourceIntegrationsEnabled ? "enabled" : "disabled")}; " +
+			$"Mod Health: {(modHealthEnabled ? "enabled" : "disabled")}; " +
+			$"Load Order Advisor: {(loadOrderAdvisorEnabled ? "enabled" : "disabled")}.");
 	}
 
 	private void ApplySourceLinkingMode(DivinityModData mod)
@@ -2560,23 +2644,43 @@ Directory the zip will be extracted to:
 
 	private void RefreshAllModUpdatesBackground()
 	{
+		var refreshGeneration = ++_modUpdateRefreshGeneration;
 		IsRefreshingModUpdates = true;
-		var disposable = RxApp.TaskpoolScheduler.ScheduleAsync(async (sch, cts) =>
+		_allModUpdatesRefreshTask.Disposable = RxApp.TaskpoolScheduler.ScheduleAsync(async (scheduler, cancellationToken) =>
 		{
-			UpdateHandler.Workshop.SteamAppID = AppSettings.DefaultPathways.Steam.AppID;
+			try
+			{
+				UpdateHandler.Workshop.SteamAppID = AppSettings.DefaultPathways.Steam.AppID;
 
-			UpdateHandler.Nexus.APIKey = Settings.NexusModsAPIKey;
-			UpdateHandler.Nexus.AppName = AppTitle;
-			UpdateHandler.Nexus.AppVersion = Version.ToString();
+				UpdateHandler.Nexus.APIKey = Settings.NexusModsAPIKey;
+				UpdateHandler.Nexus.AppName = AppTitle;
+				UpdateHandler.Nexus.AppVersion = Version.ToString();
 
-			UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled && Modules.SourceIntegrationsEnabled;
-			UpdateHandler.Modio.IsEnabled = Modules.SourceIntegrationsEnabled;
+				UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled && Modules.SourceIntegrationsEnabled;
+				UpdateHandler.Modio.IsEnabled = Modules.SourceIntegrationsEnabled;
 
-			await UpdateHandler.LoadAsync(UserMods, Version.ToString(), cts);
-			await UpdateHandler.UpdateAsync(UserMods, cts);
-			await UpdateHandler.SaveAsync(UserMods, Version.ToString(), cts);
-
-			IsRefreshingModUpdates = false;
+				await UpdateHandler.LoadAsync(UserMods, Version.ToString(), cancellationToken);
+				await UpdateHandler.UpdateAsync(UserMods, cancellationToken);
+				await UpdateHandler.SaveAsync(UserMods, Version.ToString(), cancellationToken);
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+			{
+				DivinityApp.Log("Canceled the mod-update refresh.");
+			}
+			catch (Exception ex)
+			{
+				DivinityApp.Log($"Error refreshing mod updates:\n{ex}");
+			}
+			finally
+			{
+				RxApp.MainThreadScheduler.Schedule(() =>
+				{
+					if (refreshGeneration == _modUpdateRefreshGeneration)
+					{
+						IsRefreshingModUpdates = false;
+					}
+				});
+			}
 		});
 	}
 
@@ -2588,48 +2692,53 @@ Directory the zip will be extracted to:
 		}
 
 		var loadedUserMods = UserMods.ToList();
+		var refreshGeneration = ++_modUpdateRefreshGeneration;
 		IsRefreshingModUpdates = true;
 
-		RxApp.TaskpoolScheduler.ScheduleAsync(async (scheduler, cancellationToken) =>
+		_nexusMetadataRefreshTask.Disposable = RxApp.TaskpoolScheduler.ScheduleAsync(async (scheduler, cancellationToken) =>
 		{
 			try
 			{
+				ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 				var cacheChanged = false;
 				var cachedData = await UpdateHandler.Nexus.LoadCacheAsync(Version.ToString(), cancellationToken);
+				ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 				if (cachedData != null)
 				{
 					UpdateHandler.Nexus.CacheData = cachedData;
 					await Observable.Start(() =>
 					{
-					foreach (var mod in loadedUserMods)
-					{
-						if (cachedData.Mods.TryGetValue(mod.UUID, out var nexusData))
+						ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
+						foreach (var mod in loadedUserMods)
 						{
-							mod.NexusModsData.Update(nexusData);
-						}
-						else if (mod.IsForceLoaded && !mod.HasMetadata && !String.IsNullOrWhiteSpace(mod.FilePath))
-						{
-							// Safety-staged imports from earlier Redux builds used the temporary
-							// filename as the UUID/cache key. Migrate that provider association to
-							// the committed pak identity so it survives refreshes.
-							var baseName = Path.GetFileNameWithoutExtension(mod.FilePath);
-							var stagingPrefix = $".{baseName}.redux-import-";
-							var stagedEntry = cachedData.Mods.FirstOrDefault(entry =>
-								Path.GetFileName(entry.Key).StartsWith(stagingPrefix, StringComparison.OrdinalIgnoreCase) &&
-								entry.Key.EndsWith(".pak.tmp", StringComparison.OrdinalIgnoreCase));
-							if (!String.IsNullOrWhiteSpace(stagedEntry.Key))
+							if (cachedData.Mods.TryGetValue(mod.UUID, out var nexusData))
 							{
-								mod.NexusModsData.Update(stagedEntry.Value);
-								cachedData.Mods.Remove(stagedEntry.Key);
-								cachedData.Mods[mod.UUID] = stagedEntry.Value;
-								cacheChanged = true;
-								DivinityApp.Log($"Migrated Nexus Mods metadata cache from staged override identity '{stagedEntry.Key}' to '{mod.UUID}'.");
+								mod.NexusModsData.Update(nexusData);
+							}
+							else if (mod.IsForceLoaded && !mod.HasMetadata && !String.IsNullOrWhiteSpace(mod.FilePath))
+							{
+								// Safety-staged imports from earlier Redux builds used the temporary
+								// filename as the UUID/cache key. Migrate that provider association to
+								// the committed pak identity so it survives refreshes.
+								var baseName = Path.GetFileNameWithoutExtension(mod.FilePath);
+								var stagingPrefix = $".{baseName}.redux-import-";
+								var stagedEntry = cachedData.Mods.FirstOrDefault(entry =>
+									Path.GetFileName(entry.Key).StartsWith(stagingPrefix, StringComparison.OrdinalIgnoreCase) &&
+									entry.Key.EndsWith(".pak.tmp", StringComparison.OrdinalIgnoreCase));
+								if (!String.IsNullOrWhiteSpace(stagedEntry.Key))
+								{
+									mod.NexusModsData.Update(stagedEntry.Value);
+									cachedData.Mods.Remove(stagedEntry.Key);
+									cachedData.Mods[mod.UUID] = stagedEntry.Value;
+									cacheChanged = true;
+									DivinityApp.Log($"Migrated Nexus Mods metadata cache from staged override identity '{stagedEntry.Key}' to '{mod.UUID}'.");
+								}
 							}
 						}
-					}
 					}, RxApp.MainThreadScheduler);
 				}
 
+				ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 				var creatorManifestMatches = await Observable.Start(
 					() => ApplyCreatorManifestNexusAssociations(loadedUserMods),
 					RxApp.MainThreadScheduler);
@@ -2646,6 +2755,7 @@ Directory the zip will be extracted to:
 				{
 					try
 					{
+						ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 						ReduxModDatabaseMatch match = null;
 						if (ReduxModDatabaseService.CouldMatchPak(mod.FilePath))
 						{
@@ -2671,6 +2781,7 @@ Directory the zip will be extracted to:
 				{
 					await Observable.Start(() =>
 					{
+						ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 						foreach (var (mod, match) in databaseMatches)
 						{
 							mod.NexusModsData.Update(match.CreateMetadata(mod.UUID));
@@ -2714,8 +2825,13 @@ Directory the zip will be extracted to:
 
 				if (cacheChanged)
 				{
+					ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 					await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), cancellationToken);
 				}
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested || !Modules.SourceIntegrationsEnabled)
+			{
+				DivinityApp.Log("Canceled the Nexus Mods metadata refresh because source integrations are unavailable.");
 			}
 			catch (Exception ex)
 			{
@@ -2725,7 +2841,14 @@ Directory the zip will be extracted to:
 			{
 				RxApp.MainThreadScheduler.Schedule(() =>
 				{
-					IsRefreshingModUpdates = false;
+					if (refreshGeneration == _modUpdateRefreshGeneration)
+					{
+						IsRefreshingModUpdates = false;
+					}
+					if (cancellationToken.IsCancellationRequested || !Modules.SourceIntegrationsEnabled)
+					{
+						return;
+					}
 					ShowOfflineNexusDatabaseWarningIfRequired(loadedUserMods, false);
 					ScheduleRefreshModCategories();
 				});
@@ -2859,16 +2982,24 @@ Directory the zip will be extracted to:
 
 	private void SaveAndRefreshManualNexusAssociation(DivinityModData mod, bool refreshLiveMetadata)
 	{
-		RxApp.TaskpoolScheduler.ScheduleAsync(async (_, cancellationToken) =>
+		var sourceTaskLifetime = _manualNexusAssociationTasks.Disposable as CompositeDisposable;
+		var scheduledTask = RxApp.TaskpoolScheduler.ScheduleAsync(async (_, cancellationToken) =>
 		{
 			try
 			{
+				ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 				if (refreshLiveMetadata && !String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey))
 				{
 					await UpdateHandler.Nexus.Update(new[] { mod }, cancellationToken);
+					ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 					UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
 				}
+				ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 				await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), cancellationToken);
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested || !Modules.SourceIntegrationsEnabled)
+			{
+				DivinityApp.Log($"Canceled the manual Nexus Mods association refresh for '{mod.FileName}'.");
 			}
 			catch (Exception ex)
 			{
@@ -2876,9 +3007,21 @@ Directory the zip will be extracted to:
 			}
 			finally
 			{
-				RxApp.MainThreadScheduler.Schedule(ScheduleRefreshModCategories);
+				RxApp.MainThreadScheduler.Schedule(() =>
+				{
+					if (Modules.SourceIntegrationsEnabled)
+					{
+						ScheduleRefreshModCategories();
+					}
+				});
 			}
 		});
+		if (sourceTaskLifetime == null)
+		{
+			scheduledTask.Dispose();
+			return;
+		}
+		scheduledTask.DisposeWith(sourceTaskLifetime);
 	}
 
 	private void LoadModioMetadataBackground(Action onCompleted = null)
@@ -2890,20 +3033,23 @@ Directory the zip will be extracted to:
 		}
 
 		var loadedUserMods = UserMods.ToList();
-		RxApp.TaskpoolScheduler.ScheduleAsync(async (scheduler, cancellationToken) =>
+		_modioMetadataRefreshTask.Disposable = RxApp.TaskpoolScheduler.ScheduleAsync(async (scheduler, cancellationToken) =>
 		{
 			try
 			{
+				ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 				UpdateHandler.Modio.APIKey = Settings.ModioAPIKey;
 				UpdateHandler.Modio.IsEnabled = true;
 
 				var cachedData = await UpdateHandler.Modio.LoadCacheAsync(Version.ToString(), cancellationToken);
+				ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 				var cacheChanged = false;
 				if (cachedData != null)
 				{
 					UpdateHandler.Modio.CacheData = cachedData;
 					await Observable.Start(() =>
 					{
+						ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 						foreach (var mod in loadedUserMods)
 						{
 							if (cachedData.Mods.TryGetValue(mod.UUID, out var modioData))
@@ -2931,10 +3077,16 @@ Directory the zip will be extracted to:
 
 				if (cacheChanged)
 				{
+					ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 					await UpdateHandler.Modio.SaveCacheAsync(false, Version.ToString(), cancellationToken);
 				}
 
+				ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
 				await Observable.Start(() => ShowModioSupportWarningIfRequired(loadedUserMods), RxApp.MainThreadScheduler);
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested || !Modules.SourceIntegrationsEnabled)
+			{
+				DivinityApp.Log("Canceled the mod.io metadata refresh because source integrations are unavailable.");
 			}
 			catch (Exception ex)
 			{
@@ -2944,6 +3096,10 @@ Directory the zip will be extracted to:
 			{
 				RxApp.MainThreadScheduler.Schedule(() =>
 				{
+					if (cancellationToken.IsCancellationRequested || !Modules.SourceIntegrationsEnabled)
+					{
+						return;
+					}
 					ScheduleRefreshModCategories();
 					onCompleted?.Invoke();
 				});
@@ -7346,6 +7502,10 @@ Directory the zip will be extracted to:
 	{
 		Modules = new ReduxModuleState(_settings);
 		Modules.DisposeWith(Disposables);
+		_allModUpdatesRefreshTask.DisposeWith(Disposables);
+		_nexusMetadataRefreshTask.DisposeWith(Disposables);
+		_modioMetadataRefreshTask.DisposeWith(Disposables);
+		_manualNexusAssociationTasks.DisposeWith(Disposables);
 		ModHealthSnapshots = new ReadOnlyObservableCollection<ModHealthSnapshot>(_modHealthSnapshotItems);
 		ActiveModHealthAttentionSnapshots = new ReadOnlyObservableCollection<ModHealthSnapshot>(_activeModHealthAttentionItems);
 		Services.RegisterSingleton<IModRegistryService>(new ModRegistryService(mods));
@@ -7383,10 +7543,13 @@ Directory the zip will be extracted to:
 
 		UpdateNexusModsLimitsCommand = ReactiveCommand.Create<NexusModsRateLimitsUpdatedEventArgs>(OnNexusModsRateLimitsUpdated, outputScheduler: RxApp.MainThreadScheduler);
 
-		NexusModsDataLoader.RateLimitsUpdated += (sender, e) =>
+		NexusModsRateLimitsUpdatedEventHandler nexusRateLimitsHandler = (sender, e) =>
 		{
 			UpdateNexusModsLimitsCommand.Execute(e);
 		};
+		NexusModsDataLoader.RateLimitsUpdated += nexusRateLimitsHandler;
+		Disposable.Create(() => NexusModsDataLoader.RateLimitsUpdated -= nexusRateLimitsHandler)
+			.DisposeWith(Disposables);
 
 		_isLocked = this.WhenAnyValue(x => x.IsDragging, x => x.IsRefreshing, x => x.IsLoadingOrder, (b1, b2, b3) => b1 || b2 || b3).ToProperty(this, nameof(IsLocked));
 

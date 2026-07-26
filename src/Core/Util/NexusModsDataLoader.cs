@@ -34,7 +34,7 @@ public static class NexusModsDataLoader
 
 	public static void Init(string apiKey, string appName, string appVersion)
 	{
-		if (!String.IsNullOrEmpty(apiKey) && apiKey != _lastApiKey)
+		if (!String.IsNullOrEmpty(apiKey) && (_client == null || apiKey != _lastApiKey))
 		{
 			if (Dispose())
 			{
@@ -56,6 +56,8 @@ public static class NexusModsDataLoader
 		if (!_isActive)
 		{
 			_client?.Dispose();
+			_client = null;
+			_lastApiKey = "";
 			_pendingDispose = false;
 			return true;
 		}
@@ -64,36 +66,15 @@ public static class NexusModsDataLoader
 	}
 
 	public static bool CanFetchData => _client != null && !_client.RateLimitsManagement.ApiDailyLimitExceeded() && !_client.RateLimitsManagement.ApiHourlyLimitExceeded();
-	public static bool LimitExceeded => _client != null && (_client.RateLimitsManagement.ApiDailyLimitExceeded() || !_client.RateLimitsManagement.ApiHourlyLimitExceeded());
+	public static bool LimitExceeded => _client != null && (_client.RateLimitsManagement.ApiDailyLimitExceeded() || _client.RateLimitsManagement.ApiHourlyLimitExceeded());
 	public static bool IsInitialized => _client != null;
-
-	private static bool LimitExceededCheck()
-	{
-		if (_client != null)
-		{
-			var daily = _client.RateLimitsManagement.ApiDailyLimitExceeded();
-			var hourly = _client.RateLimitsManagement.ApiHourlyLimitExceeded();
-
-			if (daily)
-			{
-				DivinityApp.Log($"Daily limit exceeded ({_client.RateLimitsManagement.APILimits.DailyLimit})");
-				return true;
-			}
-			else if (hourly)
-			{
-				DivinityApp.Log($"Hourly limit exceeded ({_client.RateLimitsManagement.APILimits.HourlyLimit})");
-				return true;
-			}
-		}
-		return false;
-	}
 
 	public static bool CanDoTask(int apiCalls)
 	{
 		if (_client != null)
 		{
 			var currentLimit = Math.Min(_client.RateLimitsManagement.APILimits.HourlyRemaining, _client.RateLimitsManagement.APILimits.DailyRemaining);
-			if (currentLimit > apiCalls)
+			if (currentLimit >= apiCalls)
 			{
 				return true;
 			}
@@ -115,13 +96,12 @@ public static class NexusModsDataLoader
 
 		try
 		{
-			var apiCallAmount = mods.Count(x => x.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START) & 2;
+			var apiCallAmount = mods.Count(x => x.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START) * 2;
 			if (!CanDoTask(apiCallAmount))
 			{
 				var apiAmounts = _client.RateLimitsManagement.APILimits;
 
 				DivinityApp.Log($"Task would exceed hourly or daily API limits. ExpectedCalls({apiCallAmount}) HourlyRemaining({apiAmounts.HourlyRemaining}/{apiAmounts.HourlyLimit}) DailyRemaining({apiAmounts.DailyRemaining}/{apiAmounts.DailyLimit})");
-				OnTaskDone();
 				return links;
 			}
 			// InfosInquirer.Dispose also disposes the shared API client. The loader owns
@@ -155,8 +135,10 @@ public static class NexusModsDataLoader
 		{
 			DivinityApp.Log($"Error fetching NexusMods data:\n{ex}");
 		}
-
-		OnTaskDone();
+		finally
+		{
+			OnTaskDone();
+		}
 
 		return links;
 	}
@@ -199,7 +181,6 @@ public static class NexusModsDataLoader
 				var apiAmounts = _client.RateLimitsManagement.APILimits;
 
 				DivinityApp.Log($"Task would exceed hourly or daily API limits. ExpectedCalls({apiCallAmount}) HourlyRemaining({apiAmounts.HourlyRemaining}/{apiAmounts.HourlyLimit}) DailyRemaining({apiAmounts.DailyRemaining}/{apiAmounts.DailyLimit})");
-				OnTaskDone();
 				return taskResult;
 			}
 
@@ -235,8 +216,10 @@ public static class NexusModsDataLoader
 		{
 			DivinityApp.Log($"Error fetching NexusMods data:\n{ex}");
 		}
-
-		OnTaskDone();
+		finally
+		{
+			OnTaskDone();
+		}
 
 		return taskResult;
 	}

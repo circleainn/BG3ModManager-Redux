@@ -32,6 +32,7 @@ public partial class MainViewControl : MainViewControlViewBase
 {
 	private readonly MainWindow main;
 	private IDisposable _toolbarVisibilitySubscription;
+	private IDisposable _modHealthStatusSubscription;
 	private double _toolbarExpandedHeight;
 	private int _toolbarAnimationVersion;
 	private int _healthStatusHoverVersion;
@@ -651,7 +652,7 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private void ToolbarModHealthStatusButton_Click(object sender, RoutedEventArgs e)
 	{
-		if (!ViewModel.HasActiveModHealthAttention)
+		if (!ViewModel.Modules.ModHealthEnabled || !ViewModel.HasActiveModHealthAttention)
 			return;
 
 		if (sender is Button button)
@@ -668,6 +669,9 @@ public partial class MainViewControl : MainViewControlViewBase
 		if (sender is not Button button)
 			return;
 
+		if (!ViewModel.Modules.ModHealthEnabled)
+			return;
+
 		AnimateToolbarModHealthStatus(button, true);
 		if (!ViewModel.HasActiveModHealthAttention)
 			return;
@@ -676,6 +680,7 @@ public partial class MainViewControl : MainViewControlViewBase
 		await Task.Delay(180);
 		if (hoverVersion == _healthStatusHoverVersion
 			&& button.IsMouseOver
+			&& ViewModel.Modules.ModHealthEnabled
 			&& ViewModel.HasActiveModHealthAttention)
 		{
 			OpenToolbarModHealthMenu(button);
@@ -691,8 +696,17 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private void ToolbarModHealthStatusButton_ContextMenuOpening(object sender, ContextMenuEventArgs e)
 	{
-		if (!ViewModel.HasActiveModHealthAttention)
+		if (!ViewModel.Modules.ModHealthEnabled || !ViewModel.HasActiveModHealthAttention)
 			e.Handled = true;
+	}
+
+	private void CloseToolbarModHealthMenu()
+	{
+		_healthStatusHoverVersion++;
+		if (ToolbarModHealthStatusButton.ContextMenu is { } menu)
+			menu.IsOpen = false;
+
+		AnimateToolbarModHealthStatus(ToolbarModHealthStatusButton, false);
 	}
 
 	private static void OpenToolbarModHealthMenu(Button button)
@@ -869,6 +883,16 @@ public partial class MainViewControl : MainViewControlViewBase
 			.DistinctUntilChanged()
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(AnimateToolbarVisibility);
+		_modHealthStatusSubscription?.Dispose();
+		_modHealthStatusSubscription = ViewModel
+			.WhenAnyValue(
+				vm => vm.Modules.ModHealthEnabled,
+				vm => vm.HasActiveModHealthAttention,
+				(enabled, hasAttention) => enabled && hasAttention)
+			.DistinctUntilChanged()
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Where(canShowAttention => !canShowAttention)
+			.Subscribe(_ => CloseToolbarModHealthMenu());
 
 		this.OneWayBind(ViewModel, vm => vm.UpdatesViewVisibility, view => view.ModUpdaterPanel.Visibility);
 		var whenUpdatesViewData = ViewModel.WhenAnyValue(x => x.ModUpdatesViewData);
