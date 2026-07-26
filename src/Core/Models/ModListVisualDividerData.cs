@@ -12,4 +12,5 @@ public class ModListVisualDividerData
 	[DataMember] public bool IsActiveList { get; set; } = true;
 	[DataMember] public int Position { get; set; }
 	[DataMember] public bool IsCollapsed { get; set; }
+	[DataMember] public bool HideLine { get; set; }
 }

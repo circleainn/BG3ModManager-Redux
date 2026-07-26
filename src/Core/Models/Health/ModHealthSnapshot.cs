@@ -10,6 +10,7 @@ public sealed class ModHealthSnapshot
 	public IReadOnlyList<ModHealthFinding> GeneralHealthFindings { get; }
 	public IReadOnlyList<ModHealthFinding> HealthAttentionFindings { get; }
 	public IReadOnlyList<ModHealthFinding> LoadOrderAdviceFindings { get; }
+	public IReadOnlyList<ModHealthFinding> AttentionFindings { get; }
 	public bool HasFindings => Findings.Count > 0;
 	public int ErrorCount => Findings.Count(finding => finding.Severity == ModHealthSeverity.Error);
 	public int WarningCount => Findings.Count(finding => finding.Severity == ModHealthSeverity.Warning);
@@ -102,6 +103,11 @@ public sealed class ModHealthSnapshot
 			.ToArray();
 		LoadOrderAdviceFindings = Findings
 			.Where(IsLoadOrderAdvice)
+			.ToArray();
+		AttentionFindings = Findings
+			.Where(finding =>
+				IsLoadOrderAdvice(finding)
+				|| finding.Severity is ModHealthSeverity.Error or ModHealthSeverity.Warning)
 			.ToArray();
 		HealthAttentionFindings = Findings
 			.Where(finding =>

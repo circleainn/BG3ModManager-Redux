@@ -27,6 +27,7 @@ public partial class CategoryNameDialog : AdonisWindow
 	public bool ResetToDefaultRequested { get; private set; }
 	public string CategoryName => CategoryNameTextBox.Text?.Trim();
 	public string CategoryDescription => CategoryDescriptionTextBox.Text?.Trim() ?? String.Empty;
+	public bool HideSeparatorLine => HideSeparatorLineCheckBox?.IsChecked == true;
 	public string CategoryColor => CategoryColorPicker.SelectedColor is Color color
 		? $"#{color.R:X2}{color.G:X2}{color.B:X2}" : "#8A6AF1";
 	public string CategoryIconId
@@ -87,7 +88,7 @@ public partial class CategoryNameDialog : AdonisWindow
 		IEnumerable<string> savedColors = null, bool visualDividerMode = false, string iconId = "",
 		bool canResetToDefault = false, bool useCategoryColorsForHover = false, string description = "",
 		bool useCategoryColorsForSidebarSelection = false, bool useCategoryColorsForSidebarText = false,
-		bool showInterfaceIcons = true)
+		bool showInterfaceIcons = true, bool hideSeparatorLine = false)
 	{
 		InitializeComponent();
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
@@ -136,6 +137,8 @@ public partial class CategoryNameDialog : AdonisWindow
 			CategoryPreviewPanel.Visibility = Visibility.Collapsed;
 			SeparatorPreviewPanel.Visibility = Visibility.Visible;
 			SeparatorPreviewPanel.Tag = useCategoryColorsForHover;
+			HideSeparatorLineCheckBox.IsChecked = hideSeparatorLine;
+			HideSeparatorLineCheckBox.Visibility = Visibility.Visible;
 			ColorFieldLabel.Text = "Separator color";
 			IconFieldLabel.Text = "Icon";
 			TintCustomIconText.Text = "Tint with separator color";

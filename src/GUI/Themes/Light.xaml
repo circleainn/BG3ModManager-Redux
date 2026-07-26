@@ -7,28 +7,29 @@
 		<ResourceDictionary Source="pack://application:,,,/AdonisUI;component/ColorSchemes/Light.xaml" />
 	</ResourceDictionary.MergedDictionaries>
 	<!--  BG3 Mod Manager Redux semantic palette  -->
-	<Color x:Key="ReduxWindowColor">#EDE9F2</Color>
-	<Color x:Key="ReduxListInteriorColor">#F2EEF6</Color>
-	<Color x:Key="ReduxSurfaceColor">#F7F4FA</Color>
-	<Color x:Key="ReduxSurfaceElevatedColor">#F0EBF5</Color>
-	<Color x:Key="ReduxSurfaceMutedColor">#E5DFEC</Color>
-	<Color x:Key="ReduxBorderColor">#D0C6DB</Color>
-	<Color x:Key="ReduxBorderStrongColor">#AA9ABB</Color>
-	<Color x:Key="ReduxHoverColor">#E9E2F0</Color>
-	<Color x:Key="ReduxPressedColor">#DCD2E7</Color>
-	<Color x:Key="ReduxAccentColor">#7355E7</Color>
-	<Color x:Key="ReduxAccentHoverColor">#6041D5</Color>
-	<Color x:Key="ReduxAccentSoftColor">#E5DCFA</Color>
-	<Color x:Key="ReduxSelectionColor">#D8CAFA</Color>
-	<Color x:Key="ReduxCyanColor">#078BA8</Color>
-	<Color x:Key="ReduxSuccessColor">#168A59</Color>
-	<Color x:Key="ReduxSuccessSoftColor">#D7EADF</Color>
-	<Color x:Key="ReduxWarningColor">#B96A08</Color>
-	<Color x:Key="ReduxErrorColor">#C92543</Color>
-	<Color x:Key="ReduxInfoColor">#356CA8</Color>
-	<Color x:Key="ReduxTextPrimaryColor">#181321</Color>
-	<Color x:Key="ReduxTextSecondaryColor">#51465F</Color>
-	<Color x:Key="ReduxTextMutedColor">#776A85</Color>
+	<!-- A cool, low-glare light ladder: distinct panes without a stark white canvas. -->
+	<Color x:Key="ReduxWindowColor">#E4DFE9</Color>
+	<Color x:Key="ReduxListInteriorColor">#EAE6EF</Color>
+	<Color x:Key="ReduxSurfaceColor">#F1EDF4</Color>
+	<Color x:Key="ReduxSurfaceElevatedColor">#ECE7F1</Color>
+	<Color x:Key="ReduxSurfaceMutedColor">#DDD6E5</Color>
+	<Color x:Key="ReduxBorderColor">#C5B9D1</Color>
+	<Color x:Key="ReduxBorderStrongColor">#9584A8</Color>
+	<Color x:Key="ReduxHoverColor">#DED6E7</Color>
+	<Color x:Key="ReduxPressedColor">#CEC2DA</Color>
+	<Color x:Key="ReduxAccentColor">#694AD6</Color>
+	<Color x:Key="ReduxAccentHoverColor">#5738C4</Color>
+	<Color x:Key="ReduxAccentSoftColor">#DBD1F1</Color>
+	<Color x:Key="ReduxSelectionColor">#CBB9F1</Color>
+	<Color x:Key="ReduxCyanColor">#087F98</Color>
+	<Color x:Key="ReduxSuccessColor">#147A53</Color>
+	<Color x:Key="ReduxSuccessSoftColor">#CEE4D8</Color>
+	<Color x:Key="ReduxWarningColor">#A45B08</Color>
+	<Color x:Key="ReduxErrorColor">#B92340</Color>
+	<Color x:Key="ReduxInfoColor">#326A9F</Color>
+	<Color x:Key="ReduxTextPrimaryColor">#201927</Color>
+	<Color x:Key="ReduxTextSecondaryColor">#554A61</Color>
+	<Color x:Key="ReduxTextMutedColor">#756A80</Color>
 	<Color x:Key="ReduxAccentForegroundColor">#FFFFFF</Color>
 	<Color x:Key="ReduxGithubIconColor">#000000</Color>
 	<SolidColorBrush x:Key="ReduxWindowBrush" Color="{DynamicResource ReduxWindowColor}" />

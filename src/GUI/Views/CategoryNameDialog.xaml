@@ -332,8 +332,10 @@
 						Foreground="{DynamicResource Redux.CategoryEditor.IconBrush}" Text="{Binding Text, ElementName=CategoryNameTextBox}"
 						TextTrimming="CharacterEllipsis"
 						Visibility="{Binding Text, ElementName=CategoryNameTextBox, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
-					<Border Grid.Column="3" Height="1.5" VerticalAlignment="Center" CornerRadius="1"
-						Background="{DynamicResource Redux.CategoryEditor.IconBrush}" />
+					<Border x:Name="SeparatorPreviewLine" Grid.Column="3" Height="1.5"
+						VerticalAlignment="Center" CornerRadius="1"
+						Background="{DynamicResource Redux.CategoryEditor.IconBrush}"
+						Visibility="{Binding IsChecked, ElementName=HideSeparatorLineCheckBox, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
 				</Grid>
 			</Grid>
 		</Border>
@@ -459,6 +461,11 @@
 								Checked="TintCustomIconCheckBox_Changed" Unchecked="TintCustomIconCheckBox_Changed"
 								ToolTip="Use the PNG transparency as a mask and apply this category or separator color.">
 								<TextBlock x:Name="TintCustomIconText" Text="Tint with category color" TextWrapping="Wrap" />
+							</CheckBox>
+							<CheckBox x:Name="HideSeparatorLineCheckBox" Margin="0,6,0,0"
+								Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed"
+								ToolTip="Show only the separator marker and optional label.">
+								<TextBlock Text="Hide separator line" TextWrapping="Wrap" />
 							</CheckBox>
 						</StackPanel>
 					</Grid>

@@ -107,10 +107,37 @@
 		<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
 	</Style>
 	<Style BasedOn="{StaticResource {x:Type ContextMenu}}" TargetType="{x:Type ContextMenu}">
+		<Setter Property="OverridesDefaultStyle" Value="True" />
 		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
-		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
 		<Setter Property="BorderThickness" Value="1" />
-		<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
+		<Setter Property="Padding" Value="2" />
+		<Setter Property="SnapsToDevicePixels" Value="False" />
+		<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Card}" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type ContextMenu}">
+					<!-- Keep rounded antialiased chrome inside the native popup bounds at fractional DPI scales. -->
+					<Grid Margin="4">
+						<Border
+							Background="{TemplateBinding Background}"
+							BorderBrush="{TemplateBinding BorderBrush}"
+							BorderThickness="{TemplateBinding BorderThickness}"
+							CornerRadius="{TemplateBinding adonisExtensions:CornerRadiusExtension.CornerRadius}"
+							Padding="{TemplateBinding Padding}"
+							SnapsToDevicePixels="False">
+							<ScrollViewer
+								CanContentScroll="True"
+								Focusable="False"
+								HorizontalScrollBarVisibility="Disabled"
+								VerticalScrollBarVisibility="Auto">
+								<ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle" />
+							</ScrollViewer>
+						</Border>
+					</Grid>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
 	</Style>
 	<!--
 		Short, functional motion only: hover feedback and state transitions. StaticResource
@@ -130,7 +157,7 @@
 	<sys:Double x:Key="Redux.Motion.PressScale">0.98</sys:Double>
 	<!-- Shared chrome for compact collapse/expand controls. Each caller supplies its directional chevron. -->
 	<Style x:Key="ReduxChromeToggleStyle" TargetType="{x:Type ToggleButton}">
-		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
 		<Setter Property="BorderThickness" Value="0" />
 		<Setter Property="Cursor" Value="Hand" />
 		<Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -145,7 +172,7 @@
 								Height="24"
 								HorizontalAlignment="Center"
 								VerticalAlignment="Center"
-								Background="{DynamicResource ReduxAccentSoftBrush}"
+								Background="{TemplateBinding Background}"
 								CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
 								IsHitTestVisible="False"
 								Opacity="0" />
@@ -176,9 +203,6 @@
 									</Storyboard>
 								</BeginStoryboard>
 							</Trigger.ExitActions>
-						</Trigger>
-						<Trigger Property="IsPressed" Value="True">
-							<Setter TargetName="HoverSurface" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
 						</Trigger>
 					</ControlTemplate.Triggers>
 				</ControlTemplate>
@@ -743,6 +767,7 @@
 		<PathGeometry Figures="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
 		<PathGeometry Figures="m9 12 2 2 4-4" />
 	</GeometryGroup>
+	<PathGeometry x:Key="Redux.Icon.Check" Figures="M20 6 9 17l-5-5" />
 	<GeometryGroup x:Key="Redux.Icon.Flag">
 		<PathGeometry Figures="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
 		<LineGeometry StartPoint="4,15" EndPoint="4,22" />
@@ -916,7 +941,7 @@
 						BorderBrush="{TemplateBinding BorderBrush}"
 						BorderThickness="{TemplateBinding BorderThickness}"
 						CornerRadius="{TemplateBinding adonisExtensions:CornerRadiusExtension.CornerRadius}"
-						SnapsToDevicePixels="True">
+						SnapsToDevicePixels="False">
 						<!-- No Margin={TemplateBinding Padding} here: TextBoxBase already forwards
 						     Padding to the ScrollContentPresenter inside PART_ContentHost, so adding
 						     it again double-pads the field vertically. -->
@@ -1474,6 +1499,7 @@
 		<Setter Property="OverridesDefaultStyle" Value="True" />
 		<Setter Property="HasDropShadow" Value="True" />
 		<Setter Property="MaxWidth" Value="440" />
+		<Setter Property="SnapsToDevicePixels" Value="False" />
 		<Setter Property="FontFamily" Value="{DynamicResource Redux.FontFamily.UI}" />
 		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.12}" />
 		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
@@ -1490,21 +1516,19 @@
 							    TextWrapping="Wrap" />
 						</DataTemplate>
 					</ControlTemplate.Resources>
-					<Border Name="Border"
-					    Padding="8,5"
-					    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-					    BorderBrush="{DynamicResource ReduxBorderBrush}"
-					    BorderThickness="1"
-					    CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-						<ContentPresenter HorizontalAlignment="Left"
-							VerticalAlignment="Top"
-							RecognizesAccessKey="True" />
-					</Border>
-					<ControlTemplate.Triggers>
-						<Trigger Property="HasDropShadow" Value="true">
-							<Setter TargetName="Border" Property="SnapsToDevicePixels" Value="true" />
-						</Trigger>
-					</ControlTemplate.Triggers>
+					<Grid Margin="4">
+						<Border Name="Border"
+						    Padding="8,5"
+						    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+						    BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
+						    BorderThickness="1"
+						    CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+						    SnapsToDevicePixels="False">
+							<ContentPresenter HorizontalAlignment="Left"
+								VerticalAlignment="Top"
+								RecognizesAccessKey="True" />
+						</Border>
+					</Grid>
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
@@ -1513,6 +1537,7 @@
 	<Style x:Key="ReduxRichToolTipStyle" TargetType="{x:Type ToolTip}">
 		<Setter Property="OverridesDefaultStyle" Value="True" />
 		<Setter Property="HasDropShadow" Value="True" />
+		<Setter Property="SnapsToDevicePixels" Value="False" />
 		<Setter Property="FontFamily" Value="{DynamicResource Redux.FontFamily.UI}" />
 		<Setter Property="Template">
 			<Setter.Value>
@@ -1866,8 +1891,19 @@
 									</Border.RenderTransform>
 								</Border>
 								<ToggleButton Width="22" Height="22" Margin="0,0,5,0" Padding="0"
-									Style="{StaticResource ReduxChromeToggleStyle}"
-									Tag="ReduxDividerToggle" ToolTip="Collapse or expand this separator section" IsChecked="{Binding IsVisualDividerCollapsed, Mode=OneWay}">
+									Tag="ReduxDividerToggle" IsChecked="{Binding IsVisualDividerCollapsed, Mode=OneWay}">
+									<ToggleButton.Style>
+										<Style BasedOn="{StaticResource ReduxChromeToggleStyle}" TargetType="{x:Type ToggleButton}">
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForHover, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
+													<Setter Property="Background"
+														Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=4D}" />
+													<Setter Property="Foreground"
+														Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</ToggleButton.Style>
 									<Path Width="10" Height="5"
 										Data="{StaticResource Redux.Icon.ChevronDownStroke}"
 										RenderTransformOrigin="0.5,0.5"
@@ -1916,7 +1952,8 @@
 									Height="1.5"
 									VerticalAlignment="Center"
 									CornerRadius="1"
-									Background="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" />
+									Background="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
+									Visibility="{Binding ShowVisualDividerLine, Converter={StaticResource BoolToVisibilityConverter}}" />
 							</Grid>
 						</Border>
 						<Border x:Name="RowBorder"
@@ -1925,7 +1962,11 @@
 							Background="{TemplateBinding Background}"
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="{TemplateBinding BorderThickness}"
+							RenderTransformOrigin="0.5,0.5"
 							SnapsToDevicePixels="True">
+							<Border.RenderTransform>
+								<TranslateTransform x:Name="RowSurfaceTranslate" Y="0" />
+							</Border.RenderTransform>
 							<Grid>
 								<Border x:Name="RowSelectionSurface"
 									Margin="2,1"
@@ -1987,6 +2028,12 @@
 										<ScaleTransform ScaleY="0.35" />
 									</Border.RenderTransform>
 								</Border>
+								<Border x:Name="RowConfirmationFlash"
+									Margin="2,1"
+									Background="{Binding DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=4D, FallbackValue=#4D9676FF}"
+									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+									IsHitTestVisible="False"
+									Opacity="0" />
 								<GridViewRowPresenter
 									Margin="{TemplateBinding Padding}"
 									Columns="{Binding Path=View.Columns, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
@@ -2035,6 +2082,11 @@
 											To="1"
 											Duration="{StaticResource Redux.Motion.Fast}"
 											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+										<DoubleAnimation Storyboard.TargetName="RowSurfaceTranslate"
+											Storyboard.TargetProperty="Y"
+											To="{StaticResource Redux.Motion.HoverTranslateNegative}"
+											Duration="{StaticResource Redux.Motion.Fast}"
+											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 									</Storyboard>
 								</BeginStoryboard>
 							</Trigger.EnterActions>
@@ -2065,6 +2117,11 @@
 											Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
 											To="0.35"
 											Duration="{StaticResource Redux.Motion.Standard}" />
+										<DoubleAnimation Storyboard.TargetName="RowSurfaceTranslate"
+											Storyboard.TargetProperty="Y"
+											To="0"
+											Duration="{StaticResource Redux.Motion.Standard}"
+											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 									</Storyboard>
 								</BeginStoryboard>
 							</Trigger.ExitActions>
@@ -2093,6 +2150,20 @@
 						<DataTrigger Binding="{Binding IsVisualDivider}" Value="True">
 							<Setter TargetName="RowBorder" Property="Visibility" Value="Collapsed" />
 						</DataTrigger>
+						<EventTrigger RoutedEvent="PreviewMouseLeftButtonDown">
+							<BeginStoryboard>
+								<Storyboard>
+									<DoubleAnimationUsingKeyFrames Storyboard.TargetName="RowConfirmationFlash"
+										Storyboard.TargetProperty="Opacity">
+										<DiscreteDoubleKeyFrame KeyTime="0:0:0" Value="0" />
+										<EasingDoubleKeyFrame KeyTime="0:0:0.06" Value="0.52"
+											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+										<EasingDoubleKeyFrame KeyTime="0:0:0.22" Value="0"
+											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+									</DoubleAnimationUsingKeyFrames>
+								</Storyboard>
+							</BeginStoryboard>
+						</EventTrigger>
 					</ControlTemplate.Triggers>
 				</ControlTemplate>
 			</Setter.Value>
@@ -2424,16 +2495,19 @@
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="controls:AutomationTooltip">
-							<Border Padding="12"
-							    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-							    BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
-							    BorderThickness="1"
-							    CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-								<Border.Effect>
-									<DropShadowEffect BlurRadius="14" Color="Black" Opacity="0.28" ShadowDepth="3" />
-								</Border.Effect>
-								<ContentPresenter />
-							</Border>
+							<Grid Margin="4">
+								<Border Padding="12"
+								    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+								    BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
+								    BorderThickness="1"
+								    CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+								    SnapsToDevicePixels="False">
+									<Border.Effect>
+										<DropShadowEffect BlurRadius="14" Color="Black" Opacity="0.28" ShadowDepth="3" />
+									</Border.Effect>
+									<ContentPresenter />
+								</Border>
+							</Grid>
 						</ControlTemplate>
 					</Setter.Value>
 				</Setter>
@@ -3147,7 +3221,6 @@
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
 			<Grid Width="14" Height="14" VerticalAlignment="Center">
 				<Grid.Style>
@@ -3195,55 +3268,6 @@
 					</Style>
 				</TextBlock.Style>
 			</TextBlock>
-			<Viewbox Grid.Column="2" Width="16" Height="16" Margin="5,0,0,0"
-				VerticalAlignment="Center" Stretch="Uniform">
-				<Viewbox.ToolTip>
-					<ToolTip Placement="Mouse" HorizontalOffset="12" VerticalOffset="10" Style="{StaticResource ReduxRichToolTipStyle}">
-						<Border MaxWidth="390"
-							Padding="12,10"
-							Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-							BorderBrush="{DynamicResource ReduxWarningBrush}"
-							BorderThickness="1"
-							CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-							<StackPanel>
-								<TextBlock FontFamily="{DynamicResource Redux.FontFamily.UI}"
-									FontSize="{DynamicResource Redux.FontSize.13}"
-									FontWeight="SemiBold"
-									Foreground="{DynamicResource ReduxWarningBrush}"
-									Text="Limited mod.io support" />
-								<TextBlock Margin="0,5,0,0"
-									FontFamily="{DynamicResource Redux.FontFamily.UI}"
-									Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-									Text="Subscribed mods can be restored or redownloaded by BG3 after Redux deletes the local file."
-									TextWrapping="Wrap" />
-								<TextBlock Margin="0,6,0,0"
-									FontFamily="{DynamicResource Redux.FontFamily.UI}"
-									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-									Text="Unsubscribe through mod.io or BG3's in-game Mod Manager when removing the mod. Manual/local or Nexus Mods installations are recommended for predictable file management."
-									TextWrapping="Wrap" />
-							</StackPanel>
-						</Border>
-					</ToolTip>
-				</Viewbox.ToolTip>
-				<Viewbox.Style>
-					<Style TargetType="{x:Type Viewbox}">
-						<Setter Property="Visibility" Value="Collapsed" />
-						<Style.Triggers>
-							<MultiDataTrigger>
-								<MultiDataTrigger.Conditions>
-									<Condition Binding="{Binding Metadata.ModioWarningVisibility}" Value="Visible" />
-									<Condition Binding="{Binding DataContext.Settings.HideModioSourceWarningIcons, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" Value="False" />
-								</MultiDataTrigger.Conditions>
-								<Setter Property="Visibility" Value="Visible" />
-							</MultiDataTrigger>
-						</Style.Triggers>
-					</Style>
-				</Viewbox.Style>
-				<controls:ReduxIcon Width="16" Height="16"
-					StrokeData="{StaticResource Redux.Icon.Danger}"
-					Foreground="{DynamicResource ReduxWarningBrush}"
-					IsHitTestVisible="True" />
-			</Viewbox>
 		</Grid>
 	</DataTemplate>
 	<Style x:Key="ReduxCategoryPillStyle" BasedOn="{StaticResource ReduxCategoryPillBaseStyle}" TargetType="{x:Type Border}">
@@ -3297,6 +3321,19 @@
 		<Setter Property="HorizontalContentAlignment" Value="Left" />
 		<Setter Property="VerticalContentAlignment" Value="Center" />
 		<Setter Property="Margin" Value="0" />
+		<Style.Triggers>
+			<!--
+				GridView creates a trailing padding header above its reserved vertical-scrollbar
+				gutter. Keep that generated corner on the same semantic surface as the real
+				column headers so the strip finishes cleanly at the pane edge.
+			-->
+			<Trigger Property="Role" Value="Padding">
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
+				<Setter Property="BorderThickness" Value="0,0,0,1" />
+				<Setter Property="IsHitTestVisible" Value="False" />
+			</Trigger>
+		</Style.Triggers>
 	</Style>
 	<Style x:Key="GridViewCenteredContainerStyle" BasedOn="{StaticResource {x:Type GridViewColumnHeader}}" TargetType="{x:Type GridViewColumnHeader}">
 		<Setter Property="HorizontalContentAlignment" Value="Center" />

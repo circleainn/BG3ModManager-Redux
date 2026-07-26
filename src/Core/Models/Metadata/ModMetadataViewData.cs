@@ -66,7 +66,6 @@ public sealed class ModMetadataViewData : ReactiveObject
 	public string SourceLabel => SourceType != ModSourceType.NONE ? SourceType.GetDescription() : "Local";
 	public string SourceBadgeLabel => SourceLabel.ToUpperInvariant();
 	public Visibility OnlineSourceVisibility => SourceType != ModSourceType.NONE ? Visibility.Visible : Visibility.Collapsed;
-	public Visibility ModioWarningVisibility => SourceType == ModSourceType.MODIO ? Visibility.Visible : Visibility.Collapsed;
 	public string SourcePageUrl => Provider?.SourcePageUrl ?? String.Empty;
 	public string GalleryPageUrl => Provider?.GalleryPageUrl ?? String.Empty;
 	public string ChangelogPageUrl => Provider?.ChangelogPageUrl ?? String.Empty;
@@ -215,7 +214,6 @@ public sealed class ModMetadataViewData : ReactiveObject
 		this.RaisePropertyChanged(nameof(SourceLabel));
 		this.RaisePropertyChanged(nameof(SourceBadgeLabel));
 		this.RaisePropertyChanged(nameof(OnlineSourceVisibility));
-		this.RaisePropertyChanged(nameof(ModioWarningVisibility));
 		this.RaisePropertyChanged(nameof(SourcePageUrl));
 		this.RaisePropertyChanged(nameof(GalleryPageUrl));
 		this.RaisePropertyChanged(nameof(ChangelogPageUrl));

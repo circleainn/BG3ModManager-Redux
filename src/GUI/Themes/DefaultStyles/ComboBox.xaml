@@ -302,16 +302,20 @@
 						    Placement="Bottom"
 						    PopupAnimation="Fade">
 							<Grid x:Name="DropDown"
+							    Margin="4,0,4,4"
 							    MinWidth="{TemplateBinding FrameworkElement.ActualWidth}"
 							    MaxHeight="{TemplateBinding ComboBox.MaxDropDownHeight}"
-							    SnapsToDevicePixels="True">
+							    SnapsToDevicePixels="False">
 								<Border x:Name="DropDownBorder"
 								    Margin="0,3,0,0"
 								    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 								    BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
 								    BorderThickness="1"
-								    CornerRadius="{TemplateBinding adonisExtensions:CornerRadiusExtension.CornerRadius}" />
-								<ScrollViewer SnapsToDevicePixels="True">
+								    CornerRadius="{TemplateBinding adonisExtensions:CornerRadiusExtension.CornerRadius}"
+								    SnapsToDevicePixels="False" />
+								<ScrollViewer Margin="1,4,1,1"
+								    Padding="0,1"
+								    SnapsToDevicePixels="False">
 									<ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
 								</ScrollViewer>
 							</Grid>

@@ -9,29 +9,29 @@
 		<ResourceDictionary Source="Light.xaml" />
 	</ResourceDictionary.MergedDictionaries>
 
-	<!-- Clean aged-paper hierarchy with dark ink and richer wax-seal emphasis. -->
-	<Color x:Key="ReduxWindowColor">#E8DDC7</Color>
-	<Color x:Key="ReduxListInteriorColor">#F4EAD6</Color>
-	<Color x:Key="ReduxSurfaceColor">#EFE3CC</Color>
-	<Color x:Key="ReduxSurfaceElevatedColor">#F7ECD8</Color>
-	<Color x:Key="ReduxSurfaceMutedColor">#DDD0B8</Color>
-	<Color x:Key="ReduxBorderColor">#BCA98B</Color>
-	<Color x:Key="ReduxBorderStrongColor">#927B5B</Color>
-	<Color x:Key="ReduxHoverColor">#E7D6B9</Color>
-	<Color x:Key="ReduxPressedColor">#D8C4A3</Color>
-	<Color x:Key="ReduxAccentColor">#8F2E32</Color>
-	<Color x:Key="ReduxAccentHoverColor">#A84649</Color>
-	<Color x:Key="ReduxAccentSoftColor">#E7C9C2</Color>
-	<Color x:Key="ReduxSelectionColor">#DCB9B2</Color>
-	<Color x:Key="ReduxCyanColor">#327D7B</Color>
-	<Color x:Key="ReduxSuccessColor">#4F7F36</Color>
-	<Color x:Key="ReduxSuccessSoftColor">#D8E1C3</Color>
-	<Color x:Key="ReduxWarningColor">#B86A0B</Color>
-	<Color x:Key="ReduxErrorColor">#B82F3E</Color>
-	<Color x:Key="ReduxInfoColor">#4E7196</Color>
-	<Color x:Key="ReduxTextPrimaryColor">#30251D</Color>
-	<Color x:Key="ReduxTextSecondaryColor">#5C4A3A</Color>
-	<Color x:Key="ReduxTextMutedColor">#74614D</Color>
-	<Color x:Key="ReduxAccentForegroundColor">#FFF7E8</Color>
+	<!-- A subdued paper-and-ink ladder with clear status colors and wax-seal emphasis. -->
+	<Color x:Key="ReduxWindowColor">#DCCFB7</Color>
+	<Color x:Key="ReduxListInteriorColor">#E7DAC2</Color>
+	<Color x:Key="ReduxSurfaceColor">#EBDEC5</Color>
+	<Color x:Key="ReduxSurfaceElevatedColor">#F0E4CE</Color>
+	<Color x:Key="ReduxSurfaceMutedColor">#D1C0A2</Color>
+	<Color x:Key="ReduxBorderColor">#AD9876</Color>
+	<Color x:Key="ReduxBorderStrongColor">#806A49</Color>
+	<Color x:Key="ReduxHoverColor">#DBC7A6</Color>
+	<Color x:Key="ReduxPressedColor">#CAB187</Color>
+	<Color x:Key="ReduxAccentColor">#8B3034</Color>
+	<Color x:Key="ReduxAccentHoverColor">#A13E42</Color>
+	<Color x:Key="ReduxAccentSoftColor">#DFC0B6</Color>
+	<Color x:Key="ReduxSelectionColor">#D2A9A1</Color>
+	<Color x:Key="ReduxCyanColor">#2B7371</Color>
+	<Color x:Key="ReduxSuccessColor">#3F6B35</Color>
+	<Color x:Key="ReduxSuccessSoftColor">#C8D7B4</Color>
+	<Color x:Key="ReduxWarningColor">#8F4C08</Color>
+	<Color x:Key="ReduxErrorColor">#AC2E3E</Color>
+	<Color x:Key="ReduxInfoColor">#466989</Color>
+	<Color x:Key="ReduxTextPrimaryColor">#2D231B</Color>
+	<Color x:Key="ReduxTextSecondaryColor">#584737</Color>
+	<Color x:Key="ReduxTextMutedColor">#6F5D4B</Color>
+	<Color x:Key="ReduxAccentForegroundColor">#FFF8EB</Color>
 	<Color x:Key="ReduxGithubIconColor">#000000</Color>
 </ResourceDictionary>

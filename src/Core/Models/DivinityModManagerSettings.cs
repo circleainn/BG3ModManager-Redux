@@ -80,10 +80,6 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ModioSupportWarningAcknowledged { get; set; }
 
-	[DefaultValue(false)]
-	[SettingsEntry("Hide mod.io warning icons", "Hide the amber warning icon beside mod.io sources. Subscribed mods may still be restored or redownloaded by BG3 after local deletion.")]
-	[DataMember, Reactive] public bool HideModioSourceWarningIcons { get; set; }
-
 	[SettingsEntry("Show mod.io safety warning again", "Clear the saved acknowledgement so the mod.io safety warning appears again on the next metadata refresh or application launch.")]
 	[Reactive] public bool ResetModioSupportWarningAcknowledgement { get; set; }
 

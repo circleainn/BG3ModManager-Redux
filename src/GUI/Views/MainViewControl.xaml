@@ -1,4 +1,4 @@
-<local:MainViewControlViewBase x:Class="DivinityModManager.Views.MainViewControl"
+﻿<local:MainViewControlViewBase x:Class="DivinityModManager.Views.MainViewControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
@@ -12,6 +12,7 @@
     xmlns:dd="urn:gong-wpf-dragdrop"
     xmlns:dutil="clr-namespace:DivinityModManager.Util;assembly=DivinityModManagerCore"
     xmlns:ext="clr-namespace:DivinityModManager.Controls.Extensions"
+    xmlns:health="clr-namespace:DivinityModManager.Models.Health;assembly=DivinityModManagerCore"
     xmlns:local="clr-namespace:DivinityModManager.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:reactiveui="http://reactiveui.net"
@@ -121,6 +122,17 @@
 						<Menu.Resources>
 							<Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
 								<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
+								<Style.Triggers>
+									<!-- Adonis places submenu rows directly against the popup chrome. Inset the
+									     rows horizontally so their rectangular highlight cannot paint over the
+									     popup's rounded corner arcs. -->
+									<Trigger Property="Role" Value="SubmenuHeader">
+										<Setter Property="Margin" Value="1,0" />
+									</Trigger>
+									<Trigger Property="Role" Value="SubmenuItem">
+										<Setter Property="Margin" Value="1,0" />
+									</Trigger>
+								</Style.Triggers>
 							</Style>
 						</Menu.Resources>
 						<MenuItem x:Name="FileMenuItem" Header="File" />
@@ -247,6 +259,9 @@
 							</MenuItem>
 							<MenuItem Header="BG3 Script Extender on GitHub" Click="OpenScriptExtenderRepo_Click">
 								<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource GithubPlatformIconTemplate}" /></MenuItem.Icon>
+							</MenuItem>
+							<MenuItem Header="BG3 Mod Manager Redux on Nexus Mods" Click="OpenReduxNexus_Click">
+								<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" /></MenuItem.Icon>
 							</MenuItem>
 							<MenuItem Header="BG3 Mod Manager Redux on GitHub" Click="OpenReduxRepo_Click">
 								<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource GithubPlatformIconTemplate}" /></MenuItem.Icon>
@@ -411,21 +426,13 @@
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="*" />
 					</Grid.RowDefinitions>
-					<Border Margin="10,8,10,10"
-					    Padding="8,6"
-					    Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+					<Border x:Name="ToolbarBand"
+					    Margin="12,6"
+					    Padding="10,7"
+					    Background="{DynamicResource ReduxSurfaceBrush}"
 					    BorderBrush="{DynamicResource ReduxBorderBrush}"
 					    BorderThickness="1"
 					    CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-						<Border.Style>
-							<Style TargetType="{x:Type Border}">
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding Settings.HideToolbar}" Value="True">
-										<Setter Property="Visibility" Value="Collapsed" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</Border.Style>
 						<Grid>
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="Auto" />
@@ -435,8 +442,7 @@
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
 						<Grid.Resources>
-							<SolidColorBrush x:Key="Toolbar.Button.HoverBrush" Color="{DynamicResource ReduxHoverColor}" />
-							<SolidColorBrush x:Key="Toolbar.Button.HoverBorderBrush" Color="{DynamicResource ReduxBorderStrongColor}" />
+							<SolidColorBrush x:Key="Toolbar.Button.HoverBrush" Color="{DynamicResource ReduxAccentSoftColor}" />
 							<ControlTemplate x:Key="ToolbarButtonTemplate" TargetType="{x:Type Button}">
 								<!--
 									Padding is applied to the ContentPresenter, not ButtonChrome:
@@ -451,7 +457,9 @@
 										BorderBrush="{TemplateBinding BorderBrush}"
 										BorderThickness="{TemplateBinding BorderThickness}"
 										CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
-										RenderTransformOrigin="0.5,0.5">
+										RenderTransformOrigin="0.5,0.5"
+										SnapsToDevicePixels="True"
+										UseLayoutRounding="True">
 										<Border.RenderTransform>
 											<TranslateTransform x:Name="ButtonChromeTranslate" Y="0" />
 										</Border.RenderTransform>
@@ -478,7 +486,7 @@
 								</Grid>
 								<ControlTemplate.Triggers>
 									<Trigger Property="IsMouseOver" Value="True">
-										<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource Toolbar.Button.HoverBorderBrush}" />
+										<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 										<Trigger.EnterActions>
 											<BeginStoryboard>
 												<Storyboard>
@@ -537,8 +545,12 @@
 								<Setter Property="VerticalAlignment" Value="Center" />
 							</Style>
 							<Style BasedOn="{StaticResource VerticalSeparator}" TargetType="Rectangle">
-								<Setter Property="Margin" Value="6,0,4,0" />
-								<Setter Property="Fill" Value="{DynamicResource ReduxBorderStrongBrush}" />
+								<!--
+									Symmetric: paired with the uniform 1px toolbar button margin this
+									yields an identical 7px gutter on both sides of every separator.
+								-->
+								<Setter Property="Margin" Value="6,0,6,0" />
+								<Setter Property="Fill" Value="{DynamicResource ReduxBorderBrush}" />
 							</Style>
 							<Style x:Key="ToolbarButtonBaseStyle" BasedOn="{StaticResource IconButtonStyle}" TargetType="{x:Type Button}">
 								<Setter Property="Width" Value="{DynamicResource Redux.ControlHeight.Standard}" />
@@ -546,7 +558,7 @@
 								<Setter Property="Margin" Value="1,0" />
 								<Setter Property="Background" Value="Transparent" />
 								<Setter Property="BorderBrush" Value="Transparent" />
-								<Setter Property="BorderThickness" Value="1.5" />
+								<Setter Property="BorderThickness" Value="1" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 								<Setter Property="HorizontalContentAlignment" Value="Center" />
 								<Setter Property="VerticalContentAlignment" Value="Center" />
@@ -559,11 +571,12 @@
 								<Setter Property="Padding" Value="8,2" />
 							</Style>
 							<Style BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="{x:Type ComboBox}">
-								<Setter Property="MinHeight" Value="{DynamicResource Redux.ControlHeight.Standard}" />
+								<Setter Property="MinHeight" Value="{DynamicResource Redux.ControlHeight.Compact}" />
+								<Setter Property="Height" Value="{DynamicResource Redux.ControlHeight.Standard}" />
 								<Setter Property="Padding" Value="{DynamicResource Redux.Inset.Compact}" />
 								<Setter Property="Background" Value="{DynamicResource ReduxSurfaceBrush}" />
 								<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
-								<Setter Property="BorderThickness" Value="1.5" />
+								<Setter Property="BorderThickness" Value="1" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 								<Setter Property="ItemContainerStyle" Value="{StaticResource ToolbarComboBoxItemStyle}" />
 								<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
@@ -571,28 +584,223 @@
 							<Style x:Key="ToolbarTextButtonStyle" BasedOn="{StaticResource ToolbarButtonBaseStyle}" TargetType="{x:Type Button}">
 								<Setter Property="Width" Value="Auto" />
 								<Setter Property="Height" Value="{DynamicResource Redux.ControlHeight.Standard}" />
-								<Setter Property="Margin" Value="2,0" />
+								<Setter Property="Margin" Value="1,0" />
 								<Setter Property="Padding" Value="10,0" />
 								<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
 								<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-								<Setter Property="BorderThickness" Value="1.5" />
+								<Setter Property="BorderThickness" Value="1" />
 								<Setter Property="Tag" Value="{Binding}" />
 							</Style>
 							<Style x:Key="ToolbarWorkflowButtonStyle" BasedOn="{StaticResource ToolbarTextButtonStyle}" TargetType="{x:Type Button}">
 								<Style.Resources>
-									<SolidColorBrush x:Key="Toolbar.Button.HoverBrush" Color="{DynamicResource ReduxAccentSoftColor}" />
-									<SolidColorBrush x:Key="Toolbar.Button.HoverBorderBrush" Color="{DynamicResource ReduxAccentColor}" />
+									<SolidColorBrush x:Key="Toolbar.Button.HoverBrush" Color="{DynamicResource ReduxAccentHoverColor}" />
 								</Style.Resources>
-								<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-								<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-								<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+								<Setter Property="Padding" Value="12,0" />
+								<Setter Property="Background" Value="{DynamicResource ReduxAccentBrush}" />
+								<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
+								<Setter Property="BorderThickness" Value="1" />
+								<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
 							</Style>
 							<Style x:Key="ToolbarWorkflowIconStyle" BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
-								<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
+								<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
 							</Style>
+							<SolidColorBrush x:Key="ToolbarHealthErrorSoftBrush" Color="{DynamicResource ReduxErrorColor}" Opacity="0.14" />
+							<ControlTemplate x:Key="ToolbarHealthStatusButtonTemplate" TargetType="{x:Type Button}">
+								<Border x:Name="StatusChrome"
+									Margin="0,1"
+									Background="{TemplateBinding Background}"
+									BorderBrush="{TemplateBinding BorderBrush}"
+									BorderThickness="{TemplateBinding BorderThickness}"
+									ClipToBounds="True"
+									SnapsToDevicePixels="True"
+									UseLayoutRounding="True"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+									<Grid>
+										<Border x:Name="StatusHoverSurface"
+											CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+											Background="{TemplateBinding Foreground}"
+											IsHitTestVisible="False"
+											Opacity="0" />
+										<StackPanel x:Name="StatusContent" Margin="8,0" Orientation="Horizontal">
+											<controls:ReduxIcon x:Name="StatusIcon"
+												Width="15"
+												Height="15"
+												VerticalAlignment="Center"
+												Foreground="{TemplateBinding Foreground}"
+												StrokeData="{StaticResource Redux.Icon.Check}" />
+											<controls:ReduxIcon x:Name="StatusChevron"
+												Width="11"
+												Height="11"
+												Margin="4,0,0,0"
+												VerticalAlignment="Center"
+												Foreground="{TemplateBinding Foreground}"
+												RenderTransformOrigin="0.5,0.5"
+												StrokeData="{StaticResource Redux.Icon.ChevronRightStroke}">
+												<controls:ReduxIcon.RenderTransform>
+													<RotateTransform Angle="0" />
+												</controls:ReduxIcon.RenderTransform>
+											</controls:ReduxIcon>
+											<TextBlock x:Name="StatusLabel"
+												Margin="6,0,0,0"
+												VerticalAlignment="Center"
+												FontWeight="SemiBold"
+												Foreground="{TemplateBinding Foreground}"
+												Opacity="0"
+												Text="No issues found" />
+										</StackPanel>
+									</Grid>
+								</Border>
+								<ControlTemplate.Triggers>
+									<Trigger Property="IsMouseOver" Value="True">
+										<Setter TargetName="StatusHoverSurface" Property="Opacity" Value="0.08" />
+									</Trigger>
+									<DataTrigger Binding="{Binding HasActiveModHealthAttention}" Value="True">
+										<Setter TargetName="StatusIcon" Property="StrokeData" Value="{StaticResource Redux.Icon.Danger}" />
+										<Setter TargetName="StatusLabel" Property="Text" Value="{Binding ActiveModHealthSummaryText}" />
+									</DataTrigger>
+									<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
+										<Setter TargetName="StatusIcon" Property="StrokeData" Value="{StaticResource Redux.Icon.CloseCircle}" />
+									</DataTrigger>
+								</ControlTemplate.Triggers>
+							</ControlTemplate>
+							<Style x:Key="ToolbarHealthStatusButtonStyle" BasedOn="{StaticResource ToolbarButtonBaseStyle}" TargetType="{x:Type Button}">
+								<Setter Property="Width" Value="48" />
+								<Setter Property="Height" Value="{DynamicResource Redux.ControlHeight.Standard}" />
+								<Setter Property="Margin" Value="8,0,0,0" />
+								<Setter Property="Padding" Value="0" />
+								<Setter Property="Background" Value="{DynamicResource ReduxSuccessSoftBrush}" />
+								<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
+								<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+								<Setter Property="BorderThickness" Value="1" />
+								<Setter Property="HorizontalAlignment" Value="Right" />
+								<Setter Property="Template" Value="{StaticResource ToolbarHealthStatusButtonTemplate}" />
+								<Setter Property="ToolTip" Value="{x:Null}" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding HasActiveModHealthAttention}" Value="True">
+										<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
+										<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+										<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+									</DataTrigger>
+									<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
+										<Setter Property="Background" Value="{StaticResource ToolbarHealthErrorSoftBrush}" />
+										<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
+										<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+							<Style x:Key="ToolbarModHealthMenuItemStyle" BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
+								<Setter Property="Padding" Value="0" />
+								<Setter Property="Margin" Value="0" />
+								<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+								<Setter Property="Template">
+									<Setter.Value>
+										<ControlTemplate TargetType="{x:Type MenuItem}">
+											<ContentPresenter
+												ContentSource="Header"
+												HorizontalAlignment="Stretch"
+												RecognizesAccessKey="True" />
+										</ControlTemplate>
+									</Setter.Value>
+								</Setter>
+								<EventSetter Event="Click" Handler="ToolbarModHealthMenuItem_Click" />
+							</Style>
+							<Style x:Key="ToolbarModHealthContextMenuStyle" BasedOn="{StaticResource {x:Type ContextMenu}}" TargetType="{x:Type ContextMenu}">
+								<Setter Property="MinWidth" Value="0" />
+								<Setter Property="MaxWidth" Value="410" />
+								<Setter Property="Padding" Value="5" />
+							</Style>
+							<DataTemplate x:Key="ToolbarModHealthMenuItemTemplate" DataType="{x:Type health:ModHealthSnapshot}">
+								<Border MinWidth="300"
+									MaxWidth="380"
+									Padding="8,7"
+									Background="Transparent">
+									<StackPanel>
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto" />
+												<ColumnDefinition Width="*" />
+											</Grid.ColumnDefinitions>
+											<Border x:Name="HealthIconBadge"
+												Width="30"
+												Height="30"
+												Margin="0,0,9,0"
+												Background="{DynamicResource ReduxWarningSoftBrush}"
+												CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+												<controls:ReduxIcon x:Name="HealthIcon"
+													Width="16"
+													Height="16"
+													HorizontalAlignment="Center"
+													VerticalAlignment="Center"
+													Foreground="{DynamicResource ReduxWarningBrush}"
+													IconKey="warning" />
+											</Border>
+											<StackPanel Grid.Column="1" VerticalAlignment="Center">
+												<TextBlock FontWeight="SemiBold"
+													Text="{Binding Mod.DisplayName}"
+													TextTrimming="CharacterEllipsis" />
+												<TextBlock Margin="0,1,0,0"
+													FontSize="{DynamicResource Redux.FontSize.11}"
+													Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+													Text="{Binding AttentionCountSummary}" />
+											</StackPanel>
+										</Grid>
+										<Border Height="1"
+											Margin="0,8,0,7"
+											Background="{DynamicResource ReduxBorderBrush}" />
+										<ItemsControl ItemsSource="{Binding AttentionFindings}">
+											<ItemsControl.ItemTemplate>
+												<DataTemplate DataType="{x:Type health:ModHealthFinding}">
+													<Grid Margin="1,0,1,6">
+														<Grid.ColumnDefinitions>
+															<ColumnDefinition Width="2" />
+															<ColumnDefinition Width="*" />
+														</Grid.ColumnDefinitions>
+														<Border x:Name="FindingRail"
+															Background="{DynamicResource ReduxWarningBrush}"
+															CornerRadius="1" />
+														<StackPanel Grid.Column="1" Margin="9,0,0,0">
+															<TextBlock x:Name="FindingTitle"
+																FontWeight="SemiBold"
+																Foreground="{DynamicResource ReduxWarningBrush}"
+																Text="{Binding Title}"
+																TextWrapping="Wrap" />
+															<TextBlock Margin="0,2,0,0"
+																Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+																Text="{Binding Message}"
+																TextWrapping="Wrap" />
+														</StackPanel>
+													</Grid>
+													<DataTemplate.Triggers>
+														<DataTrigger Binding="{Binding Severity}" Value="{x:Static health:ModHealthSeverity.Info}">
+															<Setter TargetName="FindingRail" Property="Background" Value="{DynamicResource ReduxInfoBrush}" />
+															<Setter TargetName="FindingTitle" Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
+														</DataTrigger>
+														<DataTrigger Binding="{Binding Severity}" Value="{x:Static health:ModHealthSeverity.Error}">
+															<Setter TargetName="FindingRail" Property="Background" Value="{DynamicResource ReduxErrorBrush}" />
+															<Setter TargetName="FindingTitle" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+														</DataTrigger>
+													</DataTemplate.Triggers>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</StackPanel>
+								</Border>
+								<DataTemplate.Triggers>
+									<DataTrigger Binding="{Binding HasOnlyLoadOrderAdvice}" Value="True">
+										<Setter TargetName="HealthIconBadge" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+										<Setter TargetName="HealthIcon" Property="IconKey" Value="flag" />
+										<Setter TargetName="HealthIcon" Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
+									</DataTrigger>
+									<DataTrigger Binding="{Binding HasErrors}" Value="True">
+										<Setter TargetName="HealthIconBadge" Property="Background" Value="{StaticResource ToolbarHealthErrorSoftBrush}" />
+										<Setter TargetName="HealthIcon" Property="IconKey" Value="error" />
+										<Setter TargetName="HealthIcon" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+									</DataTrigger>
+								</DataTemplate.Triggers>
+							</DataTemplate>
 							<Style x:Key="ToolbarGroupLabelStyle" BasedOn="{StaticResource Redux.Text.Overline}" TargetType="{x:Type TextBlock}">
-								<Setter Property="Margin" Value="2,0,2,4" />
+								<Setter Property="Margin" Value="1,0,0,3" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
 								<Setter Property="FontWeight" Value="SemiBold" />
 								<Setter Property="Opacity" Value="0.9" />
@@ -603,17 +811,15 @@
 						</Grid.Resources>
 						<Grid Grid.ColumnSpan="5">
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="1.25*" MinWidth="380" />
+								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="1" />
-								<ColumnDefinition Width="1.05*" MinWidth="330" />
-								<ColumnDefinition Width="1" />
-								<ColumnDefinition Width="1.25*" MinWidth="360" />
+								<ColumnDefinition Width="*" />
 								<ColumnDefinition Width="1" />
 								<ColumnDefinition Width="Auto" />
 							</Grid.ColumnDefinitions>
 
 							<!-- Setup: choose where the work applies, then install into it. -->
-							<Grid Grid.Column="0" Margin="4,0,12,0">
+							<Grid Grid.Column="0" Margin="0,0,12,0">
 								<Grid.RowDefinitions>
 									<RowDefinition Height="Auto" />
 									<RowDefinition Height="Auto" />
@@ -621,7 +827,7 @@
 								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Setup" />
 								<StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
 									<Button x:Name="ImportModButton"
-										Margin="0,0,8,0"
+										Margin="1,0,7,0"
 										Style="{StaticResource ToolbarWorkflowButtonStyle}"
 										ToolTip="Install a Mod from an Archive">
 										<StackPanel Orientation="Horizontal">
@@ -669,18 +875,24 @@
 								</StackPanel>
 							</Grid>
 
-							<Rectangle Grid.Column="1" Width="1" Margin="0,3" Fill="{DynamicResource ReduxBorderStrongBrush}" />
+							<Rectangle Grid.Column="1" Width="1" Margin="0,8" Fill="{DynamicResource ReduxBorderBrush}" Opacity="0.7" />
 
-							<!-- Order: the load-order selector and its closely related document actions. -->
-							<Grid Grid.Column="2" Margin="12,0">
+							<!-- Order & Export: select, save, then publish the active load order. -->
+							<Grid Grid.Column="2" Margin="12,0" ClipToBounds="False">
 								<Grid.RowDefinitions>
 									<RowDefinition Height="Auto" />
 									<RowDefinition Height="Auto" />
 								</Grid.RowDefinitions>
-								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Order" />
-								<StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
-									<controls:ReduxIcon Margin="2,0,5,0" StrokeData="{StaticResource Redux.Icon.ListStroke}" Foreground="{DynamicResource ReduxTextSecondaryBrush}" />
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+								<TextBlock Grid.ColumnSpan="3" Style="{StaticResource ToolbarGroupLabelStyle}" Text="Order &amp; Export" />
+								<StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
+									<controls:ReduxIcon Margin="1,0,5,0" StrokeData="{StaticResource Redux.Icon.ListStroke}" Foreground="{DynamicResource ReduxTextSecondaryBrush}" />
 									<ComboBox x:Name="OrdersComboBox"
+										Margin="0,0,1,0"
 										MinWidth="146"
 										MaxWidth="220"
 										DisplayMemberPath="Name"
@@ -722,19 +934,7 @@
 									<Button x:Name="AddNewOrderButton" ToolTip="Add New Load Order">
 										<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.AddCircle}" />
 									</Button>
-								</StackPanel>
-							</Grid>
-
-							<Rectangle Grid.Column="3" Width="1" Margin="0,3" Fill="{DynamicResource ReduxBorderStrongBrush}" />
-
-							<!-- Export: one clear primary action, with quieter archive and workspace utilities. -->
-							<Grid Grid.Column="4" Margin="12,0">
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto" />
-									<RowDefinition Height="Auto" />
-								</Grid.RowDefinitions>
-								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Export" />
-								<StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
+									<Rectangle Width="1" Height="20" />
 									<Button x:Name="ExportToModSettingsButton"
 										Style="{StaticResource ToolbarWorkflowButtonStyle}"
 										ToolTip="Export Order to Game">
@@ -794,12 +994,32 @@
 										</Button.ContextMenu>
 									</Button>
 								</StackPanel>
+								<Button x:Name="ToolbarModHealthStatusButton"
+									Grid.Row="1"
+									Grid.Column="2"
+									Click="ToolbarModHealthStatusButton_Click"
+									ContextMenuOpening="ToolbarModHealthStatusButton_ContextMenuOpening"
+									MouseEnter="ToolbarModHealthStatusButton_MouseEnter"
+									MouseLeave="ToolbarModHealthStatusButton_MouseLeave"
+									Style="{StaticResource ToolbarHealthStatusButtonStyle}"
+									Tag="{Binding}"
+									Visibility="{Binding Modules.ModHealthEnabled, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+									<Button.ContextMenu>
+										<ContextMenu
+											Closed="ToolbarModHealthMenu_Closed"
+											Opened="ToolbarModHealthMenu_Opened"
+											ItemContainerStyle="{StaticResource ToolbarModHealthMenuItemStyle}"
+											ItemTemplate="{StaticResource ToolbarModHealthMenuItemTemplate}"
+											ItemsSource="{Binding PlacementTarget.DataContext.ActiveModHealthAttentionSnapshots, RelativeSource={RelativeSource Self}}"
+											Style="{StaticResource ToolbarModHealthContextMenuStyle}" />
+									</Button.ContextMenu>
+								</Button>
 							</Grid>
 
-							<Rectangle Grid.Column="5" Width="1" Margin="0,3" Fill="{DynamicResource ReduxBorderStrongBrush}" />
+							<Rectangle Grid.Column="3" Width="1" Margin="0,8" Fill="{DynamicResource ReduxBorderBrush}" Opacity="0.7" />
 
 							<!-- Play: the final action remains visually distinct and anchored to the right edge. -->
-							<Grid Grid.Column="6" Margin="12,0,4,0">
+							<Grid Grid.Column="4" Margin="12,0,0,0">
 								<Grid.RowDefinitions>
 									<RowDefinition Height="Auto" />
 									<RowDefinition Height="Auto" />
@@ -808,7 +1028,7 @@
 								<StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
 									<ComboBox x:Name="GameLaunchActionComboBox"
 										Width="106"
-										Margin="0,0,6,0"
+										Margin="1,0,6,0"
 										DisplayMemberPath="Description"
 										ItemsSource="{Binding Source={ext:EnumExtension {x:Type dapp:DivinityGameLaunchWindowAction}}}"
 										SelectedValuePath="Value"
@@ -847,7 +1067,6 @@
 						</Grid>
 						</Grid>
 					</Border>
-					<Separator Grid.Row="1" Height="1" Background="{DynamicResource ReduxBorderBrush}" />
 					<local:HorizontalModLayout x:Name="ModLayout" Grid.Row="2" />
 				</Grid>
 				<local:ModUpdatesLayout x:Name="ModUpdaterPanel" Grid.Row="2" Background="{DynamicResource ReduxSurfaceBrush}" />

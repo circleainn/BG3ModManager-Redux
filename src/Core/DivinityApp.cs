@@ -27,6 +27,7 @@ public static class DivinityApp
 	public const string URL_REDUX_ISSUES = @"https://github.com/raincloudsfollow/BG3ModManager-Redux/issues";
 	public const string URL_REDUX_BUG_REPORT = @"https://github.com/raincloudsfollow/BG3ModManager-Redux/issues/new?template=bug-report.yaml";
 	public const string URL_REDUX_LICENSE = @"https://github.com/raincloudsfollow/BG3ModManager-Redux/blob/main/LICENSE";
+	public const string URL_REDUX_NEXUS = @"https://www.nexusmods.com/baldursgate3/mods/23799";
 	public const string URL_BG3_NEXUS = @"https://www.nexusmods.com/baldursgate3";
 	public const string URL_EXTENDER_REPO = @"https://github.com/Norbyte/bg3se";
 	public const string URL_CHANGELOG = URL_REDUX_RELEASES;

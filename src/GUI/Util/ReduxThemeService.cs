@@ -29,15 +29,15 @@ public static class ReduxThemeService
 		new Dictionary<ReduxThemeType, string[]>
 		{
 			[ReduxThemeType.ReduxDark] = ["#0D0B10", "#17121D", "#9676FF", "#F2EDF7", "#3FC58B", "#F0B43C", "#F05D70", "#74A8E5"],
-			[ReduxThemeType.ReduxLight] = ["#EDE9F2", "#F7F4FA", "#7355E7", "#181321", "#168A59", "#B96A08", "#C92543", "#356CA8"],
-			[ReduxThemeType.Parchment] = ["#E8DDC7", "#EFE3CC", "#8F2E32", "#30251D", "#4F7F36", "#B86A0B", "#B82F3E", "#4E7196"]
+			[ReduxThemeType.ReduxLight] = ["#E4DFE9", "#F1EDF4", "#694AD6", "#201927", "#147A53", "#A45B08", "#B92340", "#326A9F"],
+			[ReduxThemeType.Parchment] = ["#DCCFB7", "#EBDEC5", "#8B3034", "#2D231B", "#3F6B35", "#8F4C08", "#AC2E3E", "#466989"]
 		};
 	private static readonly IReadOnlyDictionary<ReduxThemeType, string[]> BuiltInResourceValues =
 		new Dictionary<ReduxThemeType, string[]>
 		{
 			[ReduxThemeType.ReduxDark] = ["#0D0B10", "#110D15", "#17121D", "#1C1623", "#241C2C", "#33283F", "#4B3A5C", "#2A2034", "#33263F", "#9676FF", "#B49DFF", "#322543", "#3D2C57", "#49B486", "#193F32", "#E0AA4B", "#E46674", "#74A8E5", "#F2EDF7", "#C8BDD4", "#A094AE", "#17131C", "#FFFFFF"],
-			[ReduxThemeType.ReduxLight] = ["#EDE9F2", "#F2EEF6", "#F7F4FA", "#F0EBF5", "#E5DFEC", "#D0C6DB", "#AA9ABB", "#E9E2F0", "#DCD2E7", "#7355E7", "#6041D5", "#E5DCFA", "#D8CAFA", "#27885E", "#D7EADF", "#AD6D14", "#BD3047", "#356CA8", "#181321", "#51465F", "#776A85", "#FFFFFF", "#000000"],
-			[ReduxThemeType.Parchment] = ["#E8DDC7", "#F4EAD6", "#EFE3CC", "#F7ECD8", "#DDD0B8", "#BCA98B", "#927B5B", "#E7D6B9", "#D8C4A3", "#8F2E32", "#A84649", "#E7C9C2", "#DCB9B2", "#5E7D4B", "#D8E1C3", "#B8791D", "#A82F37", "#4E7196", "#30251D", "#5C4A3A", "#74614D", "#FFF7E8", "#000000"]
+			[ReduxThemeType.ReduxLight] = ["#E4DFE9", "#EAE6EF", "#F1EDF4", "#ECE7F1", "#DDD6E5", "#C5B9D1", "#9584A8", "#DED6E7", "#CEC2DA", "#694AD6", "#5738C4", "#DBD1F1", "#CBB9F1", "#147A53", "#CEE4D8", "#A45B08", "#B92340", "#326A9F", "#201927", "#554A61", "#756A80", "#FFFFFF", "#000000"],
+			[ReduxThemeType.Parchment] = ["#DCCFB7", "#E7DAC2", "#EBDEC5", "#F0E4CE", "#D1C0A2", "#AD9876", "#806A49", "#DBC7A6", "#CAB187", "#8B3034", "#A13E42", "#DFC0B6", "#D2A9A1", "#3F6B35", "#C8D7B4", "#8F4C08", "#AC2E3E", "#466989", "#2D231B", "#584737", "#6F5D4B", "#FFF8EB", "#000000"]
 		};
 
 	public static ReduxCustomTheme GetActiveTheme(DivinityModManagerSettings settings) =>

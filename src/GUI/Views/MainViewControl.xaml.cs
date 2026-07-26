@@ -7,6 +7,7 @@ using DivinityModManager.Controls;
 using DivinityModManager.Converters;
 using DivinityModManager.Models;
 using DivinityModManager.Models.App;
+using DivinityModManager.Models.Health;
 using DivinityModManager.Models.View;
 using DivinityModManager.Util;
 using DivinityModManager.Util.ScreenReader;
@@ -17,8 +18,11 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace DivinityModManager.Views;
 
@@ -27,6 +31,10 @@ public class MainViewControlViewBase : ReactiveUserControl<MainWindowViewModel> 
 public partial class MainViewControl : MainViewControlViewBase
 {
 	private readonly MainWindow main;
+	private IDisposable _toolbarVisibilitySubscription;
+	private double _toolbarExpandedHeight;
+	private int _toolbarAnimationVersion;
+	private int _healthStatusHoverVersion;
 
 	private readonly Dictionary<string, MenuItem> menuItems = new();
 	public Dictionary<string, MenuItem> MenuItems => menuItems;
@@ -72,6 +80,7 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private void OpenBg3Nexus_Click(object sender, RoutedEventArgs e) => ProcessHelper.TryOpenUrl(DivinityApp.URL_BG3_NEXUS);
 	private void OpenScriptExtenderRepo_Click(object sender, RoutedEventArgs e) => ProcessHelper.TryOpenUrl(DivinityApp.URL_EXTENDER_REPO);
+	private void OpenReduxNexus_Click(object sender, RoutedEventArgs e) => ProcessHelper.TryOpenUrl(DivinityApp.URL_REDUX_NEXUS);
 	private void OpenReduxRepo_Click(object sender, RoutedEventArgs e) => ProcessHelper.TryOpenUrl(DivinityApp.URL_REDUX_REPO);
 
 	private static void UpdateCheckedMenuItems(MenuItem parent, Func<object, bool> isSelected)
@@ -546,6 +555,260 @@ public partial class MainViewControl : MainViewControlViewBase
 		};
 	}
 
+	private void SetInitialToolbarVisibility()
+	{
+		_toolbarAnimationVersion++;
+		ToolbarBand.BeginAnimation(FrameworkElement.HeightProperty, null);
+		ToolbarBand.BeginAnimation(UIElement.OpacityProperty, null);
+		ToolbarBand.ClearValue(FrameworkElement.HeightProperty);
+		ToolbarBand.Opacity = 1;
+		ToolbarBand.Visibility = ViewModel.Settings.HideToolbar ? Visibility.Collapsed : Visibility.Visible;
+	}
+
+	private void AnimateToolbarVisibility(bool hide)
+	{
+		if (!IsLoaded)
+		{
+			SetInitialToolbarVisibility();
+			return;
+		}
+
+		var animationVersion = ++_toolbarAnimationVersion;
+		ToolbarBand.BeginAnimation(FrameworkElement.HeightProperty, null);
+		ToolbarBand.BeginAnimation(UIElement.OpacityProperty, null);
+
+		var easing = new QuadraticEase { EasingMode = EasingMode.EaseInOut };
+		if (hide)
+		{
+			var startHeight = Math.Max(ToolbarBand.ActualHeight, ToolbarBand.DesiredSize.Height);
+			if (startHeight <= 0)
+			{
+				ToolbarBand.Visibility = Visibility.Collapsed;
+				return;
+			}
+
+			_toolbarExpandedHeight = startHeight;
+			ToolbarBand.Visibility = Visibility.Visible;
+			ToolbarBand.Height = startHeight;
+
+			var heightAnimation = new DoubleAnimation(0, TimeSpan.FromMilliseconds(210))
+			{
+				EasingFunction = easing,
+				FillBehavior = FillBehavior.Stop
+			};
+			var opacityAnimation = new DoubleAnimation(0, TimeSpan.FromMilliseconds(155))
+			{
+				EasingFunction = easing,
+				FillBehavior = FillBehavior.Stop
+			};
+			heightAnimation.Completed += (_, _) =>
+			{
+				if (animationVersion != _toolbarAnimationVersion) return;
+				ToolbarBand.Visibility = Visibility.Collapsed;
+				ToolbarBand.ClearValue(FrameworkElement.HeightProperty);
+				ToolbarBand.Opacity = 1;
+			};
+
+			ToolbarBand.BeginAnimation(FrameworkElement.HeightProperty, heightAnimation);
+			ToolbarBand.BeginAnimation(UIElement.OpacityProperty, opacityAnimation);
+			return;
+		}
+
+		var targetHeight = _toolbarExpandedHeight;
+		if (targetHeight <= 0)
+		{
+			ToolbarBand.Visibility = Visibility.Hidden;
+			ToolbarBand.ClearValue(FrameworkElement.HeightProperty);
+			ToolbarBand.Measure(new Size(Math.Max(1, ModOrderPanel.ActualWidth), Double.PositiveInfinity));
+			targetHeight = Math.Max(1, ToolbarBand.DesiredSize.Height);
+		}
+
+		ToolbarBand.Visibility = Visibility.Visible;
+		ToolbarBand.Height = 0;
+		ToolbarBand.Opacity = 0;
+
+		var expandAnimation = new DoubleAnimation(targetHeight, TimeSpan.FromMilliseconds(240))
+		{
+			EasingFunction = easing,
+			FillBehavior = FillBehavior.Stop
+		};
+		var fadeAnimation = new DoubleAnimation(1, TimeSpan.FromMilliseconds(190))
+		{
+			BeginTime = TimeSpan.FromMilliseconds(25),
+			EasingFunction = easing,
+			FillBehavior = FillBehavior.Stop
+		};
+		expandAnimation.Completed += (_, _) =>
+		{
+			if (animationVersion != _toolbarAnimationVersion) return;
+			ToolbarBand.ClearValue(FrameworkElement.HeightProperty);
+			ToolbarBand.ClearValue(UIElement.OpacityProperty);
+		};
+
+		ToolbarBand.BeginAnimation(FrameworkElement.HeightProperty, expandAnimation);
+		ToolbarBand.BeginAnimation(UIElement.OpacityProperty, fadeAnimation);
+	}
+
+	private void ToolbarModHealthStatusButton_Click(object sender, RoutedEventArgs e)
+	{
+		if (!ViewModel.HasActiveModHealthAttention)
+			return;
+
+		if (sender is Button button)
+		{
+			AnimateToolbarModHealthStatus(button, true);
+			OpenToolbarModHealthMenu(button);
+		}
+
+		e.Handled = true;
+	}
+
+	private async void ToolbarModHealthStatusButton_MouseEnter(object sender, MouseEventArgs e)
+	{
+		if (sender is not Button button)
+			return;
+
+		AnimateToolbarModHealthStatus(button, true);
+		if (!ViewModel.HasActiveModHealthAttention)
+			return;
+
+		var hoverVersion = ++_healthStatusHoverVersion;
+		await Task.Delay(180);
+		if (hoverVersion == _healthStatusHoverVersion
+			&& button.IsMouseOver
+			&& ViewModel.HasActiveModHealthAttention)
+		{
+			OpenToolbarModHealthMenu(button);
+		}
+	}
+
+	private void ToolbarModHealthStatusButton_MouseLeave(object sender, MouseEventArgs e)
+	{
+		_healthStatusHoverVersion++;
+		if (sender is Button button && button.ContextMenu?.IsOpen != true)
+			AnimateToolbarModHealthStatus(button, false);
+	}
+
+	private void ToolbarModHealthStatusButton_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+	{
+		if (!ViewModel.HasActiveModHealthAttention)
+			e.Handled = true;
+	}
+
+	private static void OpenToolbarModHealthMenu(Button button)
+	{
+		if (button.ContextMenu is not { } menu || menu.IsOpen)
+			return;
+
+		menu.PlacementTarget = button;
+		menu.Placement = PlacementMode.Bottom;
+		// Small gap so the popup reads as its own surface instead of welding onto the
+		// status chrome. Crossing it cannot collapse the button: MouseLeave defers to
+		// ContextMenu.IsOpen.
+		menu.VerticalOffset = 4;
+		menu.IsOpen = true;
+	}
+
+	private void ToolbarModHealthMenu_Opened(object sender, RoutedEventArgs e)
+	{
+		if (sender is ContextMenu { PlacementTarget: Button button })
+			AnimateToolbarModHealthStatus(button, true);
+	}
+
+	private void ToolbarModHealthMenu_Closed(object sender, RoutedEventArgs e)
+	{
+		if (sender is ContextMenu { PlacementTarget: Button button } && !button.IsMouseOver)
+			AnimateToolbarModHealthStatus(button, false);
+	}
+
+	// Compact width is the icon+chevron cluster with even 8px insets:
+	// 1 border + 8 + 15 icon + 4 + 11 chevron + 8 + 1 border.
+	private const double ToolbarHealthCompactWidth = 48;
+	private const double ToolbarHealthFallbackExpandedWidth = 126;
+	private const double ToolbarHealthMaxExpandedWidth = 240;
+
+	/// <summary>
+	/// Width the expanded status control needs for its current summary text. The label is
+	/// laid out even while transparent, so the content row's desired size is authoritative.
+	/// Measuring keeps the reveal correct under Large text, custom fonts and longer
+	/// summaries, where a hardcoded width clipped.
+	/// </summary>
+	private static double MeasureToolbarHealthExpandedWidth(Button button)
+	{
+		if (button.Template?.FindName("StatusContent", button) is not FrameworkElement content)
+			return ToolbarHealthFallbackExpandedWidth;
+
+		content.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+		var desired = content.DesiredSize.Width;
+		if (double.IsNaN(desired) || desired <= 0)
+			return ToolbarHealthFallbackExpandedWidth;
+
+		var chrome = button.BorderThickness.Left + button.BorderThickness.Right;
+		var width = Math.Ceiling(desired + chrome);
+		return Math.Min(ToolbarHealthMaxExpandedWidth, Math.Max(ToolbarHealthCompactWidth, width));
+	}
+
+	private static void AnimateToolbarModHealthStatus(Button button, bool expand)
+	{
+		const double compactLabelOpacity = 0;
+		const double expandedLabelOpacity = 1;
+
+		button.ApplyTemplate();
+
+		// Share the toolbar's motion language rather than restating it numerically.
+		var duration = button.TryFindResource("Redux.Motion.Standard") is Duration themedDuration
+			? themedDuration
+			: new Duration(TimeSpan.FromMilliseconds(160));
+		var easing = button.TryFindResource("Redux.Motion.EaseOut") as IEasingFunction
+			?? new QuadraticEase { EasingMode = EasingMode.EaseOut };
+
+		var targetWidth = expand
+			? MeasureToolbarHealthExpandedWidth(button)
+			: ToolbarHealthCompactWidth;
+
+		button.BeginAnimation(
+			FrameworkElement.WidthProperty,
+			new DoubleAnimation(targetWidth, duration) { EasingFunction = easing },
+			HandoffBehavior.SnapshotAndReplace);
+
+		if (button.Template.FindName("StatusLabel", button) is TextBlock label)
+		{
+			label.BeginAnimation(
+				UIElement.OpacityProperty,
+				new DoubleAnimation(expand ? expandedLabelOpacity : compactLabelOpacity, duration) { EasingFunction = easing },
+				HandoffBehavior.SnapshotAndReplace);
+		}
+
+		if (button.Template.FindName("StatusChevron", button) is FrameworkElement chevron)
+		{
+			var chevronRotation = chevron.RenderTransform as RotateTransform;
+			if (chevronRotation == null)
+			{
+				chevronRotation = new RotateTransform();
+				chevron.RenderTransform = chevronRotation;
+			}
+			else if (chevronRotation.IsFrozen)
+			{
+				// Freezables declared inside a shared ControlTemplate may be frozen by WPF.
+				// Give this button its own mutable transform before starting the hover animation.
+				chevronRotation = chevronRotation.CloneCurrentValue();
+				chevron.RenderTransform = chevronRotation;
+			}
+
+			chevronRotation.BeginAnimation(
+				RotateTransform.AngleProperty,
+				new DoubleAnimation(expand ? 90 : 0, duration) { EasingFunction = easing },
+				HandoffBehavior.SnapshotAndReplace);
+		}
+	}
+
+	private void ToolbarModHealthMenuItem_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is MenuItem { DataContext: ModHealthSnapshot snapshot })
+			ModLayout.FocusModHealthSnapshot(snapshot);
+	}
+
 	public void OnActivated()
 	{
 		this.WhenAnyValue(x => x.ViewModel.MainProgressIsActive).Take(1).Delay(TimeSpan.FromMilliseconds(25)).ObserveOn(RxApp.MainThreadScheduler).Subscribe(b =>
@@ -599,6 +862,13 @@ public partial class MainViewControl : MainViewControlViewBase
 		this.OneWayBind(ViewModel, vm => vm.LogFolderShortcutButtonVisibility, view => view.OpenExtenderLogsFolderButton.Visibility);
 
 		this.Bind(ViewModel, vm => vm.Settings.ActionOnGameLaunch, view => view.GameLaunchActionComboBox.SelectedValue);
+		SetInitialToolbarVisibility();
+		_toolbarVisibilitySubscription?.Dispose();
+		_toolbarVisibilitySubscription = ViewModel.WhenAnyValue(vm => vm.Settings.HideToolbar)
+			.Skip(1)
+			.DistinctUntilChanged()
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(AnimateToolbarVisibility);
 
 		this.OneWayBind(ViewModel, vm => vm.UpdatesViewVisibility, view => view.ModUpdaterPanel.Visibility);
 		var whenUpdatesViewData = ViewModel.WhenAnyValue(x => x.ModUpdatesViewData);

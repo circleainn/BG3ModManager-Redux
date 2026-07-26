@@ -59,6 +59,7 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 	[Reactive] public bool IsVisualDividerCollapsed { get; set; }
 	[Reactive] public double VisualDividerChevronAngle { get; set; }
 	[Reactive] public bool IsHiddenByVisualDivider { get; set; }
+	[Reactive] public bool ShowVisualDividerLine { get; set; } = true;
 
 	[Reactive] public DateTime? LastUpdated { get; set; }
 

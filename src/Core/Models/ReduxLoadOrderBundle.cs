@@ -43,4 +43,5 @@ public sealed class ReduxLoadOrderDivider
 	[DataMember(Order = 5)] public int FallbackPosition { get; set; }
 	[DataMember(Order = 6)] public string BeforeModUuid { get; set; } = String.Empty;
 	[DataMember(Order = 7)] public string AfterModUuid { get; set; } = String.Empty;
+	[DataMember(Order = 8)] public bool HideLine { get; set; }
 }

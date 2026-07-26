@@ -4872,6 +4872,7 @@ Directory the zip will be extracted to:
 				Color = NormalizeReduxBundleColor(divider.Color),
 				IconId = PrepareReduxBundleIconForExport(divider.IconId, presentation, assets),
 				IsCollapsed = divider.IsCollapsed,
+				HideLine = divider.HideLine,
 				FallbackPosition = sequence.Take(visualIndex).Count(item => item.Mod != null),
 				BeforeModUuid = before?.UUID ?? String.Empty,
 				AfterModUuid = after?.UUID ?? String.Empty
@@ -5114,7 +5115,8 @@ Directory the zip will be extracted to:
 				IconId = item.IconId,
 				IsActiveList = item.IsActiveList,
 				Position = item.Position,
-				IsCollapsed = item.IsCollapsed
+				IsCollapsed = item.IsCollapsed,
+				HideLine = item.HideLine
 			})
 			.ToList();
 
@@ -5208,7 +5210,8 @@ Directory the zip will be extracted to:
 				IconId = ResolveReduxBundleIcon(importedDivider.IconId, importedIcons),
 				IsActiveList = true,
 				Position = position,
-				IsCollapsed = importedDivider.IsCollapsed
+				IsCollapsed = importedDivider.IsCollapsed,
+				HideLine = importedDivider.HideLine
 			});
 		}
 
@@ -5975,26 +5978,28 @@ Directory the zip will be extracted to:
 		? Settings.VisualModListDividers?.FirstOrDefault(entry => entry.Id.Equals(item.VisualDividerId, StringComparison.OrdinalIgnoreCase))
 		: null;
 
-	public void AddVisualDivider(bool activeList, int position, string title, string color, string iconId)
+	public void AddVisualDivider(bool activeList, int position, string title, string color, string iconId, bool hideLine)
 	{
 		Settings.VisualModListDividers ??= new List<ModListVisualDividerData>();
 		foreach (var existing in Settings.VisualModListDividers.Where(item => item.IsActiveList == activeList && item.Position >= position))
 			existing.Position++;
 		Settings.VisualModListDividers.Add(new ModListVisualDividerData
 		{
-			Title = title?.Trim() ?? "", Color = color, IconId = ReduxIconCatalog.Normalize(iconId), IsActiveList = activeList, Position = Math.Max(0, position)
+			Title = title?.Trim() ?? "", Color = color, IconId = ReduxIconCatalog.Normalize(iconId),
+			IsActiveList = activeList, Position = Math.Max(0, position), HideLine = hideLine
 		});
 		RefreshVisualDividers();
 		SaveSettings();
 	}
 
-	public void UpdateVisualDivider(DivinityModData item, string title, string color, string iconId)
+	public void UpdateVisualDivider(DivinityModData item, string title, string color, string iconId, bool hideLine)
 	{
 		var divider = GetVisualDivider(item);
 		if (divider == null) return;
 		divider.Title = title?.Trim() ?? "";
 		divider.Color = color;
 		divider.IconId = ReduxIconCatalog.Normalize(iconId);
+		divider.HideLine = hideLine;
 		RefreshVisualDividers();
 		SaveSettings();
 	}
@@ -6075,6 +6080,7 @@ Directory the zip will be extracted to:
 		VisualDividerTitle = divider.Title,
 		VisualDividerColor = divider.Color,
 		VisualDividerIconId = ReduxIconCatalog.Normalize(divider.IconId),
+		ShowVisualDividerLine = !divider.HideLine,
 		IsVisualDividerCollapsed = divider.IsCollapsed,
 		VisualDividerChevronAngle = divider.IsCollapsed ? -90d : 0d,
 		IsVisualDivider = true,

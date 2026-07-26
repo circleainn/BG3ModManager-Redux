@@ -563,7 +563,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
 		SaveCategoryDialogColors(dialog);
-		ViewModel.AddVisualDivider(activeList, position, dialog.CategoryName, dialog.CategoryColor, dialog.CategoryIconId);
+		ViewModel.AddVisualDivider(activeList, position, dialog.CategoryName, dialog.CategoryColor,
+			dialog.CategoryIconId, dialog.HideSeparatorLine);
 	}
 
 	private void ShowEditVisualDividerDialog(DivinityModData item)
@@ -572,12 +573,14 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (divider == null) return;
 		var dialog = new CategoryNameDialog(divider.Title, divider.Color, true,
 			ViewModel.Settings.SavedCategoryColors, true, divider.IconId,
-			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForHover)
+			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForHover,
+			hideSeparatorLine: divider.HideLine)
 			{ Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
 		SaveCategoryDialogColors(dialog);
-		ViewModel.UpdateVisualDivider(item, dialog.CategoryName, dialog.CategoryColor, dialog.CategoryIconId);
+		ViewModel.UpdateVisualDivider(item, dialog.CategoryName, dialog.CategoryColor,
+			dialog.CategoryIconId, dialog.HideSeparatorLine);
 	}
 
 	public ModListView ActiveModsView => ActiveModsListView;
@@ -723,21 +726,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		this.ForceLoadedModsListView.ClearSelectedItems();
 	}
 
-	private void ActiveModHealthSummaryButton_Click(object sender, RoutedEventArgs e)
+	public void FocusModHealthSnapshot(ModHealthSnapshot snapshot)
 	{
-		if (sender is Button { ContextMenu: { } menu } button)
-		{
-			menu.PlacementTarget = button;
-			menu.Placement = PlacementMode.Bottom;
-			menu.IsOpen = true;
-			e.Handled = true;
-		}
-	}
-
-	private void ModHealthAttentionMenuItem_Click(object sender, RoutedEventArgs e)
-	{
-		if (sender is not MenuItem { DataContext: ModHealthSnapshot snapshot }) return;
-
+		if (snapshot?.Mod == null) return;
 		ViewModel.SelectedModCategory = MainWindowViewModel.AllModsCategory;
 		ViewModel.ActiveModFilterText = String.Empty;
 		Dispatcher.BeginInvoke(new Action(() =>
@@ -2195,10 +2186,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 						? 40
 						: MeasureColumnText(listView, mod.DisplaySource, GetPillFontSize(listView), FontWeights.SemiBold) +
 							(ViewModel?.Settings.ShowCategoryIconsInPills == true ? 60 : 36);
-					if (mod.Metadata.ModioWarningVisibility == Visibility.Visible && ViewModel?.Settings.HideModioSourceWarningIcons == false)
-					{
-						candidateWidth += 24;
-					}
 					break;
 				default:
 					candidateWidth = GetFallbackMinimumColumnWidth(columnName);
