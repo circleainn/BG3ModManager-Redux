@@ -72,7 +72,8 @@ what Redux changes, adds, and fixes.
 - A reorganized top-level Shortcuts menu that brings inherited game, mod, save, log, project, and
   online shortcuts into one consistently styled location.
 - A compact grouped command toolbar with an equivalent top-menu workflow when the toolbar is
-  hidden, plus a configurable Toggle Toolbar shortcut.
+  hidden, plus a configurable Toggle Toolbar shortcut and lightweight status indicators for
+  enabled diagnostics.
 - A compact Redux startup surface with live initialization status; the main window remains staged
   out of sight until its layout and mod-management workspace are ready to reveal.
 - Safe custom themes with a preferred bundled or locally imported typeface and text size, live
@@ -98,10 +99,15 @@ what Redux changes, adds, and fixes.
 - Multiple categories per mod with custom colors, curated vector icons, or reusable transparent
   PNG icons. Custom PNGs may retain their original colors or be tinted to the category color.
 - Fixed Redux default category identities with per-category color/icon customization and reset.
+- Optional category descriptions that appear as concise tooltips, plus editor previews that use
+  the same category presentation rules as the main Categories pane.
 - Theme-aware category presentation options for icons in pills, category-colored names, and
-  category-colored mod-row hover feedback. These settings can be stored with custom themes.
+  category-colored mod-row hover feedback. The interface-icon option applies consistently to
+  category pills, the Categories pane, source labels, and category assignment menus; source labels
+  can also be shown as icons only. These settings can be stored with custom themes.
 - Category filtering without changing the underlying load order.
-- Redux-only visual separators and collapsible sections with optional custom icons.
+- Redux-only visual separators and collapsible sections with optional custom icons or a text-only
+  presentation when the separator line is disabled.
 - Draggable category ordering and optional filter-state persistence.
 
 Categories and separators are Redux-only metadata, never written to `modsettings.lsx`. They can be
@@ -187,18 +193,25 @@ Redux can offer a polished public Nexus sign-in experience.
 
 ## Mod Health
 
-Mod Health runs quietly in the background. When the selected mod has a warning or error, Overview
-shows a compact status pill whose tooltip explains missing or inactive dependencies, duplicate or
-invalid UUIDs, self-dependencies, installed dependencies below declared minimum versions, Script
-Extender status, confirmed active declared conflicts, embedded creator-manifest validation,
-bundled Mod Fixer content, override behavior, and mod.io safety state. Mod Health is an optional
-Redux module and can be disabled in Preferences; disabling it stops analysis and removes its indicators.
-Healthy mods add no extra interface.
+Mod Health runs quietly in the background. Its status appears in the command toolbar when enabled:
+a compact indicator stays unobtrusive when the active load order is clear and expands into a
+reviewable summary only when attention is needed. Selected-mod Overview also shows a compact status
+pill for relevant findings. Details can cover missing or inactive dependencies, duplicate or invalid
+UUIDs, self-dependencies, installed dependencies below declared minimum versions, Script Extender
+status, confirmed active declared conflicts, embedded creator-manifest validation, bundled Mod Fixer
+content, override behavior, and mod.io safety state. Mod Health is optional and can be disabled in
+Preferences; disabling it stops analysis and removes its indicators. Healthy mods do not receive
+extra row-level warnings.
 
-When one or more active mods need attention, the Active Mods header shows a compact load-order
-summary. Opening it lists affected mods in severity order; choosing one focuses it in the list.
-Duplicate UUIDs, inactive dependencies, and declared conflicts also receive a compact row-level
-health indicator so they remain visible without opening the selected-mod drawer.
+A separate **Disable mod.io warnings** preference hides only the mod.io-restorability finding
+(the notice that a subscribed mod.io file can be restored or redownloaded by the game) without
+touching any other Mod Health finding, mod.io metadata, source linking, source labels, or cached
+source data. It requires Mod Health to be enabled and has no effect on Local-only mode.
+
+When one or more active mods need attention, the toolbar summary lists affected mods in severity
+order; choosing one focuses it in the list. Duplicate UUIDs, inactive dependencies, and declared
+conflicts also receive a compact row-level health indicator so they remain visible without opening
+the selected-mod drawer.
 Health findings are diagnostic and conservative, and Redux does not automatically repair, install,
 or reorder mods. The experimental Load Order Advisor is a separate opt-in extension of Mod Health
 and is disabled by default. Its rules rely only on declared package dependencies; broader

@@ -66,7 +66,8 @@
     "nonBlankString": {
       "type": "string",
       "minLength": 1,
-      "maxLength": 512
+      "maxLength": 512,
+      "pattern": "\\S"
     },
     "mod": {
       "type": "object",
@@ -100,7 +101,8 @@
         "homepage": {
           "type": "string",
           "format": "uri",
-          "maxLength": 2048
+          "maxLength": 2048,
+          "pattern": "^[hH][tT][tT][pP][sS]?://[^/@\\s]+(?:/|$)"
         },
         "sources": {
           "type": "array",
@@ -187,7 +189,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\\\/:*?\"<>|]+$"
+          "pattern": "^[^\\u0000-\\u001f\\\\/:*?\"<>|]+$"
         },
         "version": {
           "type": "string",
@@ -197,7 +199,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 260,
-          "pattern": "^[^\\\\/:*?\"<>|]+\\.pak$"
+          "pattern": "^[^\\u0000-\\u001f\\\\/:*?\"<>|]+\\.[pP][aA][kK]$"
         }
       }
     },

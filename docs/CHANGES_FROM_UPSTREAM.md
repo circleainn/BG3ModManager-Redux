@@ -44,6 +44,12 @@ These core systems come from LaughingLeader's BG3 Mod Manager:
   notifications, cards, pills, list rows, scrollbars, and secondary windows.
 - Animated hover, press, selection, tab-indicator, drawer, and category interactions designed to
   remain subtle at normal desktop scale.
+- A single shared hover/selection accent rail and directional light-wash treatment used
+  consistently across mod rows, separators, category rows, and menu rows, so every list surface
+  shares one interaction language instead of independently tuned equivalents.
+- One shared status-card presentation for Mod Health and Load Order Advisor summaries, used by the
+  toolbar, the compact Toolbar menu, and the selected-mod drawer, so those surfaces cannot drift
+  out of sync with one another.
 - Dynamic text trimming and header-based list-column minimum widths so long filenames do not lock a
   column at an excessive size.
 - Content-aware category-pane sizing based on visible labels and the active application typeface.
@@ -97,7 +103,8 @@ The upstream manager did not provide Redux's persistent category system. Redux a
   Visuals, Animations, Audio, Overhauls, Patches, Libraries, Resources, Utilities, Miscellaneous,
   Overrides, and No Category.
 - Conservative best-effort automatic assignment based on package metadata and reviewed aliases.
-- User-created custom categories.
+- User-created custom categories with optional descriptions, reusable custom icons, and tooltip
+  support.
 - Multiple categories per mod.
 - Persistent category colors, icons, ordering, counts, filters, and new-mod indicators.
 - Fixed built-in category names with editable colors and icons, plus Reset to Default.
@@ -117,7 +124,7 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 
 - Named and colored separators inside the active mod list.
 - Dot, diamond, vector, or imported PNG separator markers.
-- Collapsible separator sections.
+- Collapsible separator sections, including an optional text-only presentation with no divider line.
 - Drag-positioned placement within the active order.
 - Persistent separator titles, colors, icons, positions, and collapsed state.
 - Clear disabled behavior where separators are not meaningful, including the inactive list.
@@ -222,10 +229,16 @@ Redux additionally adds:
   behavior; and mod.io safety state.
 - A master Mod Health preference that stops scheduled analysis and removes health indicators
   without affecting installed mods, load orders, exports, or core manager behavior.
+- A **Disable mod.io warnings** preference, dependent on Mod Health, that hides only the
+  mod.io-restorability finding while every other Mod Health finding, mod.io metadata, source
+  linking, and cached source data remain unaffected.
 - An opt-in, disabled-by-default Load Order Advisor that can show conservative read-only warnings
   when an active mod's declared dependency is positioned later in the numbered load order or when
   active declared dependency metadata forms a cycle. Advisor checks are registered separately from
   general health checks and do not run when Mod Health is off.
+- Toolbar-level health and advisor indicators that stay compact, expand into severity-ranked details
+  when needed, and remain available through the compact Toolbar menu when the command toolbar is
+  hidden.
 - A compact warning or error pill in the selected-mod Overview when attention is needed, with
   severity-ranked details in its tooltip. Healthy mods add no extra interface.
 - A load-order-wide Active Mods health summary that appears only when active mods need attention

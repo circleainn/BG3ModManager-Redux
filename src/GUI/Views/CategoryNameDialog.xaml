@@ -1,4 +1,4 @@
-<adonisUi:AdonisWindow x:Class="DivinityModManager.Views.CategoryNameDialog"
+﻿<adonisUi:AdonisWindow x:Class="DivinityModManager.Views.CategoryNameDialog"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUi="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
@@ -113,13 +113,14 @@
 				<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" FontWeight="SemiBold"
 					Foreground="{DynamicResource ReduxTextMutedBrush}" Text="LIVE PREVIEW" />
 				<Border x:Name="CategoryPreviewRow" Grid.Row="1" Margin="0,6,0,0"
-					Background="Transparent" BorderBrush="Transparent" BorderThickness="1.5"
-					CornerRadius="{DynamicResource Redux.CornerRadius.Pill}" Cursor="Hand"
+					Background="Transparent" BorderBrush="Transparent"
+					BorderThickness="{DynamicResource Redux.Interaction.HoverBorderThickness}"
+					CornerRadius="{DynamicResource Redux.CornerRadius.PillTall}" Cursor="Hand"
 					ToolTipService.ShowDuration="12000">
 					<Grid>
 						<Border x:Name="CategoryPreviewHoverSurface"
-							BorderThickness="1.5"
-							CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
+							BorderThickness="{DynamicResource Redux.Interaction.HoverBorderThickness}"
+							CornerRadius="{DynamicResource Redux.CornerRadius.PillTall}"
 							IsHitTestVisible="False" Opacity="0">
 							<Border.Style>
 								<Style TargetType="{x:Type Border}">
@@ -153,7 +154,7 @@
 								</Style>
 							</Border.Style>
 						</Border>
-						<Grid Margin="10,6">
+						<Grid Margin="{DynamicResource Redux.Interaction.RowPadding}">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
@@ -213,24 +214,29 @@
 				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 				<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" FontWeight="SemiBold"
 					Foreground="{DynamicResource ReduxTextMutedBrush}" Text="LIVE PREVIEW" />
-				<Grid Grid.Row="1" Height="32" Margin="0,6,0,0">
+				<Grid Grid.Row="1" Height="32" Margin="{DynamicResource Redux.Interaction.SurfaceMargin}">
 					<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 					<Border Grid.ColumnSpan="4"
+						Margin="{DynamicResource Redux.Interaction.SurfaceMargin}"
 						CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+						BorderThickness="{DynamicResource Redux.Rail.Thickness}"
+						OpacityMask="{StaticResource Redux.Hover.WashMask}"
 						IsHitTestVisible="False">
 						<Border.Style>
 							<Style TargetType="{x:Type Border}">
 								<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+								<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 								<Setter Property="Opacity" Value="0" />
 								<Style.Triggers>
 									<DataTrigger Binding="{Binding Tag, ElementName=SeparatorPreviewPanel}" Value="True">
 										<Setter Property="Background" Value="{DynamicResource Redux.CategoryEditor.HoverBrush}" />
+										<Setter Property="BorderBrush" Value="{DynamicResource Redux.CategoryEditor.IconBrush}" />
 									</DataTrigger>
 									<DataTrigger Binding="{Binding IsMouseOver, ElementName=SeparatorPreviewPanel}" Value="True">
 										<DataTrigger.EnterActions>
 											<BeginStoryboard>
 												<Storyboard>
-													<DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.62"
+													<DoubleAnimation Storyboard.TargetProperty="Opacity" To="1"
 														Duration="{StaticResource Redux.Motion.Fast}"
 														EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 												</Storyboard>
@@ -240,48 +246,6 @@
 											<BeginStoryboard>
 												<Storyboard>
 													<DoubleAnimation Storyboard.TargetProperty="Opacity" To="0"
-														Duration="{StaticResource Redux.Motion.Standard}" />
-												</Storyboard>
-											</BeginStoryboard>
-										</DataTrigger.ExitActions>
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</Border.Style>
-					</Border>
-					<Border Grid.ColumnSpan="4"
-						Width="3"
-						HorizontalAlignment="Left"
-						Background="{DynamicResource Redux.CategoryEditor.IconBrush}"
-						CornerRadius="1.5"
-						IsHitTestVisible="False"
-						RenderTransformOrigin="0.5,0.5">
-						<Border.RenderTransform>
-							<ScaleTransform ScaleY="0.35" />
-						</Border.RenderTransform>
-						<Border.Style>
-							<Style TargetType="{x:Type Border}">
-								<Setter Property="Opacity" Value="0" />
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding IsMouseOver, ElementName=SeparatorPreviewPanel}" Value="True">
-										<DataTrigger.EnterActions>
-											<BeginStoryboard>
-												<Storyboard>
-													<DoubleAnimation Storyboard.TargetProperty="Opacity" To="0.82"
-														Duration="{StaticResource Redux.Motion.Fast}"
-														EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-													<DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" To="1"
-														Duration="{StaticResource Redux.Motion.Fast}"
-														EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-												</Storyboard>
-											</BeginStoryboard>
-										</DataTrigger.EnterActions>
-										<DataTrigger.ExitActions>
-											<BeginStoryboard>
-												<Storyboard>
-													<DoubleAnimation Storyboard.TargetProperty="Opacity" To="0"
-														Duration="{StaticResource Redux.Motion.Standard}" />
-													<DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)" To="0.35"
 														Duration="{StaticResource Redux.Motion.Standard}" />
 												</Storyboard>
 											</BeginStoryboard>

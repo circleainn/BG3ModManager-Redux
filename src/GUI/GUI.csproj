@@ -46,7 +46,7 @@
 	</PropertyGroup>
 	
 	<ItemGroup>
-		<ProjectReference Include="$(SolutionDir)\src\Core\DivinityModManagerCore.csproj" />
+		<ProjectReference Include="..\Core\DivinityModManagerCore.csproj" />
 	</ItemGroup>
 	
 	<ItemGroup>

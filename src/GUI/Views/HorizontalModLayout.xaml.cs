@@ -405,6 +405,24 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				IsChecked = ViewModel.HasModCategoryOverride(mod, category),
 				Icon = ViewModel.Settings.ShowCategoryIconsInPills ? CreateCategoryAssignmentIcon(category) : null
 			};
+			// These rows are built in code, so the "Colored names" rule is applied here rather
+			// than by a template trigger. The menu is rebuilt each time it opens, so toggling
+			// the setting is picked up without any further notification plumbing.
+			if (DivinityApp.UseCategoryColorsForText
+				&& ColorConverter.ConvertFromString(ViewModel.GetCurrentCategoryColor(category)) is Color categoryColor)
+			{
+				var labelBrush = new SolidColorBrush(categoryColor);
+				if (labelBrush.CanFreeze) labelBrush.Freeze();
+				categoryItem.Foreground = labelBrush;
+
+				// Same alpha the category pills use for their soft fill, so the row's hover
+				// matches the pill that the assignment produces.
+				var hoverBrush = new SolidColorBrush(Color.FromArgb(0x4D, categoryColor.R, categoryColor.G, categoryColor.B));
+				if (hoverBrush.CanFreeze) hoverBrush.Freeze();
+				ReduxMenuItemExtension.SetHoverBrush(categoryItem, hoverBrush);
+				// The rail is the hover surface's left border, drawn at full strength.
+				ReduxMenuItemExtension.SetRailBrush(categoryItem, labelBrush);
+			}
 			categoryItem.Click += (_, _) => ViewModel.ToggleModCategoryAssignment(mod, category);
 			categoryMenu.Items.Add(categoryItem);
 		}
@@ -564,7 +582,15 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
 		SaveCategoryDialogColors(dialog);
 		ViewModel.AddVisualDivider(activeList, position, dialog.CategoryName, dialog.CategoryColor,
-			dialog.CategoryIconId, dialog.HideSeparatorLine);
+			dialog.CategoryIconId, dialog.HideSeparatorLine, dialog.CategoryDescription);
+	}
+
+	private void AddActiveSeparatorButton_Click(object sender, RoutedEventArgs e)
+	{
+		var position = ActiveModsListView.SelectedIndex >= 0
+			? ActiveModsListView.SelectedIndex + 1
+			: ActiveModsListView.Items.Count;
+		ShowAddVisualDividerDialog(true, position);
 	}
 
 	private void ShowEditVisualDividerDialog(DivinityModData item)
@@ -574,13 +600,14 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		var dialog = new CategoryNameDialog(divider.Title, divider.Color, true,
 			ViewModel.Settings.SavedCategoryColors, true, divider.IconId,
 			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForHover,
+			description: divider.Description,
 			hideSeparatorLine: divider.HideLine)
 			{ Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
 		SaveCategoryDialogColors(dialog);
 		ViewModel.UpdateVisualDivider(item, dialog.CategoryName, dialog.CategoryColor,
-			dialog.CategoryIconId, dialog.HideSeparatorLine);
+			dialog.CategoryIconId, dialog.HideSeparatorLine, dialog.CategoryDescription);
 	}
 
 	public ModListView ActiveModsView => ActiveModsListView;

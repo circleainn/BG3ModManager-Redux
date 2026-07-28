@@ -281,7 +281,7 @@ public static class DivinityFileUtils
 		}
 	}
 
-	public static async Task<bool> ExtractPackageAsync(string pakPath, string outputDirectory, CancellationToken token, Func<PackagedFileInfo, bool>? filter = null)
+	public static async Task<bool> ExtractPackageAsync(string pakPath, string outputDirectory, CancellationToken token)
 	{
 		var task = await Task.Run(async () =>
 		{
@@ -291,7 +291,7 @@ public static class DivinityFileUtils
 				try
 				{
 					var packager = new Packager();
-					packager.UncompressPackage(pakPath, outputDirectory, filter);
+					packager.UncompressPackage(pakPath, outputDirectory, null);
 					return true;
 				}
 				catch (Exception) { return false; }

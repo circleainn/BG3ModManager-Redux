@@ -18,12 +18,14 @@
 		<Optimize>False</Optimize>
 	</PropertyGroup>
 	<ItemGroup>
-		<ProjectReference Include="$(SolutionDir)External\lslib\LSLibNative\LSLibNative.vcxproj" />
-		<ProjectReference Include="$(SolutionDir)External\lslib\LSLib\LSLib.csproj" />
-		<ProjectReference Include="$(SolutionDir)External\CrossSpeak\CrossSpeak\CrossSpeak.csproj" />
+		<ProjectReference Include="..\..\External\lslib\LSLibNative\LSLibNative.vcxproj" />
+		<ProjectReference Include="..\..\External\lslib\LSLib\LSLib.csproj" />
+		<ProjectReference Include="..\..\External\CrossSpeak\CrossSpeak\CrossSpeak.csproj" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Gameloop.Vdf" Version="0.6.2" />
+		<!-- LSLib loads this at runtime while reading .pak files. Keep it in the app dependency manifest. -->
+		<PackageReference Include="lz4net" Version="1.0.15.93" />
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="NexusModsNET" Version="1.0.5" />
@@ -32,5 +34,6 @@
 		<PackageReference Include="ReactiveUI" Version="20.1.63" />
 		<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
 		<PackageReference Include="System.Reactive" Version="6.0.1" />
+		<PackageReference Include="System.IO.Hashing" Version="9.0.4" />
 	</ItemGroup>
 </Project>

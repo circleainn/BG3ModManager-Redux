@@ -286,6 +286,40 @@ internal sealed class ModHealthTests
 		RegressionAssert.True(mod.ModioData.HasMetadata);
 	}
 
+	public void DisablingModioWarningsHidesOnlyThatFinding()
+	{
+		var mod = CreateMod("modio-suppressed", "mod.io Mod", isActive: true);
+		mod.ModioData = new ModioModData
+		{
+			ModId = 54321,
+			Name = "Linked mod.io project",
+			MetadataOrigin = ModioMetadataOrigin.NativePackage
+		};
+		// An unrelated finding proves the suppression is targeted rather than blanket.
+		mod.IsForceLoaded = true;
+
+		var analyzer = new ModHealthAnalyzer();
+		var installed = new[] { mod };
+
+		var normal = FindSnapshot(analyzer.AnalyzeAll(installed, installed), mod.UUID);
+		RegressionAssert.True(HasFinding(normal, ModHealthFindingCode.ModioManagedSource));
+
+		var suppressed = FindSnapshot(
+			analyzer.AnalyzeAll(installed, installed, null, false, disableModioWarnings: true),
+			mod.UUID);
+
+		RegressionAssert.False(HasFinding(suppressed, ModHealthFindingCode.ModioManagedSource));
+
+		// Everything else survives: other findings, and the mod.io metadata itself.
+		foreach (var finding in normal.Findings.Where(item => item.Code != ModHealthFindingCode.ModioManagedSource))
+		{
+			RegressionAssert.True(HasFinding(suppressed, finding.Code));
+		}
+
+		RegressionAssert.True(mod.OnlineMetadataEnabled);
+		RegressionAssert.True(mod.ModioData.HasMetadata);
+	}
+
 	private static RegressionModData CreateMod(string uuid, string name, bool isActive)
 	{
 		return new RegressionModData

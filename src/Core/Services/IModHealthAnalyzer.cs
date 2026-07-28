@@ -12,5 +12,6 @@ public interface IModHealthAnalyzer
 		IEnumerable<DivinityModData> installedMods,
 		IEnumerable<DivinityModData> activeMods,
 		IEnumerable<DivinityModData> duplicateMods = null,
-		bool enableLoadOrderAdvisor = false);
+		bool enableLoadOrderAdvisor = false,
+		bool disableModioWarnings = false);
 }

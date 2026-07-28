@@ -1,5 +1,7 @@
-﻿using DivinityModManager.Models;
+﻿using DivinityModManager.AppServices;
+using DivinityModManager.Models;
 using DivinityModManager.Models.Cache;
+using DivinityModManager.Models.NexusMods;
 using DivinityModManager.Util;
 
 using Newtonsoft.Json;
@@ -21,6 +23,31 @@ public class NexusModsCacheHandler : IExternalModCacheHandler<NexusModsCachedDat
 	public NexusModsCacheHandler() : base()
 	{
 		CacheData = new NexusModsCachedData();
+	}
+
+	public static bool IsCachedAssociationCompatible(
+		DivinityModData mod,
+		NexusModsModData data)
+	{
+		if (mod == null
+			|| data == null
+			|| data.MetadataOrigin != NexusMetadataOrigin.CreatorManifest)
+		{
+			return true;
+		}
+
+		if (mod.NexusModsData.MetadataOrigin is NexusMetadataOrigin.Manual
+			or NexusMetadataOrigin.ManualUnlinked
+			|| mod.ModioData?.HasMetadata == true)
+		{
+			return false;
+		}
+
+		var source = mod.CreatorManifest?.IsValid == true
+			? mod.CreatorManifest.Sources.FirstOrDefault(candidate =>
+				candidate.Service == ReduxCreatorManifestService.NexusSourceService)
+			: null;
+		return source != null && source.ProjectId == data.ModId;
 	}
 
 	public async Task<bool> Update(IEnumerable<DivinityModData> mods, CancellationToken cts)

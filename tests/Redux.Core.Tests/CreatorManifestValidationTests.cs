@@ -4,6 +4,7 @@ using DivinityModManager.Models.Metadata;
 
 using Newtonsoft.Json.Linq;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -51,6 +52,50 @@ public sealed class CreatorManifestValidationTests
 		RegressionAssert.Contains(manifest.Diagnostic, "does not exist");
 	}
 
+	public void CompactNexusManifestRejectsASecondaryModule()
+	{
+		const string secondaryUuid = "79dacebf-7f07-45f0-84b2-1bd5a13194b7";
+		var manifest = ReduxCreatorManifestService.Validate(
+			CreateCompactManifest(secondaryUuid, 23799).ToString(),
+			"Example.pak",
+			new[]
+			{
+				CreateParsedModule(),
+				CreateParsedModule(secondaryUuid, "Secondary Module", "SecondaryModule")
+			});
+
+		RegressionAssert.Equal(ReduxCreatorManifestState.Invalid, manifest.State);
+		RegressionAssert.Contains(manifest.Diagnostic, "primary module");
+	}
+
+	public void CompactNexusManifestPreservesAnOptionalFileId()
+	{
+		var json = CreateCompactManifest(ModuleUuid, 23799);
+		json["nexus"]!["fileId"] = 123456;
+
+		var manifest = ReduxCreatorManifestService.Validate(
+			json.ToString(),
+			"Example.pak",
+			new[] { CreateParsedModule() });
+
+		RegressionAssert.Equal(ReduxCreatorManifestState.Valid, manifest.State);
+		RegressionAssert.Equal(123456L, manifest.Sources[0].FileId);
+	}
+
+	public void CompactAndDetailedManifestFormsCannotBeMixed()
+	{
+		var json = CreateCompactManifest(ModuleUuid, 23799);
+		json["mod"] = CreateManifest(new[] { "Creator" })["mod"];
+
+		var manifest = ReduxCreatorManifestService.Validate(
+			json.ToString(),
+			"Example.pak",
+			new[] { CreateParsedModule() });
+
+		RegressionAssert.Equal(ReduxCreatorManifestState.Invalid, manifest.State);
+		RegressionAssert.Contains(manifest.Diagnostic, "either");
+	}
+
 	public void DuplicateAuthorsAreRejected()
 	{
 		var manifest = ReduxCreatorManifestService.Validate(
@@ -74,6 +119,60 @@ public sealed class CreatorManifestValidationTests
 
 		RegressionAssert.Equal(ReduxCreatorManifestState.Invalid, manifest.State);
 		RegressionAssert.Contains(manifest.Diagnostic, "PAK name");
+	}
+
+	public void DuplicateJsonPropertiesAreRejected()
+	{
+		var json = CreateCompactManifest(ModuleUuid, 23799).ToString();
+		json = json.Replace(
+			"\"schemaVersion\": 1,",
+			"\"schemaVersion\": 1,\n  \"schemaVersion\": 1,",
+			StringComparison.Ordinal);
+
+		var manifest = ReduxCreatorManifestService.Validate(
+			json,
+			"Example.pak",
+			new[] { CreateParsedModule() });
+
+		RegressionAssert.Equal(ReduxCreatorManifestState.Invalid, manifest.State);
+		RegressionAssert.Contains(manifest.Diagnostic, "already exists");
+	}
+
+	public void TrailingJsonContentIsRejected()
+	{
+		var manifest = ReduxCreatorManifestService.Validate(
+			$"{CreateCompactManifest(ModuleUuid, 23799)}\n{{}}",
+			"Example.pak",
+			new[] { CreateParsedModule() });
+
+		RegressionAssert.Equal(ReduxCreatorManifestState.Invalid, manifest.State);
+	}
+
+	public void HomepageMustUsePublicHttpOrHttps()
+	{
+		var json = CreateManifest(new[] { "Creator" });
+		json["mod"]!["homepage"] = "file:///C:/private/mod";
+
+		var manifest = ReduxCreatorManifestService.Validate(
+			json.ToString(),
+			"Example.pak",
+			new[] { CreateParsedModule() });
+
+		RegressionAssert.Equal(ReduxCreatorManifestState.Invalid, manifest.State);
+		RegressionAssert.Contains(manifest.Diagnostic, "HTTP");
+	}
+
+	public void PakExtensionMatchingIsCaseInsensitive()
+	{
+		var json = CreateManifest(new[] { "Creator" });
+		json["mod"]!["modules"]![0]!["pak"] = "EXAMPLE.PAK";
+
+		var manifest = ReduxCreatorManifestService.Validate(
+			json.ToString(),
+			"Example.pak",
+			new[] { CreateParsedModule() });
+
+		RegressionAssert.Equal(ReduxCreatorManifestState.Valid, manifest.State);
 	}
 
 	private static JObject CreateManifest(IEnumerable<string> authors) => new()
@@ -116,11 +215,14 @@ public sealed class CreatorManifestValidationTests
 		}
 	};
 
-	private static DivinityModData CreateParsedModule() => new RegressionModData
+	private static DivinityModData CreateParsedModule(
+		string uuid = ModuleUuid,
+		string name = "Example Mod",
+		string folder = "ExampleMod") => new RegressionModData
 	{
-		UUID = ModuleUuid,
-		Name = "Example Mod",
-		Folder = "ExampleMod",
+		UUID = uuid,
+		Name = name,
+		Folder = folder,
 		HasMetadata = true
 	};
 }

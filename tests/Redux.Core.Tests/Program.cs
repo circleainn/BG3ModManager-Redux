@@ -20,6 +20,7 @@ internal static class Program
 		var health = new ModHealthTests();
 		var modules = new ReduxModuleStateTests();
 		var bundle = new ReduxBundleTests();
+		var contribution = new ContributionReportPrivacyTests();
 		var tests = new (string Name, Action Run)[]
 		{
 			(nameof(source.ManualNexusAssociationWinsOverCachedModioMetadata), source.ManualNexusAssociationWinsOverCachedModioMetadata),
@@ -28,11 +29,25 @@ internal static class Program
 			(nameof(source.CreatorManifestModioCacheRequiresTheCurrentProjectClaim), source.CreatorManifestModioCacheRequiresTheCurrentProjectClaim),
 			(nameof(source.ManualSourceChoicesBlockCreatorManifestModioCache), source.ManualSourceChoicesBlockCreatorManifestModioCache),
 			(nameof(source.NativeModioCacheDoesNotDependOnCreatorManifest), source.NativeModioCacheDoesNotDependOnCreatorManifest),
+			(nameof(source.CreatorManifestNexusCacheRequiresTheCurrentProjectClaim), source.CreatorManifestNexusCacheRequiresTheCurrentProjectClaim),
+			(nameof(source.ManualAndNativeSourceChoicesBlockCreatorManifestNexusCache), source.ManualAndNativeSourceChoicesBlockCreatorManifestNexusCache),
+			(nameof(source.NonManifestNexusCacheDoesNotDependOnCreatorManifest), source.NonManifestNexusCacheDoesNotDependOnCreatorManifest),
+			(nameof(source.ValidCreatorManifestNexusCacheSurvivesRestart), source.ValidCreatorManifestNexusCacheSurvivesRestart),
+			(nameof(source.ChangedCreatorManifestInvalidatesReloadedNexusCache), source.ChangedCreatorManifestInvalidatesReloadedNexusCache),
+			(nameof(source.NativeModioCacheWinsOverCreatorManifestNexusAfterRestart), source.NativeModioCacheWinsOverCreatorManifestNexusAfterRestart),
+			(nameof(source.ManualNexusCacheBlocksCreatorManifestModioAfterRestart), source.ManualNexusCacheBlocksCreatorManifestModioAfterRestart),
 			(nameof(manifest.ValidManifestPreservesCreatorAuthorOrder), manifest.ValidManifestPreservesCreatorAuthorOrder),
 			(nameof(manifest.CompactNexusManifestLinksThePrimaryModule), manifest.CompactNexusManifestLinksThePrimaryModule),
 			(nameof(manifest.CompactNexusManifestRejectsAnUnrelatedModule), manifest.CompactNexusManifestRejectsAnUnrelatedModule),
+			(nameof(manifest.CompactNexusManifestRejectsASecondaryModule), manifest.CompactNexusManifestRejectsASecondaryModule),
+			(nameof(manifest.CompactNexusManifestPreservesAnOptionalFileId), manifest.CompactNexusManifestPreservesAnOptionalFileId),
+			(nameof(manifest.CompactAndDetailedManifestFormsCannotBeMixed), manifest.CompactAndDetailedManifestFormsCannotBeMixed),
 			(nameof(manifest.DuplicateAuthorsAreRejected), manifest.DuplicateAuthorsAreRejected),
 			(nameof(manifest.MismatchedPakClaimIsRejected), manifest.MismatchedPakClaimIsRejected),
+			(nameof(manifest.DuplicateJsonPropertiesAreRejected), manifest.DuplicateJsonPropertiesAreRejected),
+			(nameof(manifest.TrailingJsonContentIsRejected), manifest.TrailingJsonContentIsRejected),
+			(nameof(manifest.HomepageMustUsePublicHttpOrHttps), manifest.HomepageMustUsePublicHttpOrHttps),
+			(nameof(manifest.PakExtensionMatchingIsCaseInsensitive), manifest.PakExtensionMatchingIsCaseInsensitive),
 			(nameof(health.MissingAndInactiveDependenciesRemainIndependentOfTheAdvisor), health.MissingAndInactiveDependenciesRemainIndependentOfTheAdvisor),
 			(nameof(health.AdvisorFindingsAreAbsentUntilTheAdvisorIsEnabled), health.AdvisorFindingsAreAbsentUntilTheAdvisorIsEnabled),
 			(nameof(health.CorrectDependencyPlacementDoesNotProduceAdvisorNoise), health.CorrectDependencyPlacementDoesNotProduceAdvisorNoise),
@@ -46,6 +61,7 @@ internal static class Program
 			(nameof(health.ScriptExtenderErrorsAndWarningsRemainDistinct), health.ScriptExtenderErrorsAndWarningsRemainDistinct),
 			(nameof(health.ForceLoadedVariantsRemainInformationalAndReadOnly), health.ForceLoadedVariantsRemainInformationalAndReadOnly),
 			(nameof(health.LocalOnlyPresentationSuppressesProviderFindingsWithoutDeletingMetadata), health.LocalOnlyPresentationSuppressesProviderFindingsWithoutDeletingMetadata),
+			(nameof(health.DisablingModioWarningsHidesOnlyThatFinding), health.DisablingModioWarningsHidesOnlyThatFinding),
 			(nameof(modules.DefaultsKeepHealthOnAndExperimentalFeaturesOptIn), modules.DefaultsKeepHealthOnAndExperimentalFeaturesOptIn),
 			(nameof(modules.LocalOnlyModeChangesOnlySourceIntegrations), modules.LocalOnlyModeChangesOnlySourceIntegrations),
 			(nameof(modules.AdvisorRequiresHealthWithoutLosingItsPreference), modules.AdvisorRequiresHealthWithoutLosingItsPreference),
@@ -56,7 +72,11 @@ internal static class Program
 			(nameof(bundle.MismatchedOrderAndPresentationAreRejected), bundle.MismatchedOrderAndPresentationAreRejected),
 			(nameof(bundle.UnexpectedFilesAreRejectedDuringImport), bundle.UnexpectedFilesAreRejectedDuringImport),
 			(nameof(bundle.ExistingBundleCanBeAtomicallyReplaced), bundle.ExistingBundleCanBeAtomicallyReplaced),
-			(nameof(bundle.FailedReplacementPreservesTheExistingBundle), bundle.FailedReplacementPreservesTheExistingBundle)
+			(nameof(bundle.FailedReplacementPreservesTheExistingBundle), bundle.FailedReplacementPreservesTheExistingBundle),
+			(nameof(contribution.ContributionReportsIncludeOnlyUniqueInstalledUserMods), contribution.ContributionReportsIncludeOnlyUniqueInstalledUserMods),
+			(nameof(contribution.ContributionReportsStripPrivatePathsAndOrderingData), contribution.ContributionReportsStripPrivatePathsAndOrderingData),
+			(nameof(contribution.ContributionReportsRejectCredentialBearingProviderUrls), contribution.ContributionReportsRejectCredentialBearingProviderUrls),
+			(nameof(contribution.TamperedContributionReportsCannotBeSaved), contribution.TamperedContributionReportsCannotBeSaved)
 		};
 
 		var failures = 0;

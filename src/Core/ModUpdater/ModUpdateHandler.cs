@@ -119,13 +119,8 @@ public class ModUpdateHandler : ReactiveObject
 						}
 					}
 				}
-				if (Nexus.IsEnabled)
-				{
-					if (Nexus.CacheData.Mods.TryGetValue(mod.UUID, out var nexusData))
-					{
-						mod.NexusModsData.Update(nexusData);
-					}
-				}
+				// Apply mod.io first so native package identity is established before
+				// weaker creator-manifest Nexus associations are evaluated.
 				if (Modio.IsEnabled
 					&& Modio.CacheData.Mods.TryGetValue(mod.UUID, out var modioData))
 				{
@@ -136,6 +131,20 @@ public class ModUpdateHandler : ReactiveObject
 					else
 					{
 						Modio.CacheData.Mods.Remove(mod.UUID);
+					}
+				}
+				if (Nexus.IsEnabled)
+				{
+					if (Nexus.CacheData.Mods.TryGetValue(mod.UUID, out var nexusData))
+					{
+						if (NexusModsCacheHandler.IsCachedAssociationCompatible(mod, nexusData))
+						{
+							mod.NexusModsData.Update(nexusData);
+						}
+						else
+						{
+							Nexus.CacheData.Mods.Remove(mod.UUID);
+						}
 					}
 				}
 				if (Github.IsEnabled)

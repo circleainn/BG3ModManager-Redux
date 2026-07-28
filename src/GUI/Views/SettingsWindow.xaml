@@ -147,28 +147,24 @@
 								</Border>
 							</Grid>
 							<ControlTemplate.Triggers>
-								<MultiTrigger>
-									<MultiTrigger.Conditions>
-										<Condition Property="IsMouseOver" Value="True" />
-										<Condition Property="IsSelected" Value="False" />
-									</MultiTrigger.Conditions>
-									<MultiTrigger.EnterActions>
+											<Trigger Property="IsMouseOver" Value="True">
+									<Trigger.EnterActions>
 										<BeginStoryboard>
 											<Storyboard>
 												<DoubleAnimation Storyboard.TargetName="TabHoverSurface" Storyboard.TargetProperty="Opacity"
 													To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
-									</MultiTrigger.EnterActions>
-									<MultiTrigger.ExitActions>
+									</Trigger.EnterActions>
+									<Trigger.ExitActions>
 										<BeginStoryboard>
 											<Storyboard>
 												<DoubleAnimation Storyboard.TargetName="TabHoverSurface" Storyboard.TargetProperty="Opacity"
 													To="0" Duration="{StaticResource Redux.Motion.Standard}" />
 											</Storyboard>
 										</BeginStoryboard>
-									</MultiTrigger.ExitActions>
-								</MultiTrigger>
+									</Trigger.ExitActions>
+											</Trigger>
 								<Trigger Property="IsMouseOver" Value="True">
 									<Setter TargetName="HeaderHost" Property="TextElement.Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 								</Trigger>
@@ -260,9 +256,18 @@
 								Background="{TemplateBinding Background}"
 								BorderBrush="{TemplateBinding BorderBrush}"
 								BorderThickness="{TemplateBinding BorderThickness}"
-								CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+								CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+								RenderTransformOrigin="0.5,0.5">
+								<Border.RenderTransform>
+									<TranslateTransform x:Name="ThemeCardTranslate" Y="0" />
+								</Border.RenderTransform>
 								<Grid>
 									<ContentPresenter />
+									<Border x:Name="ThemeCardHoverSurface"
+										Background="{DynamicResource ReduxAccentSoftBrush}"
+										CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+										IsHitTestVisible="False"
+										Opacity="0" />
 									<Border x:Name="SelectionIndicator" Width="18" Height="18"
 										HorizontalAlignment="Right" VerticalAlignment="Top"
 										Background="{DynamicResource ReduxSurfaceBrush}"
@@ -277,7 +282,30 @@
 							<ControlTemplate.Triggers>
 								<Trigger Property="IsMouseOver" Value="True">
 									<Setter TargetName="CardSurface" Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-									<Setter TargetName="CardSurface" Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+									<Trigger.EnterActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="ThemeCardHoverSurface" Storyboard.TargetProperty="Opacity"
+													To="0.38" Duration="{StaticResource Redux.Motion.Fast}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+												<DoubleAnimation Storyboard.TargetName="ThemeCardTranslate" Storyboard.TargetProperty="Y"
+													To="{StaticResource Redux.Motion.HoverTranslateNegative}" Duration="{StaticResource Redux.Motion.Fast}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.EnterActions>
+									<Trigger.ExitActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="ThemeCardHoverSurface" Storyboard.TargetProperty="Opacity"
+													To="0" Duration="{StaticResource Redux.Motion.Standard}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+												<DoubleAnimation Storyboard.TargetName="ThemeCardTranslate" Storyboard.TargetProperty="Y"
+													To="0" Duration="{StaticResource Redux.Motion.Standard}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.ExitActions>
 								</Trigger>
 								<Trigger Property="IsChecked" Value="True">
 									<Setter TargetName="CardSurface" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
@@ -581,7 +609,7 @@
 										IsChecked="{Binding Settings.UseCategoryColorsForHover, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 										<StackPanel Margin="6,0,0,0">
 											<TextBlock FontWeight="SemiBold" Text="Category hover" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use each mod's category color when hovering its row." TextWrapping="Wrap" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use each mod or separator's assigned color for row hover and selection." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
 									<CheckBox x:Name="InterfaceIconsCheckBox" Margin="0,0,10,0"
@@ -590,21 +618,21 @@
 										Unchecked="InterfaceIconsCheckBox_Unchecked">
 										<StackPanel Margin="6,0,0,0">
 											<TextBlock FontWeight="SemiBold" Text="Interface icons" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Show category and source icons in lists and details." TextWrapping="Wrap" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Show category and source icons in lists, hover cards, and details." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
 									<CheckBox ToolTip="Match sidebar category names to their assigned colors"
 										IsChecked="{Binding Settings.UseCategoryColorsForSidebarText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 										<StackPanel Margin="6,0,0,0">
-											<TextBlock FontWeight="SemiBold" Text="Colored names" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Match category names in the sidebar to their colors." TextWrapping="Wrap" />
+											<TextBlock FontWeight="SemiBold" Text="Colored category labels" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use category colors for labels in the Categories pane and hover cards." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
 									<CheckBox Margin="0,8,10,0" ToolTip="Match category hover and selection to each category color"
 										IsChecked="{Binding Settings.UseCategoryColorsForSidebarSelection, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 										<StackPanel Margin="6,0,0,0">
 											<TextBlock FontWeight="SemiBold" Text="Category selection" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use category colors for sidebar hover and selection." TextWrapping="Wrap" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use category colors for hover and selection in the Categories pane." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
 									<CheckBox Margin="0,8,10,0" ToolTip="Show only provider icons in source columns"
@@ -612,7 +640,7 @@
 										IsEnabled="{Binding IsChecked, ElementName=InterfaceIconsCheckBox}">
 										<StackPanel Margin="6,0,0,0">
 											<TextBlock FontWeight="SemiBold" Text="Source icons only" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Hide source label text in mod lists." TextWrapping="Wrap" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Show source icons without text in source columns." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
 								</UniformGrid>
@@ -890,14 +918,26 @@
 										<Setter Property="Template">
 											<Setter.Value>
 												<ControlTemplate TargetType="{x:Type ListViewItem}">
-													<Grid Background="Transparent" SnapsToDevicePixels="True">
-														<Border x:Name="RowChrome"
-															Margin="4,1"
+											<Grid x:Name="HotkeyRowRoot" Background="Transparent" SnapsToDevicePixels="True" RenderTransformOrigin="0.5,0.5">
+												<Grid.RenderTransform>
+													<TranslateTransform x:Name="HotkeyRowTranslate" Y="0" />
+												</Grid.RenderTransform>
+												<Border x:Name="RowChrome"
+													Margin="4,1"
 															Background="{TemplateBinding Background}"
 															BorderBrush="{TemplateBinding BorderBrush}"
-															BorderThickness="{TemplateBinding BorderThickness}"
-															CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
-														<Border x:Name="SelectionRail"
+													BorderThickness="{TemplateBinding BorderThickness}"
+													CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
+												<Border x:Name="RowHoverSurface"
+													Margin="4,1"
+													Background="{DynamicResource ReduxAccentSoftBrush}"
+													BorderBrush="{DynamicResource ReduxAccentBrush}"
+													BorderThickness="{DynamicResource Redux.Rail.Thickness}"
+													CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+													OpacityMask="{StaticResource Redux.Hover.WashMask}"
+													IsHitTestVisible="False"
+													Opacity="0" />
+												<Border x:Name="SelectionRail"
 															Width="2"
 															Margin="4,5,0,5"
 															HorizontalAlignment="Left"
@@ -911,14 +951,33 @@
 															ContentTemplate="{TemplateBinding ContentTemplate}"
 															ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
 													</Grid>
-													<ControlTemplate.Triggers>
-														<MultiTrigger>
-															<MultiTrigger.Conditions>
-																<Condition Property="IsMouseOver" Value="True" />
-																<Condition Property="IsSelected" Value="False" />
-															</MultiTrigger.Conditions>
-															<Setter TargetName="RowChrome" Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-														</MultiTrigger>
+												<ControlTemplate.Triggers>
+												<Trigger Property="IsMouseOver" Value="True">
+														<Trigger.EnterActions>
+															<BeginStoryboard>
+																<Storyboard>
+																	<DoubleAnimation Storyboard.TargetName="RowHoverSurface" Storyboard.TargetProperty="Opacity"
+																		To="0.62" Duration="{StaticResource Redux.Motion.Fast}"
+																		EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+																	<DoubleAnimation Storyboard.TargetName="HotkeyRowTranslate" Storyboard.TargetProperty="Y"
+																		To="{StaticResource Redux.Motion.HoverTranslateNegative}" Duration="{StaticResource Redux.Motion.Fast}"
+																		EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+																</Storyboard>
+															</BeginStoryboard>
+														</Trigger.EnterActions>
+														<Trigger.ExitActions>
+															<BeginStoryboard>
+																<Storyboard>
+																	<DoubleAnimation Storyboard.TargetName="RowHoverSurface" Storyboard.TargetProperty="Opacity"
+																		To="0" Duration="{StaticResource Redux.Motion.Standard}"
+																		EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+																	<DoubleAnimation Storyboard.TargetName="HotkeyRowTranslate" Storyboard.TargetProperty="Y"
+																		To="0" Duration="{StaticResource Redux.Motion.Standard}"
+																		EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+																</Storyboard>
+															</BeginStoryboard>
+														</Trigger.ExitActions>
+												</Trigger>
 														<Trigger Property="IsSelected" Value="True">
 															<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 															<Setter TargetName="RowChrome" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />

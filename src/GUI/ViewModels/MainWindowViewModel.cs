@@ -180,11 +180,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	[Reactive] public bool HasActiveModHealthErrors { get; set; }
 	[Reactive] public bool HasOnlyActiveModLoadOrderAdvice { get; set; }
 	[Reactive] public string ActiveModHealthSummaryText { get; set; } = String.Empty;
-	[Reactive] public bool IsLoadOrderAdvisorDebugVisible { get; set; }
+	[Reactive] public bool IsLoadOrderAdvisorStatusVisible { get; set; }
 	[Reactive] public bool LoadOrderAdvisorDebugHasWarnings { get; set; }
 	[Reactive] public string LoadOrderAdvisorDebugText { get; set; } = "Advisor clear";
+	[Reactive] public string LoadOrderAdvisorDebugSummaryText { get; set; } = "No advisor findings";
+	[Reactive] public string LoadOrderAdvisorDebugDetailTitle { get; set; } = "Declared dependency checks";
 	[Reactive] public string LoadOrderAdvisorDebugTooltip { get; set; } =
-		"Debug indicator: the Load Order Advisor completed without finding a reversed declared dependency.";
+		"The Load Order Advisor completed without finding a declared dependency placement or cycle warning.";
 	public ObservableCollectionExtended<DivinityModData> DisplayActiveMods { get; } = new();
 	public ObservableCollectionExtended<DivinityModData> DisplayInactiveMods { get; } = new();
 	private bool _updatingVisualModLists;
@@ -2713,7 +2715,15 @@ Directory the zip will be extracted to:
 						{
 							if (cachedData.Mods.TryGetValue(mod.UUID, out var nexusData))
 							{
-								mod.NexusModsData.Update(nexusData);
+								if (NexusModsCacheHandler.IsCachedAssociationCompatible(mod, nexusData))
+								{
+									mod.NexusModsData.Update(nexusData);
+								}
+								else
+								{
+									cachedData.Mods.Remove(mod.UUID);
+									cacheChanged = true;
+								}
 							}
 							else if (mod.IsForceLoaded && !mod.HasMetadata && !String.IsNullOrWhiteSpace(mod.FilePath))
 							{
@@ -2727,11 +2737,14 @@ Directory the zip will be extracted to:
 									entry.Key.EndsWith(".pak.tmp", StringComparison.OrdinalIgnoreCase));
 								if (!String.IsNullOrWhiteSpace(stagedEntry.Key))
 								{
-									mod.NexusModsData.Update(stagedEntry.Value);
 									cachedData.Mods.Remove(stagedEntry.Key);
-									cachedData.Mods[mod.UUID] = stagedEntry.Value;
 									cacheChanged = true;
-									DivinityApp.Log($"Migrated Nexus Mods metadata cache from staged override identity '{stagedEntry.Key}' to '{mod.UUID}'.");
+									if (NexusModsCacheHandler.IsCachedAssociationCompatible(mod, stagedEntry.Value))
+									{
+										mod.NexusModsData.Update(stagedEntry.Value);
+										cachedData.Mods[mod.UUID] = stagedEntry.Value;
+										DivinityApp.Log($"Migrated Nexus Mods metadata cache from staged override identity '{stagedEntry.Key}' to '{mod.UUID}'.");
+									}
 								}
 							}
 						}
@@ -6134,7 +6147,7 @@ Directory the zip will be extracted to:
 		? Settings.VisualModListDividers?.FirstOrDefault(entry => entry.Id.Equals(item.VisualDividerId, StringComparison.OrdinalIgnoreCase))
 		: null;
 
-	public void AddVisualDivider(bool activeList, int position, string title, string color, string iconId, bool hideLine)
+	public void AddVisualDivider(bool activeList, int position, string title, string color, string iconId, bool hideLine, string description = "")
 	{
 		Settings.VisualModListDividers ??= new List<ModListVisualDividerData>();
 		foreach (var existing in Settings.VisualModListDividers.Where(item => item.IsActiveList == activeList && item.Position >= position))
@@ -6142,13 +6155,14 @@ Directory the zip will be extracted to:
 		Settings.VisualModListDividers.Add(new ModListVisualDividerData
 		{
 			Title = title?.Trim() ?? "", Color = color, IconId = ReduxIconCatalog.Normalize(iconId),
+			Description = description?.Trim() ?? "",
 			IsActiveList = activeList, Position = Math.Max(0, position), HideLine = hideLine
 		});
 		RefreshVisualDividers();
 		SaveSettings();
 	}
 
-	public void UpdateVisualDivider(DivinityModData item, string title, string color, string iconId, bool hideLine)
+	public void UpdateVisualDivider(DivinityModData item, string title, string color, string iconId, bool hideLine, string description = "")
 	{
 		var divider = GetVisualDivider(item);
 		if (divider == null) return;
@@ -6156,6 +6170,7 @@ Directory the zip will be extracted to:
 		divider.Color = color;
 		divider.IconId = ReduxIconCatalog.Normalize(iconId);
 		divider.HideLine = hideLine;
+		divider.Description = description?.Trim() ?? "";
 		RefreshVisualDividers();
 		SaveSettings();
 	}
@@ -6236,6 +6251,7 @@ Directory the zip will be extracted to:
 		VisualDividerTitle = divider.Title,
 		VisualDividerColor = divider.Color,
 		VisualDividerIconId = ReduxIconCatalog.Normalize(divider.IconId),
+		VisualDividerDescription = divider.Description ?? String.Empty,
 		ShowVisualDividerLine = !divider.HideLine,
 		IsVisualDividerCollapsed = divider.IsCollapsed,
 		VisualDividerChevronAngle = divider.IsCollapsed ? -90d : 0d,
@@ -7261,7 +7277,8 @@ Directory the zip will be extracted to:
 			mods.Items,
 			ActiveMods,
 			_lastDetectedDuplicateMods,
-			Modules.LoadOrderAdvisorEnabled);
+			Modules.LoadOrderAdvisorEnabled,
+			Settings.DisableModioWarnings);
 		foreach (var snapshot in snapshots)
 		{
 			snapshot.Mod.HealthSnapshot = snapshot;
@@ -7299,18 +7316,30 @@ Directory the zip will be extracted to:
 		ActiveModHealthSummaryText = String.Join(" · ", activeAttentionSummaryParts);
 		var advisorWarningCount = snapshots.Sum(snapshot =>
 			snapshot.Findings.Count(IsLoadOrderAdvisorFinding));
-		IsLoadOrderAdvisorDebugVisible = Modules.ModHealthEnabled && Settings.DebugModeEnabled;
+		IsLoadOrderAdvisorStatusVisible =
+			Modules.ModHealthEnabled
+			&& Modules.LoadOrderAdvisorEnabled;
 		LoadOrderAdvisorDebugHasWarnings = advisorWarningCount > 0;
 		LoadOrderAdvisorDebugText = !Modules.LoadOrderAdvisorEnabled
 			? "Advisor off"
 			: advisorWarningCount > 0
 			? $"Advisor: {advisorWarningCount} warning{(advisorWarningCount == 1 ? String.Empty : "s")}"
 			: "Advisor clear";
-		LoadOrderAdvisorDebugTooltip = !Modules.LoadOrderAdvisorEnabled
-			? "Debug indicator: the experimental Load Order Advisor is disabled. Enable it in Preferences to evaluate declared dependency placement."
+		LoadOrderAdvisorDebugSummaryText = !Modules.LoadOrderAdvisorEnabled
+			? "Advisor is disabled"
 			: advisorWarningCount > 0
-			? $"Debug indicator: the Load Order Advisor found {advisorWarningCount} declared dependency placement or cycle warning{(advisorWarningCount == 1 ? String.Empty : "s")}."
-			: "Debug indicator: the Load Order Advisor completed without finding a declared dependency placement or cycle warning.";
+			? $"{advisorWarningCount} advisor warning{(advisorWarningCount == 1 ? String.Empty : "s")}"
+			: "No advisor findings";
+		LoadOrderAdvisorDebugDetailTitle = !Modules.LoadOrderAdvisorEnabled
+			? "Load Order Advisor is off"
+			: advisorWarningCount > 0
+			? "Load-order guidance needs review"
+			: "Declared dependency checks";
+		LoadOrderAdvisorDebugTooltip = !Modules.LoadOrderAdvisorEnabled
+			? "The experimental Load Order Advisor is disabled. Enable it in Preferences to evaluate declared dependency placement."
+			: advisorWarningCount > 0
+			? $"The Load Order Advisor found {advisorWarningCount} declared dependency placement or cycle warning{(advisorWarningCount == 1 ? String.Empty : "s")}."
+			: "The Load Order Advisor completed without finding a declared dependency placement or cycle warning.";
 
 		if (Settings.DebugModeEnabled)
 		{
@@ -7351,9 +7380,11 @@ Directory the zip will be extracted to:
 		HasActiveModHealthErrors = false;
 		HasOnlyActiveModLoadOrderAdvice = false;
 		ActiveModHealthSummaryText = String.Empty;
-		IsLoadOrderAdvisorDebugVisible = false;
+		IsLoadOrderAdvisorStatusVisible = false;
 		LoadOrderAdvisorDebugHasWarnings = false;
 		LoadOrderAdvisorDebugText = "Advisor off";
+		LoadOrderAdvisorDebugSummaryText = "Advisor is disabled";
+		LoadOrderAdvisorDebugDetailTitle = "Load Order Advisor is off";
 		LoadOrderAdvisorDebugTooltip = "Mod Health is disabled.";
 		_lastModHealthDiagnosticSignature = String.Empty;
 		_lastLoadOrderAdvisorDiagnosticSignature = null;
@@ -7902,6 +7933,12 @@ Directory the zip will be extracted to:
 			.Subscribe(_ => ScheduleModHealthRefresh());
 
 		this.WhenAnyValue(x => x.Settings.DebugModeEnabled, x => x.Modules.ModHealthEnabled, x => x.Modules.LoadOrderAdvisorEnabled)
+			.Skip(1)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(_ => ScheduleModHealthRefresh());
+
+		// Toggling the mod.io notice re-runs analysis so the toolbar and drawer update at once.
+		this.WhenAnyValue(x => x.Settings.DisableModioWarnings)
 			.Skip(1)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ScheduleModHealthRefresh());

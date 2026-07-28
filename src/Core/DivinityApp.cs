@@ -98,10 +98,15 @@ public static class DivinityApp
 	public static DivinityGlobalEvents Events { get; private set; } = new DivinityGlobalEvents();
 
 	public static event PropertyChangedEventHandler StaticPropertyChanged;
+	// WPF bindings to static presentation preferences listen for the conventional
+	// PropertyChanged event. Keep the existing event for callers that already use
+	// it, but raise both so popup and tooltip visual trees refresh immediately.
+	public static event PropertyChangedEventHandler PropertyChanged;
 
 	private static void NotifyStaticPropertyChanged([CallerMemberName] string name = null)
 	{
 		StaticPropertyChanged?.Invoke(null, new PropertyChangedEventArgs(name));
+		PropertyChanged?.Invoke(null, new PropertyChangedEventArgs(name));
 	}
 
 	private static bool developerModeEnabled = false;
@@ -124,6 +129,42 @@ public static class DivinityApp
 		set
 		{
 			_isKeyboardNavigating = value;
+			NotifyStaticPropertyChanged();
+		}
+	}
+
+	private static bool _useCategoryColorsForText = true;
+
+	/// <summary>
+	/// Mirrors <c>Settings.UseCategoryColorsForSidebarText</c> for XAML that cannot reach the
+	/// settings object by ancestor lookup. Category pills render in the mod list, the details
+	/// drawer and hover-card tooltips; tooltips live in their own visual tree, so a
+	/// RelativeSource walk to the ListView silently fails there. Binding to this static
+	/// property works from every visual tree.
+	/// </summary>
+	public static bool UseCategoryColorsForText
+	{
+		get => _useCategoryColorsForText;
+		set
+		{
+			_useCategoryColorsForText = value;
+			NotifyStaticPropertyChanged();
+		}
+	}
+
+	private static bool _showInterfaceIcons = true;
+
+	/// <summary>
+	/// Mirrors the interface-icon preference for templates hosted in popups and tooltips,
+	/// where the main window settings object is outside the visual tree.
+	/// </summary>
+	public static bool ShowInterfaceIcons
+	{
+		get => _showInterfaceIcons;
+		set
+		{
+			if (_showInterfaceIcons == value) return;
+			_showInterfaceIcons = value;
 			NotifyStaticPropertyChanged();
 		}
 	}

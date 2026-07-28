@@ -2,8 +2,8 @@
 
 `src/GUI/Resources/ReduxModDatabase.json` is a bundled offline database that lets Redux identify
 some pre-existing Nexus Mods installs without an API request. It's not an importer, and it never
-infers a source from a filename, title, UUID, or approximate version — only from exact fingerprints
-or reviewed identity records.
+matches a package from a filename alone, title alone, arbitrary UUID, or approximate version. It uses
+exact fingerprints first, followed only by reviewed identity records with unambiguous evidence.
 
 Loaded and queried through `ReduxModDatabaseService` (`src/Core/AppServices/ReduxModDatabaseService.cs`).
 

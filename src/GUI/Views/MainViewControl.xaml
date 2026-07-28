@@ -30,7 +30,97 @@
 				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 			<Style BasedOn="{StaticResource {x:Type Button}}" TargetType="{x:Type Button}" />
-			<Style x:Key="MenuItemHighlightBlink" BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
+			<ControlTemplate x:Key="ToolbarStatusMenuItemTemplate" TargetType="{x:Type MenuItem}">
+				<ContentPresenter ContentSource="Header" HorizontalAlignment="Stretch" RecognizesAccessKey="True" />
+			</ControlTemplate>
+			<!--
+				The Template is assigned from Role triggers, not a plain setter: the base MenuItem
+				style sets Template from a Role trigger too, and a trigger outranks a setter. With a
+				plain setter these rows silently kept the full popup row template, giving the card a
+				large invisible hover surface behind it.
+			-->
+			<Style x:Key="ToolbarStatusMenuItemStyle"
+				BasedOn="{StaticResource {x:Type MenuItem}}"
+				TargetType="{x:Type MenuItem}">
+				<Setter Property="Padding" Value="0" />
+				<Setter Property="Margin" Value="0" />
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+				<Setter Property="Template" Value="{StaticResource ToolbarStatusMenuItemTemplate}" />
+				<EventSetter Event="Click" Handler="ToolbarModHealthMenuItem_Click" />
+				<Style.Triggers>
+					<Trigger Property="Role" Value="SubmenuItem">
+						<Setter Property="Template" Value="{StaticResource ToolbarStatusMenuItemTemplate}" />
+					</Trigger>
+					<Trigger Property="Role" Value="SubmenuHeader">
+						<Setter Property="Template" Value="{StaticResource ToolbarStatusMenuItemTemplate}" />
+					</Trigger>
+				</Style.Triggers>
+			</Style>
+			<Style x:Key="ToolbarStaticStatusMenuItemStyle"
+				BasedOn="{StaticResource ToolbarStatusMenuItemStyle}"
+				TargetType="{x:Type MenuItem}">
+				<Setter Property="IsHitTestVisible" Value="False" />
+			</Style>
+			<!--
+				The shared status card already draws the surface, border and padding. Without this
+				the ContextMenu draws a second card around it, which is where the doubled padding
+				and outline came from. Strip the menu chrome and let the card be the only surface.
+			-->
+			<Style x:Key="ToolbarStatusContextMenuStyle"
+				BasedOn="{StaticResource {x:Type ContextMenu}}"
+				TargetType="{x:Type ContextMenu}">
+				<Setter Property="MinWidth" Value="0" />
+				<Setter Property="MaxWidth" Value="420" />
+				<Setter Property="Padding" Value="0" />
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="BorderBrush" Value="Transparent" />
+				<Setter Property="BorderThickness" Value="0" />
+				<Setter Property="FontFamily" Value="{DynamicResource Redux.FontFamily.UI}" />
+				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.12}" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type ContextMenu}">
+							<Grid Margin="4">
+								<ItemsPresenter />
+							</Grid>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
+			<!--
+				Single definition of Redux menu presentation for every MenuItem role. Both the
+				menu bar implicit style and MenuItemHighlightBlink derive from this, so an item
+				carrying an explicit style (Tools) cannot silently fall back to stock chrome.
+			-->
+			<Style x:Key="ReduxMenuItemStyle" BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
+				<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
+				<!-- MenuItem popups are a separate visual window and do not reliably inherit typography. -->
+				<Setter Property="FontFamily" Value="{DynamicResource Redux.FontFamily.UI}" />
+				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.12}" />
+				<Style.Triggers>
+					<Trigger Property="Role" Value="TopLevelHeader">
+						<Setter Property="Padding" Value="8,4" />
+						<Setter Property="Background" Value="Transparent" />
+						<Setter Property="Template" Value="{DynamicResource ReduxTopLevelMenuHeaderTemplate}" />
+					</Trigger>
+					<Trigger Property="Role" Value="TopLevelItem">
+						<Setter Property="Padding" Value="8,4" />
+						<Setter Property="Background" Value="Transparent" />
+						<Setter Property="Template" Value="{DynamicResource ReduxTopLevelMenuHeaderTemplate}" />
+					</Trigger>
+					<!-- Inset rows horizontally so their highlight cannot paint over the popup corner arcs. -->
+					<Trigger Property="Role" Value="SubmenuHeader">
+						<Setter Property="Margin" Value="1,0" />
+						<Setter Property="Template" Value="{DynamicResource ReduxPopupMenuItemTemplate}" />
+					</Trigger>
+					<Trigger Property="Role" Value="SubmenuItem">
+						<Setter Property="Margin" Value="1,0" />
+						<Setter Property="Template" Value="{DynamicResource ReduxPopupMenuItemTemplate}" />
+					</Trigger>
+				</Style.Triggers>
+			</Style>
+			<Style x:Key="MenuItemHighlightBlink" BasedOn="{StaticResource ReduxMenuItemStyle}" TargetType="{x:Type MenuItem}">
 				<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
 				<Style.Triggers>
 					<DataTrigger Binding="{Binding HighlightExtenderDownload}" Value="True">
@@ -115,25 +205,142 @@
 						<ColumnDefinition Width="*" />
 						<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
+					<Grid.Resources>
+						<ControlTemplate x:Key="CompactTopBarStatusButtonTemplate" TargetType="{x:Type Button}">
+							<Border x:Name="StatusChrome"
+								Margin="0,1"
+								Background="{TemplateBinding Background}"
+								BorderBrush="{TemplateBinding BorderBrush}"
+								BorderThickness="{TemplateBinding BorderThickness}"
+								CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
+								SnapsToDevicePixels="True">
+								<Grid>
+									<Border x:Name="HoverSurface"
+										Background="{TemplateBinding Foreground}"
+										CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
+										IsHitTestVisible="False"
+										Opacity="0" />
+									<controls:ReduxIcon Width="13"
+										Height="13"
+										HorizontalAlignment="Center"
+										VerticalAlignment="Center"
+										Foreground="{TemplateBinding Foreground}"
+										IconKey="{TemplateBinding Tag}" />
+								</Grid>
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter TargetName="HoverSurface" Property="Opacity" Value="0.1" />
+								</Trigger>
+								<Trigger Property="IsPressed" Value="True">
+									<Setter TargetName="HoverSurface" Property="Opacity" Value="0.16" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+						<Style x:Key="CompactTopBarStatusButtonStyle" TargetType="{x:Type Button}">
+							<Setter Property="Width" Value="27" />
+							<Setter Property="Height" Value="22" />
+							<Setter Property="Margin" Value="3,0" />
+							<Setter Property="Padding" Value="0" />
+							<Setter Property="Background" Value="{DynamicResource ReduxStatusSuccessSoftBrush}" />
+							<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
+							<Setter Property="BorderThickness" Value="1.25" />
+							<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+							<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+							<Setter Property="Cursor" Value="Hand" />
+							<Setter Property="Tag" Value="check" />
+							<Setter Property="Template" Value="{StaticResource CompactTopBarStatusButtonTemplate}" />
+						</Style>
+						<Style x:Key="CompactTopBarHealthStatusButtonStyle"
+							BasedOn="{StaticResource CompactTopBarStatusButtonStyle}"
+							TargetType="{x:Type Button}">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding HasActiveModHealthAttention}" Value="True">
+									<Setter Property="Background" Value="{DynamicResource ReduxStatusWarningSoftBrush}" />
+									<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+									<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+									<Setter Property="Tag" Value="search-alert" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
+									<Setter Property="Background" Value="{DynamicResource ReduxStatusErrorSoftBrush}" />
+									<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
+									<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+									<Setter Property="Tag" Value="error" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+						<Style x:Key="CompactTopBarAdvisorStatusButtonStyle"
+							BasedOn="{StaticResource CompactTopBarStatusButtonStyle}"
+							TargetType="{x:Type Button}">
+							<Setter Property="Tag" Value="shield-check" />
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding LoadOrderAdvisorDebugHasWarnings}" Value="True">
+									<Setter Property="Background" Value="{DynamicResource ReduxStatusWarningSoftBrush}" />
+									<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+									<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+									<Setter Property="Tag" Value="search-alert" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding Modules.LoadOrderAdvisorEnabled}" Value="False">
+									<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+									<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
+									<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+									<Setter Property="Tag" Value="search-alert" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+						<DataTemplate x:Key="CompactTopBarAdvisorMenuTemplate">
+							<Border Style="{StaticResource ReduxStatusCardChromeStyle}">
+								<StackPanel>
+									<Grid>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition Width="*" />
+										</Grid.ColumnDefinitions>
+										<Border Style="{StaticResource ReduxStatusCardBadgeStyle}">
+											<controls:ReduxIcon x:Name="AdvisorIcon"
+												Width="15"
+												Height="15"
+												HorizontalAlignment="Center"
+												VerticalAlignment="Center"
+											Foreground="{DynamicResource ReduxSuccessBrush}"
+											StrokeData="{StaticResource Redux.Icon.ShieldCheck}" />
+										</Border>
+										<StackPanel Grid.Column="1" VerticalAlignment="Center">
+											<TextBlock Style="{StaticResource ReduxStatusCardTitleStyle}" Text="{Binding LoadOrderAdvisorDebugText}" />
+											<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding LoadOrderAdvisorDebugSummaryText}" />
+										</StackPanel>
+									</Grid>
+									<Border Style="{StaticResource ReduxStatusCardDividerStyle}" />
+									<Border x:Name="AdvisorFinding" Style="{StaticResource ReduxStatusFindingStyle}" BorderBrush="{DynamicResource ReduxSuccessBrush}">
+										<StackPanel>
+											<TextBlock x:Name="AdvisorFindingTitle"
+												FontWeight="SemiBold"
+												Foreground="{DynamicResource ReduxSuccessBrush}"
+												Text="{Binding LoadOrderAdvisorDebugDetailTitle}"
+												TextWrapping="Wrap" />
+											<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding LoadOrderAdvisorDebugTooltip}" />
+										</StackPanel>
+									</Border>
+								</StackPanel>
+							</Border>
+							<DataTemplate.Triggers>
+								<DataTrigger Binding="{Binding LoadOrderAdvisorDebugHasWarnings}" Value="True">
+									<Setter TargetName="AdvisorIcon" Property="StrokeData" Value="{StaticResource Redux.Icon.SearchAlert}" />
+									<Setter TargetName="AdvisorIcon" Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+									<Setter TargetName="AdvisorFinding" Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+									<Setter TargetName="AdvisorFindingTitle" Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+								</DataTrigger>
+							</DataTemplate.Triggers>
+						</DataTemplate>
+					</Grid.Resources>
 					<Menu x:Name="TopMenuBar"
 						Padding="4,2"
 						Background="{DynamicResource ReduxWindowBrush}"
-						Foreground="{DynamicResource ReduxTextPrimaryBrush}">
+						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+						FontFamily="{DynamicResource Redux.FontFamily.UI}"
+						FontSize="{DynamicResource Redux.FontSize.12}">
 						<Menu.Resources>
-							<Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
-								<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
-								<Style.Triggers>
-									<!-- Adonis places submenu rows directly against the popup chrome. Inset the
-									     rows horizontally so their rectangular highlight cannot paint over the
-									     popup's rounded corner arcs. -->
-									<Trigger Property="Role" Value="SubmenuHeader">
-										<Setter Property="Margin" Value="1,0" />
-									</Trigger>
-									<Trigger Property="Role" Value="SubmenuItem">
-										<Setter Property="Margin" Value="1,0" />
-									</Trigger>
-								</Style.Triggers>
-							</Style>
+							<Style BasedOn="{StaticResource ReduxMenuItemStyle}" TargetType="{x:Type MenuItem}" />
 						</Menu.Resources>
 						<MenuItem x:Name="FileMenuItem" Header="File" />
 						<MenuItem x:Name="EditMenuItem" Header="Edit" />
@@ -269,6 +476,58 @@
 						</MenuItem>
 						<MenuItem x:Name="HelpMenuItem" Header="Help" />
 					</Menu>
+					<StackPanel Grid.Column="1"
+						Margin="3,0,6,0"
+						HorizontalAlignment="Right"
+						VerticalAlignment="Center"
+						Orientation="Horizontal"
+						Visibility="{Binding Settings.HideToolbar, Converter={StaticResource BoolToVisibilityConverter}}">
+						<Button x:Name="CompactToolbarAdvisorStatusButton"
+							Click="ToolbarAdvisorStatusButton_Click"
+							ContextMenuOpening="ToolbarAdvisorStatusButton_ContextMenuOpening"
+							MouseEnter="ToolbarAdvisorStatusButton_MouseEnter"
+							MouseLeave="ToolbarAdvisorStatusButton_MouseLeave"
+							Style="{StaticResource CompactTopBarAdvisorStatusButtonStyle}"
+							AutomationProperties.Name="{Binding LoadOrderAdvisorDebugText}"
+							Visibility="{Binding IsLoadOrderAdvisorStatusVisible, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+							<Button.ContextMenu>
+								<ContextMenu
+									Closed="ToolbarAdvisorMenu_Closed"
+									DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+									Opened="ToolbarAdvisorMenu_Opened"
+									MouseEnter="ToolbarAdvisorMenu_MouseEnter"
+									MouseLeave="ToolbarAdvisorMenu_MouseLeave"
+									Style="{StaticResource ToolbarStatusContextMenuStyle}">
+									<MenuItem Style="{StaticResource ToolbarStaticStatusMenuItemStyle}">
+										<MenuItem.Header>
+											<ContentControl Content="{Binding}"
+												ContentTemplate="{StaticResource CompactTopBarAdvisorMenuTemplate}" />
+										</MenuItem.Header>
+									</MenuItem>
+								</ContextMenu>
+							</Button.ContextMenu>
+						</Button>
+						<Button x:Name="CompactToolbarModHealthStatusButton"
+							Click="ToolbarModHealthStatusButton_Click"
+							ContextMenuOpening="ToolbarModHealthStatusButton_ContextMenuOpening"
+							MouseEnter="ToolbarModHealthStatusButton_MouseEnter"
+							MouseLeave="ToolbarModHealthStatusButton_MouseLeave"
+							Style="{StaticResource CompactTopBarHealthStatusButtonStyle}"
+							AutomationProperties.Name="Mod Health status"
+							Visibility="{Binding Modules.ModHealthEnabled, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+							<Button.ContextMenu>
+								<ContextMenu
+									Closed="ToolbarModHealthMenu_Closed"
+									Opened="ToolbarModHealthMenu_Opened"
+									MouseEnter="ToolbarModHealthMenu_MouseEnter"
+									MouseLeave="ToolbarModHealthMenu_MouseLeave"
+									ItemContainerStyle="{StaticResource ToolbarStatusMenuItemStyle}"
+									ItemTemplate="{StaticResource ReduxStatusCardTemplate}"
+									ItemsSource="{Binding PlacementTarget.DataContext.ActiveModHealthAttentionSnapshots, RelativeSource={RelativeSource Self}}"
+									Style="{StaticResource ToolbarStatusContextMenuStyle}" />
+							</Button.ContextMenu>
+						</Button>
+					</StackPanel>
 					<StackPanel x:Name="UpdatesButtonPanel"
 					    Grid.Column="2"
 					    HorizontalAlignment="Left"
@@ -409,17 +668,8 @@
 				<Separator Grid.Row="1"
 				    Height="1"
 				    Background="{DynamicResource ReduxBorderBrush}"
-				    BorderThickness="0">
-					<Separator.Style>
-						<Style TargetType="{x:Type Separator}">
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding Settings.HideToolbar}" Value="True">
-									<Setter Property="Visibility" Value="Collapsed" />
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-					</Separator.Style>
-				</Separator>
+				    BorderThickness="0"
+				    Opacity="0.8" />
 				<Grid x:Name="ModOrderPanel" Grid.Row="2" Loaded="ModOrderPanel_Loaded">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="Auto" />
@@ -432,6 +682,8 @@
 					    Background="{DynamicResource ReduxSurfaceBrush}"
 					    BorderBrush="{DynamicResource ReduxBorderBrush}"
 					    BorderThickness="1"
+					    TextElement.FontFamily="{DynamicResource Redux.FontFamily.UI}"
+					    TextElement.FontSize="{DynamicResource Redux.FontSize.12}"
 					    CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 						<Grid>
 						<Grid.ColumnDefinitions>
@@ -478,7 +730,7 @@
 												RecognizesAccessKey="True"
 												RenderTransformOrigin="0.5,0.5">
 												<ContentPresenter.RenderTransform>
-													<ScaleTransform x:Name="ButtonContentScale" ScaleX="1" ScaleY="1" />
+													<ScaleTransform ScaleX="1" ScaleY="1" />
 												</ContentPresenter.RenderTransform>
 											</ContentPresenter>
 										</Grid>
@@ -511,24 +763,14 @@
 									<Trigger Property="IsPressed" Value="True">
 										<Setter TargetName="HoverSurface" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
 										<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-										<Trigger.EnterActions>
-											<BeginStoryboard>
-												<Storyboard>
-													<DoubleAnimation Storyboard.TargetName="ButtonContentScale" Storyboard.TargetProperty="ScaleX"
-														To="{StaticResource Redux.Motion.PressScale}" Duration="0" />
-													<DoubleAnimation Storyboard.TargetName="ButtonContentScale" Storyboard.TargetProperty="ScaleY"
-														To="{StaticResource Redux.Motion.PressScale}" Duration="0" />
-												</Storyboard>
-											</BeginStoryboard>
-										</Trigger.EnterActions>
-										<Trigger.ExitActions>
-											<BeginStoryboard>
-												<Storyboard>
-													<DoubleAnimation Storyboard.TargetName="ButtonContentScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0" />
-													<DoubleAnimation Storyboard.TargetName="ButtonContentScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0" />
-												</Storyboard>
-											</BeginStoryboard>
-										</Trigger.ExitActions>
+										<!-- Keep press scale trigger-owned. Zero-duration storyboards can retain their
+										     animation value after mouse capture is released, leaving toolbar buttons stuck. -->
+										<Setter TargetName="ButtonContent" Property="RenderTransform">
+											<Setter.Value>
+												<ScaleTransform ScaleX="{StaticResource Redux.Motion.PressScale}"
+													ScaleY="{StaticResource Redux.Motion.PressScale}" />
+											</Setter.Value>
+										</Setter>
 									</Trigger>
 									<Trigger Property="IsEnabled" Value="False">
 										<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
@@ -605,7 +847,6 @@
 							<Style x:Key="ToolbarWorkflowIconStyle" BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
 								<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
 							</Style>
-							<SolidColorBrush x:Key="ToolbarHealthErrorSoftBrush" Color="{DynamicResource ReduxErrorColor}" Opacity="0.14" />
 							<ControlTemplate x:Key="ToolbarHealthStatusButtonTemplate" TargetType="{x:Type Button}">
 								<Border x:Name="StatusChrome"
 									Margin="0,1"
@@ -615,24 +856,27 @@
 									ClipToBounds="True"
 									SnapsToDevicePixels="True"
 									UseLayoutRounding="True"
-									CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+									CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
+									<Border.RenderTransform>
+										<TranslateTransform Y="0" />
+									</Border.RenderTransform>
 									<Grid>
 										<Border x:Name="StatusHoverSurface"
-											CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+											CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
 											Background="{TemplateBinding Foreground}"
 											IsHitTestVisible="False"
 											Opacity="0" />
-										<StackPanel x:Name="StatusContent" Margin="8,0" Orientation="Horizontal">
+										<StackPanel x:Name="StatusContent" Margin="9,0" Orientation="Horizontal">
 											<controls:ReduxIcon x:Name="StatusIcon"
-												Width="15"
-												Height="15"
+												Width="14"
+												Height="14"
 												VerticalAlignment="Center"
 												Foreground="{TemplateBinding Foreground}"
-												StrokeData="{StaticResource Redux.Icon.Check}" />
+												IconKey="{TemplateBinding Tag}" />
 											<controls:ReduxIcon x:Name="StatusChevron"
-												Width="11"
-												Height="11"
-												Margin="4,0,0,0"
+												Width="9"
+												Height="9"
+												Margin="3,0,0,0"
 												VerticalAlignment="Center"
 												Foreground="{TemplateBinding Foreground}"
 												RenderTransformOrigin="0.5,0.5"
@@ -642,12 +886,12 @@
 												</controls:ReduxIcon.RenderTransform>
 											</controls:ReduxIcon>
 											<TextBlock x:Name="StatusLabel"
-												Margin="6,0,0,0"
+												Margin="7,0,0,0"
 												VerticalAlignment="Center"
 												FontWeight="SemiBold"
 												Foreground="{TemplateBinding Foreground}"
 												Opacity="0"
-												Text="No issues found" />
+												Text="{TemplateBinding Content}" />
 										</StackPanel>
 									</Grid>
 								</Border>
@@ -655,147 +899,117 @@
 									<Trigger Property="IsMouseOver" Value="True">
 										<Setter TargetName="StatusHoverSurface" Property="Opacity" Value="0.08" />
 									</Trigger>
-									<DataTrigger Binding="{Binding HasActiveModHealthAttention}" Value="True">
-										<Setter TargetName="StatusIcon" Property="StrokeData" Value="{StaticResource Redux.Icon.Danger}" />
-										<Setter TargetName="StatusLabel" Property="Text" Value="{Binding ActiveModHealthSummaryText}" />
-									</DataTrigger>
-									<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
-										<Setter TargetName="StatusIcon" Property="StrokeData" Value="{StaticResource Redux.Icon.CloseCircle}" />
+									<!-- "Colored names" off: the label goes neutral; the severity icon still carries the state. -->
+									<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForText)}" Value="False">
+										<Setter TargetName="StatusLabel" Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 									</DataTrigger>
 								</ControlTemplate.Triggers>
 							</ControlTemplate>
-							<Style x:Key="ToolbarHealthStatusButtonStyle" BasedOn="{StaticResource ToolbarButtonBaseStyle}" TargetType="{x:Type Button}">
+							<Style x:Key="ToolbarStatusButtonBaseStyle" TargetType="{x:Type Button}">
+								<!-- This semantic status control intentionally does not inherit the
+									 generic toolbar hover triggers, which replace status colors with
+									 the theme accent while the control is expanded. -->
+								<Setter Property="Cursor" Value="Hand" />
+								<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 								<Setter Property="Width" Value="48" />
+								<Setter Property="MinWidth" Value="48" />
+								<Setter Property="MaxWidth" Value="240" />
 								<Setter Property="Height" Value="{DynamicResource Redux.ControlHeight.Standard}" />
-								<Setter Property="Margin" Value="8,0,0,0" />
+								<Setter Property="Margin" Value="6,0,0,0" />
 								<Setter Property="Padding" Value="0" />
-								<Setter Property="Background" Value="{DynamicResource ReduxSuccessSoftBrush}" />
+								<Setter Property="Background" Value="{DynamicResource ReduxStatusSuccessSoftBrush}" />
 								<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
-								<Setter Property="BorderThickness" Value="1" />
+								<Setter Property="Content" Value="No issues found" />
+								<Setter Property="Tag" Value="check" />
+								<Setter Property="BorderThickness" Value="1.5" />
 								<Setter Property="HorizontalAlignment" Value="Right" />
 								<Setter Property="Template" Value="{StaticResource ToolbarHealthStatusButtonTemplate}" />
 								<Setter Property="ToolTip" Value="{x:Null}" />
+							</Style>
+							<Style x:Key="ToolbarHealthStatusButtonStyle"
+								BasedOn="{StaticResource ToolbarStatusButtonBaseStyle}"
+								TargetType="{x:Type Button}">
 								<Style.Triggers>
 									<DataTrigger Binding="{Binding HasActiveModHealthAttention}" Value="True">
-										<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
+										<Setter Property="Background" Value="{DynamicResource ReduxStatusWarningSoftBrush}" />
 										<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 										<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+										<Setter Property="Content" Value="{Binding ActiveModHealthSummaryText}" />
+										<Setter Property="Tag" Value="search-alert" />
 									</DataTrigger>
 									<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
-										<Setter Property="Background" Value="{StaticResource ToolbarHealthErrorSoftBrush}" />
+										<Setter Property="Background" Value="{DynamicResource ReduxStatusErrorSoftBrush}" />
 										<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
 										<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+										<Setter Property="Tag" Value="error" />
 									</DataTrigger>
 								</Style.Triggers>
 							</Style>
-							<Style x:Key="ToolbarModHealthMenuItemStyle" BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
-								<Setter Property="Padding" Value="0" />
-								<Setter Property="Margin" Value="0" />
-								<Setter Property="HorizontalContentAlignment" Value="Stretch" />
-								<Setter Property="Template">
-									<Setter.Value>
-										<ControlTemplate TargetType="{x:Type MenuItem}">
-											<ContentPresenter
-												ContentSource="Header"
-												HorizontalAlignment="Stretch"
-												RecognizesAccessKey="True" />
-										</ControlTemplate>
-									</Setter.Value>
-								</Setter>
-								<EventSetter Event="Click" Handler="ToolbarModHealthMenuItem_Click" />
+							<Style x:Key="ToolbarAdvisorStatusButtonStyle"
+								BasedOn="{StaticResource ToolbarStatusButtonBaseStyle}"
+								TargetType="{x:Type Button}">
+								<Setter Property="Content" Value="{Binding LoadOrderAdvisorDebugText}" />
+								<Setter Property="Tag" Value="shield-check" />
+								<Setter Property="Background" Value="{DynamicResource ReduxStatusSuccessSoftBrush}" />
+								<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
+								<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding LoadOrderAdvisorDebugHasWarnings}" Value="True">
+										<Setter Property="Background" Value="{DynamicResource ReduxStatusWarningSoftBrush}" />
+										<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+										<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+										<Setter Property="Tag" Value="search-alert" />
+									</DataTrigger>
+									<DataTrigger Binding="{Binding Modules.LoadOrderAdvisorEnabled}" Value="False">
+										<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+										<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
+										<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+										<Setter Property="Tag" Value="search-alert" />
+									</DataTrigger>
+								</Style.Triggers>
 							</Style>
-							<Style x:Key="ToolbarModHealthContextMenuStyle" BasedOn="{StaticResource {x:Type ContextMenu}}" TargetType="{x:Type ContextMenu}">
-								<Setter Property="MinWidth" Value="0" />
-								<Setter Property="MaxWidth" Value="410" />
-								<Setter Property="Padding" Value="5" />
-							</Style>
-							<DataTemplate x:Key="ToolbarModHealthMenuItemTemplate" DataType="{x:Type health:ModHealthSnapshot}">
-								<Border MinWidth="300"
-									MaxWidth="380"
-									Padding="8,7"
-									Background="Transparent">
+							<DataTemplate x:Key="ToolbarAdvisorStatusMenuTemplate">
+								<Border Style="{StaticResource ReduxStatusCardChromeStyle}">
 									<StackPanel>
 										<Grid>
 											<Grid.ColumnDefinitions>
 												<ColumnDefinition Width="Auto" />
 												<ColumnDefinition Width="*" />
 											</Grid.ColumnDefinitions>
-											<Border x:Name="HealthIconBadge"
-												Width="30"
-												Height="30"
-												Margin="0,0,9,0"
-												Background="{DynamicResource ReduxWarningSoftBrush}"
-												CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-												<controls:ReduxIcon x:Name="HealthIcon"
-													Width="16"
-													Height="16"
+											<Border Style="{StaticResource ReduxStatusCardBadgeStyle}">
+												<controls:ReduxIcon x:Name="AdvisorIcon"
+													Width="15"
+													Height="15"
 													HorizontalAlignment="Center"
 													VerticalAlignment="Center"
-													Foreground="{DynamicResource ReduxWarningBrush}"
-													IconKey="warning" />
+											Foreground="{DynamicResource ReduxSuccessBrush}"
+											StrokeData="{StaticResource Redux.Icon.ShieldCheck}" />
 											</Border>
 											<StackPanel Grid.Column="1" VerticalAlignment="Center">
-												<TextBlock FontWeight="SemiBold"
-													Text="{Binding Mod.DisplayName}"
-													TextTrimming="CharacterEllipsis" />
-												<TextBlock Margin="0,1,0,0"
-													FontSize="{DynamicResource Redux.FontSize.11}"
-													Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-													Text="{Binding AttentionCountSummary}" />
+												<TextBlock Style="{StaticResource ReduxStatusCardTitleStyle}" Text="{Binding LoadOrderAdvisorDebugText}" />
+												<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding LoadOrderAdvisorDebugSummaryText}" />
 											</StackPanel>
 										</Grid>
-										<Border Height="1"
-											Margin="0,8,0,7"
-											Background="{DynamicResource ReduxBorderBrush}" />
-										<ItemsControl ItemsSource="{Binding AttentionFindings}">
-											<ItemsControl.ItemTemplate>
-												<DataTemplate DataType="{x:Type health:ModHealthFinding}">
-													<Grid Margin="1,0,1,6">
-														<Grid.ColumnDefinitions>
-															<ColumnDefinition Width="2" />
-															<ColumnDefinition Width="*" />
-														</Grid.ColumnDefinitions>
-														<Border x:Name="FindingRail"
-															Background="{DynamicResource ReduxWarningBrush}"
-															CornerRadius="1" />
-														<StackPanel Grid.Column="1" Margin="9,0,0,0">
-															<TextBlock x:Name="FindingTitle"
-																FontWeight="SemiBold"
-																Foreground="{DynamicResource ReduxWarningBrush}"
-																Text="{Binding Title}"
-																TextWrapping="Wrap" />
-															<TextBlock Margin="0,2,0,0"
-																Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-																Text="{Binding Message}"
-																TextWrapping="Wrap" />
-														</StackPanel>
-													</Grid>
-													<DataTemplate.Triggers>
-														<DataTrigger Binding="{Binding Severity}" Value="{x:Static health:ModHealthSeverity.Info}">
-															<Setter TargetName="FindingRail" Property="Background" Value="{DynamicResource ReduxInfoBrush}" />
-															<Setter TargetName="FindingTitle" Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
-														</DataTrigger>
-														<DataTrigger Binding="{Binding Severity}" Value="{x:Static health:ModHealthSeverity.Error}">
-															<Setter TargetName="FindingRail" Property="Background" Value="{DynamicResource ReduxErrorBrush}" />
-															<Setter TargetName="FindingTitle" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
-														</DataTrigger>
-													</DataTemplate.Triggers>
-												</DataTemplate>
-											</ItemsControl.ItemTemplate>
-										</ItemsControl>
+										<Border Style="{StaticResource ReduxStatusCardDividerStyle}" />
+										<Border x:Name="AdvisorFinding" Style="{StaticResource ReduxStatusFindingStyle}" BorderBrush="{DynamicResource ReduxSuccessBrush}">
+											<StackPanel>
+												<TextBlock x:Name="AdvisorFindingTitle"
+													FontWeight="SemiBold"
+													Foreground="{DynamicResource ReduxSuccessBrush}"
+													Text="{Binding LoadOrderAdvisorDebugDetailTitle}"
+													TextWrapping="Wrap" />
+												<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding LoadOrderAdvisorDebugTooltip}" />
+											</StackPanel>
+										</Border>
 									</StackPanel>
 								</Border>
 								<DataTemplate.Triggers>
-									<DataTrigger Binding="{Binding HasOnlyLoadOrderAdvice}" Value="True">
-										<Setter TargetName="HealthIconBadge" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
-										<Setter TargetName="HealthIcon" Property="IconKey" Value="flag" />
-										<Setter TargetName="HealthIcon" Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
-									</DataTrigger>
-									<DataTrigger Binding="{Binding HasErrors}" Value="True">
-										<Setter TargetName="HealthIconBadge" Property="Background" Value="{StaticResource ToolbarHealthErrorSoftBrush}" />
-										<Setter TargetName="HealthIcon" Property="IconKey" Value="error" />
-										<Setter TargetName="HealthIcon" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+									<DataTrigger Binding="{Binding LoadOrderAdvisorDebugHasWarnings}" Value="True">
+										<Setter TargetName="AdvisorIcon" Property="StrokeData" Value="{StaticResource Redux.Icon.SearchAlert}" />
+										<Setter TargetName="AdvisorIcon" Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+										<Setter TargetName="AdvisorFinding" Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+										<Setter TargetName="AdvisorFindingTitle" Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 									</DataTrigger>
 								</DataTemplate.Triggers>
 							</DataTemplate>
@@ -994,26 +1208,55 @@
 										</Button.ContextMenu>
 									</Button>
 								</StackPanel>
-								<Button x:Name="ToolbarModHealthStatusButton"
-									Grid.Row="1"
+								<StackPanel Grid.Row="1"
 									Grid.Column="2"
-									Click="ToolbarModHealthStatusButton_Click"
-									ContextMenuOpening="ToolbarModHealthStatusButton_ContextMenuOpening"
-									MouseEnter="ToolbarModHealthStatusButton_MouseEnter"
-									MouseLeave="ToolbarModHealthStatusButton_MouseLeave"
-									Style="{StaticResource ToolbarHealthStatusButtonStyle}"
-									Tag="{Binding}"
-									Visibility="{Binding Modules.ModHealthEnabled, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-									<Button.ContextMenu>
-										<ContextMenu
-											Closed="ToolbarModHealthMenu_Closed"
-											Opened="ToolbarModHealthMenu_Opened"
-											ItemContainerStyle="{StaticResource ToolbarModHealthMenuItemStyle}"
-											ItemTemplate="{StaticResource ToolbarModHealthMenuItemTemplate}"
-											ItemsSource="{Binding PlacementTarget.DataContext.ActiveModHealthAttentionSnapshots, RelativeSource={RelativeSource Self}}"
-											Style="{StaticResource ToolbarModHealthContextMenuStyle}" />
-									</Button.ContextMenu>
-								</Button>
+									HorizontalAlignment="Right"
+									VerticalAlignment="Center"
+									Orientation="Horizontal">
+									<Button x:Name="ToolbarAdvisorStatusButton"
+										Click="ToolbarAdvisorStatusButton_Click"
+										ContextMenuOpening="ToolbarAdvisorStatusButton_ContextMenuOpening"
+										MouseEnter="ToolbarAdvisorStatusButton_MouseEnter"
+										MouseLeave="ToolbarAdvisorStatusButton_MouseLeave"
+										Style="{StaticResource ToolbarAdvisorStatusButtonStyle}"
+										Visibility="{Binding IsLoadOrderAdvisorStatusVisible, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+										<Button.ContextMenu>
+											<ContextMenu
+												Closed="ToolbarAdvisorMenu_Closed"
+												DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
+												Opened="ToolbarAdvisorMenu_Opened"
+												MouseEnter="ToolbarAdvisorMenu_MouseEnter"
+												MouseLeave="ToolbarAdvisorMenu_MouseLeave"
+												Style="{StaticResource ToolbarStatusContextMenuStyle}">
+												<MenuItem Style="{StaticResource ToolbarStaticStatusMenuItemStyle}">
+													<MenuItem.Header>
+														<ContentControl Content="{Binding}"
+															ContentTemplate="{StaticResource ToolbarAdvisorStatusMenuTemplate}" />
+													</MenuItem.Header>
+												</MenuItem>
+											</ContextMenu>
+										</Button.ContextMenu>
+									</Button>
+									<Button x:Name="ToolbarModHealthStatusButton"
+										Click="ToolbarModHealthStatusButton_Click"
+										ContextMenuOpening="ToolbarModHealthStatusButton_ContextMenuOpening"
+										MouseEnter="ToolbarModHealthStatusButton_MouseEnter"
+										MouseLeave="ToolbarModHealthStatusButton_MouseLeave"
+										Style="{StaticResource ToolbarHealthStatusButtonStyle}"
+										Visibility="{Binding Modules.ModHealthEnabled, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+										<Button.ContextMenu>
+											<ContextMenu
+												Closed="ToolbarModHealthMenu_Closed"
+												Opened="ToolbarModHealthMenu_Opened"
+												MouseEnter="ToolbarModHealthMenu_MouseEnter"
+												MouseLeave="ToolbarModHealthMenu_MouseLeave"
+												ItemContainerStyle="{StaticResource ToolbarStatusMenuItemStyle}"
+												ItemTemplate="{StaticResource ReduxStatusCardTemplate}"
+												ItemsSource="{Binding PlacementTarget.DataContext.ActiveModHealthAttentionSnapshots, RelativeSource={RelativeSource Self}}"
+												Style="{StaticResource ToolbarStatusContextMenuStyle}" />
+										</Button.ContextMenu>
+									</Button>
+								</StackPanel>
 							</Grid>
 
 							<Rectangle Grid.Column="3" Width="1" Margin="0,8" Fill="{DynamicResource ReduxBorderBrush}" Opacity="0.7" />
@@ -1067,6 +1310,10 @@
 						</Grid>
 						</Grid>
 					</Border>
+					<Border Grid.Row="1"
+						Height="6"
+						IsHitTestVisible="False"
+						Visibility="{Binding Settings.HideToolbar, Converter={StaticResource BoolToVisibilityConverter}}" />
 					<local:HorizontalModLayout x:Name="ModLayout" Grid.Row="2" />
 				</Grid>
 				<local:ModUpdatesLayout x:Name="ModUpdaterPanel" Grid.Row="2" Background="{DynamicResource ReduxSurfaceBrush}" />

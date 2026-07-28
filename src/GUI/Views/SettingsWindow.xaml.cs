@@ -101,6 +101,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		new("Optional features",
 			nameof(DivinityModManagerSettings.LocalOnlyMode),
 			nameof(DivinityModManagerSettings.EnableModHealth),
+			nameof(DivinityModManagerSettings.DisableModioWarnings),
 			nameof(DivinityModManagerSettings.EnableLoadOrderAdvisor)),
 		new("Metadata services",
 			nameof(DivinityModManagerSettings.NexusModsAPIKey),
@@ -642,7 +643,10 @@ public partial class SettingsWindow : SettingsWindowBase
 					{
 						cb.SetBinding(CheckBox.VisibilityProperty, debugModeBinding);
 					}
-					if (prop.Property.Name == nameof(DivinityModManagerSettings.EnableLoadOrderAdvisor))
+					// Both of these only mean anything while Mod Health is running, so they follow
+					// its enabled state the same way.
+					if (prop.Property.Name == nameof(DivinityModManagerSettings.EnableLoadOrderAdvisor)
+						|| prop.Property.Name == nameof(DivinityModManagerSettings.DisableModioWarnings))
 					{
 						var modHealthEnabledBinding = new Binding(nameof(DivinityModManagerSettings.EnableModHealth))
 						{

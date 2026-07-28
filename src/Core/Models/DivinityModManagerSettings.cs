@@ -289,6 +289,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool EnableModHealth { get; set; } = true;
 
 	[DefaultValue(false)]
+	[SettingsEntry("Disable mod.io warnings", "Hide the Mod Health notice about subscribed mod.io files being restorable by Baldur's Gate 3. This only hides that one warning - mod.io metadata, source linking, source labels, and cached source data are unaffected.")]
+	[DataMember, Reactive] public bool DisableModioWarnings { get; set; }
+
+	[DefaultValue(false)]
 	[SettingsEntry("Enable Load Order Advisor (experimental)", "Add conservative guidance to Mod Health using declared dependencies. Requires Mod Health, never reorders mods automatically, and remains disabled by default because valid placement can vary by mod.")]
 	[DataMember, Reactive] public bool EnableLoadOrderAdvisor { get; set; }
 
@@ -488,6 +492,13 @@ public class DivinityModManagerSettings : ReactiveObject
 		});
 
 		this.WhenAnyValue(x => x.DebugModeEnabled).Subscribe(b => DivinityApp.DeveloperModeEnabled = b);
+
+		// Colour-coded labels render in the mod list, the details drawer, hover-card tooltips and
+		// the toolbar. Tooltips sit in their own visual tree and cannot reach this settings object
+		// by ancestor lookup, so mirror the flag onto DivinityApp and let every template bind to
+		// it the same way.
+		this.WhenAnyValue(x => x.UseCategoryColorsForSidebarText).Subscribe(b => DivinityApp.UseCategoryColorsForText = b);
+		this.WhenAnyValue(x => x.ShowCategoryIconsInPills).Subscribe(b => DivinityApp.ShowInterfaceIcons = b);
 
 		this.WhenAnyValue(x => x.ResetModioSupportWarningAcknowledgement)
 			.Where(reset => reset)

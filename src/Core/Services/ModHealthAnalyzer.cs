@@ -39,7 +39,8 @@ public sealed class ModHealthAnalyzer : IModHealthAnalyzer
 		IEnumerable<DivinityModData> installedMods,
 		IEnumerable<DivinityModData> activeMods,
 		IEnumerable<DivinityModData> duplicateMods = null,
-		bool enableLoadOrderAdvisor = false)
+		bool enableLoadOrderAdvisor = false,
+		bool disableModioWarnings = false)
 	{
 		var installed = (installedMods ?? Enumerable.Empty<DivinityModData>())
 			.Where(mod => mod != null && !mod.IsVisualDivider)
@@ -66,11 +67,15 @@ public sealed class ModHealthAnalyzer : IModHealthAnalyzer
 					activeUuids,
 					activePositions,
 					duplicateUuids),
-				enableLoadOrderAdvisor))
+				enableLoadOrderAdvisor,
+				disableModioWarnings))
 			.ToArray();
 	}
 
-	private ModHealthSnapshot Analyze(ModHealthAnalysisContext context, bool enableLoadOrderAdvisor)
+	private ModHealthSnapshot Analyze(
+		ModHealthAnalysisContext context,
+		bool enableLoadOrderAdvisor,
+		bool disableModioWarnings)
 	{
 		var findings = new List<ModHealthFinding>();
 		foreach (var rule in _healthRules)
@@ -84,6 +89,14 @@ public sealed class ModHealthAnalyzer : IModHealthAnalyzer
 			{
 				rule.Evaluate(context, findings);
 			}
+		}
+
+		if (disableModioWarnings)
+		{
+			// Presentation-only suppression of a single advisory finding. The rules still run,
+			// and nothing about mod.io metadata, source linking, labels or cached source data
+			// changes - only this one notice is withheld from the snapshot.
+			findings.RemoveAll(finding => finding.Code == ModHealthFindingCode.ModioManagedSource);
 		}
 
 		return new ModHealthSnapshot(context.Mod, findings);

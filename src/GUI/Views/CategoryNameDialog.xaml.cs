@@ -133,7 +133,7 @@ public partial class CategoryNameDialog : AdonisWindow
 			CategoryNameTextBox.ToolTip = "Redux category names are fixed. Create a custom category for a different name.";
 		if (visualDividerMode)
 		{
-			DescriptionEditorPanel.Visibility = Visibility.Collapsed;
+			DescriptionEditorPanel.Visibility = Visibility.Visible;
 			CategoryPreviewPanel.Visibility = Visibility.Collapsed;
 			SeparatorPreviewPanel.Visibility = Visibility.Visible;
 			SeparatorPreviewPanel.Tag = useCategoryColorsForHover;
@@ -143,6 +143,7 @@ public partial class CategoryNameDialog : AdonisWindow
 			IconFieldLabel.Text = "Icon";
 			TintCustomIconText.Text = "Tint with separator color";
 			CategoryNameTextBox.ToolTip = "Optional separator label";
+			CategoryDescriptionTextBox.ToolTip = "Shown when the separator is hovered in the mod list";
 		}
 		UpdateCategoryPreviewToolTip();
 		UpdateColorPresentation();
@@ -162,6 +163,8 @@ public partial class CategoryNameDialog : AdonisWindow
 		if (CategoryPreviewRow == null || CategoryDescriptionTextBox == null) return;
 		var description = CategoryDescriptionTextBox.Text?.Trim();
 		CategoryPreviewRow.ToolTip = String.IsNullOrWhiteSpace(description) ? null : description;
+		if (SeparatorPreviewPanel != null)
+			SeparatorPreviewPanel.ToolTip = String.IsNullOrWhiteSpace(description) ? null : description;
 	}
 
 	private void RefreshSavedColors()

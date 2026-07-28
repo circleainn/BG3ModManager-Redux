@@ -121,8 +121,8 @@
 						<CheckBox IsChecked="{Binding UseCategoryColorsForHover}" Style="{StaticResource ReduxCheckBoxStyle}">
 							<StackPanel Margin="5,0,12,0">
 								<TextBlock FontWeight="SemiBold" Text="Category hover" />
-								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Tint mod-row hover with its category." TextWrapping="Wrap" />
+									<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+										Text="Use each mod or separator's assigned color for row hover and selection." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
 						<CheckBox x:Name="InterfaceIconsCheckBox" Grid.Column="1"
@@ -130,22 +130,22 @@
 							Unchecked="InterfaceIconsCheckBox_Unchecked">
 							<StackPanel Margin="5,0,12,0">
 								<TextBlock FontWeight="SemiBold" Text="Interface icons" />
-								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Show category and source icons." TextWrapping="Wrap" />
+									<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+										Text="Show category and source icons in lists, hover cards, and details." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
 						<CheckBox Grid.Column="2" IsChecked="{Binding UseCategoryColorsForSidebarText}" Style="{StaticResource ReduxCheckBoxStyle}">
 							<StackPanel Margin="5,0,0,0">
-								<TextBlock FontWeight="SemiBold" Text="Colored names" />
+									<TextBlock FontWeight="SemiBold" Text="Colored category labels" />
 								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Color category names in the sidebar." TextWrapping="Wrap" />
+										Text="Use category colors for labels in the Categories pane and hover cards." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
 						<CheckBox Grid.Row="1" Margin="0,10,0,0" IsChecked="{Binding UseCategoryColorsForSidebarSelection}" Style="{StaticResource ReduxCheckBoxStyle}">
 							<StackPanel Margin="5,0,12,0">
 								<TextBlock FontWeight="SemiBold" Text="Category selection" />
 								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Tint sidebar hover and selection with category colors." TextWrapping="Wrap" />
+										Text="Use category colors for hover and selection in the Categories pane." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
 						<CheckBox Grid.Row="1" Grid.Column="1" Margin="0,10,0,0"
@@ -154,7 +154,7 @@
 							<StackPanel Margin="5,0,12,0">
 								<TextBlock FontWeight="SemiBold" Text="Source icons only" />
 								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Hide source label text in mod lists." TextWrapping="Wrap" />
+										Text="Show source icons without text in source columns." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
 					</Grid>
