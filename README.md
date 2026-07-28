@@ -11,7 +11,7 @@ safer file operations, richer metadata, and better organization for large mod li
 
 ## Current version
 
-**0.1.0-alpha.7 — private testing alpha**
+**0.1.0-alpha.8 — private testing alpha**
 
 Redux is still experimental. Current builds are intended for careful personal use and a small
 group of private testers. Features, metadata matching, themes, and interface details may be
@@ -54,6 +54,15 @@ See [Changes from upstream BG3ModManager](docs/CHANGES_FROM_UPSTREAM.md) for a f
 what Redux changes, adds, and fixes.
 
 ## Redux additions and extensions
+
+### Alpha.8 stabilization update
+
+- Shared list, separator, category, and diagnostic-status interactions now use the same
+  theme-aware visual treatment across the main workspace, editors, and details surfaces.
+- Refined category-editor previews, custom-theme feedback, Redux-owned dialog backdrops, and
+  persisted list-column behavior.
+- Added the Redux Core test project to the solution and expanded regression coverage around Mod
+  Health behavior.
 
 ### Interface and workflow
 

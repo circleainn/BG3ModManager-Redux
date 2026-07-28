@@ -305,7 +305,7 @@ internal sealed class ModHealthTests
 		RegressionAssert.True(HasFinding(normal, ModHealthFindingCode.ModioManagedSource));
 
 		var suppressed = FindSnapshot(
-			analyzer.AnalyzeAll(installed, installed, null, false, disableModioWarnings: true),
+			analyzer.AnalyzeAll(installed, installed, enableLoadOrderAdvisor: false, disableModioWarnings: true),
 			mod.UUID);
 
 		RegressionAssert.False(HasFinding(suppressed, ModHealthFindingCode.ModioManagedSource));

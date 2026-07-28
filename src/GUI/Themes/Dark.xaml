@@ -43,12 +43,35 @@
 	<SolidColorBrush x:Key="ReduxAccentBrush" Color="{DynamicResource ReduxAccentColor}" />
 	<SolidColorBrush x:Key="ReduxAccentHoverBrush" Color="{DynamicResource ReduxAccentHoverColor}" />
 	<SolidColorBrush x:Key="ReduxAccentSoftBrush" Color="{DynamicResource ReduxAccentSoftColor}" />
+	<!-- Same horizontal sheen as the Nexus/mod.io source pills, for semantic status chips (Active, force-loaded). -->
+	<LinearGradientBrush x:Key="ReduxAccentPillBackground" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#3E9676FF" />
+		<GradientStop Offset="1" Color="#1E9676FF" />
+	</LinearGradientBrush>
 	<SolidColorBrush x:Key="ReduxSelectionBrush" Color="{DynamicResource ReduxSelectionColor}" />
+	<!-- Same idea as the pill sheens, but selection reads as a solid state rather than a soft
+	     tint, so this stays close to fully opaque rather than fading toward transparent. -->
+	<LinearGradientBrush x:Key="ReduxSelectionPillBackground" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#FF3D2C57" />
+		<GradientStop Offset="1" Color="#D93D2C57" />
+	</LinearGradientBrush>
 	<SolidColorBrush x:Key="ReduxCyanBrush" Color="{DynamicResource ReduxCyanColor}" />
 	<SolidColorBrush x:Key="ReduxSuccessBrush" Color="{DynamicResource ReduxSuccessColor}" />
 	<SolidColorBrush x:Key="ReduxSuccessSoftBrush" Color="{DynamicResource ReduxSuccessSoftColor}" />
+	<LinearGradientBrush x:Key="ReduxSuccessPillBackground" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#3E3FC58B" />
+		<GradientStop Offset="1" Color="#1E3FC58B" />
+	</LinearGradientBrush>
 	<SolidColorBrush x:Key="ReduxWarningBrush" Color="{DynamicResource ReduxWarningColor}" />
+	<LinearGradientBrush x:Key="ReduxWarningPillBackground" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#3EF0B43C" />
+		<GradientStop Offset="1" Color="#1EF0B43C" />
+	</LinearGradientBrush>
 	<SolidColorBrush x:Key="ReduxErrorBrush" Color="{DynamicResource ReduxErrorColor}" />
+	<LinearGradientBrush x:Key="ReduxErrorPillBackground" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#3EF05D70" />
+		<GradientStop Offset="1" Color="#1EF05D70" />
+	</LinearGradientBrush>
 	<SolidColorBrush x:Key="ReduxInfoBrush" Color="{DynamicResource ReduxInfoColor}" />
 	<SolidColorBrush x:Key="ReduxTextPrimaryBrush" Color="{DynamicResource ReduxTextPrimaryColor}" />
 	<SolidColorBrush x:Key="ReduxTextSecondaryBrush" Color="{DynamicResource ReduxTextSecondaryColor}" />

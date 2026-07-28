@@ -14,7 +14,7 @@ public static class ReduxMessageBox
 		MessageBoxImage icon = MessageBoxImage.None, MessageBoxResult defaultResult = MessageBoxResult.None)
 	{
 		var window = new ReduxMessageBoxWindow(owner, text, caption, button, icon, defaultResult);
-		window.ShowDialog();
+		ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(window, owner);
 		return window.Result;
 	}
 
@@ -34,7 +34,7 @@ public static class ReduxMessageBox
 		{
 			window.AddExtraAction(label, callback);
 		}
-		window.ShowDialog();
+		ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(window, owner);
 		return window.Result;
 	}
 }

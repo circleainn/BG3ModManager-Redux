@@ -59,7 +59,7 @@
 	<Thickness x:Key="Redux.Interaction.HoverBorderThickness">1.5</Thickness>
 	<Thickness x:Key="Redux.Interaction.SelectedBorderThickness">2</Thickness>
 	<sys:Double x:Key="Redux.StatusCard.MaxWidth">270</sys:Double>
-	<Thickness x:Key="Redux.StatusCard.Padding">5,4</Thickness>
+	<Thickness x:Key="Redux.StatusCard.Padding">10,8</Thickness>
 	<sys:Double x:Key="Redux.StatusCard.BadgeSize">20</sys:Double>
 	<Thickness x:Key="Redux.StatusCard.BadgeMargin">0,0,6,0</Thickness>
 	<Thickness x:Key="Redux.StatusCard.DividerMargin">0,5,0,4</Thickness>
@@ -180,6 +180,22 @@
 		</DataTemplate.Triggers>
 	</DataTemplate>
 	<!--
+		Wraps ReduxStatusCardTemplate with a small mod-name label above it. Used only where
+		several mods' snapshots are listed side by side (the toolbar and compact Toolbar-menu
+		dropdowns), so each card says which mod it belongs to. The drawer's single-mod tooltip
+		uses ReduxStatusCardTemplate directly - there, the mod is already the one on screen and
+		a repeated name would be redundant.
+	-->
+	<DataTemplate x:Key="ReduxStatusCardListItemTemplate" DataType="{x:Type health:ModHealthSnapshot}">
+		<StackPanel Margin="0,0,0,4">
+			<TextBlock Margin="2,0,0,3"
+				Style="{DynamicResource Redux.Text.Overline}"
+				Text="{Binding Mod.DisplayName}"
+				TextTrimming="CharacterEllipsis" />
+			<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ReduxStatusCardTemplate}" />
+		</StackPanel>
+	</DataTemplate>
+	<!--
 		Hover/selection surfaces are lit from their rail: strongest at the leading edge,
 		settling to a faint tint across the rest of the row so the whole row still reads
 		as the target. Applied as an OpacityMask rather than a gradient Background so it
@@ -204,7 +220,7 @@
 	<CornerRadius x:Key="Redux.CornerRadius.Card">8</CornerRadius>
 	<CornerRadius x:Key="Redux.CornerRadius.Pill">10</CornerRadius>
 	<!-- Capsule radius for taller elements: a pill looks capsule-shaped because 10 is half its 21px height, so anything taller needs its own value to read the same. -->
-	<CornerRadius x:Key="Redux.CornerRadius.PillTall">16</CornerRadius>
+	<CornerRadius x:Key="Redux.CornerRadius.PillTall">12</CornerRadius>
 	<!--
 		Shared spatial rhythm. Keep scalar values available for dimensions and use the
 		inset resources for common padding/margin shapes. New presentation work should
@@ -639,27 +655,27 @@
 		</Setter>
 	</Style>
 	<!--  Shared source-pill palette. Keep list, drawer, and preview treatments visually identical.  -->
-	<LinearGradientBrush x:Key="Redux.Pill.Local.Background" StartPoint="0,0" EndPoint="0,1">
+	<LinearGradientBrush x:Key="Redux.Pill.Local.Background" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#248F879E" />
 		<GradientStop Offset="1" Color="#0E8F879E" />
 	</LinearGradientBrush>
-	<LinearGradientBrush x:Key="Redux.Pill.Local.Border" StartPoint="0,0" EndPoint="0,1">
+	<LinearGradientBrush x:Key="Redux.Pill.Local.Border" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#8C8F879E" />
 		<GradientStop Offset="1" Color="#508F879E" />
 	</LinearGradientBrush>
-	<LinearGradientBrush x:Key="Redux.Pill.Nexus.Background" StartPoint="0,0" EndPoint="0,1">
+	<LinearGradientBrush x:Key="Redux.Pill.Nexus.Background" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#3EF9A332" />
 		<GradientStop Offset="1" Color="#1EF9A332" />
 	</LinearGradientBrush>
-	<LinearGradientBrush x:Key="Redux.Pill.Nexus.Border" StartPoint="0,0" EndPoint="0,1">
+	<LinearGradientBrush x:Key="Redux.Pill.Nexus.Border" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#FFF9A332" />
 		<GradientStop Offset="1" Color="#C0F9A332" />
 	</LinearGradientBrush>
-	<LinearGradientBrush x:Key="Redux.Pill.Modio.Background" StartPoint="0,0" EndPoint="0,1">
+	<LinearGradientBrush x:Key="Redux.Pill.Modio.Background" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#3E05C2D8" />
 		<GradientStop Offset="1" Color="#1E05C2D8" />
 	</LinearGradientBrush>
-	<LinearGradientBrush x:Key="Redux.Pill.Modio.Border" StartPoint="0,0" EndPoint="0,1">
+	<LinearGradientBrush x:Key="Redux.Pill.Modio.Border" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#FF05C2D8" />
 		<GradientStop Offset="1" Color="#C005C2D8" />
 	</LinearGradientBrush>
@@ -1721,6 +1737,7 @@
 	<conv:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
 	<conv:StringNotEmptyToVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter" />
 	<conv:StringToSolidBrushConverter x:Key="StringToSolidBrushConverter" />
+	<conv:StringToGradientBrushConverter x:Key="StringToGradientBrushConverter" />
 	<conv:StringToLinearBrushConverter x:Key="StringToLinearBrushConverter" />
 	<conv:UriToBitmapImageConverter x:Key="UriToBitmapImageConverter" />
 	<conv:ModToDisplayNameConverter x:Key="ModToDisplayNameConverter" />
@@ -2340,10 +2357,11 @@
 							</Border.RenderTransform>
 							<Grid>
 								<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+								<!-- Fill/rail split for the same reason as RowHoverSurface/RowHoverRail: the
+									0.62 hover cap is meant for the fill's tint, not the rail's edge. -->
 								<Border x:Name="VisualDividerHoverSurface"
 									Grid.ColumnSpan="4"
 									Margin="-6,-5"
-									BorderThickness="{DynamicResource Redux.Rail.Thickness}"
 									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
 									OpacityMask="{StaticResource Redux.Hover.WashMask}"
 									IsHitTestVisible="False"
@@ -2351,10 +2369,26 @@
 									<Border.Style>
 										<Style TargetType="{x:Type Border}">
 											<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
-											<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 											<Style.Triggers>
 												<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForHover, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
 													<Setter Property="Background" Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=4D}" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</Border.Style>
+								</Border>
+								<Border x:Name="VisualDividerHoverRail"
+									Grid.ColumnSpan="4"
+									Margin="-6,-5"
+									BorderThickness="{DynamicResource Redux.Rail.Thickness}"
+									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+									IsHitTestVisible="False"
+									Opacity="0">
+									<Border.Style>
+										<Style TargetType="{x:Type Border}">
+											<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForHover, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
 													<Setter Property="BorderBrush" Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" />
 												</DataTrigger>
 											</Style.Triggers>
@@ -2440,9 +2474,18 @@
 								<TranslateTransform x:Name="RowSurfaceTranslate" Y="0" />
 							</Border.RenderTransform>
 							<Grid>
+								<!--
+									Fill and rail used to be one Border (fill Background + rail
+									BorderBrush). Selection and hover both cap the whole element's
+									Opacity at 0.62 to keep the fill a soft tint - which meant the
+									rail, meant to read as a solid full-strength edge, was dimmed to
+									62% too. Against a light/Parchment background that reads as an
+									all-but-transparent rail. Splitting fill and rail into separate
+									elements lets the rail stay at full opacity independent of the
+									fill's dimming.
+								-->
 								<Border x:Name="RowSelectionSurface"
 									Margin="{DynamicResource Redux.Interaction.SurfaceMargin}"
-									BorderThickness="{DynamicResource Redux.Rail.Thickness}"
 									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
 									OpacityMask="{StaticResource Redux.Hover.WashMask}"
 									IsHitTestVisible="False"
@@ -2450,11 +2493,26 @@
 									<Border.Style>
 										<Style TargetType="{x:Type Border}">
 											<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
-											<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 											<Style.Triggers>
 												<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForHover, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
 													<Setter Property="Background"
 														Value="{Binding DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=4D}" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</Border.Style>
+								</Border>
+								<Border x:Name="RowSelectionRail"
+									Margin="{DynamicResource Redux.Interaction.SurfaceMargin}"
+									BorderThickness="{DynamicResource Redux.Rail.Thickness}"
+									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+									IsHitTestVisible="False"
+									Opacity="0">
+									<Border.Style>
+										<Style TargetType="{x:Type Border}">
+											<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForHover, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
 													<Setter Property="BorderBrush" Value="{Binding DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}, FallbackValue=#8F879E}" />
 												</DataTrigger>
 											</Style.Triggers>
@@ -2463,7 +2521,6 @@
 								</Border>
 								<Border x:Name="RowHoverSurface"
 									Margin="{DynamicResource Redux.Interaction.SurfaceMargin}"
-									BorderThickness="{DynamicResource Redux.Rail.Thickness}"
 									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
 									OpacityMask="{StaticResource Redux.Hover.WashMask}"
 									IsHitTestVisible="False"
@@ -2471,17 +2528,36 @@
 									<Border.Style>
 										<Style TargetType="{x:Type Border}">
 											<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
-											<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 											<Style.Triggers>
 												<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForHover, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
 													<Setter Property="Background"
 														Value="{Binding DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=4D, FallbackValue=#4D8F879E}" />
-													<Setter Property="BorderBrush" Value="{Binding DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}, FallbackValue=#8F879E}" />
 												</DataTrigger>
 												<DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}" Value="True">
 													<!-- The selected row already carries the category tint; avoid stacking a
 														second translucent layer when it is hovered. -->
 													<Setter Property="Background" Value="Transparent" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</Border.Style>
+								</Border>
+								<Border x:Name="RowHoverRail"
+									Margin="{DynamicResource Redux.Interaction.SurfaceMargin}"
+									BorderThickness="{DynamicResource Redux.Rail.Thickness}"
+									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+									IsHitTestVisible="False"
+									Opacity="0">
+									<Border.Style>
+										<Style TargetType="{x:Type Border}">
+											<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForHover, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
+													<Setter Property="BorderBrush" Value="{Binding DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}, FallbackValue=#8F879E}" />
+												</DataTrigger>
+												<DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}" Value="True">
+													<!-- Selection already owns the leading rail; do not stack the hover
+														rail on top of it. -->
 													<Setter Property="BorderBrush" Value="Transparent" />
 												</DataTrigger>
 											</Style.Triggers>
@@ -2517,9 +2593,19 @@
 											To="0.62"
 											Duration="{StaticResource Redux.Motion.Fast}"
 											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+										<DoubleAnimation Storyboard.TargetName="RowHoverRail"
+											Storyboard.TargetProperty="Opacity"
+											To="1"
+											Duration="{StaticResource Redux.Motion.Fast}"
+											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 										<DoubleAnimation Storyboard.TargetName="VisualDividerHoverSurface"
 											Storyboard.TargetProperty="Opacity"
 											To="0.62"
+											Duration="{StaticResource Redux.Motion.Fast}"
+											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+										<DoubleAnimation Storyboard.TargetName="VisualDividerHoverRail"
+											Storyboard.TargetProperty="Opacity"
+											To="1"
 											Duration="{StaticResource Redux.Motion.Fast}"
 											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 										<DoubleAnimation Storyboard.TargetName="RowSurfaceTranslate"
@@ -2542,7 +2628,15 @@
 											Storyboard.TargetProperty="Opacity"
 											To="0"
 											Duration="{StaticResource Redux.Motion.Standard}" />
+										<DoubleAnimation Storyboard.TargetName="RowHoverRail"
+											Storyboard.TargetProperty="Opacity"
+											To="0"
+											Duration="{StaticResource Redux.Motion.Standard}" />
 										<DoubleAnimation Storyboard.TargetName="VisualDividerHoverSurface"
+											Storyboard.TargetProperty="Opacity"
+											To="0"
+											Duration="{StaticResource Redux.Motion.Standard}" />
+										<DoubleAnimation Storyboard.TargetName="VisualDividerHoverRail"
 											Storyboard.TargetProperty="Opacity"
 											To="0"
 											Duration="{StaticResource Redux.Motion.Standard}" />
@@ -2564,6 +2658,9 @@
 							<Setter TargetName="RowBorder" Property="Background" Value="Transparent" />
 							<Setter TargetName="RowBorder" Property="BorderBrush" Value="Transparent" />
 							<Setter TargetName="RowSelectionSurface" Property="Opacity" Value="0.62" />
+							<!-- The rail is a full-strength edge, not a soft tint, so it does not
+								share the fill's 0.62 dimming. -->
+							<Setter TargetName="RowSelectionRail" Property="Opacity" Value="1" />
 							<!-- Selection already owns the category-colored leading rail. Do not
 								draw the animated hover rail beside it. -->
 						</Trigger>
@@ -2873,7 +2970,9 @@
 	</Style>
 	<!-- Shared pill chrome used by list cells, the selected-mod drawer, and mod hover cards. -->
 	<Style x:Key="ReduxCategoryPillBaseStyle" BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="{x:Type Border}">
-		<Setter Property="Background" Value="{Binding SoftColor}" />
+		<!-- Same horizontal sheen as the Nexus/mod.io source pills, built per-category since the
+		     colour is data-driven rather than a fixed theme resource. -->
+		<Setter Property="Background" Value="{Binding Color, Converter={StaticResource StringToGradientBrushConverter}}" />
 		<Setter Property="BorderBrush" Value="{Binding Color}" />
 		<Style.Triggers>
 			<DataTrigger Binding="{Binding Name}" Value="No Category">
@@ -2997,7 +3096,9 @@
 				</ItemsControl>
 				<Border Margin="0,0,6,0">
 					<Border.Style><Style BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="Border">
-						<Setter Property="Background" Value="{DynamicResource ReduxSuccessSoftBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
+						<!-- Same horizontal sheen as the Nexus/mod.io source pills. Inactive stays a flat
+						     muted fill deliberately - it is a quiet state, not a lit one. -->
+						<Setter Property="Background" Value="{DynamicResource ReduxSuccessPillBackground}" /><Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
 						<Style.Triggers>
 							<DataTrigger Binding="{Binding IsActive}" Value="False">
 								<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
@@ -3009,7 +3110,7 @@
 									<Condition Binding="{Binding IsForceLoadedMergedMod}" Value="False" />
 									<Condition Binding="{Binding ForceAllowInLoadOrder}" Value="False" />
 								</MultiDataTrigger.Conditions>
-								<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+								<Setter Property="Background" Value="{DynamicResource ReduxAccentPillBackground}" />
 								<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 							</MultiDataTrigger>
 						</Style.Triggers>

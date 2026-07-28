@@ -216,8 +216,17 @@ public partial class CategoryNameDialog : AdonisWindow
 		HexColorTextBox.Text = hex;
 		SelectedColorPreview.Background = new SolidColorBrush(color);
 		Resources["Redux.CategoryEditor.IconBrush"] = new SolidColorBrush(color);
-		Resources["Redux.CategoryEditor.HoverBrush"] =
-			new SolidColorBrush(Color.FromArgb(0x1F, color.R, color.G, color.B));
+		// Same horizontal sheen and alpha pair as the sidebar's category hover (see
+		// CategoryHoverSurface in HorizontalModLayout.xaml), so the preview matches what
+		// hovering the real category row will actually look like.
+		var hoverGradient = new LinearGradientBrush
+		{
+			StartPoint = new Point(0, 0),
+			EndPoint = new Point(1, 0)
+		};
+		hoverGradient.GradientStops.Add(new GradientStop(Color.FromArgb(0x28, color.R, color.G, color.B), 0));
+		hoverGradient.GradientStops.Add(new GradientStop(Color.FromArgb(0x10, color.R, color.G, color.B), 1));
+		Resources["Redux.CategoryEditor.HoverBrush"] = hoverGradient;
 		Resources["Redux.CategoryEditor.CountHoverBrush"] =
 			new SolidColorBrush(Color.FromArgb(0x24, color.R, color.G, color.B));
 		RgbToHsv(color, out _hue, out _saturation, out _brightness);

@@ -7,7 +7,16 @@ parsing through LSLib, game-path detection, and launch behavior. Confirmed inher
 received targeted correctness and safety fixes without redesigning those core formats or workflows.
 
 This page tracks what Redux inherits, what it reworks or extends, and what it adds through version
-`0.1.0-alpha.7`.
+`0.1.0-alpha.8`.
+
+## 0.1.0-alpha.8 stabilization update
+
+- Unified the shared visual treatment for mod rows, separators, category interactions, and
+  diagnostic status surfaces while retaining theme-specific semantic colors.
+- Improved category-editor previews and shared dialog ownership and backdrop behavior.
+- Improved persistence handling for saved list-column layouts and protected a delayed automatic
+  sizing pass from overwriting a user resize.
+- Added the Redux Core test project to the solution and extended Mod Health regression coverage.
 
 ## Inherited foundation
 

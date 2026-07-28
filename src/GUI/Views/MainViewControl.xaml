@@ -242,7 +242,7 @@
 							<Setter Property="Height" Value="22" />
 							<Setter Property="Margin" Value="3,0" />
 							<Setter Property="Padding" Value="0" />
-							<Setter Property="Background" Value="{DynamicResource ReduxStatusSuccessSoftBrush}" />
+							<Setter Property="Background" Value="{DynamicResource ReduxSuccessPillBackground}" />
 							<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
 							<Setter Property="BorderThickness" Value="1.25" />
 							<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
@@ -254,15 +254,18 @@
 						<Style x:Key="CompactTopBarHealthStatusButtonStyle"
 							BasedOn="{StaticResource CompactTopBarStatusButtonStyle}"
 							TargetType="{x:Type Button}">
+							<!-- The base style's default Tag ("check") has no IconKey mapping and renders
+							     blank; the clear state needs its own real icon, same as the Advisor style. -->
+							<Setter Property="Tag" Value="shield-check" />
 							<Style.Triggers>
 								<DataTrigger Binding="{Binding HasActiveModHealthAttention}" Value="True">
-									<Setter Property="Background" Value="{DynamicResource ReduxStatusWarningSoftBrush}" />
+									<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
 									<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 									<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 									<Setter Property="Tag" Value="search-alert" />
 								</DataTrigger>
 								<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
-									<Setter Property="Background" Value="{DynamicResource ReduxStatusErrorSoftBrush}" />
+									<Setter Property="Background" Value="{DynamicResource ReduxErrorPillBackground}" />
 									<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
 									<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
 									<Setter Property="Tag" Value="error" />
@@ -275,7 +278,7 @@
 							<Setter Property="Tag" Value="shield-check" />
 							<Style.Triggers>
 								<DataTrigger Binding="{Binding LoadOrderAdvisorDebugHasWarnings}" Value="True">
-									<Setter Property="Background" Value="{DynamicResource ReduxStatusWarningSoftBrush}" />
+									<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
 									<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 									<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 									<Setter Property="Tag" Value="search-alert" />
@@ -522,7 +525,7 @@
 									MouseEnter="ToolbarModHealthMenu_MouseEnter"
 									MouseLeave="ToolbarModHealthMenu_MouseLeave"
 									ItemContainerStyle="{StaticResource ToolbarStatusMenuItemStyle}"
-									ItemTemplate="{StaticResource ReduxStatusCardTemplate}"
+									ItemTemplate="{StaticResource ReduxStatusCardListItemTemplate}"
 									ItemsSource="{Binding PlacementTarget.DataContext.ActiveModHealthAttentionSnapshots, RelativeSource={RelativeSource Self}}"
 									Style="{StaticResource ToolbarStatusContextMenuStyle}" />
 							</Button.ContextMenu>
@@ -917,7 +920,7 @@
 								<Setter Property="Height" Value="{DynamicResource Redux.ControlHeight.Standard}" />
 								<Setter Property="Margin" Value="6,0,0,0" />
 								<Setter Property="Padding" Value="0" />
-								<Setter Property="Background" Value="{DynamicResource ReduxStatusSuccessSoftBrush}" />
+								<Setter Property="Background" Value="{DynamicResource ReduxSuccessPillBackground}" />
 								<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
 								<Setter Property="Content" Value="No issues found" />
@@ -930,16 +933,19 @@
 							<Style x:Key="ToolbarHealthStatusButtonStyle"
 								BasedOn="{StaticResource ToolbarStatusButtonBaseStyle}"
 								TargetType="{x:Type Button}">
+								<!-- The base style's default Tag ("check") has no IconKey mapping and renders
+								     blank; the clear state needs its own real icon, same as the Advisor style. -->
+								<Setter Property="Tag" Value="shield-check" />
 								<Style.Triggers>
 									<DataTrigger Binding="{Binding HasActiveModHealthAttention}" Value="True">
-										<Setter Property="Background" Value="{DynamicResource ReduxStatusWarningSoftBrush}" />
+										<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
 										<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 										<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 										<Setter Property="Content" Value="{Binding ActiveModHealthSummaryText}" />
 										<Setter Property="Tag" Value="search-alert" />
 									</DataTrigger>
 									<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
-										<Setter Property="Background" Value="{DynamicResource ReduxStatusErrorSoftBrush}" />
+										<Setter Property="Background" Value="{DynamicResource ReduxErrorPillBackground}" />
 										<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
 										<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
 										<Setter Property="Tag" Value="error" />
@@ -951,12 +957,12 @@
 								TargetType="{x:Type Button}">
 								<Setter Property="Content" Value="{Binding LoadOrderAdvisorDebugText}" />
 								<Setter Property="Tag" Value="shield-check" />
-								<Setter Property="Background" Value="{DynamicResource ReduxStatusSuccessSoftBrush}" />
+								<Setter Property="Background" Value="{DynamicResource ReduxSuccessPillBackground}" />
 								<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
 								<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
 								<Style.Triggers>
 									<DataTrigger Binding="{Binding LoadOrderAdvisorDebugHasWarnings}" Value="True">
-										<Setter Property="Background" Value="{DynamicResource ReduxStatusWarningSoftBrush}" />
+										<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
 										<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 										<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 										<Setter Property="Tag" Value="search-alert" />
@@ -1251,7 +1257,7 @@
 												MouseEnter="ToolbarModHealthMenu_MouseEnter"
 												MouseLeave="ToolbarModHealthMenu_MouseLeave"
 												ItemContainerStyle="{StaticResource ToolbarStatusMenuItemStyle}"
-												ItemTemplate="{StaticResource ReduxStatusCardTemplate}"
+												ItemTemplate="{StaticResource ReduxStatusCardListItemTemplate}"
 												ItemsSource="{Binding PlacementTarget.DataContext.ActiveModHealthAttentionSnapshots, RelativeSource={RelativeSource Self}}"
 												Style="{StaticResource ToolbarStatusContextMenuStyle}" />
 										</Button.ContextMenu>

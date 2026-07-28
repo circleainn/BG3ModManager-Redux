@@ -777,6 +777,9 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private void ToolbarAdvisorStatusButton_Click(object sender, RoutedEventArgs e)
 	{
+		if (!ViewModel.LoadOrderAdvisorDebugHasWarnings)
+			return;
+
 		if (sender is Button button)
 		{
 			AnimateToolbarModHealthStatus(button, true);
@@ -792,11 +795,18 @@ public partial class MainViewControl : MainViewControlViewBase
 			return;
 
 		AnimateToolbarModHealthStatus(button, true);
+		if (!ViewModel.LoadOrderAdvisorDebugHasWarnings)
+			return;
+
 		RestoreToolbarStatusMenuOpacity(button.ContextMenu);
 		var hoverVersion = ++_advisorStatusHoverVersion;
 		await Task.Delay(160);
-		if (hoverVersion == _advisorStatusHoverVersion && button.IsMouseOver)
+		if (hoverVersion == _advisorStatusHoverVersion
+			&& button.IsMouseOver
+			&& ViewModel.LoadOrderAdvisorDebugHasWarnings)
+		{
 			OpenToolbarModHealthMenu(button);
+		}
 	}
 
 	private async void ToolbarAdvisorStatusButton_MouseLeave(object sender, MouseEventArgs e)
@@ -807,7 +817,8 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private void ToolbarAdvisorStatusButton_ContextMenuOpening(object sender, ContextMenuEventArgs e)
 	{
-		if (!ViewModel.IsLoadOrderAdvisorStatusVisible)
+		// Mirrors ToolbarModHealthStatusButton_ContextMenuOpening: no findings, no popup.
+		if (!ViewModel.IsLoadOrderAdvisorStatusVisible || !ViewModel.LoadOrderAdvisorDebugHasWarnings)
 			e.Handled = true;
 	}
 
@@ -1103,6 +1114,17 @@ public partial class MainViewControl : MainViewControlViewBase
 		{
 			ownerWindow.Activated += (_, _) => Mouse.Synchronize();
 		}
+
+		// Same stale-hover problem, different cause: the busy overlay used during Refresh/Export/etc.
+		// sits over the toolbar and intercepts its mouse messages without ever moving the owner
+		// window out of the activated state, so the Activated-based sync above never fires for it.
+		// Catch the other trigger directly: re-sync whenever the overlay goes from busy back to idle.
+		this.WhenAnyValue(x => x.ViewModel.MainProgressIsActive)
+			.DistinctUntilChanged()
+			.Skip(1)
+			.Where(isActive => !isActive)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(_ => Mouse.Synchronize());
 
 		this.WhenAnyValue(x => x.ViewModel.MainProgressIsActive).Take(1).Delay(TimeSpan.FromMilliseconds(25)).ObserveOn(RxApp.MainThreadScheduler).Subscribe(b =>
 		{

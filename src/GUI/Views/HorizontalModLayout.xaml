@@ -261,11 +261,13 @@
 										Opacity="0">
 										<Border.Style>
 											<Style TargetType="{x:Type Border}">
-												<Setter Property="Background" Value="{DynamicResource ReduxSelectionBrush}" />
+												<!-- Same horizontal sheen as the pills; kept close to opaque here since
+												     selection is a solid state, not a soft tint (see ReduxSelectionPillBackground). -->
+												<Setter Property="Background" Value="{DynamicResource ReduxSelectionPillBackground}" />
 												<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 												<Style.Triggers>
 													<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarSelection, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
-														<Setter Property="Background" Value="{Binding SelectionColor}" />
+														<Setter Property="Background" Value="{Binding Color, Converter={StaticResource StringToGradientBrushConverter}, ConverterParameter=42\,22}" />
 														<Setter Property="BorderBrush" Value="{Binding Color}" />
 													</DataTrigger>
 												</Style.Triggers>
@@ -280,11 +282,11 @@
 										Opacity="0">
 										<Border.Style>
 											<Style TargetType="{x:Type Border}">
-												<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+												<Setter Property="Background" Value="{DynamicResource ReduxAccentPillBackground}" />
 												<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 												<Style.Triggers>
 													<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarSelection, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
-														<Setter Property="Background" Value="{Binding HoverColor}" />
+														<Setter Property="Background" Value="{Binding Color, Converter={StaticResource StringToGradientBrushConverter}, ConverterParameter=28\,10}" />
 														<Setter Property="BorderBrush" Value="{Binding Color}" />
 													</DataTrigger>
 												</Style.Triggers>
@@ -608,15 +610,15 @@
 			     because the drawer header's DataContext wraps the selected mod. -->
 			<Style x:Key="ModDetailsHealthIndicatorStyle" BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="{x:Type Border}">
 				<Setter Property="Margin" Value="9,0,0,0" />
-				<Setter Property="Padding" Value="7,3" />
+				<Setter Property="Padding" Value="8,2" />
 				<Setter Property="VerticalAlignment" Value="Center" />
 				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Pill}" />
-				<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
+				<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 				<Setter Property="BorderThickness" Value="1.5" />
 				<Style.Triggers>
 					<DataTrigger Binding="{Binding Tag.HasErrors, RelativeSource={RelativeSource Self}}" Value="True">
-						<Setter Property="Background" Value="{StaticResource ModHealth.ErrorSoftBrush}" />
+						<Setter Property="Background" Value="{DynamicResource ReduxErrorPillBackground}" />
 						<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
 					</DataTrigger>
 				</Style.Triggers>

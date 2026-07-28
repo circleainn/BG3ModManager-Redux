@@ -124,7 +124,7 @@
 							IsHitTestVisible="False" Opacity="0">
 							<Border.Style>
 								<Style TargetType="{x:Type Border}">
-									<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+									<Setter Property="Background" Value="{DynamicResource ReduxAccentPillBackground}" />
 									<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 									<Style.Triggers>
 										<DataTrigger Binding="{Binding Tag, ElementName=CategoryPreviewPanel}" Value="True">

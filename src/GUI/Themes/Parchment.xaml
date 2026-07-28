@@ -34,4 +34,29 @@
 	<Color x:Key="ReduxTextMutedColor">#6F5D4B</Color>
 	<Color x:Key="ReduxAccentForegroundColor">#FFF8EB</Color>
 	<Color x:Key="ReduxGithubIconColor">#000000</Color>
+	<!--
+		Light.xaml's Redux*PillBackground gradients bake in Light's own hex rather than a
+		DynamicResource Color, so they don't automatically pick up Parchment's overrides above
+		the way a plain Color-bound SolidColorBrush does. Restated here with Parchment's colors.
+	-->
+	<LinearGradientBrush x:Key="ReduxAccentPillBackground" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#3E8B3034" />
+		<GradientStop Offset="1" Color="#1E8B3034" />
+	</LinearGradientBrush>
+	<LinearGradientBrush x:Key="ReduxSuccessPillBackground" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#3E3F6B35" />
+		<GradientStop Offset="1" Color="#1E3F6B35" />
+	</LinearGradientBrush>
+	<LinearGradientBrush x:Key="ReduxWarningPillBackground" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#3E8F4C08" />
+		<GradientStop Offset="1" Color="#1E8F4C08" />
+	</LinearGradientBrush>
+	<LinearGradientBrush x:Key="ReduxErrorPillBackground" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#3EAC2E3E" />
+		<GradientStop Offset="1" Color="#1EAC2E3E" />
+	</LinearGradientBrush>
+	<LinearGradientBrush x:Key="ReduxSelectionPillBackground" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#FFD2A9A1" />
+		<GradientStop Offset="1" Color="#D9D2A9A1" />
+	</LinearGradientBrush>
 </ResourceDictionary>
