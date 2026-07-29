@@ -2,7 +2,6 @@
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
-	xmlns:adonisUI="clr-namespace:AdonisUI;assembly=AdonisUI"
 	xmlns:behavior="clr-namespace:DivinityModManager.Controls.Behavior"
 	xmlns:c="clr-namespace:DivinityModManager.Controls"
 	xmlns:conv="clr-namespace:DivinityModManager.Converters"
@@ -10,11 +9,8 @@
 	xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
 	xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
 	xmlns:dd="urn:gong-wpf-dragdrop"
-	xmlns:health="clr-namespace:DivinityModManager.Models.Health;assembly=DivinityModManagerCore"
 	xmlns:local="clr-namespace:DivinityModManager.Views"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-	xmlns:reactiveui="clr-namespace:ReactiveUI;assembly=ReactiveUI"
-	xmlns:vm="clr-namespace:DivinityModManager.ViewModels"
 	x:Name="HorizontalModLayoutView"
 	d:DesignHeight="450"
 	d:DesignWidth="800"
@@ -87,8 +83,13 @@
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type Button}">
-							<Border Background="Transparent"
-								CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+							<Border x:Name="ButtonChrome"
+								Background="Transparent"
+								CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+								RenderTransformOrigin="0.5,0.5">
+								<Border.RenderTransform>
+									<TranslateTransform Y="0" />
+								</Border.RenderTransform>
 								<Grid>
 									<Border x:Name="HoverSurface"
 										Width="24"
@@ -115,6 +116,11 @@
 													To="1"
 													Duration="{StaticResource Redux.Motion.Fast}"
 													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+												<DoubleAnimation Storyboard.TargetName="ButtonChrome"
+													Storyboard.TargetProperty="RenderTransform.Y"
+													To="{StaticResource Redux.Motion.HoverTranslateNegative}"
+													Duration="{StaticResource Redux.Motion.Fast}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
 									</Trigger.EnterActions>
@@ -125,6 +131,11 @@
 													Storyboard.TargetProperty="Opacity"
 													To="0"
 													Duration="{StaticResource Redux.Motion.Standard}" />
+												<DoubleAnimation Storyboard.TargetName="ButtonChrome"
+													Storyboard.TargetProperty="RenderTransform.Y"
+													To="0"
+													Duration="{StaticResource Redux.Motion.Standard}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
 									</Trigger.ExitActions>
@@ -161,45 +172,6 @@
 								<Border x:Name="SplitterLine"
 									Width="3"
 									HorizontalAlignment="Center"
-									Background="{DynamicResource ReduxAccentHoverBrush}"
-									CornerRadius="1.5"
-									Opacity="0" />
-							</Grid>
-							<ControlTemplate.Triggers>
-								<EventTrigger RoutedEvent="MouseEnter">
-									<BeginStoryboard>
-										<Storyboard>
-											<DoubleAnimation Storyboard.TargetName="SplitterLine" Storyboard.TargetProperty="Opacity"
-												To="0.9" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-										</Storyboard>
-									</BeginStoryboard>
-								</EventTrigger>
-								<EventTrigger RoutedEvent="MouseLeave">
-									<BeginStoryboard>
-										<Storyboard>
-											<DoubleAnimation Storyboard.TargetName="SplitterLine" Storyboard.TargetProperty="Opacity"
-												To="0" Duration="{StaticResource Redux.Motion.Standard}" />
-										</Storyboard>
-									</BeginStoryboard>
-								</EventTrigger>
-								<Trigger Property="IsDragging" Value="True">
-									<Setter TargetName="SplitterLine" Property="Opacity" Value="1" />
-								</Trigger>
-							</ControlTemplate.Triggers>
-						</ControlTemplate>
-					</Setter.Value>
-				</Setter>
-			</Style>
-			<Style x:Key="ReduxHorizontalSplitterStyle" TargetType="{x:Type GridSplitter}">
-				<Setter Property="Background" Value="Transparent" />
-				<Setter Property="Cursor" Value="SizeNS" />
-				<Setter Property="Template">
-					<Setter.Value>
-						<ControlTemplate TargetType="{x:Type GridSplitter}">
-							<Grid Background="Transparent">
-								<Border x:Name="SplitterLine"
-									Height="3"
-									VerticalAlignment="Center"
 									Background="{DynamicResource ReduxAccentHoverBrush}"
 									CornerRadius="1.5"
 									Opacity="0" />
@@ -491,8 +463,7 @@
 				<Setter Property="Cursor" Value="Hand" />
 				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-				<Setter Property="MinWidth" Value="86" />
-				<Setter Property="Padding" Value="12,7" />
+				<Setter Property="Padding" Value="{DynamicResource Redux.TabHeader.Padding}" />
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type TabItem}">
@@ -501,16 +472,22 @@
 								TabPanel double-counts external child margins and applies a layout
 								clip narrower than the tab, shearing the hover pill's right corner.
 							-->
-							<Grid Margin="0,0,6,0" Background="Transparent">
+							<Grid x:Name="HeaderHost"
+								Margin="0,0,4,0"
+								Background="Transparent"
+								RenderTransformOrigin="0.5,0.5">
+								<Grid.RenderTransform>
+									<TranslateTransform Y="0" />
+								</Grid.RenderTransform>
 								<Grid.RowDefinitions>
 									<RowDefinition Height="*" />
 									<RowDefinition Height="2" />
 								</Grid.RowDefinitions>
 								<Border x:Name="TabHoverSurface"
 									Grid.RowSpan="2"
-									Margin="2,3"
-									Background="{DynamicResource ReduxHoverBrush}"
-									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+									Margin="{DynamicResource Redux.TabHeader.HoverMargin}"
+									Background="{DynamicResource ReduxAccentSoftBrush}"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
 									IsHitTestVisible="False"
 									Opacity="0" />
 								<TextBlock x:Name="HeaderText"
@@ -556,6 +533,24 @@
 								</MultiTrigger>
 								<Trigger Property="IsMouseOver" Value="True">
 									<Setter TargetName="HeaderText" Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+									<Trigger.EnterActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="HeaderHost" Storyboard.TargetProperty="RenderTransform.Y"
+													To="{StaticResource Redux.Motion.HoverTranslateNegative}" Duration="{StaticResource Redux.Motion.Fast}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.EnterActions>
+									<Trigger.ExitActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="HeaderHost" Storyboard.TargetProperty="RenderTransform.Y"
+													To="0" Duration="{StaticResource Redux.Motion.Standard}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.ExitActions>
 								</Trigger>
 								<Trigger Property="IsSelected" Value="True">
 									<Setter Property="Panel.ZIndex" Value="1" />
@@ -599,10 +594,6 @@
 				<Setter Property="Margin" Value="0,0,6,5" />
 				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
-			</Style>
-			<Style x:Key="ModDetailsLegacyStatusChipStyle" BasedOn="{StaticResource ModDetailsMetadataChipStyle}" TargetType="{x:Type Border}">
-				<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 			</Style>
 			<SolidColorBrush x:Key="ModHealth.InfoSoftBrush" Color="{DynamicResource ReduxInfoColor}" Opacity="0.14" />
 			<SolidColorBrush x:Key="ModHealth.ErrorSoftBrush" Color="{DynamicResource ReduxErrorColor}" Opacity="0.14" />
@@ -851,85 +842,21 @@
 							<RowDefinition Height="Auto" />
 							<RowDefinition Height="*" />
 						</Grid.RowDefinitions>
-						<StackPanel>
-							<WrapPanel Margin="0,1,0,0">
-								<Border>
-									<Border.ToolTip>
-										<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
-											<Border MaxWidth="390" Padding="12,10" Background="{DynamicResource ReduxSurfaceElevatedBrush}" BorderBrush="{DynamicResource ReduxWarningBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-												<StackPanel>
-													<TextBlock FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxWarningBrush}" Text="Contains Mod Fixer" />
-													<TextBlock Margin="0,5,0,0" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="This package contains the older Mod Fixer technique used by some BG3 mods." TextWrapping="Wrap" />
-													<TextBlock Margin="0,6,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="BG3 Patch 7 and newer generally do not require Mod Fixer, and it does not need to be installed separately." TextWrapping="Wrap" />
-												</StackPanel>
-											</Border>
-										</ToolTip>
-									</Border.ToolTip>
-									<Border.Style>
-										<Style BasedOn="{StaticResource ModDetailsLegacyStatusChipStyle}" TargetType="{x:Type Border}">
-											<Setter Property="Visibility" Value="Collapsed" />
-											<Style.Triggers>
-												<DataTrigger Binding="{Binding OsirisModStatus}" Value="{x:Static dapp:DivinityOsirisModStatus.MODFIXER}">
-													<Setter Property="Visibility" Value="Visible" />
-												</DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</Border.Style>
-									<TextBlock Foreground="{DynamicResource ReduxWarningBrush}" FontWeight="SemiBold" Text="Contains Mod Fixer" />
-								</Border>
-								<Border Style="{StaticResource ModDetailsLegacyStatusChipStyle}"
-									ToolTip="This package contains files that directly override built-in game files. Those overrides remain active while the .pak exists in the Mods folder."
-									Visibility="{Binding IsForceLoaded, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-									<TextBlock Foreground="{DynamicResource ReduxWarningBrush}" FontWeight="SemiBold" Text="Overrides Game Files" />
-								</Border>
-								<Border ToolTip="This package overrides built-in game files and loads whenever its .pak is present. It is outside the normal load order and usually is not written to modsettings.lsx.">
-									<Border.Style>
-										<Style BasedOn="{StaticResource ModDetailsLegacyStatusChipStyle}" TargetType="{x:Type Border}">
-											<Setter Property="Visibility" Value="Collapsed" />
-											<Style.Triggers>
-												<MultiDataTrigger>
-													<MultiDataTrigger.Conditions>
-														<Condition Binding="{Binding IsForceLoaded}" Value="True" />
-														<Condition Binding="{Binding IsForceLoadedMergedMod}" Value="False" />
-														<Condition Binding="{Binding ForceAllowInLoadOrder}" Value="False" />
-													</MultiDataTrigger.Conditions>
-													<Setter Property="Visibility" Value="Visible" />
-												</MultiDataTrigger>
-											</Style.Triggers>
-										</Style>
-									</Border.Style>
-									<TextBlock Foreground="{DynamicResource ReduxWarningBrush}" FontWeight="SemiBold" Text="Always Loaded" />
-								</Border>
-								<Border ToolTip="This mod has a normal load-order entry and also contains direct file overrides. Disabling its load-order entry may not disable those overrides.">
-									<Border.Style>
-										<Style BasedOn="{StaticResource ModDetailsLegacyStatusChipStyle}" TargetType="{x:Type Border}">
-											<Setter Property="Visibility" Value="Collapsed" />
-											<Style.Triggers>
-												<MultiDataTrigger>
-													<MultiDataTrigger.Conditions>
-														<Condition Binding="{Binding IsForceLoadedMergedMod}" Value="True" />
-														<Condition Binding="{Binding ForceAllowInLoadOrder}" Value="False" />
-													</MultiDataTrigger.Conditions>
-													<Setter Property="Visibility" Value="Visible" />
-												</MultiDataTrigger>
-											</Style.Triggers>
-										</Style>
-									</Border.Style>
-									<TextBlock Foreground="{DynamicResource ReduxWarningBrush}" FontWeight="SemiBold" Text="Contains File Overrides" />
-								</Border>
-								<Border ToolTip="This Always Loaded package is also being treated as a load-order entry.">
-									<Border.Style>
-										<Style BasedOn="{StaticResource ModDetailsLegacyStatusChipStyle}" TargetType="{x:Type Border}">
-											<Setter Property="Visibility" Value="Collapsed" />
-											<Style.Triggers>
-												<DataTrigger Binding="{Binding ForceAllowInLoadOrder}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</Border.Style>
-									<TextBlock Foreground="{DynamicResource ReduxWarningBrush}" FontWeight="SemiBold" Text="Always Loaded + Load Order Entry" />
-								</Border>
-							</WrapPanel>
-						</StackPanel>
+						<ItemsControl Margin="0,1,0,0"
+							ItemTemplate="{StaticResource ReduxPackageBehaviorPillTemplate}"
+							ItemsSource="{Binding HealthSnapshot.PackageBehaviorFindings}">
+							<ItemsControl.ItemContainerStyle>
+								<Style TargetType="{x:Type ContentPresenter}">
+									<Setter Property="Margin" Value="0,0,6,5" />
+									<Setter Property="VerticalAlignment" Value="Center" />
+								</Style>
+							</ItemsControl.ItemContainerStyle>
+							<ItemsControl.ItemsPanel>
+								<ItemsPanelTemplate>
+									<WrapPanel />
+								</ItemsPanelTemplate>
+							</ItemsControl.ItemsPanel>
+						</ItemsControl>
 						<WrapPanel Grid.Row="1" Margin="0,2,0,0" VerticalAlignment="Center">
 							<TextBlock VerticalAlignment="Center"
 								Foreground="{DynamicResource ReduxTextMutedBrush}"

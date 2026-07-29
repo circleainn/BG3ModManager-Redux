@@ -169,6 +169,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private readonly IModHealthAnalyzer _modHealthAnalyzer = new ModHealthAnalyzer();
 	private readonly ObservableCollectionExtended<ModHealthSnapshot> _modHealthSnapshotItems = new();
 	private readonly ObservableCollectionExtended<ModHealthSnapshot> _activeModHealthAttentionItems = new();
+	private readonly ObservableCollectionExtended<ModHealthFindingGroupViewModel> _activeModHealthFindingGroupItems = new();
 	private IReadOnlyList<DivinityModData> _lastDetectedDuplicateMods = Array.Empty<DivinityModData>();
 	private IDisposable _modHealthRefreshTask;
 	private string _lastModHealthDiagnosticSignature = String.Empty;
@@ -176,6 +177,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private string _lastOptionalModuleDiagnosticSignature;
 	public ReadOnlyObservableCollection<ModHealthSnapshot> ModHealthSnapshots { get; }
 	public ReadOnlyObservableCollection<ModHealthSnapshot> ActiveModHealthAttentionSnapshots { get; }
+	public ReadOnlyObservableCollection<ModHealthFindingGroupViewModel> ActiveModHealthFindingGroups { get; }
 	[Reactive] public bool HasActiveModHealthAttention { get; set; }
 	[Reactive] public bool HasActiveModHealthErrors { get; set; }
 	[Reactive] public bool HasOnlyActiveModLoadOrderAdvice { get; set; }
@@ -4542,8 +4544,6 @@ Directory the zip will be extracted to:
 
 	private void ExportLoadOrderToArchive_Start()
 	{
-		//view.MainWindowMessageBox.Text = "Add active mods to a zip file?";
-		//view.MainWindowMessageBox.Caption = "Depending on the number of mods, this may take some time.";
 		MessageBoxResult result = ReduxMessageBox.Show(Window, $"Save active mods to a zip file?{Environment.NewLine}Depending on the number of mods, this may take some time.", "Confirm Archive Creation",
 			MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel);
 		if (result == MessageBoxResult.OK)
@@ -7297,6 +7297,21 @@ Directory the zip will be extracted to:
 			.ToArray();
 		_activeModHealthAttentionItems.Clear();
 		_activeModHealthAttentionItems.AddRange(activeAttentionSnapshots);
+		var activeFindingGroups = activeAttentionSnapshots
+			.SelectMany(snapshot => snapshot.AttentionFindings.Select(finding => (Snapshot: snapshot, Finding: finding)))
+			.GroupBy(entry => (
+				entry.Finding.Code,
+				entry.Finding.Severity,
+				entry.Finding.Title,
+				entry.Finding.Message))
+			.Select(group => new ModHealthFindingGroupViewModel(
+				group.First().Finding,
+				group.Select(entry => entry.Snapshot)))
+			.OrderByDescending(group => group.Severity)
+			.ThenBy(group => group.Code)
+			.ToArray();
+		_activeModHealthFindingGroupItems.Clear();
+		_activeModHealthFindingGroupItems.AddRange(activeFindingGroups);
 		HasActiveModHealthAttention = activeAttentionSnapshots.Length > 0;
 		var activeHealthErrorCount = activeAttentionSnapshots.Sum(snapshot => snapshot.HealthErrorCount);
 		var activeHealthWarningCount = activeAttentionSnapshots.Sum(snapshot => snapshot.HealthWarningCount);
@@ -7376,6 +7391,7 @@ Directory the zip will be extracted to:
 		}
 		_modHealthSnapshotItems.Clear();
 		_activeModHealthAttentionItems.Clear();
+		_activeModHealthFindingGroupItems.Clear();
 		HasActiveModHealthAttention = false;
 		HasActiveModHealthErrors = false;
 		HasOnlyActiveModLoadOrderAdvice = false;
@@ -7539,6 +7555,7 @@ Directory the zip will be extracted to:
 		_manualNexusAssociationTasks.DisposeWith(Disposables);
 		ModHealthSnapshots = new ReadOnlyObservableCollection<ModHealthSnapshot>(_modHealthSnapshotItems);
 		ActiveModHealthAttentionSnapshots = new ReadOnlyObservableCollection<ModHealthSnapshot>(_activeModHealthAttentionItems);
+		ActiveModHealthFindingGroups = new ReadOnlyObservableCollection<ModHealthFindingGroupViewModel>(_activeModHealthFindingGroupItems);
 		Services.RegisterSingleton<IModRegistryService>(new ModRegistryService(mods));
 
 		_settings.InitSubscriptions();
@@ -7708,16 +7725,6 @@ Directory the zip will be extracted to:
 		});
 
 		Keys.ToggleToolbar.AddAction(() => Settings.HideToolbar = !Settings.HideToolbar);
-
-		Keys.ToggleFileNameDisplay.AddAction(() =>
-		{
-			Settings.DisplayFileNames = !Settings.DisplayFileNames;
-
-			foreach (var m in Mods)
-			{
-				m.DisplayFileForName = Settings.DisplayFileNames;
-			}
-		});
 
 		Keys.DeleteSelectedMods.AddAction(() =>
 		{

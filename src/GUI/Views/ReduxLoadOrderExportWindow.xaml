@@ -99,9 +99,16 @@
 
 			<StackPanel Grid.Row="4" Margin="0,18,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
 				<Button MinWidth="86" Content="Cancel" IsCancel="True"
-					Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Click="CancelButton_Click" />
-				<Button MinWidth="126" Margin="8,0,0,0" Content="Choose Location..." IsDefault="True"
-					Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" Click="ContinueButton_Click" />
+					Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="CancelButton_Click" />
+				<Button MinWidth="126" Margin="8,0,0,0" IsDefault="True"
+					Style="{StaticResource ReduxPrimaryActionButtonStyle}" Click="ContinueButton_Click">
+					<StackPanel Orientation="Horizontal">
+						<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
+							Foreground="{DynamicResource ReduxAccentForegroundBrush}"
+							StrokeData="{StaticResource Redux.Icon.FolderOpen}" />
+						<TextBlock Text="Choose Location..." />
+					</StackPanel>
+				</Button>
 			</StackPanel>
 		</Grid>
 	</Border>

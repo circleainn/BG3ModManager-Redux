@@ -28,14 +28,14 @@ public static class ReduxThemeService
 	private static readonly IReadOnlyDictionary<ReduxThemeType, string[]> BaseColors =
 		new Dictionary<ReduxThemeType, string[]>
 		{
-			[ReduxThemeType.ReduxDark] = ["#0D0B10", "#17121D", "#9676FF", "#F2EDF7", "#3FC58B", "#F0B43C", "#F05D70", "#74A8E5"],
+			[ReduxThemeType.ReduxDark] = ["#0D0B10", "#17121D", "#9676FF", "#F2EDF7", "#3FC58B", "#F0B43C", "#F05D70", "#5B99FA"],
 			[ReduxThemeType.ReduxLight] = ["#E4DFE9", "#F1EDF4", "#694AD6", "#201927", "#147A53", "#A45B08", "#B92340", "#326A9F"],
 			[ReduxThemeType.Parchment] = ["#DCCFB7", "#EBDEC5", "#8B3034", "#2D231B", "#3F6B35", "#8F4C08", "#AC2E3E", "#466989"]
 		};
 	private static readonly IReadOnlyDictionary<ReduxThemeType, string[]> BuiltInResourceValues =
 		new Dictionary<ReduxThemeType, string[]>
 		{
-			[ReduxThemeType.ReduxDark] = ["#0D0B10", "#110D15", "#17121D", "#1C1623", "#241C2C", "#33283F", "#4B3A5C", "#2A2034", "#33263F", "#9676FF", "#B49DFF", "#322543", "#3D2C57", "#49B486", "#193F32", "#E0AA4B", "#E46674", "#74A8E5", "#F2EDF7", "#C8BDD4", "#A094AE", "#17131C", "#FFFFFF"],
+			[ReduxThemeType.ReduxDark] = ["#0D0B10", "#110D15", "#17121D", "#1C1623", "#241C2C", "#33283F", "#4B3A5C", "#2A2034", "#33263F", "#9676FF", "#B49DFF", "#322543", "#3D2C57", "#49B486", "#193F32", "#E0AA4B", "#E46674", "#5B99FA", "#F2EDF7", "#C8BDD4", "#A094AE", "#17131C", "#FFFFFF"],
 			[ReduxThemeType.ReduxLight] = ["#E4DFE9", "#EAE6EF", "#F1EDF4", "#ECE7F1", "#DDD6E5", "#C5B9D1", "#9584A8", "#DED6E7", "#CEC2DA", "#694AD6", "#5738C4", "#DBD1F1", "#CBB9F1", "#147A53", "#CEE4D8", "#A45B08", "#B92340", "#326A9F", "#201927", "#554A61", "#756A80", "#FFFFFF", "#000000"],
 			[ReduxThemeType.Parchment] = ["#DCCFB7", "#E7DAC2", "#EBDEC5", "#F0E4CE", "#D1C0A2", "#AD9876", "#806A49", "#DBC7A6", "#CAB187", "#8B3034", "#A13E42", "#DFC0B6", "#D2A9A1", "#3F6B35", "#C8D7B4", "#8F4C08", "#AC2E3E", "#466989", "#2D231B", "#584737", "#6F5D4B", "#FFF8EB", "#000000"]
 		};
@@ -43,6 +43,53 @@ public static class ReduxThemeService
 	public static ReduxCustomTheme GetActiveTheme(DivinityModManagerSettings settings) =>
 		settings?.CustomThemes?.FirstOrDefault(theme =>
 			theme.Id.Equals(settings.ActiveCustomThemeId, StringComparison.OrdinalIgnoreCase));
+
+	// Must mirror the manager's own settings serializer. IgnoreAndPopulate in particular is
+	// load-bearing: the settings file omits any value equal to its DefaultValue, so a user on
+	// the default theme has no ColorTheme key at all. Without IgnoreAndPopulate, ColorTheme
+	// stays 0 and DarkThemeEnabled stays false, and the settings model's OnDeserialized hook
+	// resolves that pair to ReduxLight -- the opposite of what was actually saved.
+	private static readonly JsonSerializerSettings PresentationReadSettings = new()
+	{
+		DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+		MissingMemberHandling = MissingMemberHandling.Ignore,
+		Error = static (_, args) => args.ErrorContext.Handled = true,
+		Converters = [new Newtonsoft.Json.Converters.StringEnumConverter()]
+	};
+
+	/// <summary>
+	/// Applies the colour theme persisted by the previous session, read straight from disk.
+	/// </summary>
+	/// <remarks>
+	/// The startup splash is created and shown before <c>MainWindowViewModel.LoadSettings</c>
+	/// runs, so at that point <c>Settings.ColorTheme</c> is still its default and the splash
+	/// renders Redux Dark no matter what the user last selected. This reads presentation
+	/// preferences only; LoadSettings remains the sole owner of applying settings to the
+	/// application.
+	/// </remarks>
+	public static void ApplyPersistedTheme(ResourceDictionary resources)
+	{
+		if (resources == null) return;
+
+		try
+		{
+			var settingsFile = DivinityApp.GetAppDirectory("Data", "settings.json");
+			if (!File.Exists(settingsFile)) return;
+
+			var settings = DivinityJsonUtils.SafeDeserialize<DivinityModManagerSettings>(
+				File.ReadAllText(settingsFile),
+				PresentationReadSettings);
+			if (settings == null) return;
+
+			Apply(resources, settings.ColorTheme, GetActiveTheme(settings));
+		}
+		catch (Exception ex)
+		{
+			// A first run, a locked file or a corrupt settings file all just mean the
+			// built-in palette stays in place.
+			DivinityApp.Log($"Could not read the persisted theme for the startup window: {ex.Message}");
+		}
+	}
 
 	public static ReduxCustomTheme CreateFromBase(string name, ReduxThemeType baseTheme,
 		ReduxTypographyFont typographyFont = 0, ReduxTextSize textSize = 0, string customTypographyFont = "",
@@ -170,6 +217,44 @@ public static class ReduxThemeService
 			var owner = FindResourceOwner(resources, entry.Key) ?? resources;
 			owner[entry.Key] = entry.Value;
 		}
+		var infoPillOwner = FindResourceOwner(resources, "ReduxInfoPillBackground") ?? resources;
+		infoPillOwner["ReduxInfoPillBackground"] = CreatePillGradient(palette["ReduxInfoColor"]);
+		var primaryActionOwner = FindResourceOwner(resources, "ReduxPrimaryActionBackgroundBrush") ?? resources;
+		primaryActionOwner["ReduxPrimaryActionBackgroundBrush"] = CreatePrimaryActionGradient(palette["ReduxAccentColor"]);
+	}
+
+	private static LinearGradientBrush CreatePillGradient(Color color)
+	{
+		var leading = color;
+		leading.A = 0x3E;
+		var trailing = color;
+		trailing.A = 0x1E;
+		var brush = new LinearGradientBrush(
+			leading,
+			trailing,
+			new Point(0, 0),
+			new Point(1, 0));
+		if (brush.CanFreeze) brush.Freeze();
+		return brush;
+	}
+
+	private static LinearGradientBrush CreatePrimaryActionGradient(Color accent)
+	{
+		var leading = Mix(accent, ShiftHue(accent, -18), 0.48);
+		var trailing = Mix(accent, ShiftHue(accent, 18), 0.48);
+		var brush = new LinearGradientBrush
+		{
+			StartPoint = new Point(0, 0.5),
+			EndPoint = new Point(1, 0.5),
+			GradientStops =
+			[
+				new GradientStop(leading, 0),
+				new GradientStop(accent, 0.52),
+				new GradientStop(trailing, 1)
+			]
+		};
+		if (brush.CanFreeze) brush.Freeze();
+		return brush;
 	}
 
 	private static Dictionary<string, Color> CreateBuiltInResourceColors(ReduxThemeType theme)
@@ -327,6 +412,48 @@ public static class ReduxThemeService
 		(byte)Math.Round(left.R + ((right.R - left.R) * amount)),
 		(byte)Math.Round(left.G + ((right.G - left.G) * amount)),
 		(byte)Math.Round(left.B + ((right.B - left.B) * amount)));
+	private static Color ShiftHue(Color color, double degrees)
+	{
+		var red = color.R / 255d;
+		var green = color.G / 255d;
+		var blue = color.B / 255d;
+		var maximum = Math.Max(red, Math.Max(green, blue));
+		var minimum = Math.Min(red, Math.Min(green, blue));
+		var chroma = maximum - minimum;
+		var lightness = (maximum + minimum) / 2d;
+		var saturation = chroma == 0
+			? 0
+			: chroma / (1d - Math.Abs((2d * lightness) - 1d));
+		var hue = chroma == 0
+			? 0
+			: maximum == red
+				? 60d * (((green - blue) / chroma) % 6d)
+				: maximum == green
+					? 60d * (((blue - red) / chroma) + 2d)
+					: 60d * (((red - green) / chroma) + 4d);
+		hue = (hue + degrees + 360d) % 360d;
+
+		var h = hue / 360d;
+		var q = lightness < 0.5
+			? lightness * (1d + saturation)
+			: lightness + saturation - (lightness * saturation);
+		var p = (2d * lightness) - q;
+		static double HueChannel(double p, double q, double channel)
+		{
+			if (channel < 0) channel += 1;
+			if (channel > 1) channel -= 1;
+			if (channel < 1d / 6d) return p + ((q - p) * 6d * channel);
+			if (channel < 1d / 2d) return q;
+			if (channel < 2d / 3d) return p + ((q - p) * (2d / 3d - channel) * 6d);
+			return p;
+		}
+
+		if (saturation == 0) return Color.FromRgb(color.R, color.G, color.B);
+		return Color.FromRgb(
+			(byte)Math.Round(HueChannel(p, q, h + (1d / 3d)) * 255d),
+			(byte)Math.Round(HueChannel(p, q, h) * 255d),
+			(byte)Math.Round(HueChannel(p, q, h - (1d / 3d)) * 255d));
+	}
 	private static double RelativeLuminance(Color color) => ((0.2126 * color.R) + (0.7152 * color.G) + (0.0722 * color.B)) / 255d;
 	private static Color BestForeground(Color background) => RelativeLuminance(background) > 0.56 ? Color.FromRgb(24, 19, 33) : System.Windows.Media.Colors.White;
 }

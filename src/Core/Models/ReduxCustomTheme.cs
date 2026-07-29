@@ -37,7 +37,7 @@ public class ReduxCustomTheme : ReactiveObject
 	[DataMember, Reactive] public string SuccessColor { get; set; } = "#3FC58B";
 	[DataMember, Reactive] public string WarningColor { get; set; } = "#F0B43C";
 	[DataMember, Reactive] public string ErrorColor { get; set; } = "#F05D70";
-	[DataMember, Reactive] public string InfoColor { get; set; } = "#74A8E5";
+	[DataMember, Reactive] public string InfoColor { get; set; } = "#5B99FA";
 
 	public ReduxCustomTheme Clone(bool createNewIdentity = false) => new()
 	{

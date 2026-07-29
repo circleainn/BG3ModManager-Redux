@@ -241,7 +241,8 @@
 						    Foreground="{TemplateBinding Foreground}"
 						    IsChecked="{Binding Path=IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
 						    Template="{StaticResource ComboBoxToggleButtonTemplate}" />
-						<Border Margin="0,0,11,0">
+						<!-- Keep selected content clear of the complete 20px toggle/chevron region. -->
+						<Border Margin="0,0,20,0">
 							<DockPanel Margin="{TemplateBinding Padding}">
 								<adonisControls:ValidationErrorIndicator x:Name="ErrorAlertHost"
 								    Margin="0,0,4,0"

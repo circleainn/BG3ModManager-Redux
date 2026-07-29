@@ -1,9 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
     xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
     xmlns:adonisUI="clr-namespace:AdonisUI;assembly=AdonisUI"
-    xmlns:appdata="clr-namespace:DivinityModManager.Models.App;assembly=DivinityModManagerCore"
     xmlns:behavior="clr-namespace:DivinityModManager.Controls.Behavior"
     xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=DotNetProjects.Wpf.Extended.Toolkit"
     xmlns:controls="clr-namespace:DivinityModManager.Controls"
@@ -14,17 +12,14 @@
     xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
     xmlns:dd="urn:gong-wpf-dragdrop"
     xmlns:divThemes="clr-namespace:DivinityModManager.Themes"
-    xmlns:dmcore="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
-    xmlns:extdata="clr-namespace:DivinityModManager.Models.Extender;assembly=DivinityModManagerCore"
-    xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-    xmlns:local="clr-namespace:DivinityModManager.Views"
     xmlns:mm="clr-namespace:DivinityModManager"
+    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:templateSelectors="clr-namespace:DivinityModManager.Controls.TemplateSelectors"
     xmlns:updates="clr-namespace:DivinityModManager.Models.Updates;assembly=DivinityModManagerCore"
-    xmlns:vm="clr-namespace:DivinityModManager.ViewModels;assembly=DivinityModManagerCore"
     xmlns:xc="http://schemas.xceed.com/wpf/xaml/toolkit"
     xmlns:xconv="clr-namespace:Xceed.Wpf.Toolkit.Converters;assembly=DotNetProjects.Wpf.Extended.Toolkit"
+    xmlns:xcprimitives="clr-namespace:Xceed.Wpf.Toolkit.Primitives;assembly=DotNetProjects.Wpf.Extended.Toolkit"
     xmlns:xcthemes="clr-namespace:Xceed.Wpf.Toolkit.Themes;assembly=DotNetProjects.Wpf.Extended.Toolkit"
 	x:Name="MainResources">
 	<ResourceDictionary.MergedDictionaries>
@@ -59,6 +54,8 @@
 	<Thickness x:Key="Redux.Interaction.HoverBorderThickness">1.5</Thickness>
 	<Thickness x:Key="Redux.Interaction.SelectedBorderThickness">2</Thickness>
 	<sys:Double x:Key="Redux.StatusCard.MaxWidth">270</sys:Double>
+	<sys:Double x:Key="Redux.StatusMenu.MaxWidth">360</sys:Double>
+	<sys:Double x:Key="Redux.StatusMenu.MaxHeight">420</sys:Double>
 	<Thickness x:Key="Redux.StatusCard.Padding">10,8</Thickness>
 	<sys:Double x:Key="Redux.StatusCard.BadgeSize">20</sys:Double>
 	<Thickness x:Key="Redux.StatusCard.BadgeMargin">0,0,6,0</Thickness>
@@ -135,35 +132,33 @@
 		</Border>
 	</DataTemplate>
 	<!-- DynamicResource for the icon geometries: this card is declared long before they are, and StaticResource only resolves backwards. -->
-	<DataTemplate x:Key="ReduxStatusCardTemplate" DataType="{x:Type health:ModHealthSnapshot}">
-		<Border Style="{StaticResource ReduxStatusCardChromeStyle}">
-			<StackPanel>
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
-					<Border Style="{StaticResource ReduxStatusCardBadgeStyle}">
-						<!-- Keep the badge on ReduxIcon's proven IconKey route.  A native Path in
-						     this popup can receive DependencyProperty.UnsetValue for Data during
-						     template creation and crash the window on hover. -->
-						<controls:ReduxIcon x:Name="StatusCardIcon"
-							Width="15"
-							Height="15"
-							StrokeData="{DynamicResource Redux.Icon.Information}"
-							Foreground="{DynamicResource ReduxInfoBrush}"
-							HorizontalAlignment="Center"
-							VerticalAlignment="Center" />
-					</Border>
-					<StackPanel Grid.Column="1" VerticalAlignment="Center">
-						<TextBlock Style="{StaticResource ReduxStatusCardTitleStyle}" Text="{Binding StatusTitle}" />
-						<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding StatusDescription}" />
-					</StackPanel>
-				</Grid>
-				<Border Style="{StaticResource ReduxStatusCardDividerStyle}" />
-				<ItemsControl ItemsSource="{Binding Findings}" ItemTemplate="{StaticResource ReduxStatusFindingTemplate}" />
-			</StackPanel>
-		</Border>
+	<DataTemplate x:Key="ReduxStatusCardBodyTemplate" DataType="{x:Type health:ModHealthSnapshot}">
+		<StackPanel>
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+				<Border Style="{StaticResource ReduxStatusCardBadgeStyle}">
+					<!-- Keep the badge on ReduxIcon's proven geometry route. A native Path in
+					     this popup can receive DependencyProperty.UnsetValue for Data during
+					     template creation and crash the window on hover. -->
+					<controls:ReduxIcon x:Name="StatusCardIcon"
+						Width="15"
+						Height="15"
+						HorizontalAlignment="Center"
+						VerticalAlignment="Center"
+						Foreground="{DynamicResource ReduxInfoBrush}"
+						StrokeData="{DynamicResource Redux.Icon.Information}" />
+				</Border>
+				<StackPanel Grid.Column="1" VerticalAlignment="Center">
+					<TextBlock Style="{StaticResource ReduxStatusCardTitleStyle}" Text="{Binding StatusTitle}" />
+					<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding StatusDescription}" />
+				</StackPanel>
+			</Grid>
+			<Border Style="{StaticResource ReduxStatusCardDividerStyle}" />
+			<ItemsControl ItemsSource="{Binding Findings}" ItemTemplate="{StaticResource ReduxStatusFindingTemplate}" />
+		</StackPanel>
 		<DataTemplate.Triggers>
 			<DataTrigger Binding="{Binding IsClear}" Value="True">
 				<Setter TargetName="StatusCardIcon" Property="StrokeData" Value="{DynamicResource Redux.Icon.ShieldCheck}" />
@@ -179,21 +174,52 @@
 			</DataTrigger>
 		</DataTemplate.Triggers>
 	</DataTemplate>
+	<DataTemplate x:Key="ReduxStatusCardTemplate" DataType="{x:Type health:ModHealthSnapshot}">
+		<Border Style="{StaticResource ReduxStatusCardChromeStyle}">
+			<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ReduxStatusCardBodyTemplate}" />
+		</Border>
+	</DataTemplate>
 	<!--
-		Wraps ReduxStatusCardTemplate with a small mod-name label above it. Used only where
-		several mods' snapshots are listed side by side (the toolbar and compact Toolbar-menu
-		dropdowns), so each card says which mod it belongs to. The drawer's single-mod tooltip
-		uses ReduxStatusCardTemplate directly - there, the mod is already the one on screen and
-		a repeated name would be redundant.
+		Toolbar status menus can contain several snapshots, so each card includes its affected
+		mod as context. The context and findings share one outer surface; placing the name above
+		ReduxStatusCardTemplate leaves it floating outside the rounded popup chrome.
 	-->
 	<DataTemplate x:Key="ReduxStatusCardListItemTemplate" DataType="{x:Type health:ModHealthSnapshot}">
-		<StackPanel Margin="0,0,0,4">
-			<TextBlock Margin="2,0,0,3"
-				Style="{DynamicResource Redux.Text.Overline}"
-				Text="{Binding Mod.DisplayName}"
-				TextTrimming="CharacterEllipsis" />
-			<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ReduxStatusCardTemplate}" />
-		</StackPanel>
+		<Border Margin="0,0,0,4" Style="{StaticResource ReduxStatusCardChromeStyle}">
+			<StackPanel>
+				<Grid Margin="0,0,0,6">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+					<ContentControl Width="14"
+						Height="14"
+						Margin="0,0,6,0"
+						VerticalAlignment="Center"
+						Content="{Binding Mod.DisplayCategories[0]}"
+						ContentTemplate="{DynamicResource ReduxCategoryGlyphTemplate}" />
+					<TextBlock Grid.Column="1"
+						VerticalAlignment="Center"
+						FontWeight="SemiBold"
+						Text="{Binding Mod.DisplayName}"
+						TextTrimming="CharacterEllipsis"
+						ToolTip="{Binding Mod.DisplayName}">
+						<TextBlock.Style>
+							<Style TargetType="{x:Type TextBlock}">
+								<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.11}" />
+								<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForText)}" Value="True">
+										<Setter Property="Foreground" Value="{Binding Mod.DisplayCategories[0].Color}" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
+					</TextBlock>
+				</Grid>
+				<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ReduxStatusCardBodyTemplate}" />
+			</StackPanel>
+		</Border>
 	</DataTemplate>
 	<!--
 		Hover/selection surfaces are lit from their rail: strongest at the leading edge,
@@ -222,6 +248,57 @@
 	<!-- Capsule radius for taller elements: a pill looks capsule-shaped because 10 is half its 21px height, so anything taller needs its own value to read the same. -->
 	<CornerRadius x:Key="Redux.CornerRadius.PillTall">12</CornerRadius>
 	<!--
+		Windows that host controls:ReduxWindowTitleBar must use this template. They derive from
+		AdonisWindow, whose default template renders a title bar of its own; leaving that in place
+		stacks the Adonis caption above the Redux one and the window shows two title bars. This
+		strips the window to its content so the caption is owned entirely by ReduxWindowTitleBar.
+		AdonisWindow.OnApplyTemplate null-checks every PART_ it looks up, so omitting its parts
+		only skips the wiring it would have done. The per-window WindowChrome keeps the resize
+		border, and ReduxWindowBehavior.AttachWorkAreaMaximize constrains a maximized window to
+		the monitor work area, so no maximize-overhang padding is needed here.
+	-->
+	<ControlTemplate x:Key="ReduxWindowTemplate" TargetType="{x:Type Window}">
+		<Border x:Name="WindowSurface"
+			Background="{TemplateBinding Background}"
+			BorderThickness="0"
+			CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+			SnapsToDevicePixels="True">
+			<Grid>
+				<AdornerDecorator>
+					<ContentPresenter />
+				</AdornerDecorator>
+				<!-- Keep the visible stroke inside the HWND boundary. A stroke painted
+				     directly on that boundary is shaved by rounded window/popup regions. -->
+				<Border x:Name="WindowOutline"
+					Margin="1"
+					BorderBrush="{DynamicResource ReduxBorderBrush}"
+					BorderThickness="1"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+					IsHitTestVisible="False"
+					SnapsToDevicePixels="True" />
+				<ResizeGrip x:Name="WindowResizeGrip"
+					HorizontalAlignment="Right"
+					VerticalAlignment="Bottom"
+					IsTabStop="False"
+					Visibility="Collapsed"
+					shell:WindowChrome.ResizeGripDirection="BottomRight" />
+			</Grid>
+		</Border>
+		<ControlTemplate.Triggers>
+			<Trigger Property="WindowState" Value="Maximized">
+				<Setter TargetName="WindowSurface" Property="CornerRadius" Value="0" />
+				<Setter TargetName="WindowOutline" Property="Visibility" Value="Collapsed" />
+			</Trigger>
+			<MultiTrigger>
+				<MultiTrigger.Conditions>
+					<Condition Property="ResizeMode" Value="CanResizeWithGrip" />
+					<Condition Property="WindowState" Value="Normal" />
+				</MultiTrigger.Conditions>
+				<Setter TargetName="WindowResizeGrip" Property="Visibility" Value="Visible" />
+			</MultiTrigger>
+		</ControlTemplate.Triggers>
+	</ControlTemplate>
+	<!--
 		Shared spatial rhythm. Keep scalar values available for dimensions and use the
 		inset resources for common padding/margin shapes. New presentation work should
 		prefer these tokens over introducing nearby one-off values.
@@ -239,6 +316,8 @@
 	<Thickness x:Key="Redux.Inset.Control">10,6</Thickness>
 	<Thickness x:Key="Redux.Inset.Surface">12</Thickness>
 	<Thickness x:Key="Redux.Inset.Card">16</Thickness>
+	<Thickness x:Key="Redux.TabHeader.Padding">10,5</Thickness>
+	<Thickness x:Key="Redux.TabHeader.HoverMargin">1,2</Thickness>
 	<sys:Double x:Key="Redux.ControlHeight.Compact">28</sys:Double>
 	<sys:Double x:Key="Redux.ControlHeight.Standard">32</sys:Double>
 	<sys:Double x:Key="Redux.ControlHeight.Comfortable">36</sys:Double>
@@ -610,7 +689,13 @@
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="{x:Type ToggleButton}">
-					<Border Background="Transparent" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+					<Border x:Name="ButtonChrome"
+						Background="Transparent"
+						CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+						RenderTransformOrigin="0.5,0.5">
+						<Border.RenderTransform>
+							<TranslateTransform Y="0" />
+						</Border.RenderTransform>
 						<Grid>
 							<Border x:Name="HoverSurface"
 								Width="24"
@@ -635,6 +720,11 @@
 											To="1"
 											Duration="{StaticResource Redux.Motion.Fast}"
 											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+										<DoubleAnimation Storyboard.TargetName="ButtonChrome"
+											Storyboard.TargetProperty="RenderTransform.Y"
+											To="{StaticResource Redux.Motion.HoverTranslateNegative}"
+											Duration="{StaticResource Redux.Motion.Fast}"
+											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 									</Storyboard>
 								</BeginStoryboard>
 							</Trigger.EnterActions>
@@ -645,6 +735,11 @@
 											Storyboard.TargetProperty="Opacity"
 											To="0"
 											Duration="{StaticResource Redux.Motion.Standard}" />
+										<DoubleAnimation Storyboard.TargetName="ButtonChrome"
+											Storyboard.TargetProperty="RenderTransform.Y"
+											To="0"
+											Duration="{StaticResource Redux.Motion.Standard}"
+											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 									</Storyboard>
 								</BeginStoryboard>
 							</Trigger.ExitActions>
@@ -948,6 +1043,16 @@
 	<GeometryGroup x:Key="Redux.Icon.Close">
 		<PathGeometry Figures="M18 6 6 18" />
 		<PathGeometry Figures="m6 6 12 12" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.WindowMinimize">
+		<PathGeometry Figures="M5 12h14" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.WindowMaximize">
+		<RectangleGeometry Rect="4,4,16,16" RadiusX="2" RadiusY="2" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.WindowRestore">
+		<RectangleGeometry Rect="7,4,13,13" RadiusX="2" RadiusY="2" />
+		<PathGeometry Figures="M17 17v1a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1" />
 	</GeometryGroup>
 	<GeometryGroup x:Key="Redux.Icon.Success">
 		<PathGeometry Figures="m9 12 2 2 4-4" />
@@ -1400,9 +1505,43 @@
 			<Trigger Property="IconKey" Value="wand-sparkles"><Setter Property="StrokeData" Value="{StaticResource Redux.Icon.WandSparkles}" /></Trigger>
 		</Style.Triggers>
 	</Style>
-	<Style x:Key="ReduxPrimaryIconStyle" BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
-		<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
-	</Style>
+	<!-- Declared after the ReduxIcon catalog so popup templates defined near the top of this
+	     dictionary can resolve category keys through a deferred DynamicResource reference. -->
+	<DataTemplate x:Key="ReduxCategoryGlyphTemplate" DataType="{x:Type data:ModCategoryDisplayData}">
+		<Grid Width="14" Height="14">
+			<Ellipse Width="{DynamicResource Redux.MarkerSize.Default}"
+				Height="{DynamicResource Redux.MarkerSize.Default}"
+				Fill="Transparent"
+				Stroke="{Binding Color}"
+				StrokeThickness="1.5">
+				<Ellipse.Style>
+					<Style TargetType="{x:Type Ellipse}">
+						<Setter Property="Visibility" Value="Visible" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding HasIcon}" Value="True">
+								<Setter Property="Visibility" Value="Collapsed" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Ellipse.Style>
+			</Ellipse>
+			<controls:ReduxIcon Width="12"
+				Height="12"
+				IconKey="{Binding IconId}"
+				Foreground="{Binding Color}">
+				<controls:ReduxIcon.Style>
+					<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
+						<Setter Property="Visibility" Value="Collapsed" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding HasIcon}" Value="True">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</controls:ReduxIcon.Style>
+			</controls:ReduxIcon>
+		</Grid>
+	</DataTemplate>
 	<!--
 		Named, app-wide TextBox chrome. A self-contained Template (like ReduxCheckBoxStyle
 		below) rather than a BasedOn self-key bridge to the type's default style, since that bridge
@@ -1570,50 +1709,112 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
-	<!-- Shared primary action chrome for Redux-owned dialogs. -->
-	<Style x:Key="ReduxRoundedPrimaryButtonStyle" TargetType="{x:Type Button}">
-		<Setter Property="Background" Value="{DynamicResource ReduxAccentBrush}" />
-		<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
-		<Setter Property="BorderThickness" Value="1" />
-		<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
-		<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Control}" />
-		<Setter Property="Padding" Value="16,7" />
-		<Setter Property="HorizontalContentAlignment" Value="Center" />
-		<Setter Property="VerticalContentAlignment" Value="Center" />
-		<Setter Property="FocusVisualStyle" Value="{x:Null}" />
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate TargetType="{x:Type Button}">
-					<Border x:Name="ButtonChrome"
-						Background="{TemplateBinding Background}"
-						BorderBrush="{TemplateBinding BorderBrush}"
-						BorderThickness="{TemplateBinding BorderThickness}"
+	<!--
+		Shared semantic action chrome for Redux-owned dialogs and editors.
+		Variant styles below supply only semantic colors; sizing, focus, motion, and
+		pressed/disabled behavior stay centralized here.
+	-->
+	<LinearGradientBrush x:Key="ReduxPrimaryActionBackgroundBrush" StartPoint="0,0.5" EndPoint="1,0.5">
+		<GradientStop Offset="0" Color="{DynamicResource ReduxAccentColor}" />
+		<GradientStop Offset="0.72" Color="{DynamicResource ReduxAccentColor}" />
+		<GradientStop Offset="1" Color="{DynamicResource ReduxAccentHoverColor}" />
+	</LinearGradientBrush>
+	<ControlTemplate x:Key="ReduxActionButtonTemplate" TargetType="{x:Type Button}">
+		<Grid ClipToBounds="False">
+			<Border x:Name="ButtonChrome"
+				Margin="0,1"
+				Background="{TemplateBinding Background}"
+				BorderBrush="{TemplateBinding BorderBrush}"
+				BorderThickness="{TemplateBinding BorderThickness}"
+				CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+				RenderTransformOrigin="0.5,0.5"
+				SnapsToDevicePixels="True"
+				UseLayoutRounding="True">
+				<Border.RenderTransform>
+					<TranslateTransform x:Name="ButtonChromeTranslate" Y="0" />
+				</Border.RenderTransform>
+				<Grid>
+					<!--
+						Using the variant foreground as a low-opacity wash keeps hover
+						feedback semantic without maintaining one template per color role.
+					-->
+					<Border x:Name="HoverSurface"
+						Background="{TemplateBinding Foreground}"
+						CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+						IsHitTestVisible="False"
+						Opacity="0" />
+					<ContentPresenter Margin="{TemplateBinding Padding}"
+						HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+						VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+						Content="{TemplateBinding Content}"
+						ContentStringFormat="{TemplateBinding ContentStringFormat}"
+						ContentTemplate="{TemplateBinding ContentTemplate}"
+						RecognizesAccessKey="True" />
+					<Border x:Name="FocusRing"
+						BorderBrush="{DynamicResource ReduxAccentBrush}"
+						BorderThickness="1"
 						CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
-						Padding="{TemplateBinding Padding}">
-						<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-							VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-							RecognizesAccessKey="True" />
-					</Border>
-					<ControlTemplate.Triggers>
-						<Trigger Property="IsMouseOver" Value="True">
-							<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxAccentHoverBrush}" />
-						</Trigger>
-						<Trigger Property="IsPressed" Value="True">
-							<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.82" />
-						</Trigger>
-						<Trigger Property="IsEnabled" Value="False">
-							<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
-							<Setter Property="Cursor" Value="Arrow" />
-						</Trigger>
-					</ControlTemplate.Triggers>
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
-	<!-- Shared neutral action chrome for Redux-owned dialogs and editors. -->
-	<Style x:Key="ReduxRoundedSecondaryButtonStyle" TargetType="{x:Type Button}">
+						IsHitTestVisible="False"
+						Opacity="0" />
+				</Grid>
+			</Border>
+		</Grid>
+		<ControlTemplate.Triggers>
+			<MultiTrigger>
+				<MultiTrigger.Conditions>
+					<Condition Property="IsMouseOver" Value="True" />
+					<Condition Property="IsEnabled" Value="True" />
+				</MultiTrigger.Conditions>
+				<MultiTrigger.EnterActions>
+					<BeginStoryboard>
+						<Storyboard>
+							<DoubleAnimation Storyboard.TargetName="HoverSurface"
+								Storyboard.TargetProperty="Opacity"
+								To="0.10"
+								Duration="{StaticResource Redux.Motion.Fast}"
+								EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+							<DoubleAnimation Storyboard.TargetName="ButtonChromeTranslate"
+								Storyboard.TargetProperty="Y"
+								To="{StaticResource Redux.Motion.HoverTranslateNegative}"
+								Duration="{StaticResource Redux.Motion.Fast}"
+								EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+						</Storyboard>
+					</BeginStoryboard>
+				</MultiTrigger.EnterActions>
+				<MultiTrigger.ExitActions>
+					<BeginStoryboard>
+						<Storyboard>
+							<DoubleAnimation Storyboard.TargetName="HoverSurface"
+								Storyboard.TargetProperty="Opacity"
+								To="0"
+								Duration="{StaticResource Redux.Motion.Standard}" />
+							<DoubleAnimation Storyboard.TargetName="ButtonChromeTranslate"
+								Storyboard.TargetProperty="Y"
+								To="0"
+								Duration="{StaticResource Redux.Motion.Standard}"
+								EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+						</Storyboard>
+					</BeginStoryboard>
+				</MultiTrigger.ExitActions>
+			</MultiTrigger>
+			<Trigger Property="IsKeyboardFocused" Value="True">
+				<Setter TargetName="FocusRing" Property="Opacity" Value="1" />
+			</Trigger>
+			<Trigger Property="IsDefaulted" Value="True">
+				<Setter TargetName="FocusRing" Property="Opacity" Value="0.65" />
+			</Trigger>
+			<Trigger Property="IsPressed" Value="True">
+				<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.82" />
+			</Trigger>
+			<Trigger Property="IsEnabled" Value="False">
+				<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
+				<Setter Property="Cursor" Value="Arrow" />
+			</Trigger>
+		</ControlTemplate.Triggers>
+	</ControlTemplate>
+	<Style x:Key="ReduxActionButtonBaseStyle" TargetType="{x:Type Button}">
 		<Setter Property="MinHeight" Value="32" />
-		<Setter Property="Padding" Value="12,5" />
+		<Setter Property="Padding" Value="14,6" />
 		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
 		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
 		<Setter Property="BorderThickness" Value="1" />
@@ -1621,39 +1822,30 @@
 		<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Control}" />
 		<Setter Property="HorizontalContentAlignment" Value="Center" />
 		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="Cursor" Value="Hand" />
 		<Setter Property="FocusVisualStyle" Value="{x:Null}" />
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate TargetType="{x:Type Button}">
-					<Border x:Name="ButtonChrome"
-						Background="{TemplateBinding Background}"
-						BorderBrush="{TemplateBinding BorderBrush}"
-						BorderThickness="{TemplateBinding BorderThickness}"
-						CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-						<ContentPresenter Margin="{TemplateBinding Padding}"
-							HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-							VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-							RecognizesAccessKey="True" />
-					</Border>
-					<ControlTemplate.Triggers>
-						<Trigger Property="IsMouseOver" Value="True">
-							<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxHoverBrush}" />
-							<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-						</Trigger>
-						<Trigger Property="IsKeyboardFocused" Value="True">
-							<Setter TargetName="ButtonChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-						</Trigger>
-						<Trigger Property="IsPressed" Value="True">
-							<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
-						</Trigger>
-						<Trigger Property="IsEnabled" Value="False">
-							<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.45" />
-							<Setter Property="Cursor" Value="Arrow" />
-						</Trigger>
-					</ControlTemplate.Triggers>
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
+		<Setter Property="Template" Value="{StaticResource ReduxActionButtonTemplate}" />
+	</Style>
+	<Style x:Key="ReduxPrimaryActionButtonStyle" BasedOn="{StaticResource ReduxActionButtonBaseStyle}" TargetType="{x:Type Button}">
+		<Setter Property="Background" Value="{DynamicResource ReduxPrimaryActionBackgroundBrush}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
+		<Setter Property="Padding" Value="16,7" />
+	</Style>
+	<Style x:Key="ReduxSecondaryActionButtonStyle" BasedOn="{StaticResource ReduxActionButtonBaseStyle}" TargetType="{x:Type Button}" />
+	<Style x:Key="ReduxWarningActionButtonStyle" BasedOn="{StaticResource ReduxActionButtonBaseStyle}" TargetType="{x:Type Button}">
+		<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+	</Style>
+	<Style x:Key="ReduxDestructiveActionButtonStyle" BasedOn="{StaticResource ReduxActionButtonBaseStyle}" TargetType="{x:Type Button}">
+		<Setter Property="Background" Value="{DynamicResource ReduxErrorPillBackground}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+	</Style>
+	<Style x:Key="ReduxGhostActionButtonStyle" BasedOn="{StaticResource ReduxActionButtonBaseStyle}" TargetType="{x:Type Button}">
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="BorderBrush" Value="Transparent" />
 	</Style>
 	<!--
 		Shared "accent-soft pill" button chrome (Settings action buttons, drawer source/author
@@ -1670,7 +1862,10 @@
 			RenderTransformOrigin="0.5,0.5"
 			SnapsToDevicePixels="True">
 			<Border.RenderTransform>
-				<ScaleTransform ScaleX="1" ScaleY="1" />
+				<TransformGroup>
+					<ScaleTransform ScaleX="1" ScaleY="1" />
+					<TranslateTransform Y="0" />
+				</TransformGroup>
 			</Border.RenderTransform>
 			<ContentPresenter HorizontalAlignment="Center"
 				VerticalAlignment="Center"
@@ -1690,20 +1885,26 @@
 				<Trigger.EnterActions>
 					<BeginStoryboard>
 						<Storyboard>
-							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="RenderTransform.ScaleX"
+							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
 								To="1.02" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="RenderTransform.ScaleY"
+							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
 								To="1.02" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
+								To="{StaticResource Redux.Motion.HoverTranslateNegative}" Duration="{StaticResource Redux.Motion.Fast}"
+								EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 						</Storyboard>
 					</BeginStoryboard>
 				</Trigger.EnterActions>
 				<Trigger.ExitActions>
 					<BeginStoryboard>
 						<Storyboard>
-							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="RenderTransform.ScaleX"
+							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
 								To="1" Duration="{StaticResource Redux.Motion.Standard}" />
-							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="RenderTransform.ScaleY"
+							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
 								To="1" Duration="{StaticResource Redux.Motion.Standard}" />
+							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
+								To="0" Duration="{StaticResource Redux.Motion.Standard}"
+								EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 						</Storyboard>
 					</BeginStoryboard>
 				</Trigger.ExitActions>
@@ -1733,7 +1934,6 @@
 	<conv:ModExistsConverter x:Key="ModExistsConverter" />
 	<conv:ModIsActiveConverter x:Key="ModIsActiveConverter" />
 	<conv:StringToUriConverter x:Key="StringToUriConverter" />
-	<conv:DivinityGameLaunchWindowActionToStringConverter x:Key="GameLaunchActionToStringConverter" />
 	<conv:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
 	<conv:StringNotEmptyToVisibilityConverter x:Key="StringNotEmptyToVisibilityConverter" />
 	<conv:StringToSolidBrushConverter x:Key="StringToSolidBrushConverter" />
@@ -1760,46 +1960,22 @@
 		</Setter>
 	</Style>
 	<templateSelectors:TagTemplateSelector x:Key="TagTemplateSelector" />
-	<BitmapImage x:Key="AddItemImage" UriSource="pack://application:,,,/Resources/Icons/AddItem_16x.png" />
 	<BitmapImage x:Key="AlertBar_Close" UriSource="pack://application:,,,/Resources/Icons/AlertBar_Close.png" />
 	<BitmapImage x:Key="AlertBar_Close_Hover" UriSource="pack://application:,,,/Resources/Icons/AlertBar_Close_Hover.png" />
 	<BitmapImage x:Key="AlertBar_Danger" UriSource="pack://application:,,,/Resources/Icons/AlertBar_Danger_16x.png" />
 	<BitmapImage x:Key="AlertBar_Information" UriSource="pack://application:,,,/Resources/Icons/AlertBar_Information_16x.png" />
 	<BitmapImage x:Key="AlertBar_Success" UriSource="pack://application:,,,/Resources/Icons/AlertBar_Success_16x.png" />
 	<BitmapImage x:Key="AlertBar_Warning" UriSource="pack://application:,,,/Resources/Icons/AlertBar_Warning_16x.png" />
-	<BitmapImage x:Key="CopyToClipboardImage" UriSource="pack://application:,,,/Resources/Icons/CopyToClipboard_16x.png" />
 	<BitmapImage x:Key="DefaultIcon" UriSource="pack://application:,,,/Resources/Icons/DefaultIcon_16x.png" />
-	<BitmapImage x:Key="DeleteModImage" UriSource="pack://application:,,,/Resources/Icons/DeleteAzureResource_16x.png" />
 	<BitmapImage x:Key="DivinityEngine" UriSource="pack://application:,,,/Resources/Icons/DivinityEngineGlasses_64x.png" />
 	<BitmapImage x:Key="DivinityEngine2" UriSource="pack://application:,,,/Resources/Icons/DivinityEngine2_64x.png" />
 	<BitmapImage x:Key="ExpandDownImage" UriSource="pack://application:,,,/Resources/Icons/ExpandChevronDown_16x.png" />
-	<BitmapImage x:Key="ExpandDownImageDisabled" UriSource="pack://application:,,,/Resources/Icons/ExpandChevronDown_lightGray_16x.png" />
 	<BitmapImage x:Key="ExpandUpImage" UriSource="pack://application:,,,/Resources/Icons/ExpandChevronUp_16x.png" />
-	<BitmapImage x:Key="ExpandUpImageDisabled" UriSource="pack://application:,,,/Resources/Icons/ExpandChevronUp_lightGrey_16x.png" />
-	<BitmapImage x:Key="ExportDataImage" UriSource="pack://application:,,,/Resources/Icons/ExportData_16x.png" />
-	<BitmapImage x:Key="ExportScriptImage" UriSource="pack://application:,,,/Resources/Icons/ExportScript_16x.png" />
 	<BitmapImage x:Key="HighPriority" UriSource="pack://application:,,,/Resources/Icons/HighPriority_16x.png" />
-	<BitmapImage x:Key="LoadCampaignOrderImage" UriSource="pack://application:,,,/Resources/Icons/LoadCampaignOrder_16x.png" />
-	<BitmapImage x:Key="LogImage" UriSource="pack://application:,,,/Resources/Icons/Log_Normal_32x.png" />
 	<BitmapImage x:Key="MissingDependencyIcon" UriSource="pack://application:,,,/Resources/Icons/FileMissing_16x.png" />
-	<BitmapImage x:Key="OpenDonationLinkImage" UriSource="pack://application:,,,/Resources/Icons/Kofi_16x.png" />
-	<BitmapImage x:Key="OpenFolderImage" UriSource="pack://application:,,,/Resources/Icons/OpenFolder_16x.png" />
-	<BitmapImage x:Key="OpenGameImage" UriSource="pack://application:,,,/Resources/Icons/BG3_64x.png" />
-	<BitmapImage x:Key="OpenInBrowserImage" UriSource="pack://application:,,,/Resources/Icons/BrowserLink_16x.png" />
-	<BitmapImage x:Key="OpenSteamWorkshopFolderImage" UriSource="pack://application:,,,/Resources/Icons/Steam_16x.png" />
-	<BitmapImage x:Key="OsirisImage" UriSource="pack://application:,,,/Resources/Icons/Osiris_16x.png" />
-	<BitmapImage x:Key="OsirisModFixerImage" UriSource="pack://application:,,,/Resources/Icons/Osiris_ModFixer_16x.png" />
-	<BitmapImage x:Key="RefreshImage" UriSource="pack://application:,,,/Resources/Icons/Refresh_16x.png" />
-	<BitmapImage x:Key="RenameFileImage" UriSource="pack://application:,,,/Resources/Icons/Rename_16x.png" />
-	<BitmapImage x:Key="SaveAsImage" UriSource="pack://application:,,,/Resources/Icons/SaveAs_16x.png" />
-	<BitmapImage x:Key="SaveDisabledImage" UriSource="pack://application:,,,/Resources/Icons/SaveGrey_16x.png" />
-	<BitmapImage x:Key="SaveImage" UriSource="pack://application:,,,/Resources/Icons/Save_16x.png" />
 	<BitmapImage x:Key="StatusCriticalError" UriSource="pack://application:,,,/Resources/Icons/StatusCriticalError_16x.png" />
 	<BitmapImage x:Key="StatusWarning" UriSource="pack://application:,,,/Resources/Icons/StatusWarning_16x.png" />
-	<BitmapImage x:Key="ToolkitModProjectIcon" UriSource="pack://application:,,,/Resources/Icons/Builder_16x.png" />
 	<BitmapImage x:Key="XMLSchemaError" UriSource="pack://application:,,,/Resources/Icons/XMLSchemaError_16x.png" />
-	<BitmapImage x:Key="ZipFileAsImage" UriSource="pack://application:,,,/Resources/Icons/ZipFileAs_16x.png" />
-	<BitmapImage x:Key="ZipFileImage" UriSource="pack://application:,,,/Resources/Icons/ZipFile_16x.png" />
 	<!--  Overrides the default context menu open animation to remove flickering.  -->
 	<PopupAnimation x:Key="{x:Static SystemParameters.MenuPopupAnimationKey}">Fade</PopupAnimation>
 	<Style x:Key="IconButtonStyle" BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
@@ -2163,11 +2339,19 @@
 			</Grid.Resources>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="4" />
-				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="8" />
+				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-			<TextBlock Text="{Binding Converter={StaticResource ModToDisplayNameConverter}, Mode=OneWay}" />
-			<TextBlock Grid.Column="2" Text="{Binding Version.Version, Mode=OneWay}" TextAlignment="Right" />
+			<TextBlock Text="{Binding Converter={StaticResource ModToDisplayNameConverter}, Mode=OneWay}"
+				TextTrimming="CharacterEllipsis"
+				ToolTip="{Binding Converter={StaticResource ModToDisplayNameConverter}, Mode=OneWay}" />
+			<TextBlock Grid.Column="2"
+				MaxWidth="150"
+				HorizontalAlignment="Right"
+				Text="{Binding Version.Version, Mode=OneWay}"
+				TextAlignment="Right"
+				TextTrimming="CharacterEllipsis"
+				ToolTip="{Binding Version.Version, Mode=OneWay}" />
 		</Grid>
 	</DataTemplate>
 
@@ -2178,11 +2362,19 @@
 			</Grid.Resources>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="4" />
-				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="8" />
+				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-			<TextBlock Text="{Binding Converter={StaticResource ModToDisplayNameConverter}, Mode=OneWay}" />
-			<TextBlock Grid.Column="2" Text="{Binding Version.Version, Mode=OneWay}" TextAlignment="Right" />
+			<TextBlock Text="{Binding Converter={StaticResource ModToDisplayNameConverter}, Mode=OneWay}"
+				TextTrimming="CharacterEllipsis"
+				ToolTip="{Binding Converter={StaticResource ModToDisplayNameConverter}, Mode=OneWay}" />
+			<TextBlock Grid.Column="2"
+				MaxWidth="150"
+				HorizontalAlignment="Right"
+				Text="{Binding Version.Version, Mode=OneWay}"
+				TextAlignment="Right"
+				TextTrimming="CharacterEllipsis"
+				ToolTip="{Binding Version.Version, Mode=OneWay}" />
 		</Grid>
 	</DataTemplate>
 
@@ -2195,12 +2387,6 @@
 		<Setter Property="VerticalContentAlignment" Value="Center" />
 		<Setter Property="BorderBrush" Value="Transparent" />
 		<Setter Property="BorderThickness" Value="3,0,0,0" />
-		<!--<Style.Resources>
-			<LinearGradientBrush x:Key="ListItemHoverFill_Selected" StartPoint="0,0" EndPoint="0,1">
-				<GradientStop Offset="0" Color="#FFD1FFD1" />
-				<GradientStop Offset="1" Color="#FFA3FFAB" />
-			</LinearGradientBrush>
-		</Style.Resources>-->
 		<Setter Property="Tag" Value="{Binding}" />
 		<Setter Property="ContextMenu">
 			<Setter.Value>
@@ -2968,6 +3154,51 @@
 			</Trigger>
 		</Style.Triggers>
 	</Style>
+	<!-- Informational package-behavior pills are health facts, not warnings. -->
+	<SolidColorBrush x:Key="ReduxInfoPillBorderBrush"
+		Color="{DynamicResource ReduxInfoColor}"
+		Opacity="0.82" />
+	<Style x:Key="ReduxPackageBehaviorPillStyle"
+		BasedOn="{StaticResource ReduxPillBaseStyle}"
+		TargetType="{x:Type Border}">
+		<Setter Property="Background" Value="{DynamicResource ReduxInfoPillBackground}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoPillBorderBrush}" />
+		<Style.Triggers>
+			<DataTrigger Binding="{Binding Severity}" Value="{x:Static health:ModHealthSeverity.Warning}">
+				<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+			</DataTrigger>
+			<DataTrigger Binding="{Binding Severity}" Value="{x:Static health:ModHealthSeverity.Error}">
+				<Setter Property="Background" Value="{DynamicResource ReduxErrorPillBackground}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
+			</DataTrigger>
+		</Style.Triggers>
+	</Style>
+	<DataTemplate x:Key="ReduxPackageBehaviorPillTemplate" DataType="{x:Type health:ModHealthFinding}">
+		<Border Style="{StaticResource ReduxPackageBehaviorPillStyle}" ToolTip="{Binding Message}">
+			<StackPanel Orientation="Horizontal">
+				<controls:ReduxIcon Width="11"
+					Height="11"
+					Margin="0,0,5,0"
+					VerticalAlignment="Center"
+					Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
+					IconKey="info">
+					<controls:ReduxIcon.Style>
+						<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons)}" Value="False">
+									<Setter Property="Visibility" Value="Collapsed" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</controls:ReduxIcon.Style>
+				</controls:ReduxIcon>
+				<TextBlock FontWeight="SemiBold"
+					Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
+					Text="{Binding Title}" />
+			</StackPanel>
+		</Border>
+	</DataTemplate>
 	<!-- Shared pill chrome used by list cells, the selected-mod drawer, and mod hover cards. -->
 	<Style x:Key="ReduxCategoryPillBaseStyle" BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="{x:Type Border}">
 		<!-- Same horizontal sheen as the Nexus/mod.io source pills, built per-category since the
@@ -3046,8 +3277,8 @@
 			</Style>
 		</controls:AutomationTooltip.Style>
 		<StackPanel x:Name="InfoStackPanel"
-			Width="420"
-		    MaxWidth="420"
+			Width="400"
+		    MaxWidth="400"
 		    Background="Transparent"
 		    Orientation="Vertical">
 			<StackPanel.Resources>
@@ -3167,6 +3398,26 @@
 						</TextBlock>
 					</StackPanel>
 				</Border>
+				<ItemsControl VerticalAlignment="Center"
+					ItemTemplate="{StaticResource ReduxPackageBehaviorPillTemplate}"
+					ItemsSource="{Binding HealthSnapshot.PackageBehaviorFindings}">
+					<ItemsControl.ItemContainerStyle>
+						<Style TargetType="{x:Type ContentPresenter}">
+							<Setter Property="Margin" Value="0,0,6,0" />
+							<Setter Property="VerticalAlignment" Value="Center" />
+							<Style.Triggers>
+								<!-- The state pill immediately before this already communicates
+								     the simple Always Loaded state. Keep other behavior facts. -->
+								<DataTrigger Binding="{Binding Code}" Value="{x:Static health:ModHealthFindingCode.AlwaysLoaded}">
+									<Setter Property="Visibility" Value="Collapsed" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</ItemsControl.ItemContainerStyle>
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+				</ItemsControl>
 			</WrapPanel>
 
 			<Separator Margin="4,0" Background="{DynamicResource ReduxBorderBrush}" />
@@ -3247,7 +3498,8 @@
 					CornerRadius="{DynamicResource Redux.CornerRadius.Control}" ClipToBounds="True">
 					<ListBox Grid.IsSharedSizeScope="True"
 						ItemTemplate="{StaticResource DependencyModTemplate}"
-						ItemsSource="{Binding DisplayedDependencies}">
+						ItemsSource="{Binding DisplayedDependencies}"
+						ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 						<ListBox.Style>
 							<Style BasedOn="{StaticResource ModuleShortDescListBox}" TargetType="ListBox">
 								<Setter Property="Background" Value="Transparent" />
@@ -3265,7 +3517,8 @@
 					CornerRadius="{DynamicResource Redux.CornerRadius.Control}" ClipToBounds="True">
 					<ListBox Grid.IsSharedSizeScope="True"
 						ItemTemplate="{StaticResource ConflictModTemplate}"
-						ItemsSource="{Binding DisplayedConflicts}">
+						ItemsSource="{Binding DisplayedConflicts}"
+						ScrollViewer.HorizontalScrollBarVisibility="Disabled">
 						<ListBox.Style>
 							<Style BasedOn="{StaticResource ModuleShortDescListBox}" TargetType="ListBox">
 								<Setter Property="Background" Value="Transparent" />
@@ -4257,10 +4510,6 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
-	<DataTemplate x:Key="HotkeyTemplate" DataType="{x:Type appdata:IHotkey}">
-		<controls:HotkeyEditorControl Hotkey="{Binding}" />
-	</DataTemplate>
-
 	<!--  Xceed WPF Toolkit  -->
 	<SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type xcthemes:ResourceKeys}, ResourceId=ControlDisabledBackgroundKey}" Color="{DynamicResource {x:Static adonisUI:Colors.Layer0BackgroundColor}}" />
 	<SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type xcthemes:ResourceKeys}, ResourceId=ControlDisabledBorderKey}" Color="{DynamicResource {x:Static adonisUI:Colors.Layer0BorderColor}}" />
@@ -4275,90 +4524,197 @@
 		    Focusable="False"
 		    Foreground="{DynamicResource {x:Static adonisUI:Brushes.ForegroundBrush}}" />
 	</DataTemplate>
-	<Style BasedOn="{StaticResource {x:Type xc:IntegerUpDown}}" TargetType="{x:Type xc:IntegerUpDown}">
-		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-		<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUI:Brushes.ForegroundBrush}}" />
-		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-		<Setter Property="WatermarkTemplate" Value="{StaticResource DefaultXCWatermarkTemplate}" />
-		<Setter Property="BorderThickness" Value="1" />
-		<Setter Property="VerticalAlignment" Value="Center" />
-		<Setter Property="MinWidth" Value="88" />
-		<Setter Property="MinHeight" Value="30" />
-		<Setter Property="ClipValueToMinMax" Value="True" />
-		<Style.Triggers>
-			<Trigger Property="IsMouseOver" Value="True">
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
-			</Trigger>
-			<Trigger Property="IsKeyboardFocusWithin" Value="True">
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-			</Trigger>
-			<Trigger Property="IsEnabled" Value="False">
-				<Setter Property="Opacity" Value="0.55" />
-			</Trigger>
-		</Style.Triggers>
-	</Style>
-	<Style BasedOn="{StaticResource {x:Type xc:ULongUpDown}}" TargetType="{x:Type xc:ULongUpDown}">
-		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-		<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUI:Brushes.ForegroundBrush}}" />
-		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-		<Setter Property="WatermarkTemplate" Value="{StaticResource DefaultXCWatermarkTemplate}" />
-		<Setter Property="BorderThickness" Value="1" />
-		<Setter Property="MinWidth" Value="88" />
-		<Setter Property="MinHeight" Value="30" />
-	</Style>
-	<Style BasedOn="{StaticResource {x:Type xc:DoubleUpDown}}" TargetType="{x:Type xc:DoubleUpDown}">
-		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-		<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUI:Brushes.ForegroundBrush}}" />
-		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-		<Setter Property="WatermarkTemplate" Value="{StaticResource DefaultXCWatermarkTemplate}" />
-		<Setter Property="BorderThickness" Value="1" />
-		<Setter Property="MinWidth" Value="88" />
-		<Setter Property="MinHeight" Value="30" />
-	</Style>
-	<Style BasedOn="{StaticResource {x:Type xc:LongUpDown}}" TargetType="{x:Type xc:LongUpDown}">
-		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-		<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUI:Brushes.ForegroundBrush}}" />
-		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-		<Setter Property="WatermarkTemplate" Value="{StaticResource DefaultXCWatermarkTemplate}" />
-		<Setter Property="BorderThickness" Value="1" />
-		<Setter Property="MinWidth" Value="88" />
-		<Setter Property="MinHeight" Value="30" />
-	</Style>
-	<Style x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type xcthemes:ResourceKeys}, ResourceId=SpinnerButtonStyleKey}" TargetType="RepeatButton">
-		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-		<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUI:Brushes.ForegroundBrush}}" />
-		<Setter Property="BorderBrush" Value="{DynamicResource {x:Static adonisUI:Brushes.Layer1BorderBrush}}" />
+	<Style x:Key="ReduxNumericSpinnerButtonStyle" TargetType="RepeatButton">
+		<Setter Property="Background" Value="Transparent" />
 		<Setter Property="BorderThickness" Value="0" />
-		<Setter Property="Padding" Value="2,2" />
+		<Setter Property="Focusable" Value="False" />
+		<Setter Property="HorizontalContentAlignment" Value="Center" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="RepeatButton">
-					<Grid>
-						<chrome:ButtonChrome x:Name="Chrome"
-						    Background="{TemplateBinding Background}"
-						    BorderBrush="{TemplateBinding BorderBrush}"
-						    BorderThickness="0"
-						    CornerRadius="{DynamicResource {x:Static xcthemes:ResourceKeys.SpinButtonCornerRadiusKey}}"
-						    RenderEnabled="{TemplateBinding IsEnabled}"
-						    RenderMouseOver="{TemplateBinding IsMouseOver}"
-						    RenderNormal="True"
-						    RenderPressed="{TemplateBinding IsPressed}"
-						    SnapsToDevicePixels="true" />
-
-						<ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-					</Grid>
+					<Border x:Name="ButtonChrome"
+						Margin="1"
+						Background="{TemplateBinding Background}"
+						CornerRadius="{DynamicResource Redux.CornerRadius.Small}">
+						<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+							VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxHoverBrush}" />
+						</Trigger>
+						<Trigger Property="IsPressed" Value="True">
+							<Setter TargetName="ButtonChrome" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
+						</Trigger>
+						<Trigger Property="IsEnabled" Value="False">
+							<Setter Property="Opacity" Value="0.4" />
+						</Trigger>
+					</ControlTemplate.Triggers>
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
-		<Style.Triggers>
-			<Trigger Property="IsMouseOver" Value="True">
-				<Setter Property="Background" Value="{DynamicResource ReduxHoverBrush}" />
-			</Trigger>
-			<Trigger Property="IsPressed" Value="True">
-				<Setter Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
-			</Trigger>
-		</Style.Triggers>
 	</Style>
+
+	<Style x:Key="ReduxNumericButtonSpinnerStyle" TargetType="{x:Type xc:ButtonSpinner}">
+		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="Focusable" Value="False" />
+		<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+		<Setter Property="VerticalContentAlignment" Value="Stretch" />
+		<Setter Property="Padding" Value="1" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type xc:ButtonSpinner}">
+					<Border x:Name="SpinnerChrome"
+						Background="{TemplateBinding Background}"
+						BorderBrush="{TemplateBinding BorderBrush}"
+						BorderThickness="{TemplateBinding BorderThickness}"
+						CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+						SnapsToDevicePixels="True">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition x:Name="FirstContentColumn" Width="*" />
+								<ColumnDefinition x:Name="SecondContentColumn" Width="*" />
+								<ColumnDefinition x:Name="ThirdContentColumn" Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="*" />
+								<RowDefinition Height="*" />
+							</Grid.RowDefinitions>
+							<ContentPresenter x:Name="ContentPresenter"
+								Grid.RowSpan="2"
+								Grid.ColumnSpan="2"
+								Margin="{TemplateBinding Padding}"
+								HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+								VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+								Focusable="False" />
+							<RepeatButton x:Name="PART_IncreaseButton"
+								Grid.Column="2"
+								Style="{StaticResource ReduxNumericSpinnerButtonStyle}"
+								IsTabStop="False"
+								Width="22">
+								<controls:ReduxIcon Width="10" Height="10"
+									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+									StrokeData="{StaticResource Redux.Icon.ChevronUpStroke}" />
+							</RepeatButton>
+							<RepeatButton x:Name="PART_DecreaseButton"
+								Grid.Row="1"
+								Grid.Column="2"
+								Style="{StaticResource ReduxNumericSpinnerButtonStyle}"
+								IsTabStop="False"
+								Width="22">
+								<controls:ReduxIcon Width="10" Height="10"
+									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+									StrokeData="{StaticResource Redux.Icon.ChevronDownStroke}" />
+							</RepeatButton>
+						</Grid>
+					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="ShowButtonSpinner" Value="False">
+							<Setter TargetName="PART_IncreaseButton" Property="Visibility" Value="Collapsed" />
+							<Setter TargetName="PART_DecreaseButton" Property="Visibility" Value="Collapsed" />
+						</Trigger>
+						<Trigger Property="IsMouseOver" Value="True">
+							<Setter TargetName="SpinnerChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
+						</Trigger>
+						<Trigger Property="IsKeyboardFocusWithin" Value="True">
+							<Setter TargetName="SpinnerChrome" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+						</Trigger>
+						<Trigger Property="IsEnabled" Value="False">
+							<Setter Property="Opacity" Value="0.55" />
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<Style x:Key="ReduxNumericUpDownBaseStyle" TargetType="{x:Type xcprimitives:InputBase}">
+		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+		<Setter Property="HorizontalContentAlignment" Value="Right" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="TextAlignment" Value="Right" />
+		<Setter Property="Padding" Value="7,2" />
+		<Setter Property="MinWidth" Value="88" />
+		<Setter Property="MinHeight" Value="32" />
+		<Setter Property="WatermarkTemplate" Value="{StaticResource DefaultXCWatermarkTemplate}" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type xcprimitives:InputBase}">
+					<xc:ButtonSpinner x:Name="PART_Spinner"
+						Style="{StaticResource ReduxNumericButtonSpinnerStyle}"
+						AllowSpin="{Binding AllowSpin, RelativeSource={RelativeSource TemplatedParent}}"
+						ShowButtonSpinner="{Binding ShowButtonSpinner, RelativeSource={RelativeSource TemplatedParent}}"
+						ButtonSpinnerLocation="{Binding ButtonSpinnerLocation, RelativeSource={RelativeSource TemplatedParent}}">
+						<xc:WatermarkTextBox x:Name="PART_TextBox"
+							AcceptsReturn="False"
+							AutoMoveFocus="{Binding AutoMoveFocus, RelativeSource={RelativeSource TemplatedParent}}"
+							AutoSelectBehavior="{Binding AutoSelectBehavior, RelativeSource={RelativeSource TemplatedParent}}"
+							Background="Transparent"
+							BorderThickness="0"
+							CaretBrush="{DynamicResource ReduxAccentBrush}"
+							ContextMenu="{TemplateBinding ContextMenu}"
+							FontFamily="{TemplateBinding FontFamily}"
+							FontSize="{TemplateBinding FontSize}"
+							FontStretch="{TemplateBinding FontStretch}"
+							FontStyle="{TemplateBinding FontStyle}"
+							FontWeight="{TemplateBinding FontWeight}"
+							Foreground="{TemplateBinding Foreground}"
+							HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+							IsTabStop="True"
+							IsUndoEnabled="{Binding IsUndoEnabled, RelativeSource={RelativeSource TemplatedParent}}"
+							MaxLength="{Binding MaxLength, RelativeSource={RelativeSource TemplatedParent}}"
+							MinWidth="20"
+							Padding="{TemplateBinding Padding}"
+							SelectionBrush="{DynamicResource ReduxAccentSoftBrush}"
+							TabIndex="{TemplateBinding TabIndex}"
+							TextAlignment="{Binding TextAlignment, RelativeSource={RelativeSource TemplatedParent}}"
+							TextWrapping="NoWrap"
+							VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+							Watermark="{Binding Watermark, RelativeSource={RelativeSource TemplatedParent}}"
+							WatermarkTemplate="{Binding WatermarkTemplate, RelativeSource={RelativeSource TemplatedParent}}" />
+					</xc:ButtonSpinner>
+					<ControlTemplate.Triggers>
+						<MultiDataTrigger>
+							<MultiDataTrigger.Conditions>
+								<Condition Binding="{Binding IsReadOnly, RelativeSource={RelativeSource Self}}" Value="False" />
+								<Condition Binding="{Binding AllowTextInput, RelativeSource={RelativeSource Self}}" Value="False" />
+							</MultiDataTrigger.Conditions>
+							<Setter TargetName="PART_TextBox" Property="IsReadOnly" Value="True" />
+						</MultiDataTrigger>
+						<DataTrigger Binding="{Binding IsReadOnly, RelativeSource={RelativeSource Self}}" Value="True">
+							<Setter TargetName="PART_TextBox" Property="IsReadOnly" Value="True" />
+						</DataTrigger>
+						<Trigger Property="IsFocused" Value="True">
+							<Setter TargetName="PART_TextBox" Property="FocusManager.FocusedElement" Value="{Binding ElementName=PART_TextBox}" />
+						</Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
+
+	<Style x:Key="ReduxIntegerUpDownStyle" BasedOn="{StaticResource ReduxNumericUpDownBaseStyle}" TargetType="{x:Type xc:IntegerUpDown}">
+		<Setter Property="ClipValueToMinMax" Value="True" />
+	</Style>
+	<Style BasedOn="{StaticResource ReduxIntegerUpDownStyle}" TargetType="{x:Type xc:IntegerUpDown}" />
+	<Style x:Key="ReduxULongUpDownStyle" BasedOn="{StaticResource ReduxNumericUpDownBaseStyle}" TargetType="{x:Type xc:ULongUpDown}">
+		<Setter Property="ClipValueToMinMax" Value="True" />
+	</Style>
+	<Style BasedOn="{StaticResource ReduxULongUpDownStyle}" TargetType="{x:Type xc:ULongUpDown}" />
+	<Style x:Key="ReduxDoubleUpDownStyle" BasedOn="{StaticResource ReduxNumericUpDownBaseStyle}" TargetType="{x:Type xc:DoubleUpDown}">
+		<Setter Property="ClipValueToMinMax" Value="True" />
+	</Style>
+	<Style BasedOn="{StaticResource ReduxDoubleUpDownStyle}" TargetType="{x:Type xc:DoubleUpDown}" />
+	<Style x:Key="ReduxLongUpDownStyle" BasedOn="{StaticResource ReduxNumericUpDownBaseStyle}" TargetType="{x:Type xc:LongUpDown}">
+		<Setter Property="ClipValueToMinMax" Value="True" />
+	</Style>
+	<Style BasedOn="{StaticResource ReduxLongUpDownStyle}" TargetType="{x:Type xc:LongUpDown}" />
 	<!--
 	<SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type xcthemes:ResourceKeys}, ResourceId=ControlDisabledBackgroundKey}" Color="Red" />
 	<SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type xcthemes:ResourceKeys}, ResourceId=ControlNormalBackgroundKey}" Color="Red" />

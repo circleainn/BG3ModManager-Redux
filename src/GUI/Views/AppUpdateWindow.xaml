@@ -7,18 +7,32 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:local="clr-namespace:DivinityModManager.Views"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
 	Title="Redux Updater"
 	Width="900"
 	Height="620"
 	MinWidth="680"
 	MinHeight="460"
+	ResizeMode="CanResizeWithGrip"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
-	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
+	WindowStyle="SingleBorderWindow"
+	Template="{DynamicResource ReduxWindowTemplate}"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontSize="{DynamicResource Redux.FontSize.12}"
+	FontWeight="{DynamicResource Redux.FontWeight.Body}"
+	TextOptions.TextFormattingMode="Ideal"
+	TextOptions.TextRenderingMode="ClearType"
 	Background="{DynamicResource ReduxWindowBrush}"
-	TitleBarBackground="{DynamicResource ReduxWindowBrush}"
-	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
 	mc:Ignorable="d">
+	<shell:WindowChrome.WindowChrome>
+		<shell:WindowChrome
+			CaptionHeight="0"
+			CornerRadius="0"
+			GlassFrameThickness="0"
+			ResizeBorderThickness="6"
+			UseAeroCaptionButtons="False" />
+	</shell:WindowChrome.WindowChrome>
 	<Window.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
@@ -29,7 +43,7 @@
 				<Setter Property="Width" Value="120" />
 				<Setter Property="Margin" Value="10,0" />
 			</Style>
-			<Style TargetType="StackPanel">
+			<Style x:Key="UpdateButtonPanelStyle" TargetType="StackPanel">
 				<Setter Property="VerticalAlignment" Value="Center" />
 				<Setter Property="Orientation" Value="Horizontal" />
 				<Setter Property="Margin" Value="10" />
@@ -41,19 +55,21 @@
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
+			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
-		<Separator Grid.Row="1"
+		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.Download}" />
+		<Separator Grid.Row="2"
 			Margin="0,18,0,4"
 			HorizontalAlignment="Stretch"
 			VerticalAlignment="Stretch" />
-		<TextBlock Grid.Row="2"
+		<TextBlock Grid.Row="3"
 			Padding="4"
 			FontSize="{DynamicResource Redux.FontSize.24}"
 			Text="Changelog"
 			TextAlignment="Center" />
 		<FlowDocumentScrollViewer x:Name="UpdateChangelogView"
-			Grid.Row="3"
+			Grid.Row="4"
 			ScrollViewer.CanContentScroll="True"
 			ScrollViewer.HorizontalScrollBarVisibility="Disabled"
 			ScrollViewer.VerticalScrollBarVisibility="Auto">
@@ -63,7 +79,7 @@
 				</Style>
 			</FlowDocumentScrollViewer.Resources>
 		</FlowDocumentScrollViewer>
-		<Grid Grid.Row="0">
+		<Grid Grid.Row="1">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="*" />
 				<RowDefinition Height="4*" />
@@ -78,7 +94,7 @@
 				Margin="4,0,4,0"
 				HorizontalAlignment="Center"
 				Background="{DynamicResource {x:Static adonisUI:Brushes.Layer0BackgroundBrush}}"
-				Orientation="Horizontal">
+				Style="{StaticResource UpdateButtonPanelStyle}">
 				<Button x:Name="ConfirmButton"
 					HorizontalAlignment="Center"
 					Background="{DynamicResource ReduxSuccessBrush}"

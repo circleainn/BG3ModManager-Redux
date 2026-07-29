@@ -74,6 +74,10 @@
 		<GradientStop Offset="1" Color="#1EB92340" />
 	</LinearGradientBrush>
 	<SolidColorBrush x:Key="ReduxInfoBrush" Color="{DynamicResource ReduxInfoColor}" />
+	<LinearGradientBrush x:Key="ReduxInfoPillBackground" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#3E326A9F" />
+		<GradientStop Offset="1" Color="#1E326A9F" />
+	</LinearGradientBrush>
 	<SolidColorBrush x:Key="ReduxTextPrimaryBrush" Color="{DynamicResource ReduxTextPrimaryColor}" />
 	<SolidColorBrush x:Key="ReduxTextSecondaryBrush" Color="{DynamicResource ReduxTextSecondaryColor}" />
 	<SolidColorBrush x:Key="ReduxTextMutedBrush" Color="{DynamicResource ReduxTextMutedColor}" />

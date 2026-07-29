@@ -39,9 +39,16 @@ public sealed class ModMetadataViewData : ReactiveObject
 	}
 	private bool HasOnlineMetadata => Provider?.HasMetadata == true;
 
-	public string Title => HasOnlineMetadata && !String.IsNullOrWhiteSpace(Provider?.Name)
-		? Provider.Name
-		: _mod.DisplayName;
+	public string Title
+	{
+		get
+		{
+			if (HasOnlineMetadata && !String.IsNullOrWhiteSpace(Provider?.Name)) return Provider.Name;
+			if (!String.IsNullOrWhiteSpace(_mod.DisplayName)) return _mod.DisplayName;
+			if (!String.IsNullOrWhiteSpace(_mod.FileName)) return _mod.FileName;
+			return "Unknown package";
+		}
+	}
 
 	public string Author => HasOnlineMetadata && !String.IsNullOrWhiteSpace(Provider?.Author)
 		? Provider.Author
@@ -51,13 +58,27 @@ public sealed class ModMetadataViewData : ReactiveObject
 		? Provider.Version
 		: _mod.DisplayVersion;
 
-	public string Summary => HasOnlineMetadata && !String.IsNullOrWhiteSpace(Provider?.Summary)
-		? Provider.Summary
-		: _mod.Description;
+	public string Summary
+	{
+		get
+		{
+			if (HasOnlineMetadata && !String.IsNullOrWhiteSpace(Provider?.Summary)) return Provider.Summary;
+			return !String.IsNullOrWhiteSpace(_mod.Description)
+				? _mod.Description
+				: "No local description is available.";
+		}
+	}
 
-	public string Description => HasOnlineMetadata && !String.IsNullOrWhiteSpace(Provider?.Description)
-		? Provider.Description
-		: _mod.Description;
+	public string Description
+	{
+		get
+		{
+			if (HasOnlineMetadata && !String.IsNullOrWhiteSpace(Provider?.Description)) return Provider.Description;
+			return !String.IsNullOrWhiteSpace(_mod.Description)
+				? _mod.Description
+				: "No local description is available for this mod.";
+		}
+	}
 
 	public string ChangelogText => Provider?.ChangelogText ?? String.Empty;
 
@@ -89,7 +110,7 @@ public sealed class ModMetadataViewData : ReactiveObject
 				_ => "Automatically linked from Nexus Mods"
 			}
 			: $"Automatically linked from {SourceLabel}"
-		: "Selected mod details";
+		: "Local package metadata";
 
 	public bool UsesBundledNexusMetadata => SourceType == ModSourceType.NEXUSMODS
 		&& _mod.NexusModsData?.UsesBundledProvenance == true;
@@ -107,11 +128,18 @@ public sealed class ModMetadataViewData : ReactiveObject
 	// Retained as compatibility aliases for existing bindings while the standalone database badge is removed.
 	public string OfflineDatabaseNoticeTooltip => LinkStatusTooltip;
 
-	public string VersionLabel => HasOnlineMetadata
-		? $"{SourceLabel} version {Version}"
-		: $"Version {Version}";
+	public string VersionLabel => String.IsNullOrWhiteSpace(Version)
+		|| (!HasOnlineMetadata && !_mod.HasMetadata)
+		? "Version unavailable"
+		: HasOnlineMetadata
+			? $"{SourceLabel} version {Version}"
+			: $"Version {Version}";
 
-	public string AuthorLabel => SourceType == ModSourceType.NEXUSMODS ? $"Created by {Author}" : $"By {Author}";
+	public string AuthorLabel => String.IsNullOrWhiteSpace(Author)
+		? "Author unavailable"
+		: SourceType == ModSourceType.NEXUSMODS
+			? $"Created by {Author}"
+			: $"By {Author}";
 	// A Nexus mod's credited creator and uploading account are separate values.
 	// Only UploadedBy is safe to use when constructing a Nexus profile link.
 	public string Uploader => SourceType == ModSourceType.NEXUSMODS
@@ -139,8 +167,8 @@ public sealed class ModMetadataViewData : ReactiveObject
 	{
 		get
 		{
-			if (String.IsNullOrWhiteSpace(Author)) return Visibility.Collapsed;
 			if (SourceType == ModSourceType.NEXUSMODS &&
+				!String.IsNullOrWhiteSpace(Author) &&
 				String.Equals(Author, Uploader, StringComparison.OrdinalIgnoreCase))
 				return Visibility.Collapsed;
 			return Visibility.Visible;
@@ -157,7 +185,9 @@ public sealed class ModMetadataViewData : ReactiveObject
 				return $"{SourceLabel} updated {updated.ToString(DivinityApp.DateTimeColumnFormat, CultureInfo.InstalledUICulture)}";
 			}
 
-			return _mod.LastModifiedDateText;
+			return !String.IsNullOrWhiteSpace(_mod.LastModifiedDateText)
+				? _mod.LastModifiedDateText
+				: "Updated date unavailable";
 		}
 	}
 

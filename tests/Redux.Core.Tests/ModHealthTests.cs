@@ -254,6 +254,10 @@ internal sealed class ModHealthTests
 		AssertInfoFinding(snapshots, merged.UUID, ModHealthFindingCode.ContainsFileOverrides);
 		AssertInfoFinding(snapshots, allowed.UUID, ModHealthFindingCode.AlwaysLoadedWithLoadOrderEntry);
 		AssertInfoFinding(snapshots, modFixer.UUID, ModHealthFindingCode.LegacyModFixerIncluded);
+		RegressionAssert.Equal(1, FindSnapshot(snapshots, alwaysLoaded.UUID).PackageBehaviorFindings.Count);
+		RegressionAssert.Equal(1, FindSnapshot(snapshots, merged.UUID).PackageBehaviorFindings.Count);
+		RegressionAssert.Equal(1, FindSnapshot(snapshots, allowed.UUID).PackageBehaviorFindings.Count);
+		RegressionAssert.Equal(1, FindSnapshot(snapshots, modFixer.UUID).PackageBehaviorFindings.Count);
 		RegressionAssert.True(installed.All(mod => mod.IsActive));
 	}
 

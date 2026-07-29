@@ -414,10 +414,10 @@
 										</DataTemplate>
 									</ComboBox.ItemTemplate>
 								</ComboBox>
-								<Button Margin="7,0,0,0" MinWidth="98" Padding="9,4" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Click="ImportCustomIcon_Click" ToolTip="Import a square transparent PNG into Redux">
+								<Button Margin="7,0,0,0" MinWidth="98" Padding="9,4" Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="ImportCustomIcon_Click" ToolTip="Import a square transparent PNG into Redux">
 									<StackPanel Orientation="Horizontal"><controls:ReduxIcon Width="14" Height="14" Margin="0,0,5,0" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /><TextBlock Text="Import PNG" /></StackPanel>
 								</Button>
-								<Button x:Name="DeleteCustomIconButton" Margin="7,0,0,0" MinWidth="32" Padding="7,4" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Visibility="Collapsed" Click="DeleteCustomIcon_Click" ToolTip="Remove the selected custom icon from Redux">
+								<Button x:Name="DeleteCustomIconButton" Margin="7,0,0,0" MinWidth="32" Padding="7,4" Style="{StaticResource ReduxDestructiveActionButtonStyle}" Visibility="Collapsed" Click="DeleteCustomIcon_Click" ToolTip="Remove the selected custom icon from Redux">
 									<controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" />
 								</Button>
 							</WrapPanel>
@@ -455,7 +455,7 @@
 					<DockPanel Margin="0,0,0,5" LastChildFill="False">
 						<TextBlock VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
 							Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Saved colors" />
-						<Button DockPanel.Dock="Right" MinWidth="96" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}"
+						<Button DockPanel.Dock="Right" MinWidth="96" Style="{StaticResource ReduxSecondaryActionButtonStyle}"
 							Click="SaveCurrentColor_Click">
 							<StackPanel Margin="0" Orientation="Horizontal">
 								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.AddCircle}" />
@@ -476,7 +476,7 @@
 			BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="0,1,0,0">
 		<StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
 			<Button x:Name="ResetToDefaultButton" MinWidth="138" Margin="0,0,8,0"
-				Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Visibility="Collapsed"
+				Style="{StaticResource ReduxWarningActionButtonStyle}" Visibility="Collapsed"
 				Click="ResetToDefault_Click">
 				<StackPanel Orientation="Horizontal">
 					<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
@@ -484,8 +484,8 @@
 					<TextBlock Text="Reset to default" />
 				</StackPanel>
 			</Button>
-			<Button x:Name="ConfirmButton" MinWidth="84" Margin="0,0,8,0" Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" IsDefault="True" Click="Add_Click" Content="Add" />
-			<Button MinWidth="84" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" IsCancel="True" Content="Cancel" />
+			<Button x:Name="ConfirmButton" MinWidth="84" Margin="0,0,8,0" Style="{StaticResource ReduxPrimaryActionButtonStyle}" IsDefault="True" Click="Add_Click" Content="Add" />
+			<Button MinWidth="84" Style="{StaticResource ReduxSecondaryActionButtonStyle}" IsCancel="True" Content="Cancel" />
 		</StackPanel>
 		</Border>
 	</Grid>

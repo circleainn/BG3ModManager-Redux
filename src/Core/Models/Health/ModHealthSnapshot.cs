@@ -11,6 +11,7 @@ public sealed class ModHealthSnapshot
 	public IReadOnlyList<ModHealthFinding> HealthAttentionFindings { get; }
 	public IReadOnlyList<ModHealthFinding> LoadOrderAdviceFindings { get; }
 	public IReadOnlyList<ModHealthFinding> AttentionFindings { get; }
+	public IReadOnlyList<ModHealthFinding> PackageBehaviorFindings { get; }
 	public bool HasFindings => Findings.Count > 0;
 	public int ErrorCount => Findings.Count(finding => finding.Severity == ModHealthSeverity.Error);
 	public int WarningCount => Findings.Count(finding => finding.Severity == ModHealthSeverity.Warning);
@@ -122,6 +123,13 @@ public sealed class ModHealthSnapshot
 				ModHealthFindingCode.DependencyVersionTooOld or
 				ModHealthFindingCode.DeclaredConflict or
 				ModHealthFindingCode.InvalidCreatorManifest)
+			.ToArray();
+		PackageBehaviorFindings = Findings
+			.Where(finding => finding.Code is
+				ModHealthFindingCode.LegacyModFixerIncluded or
+				ModHealthFindingCode.AlwaysLoaded or
+				ModHealthFindingCode.ContainsFileOverrides or
+				ModHealthFindingCode.AlwaysLoadedWithLoadOrderEntry)
 			.ToArray();
 	}
 

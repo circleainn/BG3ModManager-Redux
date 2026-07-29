@@ -1,5 +1,6 @@
 ﻿using AdonisUI.Controls;
 
+using DivinityModManager.Controls;
 using DivinityModManager.Util;
 
 using System.ComponentModel;
@@ -9,7 +10,7 @@ using System.Windows.Input;
 
 namespace DivinityModManager.Views;
 
-public class HideWindowBase<TViewModel> : AdonisWindow, IViewFor<TViewModel> where TViewModel : class
+public class HideWindowBase<TViewModel> : AdonisWindow, IViewFor<TViewModel>, IReduxAnimatedHideWindow where TViewModel : class
 {
 	private bool _hideAnimationRunning;
 	/// <summary>

@@ -4,19 +4,31 @@
 	xmlns:app="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
 	xmlns:c="clr-namespace:DivinityModManager.Controls"
 	xmlns:local="clr-namespace:DivinityModManager.Views"
+	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
 	Title="About BG3 Mod Manager Redux"
 	Width="720"
-	Height="470"
-	MinWidth="620"
-	MinHeight="420"
+	Height="500"
+	MinWidth="640"
+	MinHeight="450"
 	ResizeMode="CanResizeWithGrip"
+	WindowStyle="SingleBorderWindow"
+	Template="{DynamicResource ReduxWindowTemplate}"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
-	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
-	FontWeight="Medium"
-	Background="{DynamicResource ReduxWindowBrush}"
-	TitleBarBackground="{DynamicResource ReduxWindowBrush}"
-	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}">
+	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontSize="{DynamicResource Redux.FontSize.12}"
+	FontWeight="{DynamicResource Redux.FontWeight.Body}"
+	TextOptions.TextFormattingMode="Ideal"
+	TextOptions.TextRenderingMode="ClearType"
+	Background="{DynamicResource ReduxWindowBrush}">
+	<shell:WindowChrome.WindowChrome>
+		<shell:WindowChrome
+			CaptionHeight="0"
+			CornerRadius="0"
+			GlassFrameThickness="0"
+			ResizeBorderThickness="6"
+			UseAeroCaptionButtons="False" />
+	</shell:WindowChrome.WindowChrome>
 	<Window.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
@@ -25,19 +37,33 @@
 			<Style x:Key="AboutLinkStyle" TargetType="c:HyperlinkText">
 				<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
 				<Setter Property="HorizontalAlignment" Value="Left" />
+				<Setter Property="VerticalAlignment" Value="Center" />
 			</Style>
 			<Style x:Key="AboutLabelStyle" TargetType="TextBlock">
 				<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
 				<Setter Property="VerticalAlignment" Value="Center" />
 			</Style>
+			<Style x:Key="AboutSectionCardStyle" TargetType="Border">
+				<Setter Property="Padding" Value="{DynamicResource Redux.Inset.Card}" />
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
+				<Setter Property="BorderThickness" Value="1" />
+				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Card}" />
+			</Style>
 		</ResourceDictionary>
 	</Window.Resources>
-	<Border Margin="12"
-		Padding="22"
-		Background="{DynamicResource ReduxSurfaceBrush}"
-		BorderBrush="{DynamicResource ReduxBorderBrush}"
-		BorderThickness="1"
-		CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<c:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.Information}" />
+		<Border Grid.Row="1"
+			Padding="22"
+			Background="{DynamicResource ReduxAppBackgroundBrush}"
+			BorderBrush="{DynamicResource ReduxBorderBrush}"
+			BorderThickness="1">
 		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
@@ -45,26 +71,41 @@
 				<RowDefinition Height="*" />
 				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
-			<StackPanel Orientation="Horizontal">
-				<Border Width="48" Height="48"
+
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="*" />
+				</Grid.ColumnDefinitions>
+				<Border Width="48"
+					Height="48"
+					VerticalAlignment="Top"
 					Background="{DynamicResource ReduxAccentSoftBrush}"
 					BorderBrush="{DynamicResource ReduxAccentBrush}"
 					BorderThickness="1"
-					CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
-					<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-						FontSize="{DynamicResource Redux.FontSize.22}" FontWeight="SemiBold"
-						Foreground="{DynamicResource ReduxAccentHoverBrush}" Text="R" />
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+					<c:ReduxIcon Width="23"
+						Height="23"
+						HorizontalAlignment="Center"
+						VerticalAlignment="Center"
+						Foreground="{DynamicResource ReduxAccentHoverBrush}"
+						StrokeData="{StaticResource Redux.Icon.Information}" />
 				</Border>
-				<StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
-					<TextBlock x:Name="TitleText" FontSize="{DynamicResource Redux.FontSize.21}" FontWeight="SemiBold"
-						Foreground="{DynamicResource ReduxTextPrimaryBrush}" />
-					<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}">
-						<Run Text="v" /><Run Text="{x:Static app:DivinityApp.REDUX_DISPLAY_VERSION}" /><Run Text="  •  A modern interface for Baldur's Gate 3 mod management" />
+				<StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+					<TextBlock x:Name="TitleText" Style="{StaticResource Redux.Text.PageTitle}" />
+					<TextBlock Margin="0,4,0,0"
+						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+						TextWrapping="Wrap">
+						<Run Text="Version " />
+						<Run Text="{x:Static app:DivinityApp.REDUX_DISPLAY_VERSION}" />
+						<Run Text="  •  A modern interface for Baldur's Gate 3 mod management" />
 					</TextBlock>
 				</StackPanel>
-			</StackPanel>
+			</Grid>
 
-			<Separator Grid.Row="1" Margin="0,18,0,16"
+			<Border Grid.Row="1"
+				Height="1"
+				Margin="0,18,0,16"
 				Background="{DynamicResource ReduxBorderBrush}" />
 
 			<Grid Grid.Row="2">
@@ -73,15 +114,25 @@
 					<ColumnDefinition Width="16" />
 					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
-				<Border Padding="16" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+
+				<Border Style="{StaticResource AboutSectionCardStyle}">
 					<StackPanel>
-						<TextBlock FontSize="{DynamicResource Redux.FontSize.15}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Redux Project" />
-						<TextBlock Margin="0,4,0,14" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Maintained by raincloudsfollow." />
+						<TextBlock Style="{StaticResource Redux.Text.SectionTitle}" Text="Redux Project" />
+						<TextBlock Margin="0,5,0,14"
+							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+							Text="Maintained by raincloudsfollow."
+							TextWrapping="Wrap" />
 						<Grid>
-							<Grid.ColumnDefinitions><ColumnDefinition Width="76" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Grid.RowDefinitions><RowDefinition MinHeight="28" /><RowDefinition MinHeight="28" /><RowDefinition MinHeight="28" /><RowDefinition MinHeight="28" /></Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="76" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<Grid.RowDefinitions>
+								<RowDefinition MinHeight="29" />
+								<RowDefinition MinHeight="29" />
+								<RowDefinition MinHeight="29" />
+								<RowDefinition MinHeight="29" />
+							</Grid.RowDefinitions>
 							<TextBlock Style="{StaticResource AboutLabelStyle}" Text="Project" />
 							<c:HyperlinkText Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Open Redux on GitHub" URL="{x:Static app:DivinityApp.URL_REDUX_REPO}" />
 							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="Releases" />
@@ -94,15 +145,23 @@
 					</StackPanel>
 				</Border>
 
-				<Border Grid.Column="2" Padding="16" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+				<Border Grid.Column="2" Style="{StaticResource AboutSectionCardStyle}">
 					<StackPanel>
-						<TextBlock FontSize="{DynamicResource Redux.FontSize.15}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Original Project Credit" />
-						<TextBlock Margin="0,4,0,14" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Redux is based on LaughingLeader's original BG3 Mod Manager and retains its core functionality." />
+						<TextBlock Style="{StaticResource Redux.Text.SectionTitle}" Text="Original Project" />
+						<TextBlock Margin="0,5,0,14"
+							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+							Text="Redux builds on LaughingLeader's BG3 Mod Manager and preserves its core mod-management behavior."
+							TextWrapping="Wrap" />
 						<Grid>
-							<Grid.ColumnDefinitions><ColumnDefinition Width="76" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Grid.RowDefinitions><RowDefinition MinHeight="28" /><RowDefinition MinHeight="28" /><RowDefinition MinHeight="28" /></Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="76" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<Grid.RowDefinitions>
+								<RowDefinition MinHeight="29" />
+								<RowDefinition MinHeight="29" />
+								<RowDefinition MinHeight="29" />
+							</Grid.RowDefinitions>
 							<TextBlock Style="{StaticResource AboutLabelStyle}" Text="Upstream" />
 							<c:HyperlinkText Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Original BG3 Mod Manager" URL="{x:Static app:DivinityApp.URL_REPO}" />
 							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="Author" />
@@ -114,9 +173,12 @@
 				</Border>
 			</Grid>
 
-			<TextBlock Grid.Row="3" Margin="0,16,0,0" HorizontalAlignment="Center"
-				Foreground="{DynamicResource ReduxTextMutedBrush}"
+			<TextBlock Grid.Row="3"
+				Margin="0,16,0,0"
+				HorizontalAlignment="Center"
+				Style="{StaticResource Redux.Text.Caption}"
 				Text="Organize. Sort. Launch." />
 		</Grid>
-	</Border>
+		</Border>
+	</Grid>
 </local:AboutWindowBase>

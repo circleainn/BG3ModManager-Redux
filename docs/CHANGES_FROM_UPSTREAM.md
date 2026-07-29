@@ -13,9 +13,18 @@ This page tracks what Redux inherits, what it reworks or extends, and what it ad
 
 - Unified the shared visual treatment for mod rows, separators, category interactions, and
   diagnostic status surfaces while retaining theme-specific semantic colors.
-- Improved category-editor previews and shared dialog ownership and backdrop behavior.
+- Added shared Redux window chrome and title bars across the main window, Preferences, Help,
+  About, updater, version generator, and Redux-owned confirmation dialogs.
+- Unified primary, secondary, warning, destructive, and ghost action buttons around shared
+  semantic styling while retaining compact borderless toolbar workflow actions.
+- Improved category-editor previews, dialog ownership, rounded-window behavior, startup
+  transitions, and secondary-window entrance and exit motion.
 - Improved persistence handling for saved list-column layouts and protected a delayed automatic
   sizing pass from overwriting a user resize.
+- Consolidated Mod Health and Load Order Advisor status presentation across the toolbar, compact
+  top menu, selected-mod drawer, hover information, and affected-mod navigation.
+- Removed superseded bitmap controls and legacy converter code after their Lucide or shared Redux
+  replacements were verified.
 - Added the Redux Core test project to the solution and extended Mod Health regression coverage.
 
 ## Inherited foundation

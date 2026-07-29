@@ -114,8 +114,7 @@ public partial class ReduxMessageBoxWindow : AdonisUI.Controls.AdonisWindow
 
 	/// <summary>
 	/// Adds an extra action button (e.g. "Copy to Clipboard") alongside the standard result
-	/// buttons. Extra actions do not close the dialog by default, matching the behavior of the
-	/// legacy shared MessageBoxSelectableText template this replaces.
+	/// buttons. Extra actions do not close the dialog unless requested.
 	/// </summary>
 	public void AddExtraAction(string label, Action callback, bool closesDialog = false)
 	{
@@ -124,7 +123,7 @@ public partial class ReduxMessageBoxWindow : AdonisUI.Controls.AdonisWindow
 			Content = label,
 			MinWidth = 80,
 			Margin = new Thickness(0, 0, 8, 0),
-			Style = (Style)FindResource("ReduxRoundedSecondaryButtonStyle")
+			Style = (Style)FindResource("ReduxSecondaryActionButtonStyle")
 		};
 		button.Click += (_, _) =>
 		{

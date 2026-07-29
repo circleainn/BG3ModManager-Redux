@@ -15,25 +15,33 @@
     xmlns:local="clr-namespace:DivinityModManager.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:reactiveui="http://reactiveui.net"
+    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
     xmlns:vm="clr-namespace:DivinityModManager.ViewModels"
     xmlns:xc="http://schemas.xceed.com/wpf/xaml/toolkit"
     Title="{Binding Title}"
+	Icon="/BG3ModManager;component/BG3ModManager.ico"
 	Width="1440"
 	Height="900"
 	MinWidth="960"
 	MinHeight="620"
+	WindowStyle="SingleBorderWindow"
+	Template="{DynamicResource ReduxWindowTemplate}"
+	Background="{DynamicResource ReduxWindowBrush}"
 	WindowStartupLocation="CenterScreen"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="Medium"
 	TextOptions.TextFormattingMode="Ideal"
 	TextOptions.TextRenderingMode="ClearType"
     d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
-    TitleBarBackground="{DynamicResource ReduxWindowBrush}"
-    TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
     mc:Ignorable="d">
-	<Window.Style>
-		<Style BasedOn="{StaticResource {x:Type Window}}" TargetType="Window" />
-	</Window.Style>
+	<shell:WindowChrome.WindowChrome>
+		<shell:WindowChrome
+			CaptionHeight="0"
+			CornerRadius="0"
+			GlassFrameThickness="0"
+			ResizeBorderThickness="6"
+			UseAeroCaptionButtons="False" />
+	</shell:WindowChrome.WindowChrome>
 	<!--  d:DataContext="{d:DesignInstance IsDesignTimeCreatable=True, Type=local:MainWindowDebugData}"  -->
 	<Window.Resources>
 		<ResourceDictionary>
@@ -45,22 +53,35 @@
 	<Window.TaskbarItemInfo>
 		<TaskbarItemInfo />
 	</Window.TaskbarItemInfo>
-	<Grid x:Name="MainGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-		<Border x:Name="WindowResizeGlow"
-			Margin="1"
-			Panel.ZIndex="1000"
-			Background="Transparent"
-			BorderBrush="{DynamicResource ReduxAccentHoverBrush}"
-			BorderThickness="2"
-			CornerRadius="6"
-			IsHitTestVisible="False"
-			Opacity="0">
-			<Border.Effect>
-				<DropShadowEffect BlurRadius="10"
-					Color="{DynamicResource ReduxAccentHoverColor}"
-					Opacity="0.75"
-					ShadowDepth="0" />
-			</Border.Effect>
-		</Border>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<controls:ReduxWindowTitleBar
+			Background="{DynamicResource ReduxWindowBrush}"
+			BottomBorderThickness="0"
+			IconSource="{Binding Icon, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" />
+		<Grid x:Name="MainGrid"
+			Grid.Row="1"
+			HorizontalAlignment="Stretch"
+			VerticalAlignment="Stretch">
+			<Border x:Name="WindowResizeGlow"
+				Margin="1"
+				Panel.ZIndex="1000"
+				Background="Transparent"
+				BorderBrush="{DynamicResource ReduxAccentHoverBrush}"
+				BorderThickness="2"
+				CornerRadius="6"
+				IsHitTestVisible="False"
+				Opacity="0">
+				<Border.Effect>
+					<DropShadowEffect BlurRadius="10"
+						Color="{DynamicResource ReduxAccentHoverColor}"
+						Opacity="0.75"
+						ShadowDepth="0" />
+				</Border.Effect>
+			</Border>
+		</Grid>
 	</Grid>
 </adonisControls:AdonisWindow>

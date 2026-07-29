@@ -73,6 +73,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
+		<Resource Include="BG3ModManager.ico" />
 		<None Include="Resources\*.json">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

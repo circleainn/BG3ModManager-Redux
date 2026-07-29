@@ -23,7 +23,7 @@
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-			<Style x:Key="ThemeColorButtonStyle" BasedOn="{StaticResource ReduxRoundedSecondaryButtonStyle}" TargetType="Button">
+			<Style x:Key="ThemeColorButtonStyle" BasedOn="{StaticResource ReduxSecondaryActionButtonStyle}" TargetType="Button">
 				<Setter Property="Height" Value="52" />
 				<Setter Property="Margin" Value="0,0,10,10" />
 				<Setter Property="Padding" Value="10,7" />
@@ -217,8 +217,15 @@
 			<Grid Grid.Row="5" Margin="0,14,0,0">
 				<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
 				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Color changes preview immediately behind this window." />
-				<Button Grid.Column="1" MinWidth="90" Margin="0,0,8,0" Content="Cancel" IsCancel="True" Style="{StaticResource ReduxRoundedSecondaryButtonStyle}" Click="CancelButton_Click" />
-				<Button Grid.Column="2" MinWidth="110" Content="Save Theme" IsDefault="True" Style="{StaticResource ReduxRoundedPrimaryButtonStyle}" Click="SaveButton_Click" />
+				<Button Grid.Column="1" MinWidth="90" Margin="0,0,8,0" Content="Cancel" IsCancel="True" Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="CancelButton_Click" />
+				<Button Grid.Column="2" MinWidth="110" IsDefault="True" Style="{StaticResource ReduxPrimaryActionButtonStyle}" Click="SaveButton_Click">
+					<StackPanel Orientation="Horizontal">
+						<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
+							Foreground="{DynamicResource ReduxAccentForegroundBrush}"
+							StrokeData="{StaticResource Redux.Icon.Save}" />
+						<TextBlock Text="Save Theme" />
+					</StackPanel>
+				</Button>
 			</Grid>
 		</Grid>
 	</Border>

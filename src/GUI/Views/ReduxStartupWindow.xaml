@@ -63,7 +63,15 @@
 			<Ellipse.Effect><BlurEffect Radius="80" /></Ellipse.Effect>
 		</Ellipse>
 
-		<Grid Margin="28,24,28,22">
+		<!--
+			Only the foreground animates on entrance. The card background, border and colour
+			fields above are the splash surface itself: fading them leaves nothing but the
+			opaque window background, which reads as a black window fading into the splash.
+		-->
+		<Grid x:Name="StartupForeground" Margin="28,24,28,22">
+			<Grid.RenderTransform>
+				<TranslateTransform Y="0" />
+			</Grid.RenderTransform>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="*" />

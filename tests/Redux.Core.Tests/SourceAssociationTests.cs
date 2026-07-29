@@ -58,7 +58,22 @@ public sealed class SourceAssociationTests
 
 		RegressionAssert.Equal(ModSourceType.NONE, mod.Metadata.SourceType);
 		RegressionAssert.Equal("Local", mod.Metadata.SourceLabel);
+		RegressionAssert.Equal("Local package metadata", mod.Metadata.LinkStatus);
 		RegressionAssert.True(mod.NexusModsData.HasMetadata);
+	}
+
+	public void LocalMetadataUsesExplicitUnavailableFallbacks()
+	{
+		var mod = CreateMod();
+		mod.Author = String.Empty;
+		mod.Description = String.Empty;
+		mod.HasMetadata = false;
+
+		RegressionAssert.Equal("Author unavailable", mod.Metadata.AuthorLabel);
+		RegressionAssert.Equal("Version unavailable", mod.Metadata.VersionLabel);
+		RegressionAssert.Equal("No local description is available.", mod.Metadata.Summary);
+		RegressionAssert.Equal("No local description is available for this mod.", mod.Metadata.Description);
+		RegressionAssert.Equal(System.Windows.Visibility.Visible, mod.Metadata.LocalAuthorVisibility);
 	}
 
 	public void CreatorManifestModioCacheRequiresTheCurrentProjectClaim()

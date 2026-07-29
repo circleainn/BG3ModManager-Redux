@@ -5,16 +5,24 @@ using DivinityModManager.ViewModels;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 
 namespace DivinityModManager.Views;
 
 public partial class ReduxStartupWindow : Window, IReduxTypographyIsolated
 {
-	private static readonly Duration EntranceDuration = TimeSpan.FromMilliseconds(180);
-	private static readonly Duration ExitDuration = TimeSpan.FromMilliseconds(150);
+	private static readonly Duration EntranceDuration = TimeSpan.FromMilliseconds(280);
+	private static readonly Duration ExitDuration = TimeSpan.FromMilliseconds(220);
+	// The card leaves as a whole on exit, so scaling it there is fine. On entrance only
+	// StartupForeground moves: see the note in the XAML.
+	private const double ExitScale = 0.96;
+	private const double ForegroundRiseDistance = 10;
 	private const int DwmWindowCornerPreferenceAttribute = 33;
 	private const int DwmWindowCornerPreferenceRound = 2;
+
+	private bool _contentRendered;
+	private Task? _entranceTask;
 
 	public static readonly DependencyProperty VersionTextProperty = DependencyProperty.Register(
 		nameof(VersionText),
@@ -31,22 +39,32 @@ public partial class ReduxStartupWindow : Window, IReduxTypographyIsolated
 	public ReduxStartupWindow()
 	{
 		InitializeComponent();
+		// Read from disk rather than from the view model: the splash is shown before
+		// MainWindowViewModel.LoadSettings runs, so the view model's theme is still the
+		// default at this point. Doing it here means the first frame is already correct.
+		ReduxThemeService.ApplyPersistedTheme(Resources);
 		FontFamily = ReduxTypographyService.ResolveFontFamily(ReduxTypographyFont.Manrope);
 		FontSize = 12;
 		VersionText = $"v{DivinityApp.REDUX_DISPLAY_VERSION}";
-		// The splash must be fully opaque on its first rendered frame. Fading the
-		// entire transparent window in briefly exposes the desktop beneath the card.
-		StartupContent.Opacity = 1;
+		// The native window remains opaque throughout. Animating only its content
+		// reveals the same solid Redux background instead of the desktop.
+		if (SystemParameters.ClientAreaAnimation)
+		{
+			StartupForeground.Opacity = 0;
+			((TranslateTransform)StartupForeground.RenderTransform).Y = ForegroundRiseDistance;
+		}
+
 		SourceInitialized += OnSourceInitialized;
-		Loaded += OnLoaded;
+		ContentRendered += (_, _) => _contentRendered = true;
 	}
 
+	/// <summary>
+	/// Binds the splash to the startup progress. The theme is deliberately not applied here:
+	/// this runs before the view model has loaded settings, so reading its theme would replace
+	/// the correct persisted palette with the default one.
+	/// </summary>
 	public void Attach(MainWindowViewModel viewModel)
 	{
-		ReduxThemeService.Apply(
-			Resources,
-			viewModel.Settings.ColorTheme,
-			ReduxThemeService.GetActiveTheme(viewModel.Settings));
 		DataContext = viewModel;
 	}
 
@@ -63,39 +81,77 @@ public partial class ReduxStartupWindow : Window, IReduxTypographyIsolated
 		{
 			EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
 		};
-		var scaleX = new DoubleAnimation(1, 0.985, ExitDuration)
+		var scale = new DoubleAnimation(1, ExitScale, ExitDuration)
 		{
 			EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
 		};
-		var scaleY = scaleX.Clone();
 		opacity.Completed += (_, _) =>
 		{
 			Close();
 			completion.TrySetResult();
 		};
-		StartupContent.BeginAnimation(OpacityProperty, opacity);
-		StartupContent.RenderTransform.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, scaleX);
-		StartupContent.RenderTransform.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, scaleY);
+		StartupContent.BeginAnimation(UIElement.OpacityProperty, opacity);
+		StartupContent.RenderTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scale);
+		StartupContent.RenderTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scale.Clone());
 		return completion.Task;
 	}
 
-	private void OnLoaded(object sender, RoutedEventArgs e)
+	/// <summary>
+	/// Plays the splash entrance and completes when it has finished. Callers must await this
+	/// before starting work that occupies the UI thread.
+	/// </summary>
+	/// <remarks>
+	/// This used to run off <see cref="FrameworkElement.Loaded"/>, which is why it was never
+	/// visible: <c>Loaded</c> fires inside <c>Show()</c>, and the caller then built the main
+	/// window on the very next dispatcher pass. The animation clock elapsed while the UI
+	/// thread was blocked by that construction, so the splash presented one frame at its
+	/// start value and the next frame it presented was already the end state.
+	/// </remarks>
+	public Task PlayEntranceAsync() => _entranceTask ??= PlayEntranceCoreAsync();
+
+	private async Task PlayEntranceCoreAsync()
 	{
 		if (!SystemParameters.ClientAreaAnimation)
 		{
-			StartupContent.Opacity = 1;
+			StartupForeground.Opacity = 1;
+			((TranslateTransform)StartupForeground.RenderTransform).Y = 0;
 			return;
 		}
 
-		var transform = (System.Windows.Media.ScaleTransform)StartupContent.RenderTransform;
-		transform.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, new DoubleAnimation(0.985, 1, EntranceDuration)
+		// Present a real frame at the start values before the clock begins.
+		await WaitForContentRenderedAsync();
+		await ReduxWindowBehavior.WaitForRenderFrameAsync();
+
+		var transform = (TranslateTransform)StartupForeground.RenderTransform;
+		var completion = new TaskCompletionSource();
+		var opacity = new DoubleAnimation(0, 1, EntranceDuration)
 		{
 			EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-		});
-		transform.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, new DoubleAnimation(0.985, 1, EntranceDuration)
+		};
+		var rise = new DoubleAnimation(ForegroundRiseDistance, 0, EntranceDuration)
 		{
 			EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-		});
+		};
+		opacity.Completed += (_, _) => completion.TrySetResult();
+
+		StartupForeground.BeginAnimation(UIElement.OpacityProperty, opacity);
+		transform.BeginAnimation(TranslateTransform.YProperty, rise);
+		await completion.Task;
+	}
+
+	private Task WaitForContentRenderedAsync()
+	{
+		if (_contentRendered) return Task.CompletedTask;
+
+		var completion = new TaskCompletionSource();
+		EventHandler handler = null;
+		handler = (_, _) =>
+		{
+			ContentRendered -= handler;
+			completion.TrySetResult();
+		};
+		ContentRendered += handler;
+		return completion.Task;
 	}
 
 	private void OnSourceInitialized(object? sender, EventArgs e)

@@ -18,6 +18,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:mv="clr-namespace:DivinityModManager.Models.View"
     xmlns:reactiveui="http://reactiveui.net"
+    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
     xmlns:vm="clr-namespace:DivinityModManager.ViewModels"
     xmlns:xc="http://schemas.xceed.com/wpf/xaml/toolkit"
     Title="Preferences"
@@ -25,17 +26,22 @@
 	Height="720"
 	MinWidth="780"
 	MinHeight="600"
+	WindowStyle="SingleBorderWindow"
+	Template="{DynamicResource ReduxWindowTemplate}"
 	WindowStartupLocation="CenterOwner"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="{DynamicResource Redux.FontWeight.Body}"
 	TextOptions.TextFormattingMode="Ideal"
 	TextOptions.TextRenderingMode="ClearType"
-    TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
-    TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
     mc:Ignorable="d">
-	<Window.Style>
-		<Style BasedOn="{StaticResource {x:Type Window}}" TargetType="Window" />
-	</Window.Style>
+	<shell:WindowChrome.WindowChrome>
+		<shell:WindowChrome
+			CaptionHeight="0"
+			CornerRadius="0"
+			GlassFrameThickness="0"
+			ResizeBorderThickness="6"
+			UseAeroCaptionButtons="False" />
+	</shell:WindowChrome.WindowChrome>
 	<Window.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
@@ -104,7 +110,7 @@
 				<Setter Property="Cursor" Value="Hand" />
 				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
-				<Setter Property="Padding" Value="12,6" />
+				<Setter Property="Padding" Value="{DynamicResource Redux.TabHeader.Padding}" />
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type TabItem}">
@@ -117,16 +123,20 @@
 							<Grid x:Name="HeaderHost"
 								Margin="0,0,4,0"
 								Background="Transparent"
+								RenderTransformOrigin="0.5,0.5"
 								TextElement.Foreground="{DynamicResource ReduxTextMutedBrush}">
+								<Grid.RenderTransform>
+									<TranslateTransform Y="0" />
+								</Grid.RenderTransform>
 								<Grid.RowDefinitions>
 									<RowDefinition Height="*" />
 									<RowDefinition Height="2" />
 								</Grid.RowDefinitions>
 								<Border x:Name="TabHoverSurface"
 									Grid.RowSpan="2"
-									Margin="2,3"
-									Background="{DynamicResource ReduxHoverBrush}"
-									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+									Margin="{DynamicResource Redux.TabHeader.HoverMargin}"
+									Background="{DynamicResource ReduxAccentSoftBrush}"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
 									IsHitTestVisible="False"
 									Opacity="0" />
 								<ContentPresenter Margin="{TemplateBinding Padding}"
@@ -147,12 +157,16 @@
 								</Border>
 							</Grid>
 							<ControlTemplate.Triggers>
-											<Trigger Property="IsMouseOver" Value="True">
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter TargetName="HeaderHost" Property="TextElement.Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 									<Trigger.EnterActions>
 										<BeginStoryboard>
 											<Storyboard>
 												<DoubleAnimation Storyboard.TargetName="TabHoverSurface" Storyboard.TargetProperty="Opacity"
 													To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+												<DoubleAnimation Storyboard.TargetName="HeaderHost" Storyboard.TargetProperty="RenderTransform.Y"
+													To="{StaticResource Redux.Motion.HoverTranslateNegative}" Duration="{StaticResource Redux.Motion.Fast}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
 									</Trigger.EnterActions>
@@ -161,12 +175,12 @@
 											<Storyboard>
 												<DoubleAnimation Storyboard.TargetName="TabHoverSurface" Storyboard.TargetProperty="Opacity"
 													To="0" Duration="{StaticResource Redux.Motion.Standard}" />
+												<DoubleAnimation Storyboard.TargetName="HeaderHost" Storyboard.TargetProperty="RenderTransform.Y"
+													To="0" Duration="{StaticResource Redux.Motion.Standard}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
 									</Trigger.ExitActions>
-											</Trigger>
-								<Trigger Property="IsMouseOver" Value="True">
-									<Setter TargetName="HeaderHost" Property="TextElement.Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 								</Trigger>
 								<Trigger Property="IsSelected" Value="True">
 									<Setter Property="Panel.ZIndex" Value="1" />
@@ -320,7 +334,7 @@
 				</Setter>
 			</Style>
 			<Style x:Key="SettingsWarningButtonStyle" BasedOn="{StaticResource SettingsActionButtonStyle}" TargetType="{x:Type Button}">
-				<Setter Property="Background" Value="{DynamicResource ReduxWarningSoftBrush}" />
+				<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 			</Style>
@@ -415,13 +429,22 @@
 			</DataTemplate>
 		</ResourceDictionary>
 	</Window.Resources>
-	<Grid Background="{DynamicResource ReduxWindowBrush}">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<controls:ReduxWindowTitleBar
+			Background="{DynamicResource ReduxWindowBrush}"
+			BottomBorderThickness="0"
+			IconData="{DynamicResource Redux.Icon.Settings}" />
+		<Grid Grid.Row="1" Background="{DynamicResource ReduxWindowBrush}">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
-		<Border Margin="12,7,12,1"
+		<Border Margin="12,7,12,5"
 			Padding="0,4"
 			Background="Transparent"
 			BorderThickness="0">
@@ -650,7 +673,7 @@
 						<Border Grid.Row="5" Margin="0,10,0,0" Style="{StaticResource CompactThemeSectionCardStyle}">
 							<Grid>
 								<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-								<Grid.ColumnDefinitions><ColumnDefinition Width="250" /><ColumnDefinition Width="16" /><ColumnDefinition Width="*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="160" /></Grid.ColumnDefinitions>
+								<Grid.ColumnDefinitions><ColumnDefinition Width="190" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 								<StackPanel VerticalAlignment="Center">
 									<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Typography" />
 									<TextBlock Margin="0,3,0,7" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Typeface and scale apply throughout Redux." TextWrapping="Wrap" />
@@ -659,25 +682,28 @@
 								</StackPanel>
 								<Grid Grid.Column="2" VerticalAlignment="Center">
 									<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-									<TextBlock Margin="0,0,0,4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Typeface" />
-									<Grid Grid.Row="1">
-										<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-										<ComboBox x:Name="TypographyComboBox" MinWidth="170" DisplayMemberPath="Name"
-											SelectionChanged="TypographyComboBox_SelectionChanged" ToolTip="Choose a bundled or imported typeface" />
-										<Button Grid.Column="1" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7" Style="{StaticResource SettingsActionButtonStyle}" Click="ImportCustomFont_Click" ToolTip="Import a TrueType or OpenType font"><controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Download}" /></Button>
-										<Button x:Name="DeleteCustomFontButton" Grid.Column="2" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7" Style="{StaticResource SettingsActionButtonStyle}" Click="DeleteCustomFont_Click" ToolTip="Remove the selected imported font"><controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /></Button>
-										<Button Grid.Column="3" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7" Style="{StaticResource SettingsActionButtonStyle}" Click="OpenCustomFontsFolder_Click" ToolTip="Open the custom fonts folder"><controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></Button>
+									<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="140" /></Grid.ColumnDefinitions>
+									<StackPanel>
+										<TextBlock Margin="0,0,0,4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Typeface" />
+										<Grid>
+											<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+											<ComboBox x:Name="TypographyComboBox" Grid.Column="0" MinWidth="170" HorizontalAlignment="Stretch" DisplayMemberPath="Name"
+												SelectionChanged="TypographyComboBox_SelectionChanged" ToolTip="Choose a bundled or imported typeface" />
+											<Button Grid.Column="1" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7" Style="{StaticResource SettingsActionButtonStyle}" Click="ImportCustomFont_Click" ToolTip="Import a TrueType or OpenType font"><controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Download}" /></Button>
+											<Button x:Name="DeleteCustomFontButton" Grid.Column="2" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7" Style="{StaticResource SettingsActionButtonStyle}" Click="DeleteCustomFont_Click" ToolTip="Remove the selected imported font"><controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /></Button>
+											<Button Grid.Column="3" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7" Style="{StaticResource SettingsActionButtonStyle}" Click="OpenCustomFontsFolder_Click" ToolTip="Open the custom fonts folder"><controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></Button>
+										</Grid>
+									</StackPanel>
+									<StackPanel Grid.Column="2">
+										<TextBlock Margin="0,0,0,4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Text size" />
+										<ComboBox x:Name="TextSizeComboBox" DisplayMemberPath="Description"
+												ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxTextSize}}}" SelectedValuePath="Value"
+												ToolTip="Choose Compact, Default, or Large interface text" />
+									</StackPanel>
+									<TextBlock Grid.Row="1" Grid.ColumnSpan="3" Margin="0,8,0,0"
+										FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+										Text="Imported fonts are provided as-is; some files may render differently or may not be compatible with Redux." TextWrapping="Wrap" />
 									</Grid>
-								</Grid>
-								<StackPanel Grid.Column="4" VerticalAlignment="Center">
-									<TextBlock Margin="0,0,0,4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Text size" />
-									<ComboBox x:Name="TextSizeComboBox" DisplayMemberPath="Description"
-											ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxTextSize}}}" SelectedValuePath="Value"
-											ToolTip="Choose Compact, Default, or Large interface text" />
-								</StackPanel>
-								<TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Margin="0,8,0,0"
-									FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Imported fonts are provided as-is; some files may render differently or may not be compatible with Redux." TextWrapping="Wrap" />
 							</Grid>
 						</Border>
 
@@ -816,7 +842,7 @@
 						Text="Select a shortcut and press Enter, or double-click its row to record a new key combination." />
 					<Grid Grid.Column="1"
 						Grid.RowSpan="2"
-						Height="28"
+						MinHeight="30"
 						Margin="12,0,8,10"
 						VerticalAlignment="Center">
 						<TextBox x:Name="KeybindingsSearchTextBox"
@@ -1186,5 +1212,6 @@
 				<controls:AlertBar x:Name="AlertBar" Theme="Standard" />
 			</StatusBarItem>
 		</StatusBar>
+		</Grid>
 	</Grid>
 </local:SettingsWindowBase>

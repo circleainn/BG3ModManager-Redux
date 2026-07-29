@@ -22,6 +22,13 @@ namespace DivinityModManager;
 /// </summary>
 public partial class App : Application
 {
+	// The main window's arrival is a hard cut -- it is opaque and its bounds are not animated,
+	// so nothing can soften the HWND appearing. What the fade can do is let the UI resolve out
+	// of the window's own surface colour rather than landing fully formed. A shallow value
+	// (0.85) is invisible against an opaque background; this needs to be deep enough to read.
+	private const double StartupRevealOpacity = 0.4;
+	private static readonly Duration StartupRevealDuration = TimeSpan.FromMilliseconds(280);
+
 	public App()
 	{
 		Services.RegisterSingleton<IFileWatcherService>(new FileWatcherService());
@@ -75,8 +82,13 @@ public partial class App : Application
 		// Let the compact startup surface render before constructing the much larger
 		// main visual tree. The main window still drives the existing initialization
 		// pipeline; it is simply prepared out of sight until that pipeline completes.
-		Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() =>
+		Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(async () =>
 		{
+			// Building MainWindow occupies the UI thread for much longer than the splash
+			// entrance lasts, and an animation whose clock runs while no frames are being
+			// presented is never seen. Let the entrance finish before that work starts.
+			await startupWindow.PlayEntranceAsync();
+
 			var mainWindow = new MainWindow();
 			mainWindow.PrepareForStartup();
 			startupWindow.Attach(mainWindow.ViewModel);
@@ -95,8 +107,20 @@ public partial class App : Application
 				revealStarted = true;
 				mainWindow.ViewModel.PropertyChanged -= initializedHandler;
 				await mainWindow.PrepareVisualTreeForRevealAsync();
+				// Crossfade the prepared main surface with the splash. Both top-level
+				// windows stay opaque; only their WPF content roots animate. Main starts
+				// only slightly transparent -- its window background is opaque, so a low
+				// starting opacity reads as a large blank rectangle rather than a fade.
+				ReduxWindowBehavior.PrepareEntrance(mainWindow, StartupRevealOpacity);
 				mainWindow.RevealAfterStartup();
-				await startupWindow.CloseWithTransitionAsync();
+				// RevealAfterStartup moves the window onscreen; let that frame present at
+				// the start opacity before the entrance clock begins.
+				await ReduxWindowBehavior.WaitForRenderFrameAsync();
+
+				await Task.WhenAll(
+					ReduxWindowBehavior.AnimateEntranceAsync(mainWindow, StartupRevealOpacity, StartupRevealDuration),
+					startupWindow.CloseWithTransitionAsync());
+
 				mainWindow.Activate();
 				await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
 				mainWindow.ViewModel.CompleteStartupPresentation();

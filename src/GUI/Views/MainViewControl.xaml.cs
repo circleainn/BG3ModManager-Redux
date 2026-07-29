@@ -1101,6 +1101,8 @@ public partial class MainViewControl : MainViewControlViewBase
 	{
 		if (sender is MenuItem { DataContext: ModHealthSnapshot snapshot })
 			ModLayout.FocusModHealthSnapshot(snapshot);
+		else if (sender is MenuItem { DataContext: ModHealthFindingGroupViewModel group })
+			ModLayout.FocusModHealthSnapshot(group.PrimarySnapshot);
 	}
 
 	public void OnActivated()
