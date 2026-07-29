@@ -643,8 +643,7 @@ public partial class SettingsWindow : SettingsWindowBase
 					{
 						cb.SetBinding(CheckBox.VisibilityProperty, debugModeBinding);
 					}
-					// Both of these only mean anything while Mod Health is running, so they follow
-					// its enabled state the same way.
+					// These optional diagnostic details only apply while Mod Diagnostics is running.
 					if (prop.Property.Name == nameof(DivinityModManagerSettings.EnableLoadOrderAdvisor)
 						|| prop.Property.Name == nameof(DivinityModManagerSettings.DisableModioWarnings))
 					{

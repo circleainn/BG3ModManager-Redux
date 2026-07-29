@@ -168,27 +168,19 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public ObservableCollectionExtended<DivinityModData> InactiveMods => _inactiveMods;
 	private readonly IModHealthAnalyzer _modHealthAnalyzer = new ModHealthAnalyzer();
 	private readonly ObservableCollectionExtended<ModHealthSnapshot> _modHealthSnapshotItems = new();
-	private readonly ObservableCollectionExtended<ModHealthSnapshot> _activeModHealthAttentionItems = new();
-	private readonly ObservableCollectionExtended<ModHealthFindingGroupViewModel> _activeModHealthFindingGroupItems = new();
+	private readonly ObservableCollectionExtended<ModHealthSnapshot> _activeDiagnosticAttentionItems = new();
+	private readonly ObservableCollectionExtended<ModDiagnosticFindingGroupViewModel> _activeDiagnosticFindingGroupItems = new();
 	private IReadOnlyList<DivinityModData> _lastDetectedDuplicateMods = Array.Empty<DivinityModData>();
 	private IDisposable _modHealthRefreshTask;
 	private string _lastModHealthDiagnosticSignature = String.Empty;
 	private string _lastLoadOrderAdvisorDiagnosticSignature;
 	private string _lastOptionalModuleDiagnosticSignature;
 	public ReadOnlyObservableCollection<ModHealthSnapshot> ModHealthSnapshots { get; }
-	public ReadOnlyObservableCollection<ModHealthSnapshot> ActiveModHealthAttentionSnapshots { get; }
-	public ReadOnlyObservableCollection<ModHealthFindingGroupViewModel> ActiveModHealthFindingGroups { get; }
-	[Reactive] public bool HasActiveModHealthAttention { get; set; }
-	[Reactive] public bool HasActiveModHealthErrors { get; set; }
-	[Reactive] public bool HasOnlyActiveModLoadOrderAdvice { get; set; }
-	[Reactive] public string ActiveModHealthSummaryText { get; set; } = String.Empty;
-	[Reactive] public bool IsLoadOrderAdvisorStatusVisible { get; set; }
-	[Reactive] public bool LoadOrderAdvisorDebugHasWarnings { get; set; }
-	[Reactive] public string LoadOrderAdvisorDebugText { get; set; } = "Advisor clear";
-	[Reactive] public string LoadOrderAdvisorDebugSummaryText { get; set; } = "No advisor findings";
-	[Reactive] public string LoadOrderAdvisorDebugDetailTitle { get; set; } = "Declared dependency checks";
-	[Reactive] public string LoadOrderAdvisorDebugTooltip { get; set; } =
-		"The Load Order Advisor completed without finding a declared dependency placement or cycle warning.";
+	public ReadOnlyObservableCollection<ModHealthSnapshot> ActiveDiagnosticAttentionSnapshots { get; }
+	public ReadOnlyObservableCollection<ModDiagnosticFindingGroupViewModel> ActiveDiagnosticFindingGroups { get; }
+	[Reactive] public bool HasActiveDiagnosticAttention { get; set; }
+	[Reactive] public bool HasActiveDiagnosticErrors { get; set; }
+	[Reactive] public string ActiveDiagnosticSummaryText { get; set; } = String.Empty;
 	public ObservableCollectionExtended<DivinityModData> DisplayActiveMods { get; } = new();
 	public ObservableCollectionExtended<DivinityModData> DisplayInactiveMods { get; } = new();
 	private bool _updatingVisualModLists;
@@ -1231,8 +1223,8 @@ Directory the zip will be extracted to:
 		this.WhenAnyValue(
 				x => x.Settings.DebugModeEnabled,
 				x => x.Modules.SourceIntegrationsEnabled,
-				x => x.Modules.ModHealthEnabled,
-				x => x.Modules.LoadOrderAdvisorEnabled)
+				x => x.Modules.ModDiagnosticsEnabled,
+				x => x.Modules.LoadOrderGuidanceEnabled)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(state => LogOptionalModuleState(
 				state.Item1,
@@ -1768,8 +1760,8 @@ Directory the zip will be extracted to:
 		_lastOptionalModuleDiagnosticSignature = signature;
 		DivinityApp.Log(
 			$"[Redux modules] Source integrations: {(sourceIntegrationsEnabled ? "enabled" : "disabled")}; " +
-			$"Mod Health: {(modHealthEnabled ? "enabled" : "disabled")}; " +
-			$"Load Order Advisor: {(loadOrderAdvisorEnabled ? "enabled" : "disabled")}.");
+			$"Mod diagnostics: {(modHealthEnabled ? "enabled" : "disabled")}; " +
+			$"Experimental load-order guidance: {(loadOrderAdvisorEnabled ? "enabled" : "disabled")}.");
 	}
 
 	private void ApplySourceLinkingMode(DivinityModData mod)
@@ -7259,7 +7251,7 @@ Directory the zip will be extracted to:
 	private void ScheduleModHealthRefresh()
 	{
 		_modHealthRefreshTask?.Dispose();
-		if (!Modules.ModHealthEnabled)
+		if (!Modules.ModDiagnosticsEnabled)
 		{
 			ClearModHealthState();
 			return;
@@ -7272,7 +7264,7 @@ Directory the zip will be extracted to:
 
 	private void RecomputeModHealthSnapshots()
 	{
-		if (!Modules.ModHealthEnabled)
+		if (!Modules.ModDiagnosticsEnabled)
 		{
 			ClearModHealthState();
 			return;
@@ -7282,7 +7274,7 @@ Directory the zip will be extracted to:
 			mods.Items,
 			ActiveMods,
 			_lastDetectedDuplicateMods,
-			Modules.LoadOrderAdvisorEnabled,
+			Modules.LoadOrderGuidanceEnabled,
 			Settings.DisableModioWarnings);
 		foreach (var snapshot in snapshots)
 		{
@@ -7300,8 +7292,8 @@ Directory the zip will be extracted to:
 			.OrderByDescending(snapshot => snapshot.HighestSeverity)
 			.ThenBy(snapshot => snapshot.Mod.Index)
 			.ToArray();
-		_activeModHealthAttentionItems.Clear();
-		_activeModHealthAttentionItems.AddRange(activeAttentionSnapshots);
+		_activeDiagnosticAttentionItems.Clear();
+		_activeDiagnosticAttentionItems.AddRange(activeAttentionSnapshots);
 		var activeFindingGroups = activeAttentionSnapshots
 			.SelectMany(snapshot => snapshot.AttentionFindings.Select(finding => (Snapshot: snapshot, Finding: finding)))
 			.GroupBy(entry => (
@@ -7309,57 +7301,27 @@ Directory the zip will be extracted to:
 				entry.Finding.Severity,
 				entry.Finding.Title,
 				entry.Finding.Message))
-			.Select(group => new ModHealthFindingGroupViewModel(
+			.Select(group => new ModDiagnosticFindingGroupViewModel(
 				group.First().Finding,
 				group.Select(entry => entry.Snapshot)))
 			.OrderByDescending(group => group.Severity)
 			.ThenBy(group => group.Code)
 			.ToArray();
-		_activeModHealthFindingGroupItems.Clear();
-		_activeModHealthFindingGroupItems.AddRange(activeFindingGroups);
-		HasActiveModHealthAttention = activeAttentionSnapshots.Length > 0;
+		_activeDiagnosticFindingGroupItems.Clear();
+		_activeDiagnosticFindingGroupItems.AddRange(activeFindingGroups);
+		HasActiveDiagnosticAttention = activeAttentionSnapshots.Length > 0;
 		var activeHealthErrorCount = activeAttentionSnapshots.Sum(snapshot => snapshot.HealthErrorCount);
 		var activeHealthWarningCount = activeAttentionSnapshots.Sum(snapshot => snapshot.HealthWarningCount);
 		var activeAdvisorCount = activeAttentionSnapshots.Sum(snapshot => snapshot.LoadOrderAdviceCount);
-		HasActiveModHealthErrors = activeHealthErrorCount > 0;
-		HasOnlyActiveModLoadOrderAdvice =
-			activeAdvisorCount > 0
-			&& activeHealthErrorCount == 0
-			&& activeHealthWarningCount == 0;
+		HasActiveDiagnosticErrors = activeHealthErrorCount > 0;
 		var activeAttentionSummaryParts = new List<string>();
 		if (activeHealthErrorCount > 0)
 			activeAttentionSummaryParts.Add($"{activeHealthErrorCount} error{(activeHealthErrorCount == 1 ? String.Empty : "s")}");
 		if (activeHealthWarningCount > 0)
 			activeAttentionSummaryParts.Add($"{activeHealthWarningCount} warning{(activeHealthWarningCount == 1 ? String.Empty : "s")}");
 		if (activeAdvisorCount > 0)
-			activeAttentionSummaryParts.Add($"{activeAdvisorCount} advisor note{(activeAdvisorCount == 1 ? String.Empty : "s")}");
-		ActiveModHealthSummaryText = String.Join(" · ", activeAttentionSummaryParts);
-		var advisorWarningCount = snapshots.Sum(snapshot =>
-			snapshot.Findings.Count(IsLoadOrderAdvisorFinding));
-		IsLoadOrderAdvisorStatusVisible =
-			Modules.ModHealthEnabled
-			&& Modules.LoadOrderAdvisorEnabled;
-		LoadOrderAdvisorDebugHasWarnings = advisorWarningCount > 0;
-		LoadOrderAdvisorDebugText = !Modules.LoadOrderAdvisorEnabled
-			? "Advisor off"
-			: advisorWarningCount > 0
-			? $"Advisor: {advisorWarningCount} warning{(advisorWarningCount == 1 ? String.Empty : "s")}"
-			: "Advisor clear";
-		LoadOrderAdvisorDebugSummaryText = !Modules.LoadOrderAdvisorEnabled
-			? "Advisor is disabled"
-			: advisorWarningCount > 0
-			? $"{advisorWarningCount} advisor warning{(advisorWarningCount == 1 ? String.Empty : "s")}"
-			: "No advisor findings";
-		LoadOrderAdvisorDebugDetailTitle = !Modules.LoadOrderAdvisorEnabled
-			? "Load Order Advisor is off"
-			: advisorWarningCount > 0
-			? "Load-order guidance needs review"
-			: "Declared dependency checks";
-		LoadOrderAdvisorDebugTooltip = !Modules.LoadOrderAdvisorEnabled
-			? "The experimental Load Order Advisor is disabled. Enable it in Preferences to evaluate declared dependency placement."
-			: advisorWarningCount > 0
-			? $"The Load Order Advisor found {advisorWarningCount} declared dependency placement or cycle warning{(advisorWarningCount == 1 ? String.Empty : "s")}."
-			: "The Load Order Advisor completed without finding a declared dependency placement or cycle warning.";
+			activeAttentionSummaryParts.Add($"{activeAdvisorCount} guidance note{(activeAdvisorCount == 1 ? String.Empty : "s")}");
+		ActiveDiagnosticSummaryText = String.Join(" · ", activeAttentionSummaryParts);
 
 		if (Settings.DebugModeEnabled)
 		{
@@ -7374,11 +7336,11 @@ Directory the zip will be extracted to:
 			var advisorDiagnosticSignature = BuildLoadOrderAdvisorDiagnosticSignature(
 				ActiveMods,
 				snapshots,
-				Modules.LoadOrderAdvisorEnabled);
+				Modules.LoadOrderGuidanceEnabled);
 			if (!String.Equals(_lastLoadOrderAdvisorDiagnosticSignature, advisorDiagnosticSignature, StringComparison.Ordinal))
 			{
 				_lastLoadOrderAdvisorDiagnosticSignature = advisorDiagnosticSignature;
-				LogLoadOrderAdvisorDiagnostics(ActiveMods, snapshots, Modules.LoadOrderAdvisorEnabled);
+				LogLoadOrderAdvisorDiagnostics(ActiveMods, snapshots, Modules.LoadOrderGuidanceEnabled);
 			}
 		}
 		else
@@ -7395,18 +7357,11 @@ Directory the zip will be extracted to:
 			mod.HealthSnapshot = null;
 		}
 		_modHealthSnapshotItems.Clear();
-		_activeModHealthAttentionItems.Clear();
-		_activeModHealthFindingGroupItems.Clear();
-		HasActiveModHealthAttention = false;
-		HasActiveModHealthErrors = false;
-		HasOnlyActiveModLoadOrderAdvice = false;
-		ActiveModHealthSummaryText = String.Empty;
-		IsLoadOrderAdvisorStatusVisible = false;
-		LoadOrderAdvisorDebugHasWarnings = false;
-		LoadOrderAdvisorDebugText = "Advisor off";
-		LoadOrderAdvisorDebugSummaryText = "Advisor is disabled";
-		LoadOrderAdvisorDebugDetailTitle = "Load Order Advisor is off";
-		LoadOrderAdvisorDebugTooltip = "Mod Health is disabled.";
+		_activeDiagnosticAttentionItems.Clear();
+		_activeDiagnosticFindingGroupItems.Clear();
+		HasActiveDiagnosticAttention = false;
+		HasActiveDiagnosticErrors = false;
+		ActiveDiagnosticSummaryText = String.Empty;
 		_lastModHealthDiagnosticSignature = String.Empty;
 		_lastLoadOrderAdvisorDiagnosticSignature = null;
 	}
@@ -7559,8 +7514,8 @@ Directory the zip will be extracted to:
 		_modioMetadataRefreshTask.DisposeWith(Disposables);
 		_manualNexusAssociationTasks.DisposeWith(Disposables);
 		ModHealthSnapshots = new ReadOnlyObservableCollection<ModHealthSnapshot>(_modHealthSnapshotItems);
-		ActiveModHealthAttentionSnapshots = new ReadOnlyObservableCollection<ModHealthSnapshot>(_activeModHealthAttentionItems);
-		ActiveModHealthFindingGroups = new ReadOnlyObservableCollection<ModHealthFindingGroupViewModel>(_activeModHealthFindingGroupItems);
+		ActiveDiagnosticAttentionSnapshots = new ReadOnlyObservableCollection<ModHealthSnapshot>(_activeDiagnosticAttentionItems);
+		ActiveDiagnosticFindingGroups = new ReadOnlyObservableCollection<ModDiagnosticFindingGroupViewModel>(_activeDiagnosticFindingGroupItems);
 		Services.RegisterSingleton<IModRegistryService>(new ModRegistryService(mods));
 
 		_settings.InitSubscriptions();
@@ -7955,7 +7910,7 @@ Directory the zip will be extracted to:
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ScheduleModHealthRefresh());
 
-		this.WhenAnyValue(x => x.Settings.DebugModeEnabled, x => x.Modules.ModHealthEnabled, x => x.Modules.LoadOrderAdvisorEnabled)
+		this.WhenAnyValue(x => x.Settings.DebugModeEnabled, x => x.Modules.ModDiagnosticsEnabled, x => x.Modules.LoadOrderGuidanceEnabled)
 			.Skip(1)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ScheduleModHealthRefresh());

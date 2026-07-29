@@ -2094,7 +2094,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (mod.HealthSnapshot?.HasLoadOrderAdvice == true ||
 			(mod.IsActive &&
 			 ViewModel?.Settings.DebugModeEnabled == true &&
-			 ViewModel.Modules?.LoadOrderAdvisorEnabled == true))
+			 ViewModel.Modules?.LoadOrderGuidanceEnabled == true))
 		{
 			count++;
 		}

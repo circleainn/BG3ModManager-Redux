@@ -285,15 +285,15 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool DisableMissingModWarnings { get; set; }
 
 	[DefaultValue(true)]
-	[SettingsEntry("Enable Mod Health", "Run read-only checks for clearly detectable package, dependency, conflict, Script Extender, and override conditions. This does not edit mods or the load order. Disabling it stops analysis and removes its indicators.")]
+	[SettingsEntry("Enable mod diagnostics", "Run read-only checks for clearly detectable package, dependency, conflict, Script Extender, override, and optional load-order conditions. This does not edit mods or the load order. Disabling it stops analysis and removes diagnostic indicators.")]
 	[DataMember, Reactive] public bool EnableModHealth { get; set; } = true;
 
 	[DefaultValue(false)]
-	[SettingsEntry("Disable mod.io warnings", "Hide the Mod Health notice about subscribed mod.io files being restorable by Baldur's Gate 3. This only hides that one warning - mod.io metadata, source linking, source labels, and cached source data are unaffected.")]
+	[SettingsEntry("Disable mod.io diagnostic notices", "Hide the diagnostic notice about subscribed mod.io files being restorable by Baldur's Gate 3. This only hides that one notice - mod.io metadata, source linking, source labels, and cached source data are unaffected.")]
 	[DataMember, Reactive] public bool DisableModioWarnings { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Enable Load Order Advisor (experimental)", "Add conservative guidance to Mod Health using declared dependencies. Requires Mod Health, never reorders mods automatically, and remains disabled by default because valid placement can vary by mod.")]
+	[SettingsEntry("Include experimental load-order guidance", "Add conservative declared-dependency placement and cycle guidance to mod diagnostics. It never reorders mods automatically and remains disabled by default because valid placement can vary by mod.")]
 	[DataMember, Reactive] public bool EnableLoadOrderAdvisor { get; set; }
 
 	[DefaultValue(false)]

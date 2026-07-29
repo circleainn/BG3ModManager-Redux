@@ -23,11 +23,12 @@ This page tracks what Redux inherits, what it reworks or extends, and what it ad
   sizing pass from overwriting a user resize.
 - Added direct category filtering from pills in the active and inactive lists, synchronized with
   the category navigator and a clearable filtered-view notice in both list headers.
-- Consolidated Mod Health and Load Order Advisor status presentation across the toolbar, compact
-  top menu, selected-mod drawer, hover information, and affected-mod navigation.
+- Consolidated diagnostics and optional load-order guidance into one Mod Diagnostics presentation
+  across the toolbar, compact top menu, selected-mod drawer, hover information, and affected-mod
+  navigation.
 - Removed superseded bitmap controls and legacy converter code after their Lucide or shared Redux
   replacements were verified.
-- Added the Redux Core test project to the solution and extended Mod Health regression coverage.
+- Added the Redux Core test project to the solution and extended Mod Diagnostics regression coverage.
 
 ## Inherited foundation
 
@@ -67,9 +68,8 @@ These core systems come from LaughingLeader's BG3 Mod Manager:
 - A single shared hover/selection accent rail and directional light-wash treatment used
   consistently across mod rows, separators, category rows, and menu rows, so every list surface
   shares one interaction language instead of independently tuned equivalents.
-- One shared status-card presentation for Mod Health and Load Order Advisor summaries, used by the
-  toolbar, the compact Toolbar menu, and the selected-mod drawer, so those surfaces cannot drift
-  out of sync with one another.
+- One shared Mod Diagnostics status-card presentation used by the toolbar, compact Toolbar menu, and
+  selected-mod drawer, so diagnostic and optional guidance surfaces cannot drift out of sync.
 - Dynamic text trimming and header-based list-column minimum widths so long filenames do not lock a
   column at an excessive size.
 - Content-aware category-pane sizing based on visible labels and the active application typeface.
@@ -243,32 +243,34 @@ originate upstream. Redux retains those checks while reworking how they are inte
 
 Redux additionally adds:
 
-- Background Mod Health checks for missing, inactive, self-referencing, or older-than-declared
-  dependencies; duplicate or invalid UUIDs; Script Extender requirements; confirmed active
-  declared conflicts; embedded creator-manifest validation; bundled Mod Fixer content; override
-  behavior; and mod.io safety state.
-- A master Mod Health preference that stops scheduled analysis and removes health indicators
-  without affecting installed mods, load orders, exports, or core manager behavior.
-- A **Disable mod.io warnings** preference, dependent on Mod Health, that hides only the
-  mod.io-restorability finding while every other Mod Health finding, mod.io metadata, source
-  linking, and cached source data remain unaffected.
-- An opt-in, disabled-by-default Load Order Advisor that can show conservative read-only warnings
-  when an active mod's declared dependency is positioned later in the numbered load order or when
-  active declared dependency metadata forms a cycle. Advisor checks are registered separately from
-  general health checks and do not run when Mod Health is off.
-- Toolbar-level health and advisor indicators that stay compact, expand into severity-ranked details
-  when needed, and remain available through the compact Toolbar menu when the command toolbar is
+- A unified, read-only **Mod Diagnostics** system that checks missing, inactive, self-referencing,
+  or older-than-declared dependencies; duplicate or invalid UUIDs; Script Extender requirements;
+  confirmed active declared conflicts; embedded creator-manifest validation; bundled Mod Fixer
+  content; override behavior; and mod.io safety state.
+- A master **Enable mod diagnostics** preference that stops scheduled analysis and removes
+  diagnostic indicators without affecting installed mods, load orders, exports, or core manager
+  behavior.
+- A **Disable mod.io diagnostic notices** preference that hides only the mod.io-restorability
+  finding while every other diagnostic finding, mod.io metadata, source linking, and cached source
+  data remain unaffected.
+- Optional, disabled-by-default experimental load-order guidance that reports when an active mod's
+  declared dependency is positioned later in the numbered order or active declared dependency
+  metadata forms a cycle. These rules are registered separately from the default diagnostic checks
+  and do not run when Mod Diagnostics is off.
+- One toolbar-level diagnostic indicator that stays compact, expands into severity-ranked details
+  when needed, and remains available through the compact Toolbar menu when the command toolbar is
   hidden.
 - A compact warning or error pill in the selected-mod Overview when attention is needed, with
   severity-ranked details in its tooltip. Healthy mods add no extra interface.
-- A load-order-wide Active Mods health summary that appears only when active mods need attention
+- A load-order-wide Active Mods diagnostic summary that appears only when active mods need attention
   and focuses an affected mod when selected.
-- A compact row-level health indicator for duplicate UUIDs, inactive dependencies, and declared
+- A compact row-level diagnostic indicator for duplicate UUIDs, inactive dependencies, and declared
   conflicts that otherwise have no dedicated status icon.
 - No automatic repair, installation, conflict resolution, or load-order reordering. Broader
   category- and compatibility-based load-order recommendations remain future work.
-- Rule-level Mod Health extension boundaries (`IModHealthAnalyzer` and `IModHealthRule`) so
-  diagnostics can be added, disabled, or removed without coupling them to list loading or export.
+- Rule-level extension boundaries (`IModHealthAnalyzer` and `IModHealthRule`) that keep default
+  checks and experimental guidance modular without coupling either family to list loading or
+  export.
 
 ## Dialogs, warnings, notifications, and help
 
@@ -349,21 +351,21 @@ discussion is [issue #11](https://github.com/raincloudsfollow/BG3ModManager-Redu
 - Manager-launched game crashes that do not occur through Steam (#456).
 - "Extension not found" reports that appear to originate from the Script Extender runtime (#461).
 - Application localization (#475).
-- Broader category-, compatibility-, and author-rule-based Load Order Advisor guidance beyond the
+- Broader category-, compatibility-, and author-rule-based Mod Diagnostics guidance beyond the
   current opt-in declared-dependency placement check.
 - An optional built-in Redux onboarding and feature tour. On first start, Redux should ask
   "Would you like a tour of Redux and its features?" with clear Yes and No choices; declining must
   immediately continue into the app without additional prompts. The tour should remain replayable
   from Help and introduce active/inactive lists, safe exporting, categories and separators, the
-  selected-mod drawer, Mod Health, themes and typography, accessibility tools, source warnings,
+  selected-mod drawer, Mod Diagnostics, themes and typography, accessibility tools, source warnings,
   and Redux-specific import/export without changing the user's load order or files. The tour should
   fold the current Redux preview, mod.io support, and offline Nexus database explanations into a
   coherent guided sequence instead of stacking separate startup dialogs, while preserving any
   acknowledgement that is still required for an enabled feature.
   The tour should
   also explain optional source linking and offer a clear choice between enabling integrations or
-  starting in **Local-only mode**. It should identify Mod Health as optional, keep the experimental
-  Load Order Advisor disabled unless the user deliberately enables it, and make every choice
+  starting in **Local-only mode**. It should identify Mod Diagnostics as optional, keep experimental
+  load-order guidance disabled unless the user deliberately enables it, and make every choice
   reversible from Preferences.
 - Public Nexus SSO authentication.
 - Automatic Redux self-updating during the private alpha.

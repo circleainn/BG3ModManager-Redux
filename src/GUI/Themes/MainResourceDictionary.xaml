@@ -3828,7 +3828,7 @@
 										<MultiDataTrigger.Conditions>
 											<Condition Binding="{Binding IsActive}" Value="True" />
 											<Condition Binding="{Binding DataContext.Settings.DebugModeEnabled, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True" />
-											<Condition Binding="{Binding DataContext.Modules.LoadOrderAdvisorEnabled, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True" />
+											<Condition Binding="{Binding DataContext.Modules.LoadOrderGuidanceEnabled, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True" />
 										</MultiDataTrigger.Conditions>
 										<Setter Property="Visibility" Value="Visible" />
 									</MultiDataTrigger>
@@ -3836,7 +3836,7 @@
 										<MultiDataTrigger.Conditions>
 											<Condition Binding="{Binding IsActive}" Value="True" />
 											<Condition Binding="{Binding DataContext.Settings.DebugModeEnabled, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True" />
-											<Condition Binding="{Binding DataContext.Modules.LoadOrderAdvisorEnabled, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True" />
+											<Condition Binding="{Binding DataContext.Modules.LoadOrderGuidanceEnabled, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True" />
 											<Condition Binding="{Binding HealthSnapshot.HasLoadOrderAdvice}" Value="True" />
 										</MultiDataTrigger.Conditions>
 										<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />

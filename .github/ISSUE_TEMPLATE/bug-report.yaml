@@ -59,7 +59,7 @@ body:
         - Load order or export
         - Mod installation, import, or deletion
         - Categories or separators
-        - Mod Health or Load Order Advisor
+        - Mod diagnostics
         - Redux bundle import or export
         - Preferences, themes, or typography
         - Accessibility, speech, or keyboard navigation

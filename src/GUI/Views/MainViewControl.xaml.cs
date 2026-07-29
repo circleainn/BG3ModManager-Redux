@@ -44,11 +44,10 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private readonly MainWindow main;
 	private IDisposable _toolbarVisibilitySubscription;
-	private IDisposable _modHealthStatusSubscription;
+	private IDisposable _modDiagnosticsStatusSubscription;
 	private double _toolbarExpandedHeight;
 	private int _toolbarAnimationVersion;
-	private int _healthStatusHoverVersion;
-	private int _advisorStatusHoverVersion;
+	private int _diagnosticStatusHoverVersion;
 	private readonly HashSet<ContextMenu> _closingToolbarStatusMenus = new();
 
 	private readonly Dictionary<string, MenuItem> menuItems = new();
@@ -668,66 +667,66 @@ public partial class MainViewControl : MainViewControlViewBase
 		ToolbarBand.BeginAnimation(UIElement.OpacityProperty, fadeAnimation);
 	}
 
-	private void ToolbarModHealthStatusButton_Click(object sender, RoutedEventArgs e)
+	private void ToolbarModDiagnosticsStatusButton_Click(object sender, RoutedEventArgs e)
 	{
-		if (!ViewModel.Modules.ModHealthEnabled || !ViewModel.HasActiveModHealthAttention)
+		if (!ViewModel.Modules.ModDiagnosticsEnabled || !ViewModel.HasActiveDiagnosticAttention)
 			return;
 
 		if (sender is Button button)
 		{
-			AnimateToolbarModHealthStatus(button, true);
-			OpenToolbarModHealthMenu(button);
+			AnimateToolbarModDiagnosticsStatus(button, true);
+			OpenToolbarModDiagnosticsMenu(button);
 		}
 
 		e.Handled = true;
 	}
 
-	private async void ToolbarModHealthStatusButton_MouseEnter(object sender, MouseEventArgs e)
+	private async void ToolbarModDiagnosticsStatusButton_MouseEnter(object sender, MouseEventArgs e)
 	{
 		if (sender is not Button button)
 			return;
 
-		if (!ViewModel.Modules.ModHealthEnabled)
+		if (!ViewModel.Modules.ModDiagnosticsEnabled)
 			return;
 
-		AnimateToolbarModHealthStatus(button, true);
-		if (!ViewModel.HasActiveModHealthAttention)
+		AnimateToolbarModDiagnosticsStatus(button, true);
+		if (!ViewModel.HasActiveDiagnosticAttention)
 			return;
 
-		var hoverVersion = ++_healthStatusHoverVersion;
+		var hoverVersion = ++_diagnosticStatusHoverVersion;
 		RestoreToolbarStatusMenuOpacity(button.ContextMenu);
 		await Task.Delay(160);
-		if (hoverVersion == _healthStatusHoverVersion
+		if (hoverVersion == _diagnosticStatusHoverVersion
 			&& button.IsMouseOver
-			&& ViewModel.Modules.ModHealthEnabled
-			&& ViewModel.HasActiveModHealthAttention)
+			&& ViewModel.Modules.ModDiagnosticsEnabled
+			&& ViewModel.HasActiveDiagnosticAttention)
 		{
-			OpenToolbarModHealthMenu(button);
+			OpenToolbarModDiagnosticsMenu(button);
 		}
 	}
 
-	private async void ToolbarModHealthStatusButton_MouseLeave(object sender, MouseEventArgs e)
+	private async void ToolbarModDiagnosticsStatusButton_MouseLeave(object sender, MouseEventArgs e)
 	{
 		if (sender is Button button)
-			await ScheduleToolbarStatusCloseAsync(button, false);
+			await ScheduleToolbarStatusCloseAsync(button);
 	}
 
-	private void ToolbarModHealthStatusButton_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+	private void ToolbarModDiagnosticsStatusButton_ContextMenuOpening(object sender, ContextMenuEventArgs e)
 	{
-		if (!ViewModel.Modules.ModHealthEnabled || !ViewModel.HasActiveModHealthAttention)
+		if (!ViewModel.Modules.ModDiagnosticsEnabled || !ViewModel.HasActiveDiagnosticAttention)
 			e.Handled = true;
 	}
 
-	private void CloseToolbarModHealthMenu()
+	private void CloseToolbarModDiagnosticsMenu()
 	{
-		_healthStatusHoverVersion++;
-		if (ToolbarModHealthStatusButton.ContextMenu is { } menu)
+		_diagnosticStatusHoverVersion++;
+		if (ToolbarModDiagnosticsStatusButton.ContextMenu is { } menu)
 			menu.IsOpen = false;
 
-		AnimateToolbarModHealthStatus(ToolbarModHealthStatusButton, false);
+		AnimateToolbarModDiagnosticsStatus(ToolbarModDiagnosticsStatusButton, false);
 	}
 
-	private static void OpenToolbarModHealthMenu(Button button)
+	private static void OpenToolbarModDiagnosticsMenu(Button button)
 	{
 		if (button.ContextMenu is not { } menu || menu.IsOpen)
 			return;
@@ -741,137 +740,55 @@ public partial class MainViewControl : MainViewControlViewBase
 		menu.IsOpen = true;
 	}
 
-	private void ToolbarModHealthMenu_Opened(object sender, RoutedEventArgs e)
+	private void ToolbarModDiagnosticsMenu_Opened(object sender, RoutedEventArgs e)
 	{
 		if (sender is ContextMenu { PlacementTarget: Button button } menu)
 		{
-			_healthStatusHoverVersion++;
+			_diagnosticStatusHoverVersion++;
 			AnimateToolbarStatusMenu(menu, true);
-			AnimateToolbarModHealthStatus(button, true);
-			_ = MonitorToolbarStatusPointerAsync(button, false);
+			AnimateToolbarModDiagnosticsStatus(button, true);
+			_ = MonitorToolbarStatusPointerAsync(button);
 		}
 	}
 
-	private void ToolbarModHealthMenu_Closed(object sender, RoutedEventArgs e)
+	private void ToolbarModDiagnosticsMenu_Closed(object sender, RoutedEventArgs e)
 	{
 		if (sender is ContextMenu { PlacementTarget: Button button } menu)
 		{
 			RestoreToolbarStatusMenuOpacity(menu);
 			if (!button.IsMouseOver)
-				AnimateToolbarModHealthStatus(button, false);
+				AnimateToolbarModDiagnosticsStatus(button, false);
 		}
 	}
 
-	private void ToolbarModHealthMenu_MouseEnter(object sender, MouseEventArgs e)
+	private void ToolbarModDiagnosticsMenu_MouseEnter(object sender, MouseEventArgs e)
 	{
-		_healthStatusHoverVersion++;
+		_diagnosticStatusHoverVersion++;
 		if (sender is ContextMenu menu)
 			RestoreToolbarStatusMenuOpacity(menu, true);
 	}
 
-	private async void ToolbarModHealthMenu_MouseLeave(object sender, MouseEventArgs e)
+	private async void ToolbarModDiagnosticsMenu_MouseLeave(object sender, MouseEventArgs e)
 	{
 		if (sender is ContextMenu { PlacementTarget: Button button })
-			await ScheduleToolbarStatusCloseAsync(button, false);
+			await ScheduleToolbarStatusCloseAsync(button);
 	}
 
-	private void ToolbarAdvisorStatusButton_Click(object sender, RoutedEventArgs e)
+	private async Task ScheduleToolbarStatusCloseAsync(Button button)
 	{
-		if (!ViewModel.LoadOrderAdvisorDebugHasWarnings)
-			return;
-
-		if (sender is Button button)
-		{
-			AnimateToolbarModHealthStatus(button, true);
-			OpenToolbarModHealthMenu(button);
-		}
-
-		e.Handled = true;
-	}
-
-	private async void ToolbarAdvisorStatusButton_MouseEnter(object sender, MouseEventArgs e)
-	{
-		if (sender is not Button button)
-			return;
-
-		AnimateToolbarModHealthStatus(button, true);
-		if (!ViewModel.LoadOrderAdvisorDebugHasWarnings)
-			return;
-
-		RestoreToolbarStatusMenuOpacity(button.ContextMenu);
-		var hoverVersion = ++_advisorStatusHoverVersion;
-		await Task.Delay(160);
-		if (hoverVersion == _advisorStatusHoverVersion
-			&& button.IsMouseOver
-			&& ViewModel.LoadOrderAdvisorDebugHasWarnings)
-		{
-			OpenToolbarModHealthMenu(button);
-		}
-	}
-
-	private async void ToolbarAdvisorStatusButton_MouseLeave(object sender, MouseEventArgs e)
-	{
-		if (sender is Button button)
-			await ScheduleToolbarStatusCloseAsync(button, true);
-	}
-
-	private void ToolbarAdvisorStatusButton_ContextMenuOpening(object sender, ContextMenuEventArgs e)
-	{
-		// Mirrors ToolbarModHealthStatusButton_ContextMenuOpening: no findings, no popup.
-		if (!ViewModel.IsLoadOrderAdvisorStatusVisible || !ViewModel.LoadOrderAdvisorDebugHasWarnings)
-			e.Handled = true;
-	}
-
-	private void ToolbarAdvisorMenu_Opened(object sender, RoutedEventArgs e)
-	{
-		if (sender is ContextMenu { PlacementTarget: Button button } menu)
-		{
-			_advisorStatusHoverVersion++;
-			AnimateToolbarStatusMenu(menu, true);
-			AnimateToolbarModHealthStatus(button, true);
-			_ = MonitorToolbarStatusPointerAsync(button, true);
-		}
-	}
-
-	private void ToolbarAdvisorMenu_Closed(object sender, RoutedEventArgs e)
-	{
-		if (sender is ContextMenu { PlacementTarget: Button button } menu)
-		{
-			RestoreToolbarStatusMenuOpacity(menu);
-			if (!button.IsMouseOver)
-				AnimateToolbarModHealthStatus(button, false);
-		}
-	}
-
-	private void ToolbarAdvisorMenu_MouseEnter(object sender, MouseEventArgs e)
-	{
-		_advisorStatusHoverVersion++;
-		if (sender is ContextMenu menu)
-			RestoreToolbarStatusMenuOpacity(menu, true);
-	}
-
-	private async void ToolbarAdvisorMenu_MouseLeave(object sender, MouseEventArgs e)
-	{
-		if (sender is ContextMenu { PlacementTarget: Button button })
-			await ScheduleToolbarStatusCloseAsync(button, true);
-	}
-
-	private async Task ScheduleToolbarStatusCloseAsync(Button button, bool isAdvisor)
-	{
-		var hoverVersion = isAdvisor ? ++_advisorStatusHoverVersion : ++_healthStatusHoverVersion;
+		var hoverVersion = ++_diagnosticStatusHoverVersion;
 		await Task.Delay(150);
 
-		var currentVersion = isAdvisor ? _advisorStatusHoverVersion : _healthStatusHoverVersion;
 		var menu = button.ContextMenu;
-		if (hoverVersion != currentVersion
+		if (hoverVersion != _diagnosticStatusHoverVersion
 			|| IsPointerWithin(button)
 			|| menu?.IsOpen == true)
 			return;
 
-		AnimateToolbarModHealthStatus(button, false);
+		AnimateToolbarModDiagnosticsStatus(button, false);
 	}
 
-	private async Task MonitorToolbarStatusPointerAsync(Button button, bool isAdvisor)
+	private async Task MonitorToolbarStatusPointerAsync(Button button)
 	{
 		if (button.ContextMenu is not { } menu)
 			return;
@@ -899,13 +816,10 @@ public partial class MainViewControl : MainViewControlViewBase
 
 					if (!IsPointerWithin(button) && !IsPointerWithin(menu))
 					{
-						if (isAdvisor)
-							_advisorStatusHoverVersion++;
-						else
-							_healthStatusHoverVersion++;
+						_diagnosticStatusHoverVersion++;
 
 						menu.IsOpen = false;
-						AnimateToolbarModHealthStatus(button, false);
+						AnimateToolbarModDiagnosticsStatus(button, false);
 						return;
 					}
 
@@ -994,7 +908,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			// A menu that was never run through AnimateToolbarStatusMenu still carries the
 			// shared transform from its template, which WPF freezes. Both BeginAnimation and
 			// the Y assignment below throw on a frozen Freezable, so swap in a mutable clone
-			// first — the same guard AnimateToolbarModHealthStatus already uses.
+			// first — the same guard AnimateToolbarModDiagnosticsStatus already uses.
 			if (translate.IsFrozen)
 			{
 				translate = translate.CloneCurrentValue();
@@ -1008,9 +922,9 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	// Compact width is the icon+chevron cluster with even 8px insets:
 	// 1 border + 8 + 15 icon + 4 + 11 chevron + 8 + 1 border.
-	private const double ToolbarHealthCompactWidth = 48;
-	private const double ToolbarHealthFallbackExpandedWidth = 126;
-	private const double ToolbarHealthMaxExpandedWidth = 240;
+	private const double ToolbarDiagnosticCompactWidth = 48;
+	private const double ToolbarDiagnosticFallbackExpandedWidth = 126;
+	private const double ToolbarDiagnosticMaxExpandedWidth = 240;
 
 	/// <summary>
 	/// Width the expanded status control needs for its current summary text. The label is
@@ -1018,25 +932,25 @@ public partial class MainViewControl : MainViewControlViewBase
 	/// Measuring keeps the reveal correct under Large text, custom fonts and longer
 	/// summaries, where a hardcoded width clipped.
 	/// </summary>
-	private static double MeasureToolbarHealthExpandedWidth(Button button)
+	private static double MeasureToolbarDiagnosticExpandedWidth(Button button)
 	{
 		if (button.Template?.FindName("StatusContent", button) is not FrameworkElement content)
-			return ToolbarHealthFallbackExpandedWidth;
+			return ToolbarDiagnosticFallbackExpandedWidth;
 
 		content.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
 
 		var desired = content.DesiredSize.Width;
 		if (double.IsNaN(desired) || desired <= 0)
-			return ToolbarHealthFallbackExpandedWidth;
+			return ToolbarDiagnosticFallbackExpandedWidth;
 
 		var chrome = button.BorderThickness.Left + button.BorderThickness.Right;
 		// A few device-independent pixels beyond DesiredSize protect the final glyph
 		// from ClearType overhang and layout rounding at non-100% DPI.
 		var width = Math.Ceiling(desired + chrome + 7);
-		return Math.Min(ToolbarHealthMaxExpandedWidth, Math.Max(ToolbarHealthCompactWidth, width));
+		return Math.Min(ToolbarDiagnosticMaxExpandedWidth, Math.Max(ToolbarDiagnosticCompactWidth, width));
 	}
 
-	private static void AnimateToolbarModHealthStatus(Button button, bool expand)
+	private static void AnimateToolbarModDiagnosticsStatus(Button button, bool expand)
 	{
 		// The menu-row variants intentionally remain icon-only. They reuse the same
 		// status popup lifecycle without changing the width of the application menu.
@@ -1055,8 +969,8 @@ public partial class MainViewControl : MainViewControlViewBase
 			?? new QuadraticEase { EasingMode = EasingMode.EaseOut };
 
 		var targetWidth = expand
-			? MeasureToolbarHealthExpandedWidth(button)
-			: ToolbarHealthCompactWidth;
+			? MeasureToolbarDiagnosticExpandedWidth(button)
+			: ToolbarDiagnosticCompactWidth;
 
 		button.BeginAnimation(
 			FrameworkElement.WidthProperty,
@@ -1097,11 +1011,11 @@ public partial class MainViewControl : MainViewControlViewBase
 		// open made the two animations fight, so the dropdown appeared to stutter.
 	}
 
-	private void ToolbarModHealthMenuItem_Click(object sender, RoutedEventArgs e)
+	private void ToolbarModDiagnosticsMenuItem_Click(object sender, RoutedEventArgs e)
 	{
 		if (sender is MenuItem { DataContext: ModHealthSnapshot snapshot })
 			ModLayout.FocusModHealthSnapshot(snapshot);
-		else if (sender is MenuItem { DataContext: ModHealthFindingGroupViewModel group })
+		else if (sender is MenuItem { DataContext: ModDiagnosticFindingGroupViewModel group })
 			ModLayout.FocusModHealthSnapshot(group.PrimarySnapshot);
 	}
 
@@ -1186,16 +1100,16 @@ public partial class MainViewControl : MainViewControlViewBase
 			.DistinctUntilChanged()
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(AnimateToolbarVisibility);
-		_modHealthStatusSubscription?.Dispose();
-		_modHealthStatusSubscription = ViewModel
+		_modDiagnosticsStatusSubscription?.Dispose();
+		_modDiagnosticsStatusSubscription = ViewModel
 			.WhenAnyValue(
-				vm => vm.Modules.ModHealthEnabled,
-				vm => vm.HasActiveModHealthAttention,
+				vm => vm.Modules.ModDiagnosticsEnabled,
+				vm => vm.HasActiveDiagnosticAttention,
 				(enabled, hasAttention) => enabled && hasAttention)
 			.DistinctUntilChanged()
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Where(canShowAttention => !canShowAttention)
-			.Subscribe(_ => CloseToolbarModHealthMenu());
+			.Subscribe(_ => CloseToolbarModDiagnosticsMenu());
 
 		this.OneWayBind(ViewModel, vm => vm.UpdatesViewVisibility, view => view.ModUpdaterPanel.Visibility);
 		var whenUpdatesViewData = ViewModel.WhenAnyValue(x => x.ModUpdatesViewData);

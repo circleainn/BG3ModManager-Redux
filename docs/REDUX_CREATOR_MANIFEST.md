@@ -19,7 +19,7 @@ Redux should reject the archive claim and validate the embedded PAK metadata ind
 Redux discovers a root-level manifest while it is already scanning the PAK, then validates the
 claim against the package's parsed `meta.lsx` module metadata. Discovery is read-only and does not
 perform a second package scan. A valid manifest is retained as verified runtime metadata. An
-invalid manifest is ignored and appears as a non-destructive Mod Health finding.
+invalid manifest is ignored and appears as a non-destructive Mod Diagnostics finding.
 
 Validated source claims participate in Redux's normal provider-resolution pipeline. The embedded
 file only needs to establish the stable project identity; cached or live Nexus data supplies the

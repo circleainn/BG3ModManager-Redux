@@ -7,8 +7,8 @@ file operations.
 
 At runtime, `ReduxModuleState` is the central reactive contract for optional-module availability.
 Provider services and source-related UI consume `SourceIntegrationsEnabled`; diagnostics consume
-`ModHealthEnabled` and `LoadOrderAdvisorEnabled`. Feature code should not reinterpret the underlying
-preference values independently.
+`ModDiagnosticsEnabled` and `LoadOrderGuidanceEnabled`. Feature code should not reinterpret the
+underlying preference values independently.
 
 ## Source integrations
 
@@ -34,40 +34,44 @@ to Local-only mode does not cancel that whole shared operation: source-provider 
 started are skipped, and an already-running provider request is allowed to finish disposal without
 interrupting the unrelated inherited providers.
 
-Local-only mode does not disable Mod Health or Load Order Advisor. Those modules use locally parsed
-package metadata and remain useful without provider integration. Provider-specific findings, such
-as the mod.io deletion warning, naturally disappear while source identities are masked.
+Local-only mode does not disable Mod Diagnostics. Its checks use locally parsed package metadata and
+remain useful without provider integration. Provider-specific findings, such as the mod.io
+restoration notice, naturally disappear while source identities are masked.
 
-## Mod Health
+## Mod Diagnostics
 
-Mod Health is a read-only diagnostics module. It evaluates facts Redux has already detected and
-never repairs, installs, removes, reorders, or rewrites anything. **Enable Mod Health** is on by
-default and can be turned off independently.
+Mod Diagnostics is the single user-facing diagnostic and guidance system. It evaluates facts
+Redux has already detected and never repairs, installs, removes, reorders, or rewrites anything.
+**Enable mod diagnostics** is on by default and can be turned off independently.
 
-When disabled, Redux cancels pending health refreshes, clears computed snapshots, and removes
-health header, row, drawer, and debug indicators. Mod loading and all core manager operations
+When disabled, Redux cancels pending analysis, clears computed snapshots, and removes diagnostic
+toolbar, row, drawer, hover-card, compact-menu, and debug indicators. Mod loading and core behavior
 continue normally.
 
 Checks implement `IModHealthRule` and receive an immutable `ModHealthAnalysisContext`. The
 `IModHealthAnalyzer` composes those rules into display snapshots. This keeps diagnostic rules
 separate from the main window and makes individual rule families removable.
 
-Current checks cover invalid or duplicate UUIDs, missing or inactive dependencies, self-dependency
-metadata, installed dependencies below a declared minimum version, declared conflicts, Script
-Extender availability, legacy Mod Fixer and override behavior, provider-specific safety notes, and
-invalid embedded Redux creator manifests.
+The default checks cover invalid or duplicate UUIDs, missing or inactive dependencies,
+self-dependency metadata, installed dependencies below a declared minimum version, declared
+conflicts, Script Extender availability, legacy Mod Fixer and override behavior, provider-specific
+safety notes, and invalid embedded Redux creator manifests.
 
-## Load Order Advisor
+### Experimental load-order guidance
 
-Load Order Advisor is an experimental extension of Mod Health, not an automatic sorting system. It
-is disabled by default and does not run unless both **Enable Mod Health** and **Enable Load Order
-Advisor** are enabled.
+Load-order guidance is an experimental, opt-in Mod Diagnostics rule family—not an automatic sorting
+system. **Include experimental load-order guidance** is disabled by default and does not run unless
+Mod Diagnostics is enabled.
 
-The advisor reports when an active package's explicitly declared dependency is positioned later in
+These rules report when an active package's explicitly declared dependency is positioned later in
 the numbered order and when active declared dependency metadata forms a cycle that no linear order
-can satisfy. It does not infer category, author, framework, patch, or compatibility ordering and
-does not move mods. Advisor rules are registered separately from the general health rules so the
-module can be omitted without changing the rest of Mod Health.
+can satisfy. They do not infer category, author, framework, patch, or compatibility ordering and do
+not move mods. The rules remain registered separately from the default checks so the experimental
+family can be omitted without changing the rest of Mod Diagnostics.
+
+All enabled findings share one toolbar status, compact top-menu indicator, grouped finding popup,
+selected-mod presentation, and severity language. The unified interface does not remove the
+internal rule boundary or the saved opt-in preference.
 
 ## Extension requirements
 

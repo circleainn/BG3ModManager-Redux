@@ -45,8 +45,8 @@ public sealed class ModHealthSnapshot
 				? Mod.Index.ToString()
 				: Mod.LoadOrderDisplayText;
 			return advice.Length == 0
-				? $"Load Order Advisor{Environment.NewLine}Current position: {position}{Environment.NewLine}No evidence-based placement change is recommended."
-				: $"Load Order Advisor{Environment.NewLine}Current position: {position}{Environment.NewLine}{String.Join(Environment.NewLine + Environment.NewLine, advice)}";
+				? $"Mod diagnostics — load-order guidance{Environment.NewLine}Current position: {position}{Environment.NewLine}No evidence-based placement change is recommended."
+				: $"Mod diagnostics — load-order guidance{Environment.NewLine}Current position: {position}{Environment.NewLine}{String.Join(Environment.NewLine + Environment.NewLine, advice)}";
 		}
 	}
 	public bool NeedsAttention => HasErrors || HasWarnings;
@@ -86,11 +86,11 @@ public sealed class ModHealthSnapshot
 		{
 			var parts = new List<string>();
 			if (HealthErrorCount > 0)
-				parts.Add($"{HealthErrorCount} health error{(HealthErrorCount == 1 ? String.Empty : "s")}");
+				parts.Add($"{HealthErrorCount} error{(HealthErrorCount == 1 ? String.Empty : "s")}");
 			if (HealthWarningCount > 0)
-				parts.Add($"{HealthWarningCount} health warning{(HealthWarningCount == 1 ? String.Empty : "s")}");
+				parts.Add($"{HealthWarningCount} warning{(HealthWarningCount == 1 ? String.Empty : "s")}");
 			if (LoadOrderAdviceCount > 0)
-				parts.Add($"{LoadOrderAdviceCount} advisor note{(LoadOrderAdviceCount == 1 ? String.Empty : "s")}");
+				parts.Add($"{LoadOrderAdviceCount} guidance note{(LoadOrderAdviceCount == 1 ? String.Empty : "s")}");
 			return parts.Count == 0 ? FindingCountSummary : String.Join(" · ", parts);
 		}
 	}

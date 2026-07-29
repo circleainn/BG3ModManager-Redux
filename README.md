@@ -28,7 +28,7 @@ stronger organization, portable Redux data, richer metadata, and safer file hand
   Compact/Default/Large text presets, live previews, and JSON import/export.
 - **Richer source information** for Nexus Mods, mod.io, and Local packages, including manual Nexus
   linking, conservative database matching, and a reversible Local-only mode.
-- **Read-only diagnostics** through Mod Health and the optional experimental Load Order Advisor.
+- **Read-only mod diagnostics** with optional experimental load-order guidance.
 - **Safer persistence** through staged imports, validated atomic writes, backups, recoverable
   deletion paths, and privacy-checked release packaging.
 
@@ -64,13 +64,13 @@ Categories and separators are presentation data. Redux never writes them to the 
   Nexus project manually.
 - Disable source integrations with Local-only mode without deleting cached associations.
 - Review dependency, UUID, Script Extender, conflict, creator-manifest, Mod Fixer, override, and
-  mod.io findings through Mod Health.
-- Optionally enable the experimental Load Order Advisor for exact declared-dependency placement and
-  cycle checks.
+  mod.io findings through Mod Diagnostics.
+- Optionally include experimental declared-dependency placement and cycle guidance in the same
+  Advisor status and finding list.
 
-Mod Health and Load Order Advisor are read-only. They do not install, delete, repair, reorder, or
-rewrite mods. Provider matches are conveniences rather than compatibility guarantees; always
-follow the mod author's instructions.
+Mod Diagnostics is read-only. It does not install, delete, repair, reorder, or rewrite mods. Provider
+matches are conveniences rather than compatibility guarantees; always follow the mod author's
+instructions.
 
 ### Personalize Redux
 
@@ -155,8 +155,8 @@ Developers can follow [Building Redux from source](docs/BUILDING.md).
 - Nexus authentication uses a personal API key rather than public SSO.
 - Provider matching, automatic categories, dependency data, and conflict data may be incomplete.
 - mod.io author profile links cannot always be resolved reliably.
-- Load Order Advisor coverage is deliberately limited to high-confidence declared dependency
-  information.
+- Experimental load-order guidance in Mod Diagnostics is deliberately limited to high-confidence
+  declared dependency information.
 - Imported fonts may expose incomplete metadata or render differently in WPF.
 - Uncommon display scales and dense layouts may still expose minor visual inconsistencies.
 - Clean-machine packaging and migration behavior need broader testing.

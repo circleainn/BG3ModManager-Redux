@@ -39,7 +39,7 @@
 				<Setter Property="Background" Value="Transparent" />
 				<Setter Property="HorizontalContentAlignment" Value="Stretch" />
 				<Setter Property="Template" Value="{StaticResource ToolbarStatusMenuItemTemplate}" />
-				<EventSetter Event="Click" Handler="ToolbarModHealthMenuItem_Click" />
+				<EventSetter Event="Click" Handler="ToolbarModDiagnosticsMenuItem_Click" />
 				<Style.Triggers>
 					<Trigger Property="Role" Value="SubmenuItem">
 						<Setter Property="Template" Value="{StaticResource ToolbarStatusMenuItemTemplate}" />
@@ -48,11 +48,6 @@
 						<Setter Property="Template" Value="{StaticResource ToolbarStatusMenuItemTemplate}" />
 					</Trigger>
 				</Style.Triggers>
-			</Style>
-			<Style x:Key="ToolbarStaticStatusMenuItemStyle"
-				BasedOn="{StaticResource ToolbarStatusMenuItemStyle}"
-				TargetType="{x:Type MenuItem}">
-				<Setter Property="IsHitTestVisible" Value="False" />
 			</Style>
 			<!--
 				The shared status card already draws the surface, border and padding. Without this
@@ -80,7 +75,7 @@
 					</Setter.Value>
 				</Setter>
 			</Style>
-			<DataTemplate x:Key="ToolbarHealthAffectedModTemplate">
+			<DataTemplate x:Key="ToolbarDiagnosticAffectedModTemplate">
 				<Grid Margin="0,3,0,0">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto" />
@@ -112,7 +107,7 @@
 					</TextBlock>
 				</Grid>
 			</DataTemplate>
-			<DataTemplate x:Key="ToolbarHealthFindingGroupTemplate">
+			<DataTemplate x:Key="ToolbarDiagnosticFindingGroupTemplate">
 				<Border Style="{StaticResource ReduxStatusFindingStyle}">
 					<StackPanel>
 						<Grid>
@@ -140,12 +135,12 @@
 						</Grid>
 						<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding Message}" />
 						<ItemsControl Margin="0,3,0,0"
-							ItemTemplate="{StaticResource ToolbarHealthAffectedModTemplate}"
+							ItemTemplate="{StaticResource ToolbarDiagnosticAffectedModTemplate}"
 							ItemsSource="{Binding AffectedMods}" />
 					</StackPanel>
 				</Border>
 			</DataTemplate>
-			<Style x:Key="ToolbarHealthContextMenuStyle"
+			<Style x:Key="ToolbarDiagnosticContextMenuStyle"
 				BasedOn="{StaticResource ToolbarStatusContextMenuStyle}"
 				TargetType="{x:Type ContextMenu}">
 				<Setter Property="MaxWidth" Value="{DynamicResource Redux.StatusMenu.MaxWidth}" />
@@ -167,18 +162,18 @@
 												<ColumnDefinition Width="*" />
 											</Grid.ColumnDefinitions>
 											<Border Style="{StaticResource ReduxStatusCardBadgeStyle}">
-												<controls:ReduxIcon x:Name="HealthMenuIcon"
+												<controls:ReduxIcon x:Name="DiagnosticMenuIcon"
 													Width="15"
 													Height="15"
 													Foreground="{DynamicResource ReduxWarningBrush}"
 													IconKey="search-alert" />
 											</Border>
 											<StackPanel Grid.Column="1" VerticalAlignment="Center">
-												<TextBlock x:Name="HealthMenuTitle"
+												<TextBlock x:Name="DiagnosticMenuTitle"
 													Style="{StaticResource ReduxStatusCardTitleStyle}"
 													Text="Review recommended" />
 												<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}"
-													Text="{Binding PlacementTarget.DataContext.ActiveModHealthSummaryText, RelativeSource={RelativeSource TemplatedParent}}" />
+													Text="{Binding PlacementTarget.DataContext.ActiveDiagnosticSummaryText, RelativeSource={RelativeSource TemplatedParent}}" />
 											</StackPanel>
 										</Grid>
 										<Border Grid.Row="1" Style="{StaticResource ReduxStatusCardDividerStyle}" />
@@ -193,62 +188,16 @@
 								</Border>
 							</Grid>
 							<ControlTemplate.Triggers>
-								<DataTrigger Binding="{Binding PlacementTarget.DataContext.HasActiveModHealthErrors, RelativeSource={RelativeSource TemplatedParent}}" Value="True">
-									<Setter TargetName="HealthMenuIcon" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
-									<Setter TargetName="HealthMenuIcon" Property="IconKey" Value="warning" />
-									<Setter TargetName="HealthMenuTitle" Property="Text" Value="Action recommended" />
+								<DataTrigger Binding="{Binding PlacementTarget.DataContext.HasActiveDiagnosticErrors, RelativeSource={RelativeSource TemplatedParent}}" Value="True">
+									<Setter TargetName="DiagnosticMenuIcon" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+									<Setter TargetName="DiagnosticMenuIcon" Property="IconKey" Value="warning" />
+									<Setter TargetName="DiagnosticMenuTitle" Property="Text" Value="Action recommended" />
 								</DataTrigger>
 							</ControlTemplate.Triggers>
 						</ControlTemplate>
 					</Setter.Value>
 				</Setter>
 			</Style>
-			<DataTemplate x:Key="ToolbarAdvisorStatusMenuTemplate">
-				<Border Style="{StaticResource ReduxStatusCardChromeStyle}">
-					<StackPanel>
-						<Grid>
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="Auto" />
-								<ColumnDefinition Width="*" />
-							</Grid.ColumnDefinitions>
-							<Border Style="{StaticResource ReduxStatusCardBadgeStyle}">
-								<controls:ReduxIcon x:Name="AdvisorIcon"
-									Width="15"
-									Height="15"
-									HorizontalAlignment="Center"
-									VerticalAlignment="Center"
-									Foreground="{DynamicResource ReduxSuccessBrush}"
-									StrokeData="{StaticResource Redux.Icon.ShieldCheck}" />
-							</Border>
-							<StackPanel Grid.Column="1" VerticalAlignment="Center">
-								<TextBlock Style="{StaticResource ReduxStatusCardTitleStyle}" Text="{Binding LoadOrderAdvisorDebugText}" />
-								<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding LoadOrderAdvisorDebugSummaryText}" />
-							</StackPanel>
-						</Grid>
-						<Border Style="{StaticResource ReduxStatusCardDividerStyle}" />
-						<Border x:Name="AdvisorFinding"
-							BorderBrush="{DynamicResource ReduxSuccessBrush}"
-							Style="{StaticResource ReduxStatusFindingStyle}">
-							<StackPanel>
-								<TextBlock x:Name="AdvisorFindingTitle"
-									FontWeight="SemiBold"
-									Foreground="{DynamicResource ReduxSuccessBrush}"
-									Text="{Binding LoadOrderAdvisorDebugDetailTitle}"
-									TextWrapping="Wrap" />
-								<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding LoadOrderAdvisorDebugTooltip}" />
-							</StackPanel>
-						</Border>
-					</StackPanel>
-				</Border>
-				<DataTemplate.Triggers>
-					<DataTrigger Binding="{Binding LoadOrderAdvisorDebugHasWarnings}" Value="True">
-						<Setter TargetName="AdvisorIcon" Property="StrokeData" Value="{StaticResource Redux.Icon.SearchAlert}" />
-						<Setter TargetName="AdvisorIcon" Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
-						<Setter TargetName="AdvisorFinding" Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
-						<Setter TargetName="AdvisorFindingTitle" Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
-					</DataTrigger>
-				</DataTemplate.Triggers>
-			</DataTemplate>
 			<!--
 				Single definition of Redux menu presentation for every MenuItem role. Both the
 				menu bar implicit style and MenuItemHighlightBlink derive from this, so an item
@@ -412,43 +361,24 @@
 							<Setter Property="Tag" Value="check" />
 							<Setter Property="Template" Value="{StaticResource CompactTopBarStatusButtonTemplate}" />
 						</Style>
-						<Style x:Key="CompactTopBarHealthStatusButtonStyle"
+						<Style x:Key="CompactTopBarDiagnosticStatusButtonStyle"
 							BasedOn="{StaticResource CompactTopBarStatusButtonStyle}"
 							TargetType="{x:Type Button}">
 							<!-- The base style's default Tag ("check") has no IconKey mapping and renders
 							     blank; the clear state needs its own real icon, same as the Advisor style. -->
 							<Setter Property="Tag" Value="shield-check" />
 							<Style.Triggers>
-								<DataTrigger Binding="{Binding HasActiveModHealthAttention}" Value="True">
+								<DataTrigger Binding="{Binding HasActiveDiagnosticAttention}" Value="True">
 									<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
 									<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 									<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 									<Setter Property="Tag" Value="search-alert" />
 								</DataTrigger>
-								<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
+								<DataTrigger Binding="{Binding HasActiveDiagnosticErrors}" Value="True">
 									<Setter Property="Background" Value="{DynamicResource ReduxErrorPillBackground}" />
 									<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
 									<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
 									<Setter Property="Tag" Value="error" />
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-						<Style x:Key="CompactTopBarAdvisorStatusButtonStyle"
-							BasedOn="{StaticResource CompactTopBarStatusButtonStyle}"
-							TargetType="{x:Type Button}">
-							<Setter Property="Tag" Value="shield-check" />
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding LoadOrderAdvisorDebugHasWarnings}" Value="True">
-									<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
-									<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
-									<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
-									<Setter Property="Tag" Value="search-alert" />
-								</DataTrigger>
-								<DataTrigger Binding="{Binding Modules.LoadOrderAdvisorEnabled}" Value="False">
-									<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-									<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
-									<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
-									<Setter Property="Tag" Value="search-alert" />
 								</DataTrigger>
 							</Style.Triggers>
 						</Style>
@@ -602,49 +532,24 @@
 						VerticalAlignment="Center"
 						Orientation="Horizontal"
 						Visibility="{Binding Settings.HideToolbar, Converter={StaticResource BoolToVisibilityConverter}}">
-						<Button x:Name="CompactToolbarAdvisorStatusButton"
-							Click="ToolbarAdvisorStatusButton_Click"
-							ContextMenuOpening="ToolbarAdvisorStatusButton_ContextMenuOpening"
-							MouseEnter="ToolbarAdvisorStatusButton_MouseEnter"
-							MouseLeave="ToolbarAdvisorStatusButton_MouseLeave"
-							Style="{StaticResource CompactTopBarAdvisorStatusButtonStyle}"
-							AutomationProperties.Name="{Binding LoadOrderAdvisorDebugText}"
-							Visibility="{Binding IsLoadOrderAdvisorStatusVisible, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+						<Button x:Name="CompactToolbarModDiagnosticsStatusButton"
+							Click="ToolbarModDiagnosticsStatusButton_Click"
+							ContextMenuOpening="ToolbarModDiagnosticsStatusButton_ContextMenuOpening"
+							MouseEnter="ToolbarModDiagnosticsStatusButton_MouseEnter"
+							MouseLeave="ToolbarModDiagnosticsStatusButton_MouseLeave"
+							Style="{StaticResource CompactTopBarDiagnosticStatusButtonStyle}"
+							AutomationProperties.Name="Mod diagnostics status"
+							Visibility="{Binding Modules.ModDiagnosticsEnabled, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
 							<Button.ContextMenu>
 								<ContextMenu
-									Closed="ToolbarAdvisorMenu_Closed"
-									DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
-									Opened="ToolbarAdvisorMenu_Opened"
-									MouseEnter="ToolbarAdvisorMenu_MouseEnter"
-									MouseLeave="ToolbarAdvisorMenu_MouseLeave"
-									Style="{StaticResource ToolbarStatusContextMenuStyle}">
-									<MenuItem Style="{StaticResource ToolbarStaticStatusMenuItemStyle}">
-										<MenuItem.Header>
-											<ContentControl Content="{Binding}"
-												ContentTemplate="{StaticResource ToolbarAdvisorStatusMenuTemplate}" />
-										</MenuItem.Header>
-									</MenuItem>
-								</ContextMenu>
-							</Button.ContextMenu>
-						</Button>
-						<Button x:Name="CompactToolbarModHealthStatusButton"
-							Click="ToolbarModHealthStatusButton_Click"
-							ContextMenuOpening="ToolbarModHealthStatusButton_ContextMenuOpening"
-							MouseEnter="ToolbarModHealthStatusButton_MouseEnter"
-							MouseLeave="ToolbarModHealthStatusButton_MouseLeave"
-							Style="{StaticResource CompactTopBarHealthStatusButtonStyle}"
-							AutomationProperties.Name="Mod Health status"
-							Visibility="{Binding Modules.ModHealthEnabled, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-							<Button.ContextMenu>
-								<ContextMenu
-									Closed="ToolbarModHealthMenu_Closed"
-									Opened="ToolbarModHealthMenu_Opened"
-									MouseEnter="ToolbarModHealthMenu_MouseEnter"
-									MouseLeave="ToolbarModHealthMenu_MouseLeave"
+									Closed="ToolbarModDiagnosticsMenu_Closed"
+									Opened="ToolbarModDiagnosticsMenu_Opened"
+									MouseEnter="ToolbarModDiagnosticsMenu_MouseEnter"
+									MouseLeave="ToolbarModDiagnosticsMenu_MouseLeave"
 									ItemContainerStyle="{StaticResource ToolbarStatusMenuItemStyle}"
-									ItemTemplate="{StaticResource ToolbarHealthFindingGroupTemplate}"
-									ItemsSource="{Binding PlacementTarget.DataContext.ActiveModHealthFindingGroups, RelativeSource={RelativeSource Self}}"
-									Style="{StaticResource ToolbarHealthContextMenuStyle}" />
+									ItemTemplate="{StaticResource ToolbarDiagnosticFindingGroupTemplate}"
+									ItemsSource="{Binding PlacementTarget.DataContext.ActiveDiagnosticFindingGroups, RelativeSource={RelativeSource Self}}"
+									Style="{StaticResource ToolbarDiagnosticContextMenuStyle}" />
 							</Button.ContextMenu>
 						</Button>
 					</StackPanel>
@@ -961,7 +866,7 @@
 							<Style x:Key="ToolbarWorkflowIconStyle" BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
 								<Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
 							</Style>
-							<ControlTemplate x:Key="ToolbarHealthStatusButtonTemplate" TargetType="{x:Type Button}">
+							<ControlTemplate x:Key="ToolbarDiagnosticStatusButtonTemplate" TargetType="{x:Type Button}">
 								<Border x:Name="StatusChrome"
 									Margin="0,1"
 									Background="{TemplateBinding Background}"
@@ -1038,51 +943,28 @@
 								<Setter Property="Tag" Value="check" />
 								<Setter Property="BorderThickness" Value="1.5" />
 								<Setter Property="HorizontalAlignment" Value="Right" />
-								<Setter Property="Template" Value="{StaticResource ToolbarHealthStatusButtonTemplate}" />
+								<Setter Property="Template" Value="{StaticResource ToolbarDiagnosticStatusButtonTemplate}" />
 								<Setter Property="ToolTip" Value="{x:Null}" />
 							</Style>
-							<Style x:Key="ToolbarHealthStatusButtonStyle"
+							<Style x:Key="ToolbarDiagnosticStatusButtonStyle"
 								BasedOn="{StaticResource ToolbarStatusButtonBaseStyle}"
 								TargetType="{x:Type Button}">
 								<!-- The base style's default Tag ("check") has no IconKey mapping and renders
-								     blank; the clear state needs its own real icon, same as the Advisor style. -->
+								     blank; the clear state therefore uses an explicit catalog icon. -->
 								<Setter Property="Tag" Value="shield-check" />
 								<Style.Triggers>
-									<DataTrigger Binding="{Binding HasActiveModHealthAttention}" Value="True">
+									<DataTrigger Binding="{Binding HasActiveDiagnosticAttention}" Value="True">
 										<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
 										<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 										<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
-										<Setter Property="Content" Value="{Binding ActiveModHealthSummaryText}" />
+										<Setter Property="Content" Value="{Binding ActiveDiagnosticSummaryText}" />
 										<Setter Property="Tag" Value="search-alert" />
 									</DataTrigger>
-									<DataTrigger Binding="{Binding HasActiveModHealthErrors}" Value="True">
+									<DataTrigger Binding="{Binding HasActiveDiagnosticErrors}" Value="True">
 										<Setter Property="Background" Value="{DynamicResource ReduxErrorPillBackground}" />
 										<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
 										<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
 										<Setter Property="Tag" Value="error" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-							<Style x:Key="ToolbarAdvisorStatusButtonStyle"
-								BasedOn="{StaticResource ToolbarStatusButtonBaseStyle}"
-								TargetType="{x:Type Button}">
-								<Setter Property="Content" Value="{Binding LoadOrderAdvisorDebugText}" />
-								<Setter Property="Tag" Value="shield-check" />
-								<Setter Property="Background" Value="{DynamicResource ReduxSuccessPillBackground}" />
-								<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
-								<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding LoadOrderAdvisorDebugHasWarnings}" Value="True">
-										<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
-										<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
-										<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
-										<Setter Property="Tag" Value="search-alert" />
-									</DataTrigger>
-									<DataTrigger Binding="{Binding Modules.LoadOrderAdvisorEnabled}" Value="False">
-										<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-										<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
-										<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
-										<Setter Property="Tag" Value="search-alert" />
 									</DataTrigger>
 								</Style.Triggers>
 							</Style>
@@ -1286,47 +1168,23 @@
 									HorizontalAlignment="Right"
 									VerticalAlignment="Center"
 									Orientation="Horizontal">
-									<Button x:Name="ToolbarAdvisorStatusButton"
-										Click="ToolbarAdvisorStatusButton_Click"
-										ContextMenuOpening="ToolbarAdvisorStatusButton_ContextMenuOpening"
-										MouseEnter="ToolbarAdvisorStatusButton_MouseEnter"
-										MouseLeave="ToolbarAdvisorStatusButton_MouseLeave"
-										Style="{StaticResource ToolbarAdvisorStatusButtonStyle}"
-										Visibility="{Binding IsLoadOrderAdvisorStatusVisible, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+									<Button x:Name="ToolbarModDiagnosticsStatusButton"
+										Click="ToolbarModDiagnosticsStatusButton_Click"
+										ContextMenuOpening="ToolbarModDiagnosticsStatusButton_ContextMenuOpening"
+										MouseEnter="ToolbarModDiagnosticsStatusButton_MouseEnter"
+										MouseLeave="ToolbarModDiagnosticsStatusButton_MouseLeave"
+										Style="{StaticResource ToolbarDiagnosticStatusButtonStyle}"
+										Visibility="{Binding Modules.ModDiagnosticsEnabled, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
 										<Button.ContextMenu>
 											<ContextMenu
-												Closed="ToolbarAdvisorMenu_Closed"
-												DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}"
-												Opened="ToolbarAdvisorMenu_Opened"
-												MouseEnter="ToolbarAdvisorMenu_MouseEnter"
-												MouseLeave="ToolbarAdvisorMenu_MouseLeave"
-												Style="{StaticResource ToolbarStatusContextMenuStyle}">
-												<MenuItem Style="{StaticResource ToolbarStaticStatusMenuItemStyle}">
-													<MenuItem.Header>
-														<ContentControl Content="{Binding}"
-															ContentTemplate="{StaticResource ToolbarAdvisorStatusMenuTemplate}" />
-													</MenuItem.Header>
-												</MenuItem>
-											</ContextMenu>
-										</Button.ContextMenu>
-									</Button>
-									<Button x:Name="ToolbarModHealthStatusButton"
-										Click="ToolbarModHealthStatusButton_Click"
-										ContextMenuOpening="ToolbarModHealthStatusButton_ContextMenuOpening"
-										MouseEnter="ToolbarModHealthStatusButton_MouseEnter"
-										MouseLeave="ToolbarModHealthStatusButton_MouseLeave"
-										Style="{StaticResource ToolbarHealthStatusButtonStyle}"
-										Visibility="{Binding Modules.ModHealthEnabled, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-										<Button.ContextMenu>
-											<ContextMenu
-												Closed="ToolbarModHealthMenu_Closed"
-												Opened="ToolbarModHealthMenu_Opened"
-												MouseEnter="ToolbarModHealthMenu_MouseEnter"
-												MouseLeave="ToolbarModHealthMenu_MouseLeave"
+												Closed="ToolbarModDiagnosticsMenu_Closed"
+												Opened="ToolbarModDiagnosticsMenu_Opened"
+												MouseEnter="ToolbarModDiagnosticsMenu_MouseEnter"
+												MouseLeave="ToolbarModDiagnosticsMenu_MouseLeave"
 												ItemContainerStyle="{StaticResource ToolbarStatusMenuItemStyle}"
-												ItemTemplate="{StaticResource ToolbarHealthFindingGroupTemplate}"
-												ItemsSource="{Binding PlacementTarget.DataContext.ActiveModHealthFindingGroups, RelativeSource={RelativeSource Self}}"
-												Style="{StaticResource ToolbarHealthContextMenuStyle}" />
+												ItemTemplate="{StaticResource ToolbarDiagnosticFindingGroupTemplate}"
+												ItemsSource="{Binding PlacementTarget.DataContext.ActiveDiagnosticFindingGroups, RelativeSource={RelativeSource Self}}"
+												Style="{StaticResource ToolbarDiagnosticContextMenuStyle}" />
 										</Button.ContextMenu>
 									</Button>
 								</StackPanel>

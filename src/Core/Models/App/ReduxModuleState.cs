@@ -10,8 +10,8 @@ public sealed class ReduxModuleState : ReactiveObject, IDisposable
 	private readonly CompositeDisposable _subscriptions = new();
 
 	[Reactive] public bool SourceIntegrationsEnabled { get; private set; }
-	[Reactive] public bool ModHealthEnabled { get; private set; }
-	[Reactive] public bool LoadOrderAdvisorEnabled { get; private set; }
+	[Reactive] public bool ModDiagnosticsEnabled { get; private set; }
+	[Reactive] public bool LoadOrderGuidanceEnabled { get; private set; }
 
 	public ReduxModuleState(DivinityModManagerSettings settings)
 	{
@@ -25,13 +25,13 @@ public sealed class ReduxModuleState : ReactiveObject, IDisposable
 
 		settings.WhenAnyValue(x => x.EnableModHealth)
 			.DistinctUntilChanged()
-			.BindTo(this, x => x.ModHealthEnabled)
+			.BindTo(this, x => x.ModDiagnosticsEnabled)
 			.DisposeWith(_subscriptions);
 
 		settings.WhenAnyValue(x => x.EnableModHealth, x => x.EnableLoadOrderAdvisor,
-				(healthEnabled, advisorEnabled) => healthEnabled && advisorEnabled)
+			(healthEnabled, advisorEnabled) => healthEnabled && advisorEnabled)
 			.DistinctUntilChanged()
-			.BindTo(this, x => x.LoadOrderAdvisorEnabled)
+			.BindTo(this, x => x.LoadOrderGuidanceEnabled)
 			.DisposeWith(_subscriptions);
 	}
 

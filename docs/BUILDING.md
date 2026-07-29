@@ -78,9 +78,9 @@ The helper restores from the local NuGet package cache first and can use the off
 for packages that are not cached. It locates the same Visual Studio C++/CLI toolchain used by the
 main build and runs the checks as a standalone executable. The suite covers creator-manifest
 validation, source-provider precedence, Local-only presentation, contribution-report privacy, and
-cached creator association invalidation. It also verifies conservative Mod Health identity,
-dependency, conflict, Script Extender, legacy Mod Fixer, and force-loaded override findings, plus
-invalid embedded-manifest reporting and the opt-in boundary around Load Order Advisor findings.
+cached creator association invalidation. It also verifies Mod Diagnostics identity, dependency,
+conflict, Script Extender, legacy Mod Fixer, and force-loaded override findings, plus invalid
+embedded-manifest reporting and the opt-in boundary around experimental load-order guidance.
 It does not alter settings, installed mods, or load orders. Portable bundle checks cover exact
 load-order and presentation round trips, atomic replacement, preservation after failed validation,
 and the rule that `.bg3redux` archives never contain or accept `modsettings.lsx`.

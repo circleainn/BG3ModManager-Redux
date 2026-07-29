@@ -16,7 +16,7 @@ namespace Redux.Core.Tests;
 
 internal sealed class ModHealthTests
 {
-	public void MissingAndInactiveDependenciesRemainIndependentOfTheAdvisor()
+	public void MissingAndInactiveDependenciesRemainIndependentOfLoadOrderGuidance()
 	{
 		var inactiveDependency = CreateMod("dependency", "Dependency", isActive: false);
 		var activeMod = CreateMod("active", "Active Mod", isActive: true);
@@ -37,7 +37,7 @@ internal sealed class ModHealthTests
 		RegressionAssert.Equal(0, activeSnapshot.LoadOrderAdviceCount);
 	}
 
-	public void AdvisorFindingsAreAbsentUntilTheAdvisorIsEnabled()
+	public void LoadOrderGuidanceFindingsAreAbsentUntilEnabled()
 	{
 		var dependent = CreateMod("dependent", "Dependent", isActive: true);
 		var dependency = CreateMod("dependency", "Dependency", isActive: true);
@@ -58,7 +58,7 @@ internal sealed class ModHealthTests
 			activeOrder.Select(mod => mod.Name));
 	}
 
-	public void CorrectDependencyPlacementDoesNotProduceAdvisorNoise()
+	public void CorrectDependencyPlacementDoesNotProduceGuidanceNoise()
 	{
 		var dependency = CreateMod("dependency", "Dependency", isActive: true);
 		var dependent = CreateMod("dependent", "Dependent", isActive: true);
@@ -118,7 +118,7 @@ internal sealed class ModHealthTests
 		RegressionAssert.Equal(1, mod.Dependencies.Count);
 	}
 
-	public void DependencyCyclesAreReportedOnlyByTheOptInAdvisor()
+	public void DependencyCyclesAreReportedOnlyByOptInGuidance()
 	{
 		var first = CreateMod("first", "First", isActive: true);
 		var second = CreateMod("second", "Second", isActive: true);
