@@ -80,7 +80,6 @@
 		<Resource Include="Resources\Icons\*.png">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
-		<Resource Include="Resources\Icons\Platforms\*.svg" />
 		<Resource Include="Resources\Icons\Platforms\*.png" />
 		<Content Include="Resources\Fonts\*.ttf;Resources\Fonts\*.otf">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

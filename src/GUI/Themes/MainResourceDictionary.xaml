@@ -4142,46 +4142,69 @@
 	<Style x:Key="ReduxCategoryPillStyle" BasedOn="{StaticResource ReduxCategoryPillBaseStyle}" TargetType="{x:Type Border}">
 		<Setter Property="Margin" Value="0,0,5,0" />
 	</Style>
+	<Style x:Key="ReduxCategoryFilterPillButtonStyle" TargetType="{x:Type Button}">
+		<Setter Property="Padding" Value="0" />
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="Cursor" Value="Hand" />
+		<Setter Property="HorizontalContentAlignment" Value="Left" />
+		<Setter Property="VerticalContentAlignment" Value="Center" />
+		<Setter Property="ToolTip" Value="{Binding Name, StringFormat=Show only {0} mods}" />
+		<Setter Property="AutomationProperties.Name" Value="{Binding Name, StringFormat=Filter mods by {0}}" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type Button}">
+					<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+						VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+						SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
 	<DataTemplate x:Key="ModCategoryPillItemTemplate">
-		<Border Style="{StaticResource ReduxCategoryPillStyle}"
+		<Button Command="{Binding DataContext.SelectModCategoryCommand, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+			CommandParameter="{Binding Name}"
+			Style="{StaticResource ReduxCategoryFilterPillButtonStyle}"
 			MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Converter={StaticResource AvailableWidthConverter}, ConverterParameter=5}">
-			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="*" />
-				</Grid.ColumnDefinitions>
-				<controls:ReduxIcon Width="12" Height="12" Margin="0,0,5,0" IconKey="{Binding IconId}" Foreground="{Binding Color}">
-					<controls:ReduxIcon.Style>
-						<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
-							<Setter Property="Visibility" Value="Collapsed" />
-							<Style.Triggers>
-								<MultiDataTrigger>
-									<MultiDataTrigger.Conditions>
-										<Condition Binding="{Binding HasIcon}" Value="True" />
-										<Condition Binding="{Binding DataContext.Settings.ShowCategoryIconsInPills, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" Value="True" />
-									</MultiDataTrigger.Conditions>
-									<Setter Property="Visibility" Value="Visible" />
-								</MultiDataTrigger>
-							</Style.Triggers>
-						</Style>
-					</controls:ReduxIcon.Style>
-				</controls:ReduxIcon>
-				<TextBlock Grid.Column="1" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="Medium"
-					Text="{Binding Name}" TextTrimming="CharacterEllipsis">
-					<TextBlock.Style>
-						<Style TargetType="{x:Type TextBlock}">
-							<!-- The "Colored names" setting governs category label colour in the mod list as well as the sidebar. -->
-							<Setter Property="Foreground" Value="{Binding Color}" />
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForText)}" Value="False">
-									<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-					</TextBlock.Style>
-				</TextBlock>
-			</Grid>
-		</Border>
+			<Border Cursor="Hand" Style="{StaticResource ReduxCategoryPillStyle}">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+					<controls:ReduxIcon Width="12" Height="12" Margin="0,0,5,0" IconKey="{Binding IconId}" Foreground="{Binding Color}">
+						<controls:ReduxIcon.Style>
+							<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
+								<Setter Property="Visibility" Value="Collapsed" />
+								<Style.Triggers>
+									<MultiDataTrigger>
+										<MultiDataTrigger.Conditions>
+											<Condition Binding="{Binding HasIcon}" Value="True" />
+											<Condition Binding="{Binding DataContext.Settings.ShowCategoryIconsInPills, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" Value="True" />
+										</MultiDataTrigger.Conditions>
+										<Setter Property="Visibility" Value="Visible" />
+									</MultiDataTrigger>
+								</Style.Triggers>
+							</Style>
+						</controls:ReduxIcon.Style>
+					</controls:ReduxIcon>
+					<TextBlock Grid.Column="1" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="Medium"
+						Text="{Binding Name}" TextTrimming="CharacterEllipsis">
+						<TextBlock.Style>
+							<Style TargetType="{x:Type TextBlock}">
+								<!-- The "Colored names" setting governs category label colour in the mod list as well as the sidebar. -->
+								<Setter Property="Foreground" Value="{Binding Color}" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForText)}" Value="False">
+										<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
+					</TextBlock>
+				</Grid>
+			</Border>
+		</Button>
 	</DataTemplate>
 	<DataTemplate x:Key="ModCategoryTemplate" DataType="{x:Type data:DivinityModData}">
 		<!--  ClipToBounds off: see ModSourceTemplate - the per-item MaxWidth clamp handles overflow.  -->

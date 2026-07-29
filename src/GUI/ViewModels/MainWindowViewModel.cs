@@ -230,6 +230,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public const string NoCategoryAssignment = "__ReduxNoCategory__";
 	public ObservableCollectionExtended<ModCategoryFilterItem> ModCategoryFilters { get; } = new();
 	[Reactive] public string SelectedModCategory { get; set; } = AllModsCategory;
+	public string SelectedModCategoryColor => GetCategoryColor(SelectedModCategory);
+	public string SelectedModCategoryIcon => GetCategoryIcon(SelectedModCategory);
+	public bool SelectedModCategoryHasIcon => !String.IsNullOrWhiteSpace(SelectedModCategoryIcon);
 	[Reactive] public bool IsCategoriesExpanded { get; set; } = true;
 	[Reactive] public bool IsAlwaysLoadedExpanded { get; set; } = true;
 	[Reactive] public bool IsInactiveModsExpanded { get; set; } = true;
@@ -429,6 +432,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public ICommand ConfirmCommand { get; set; }
 	public ICommand FocusFilterCommand { get; set; }
 	public ICommand SaveSettingsSilentlyCommand { get; private set; }
+	public ICommand SelectModCategoryCommand { get; private set; }
+	public ICommand ClearModCategoryFilterCommand { get; private set; }
 	public ReactiveCommand<DivinityLoadOrder, Unit> DeleteOrderCommand { get; private set; }
 	public ReactiveCommand<object, Unit> ToggleOrderRenamingCommand { get; set; }
 	public RxCommandUnit RefreshCommand { get; private set; }
@@ -7590,6 +7595,17 @@ Directory the zip will be extracted to:
 		});
 
 		UpdateNexusModsLimitsCommand = ReactiveCommand.Create<NexusModsRateLimitsUpdatedEventArgs>(OnNexusModsRateLimitsUpdated, outputScheduler: RxApp.MainThreadScheduler);
+		SelectModCategoryCommand = ReactiveCommand.Create<string>(category =>
+		{
+			if (!String.IsNullOrWhiteSpace(category) &&
+				ModCategoryFilters.Any(item => item.Name.Equals(category, StringComparison.OrdinalIgnoreCase)))
+			{
+				SelectedModCategory = category;
+			}
+		}, outputScheduler: RxApp.MainThreadScheduler);
+		ClearModCategoryFilterCommand = ReactiveCommand.Create(
+			() => SelectedModCategory = AllModsCategory,
+			outputScheduler: RxApp.MainThreadScheduler);
 
 		NexusModsRateLimitsUpdatedEventHandler nexusRateLimitsHandler = (sender, e) =>
 		{
@@ -7969,6 +7985,9 @@ Directory the zip will be extracted to:
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(category =>
 			{
+				this.RaisePropertyChanged(nameof(SelectedModCategoryColor));
+				this.RaisePropertyChanged(nameof(SelectedModCategoryIcon));
+				this.RaisePropertyChanged(nameof(SelectedModCategoryHasIcon));
 				OnFilterTextChanged(ActiveModFilterText, ActiveMods);
 				OnFilterTextChanged(InactiveModFilterText, InactiveMods);
 				RefreshVisualDividers();

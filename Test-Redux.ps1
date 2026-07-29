@@ -6,11 +6,19 @@ $repositoryRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $project = Join-Path $repositoryRoot "tests\Redux.Core.Tests\Redux.Core.Tests.csproj"
 $solutionDirectory = "$repositoryRoot\"
 $offlinePackages = Join-Path $env:USERPROFILE ".nuget\packages"
-
-dotnet restore $project `
-	"--source" $offlinePackages `
-	"--property:Platform=x64" `
+$restoreArguments = @(
+	"restore",
+	$project,
+	"--source",
+	$offlinePackages,
+	"--source",
+	"https://api.nuget.org/v3/index.json",
+	"--ignore-failed-sources",
+	"--property:Platform=x64",
 	"--property:SolutionDir=$solutionDirectory"
+)
+
+& dotnet @restoreArguments
 if ($LASTEXITCODE -ne 0)
 {
 	exit $LASTEXITCODE

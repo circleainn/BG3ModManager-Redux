@@ -21,6 +21,8 @@ This page tracks what Redux inherits, what it reworks or extends, and what it ad
   transitions, and secondary-window entrance and exit motion.
 - Improved persistence handling for saved list-column layouts and protected a delayed automatic
   sizing pass from overwriting a user resize.
+- Added direct category filtering from pills in the active and inactive lists, synchronized with
+  the category navigator and a clearable filtered-view notice in both list headers.
 - Consolidated Mod Health and Load Order Advisor status presentation across the toolbar, compact
   top menu, selected-mod drawer, hover information, and affected-mod navigation.
 - Removed superseded bitmap controls and legacy converter code after their Lucide or shared Redux

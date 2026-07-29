@@ -53,6 +53,68 @@
 				<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Title}" />
 				<Setter Property="VerticalAlignment" Value="Center" />
 			</Style>
+			<Style x:Key="ModCategoryFilterNoticeButtonStyle" TargetType="{x:Type Button}">
+				<Setter Property="Padding" Value="0" />
+				<Setter Property="HorizontalAlignment" Value="Left" />
+				<Setter Property="HorizontalContentAlignment" Value="Left" />
+				<Setter Property="VerticalAlignment" Value="Center" />
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="BorderThickness" Value="0" />
+				<Setter Property="Cursor" Value="Hand" />
+				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.11}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxAccentBrush}" />
+				<Setter Property="ToolTip" Value="Clear the category filter and show all mods" />
+				<Setter Property="AutomationProperties.Name" Value="Clear category filter" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type Button}">
+							<ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+								VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+								SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding SelectedModCategory}" Value="All Mods">
+						<Setter Property="Visibility" Value="Collapsed" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding Settings.UseCategoryColorsForSidebarText}" Value="True">
+						<Setter Property="Foreground" Value="{Binding SelectedModCategoryColor}" />
+					</DataTrigger>
+					<Trigger Property="IsMouseOver" Value="True">
+						<Setter Property="Opacity" Value="0.78" />
+					</Trigger>
+				</Style.Triggers>
+			</Style>
+			<Style x:Key="ModCategoryFilterNoticeIconStyle"
+				BasedOn="{StaticResource {x:Type c:ReduxIcon}}"
+				TargetType="{x:Type c:ReduxIcon}">
+				<Setter Property="Visibility" Value="Collapsed" />
+				<Style.Triggers>
+					<MultiDataTrigger>
+						<MultiDataTrigger.Conditions>
+							<Condition Binding="{Binding SelectedModCategoryHasIcon}" Value="True" />
+							<Condition Binding="{Binding Settings.ShowCategoryIconsInPills}" Value="True" />
+						</MultiDataTrigger.Conditions>
+						<Setter Property="Visibility" Value="Visible" />
+					</MultiDataTrigger>
+				</Style.Triggers>
+			</Style>
+			<DataTemplate x:Key="ModCategoryFilterNoticeContentTemplate">
+				<StackPanel Orientation="Horizontal">
+					<TextBlock Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+						Text="Filtered view — " />
+					<c:ReduxIcon Width="11" Height="11" Margin="0,0,4,0"
+						VerticalAlignment="Center"
+						Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+						IconKey="{Binding SelectedModCategoryIcon}"
+						Style="{StaticResource ModCategoryFilterNoticeIconStyle}" />
+					<TextBlock Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+						Text="{Binding SelectedModCategory}" />
+					<TextBlock Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+						Text="; click to show all" />
+				</StackPanel>
+			</DataTemplate>
 			<!-- One vertical rhythm for Categories, Active Mods, and Inactive Mods. -->
 			<Style x:Key="ModPaneHeaderStyle" TargetType="{x:Type Grid}">
 				<Setter Property="Height" Value="{DynamicResource Redux.PaneHeaderHeight}" />
@@ -1513,16 +1575,21 @@
 					<ColumnDefinition Width="220" />
 				</Grid.ColumnDefinitions>
 				<TextBlock Style="{StaticResource ModSectionTitle}" Text="Active Mods" />
-				<TextBlock Grid.Column="1"
-					Margin="12,0,8,0"
-					VerticalAlignment="Center"
-					AutomationProperties.HelpText="The active list is sorted by metadata. Click the number-sign column to restore load-order editing."
-					FontSize="{DynamicResource Redux.FontSize.11}"
-					Foreground="{DynamicResource ReduxWarningBrush}"
-					Text="Sorted view — drag disabled; click # to edit order"
-					TextTrimming="CharacterEllipsis"
-					ToolTip="The active list is sorted by metadata, so visible rows no longer match load-order positions. Click the # column to restore load-order editing and drag-and-drop."
-					Visibility="{Binding IsActiveListMetadataSorted, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
+				<DockPanel Grid.Column="1" Margin="12,0,8,0" LastChildFill="True">
+					<TextBlock Margin="0,0,12,0"
+						VerticalAlignment="Center"
+						AutomationProperties.HelpText="The active list is sorted by metadata. Click the number-sign column to restore load-order editing."
+						FontSize="{DynamicResource Redux.FontSize.11}"
+						Foreground="{DynamicResource ReduxWarningBrush}"
+						Text="Sorted view — drag disabled; click # to edit order"
+						TextTrimming="CharacterEllipsis"
+						ToolTip="The active list is sorted by metadata, so visible rows no longer match load-order positions. Click the # column to restore load-order editing and drag-and-drop."
+						Visibility="{Binding IsActiveListMetadataSorted, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
+					<Button Command="{Binding ClearModCategoryFilterCommand}"
+						Content="{Binding}"
+						ContentTemplate="{StaticResource ModCategoryFilterNoticeContentTemplate}"
+						Style="{StaticResource ModCategoryFilterNoticeButtonStyle}" />
+				</DockPanel>
 				<c:UnfocusableTextBox x:Name="ActiveModsFilterTextBox"
 					Grid.Column="6"
 					Height="28"
@@ -1708,6 +1775,12 @@
 				</Grid.ColumnDefinitions>
 				<TextBlock Grid.Column="1" Margin="8,0,0,0" Style="{StaticResource ModSectionTitle}" Text="Inactive Mods"
 					Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}" />
+				<Button Grid.Column="2"
+					Margin="12,0,8,0"
+					Command="{Binding ClearModCategoryFilterCommand}"
+					Content="{Binding}"
+					ContentTemplate="{StaticResource ModCategoryFilterNoticeContentTemplate}"
+					Style="{StaticResource ModCategoryFilterNoticeButtonStyle}" />
 			<c:UnfocusableTextBox x:Name="InactiveModsFilterTextBox"
 					Grid.Column="6"
 					Height="28"

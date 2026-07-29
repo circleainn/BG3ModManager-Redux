@@ -1,91 +1,90 @@
 # Baldur's Gate 3 Mod Manager Redux
 
 BG3 Mod Manager Redux is a Windows mod manager for Baldur's Gate 3 built on
-[LaughingLeader's BG3 Mod Manager](https://github.com/LaughingLeader/BG3ModManager).
-It keeps the established BG3MM load-order and package-management foundation while adding a
-redesigned interface, stronger organization tools, portable Redux data, richer metadata, and safer
-file handling.
+[LaughingLeader's BG3 Mod Manager](https://github.com/LaughingLeader/BG3ModManager). It preserves
+BG3MM's established package and load-order foundation while adding a redesigned interface,
+stronger organization, portable Redux data, richer metadata, and safer file handling.
 
-**Current build:** `0.1.0-alpha.8` - private testing alpha
+**Current build:** `0.1.0-alpha.8` — private testing alpha
 
-[Nexus Mods](https://www.nexusmods.com/baldursgate3/mods/23799) |
-[Issues](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues) |
-[Changes from upstream](docs/CHANGES_FROM_UPSTREAM.md) |
+[Nexus Mods](https://www.nexusmods.com/baldursgate3/mods/23799) ·
+[Report an issue](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues) ·
+[Changes from upstream](docs/CHANGES_FROM_UPSTREAM.md) ·
 [Build from source](docs/BUILDING.md)
 
 > [!IMPORTANT]
-> Redux is experimental and current builds are intended for careful personal use and private
-> testing. Keep independent backups of important profiles, save files, downloaded archives, and
-> the BG3 Mods folder. Verify an exported load order before launching the game.
+> Redux is experimental. Keep independent backups of important profiles, save files, downloaded
+> archives, and the BG3 Mods folder. Verify an exported load order before launching the game.
 
-## What Redux adds
+## Highlights
 
-- **A fully reworked desktop interface** with a semantic design system, custom window chrome,
-  responsive layouts, consistent motion, Lucide iconography, and Dark, Light, and Parchment themes.
-- **Powerful mod organization** through persistent categories, multiple categories per mod,
-  custom colors and icons, collapsible visual separators, configurable columns, filtering, and a
-  resizable details drawer.
-- **Portable Redux bundles** that can transfer saved orders, categories, assignments, separators,
-  and custom PNG icons without placing Redux-only data in `modsettings.lsx`.
-- **Custom themes and typography** with semantic color editing, bundled fonts, imported local
-  fonts, text-size presets, live previews, and JSON import/export.
-- **Expanded source information** for Nexus Mods, mod.io, and Local packages, including provider
-  metadata, manual Nexus linking, conservative database matching, and an optional Local-only mode.
-- **Mod Health diagnostics** for important dependency, UUID, Script Extender, conflict, manifest,
-  Mod Fixer, override, and mod.io conditions, presented only when attention is useful.
-- **An optional Load Order Advisor** for conservative declared-dependency placement and cycle
-  checks. It is experimental, read-only, and disabled by default.
-- **Safer persistence and file operations** using staged imports, validated atomic writes,
-  backups, recoverable deletion paths, and privacy-checked release packaging.
+- **A reworked desktop interface** with semantic themes, custom window chrome, responsive layouts,
+  consistent motion, Lucide iconography, and Dark, Light, and Parchment themes.
+- **Persistent mod organization** with automatic and custom categories, multiple categories per
+  mod, configurable columns, collapsible separators, filtering, and a resizable details drawer.
+- **Portable `.bg3redux` bundles** for saved orders, categories, assignments, separators, and
+  reusable custom PNG icons—without placing Redux data in `modsettings.lsx`.
+- **Custom themes and typography** with semantic color editing, bundled and imported fonts,
+  Compact/Default/Large text presets, live previews, and JSON import/export.
+- **Richer source information** for Nexus Mods, mod.io, and Local packages, including manual Nexus
+  linking, conservative database matching, and a reversible Local-only mode.
+- **Read-only diagnostics** through Mod Health and the optional experimental Load Order Advisor.
+- **Safer persistence** through staged imports, validated atomic writes, backups, recoverable
+  deletion paths, and privacy-checked release packaging.
 
-## Feature overview
+## Features
 
-### Manage and organize
+### Organize load orders
 
-- Active and inactive mod lists with drag-and-drop load-order management.
-- Profiles, campaigns, saved orders, search, filtering, and configurable columns.
-- Automatic and custom categories with descriptions, ordering, counts, colors, vector icons, and
-  reusable transparent PNG icons.
-- Multiple categories per mod and category filtering that never changes the underlying load order.
-- Collapsible visual separators with custom names, descriptions, colors, icons, saved positions,
+- Manage active and inactive mods with BG3MM's established drag-and-drop load-order workflow.
+- Use profiles, campaigns, saved orders, search, filtering, and configurable columns.
+- Assign multiple categories to a mod or use conservative automatic category suggestions.
+- Create categories with custom names, descriptions, colors, vector icons, or imported transparent
+  PNG icons.
+- Click category pills directly in either mod list to filter both lists; the active filter is shown
+  in each list header and can be cleared there.
+- Add collapsible visual separators with names, descriptions, colors, icons, remembered positions,
   and an optional text-only presentation.
-- A compact grouped command toolbar, a complete top-menu replacement when the toolbar is hidden,
-  and configurable keyboard shortcuts.
-- A resizable selected-mod drawer with Overview, Description, Requirements, Files, and Changelog
-  tabs, plus compact hover cards for quick information.
-- A dedicated Override Mods presentation for force-loaded packages outside the numbered order.
+- Work from the grouped command toolbar or hide it and use the complete compact Toolbar menu.
+- Open the selected-mod drawer for Overview, Description, Requirements, Files, and Changelog tabs,
+  or use hover cards for quick information.
+- Keep force-loaded packages visible in the dedicated Override Mods section outside the numbered
+  order.
 
-Categories and separators are Redux presentation data. They are never exported to the game's
+Categories and separators are presentation data. Redux never writes them to the game's
 `modsettings.lsx`.
-
-### Personalize the interface
-
-- Redux Dark, Redux Light, and Parchment themes.
-- Reusable custom themes with semantic colors and saved appearance preferences.
-- Manrope, Atkinson Hyperlegible, Monaspace Neon, Minipax, Chivo, and Segoe UI choices.
-- Local `.ttf` and `.otf` font importing with safe fallback to Manrope.
-- Compact, Default, and Large interface text presets.
-- Theme-aware category colors, optional colored names, interface icons, source-label modes, and
-  category-colored row feedback.
-- Shared Redux dialogs, menus, tooltips, controls, title bars, buttons, and interaction animation.
 
 ### Understand installed mods
 
-- Nexus Mods, mod.io, and Local source presentation.
-- Source-specific titles, authors, versions, dates, descriptions, requirements, files, and
-  changelogs when available.
-- Separate display names and local `.pak` filenames.
-- Conservative pre-existing Nexus matching through the bundled Redux database.
-- Manual Nexus project linking when automatic association is unavailable.
-- Local metadata fallback and a reversible Local-only mode that disables source integrations
-  without deleting saved associations.
-- Mod Health summaries in the toolbar and selected-mod drawer, with focused row indicators only
-  for findings that need attention.
+- Distinguish Nexus Mods, mod.io, and Local packages with source-aware metadata and actions.
+- View available titles, authors, versions, dates, descriptions, requirements, files, and
+  changelogs.
+- Keep display names separate from local `.pak` filenames.
+- Associate supported pre-existing Nexus packages through the reviewed Redux database or attach a
+  Nexus project manually.
+- Disable source integrations with Local-only mode without deleting cached associations.
+- Review dependency, UUID, Script Extender, conflict, creator-manifest, Mod Fixer, override, and
+  mod.io findings through Mod Health.
+- Optionally enable the experimental Load Order Advisor for exact declared-dependency placement and
+  cycle checks.
 
-Provider matching is a convenience, not proof that packages are compatible. Always follow the mod
-author's installation and load-order instructions.
+Mod Health and Load Order Advisor are read-only. They do not install, delete, repair, reorder, or
+rewrite mods. Provider matches are conveniences rather than compatibility guarantees; always
+follow the mod author's instructions.
 
-### Share Redux organization
+### Personalize Redux
+
+- Switch between Redux Dark, Redux Light, and Parchment.
+- Create reusable custom themes with semantic colors and saved appearance preferences.
+- Choose Manrope, Atkinson Hyperlegible, Monaspace Neon, Minipax, Chivo, or Segoe UI.
+- Import local `.ttf` and `.otf` files with safe fallback to Manrope.
+- Use Compact, Default, or Large interface text.
+- Configure category-colored text and interaction feedback, category and source icons, and compact
+  source-label presentation.
+- Reuse Redux's shared dialogs, title bars, menus, tooltips, controls, and motion language across
+  built-in and custom themes.
+
+### Move Redux data between computers
 
 Portable `.bg3redux` bundles can include:
 
@@ -95,57 +94,39 @@ Portable `.bg3redux` bundles can include:
 - visual separators and collapsed states; and
 - reusable custom PNG icons.
 
-Export and import previews explain what will change before anything is applied. Redux bundles do
-not contain mod `.pak` files or `modsettings.lsx`, and importing one does not install missing mods.
+Export and import previews explain what will change before it is applied. Bundles do not contain
+mod `.pak` files or `modsettings.lsx`, and importing one does not install missing mods.
 
-Private testers can also create a reviewable `.bg3redux-report` for Redux database maintenance.
-Reports contain conservative package identity evidence and fingerprints, but exclude profiles,
+Private testers can also generate a reviewable `.bg3redux-report` for database maintenance.
+Reports include conservative package identity evidence and fingerprints while excluding profiles,
 load-order positions, settings, credentials, and private filesystem paths.
 
 ### Accessibility and keyboard use
 
-Redux surfaces the inherited Speak Active Order and Stop Speaking commands in a dedicated
-Accessibility menu. It also adds scalable text presets, Atkinson Hyperlegible, selectable dialog
-text, refreshed keyboard-accessible dialogs, and a rebuilt shortcut editor.
+Redux places the inherited Speak Active Order and Stop Speaking commands in a dedicated
+Accessibility menu. It also provides scalable text presets, Atkinson Hyperlegible, selectable
+dialog text, keyboard-accessible Redux dialogs, and a rebuilt shortcut editor.
 
-CrossSpeak, Windows speech fallback, screen-reader helpers, the speech commands, configurable
-hotkeys, and the original Toolkit/editor-project marker originated in upstream BG3MM. Redux
-retains those systems and updates their presentation.
-
-## Mod Health and Load Order Advisor
-
-Mod Health runs quietly in the background when enabled. It can report:
-
-- missing, inactive, self-referencing, or older-than-declared dependencies;
-- duplicate or invalid UUIDs;
-- Script Extender requirements and status;
-- confirmed active declared conflicts;
-- invalid embedded creator manifests;
-- bundled Mod Fixer and override behavior; and
-- mod.io subscription-restoration warnings.
-
-Mod Health is diagnostic and never repairs, installs, deletes, or reorders mods. The separate Load
-Order Advisor is opt-in and currently limited to exact declared dependency ordering and dependency
-cycles. See [Optional Redux modules](docs/REDUX_OPTIONAL_MODULES.md) for precise boundaries and
-disabled behavior.
+CrossSpeak, Windows speech fallback, screen-reader helpers, speech commands, configurable hotkeys,
+and the original Toolkit/editor-project marker come from upstream BG3MM. Redux retains those
+systems and refreshes their presentation.
 
 ## Built on BG3 Mod Manager
 
-Redux is a fork, not a from-scratch replacement. The following foundations come from
-LaughingLeader and the upstream BG3MM contributors:
+Redux is a fork, not a from-scratch replacement. These foundations come from LaughingLeader and the
+upstream BG3MM contributors:
 
 - active/inactive load-order management, profiles, campaigns, saved orders, and filtering;
 - `.pak` and archive import through LSLib, plus established game/save/archive/text/JSON workflows;
 - BG3 path detection, launch behavior, folder shortcuts, and load-order export;
 - override packages, dependency and UUID checks, Osiris/Mod Fixer detection, and Script Extender
   management;
-- Nexus Mods API, caching, update checks, links, images, and metadata;
+- Nexus Mods API integration, caching, update checks, links, images, and metadata;
 - configurable hotkeys, package extraction, metadata tools, and version generation; and
 - CrossSpeak, Windows speech fallback, screen-reader helpers, and speech commands.
 
-Redux reworks and extends many of these systems, but their upstream authorship remains explicit.
-See [Changes from upstream BG3 Mod Manager](docs/CHANGES_FROM_UPSTREAM.md) for the detailed
-feature-by-feature distinction.
+Redux reworks and extends many of these systems while preserving their upstream attribution. See
+[Changes from upstream BG3 Mod Manager](docs/CHANGES_FROM_UPSTREAM.md) for the detailed distinction.
 
 ## Features for mod authors
 
@@ -155,30 +136,30 @@ Redux retains BG3MM's package extraction, UUID and folder-name copying, metadata
 Mod authors may also place an optional root-level
 [`redux.mod.json`](docs/REDUX_CREATOR_MANIFEST.md) inside a PAK. Redux validates its module claim
 against parsed `meta.lsx` data before using it for Nexus Mods or mod.io identification. Invalid
-claims are ignored and reported without changing the user's files or load order.
+claims are ignored and reported without changing user files or load orders.
 
-## Requirements and availability
+## Requirements
 
 - Windows 10 or Windows 11, x64.
 - [.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0).
 - Baldur's Gate 3.
 
-Redux does not support Linux, macOS, Wine, or Proton. It is currently framework-dependent and is
-not distributed as a self-contained application.
+Redux does not support Linux, macOS, Wine, or Proton. It is framework-dependent and is not
+distributed as a self-contained application.
 
 There is no supported public installer or automatic Redux updater during the private alpha.
 Developers can follow [Building Redux from source](docs/BUILDING.md).
 
-## Known alpha limitations
+## Current alpha limitations
 
-- Nexus authentication currently uses a personal API key rather than public SSO.
+- Nexus authentication uses a personal API key rather than public SSO.
 - Provider matching, automatic categories, dependency data, and conflict data may be incomplete.
 - mod.io author profile links cannot always be resolved reliably.
-- The Load Order Advisor does not yet include broad compatibility-, category-, framework-, or
-  author-specific rules.
+- Load Order Advisor coverage is deliberately limited to high-confidence declared dependency
+  information.
 - Imported fonts may expose incomplete metadata or render differently in WPF.
 - Uncommon display scales and dense layouts may still expose minor visual inconsistencies.
-- Clean-machine packaging and migration behavior need broader private testing.
+- Clean-machine packaging and migration behavior need broader testing.
 
 Users are responsible for permission to use or share imported fonts and PNG icons. Imported assets
 are local runtime data and are not included in Redux application packages.
@@ -195,13 +176,13 @@ are local runtime data and are not included in Redux application packages.
 ## Reporting problems
 
 Use the [Redux issue tracker](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues) for
-reproducible bugs. Include the Redux version, relevant logs, screenshots, affected mod names or
-UUIDs, and reproduction steps. Never post API keys or private filesystem information.
+reproducible bugs. Include the Redux version, reproduction steps, relevant logs, screenshots, and
+affected mod names or UUIDs. Never post API keys or private filesystem information.
 
 ## Credits and license
 
-Redux exists because of LaughingLeader's original project and retains substantial upstream code
-and behavior.
+Redux exists because of LaughingLeader's original project and retains substantial upstream code and
+behavior.
 
 - [Original BG3 Mod Manager](https://github.com/LaughingLeader/BG3ModManager)
 - [LaughingLeader](https://github.com/LaughingLeader)
