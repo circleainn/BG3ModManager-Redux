@@ -9,6 +9,7 @@
     xmlns:ext="clr-namespace:DivinityModManager.Controls.Extensions"
     xmlns:local="clr-namespace:DivinityModManager.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:util="clr-namespace:DivinityModManager.Util"
     xmlns:xc="http://schemas.xceed.com/wpf/xaml/toolkit"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -90,6 +91,7 @@
 							<Border x:Name="AffectedModChrome"
 								Background="{TemplateBinding Background}"
 								CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+								util:ReduxWindowBehavior.HoverLift="1"
 								RenderTransformOrigin="0.5,0.5">
 								<Border.RenderTransform>
 									<TranslateTransform x:Name="AffectedModTranslate" Y="0" />
@@ -153,11 +155,6 @@
 													To="1"
 													Duration="{StaticResource Redux.Motion.Fast}"
 													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-												<DoubleAnimation Storyboard.TargetName="AffectedModTranslate"
-													Storyboard.TargetProperty="Y"
-													To="{StaticResource Redux.Motion.HoverTranslateNegative}"
-													Duration="{StaticResource Redux.Motion.Fast}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
 									</Trigger.EnterActions>
@@ -172,11 +169,6 @@
 													Storyboard.TargetProperty="Opacity"
 													To="0"
 													Duration="{StaticResource Redux.Motion.Standard}" />
-												<DoubleAnimation Storyboard.TargetName="AffectedModTranslate"
-													Storyboard.TargetProperty="Y"
-													To="0"
-													Duration="{StaticResource Redux.Motion.Standard}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
 									</Trigger.ExitActions>
@@ -281,6 +273,39 @@
 								</Style>
 							</ItemsControl.ItemContainerStyle>
 						</ItemsControl>
+						<WrapPanel Margin="0,7,0,0"
+							Visibility="{Binding HasDiagnosticActions, Converter={StaticResource BoolToVisibilityConverter}}">
+							<Button Margin="0,0,6,0"
+								Click="ToolbarDiagnosticRelatedMod_Click"
+								CommandParameter="{Binding PrimaryRelatedMod}"
+								Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+								Visibility="{Binding CanRevealRelatedDependency, Converter={StaticResource BoolToVisibilityConverter}}">
+								<StackPanel Orientation="Horizontal">
+									<controls:ReduxIcon Width="13"
+										Height="13"
+										Margin="0,0,5,0"
+										VerticalAlignment="Center"
+										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+										StrokeData="{StaticResource Redux.Icon.Eye}" />
+									<TextBlock VerticalAlignment="Center" Text="{Binding RelatedDependencyActionText}" />
+								</StackPanel>
+							</Button>
+							<Button Click="ToolbarDiagnosticAffectedSource_Click"
+								CommandParameter="{Binding PrimarySnapshot.Mod}"
+								Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+								ToolTip="Open the linked mod page to review the author's requirements"
+								Visibility="{Binding CanOpenAffectedModSource, Converter={StaticResource BoolToVisibilityConverter}}">
+								<StackPanel Orientation="Horizontal">
+									<controls:ReduxIcon Width="13"
+										Height="13"
+										Margin="0,0,5,0"
+										VerticalAlignment="Center"
+										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+										StrokeData="{StaticResource Redux.Icon.LinkStroke}" />
+									<TextBlock VerticalAlignment="Center" Text="Open affected mod page" />
+								</StackPanel>
+							</Button>
+						</WrapPanel>
 					</StackPanel>
 				</Border>
 			</DataTemplate>
@@ -654,13 +679,21 @@
 							</MenuItem>
 							<Separator />
 							<MenuItem Header="ONLINE" IsEnabled="False" />
-							<MenuItem Header="BG3 on Nexus Mods" Click="OpenBg3Nexus_Click">
+							<MenuItem Header="BG3 on Nexus Mods"
+								Click="OpenBg3Nexus_Click"
+								util:ReduxMenuItemExtension.UseSemanticHover="True"
+								util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource Redux.Pill.Nexus.Background}"
+								util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource Redux.Pill.Nexus.Border}">
 								<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" /></MenuItem.Icon>
 							</MenuItem>
 							<MenuItem Header="BG3 Script Extender on GitHub" Click="OpenScriptExtenderRepo_Click">
 								<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource GithubPlatformIconTemplate}" /></MenuItem.Icon>
 							</MenuItem>
-							<MenuItem Header="BG3 Mod Manager Redux on Nexus Mods" Click="OpenReduxNexus_Click">
+							<MenuItem Header="BG3 Mod Manager Redux on Nexus Mods"
+								Click="OpenReduxNexus_Click"
+								util:ReduxMenuItemExtension.UseSemanticHover="True"
+								util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource Redux.Pill.Nexus.Background}"
+								util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource Redux.Pill.Nexus.Border}">
 								<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" /></MenuItem.Icon>
 							</MenuItem>
 							<MenuItem Header="BG3 Mod Manager Redux on GitHub" Click="OpenReduxRepo_Click">
@@ -876,6 +909,7 @@
 										BorderBrush="{TemplateBinding BorderBrush}"
 										BorderThickness="{TemplateBinding BorderThickness}"
 										CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+										util:ReduxWindowBehavior.HoverLift="1"
 										RenderTransformOrigin="0.5,0.5"
 										SnapsToDevicePixels="True"
 										UseLayoutRounding="True">
@@ -905,8 +939,6 @@
 												<Storyboard>
 													<DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
 														To="0.38" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-													<DoubleAnimation Storyboard.TargetName="ButtonChromeTranslate" Storyboard.TargetProperty="Y"
-														To="{StaticResource Redux.Motion.HoverTranslateNegative}" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 												</Storyboard>
 											</BeginStoryboard>
 										</Trigger.EnterActions>
@@ -915,8 +947,6 @@
 												<Storyboard>
 													<DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
 														To="0" Duration="{StaticResource Redux.Motion.Standard}" />
-													<DoubleAnimation Storyboard.TargetName="ButtonChromeTranslate" Storyboard.TargetProperty="Y"
-														To="0" Duration="{StaticResource Redux.Motion.Standard}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 												</Storyboard>
 											</BeginStoryboard>
 										</Trigger.ExitActions>

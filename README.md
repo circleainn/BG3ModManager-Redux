@@ -29,8 +29,9 @@ stronger organization, portable Redux data, richer metadata, and safer file hand
 - **Richer source information** for Nexus Mods, mod.io, and Local packages, including manual Nexus
   linking, conservative database matching, and a reversible Local-only mode.
 - **Read-only mod diagnostics** with optional experimental load-order guidance.
-- **Safer persistence** through staged imports, validated atomic writes, backups, recoverable
-  deletion paths, and privacy-checked release packaging.
+- **Safer persistence** through a read-only game-export review, automatic pre-export restore
+  points, staged imports, validated atomic writes, backups, recoverable deletion paths, and
+  privacy-checked release packaging.
 
 ## Features
 
@@ -46,8 +47,17 @@ stronger organization, portable Redux data, richer metadata, and safer file hand
 - Add collapsible visual separators with names, descriptions, colors, icons, remembered positions,
   and an optional text-only presentation.
 - Work from the grouped command toolbar or hide it and use the complete compact Toolbar menu.
+- Review activations, deactivations, placement changes, automatically added dependencies, and
+  enabled Mod Diagnostics findings before Redux writes the selected order to the game profile.
+- Return to an earlier exported state from File > Restore Points. Redux keeps the 20 newest
+  pre-export snapshots per profile and loads a selected snapshot as a working order without
+  changing game files until it is exported.
+- Compare any two available load orders from File > Compare Load Orders to see user-managed mods
+  that were added, removed, or meaningfully repositioned without changing either order.
 - Open the selected-mod drawer for Overview, Description, Requirements, Files, and Changelog tabs,
   or use hover cards for quick information.
+- Keep per-mod notes in Redux for installation reminders, compatibility context, or
+  personal load-order guidance.
 - Keep force-loaded packages visible in the dedicated Override Mods section outside the numbered
   order.
 
@@ -65,6 +75,11 @@ Categories and separators are presentation data. Redux never writes them to the 
 - Disable source integrations with Local-only mode without deleting cached associations.
 - Review dependency, UUID, Script Extender, conflict, creator-manifest, Mod Fixer, override, and
   mod.io findings through Mod Diagnostics.
+- Use dependency-finding actions to reveal an installed dependency or open an already-linked mod
+  page for the author's requirements without automatically installing, activating, or moving mods.
+- Run the on-demand Active File Overlaps inspector from Tools to find internal PAK paths shared by
+  active and override packages. Redux reports these as overlaps rather than definite conflicts,
+  because patches and intentional overrides commonly share files.
 - Optionally include experimental declared-dependency placement and cycle guidance in the same
   Advisor status and finding list.
 
@@ -89,13 +104,16 @@ instructions.
 Portable `.bg3redux` bundles can include:
 
 - a saved load order;
-- custom categories and assignments;
+- custom categories, descriptions, and assignments;
 - category display order;
-- visual separators and collapsed states; and
+- visual separators, descriptions, and collapsed states;
+- mod notes when explicitly enabled in the export review; and
 - reusable custom PNG icons.
 
 Export and import previews explain what will change before it is applied. Bundles do not contain
-mod `.pak` files or `modsettings.lsx`, and importing one does not install missing mods.
+mod `.pak` files or `modsettings.lsx`, and importing one does not install missing mods. Mod
+notes remain local by default and are never included unless the bundle exporter checks the
+dedicated option.
 
 Private testers can also generate a reviewable `.bg3redux-report` for database maintenance.
 Reports include conservative package identity evidence and fingerprints while excluding profiles,
@@ -105,7 +123,8 @@ load-order positions, settings, credentials, and private filesystem paths.
 
 Redux places the inherited Speak Active Order and Stop Speaking commands in a dedicated
 Accessibility menu. It also provides scalable text presets, Atkinson Hyperlegible, selectable
-dialog text, keyboard-accessible Redux dialogs, and a rebuilt shortcut editor.
+dialog text, keyboard-accessible Redux dialogs, a rebuilt shortcut editor, reduced-motion
+transitions, and an option to disable background blur and dimming.
 
 CrossSpeak, Windows speech fallback, screen-reader helpers, speech commands, configurable hotkeys,
 and the original Toolkit/editor-project marker come from upstream BG3MM. Redux retains those

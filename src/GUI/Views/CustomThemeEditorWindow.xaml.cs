@@ -18,7 +18,9 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 	{
 		Theme = theme ?? throw new ArgumentNullException(nameof(theme));
 		InitializeComponent();
-		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
+		// The editor previews directly against the main Redux window. Keep that
+		// surface visible instead of dimming it behind another settings layer.
+		ReduxWindowBehavior.AttachDialogTransitions(this, 40, dimOwner: false);
 		DataContext = Theme;
 		BaseThemeComboBox.SelectedValue = Theme.BaseTheme;
 		RefreshTypographyChoices();

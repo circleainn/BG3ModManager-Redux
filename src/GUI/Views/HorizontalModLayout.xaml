@@ -11,6 +11,7 @@
 	xmlns:dd="urn:gong-wpf-dragdrop"
 	xmlns:local="clr-namespace:DivinityModManager.Views"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:util="clr-namespace:DivinityModManager.Util"
 	x:Name="HorizontalModLayoutView"
 	d:DesignHeight="450"
 	d:DesignWidth="800"
@@ -148,6 +149,7 @@
 							<Border x:Name="ButtonChrome"
 								Background="Transparent"
 								CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+								util:ReduxWindowBehavior.HoverLift="1"
 								RenderTransformOrigin="0.5,0.5">
 								<Border.RenderTransform>
 									<TranslateTransform Y="0" />
@@ -178,11 +180,6 @@
 													To="1"
 													Duration="{StaticResource Redux.Motion.Fast}"
 													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-												<DoubleAnimation Storyboard.TargetName="ButtonChrome"
-													Storyboard.TargetProperty="RenderTransform.Y"
-													To="{StaticResource Redux.Motion.HoverTranslateNegative}"
-													Duration="{StaticResource Redux.Motion.Fast}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
 									</Trigger.EnterActions>
@@ -193,11 +190,6 @@
 													Storyboard.TargetProperty="Opacity"
 													To="0"
 													Duration="{StaticResource Redux.Motion.Standard}" />
-												<DoubleAnimation Storyboard.TargetName="ButtonChrome"
-													Storyboard.TargetProperty="RenderTransform.Y"
-													To="0"
-													Duration="{StaticResource Redux.Motion.Standard}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
 									</Trigger.ExitActions>
@@ -282,6 +274,7 @@
 								BorderBrush="{TemplateBinding BorderBrush}"
 								BorderThickness="{TemplateBinding BorderThickness}"
 								CornerRadius="{DynamicResource Redux.CornerRadius.PillTall}"
+								util:ReduxWindowBehavior.HoverLift="1"
 								RenderTransformOrigin="0.5,0.5">
 								<Border.RenderTransform>
 									<TranslateTransform x:Name="CategorySurfaceTranslate" Y="0" />
@@ -366,28 +359,6 @@
 								</MultiTrigger>
 								<Trigger Property="IsMouseOver" Value="True">
 									<Setter TargetName="CategorySurface" Property="Opacity" Value="1" />
-									<Trigger.EnterActions>
-										<BeginStoryboard>
-											<Storyboard>
-												<DoubleAnimation Storyboard.TargetName="CategorySurfaceTranslate"
-													Storyboard.TargetProperty="Y"
-													To="{StaticResource Redux.Motion.HoverTranslateNegative}"
-													Duration="{StaticResource Redux.Motion.Fast}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-											</Storyboard>
-										</BeginStoryboard>
-									</Trigger.EnterActions>
-									<Trigger.ExitActions>
-										<BeginStoryboard>
-											<Storyboard>
-												<DoubleAnimation Storyboard.TargetName="CategorySurfaceTranslate"
-													Storyboard.TargetProperty="Y"
-													To="0"
-													Duration="{StaticResource Redux.Motion.Standard}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-											</Storyboard>
-										</BeginStoryboard>
-									</Trigger.ExitActions>
 								</Trigger>
 								<Trigger Property="IsSelected" Value="True">
 									<Setter TargetName="CategorySurface" Property="Opacity" Value="1" />
@@ -537,6 +508,7 @@
 							<Grid x:Name="HeaderHost"
 								Margin="0,0,4,0"
 								Background="Transparent"
+								util:ReduxWindowBehavior.HoverLift="1"
 								RenderTransformOrigin="0.5,0.5">
 								<Grid.RenderTransform>
 									<TranslateTransform Y="0" />
@@ -595,24 +567,6 @@
 								</MultiTrigger>
 								<Trigger Property="IsMouseOver" Value="True">
 									<Setter TargetName="HeaderText" Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-									<Trigger.EnterActions>
-										<BeginStoryboard>
-											<Storyboard>
-												<DoubleAnimation Storyboard.TargetName="HeaderHost" Storyboard.TargetProperty="RenderTransform.Y"
-													To="{StaticResource Redux.Motion.HoverTranslateNegative}" Duration="{StaticResource Redux.Motion.Fast}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-											</Storyboard>
-										</BeginStoryboard>
-									</Trigger.EnterActions>
-									<Trigger.ExitActions>
-										<BeginStoryboard>
-											<Storyboard>
-												<DoubleAnimation Storyboard.TargetName="HeaderHost" Storyboard.TargetProperty="RenderTransform.Y"
-													To="0" Duration="{StaticResource Redux.Motion.Standard}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-											</Storyboard>
-										</BeginStoryboard>
-									</Trigger.ExitActions>
 								</Trigger>
 								<Trigger Property="IsSelected" Value="True">
 									<Setter Property="Panel.ZIndex" Value="1" />
@@ -1242,6 +1196,77 @@
 					</Border>
 				</Grid>
 			</DataTemplate>
+			<DataTemplate x:Key="ModDetailsNotesTemplate" DataType="{x:Type data:DivinityModData}">
+				<Grid Margin="18,12">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="*" />
+					</Grid.RowDefinitions>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<StackPanel Orientation="Horizontal">
+							<c:ReduxIcon Width="18"
+								Height="18"
+								Margin="0,0,8,0"
+								VerticalAlignment="Center"
+								Foreground="{DynamicResource ReduxAccentBrush}"
+								StrokeData="{StaticResource Redux.Icon.ScrollText}" />
+							<TextBlock VerticalAlignment="Center"
+								FontSize="{DynamicResource Redux.FontSize.16}"
+								FontWeight="SemiBold"
+								Text="Notes" />
+						</StackPanel>
+						<Button Grid.Column="1"
+							MinWidth="76"
+							Click="EditPrivateNoteButton_Click">
+							<Button.Style>
+								<Style BasedOn="{StaticResource ReduxSecondaryActionButtonStyle}" TargetType="{x:Type Button}">
+									<Setter Property="Content" Value="Add Note" />
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding HasPrivateNote}" Value="True">
+											<Setter Property="Content" Value="Edit Note" />
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</Button.Style>
+						</Button>
+					</Grid>
+					<TextBlock Grid.Row="1"
+						Margin="0,3,0,10"
+						Foreground="{DynamicResource ReduxTextMutedBrush}"
+						Text="Stored locally unless explicitly included in a Redux bundle."
+						TextWrapping="Wrap" />
+					<Border Grid.Row="2"
+						Padding="12,10"
+						Background="{DynamicResource ReduxListInteriorBrush}"
+						BorderBrush="{DynamicResource ReduxBorderBrush}"
+						BorderThickness="1"
+						CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+						<ScrollViewer HorizontalScrollBarVisibility="Disabled"
+							VerticalScrollBarVisibility="Auto">
+							<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+								TextWrapping="Wrap">
+								<TextBlock.Style>
+									<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+										<Setter Property="Text" Value="{Binding PrivateNote, TargetNullValue=''}" />
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding HasPrivateNote}" Value="False">
+												<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+												<Setter Property="FontStyle" Value="Italic" />
+												<Setter Property="Text" Value="No notes have been added for this mod." />
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+							</TextBlock>
+						</ScrollViewer>
+					</Border>
+				</Grid>
+			</DataTemplate>
 			<DataTemplate x:Key="ModDetailsTabbedTemplate" DataType="{x:Type data:DivinityModData}">
 				<TabControl ItemContainerStyle="{StaticResource ModDetailsTabItemStyle}"
 					SelectedIndex="0"
@@ -1260,6 +1285,9 @@
 					</TabItem>
 					<TabItem Header="Changelog">
 						<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModDetailsChangelogTemplate}" />
+					</TabItem>
+					<TabItem Header="Notes">
+						<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModDetailsNotesTemplate}" />
 					</TabItem>
 				</TabControl>
 			</DataTemplate>
@@ -1315,7 +1343,11 @@
 					<MenuItem x:Name="EnableCategoriesMenuItem" Header="Enable / Disable Categories">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Pricetag}" /></MenuItem.Icon>
 					</MenuItem>
-					<MenuItem x:Name="DeleteCustomCategoryMenuItem" Header="Delete Custom Category">
+					<MenuItem x:Name="DeleteCustomCategoryMenuItem"
+						Header="Delete Custom Category"
+						util:ReduxMenuItemExtension.UseSemanticHover="True"
+						util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource ReduxErrorPillBackground}"
+						util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource ReduxErrorBrush}">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
 					</MenuItem>
 				</ContextMenu>

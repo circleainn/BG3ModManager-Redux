@@ -3,7 +3,8 @@
     xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
     xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
     xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
-    xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore">
+    xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
+    xmlns:util="clr-namespace:DivinityModManager.Util">
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="pack://application:,,,/AdonisUI.ClassicTheme;component/DefaultStyles/TextBox.xaml" />
 	</ResourceDictionary.MergedDictionaries>
@@ -301,7 +302,7 @@
 						    Focusable="False"
 						    IsOpen="{TemplateBinding ComboBox.IsDropDownOpen}"
 						    Placement="Bottom"
-						    PopupAnimation="Fade">
+						    util:ReduxWindowBehavior.ManagedPopupAnimation="Fade">
 							<Grid x:Name="DropDown"
 							    Margin="4,0,4,4"
 							    MinWidth="{TemplateBinding FrameworkElement.ActualWidth}"

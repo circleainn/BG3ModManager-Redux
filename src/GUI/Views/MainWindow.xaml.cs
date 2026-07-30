@@ -210,7 +210,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 	private void OnWindowResizeFeedback(object sender, SizeChangedEventArgs e)
 	{
-		if (!IsLoaded || WindowState == WindowState.Maximized)
+		if (!IsLoaded || WindowState == WindowState.Maximized || ReduxWindowBehavior.ReduceMotion)
 		{
 			WindowResizeGlow.Opacity = 0;
 			return;

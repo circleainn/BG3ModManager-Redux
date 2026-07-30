@@ -22,6 +22,7 @@ public sealed class ReduxLoadOrderPresentation
 		new(StringComparer.OrdinalIgnoreCase);
 	[DataMember(Order = 11)] public string CreatorVersion { get; set; } = String.Empty;
 	[DataMember(Order = 12)] public string CreatorInternalVersion { get; set; } = String.Empty;
+	[DataMember(Order = 13)] public List<ReduxLoadOrderPrivateNote> PrivateModNotes { get; set; } = new();
 }
 
 [DataContract]
@@ -44,4 +45,12 @@ public sealed class ReduxLoadOrderDivider
 	[DataMember(Order = 6)] public string BeforeModUuid { get; set; } = String.Empty;
 	[DataMember(Order = 7)] public string AfterModUuid { get; set; } = String.Empty;
 	[DataMember(Order = 8)] public bool HideLine { get; set; }
+	[DataMember(Order = 9)] public string Description { get; set; } = String.Empty;
+}
+
+[DataContract]
+public sealed class ReduxLoadOrderPrivateNote
+{
+	[DataMember(Order = 1)] public string ModUuid { get; set; } = String.Empty;
+	[DataMember(Order = 2)] public string Note { get; set; } = String.Empty;
 }

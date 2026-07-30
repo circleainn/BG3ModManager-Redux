@@ -56,6 +56,7 @@ public partial class ReduxWindowTitleBar : UserControl
 			if (OwnerWindow is { } window)
 			{
 				EnsureWindowChrome(window);
+				ReduxWindowBehavior.AttachWindowMotionPreference(window);
 				ReduxWindowBehavior.AttachRoundedCorners(window);
 				ReduxWindowBehavior.AttachWorkAreaMaximize(window);
 				window.StateChanged -= OwnerWindow_StateChanged;
@@ -129,6 +130,16 @@ public partial class ReduxWindowTitleBar : UserControl
 		if (window is IReduxAnimatedHideWindow animatedWindow)
 		{
 			animatedWindow.HideWithTransition();
+			return;
+		}
+
+		if (ReduxWindowBehavior.ReduceMotion)
+		{
+			// Hide first so neither the Redux opacity transition nor Windows'
+			// visible close composition can produce a fade.
+			window.Hide();
+			ReduxWindowBehavior.RemoveOwnerBackdrop(window);
+			SystemCommands.CloseWindow(window);
 			return;
 		}
 

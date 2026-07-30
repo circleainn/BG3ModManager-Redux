@@ -98,6 +98,9 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(DivinityModManagerSettings.SaveWindowLocation),
 			nameof(DivinityModManagerSettings.EnableColorblindSupport),
 			nameof(DivinityModManagerSettings.HideToolbar)),
+		new("Visual comfort",
+			nameof(DivinityModManagerSettings.ReduceMotion),
+			nameof(DivinityModManagerSettings.DisableBackgroundEffects)),
 		new("Optional features",
 			nameof(DivinityModManagerSettings.LocalOnlyMode),
 			nameof(DivinityModManagerSettings.EnableModHealth),
@@ -378,15 +381,42 @@ public partial class SettingsWindow : SettingsWindowBase
 		var previousFont = ViewModel.Settings.TypographyFont;
 		var previousCustomFont = ViewModel.Settings.CustomTypographyFont;
 		var previousTextSize = ViewModel.Settings.TextSize;
-		var dialog = new CustomThemeEditorWindow(workingTheme) { Owner = this };
-		dialog.PreviewChanged += preview => MainWindow.Self.MainView.PreviewCustomTheme(preview);
-		var accepted = dialog.ShowDialog() == true;
-		if (!accepted)
+		var mainWindow = MainWindow.Self;
+		var dialog = new CustomThemeEditorWindow(workingTheme)
 		{
-			MainWindow.Self.MainView.UpdateColorTheme(previousTheme);
-			ReduxTypographyService.Apply(Application.Current.Resources, previousFont, previousCustomFont);
-			ReduxTypographyService.ApplyTextSize(Application.Current.Resources, previousTextSize);
+			Owner = mainWindow
+		};
+		dialog.PreviewChanged += preview => MainWindow.Self.MainView.PreviewCustomTheme(preview);
+
+		// Editing a theme from a modal Preferences window buried the live Redux
+		// preview beneath two dimmed surfaces. Temporarily remove Preferences
+		// from the stack and place the editor directly over the main application.
+		var restorePreferences = IsVisible;
+		if (restorePreferences)
+		{
+			ReduxWindowBehavior.RemoveOwnerBackdrop(this);
+			Hide();
 		}
+
+		var accepted = false;
+		try
+		{
+			accepted = dialog.ShowDialog() == true;
+		}
+		finally
+		{
+			if (!accepted)
+			{
+				MainWindow.Self.MainView.UpdateColorTheme(previousTheme);
+				ReduxTypographyService.Apply(Application.Current.Resources, previousFont, previousCustomFont);
+				ReduxTypographyService.ApplyTextSize(Application.Current.Resources, previousTextSize);
+			}
+			if (restorePreferences)
+			{
+				ShowWithTransition();
+			}
+		}
+
 		return accepted;
 	}
 
@@ -639,6 +669,24 @@ public partial class SettingsWindow : SettingsWindowBase
 						Mode = BindingMode.TwoWay,
 						UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
 					});
+					if (source is DivinityModManagerSettings accessibilitySettings
+						&& prop.Property.Name is nameof(DivinityModManagerSettings.ReduceMotion)
+							or nameof(DivinityModManagerSettings.DisableBackgroundEffects))
+					{
+						void ApplyAccessibilityPreference(object _, RoutedEventArgs __)
+						{
+							var reduceMotion = prop.Property.Name == nameof(DivinityModManagerSettings.ReduceMotion)
+								? cb.IsChecked == true
+								: accessibilitySettings.ReduceMotion;
+							var disableBackgroundEffects = prop.Property.Name == nameof(DivinityModManagerSettings.DisableBackgroundEffects)
+								? cb.IsChecked == true
+								: accessibilitySettings.DisableBackgroundEffects;
+							ReduxWindowBehavior.ConfigureAccessibility(reduceMotion, disableBackgroundEffects);
+						}
+
+						cb.Checked += ApplyAccessibilityPreference;
+						cb.Unchecked += ApplyAccessibilityPreference;
+					}
 					if (prop.Attribute.IsDebug)
 					{
 						cb.SetBinding(CheckBox.VisibilityProperty, debugModeBinding);

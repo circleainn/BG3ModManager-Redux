@@ -22,6 +22,7 @@
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
 				<RowDefinition Height="Auto" />
+				<RowDefinition Height="Auto" />
 			</Grid.RowDefinitions>
 
 			<Grid>
@@ -93,11 +94,23 @@
 				</Grid>
 			</Border>
 
-			<CheckBox x:Name="OpenFolderCheckBox" Grid.Row="3" Margin="0,14,0,0"
+			<CheckBox x:Name="IncludePrivateNotesCheckBox" Grid.Row="3" Margin="0,14,0,0"
+				Style="{StaticResource ReduxCheckBoxStyle}">
+				<StackPanel Margin="5,0,0,0">
+					<TextBlock x:Name="PrivateNotesTitleText" FontWeight="SemiBold"
+						Text="Include notes" />
+					<TextBlock Margin="0,2,0,0"
+						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+						Text="Off by default. Notes are otherwise stored only on this computer."
+						TextWrapping="Wrap" />
+				</StackPanel>
+			</CheckBox>
+
+			<CheckBox x:Name="OpenFolderCheckBox" Grid.Row="4" Margin="0,12,0,0"
 				Content="Open containing folder after export"
 				Style="{StaticResource ReduxCheckBoxStyle}" />
 
-			<StackPanel Grid.Row="4" Margin="0,18,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
+			<StackPanel Grid.Row="5" Margin="0,18,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
 				<Button MinWidth="86" Content="Cancel" IsCancel="True"
 					Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="CancelButton_Click" />
 				<Button MinWidth="126" Margin="8,0,0,0" IsDefault="True"

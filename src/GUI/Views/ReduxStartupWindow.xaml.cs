@@ -48,7 +48,7 @@ public partial class ReduxStartupWindow : Window, IReduxTypographyIsolated
 		VersionText = $"v{DivinityApp.REDUX_DISPLAY_VERSION}";
 		// The native window remains opaque throughout. Animating only its content
 		// reveals the same solid Redux background instead of the desktop.
-		if (SystemParameters.ClientAreaAnimation)
+		if (SystemParameters.ClientAreaAnimation && !ReduxWindowBehavior.ReduceMotion)
 		{
 			StartupForeground.Opacity = 0;
 			((TranslateTransform)StartupForeground.RenderTransform).Y = ForegroundRiseDistance;
@@ -70,7 +70,7 @@ public partial class ReduxStartupWindow : Window, IReduxTypographyIsolated
 
 	public Task CloseWithTransitionAsync()
 	{
-		if (!SystemParameters.ClientAreaAnimation)
+		if (!SystemParameters.ClientAreaAnimation || ReduxWindowBehavior.ReduceMotion)
 		{
 			Close();
 			return Task.CompletedTask;
@@ -111,7 +111,7 @@ public partial class ReduxStartupWindow : Window, IReduxTypographyIsolated
 
 	private async Task PlayEntranceCoreAsync()
 	{
-		if (!SystemParameters.ClientAreaAnimation)
+		if (!SystemParameters.ClientAreaAnimation || ReduxWindowBehavior.ReduceMotion)
 		{
 			StartupForeground.Opacity = 1;
 			((TranslateTransform)StartupForeground.RenderTransform).Y = 0;

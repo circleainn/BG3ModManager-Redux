@@ -365,6 +365,7 @@
 	</Style>
 	<Style BasedOn="{StaticResource {x:Type ContextMenu}}" TargetType="{x:Type ContextMenu}">
 		<Setter Property="OverridesDefaultStyle" Value="True" />
+		<Setter Property="util:ReduxWindowBehavior.ManageContextMenuMotion" Value="True" />
 		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
 		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
 		<Setter Property="BorderThickness" Value="1" />
@@ -407,6 +408,8 @@
 	<sys:Int32 x:Key="Redux.Motion.PanelMilliseconds">300</sys:Int32>
 	<Duration x:Key="Redux.Motion.DialogEnter">0:0:0.18</Duration>
 	<Duration x:Key="Redux.Motion.StatusPulseDuration">0:0:1.8</Duration>
+	<PopupAnimation x:Key="Redux.Motion.PopupFadeAnimation">Fade</PopupAnimation>
+	<PopupAnimation x:Key="Redux.Motion.PopupSlideAnimation">Slide</PopupAnimation>
 	<QuadraticEase x:Key="Redux.Motion.EaseOut" EasingMode="EaseOut" />
 	<CubicEase x:Key="Redux.Motion.EaseInOut" EasingMode="EaseInOut" />
 	<SineEase x:Key="Redux.Motion.PanelEase" EasingMode="EaseInOut" />
@@ -512,7 +515,7 @@
 				Focusable="False"
 				IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
 				Placement="Right"
-				PopupAnimation="Fade">
+				util:ReduxWindowBehavior.ManagedPopupAnimation="Fade">
 				<Grid Margin="4">
 					<Border
 						Background="{DynamicResource ReduxSurfaceElevatedBrush}"
@@ -597,7 +600,7 @@
 				Focusable="False"
 				IsOpen="{Binding IsSubmenuOpen, RelativeSource={RelativeSource TemplatedParent}}"
 				Placement="Bottom"
-				PopupAnimation="Slide">
+				util:ReduxWindowBehavior.ManagedPopupAnimation="Slide">
 				<!-- Margin keeps rounded antialiased chrome inside the native popup bounds at fractional DPI. -->
 				<Grid Margin="4">
 					<Border
@@ -685,6 +688,7 @@
 					<Border x:Name="ButtonChrome"
 						Background="Transparent"
 						CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+						util:ReduxWindowBehavior.HoverLift="1"
 						RenderTransformOrigin="0.5,0.5">
 						<Border.RenderTransform>
 							<TranslateTransform Y="0" />
@@ -713,11 +717,6 @@
 											To="1"
 											Duration="{StaticResource Redux.Motion.Fast}"
 											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-										<DoubleAnimation Storyboard.TargetName="ButtonChrome"
-											Storyboard.TargetProperty="RenderTransform.Y"
-											To="{StaticResource Redux.Motion.HoverTranslateNegative}"
-											Duration="{StaticResource Redux.Motion.Fast}"
-											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 									</Storyboard>
 								</BeginStoryboard>
 							</Trigger.EnterActions>
@@ -728,11 +727,6 @@
 											Storyboard.TargetProperty="Opacity"
 											To="0"
 											Duration="{StaticResource Redux.Motion.Standard}" />
-										<DoubleAnimation Storyboard.TargetName="ButtonChrome"
-											Storyboard.TargetProperty="RenderTransform.Y"
-											To="0"
-											Duration="{StaticResource Redux.Motion.Standard}"
-											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 									</Storyboard>
 								</BeginStoryboard>
 							</Trigger.ExitActions>
@@ -776,6 +770,32 @@
 	<SolidColorBrush x:Key="ReduxStatusSuccessSoftBrush" Color="{DynamicResource ReduxSuccessColor}" Opacity="0.14" />
 	<SolidColorBrush x:Key="ReduxStatusWarningSoftBrush" Color="{DynamicResource ReduxWarningColor}" Opacity="0.14" />
 	<SolidColorBrush x:Key="ReduxStatusErrorSoftBrush" Color="{DynamicResource ReduxErrorColor}" Opacity="0.14" />
+
+	<!-- Shared secondary-window building blocks. Keep summary metrics and passive
+	     result lists aligned across export review, comparison, and inspection tools. -->
+	<Style x:Key="ReduxDialogSummaryCardStyle" TargetType="{x:Type Border}">
+		<Setter Property="Margin" Value="0,0,8,0" />
+		<Setter Property="Padding" Value="11,9" />
+		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceBrush}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
+		<Setter Property="BorderThickness" Value="1" />
+		<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
+	</Style>
+	<Style x:Key="ReduxPassiveResultItemStyle" TargetType="{x:Type ListBoxItem}">
+		<Setter Property="Margin" Value="0,0,0,6" />
+		<Setter Property="Padding" Value="0" />
+		<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+		<Setter Property="Background" Value="Transparent" />
+		<Setter Property="BorderThickness" Value="0" />
+		<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type ListBoxItem}">
+					<ContentPresenter />
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
 
 	<!-- Lucide vector icons, normalized to Lucide's native 24x24 view box. -->
 	<!-- Curated fantasy/category glyphs. Keep these readable at 12-16px. -->
@@ -1720,6 +1740,7 @@
 				BorderBrush="{TemplateBinding BorderBrush}"
 				BorderThickness="{TemplateBinding BorderThickness}"
 				CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+				util:ReduxWindowBehavior.HoverLift="1"
 				RenderTransformOrigin="0.5,0.5"
 				SnapsToDevicePixels="True"
 				UseLayoutRounding="True">
@@ -1766,11 +1787,6 @@
 								To="0.10"
 								Duration="{StaticResource Redux.Motion.Fast}"
 								EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-							<DoubleAnimation Storyboard.TargetName="ButtonChromeTranslate"
-								Storyboard.TargetProperty="Y"
-								To="{StaticResource Redux.Motion.HoverTranslateNegative}"
-								Duration="{StaticResource Redux.Motion.Fast}"
-								EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 						</Storyboard>
 					</BeginStoryboard>
 				</MultiTrigger.EnterActions>
@@ -1781,11 +1797,6 @@
 								Storyboard.TargetProperty="Opacity"
 								To="0"
 								Duration="{StaticResource Redux.Motion.Standard}" />
-							<DoubleAnimation Storyboard.TargetName="ButtonChromeTranslate"
-								Storyboard.TargetProperty="Y"
-								To="0"
-								Duration="{StaticResource Redux.Motion.Standard}"
-								EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 						</Storyboard>
 					</BeginStoryboard>
 				</MultiTrigger.ExitActions>
@@ -1852,6 +1863,8 @@
 			BorderBrush="{TemplateBinding BorderBrush}"
 			BorderThickness="{TemplateBinding BorderThickness}"
 			CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
+			util:ReduxWindowBehavior.HoverLift="1"
+			util:ReduxWindowBehavior.HoverScale="1.02"
 			RenderTransformOrigin="0.5,0.5"
 			SnapsToDevicePixels="True">
 			<Border.RenderTransform>
@@ -1875,32 +1888,6 @@
 			-->
 			<Trigger Property="IsMouseOver" Value="True">
 				<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.85" />
-				<Trigger.EnterActions>
-					<BeginStoryboard>
-						<Storyboard>
-							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
-								To="1.02" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
-								To="1.02" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
-								To="{StaticResource Redux.Motion.HoverTranslateNegative}" Duration="{StaticResource Redux.Motion.Fast}"
-								EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-						</Storyboard>
-					</BeginStoryboard>
-				</Trigger.EnterActions>
-				<Trigger.ExitActions>
-					<BeginStoryboard>
-						<Storyboard>
-							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
-								To="1" Duration="{StaticResource Redux.Motion.Standard}" />
-							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
-								To="1" Duration="{StaticResource Redux.Motion.Standard}" />
-							<DoubleAnimation Storyboard.TargetName="ButtonChrome" Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
-								To="0" Duration="{StaticResource Redux.Motion.Standard}"
-								EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-						</Storyboard>
-					</BeginStoryboard>
-				</Trigger.ExitActions>
 			</Trigger>
 			<Trigger Property="IsPressed" Value="True">
 				<Setter TargetName="ButtonChrome" Property="Opacity" Value="0.72" />
@@ -1969,8 +1956,6 @@
 	<BitmapImage x:Key="StatusCriticalError" UriSource="pack://application:,,,/Resources/Icons/StatusCriticalError_16x.png" />
 	<BitmapImage x:Key="StatusWarning" UriSource="pack://application:,,,/Resources/Icons/StatusWarning_16x.png" />
 	<BitmapImage x:Key="XMLSchemaError" UriSource="pack://application:,,,/Resources/Icons/XMLSchemaError_16x.png" />
-	<!--  Overrides the default context menu open animation to remove flickering.  -->
-	<PopupAnimation x:Key="{x:Static SystemParameters.MenuPopupAnimationKey}">Fade</PopupAnimation>
 	<Style x:Key="IconButtonStyle" BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
 		<Setter Property="Width" Value="24" />
 		<Setter Property="Height" Value="24" />
@@ -2438,7 +2423,10 @@
 					    CommandParameter="{Binding}"
 					    Header="View Mod on Nexus Mods"
 					    IsEnabled="{Binding CanOpenNexusModsLink}"
-					    Visibility="{Binding OpenNexusModsLinkVisibility}">
+					    Visibility="{Binding OpenNexusModsLinkVisibility}"
+						util:ReduxMenuItemExtension.UseSemanticHover="True"
+						util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource Redux.Pill.Nexus.Background}"
+						util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource Redux.Pill.Nexus.Border}">
 						<MenuItem.Icon>
 							<ContentControl ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" />
 						</MenuItem.Icon>
@@ -2476,7 +2464,10 @@
 					<MenuItem Command="{Binding Path=DeleteModCommand, Source={x:Static dapp:DivinityApp.Commands}}"
 					    CommandParameter="{Binding}"
 					    Header="Delete Mod..."
-					    IsEnabled="{Binding CanDelete}">
+					    IsEnabled="{Binding CanDelete}"
+						util:ReduxMenuItemExtension.UseSemanticHover="True"
+						util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource ReduxErrorPillBackground}"
+						util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource ReduxErrorBrush}">
 						<MenuItem.Icon>
 							<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" />
 						</MenuItem.Icon>
@@ -2528,6 +2519,7 @@
 							Margin="12,8,12,6"
 							Padding="0,4"
 							Background="Transparent"
+							util:ReduxWindowBehavior.HoverLift="1"
 							ToolTip="{Binding VisualDividerDescription}"
 							ToolTipService.IsEnabled="{Binding HasVisualDividerDescription}"
 							Visibility="{Binding ShowVisualDivider, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -2647,6 +2639,7 @@
 							Background="{TemplateBinding Background}"
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="{TemplateBinding BorderThickness}"
+							util:ReduxWindowBehavior.HoverLift="1"
 							RenderTransformOrigin="0.5,0.5"
 							SnapsToDevicePixels="True">
 							<Border.RenderTransform>
@@ -2787,16 +2780,6 @@
 											To="1"
 											Duration="{StaticResource Redux.Motion.Fast}"
 											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-										<DoubleAnimation Storyboard.TargetName="RowSurfaceTranslate"
-											Storyboard.TargetProperty="Y"
-											To="{StaticResource Redux.Motion.HoverTranslateNegative}"
-											Duration="{StaticResource Redux.Motion.Fast}"
-											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-										<DoubleAnimation Storyboard.TargetName="VisualDividerTranslate"
-											Storyboard.TargetProperty="Y"
-											To="{StaticResource Redux.Motion.HoverTranslateNegative}"
-											Duration="{StaticResource Redux.Motion.Fast}"
-											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 									</Storyboard>
 								</BeginStoryboard>
 							</Trigger.EnterActions>
@@ -2819,16 +2802,6 @@
 											Storyboard.TargetProperty="Opacity"
 											To="0"
 											Duration="{StaticResource Redux.Motion.Standard}" />
-										<DoubleAnimation Storyboard.TargetName="RowSurfaceTranslate"
-											Storyboard.TargetProperty="Y"
-											To="0"
-											Duration="{StaticResource Redux.Motion.Standard}"
-											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-										<DoubleAnimation Storyboard.TargetName="VisualDividerTranslate"
-											Storyboard.TargetProperty="Y"
-											To="0"
-											Duration="{StaticResource Redux.Motion.Standard}"
-											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 									</Storyboard>
 								</BeginStoryboard>
 							</Trigger.ExitActions>
@@ -3104,6 +3077,7 @@
 		<!--  Pills are labels, not controls: stop the drag-source row's hand cursor from inheriting down.  -->
 		<Setter Property="Cursor" Value="Arrow" />
 		<Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+		<Setter Property="util:ReduxWindowBehavior.HoverScale" Value="1.02" />
 		<Setter Property="RenderTransform">
 			<Setter.Value>
 				<ScaleTransform x:Name="PillHoverScale" ScaleX="1" ScaleY="1" />
@@ -3126,24 +3100,6 @@
 		<Style.Triggers>
 			<Trigger Property="IsMouseOver" Value="True">
 				<Setter Property="Opacity" Value="0.85" />
-				<Trigger.EnterActions>
-					<BeginStoryboard>
-						<Storyboard>
-							<DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" To="1.02"
-								Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-							<DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" To="1.02"
-								Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-						</Storyboard>
-					</BeginStoryboard>
-				</Trigger.EnterActions>
-				<Trigger.ExitActions>
-					<BeginStoryboard>
-						<Storyboard>
-							<DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" To="1" Duration="{StaticResource Redux.Motion.Standard}" />
-							<DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" To="1" Duration="{StaticResource Redux.Motion.Standard}" />
-						</Storyboard>
-					</BeginStoryboard>
-				</Trigger.ExitActions>
 			</Trigger>
 		</Style.Triggers>
 	</Style>
@@ -3908,6 +3864,18 @@
 							</Style>
 						</controls:ReduxIcon.Style>
 					</controls:ReduxIcon>
+					<controls:ReduxIcon Width="16"
+					    Height="16"
+					    MaxWidth="16"
+					    MaxHeight="16"
+					    Margin="2,0"
+					    HorizontalAlignment="Center"
+					    VerticalAlignment="Center"
+					    StrokeData="{StaticResource Redux.Icon.ScrollText}"
+					    Foreground="{DynamicResource ReduxAccentHoverBrush}"
+					    IsHitTestVisible="True"
+					    ToolTip="Notes added"
+					    Visibility="{Binding HasPrivateNote, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
 					<controls:ReduxIcon Width="16"
 					    Height="16"
 					    MaxWidth="16"

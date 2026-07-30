@@ -160,6 +160,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private readonly DivinityModManagerSettings _settings = new();
 	public DivinityModManagerSettings Settings => _settings;
 	public ReduxModuleState Modules { get; }
+	private ReduxModAnnotationStore _modAnnotationStore = new();
 
 	private readonly ObservableCollectionExtended<DivinityModData> _activeMods = new();
 	public ObservableCollectionExtended<DivinityModData> ActiveMods => _activeMods;
@@ -1160,6 +1161,16 @@ Directory the zip will be extracted to:
 			if (IsInitialized) SaveSettings();
 		});
 
+		Settings.WhenAnyValue(x => x.ReduceMotion, x => x.DisableBackgroundEffects)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(preferences =>
+			{
+				ReduxWindowBehavior.ConfigureAccessibility(
+					preferences.Item1,
+					preferences.Item2);
+				if (IsInitialized) SaveSettings();
+			});
+
 		Settings.WhenAnyValue(x => x.ColorTheme, x => x.ActiveCustomThemeId).ObserveOn(RxApp.MainThreadScheduler).Subscribe((selection) =>
 		{
 			var theme = selection.Item1;
@@ -1771,13 +1782,47 @@ Directory the zip will be extracted to:
 		mod.NexusModsEnabled = DivinityApp.NexusModsEnabled && Modules.SourceIntegrationsEnabled;
 	}
 
+	private static string GetModAnnotationsPath() =>
+		DivinityApp.GetAppDirectory("Data", "mod-annotations.json");
+
+	private void ApplyModAnnotation(DivinityModData mod)
+	{
+		if (mod == null) return;
+		var annotation = ReduxModAnnotationService.Find(_modAnnotationStore, mod.UUID);
+		mod.PrivateNote = annotation?.PrivateNote ?? String.Empty;
+		mod.HasPrivateNote = !String.IsNullOrWhiteSpace(mod.PrivateNote);
+	}
+
+	public bool TrySetModPrivateNote(DivinityModData mod, string note, out string error)
+	{
+		error = String.Empty;
+		if (mod == null)
+		{
+			error = "Choose a mod before editing its notes.";
+			return false;
+		}
+
+		var proposed = _modAnnotationStore.Clone();
+		if (!ReduxModAnnotationService.TrySet(proposed, mod.UUID, note, out error) ||
+			!ReduxModAnnotationService.TrySave(GetModAnnotationsPath(), proposed, out error))
+			return false;
+
+		_modAnnotationStore = proposed;
+		foreach (var matchingMod in mods.Items.Where(item =>
+			String.Equals(item.UUID, mod.UUID, StringComparison.OrdinalIgnoreCase)))
+			ApplyModAnnotation(matchingMod);
+		return true;
+	}
+
 	private void SetLoadedMods(IEnumerable<DivinityModData> loadedMods)
 	{
+		_modAnnotationStore = ReduxModAnnotationService.Load(GetModAnnotationsPath());
 		var uuids = loadedMods.Select(x => x.UUID).ToHashSet();
 		mods.Clear();
 		foreach (var mod in loadedMods)
 		{
 			ApplySourceLinkingMode(mod);
+			ApplyModAnnotation(mod);
 			mod.HasColorblindSupport = Settings.EnableColorblindSupport;
 
 			if (mod.IsLarianMod)
@@ -3529,6 +3574,144 @@ Directory the zip will be extracted to:
 		return loadOrderDirectory;
 	}
 
+	private static string GetRestorePointsDirectory() =>
+		DivinityApp.GetAppDirectory("Data", "RestorePoints");
+
+	private void OpenLoadOrderComparison()
+	{
+		var comparableOrders = ModOrderList
+			.Where(order => order != null)
+			.Select(order => new DivinityLoadOrder
+			{
+				Name = order.Name,
+				FilePath = order.FilePath,
+				IsModSettings = order.IsModSettings,
+				LastModifiedDate = order.LastModifiedDate,
+				Order = (order.Order ?? [])
+					.Where(entry => entry != null && !IsInternalComparisonEntry(entry.UUID))
+					.Select(entry =>
+					{
+						var installed = mods.Lookup(entry.UUID);
+						var displayName = installed.HasValue
+							? installed.Value.GetDisplayName()
+							: entry.Name;
+						return new DivinityLoadOrderEntry
+						{
+							UUID = entry.UUID,
+							Name = String.IsNullOrWhiteSpace(displayName) ? entry.Name : displayName,
+							Missing = entry.Missing
+						};
+					})
+					.ToList()
+			})
+			.ToArray();
+		if (comparableOrders.Length < 2)
+		{
+			ShowAlert("At least two load orders are needed for comparison.", AlertType.Info, 15);
+			return;
+		}
+
+		var baselineIndex = 0;
+		var comparedIndex = SelectedModOrderIndex > 0
+			? Math.Min(SelectedModOrderIndex, comparableOrders.Length - 1)
+			: 1;
+		var dialog = new ReduxLoadOrderComparisonWindow(
+			Window,
+			comparableOrders,
+			baselineIndex,
+			comparedIndex);
+		dialog.ShowDialog();
+	}
+
+	private bool IsInternalComparisonEntry(string uuid)
+	{
+		if (String.IsNullOrWhiteSpace(uuid)
+			|| DivinityModDataLoader.IgnoreMod(uuid)
+			|| String.Equals(uuid, DivinityApp.GUSTAVX_UUID, StringComparison.OrdinalIgnoreCase)
+			|| String.Equals(uuid, DivinityApp.GUSTAVDEV_UUID, StringComparison.OrdinalIgnoreCase)
+			|| String.Equals(uuid, DivinityApp.MAIN_CAMPAIGN_UUID, StringComparison.OrdinalIgnoreCase))
+		{
+			return true;
+		}
+
+		var installed = mods.Lookup(uuid);
+		return installed.HasValue
+			&& (installed.Value.IsLarianMod
+				|| String.Equals(installed.Value.ModType, "Adventure", StringComparison.OrdinalIgnoreCase));
+	}
+
+	private void OpenRestorePoints()
+	{
+		if (SelectedProfile == null)
+		{
+			return;
+		}
+
+		var restorePoints = LoadOrderRestorePointService.Load(
+			GetRestorePointsDirectory(),
+			SelectedProfile.UUID);
+		var dialog = new ReduxRestorePointsWindow(Window, restorePoints);
+		dialog.ShowDialog();
+		if (!dialog.Accepted || dialog.SelectedRestorePoint == null)
+		{
+			return;
+		}
+
+		var restorePoint = dialog.SelectedRestorePoint;
+		var baseName = $"Restored {restorePoint.CreatedLocal:yyyy-MM-dd HH-mm}";
+		var existingNames = ModOrderList
+			.Where(order => order != null)
+			.Select(order => order.Name)
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var restoredName = baseName;
+		for (var suffix = 2; existingNames.Contains(restoredName); suffix++)
+		{
+			restoredName = $"{baseName} ({suffix})";
+		}
+
+		var restoredOrder = new DivinityLoadOrder
+		{
+			Name = restoredName,
+			FilePath = Path.Combine(
+				GetOrdersDirectory(),
+				DivinityModDataLoader.MakeSafeFilename(restoredName + ".json", '_')),
+			LastModifiedDate = DateTime.Now,
+			Order = restorePoint.Order.Select(entry => entry.Clone()).ToList()
+		};
+		AddNewModOrder(restoredOrder);
+		ShowAlert(
+			$"Loaded restore point from {restorePoint.CreatedSummary} as '{restoredName}'. Export when you are ready to apply it to the game.",
+			AlertType.Success,
+			20);
+	}
+
+	private void OpenFileOverlapInspector()
+	{
+		if (MainProgressIsActive)
+		{
+			return;
+		}
+
+		var candidates = ActiveMods
+			.Concat(ForceLoadedMods)
+			.Where(mod => mod != null
+				&& !mod.IsVisualDivider
+				&& !String.IsNullOrWhiteSpace(mod.FilePath))
+			.DistinctBy(mod => mod.FilePath, StringComparer.OrdinalIgnoreCase)
+			.ToArray();
+		if (candidates.Length < 2)
+		{
+			ShowAlert(
+				"At least two active or override PAK packages are needed to inspect file overlaps.",
+				AlertType.Info,
+				15);
+			return;
+		}
+
+		var dialog = new ReduxFileOverlapWindow(Window, candidates);
+		dialog.ShowDialog();
+	}
+
 	private async Task<List<DivinityLoadOrder>> LoadExternalLoadOrdersAsync()
 	{
 		try
@@ -3849,12 +4032,105 @@ Directory the zip will be extracted to:
 		}
 	}
 
+	private async Task<bool> ShowExportReviewAsync(
+		IReadOnlyList<DivinityLoadOrderEntry> previouslyExportedOrder,
+		bool hasPreviousExport,
+		IReadOnlyList<DivinityModData> finalOrder,
+		DivinityModData outputAdventureMod)
+	{
+		return await Observable.Start(() =>
+		{
+			var installedByUuid = mods.Items
+				.Where(mod => !String.IsNullOrWhiteSpace(mod.UUID))
+				.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
+				.ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+			bool IsInternalExportEntry(string uuid)
+			{
+				if (String.IsNullOrWhiteSpace(uuid)) return true;
+				if (String.Equals(uuid, outputAdventureMod?.UUID, StringComparison.OrdinalIgnoreCase)
+					|| String.Equals(uuid, DivinityApp.GUSTAVX_UUID, StringComparison.OrdinalIgnoreCase)
+					|| String.Equals(uuid, DivinityApp.GUSTAVDEV_UUID, StringComparison.OrdinalIgnoreCase)
+					|| String.Equals(uuid, DivinityApp.MAIN_CAMPAIGN_UUID, StringComparison.OrdinalIgnoreCase))
+				{
+					return true;
+				}
+
+				return installedByUuid.TryGetValue(uuid, out var installed)
+					&& (installed.IsLarianMod
+						|| String.Equals(installed.ModType, "Adventure", StringComparison.OrdinalIgnoreCase));
+			}
+
+			var previousEntries = (previouslyExportedOrder ?? Array.Empty<DivinityLoadOrderEntry>())
+				.Where(entry => entry != null && !IsInternalExportEntry(entry.UUID))
+				.Select(entry =>
+				{
+					var displayName = installedByUuid.TryGetValue(entry.UUID, out var installed)
+						? installed.GetDisplayName()
+						: entry.Name;
+					return new DivinityLoadOrderEntry
+					{
+						UUID = entry.UUID,
+						Name = String.IsNullOrWhiteSpace(displayName) ? entry.Name : displayName,
+						Missing = entry.Missing
+					};
+				})
+				.ToArray();
+			var proposedEntries = (finalOrder ?? Array.Empty<DivinityModData>())
+				.Where(mod => mod != null && !IsInternalExportEntry(mod.UUID))
+				.Select(mod => new DivinityLoadOrderEntry
+				{
+					UUID = mod.UUID,
+					Name = mod.GetDisplayName()
+				})
+				.ToArray();
+			var explicitlySelectedUuids = SelectedModOrder?.Order
+				.Where(entry => entry != null && !entry.Missing)
+				.Select(entry => entry.UUID)
+				.ToArray() ?? Array.Empty<string>();
+			var comparison = LoadOrderComparisonService.Compare(
+				previousEntries,
+				proposedEntries,
+				explicitlySelectedUuids,
+				hasPreviousExport);
+
+			var proposedUuids = proposedEntries
+				.Select(entry => entry.UUID)
+				.ToHashSet(StringComparer.OrdinalIgnoreCase);
+			var relevantSnapshots = ModHealthSnapshots
+				.Where(snapshot => snapshot?.Mod != null && proposedUuids.Contains(snapshot.Mod.UUID))
+				.ToArray();
+			var healthErrorCount = relevantSnapshots.Sum(snapshot => snapshot.HealthErrorCount);
+			var healthWarningCount = relevantSnapshots.Sum(snapshot => snapshot.HealthWarningCount);
+			var guidanceCount = relevantSnapshots.Sum(snapshot => snapshot.LoadOrderAdviceCount);
+			var missingDependencyCount = relevantSnapshots.Sum(snapshot =>
+				snapshot.Findings.Count(finding => finding.Code == ModHealthFindingCode.MissingDependency));
+			var review = new ReduxExportReviewData(
+				SelectedModOrder?.Name,
+				SelectedProfile?.Name ?? SelectedProfile?.ProfileName,
+				comparison,
+				healthErrorCount,
+				healthWarningCount,
+				guidanceCount,
+				missingDependencyCount);
+			var dialog = new ReduxExportReviewWindow(Window, review);
+			dialog.ShowDialog();
+			return dialog.Accepted;
+		}, RxApp.MainThreadScheduler);
+	}
+
 	private async Task<bool> ExportLoadOrderAsync()
 	{
 		if (SelectedProfile != null && SelectedModOrder != null)
 		{
+			var currentExport = ModOrderList.FirstOrDefault(order => order.IsModSettings);
+			var previouslyExportedOrder = currentExport?.Order
+				.Select(entry => entry?.Clone())
+				.Where(entry => entry != null)
+				.ToArray() ?? Array.Empty<DivinityLoadOrderEntry>();
+			var hasPreviousExport = File.Exists(
+				currentExport?.FilePath ?? Path.Combine(SelectedProfile.Folder, "modsettings.lsx"));
 			UpdateOrderFromActiveMods();
-			DeleteModCrashSanityCheck();
 
 			var outputAdventureMod = SelectedAdventureMod;
 			if (outputAdventureMod == null)
@@ -3884,6 +4160,48 @@ Directory the zip will be extracted to:
 			}
 			string outputPath = Path.Combine(SelectedProfile.Folder, "modsettings.lsx");
 			var finalOrder = DivinityModDataLoader.BuildOutputList(SelectedModOrder.Order, mods.Items, Settings.AutoAddDependenciesWhenExporting, outputAdventureMod);
+			if (!await ShowExportReviewAsync(previouslyExportedOrder, hasPreviousExport, finalOrder, outputAdventureMod))
+			{
+				DivinityApp.Log("Canceled Export to Game from Review Export.");
+				return false;
+			}
+
+			if (hasPreviousExport)
+			{
+				var profileUuid = SelectedProfile.UUID;
+				var profileName = SelectedProfile.Name ?? SelectedProfile.ProfileName;
+				var sourceOrderName = currentExport?.Name ?? "Current";
+				var snapshotOrder = previouslyExportedOrder
+					.Select(entry => entry.Clone())
+					.ToArray();
+				var captureResult = await Task.Run(() =>
+				{
+					var saved = LoadOrderRestorePointService.TryCreate(
+						GetRestorePointsDirectory(),
+						profileUuid,
+						profileName,
+						sourceOrderName,
+						"Before game export",
+						snapshotOrder,
+						out _,
+						out var error);
+					return (Saved: saved, Error: error);
+				});
+				if (!captureResult.Saved)
+				{
+					DivinityApp.Log($"Export will continue without a restore point: {captureResult.Error}");
+					await Observable.Start(() =>
+					{
+						ShowAlert(
+							"Redux could not create a pre-export restore point. The export will continue.",
+							AlertType.Warning,
+							20);
+						return Unit.Default;
+					}, RxApp.MainThreadScheduler);
+				}
+			}
+
+			DeleteModCrashSanityCheck();
 			var result = await DivinityModDataLoader.ExportModSettingsToFileAsync(SelectedProfile.Folder, finalOrder);
 
 			if (result)
@@ -4127,6 +4445,7 @@ Directory the zip will be extracted to:
 	private void AddImportedMod(DivinityModData mod, bool? toActiveList = null)
 	{
 		ApplySourceLinkingMode(mod);
+		ApplyModAnnotation(mod);
 
 		if (mod.IsForceLoaded && !mod.IsForceLoadedMergedMod)
 		{
@@ -5037,6 +5356,7 @@ Directory the zip will be extracted to:
 				Title = divider.Title?.Trim() ?? String.Empty,
 				Color = NormalizeReduxBundleColor(divider.Color),
 				IconId = PrepareReduxBundleIconForExport(divider.IconId, presentation, assets),
+				Description = NormalizeCategoryDescription(divider.Description),
 				IsCollapsed = divider.IsCollapsed,
 				HideLine = divider.HideLine,
 				FallbackPosition = sequence.Take(visualIndex).Count(item => item.Mod != null),
@@ -5117,6 +5437,8 @@ Directory the zip will be extracted to:
 				return String.IsNullOrWhiteSpace(normalized) ||
 					!presentation.CustomIconAssets.ContainsKey(normalized);
 			});
+		var privateNoteCount = ActiveMods.Count(mod =>
+			!mod.IsVisualDivider && !String.IsNullOrWhiteSpace(mod.PrivateNote));
 
 		var reviewWindow = new ReduxLoadOrderExportWindow(
 			Window,
@@ -5125,9 +5447,22 @@ Directory the zip will be extracted to:
 			presentation.CustomCategories.Count,
 			presentation.Dividers.Count,
 			presentation.CustomIconAssets.Count,
+			privateNoteCount,
 			unavailableCustomIconCount);
 		reviewWindow.ShowDialog();
 		if (!reviewWindow.Accepted) return;
+		if (reviewWindow.IncludePrivateNotes)
+		{
+			presentation.PrivateModNotes = ActiveMods
+				.Where(mod => !mod.IsVisualDivider && !String.IsNullOrWhiteSpace(mod.UUID) &&
+					!String.IsNullOrWhiteSpace(mod.PrivateNote))
+				.Select(mod => new ReduxLoadOrderPrivateNote
+				{
+					ModUuid = mod.UUID,
+					Note = mod.PrivateNote.Trim()
+				})
+				.ToList();
+		}
 
 		var dialog = new SaveFileDialog
 		{
@@ -5146,7 +5481,8 @@ Directory the zip will be extracted to:
 			DivinityApp.Log(
 				$"[ReduxBundle] Exported '{dialog.FileName}': {loadOrder.Order.Count} mod(s), " +
 				$"{presentation.CustomCategories.Count} custom categories, {presentation.Dividers.Count} separator(s), " +
-				$"{presentation.CustomIconAssets.Count} custom icon(s), creator {presentation.CreatorVersion} " +
+				$"{presentation.CustomIconAssets.Count} custom icon(s), " +
+				$"{presentation.PrivateModNotes.Count} note(s), creator {presentation.CreatorVersion} " +
 				$"({presentation.CreatorInternalVersion}).");
 			ShowAlert($"Exported Redux bundle '{Path.GetFileName(dialog.FileName)}'.", AlertType.Success, 15);
 			if (reviewWindow.OpenContainingFolder)
@@ -5279,6 +5615,7 @@ Directory the zip will be extracted to:
 				Title = item.Title,
 				Color = item.Color,
 				IconId = item.IconId,
+				Description = item.Description,
 				IsActiveList = item.IsActiveList,
 				Position = item.Position,
 				IsCollapsed = item.IsCollapsed,
@@ -5374,6 +5711,7 @@ Directory the zip will be extracted to:
 				Title = importedDivider.Title?.Trim() ?? String.Empty,
 				Color = NormalizeReduxBundleColor(importedDivider.Color),
 				IconId = ResolveReduxBundleIcon(importedDivider.IconId, importedIcons),
+				Description = NormalizeCategoryDescription(importedDivider.Description),
 				IsActiveList = true,
 				Position = position,
 				IsCollapsed = importedDivider.IsCollapsed,
@@ -5473,6 +5811,45 @@ Directory the zip will be extracted to:
 		}
 	}
 
+	private bool ImportReduxBundlePrivateNotes(
+		ReduxLoadOrderBundleContents contents,
+		out int importedCount,
+		out int preservedLocalCount)
+	{
+		importedCount = 0;
+		preservedLocalCount = 0;
+		var proposed = _modAnnotationStore.Clone();
+		foreach (var imported in contents.Presentation.PrivateModNotes)
+		{
+			var existing = ReduxModAnnotationService.Find(proposed, imported.ModUuid);
+			if (existing?.HasPrivateNote == true)
+			{
+				if (!String.Equals(existing.PrivateNote, imported.Note, StringComparison.Ordinal))
+					preservedLocalCount++;
+				continue;
+			}
+
+			if (!ReduxModAnnotationService.TrySet(proposed, imported.ModUuid, imported.Note, out var error))
+			{
+				DivinityApp.Log($"[ReduxBundle] Could not stage note for '{imported.ModUuid}': {error}");
+				return false;
+			}
+			importedCount++;
+		}
+
+		if (importedCount > 0 &&
+			!ReduxModAnnotationService.TrySave(GetModAnnotationsPath(), proposed, out var saveError))
+		{
+			DivinityApp.Log($"[ReduxBundle] Could not save imported notes: {saveError}");
+			return false;
+		}
+
+		_modAnnotationStore = proposed;
+		foreach (var mod in mods.Items)
+			ApplyModAnnotation(mod);
+		return true;
+	}
+
 	private void ImportReduxLoadOrder()
 	{
 		var dialog = new OpenFileDialog
@@ -5494,6 +5871,7 @@ Directory the zip will be extracted to:
 			$"[ReduxBundle] Validated '{dialog.FileName}': schema {contents.Presentation.SchemaVersion}, " +
 			$"{contents.LoadOrder.Order.Count} mod(s), {contents.Presentation.CustomCategories.Count} custom categories, " +
 			$"{contents.Presentation.Dividers.Count} separator(s), {contents.Presentation.CustomIconAssets.Count} custom icon(s), " +
+			$"{contents.Presentation.PrivateModNotes.Count} note(s), " +
 			$"creator {contents.Presentation.CreatorVersion} ({contents.Presentation.CreatorInternalVersion}), " +
 			$"exported {contents.Presentation.ExportedAtUtc:O}.");
 
@@ -5536,6 +5914,9 @@ Directory the zip will be extracted to:
 
 		var orderImported = !importWindow.ImportLoadOrder;
 		var presentationImported = !importWindow.ImportPresentation;
+		var privateNotesImported = !importWindow.ImportPrivateNotes;
+		var importedPrivateNoteCount = 0;
+		var preservedLocalNoteCount = 0;
 		DivinityLoadOrder importedOrder = null;
 		if (importWindow.ImportLoadOrder)
 			orderImported = ImportReduxBundleOrder(contents.LoadOrder, out importedOrder);
@@ -5543,8 +5924,16 @@ Directory the zip will be extracted to:
 		var warnings = new List<string>();
 		if (importWindow.ImportPresentation)
 			presentationImported = ImportReduxBundlePresentation(contents, warnings);
+		if (importWindow.ImportPrivateNotes)
+			privateNotesImported = ImportReduxBundlePrivateNotes(
+				contents,
+				out importedPrivateNoteCount,
+				out preservedLocalNoteCount);
 		foreach (var warning in warnings)
 			DivinityApp.Log($"[ReduxBundle][Warning] {warning}");
+		if (preservedLocalNoteCount > 0)
+			DivinityApp.Log(
+				$"[ReduxBundle] Preserved {preservedLocalNoteCount} existing local note(s) instead of overwriting them.");
 
 		var importedParts = new List<string>();
 		var failedParts = new List<string>();
@@ -5562,12 +5951,22 @@ Directory the zip will be extracted to:
 			else
 				failedParts.Add("categories and separators");
 		}
+		if (importWindow.ImportPrivateNotes)
+		{
+			if (privateNotesImported)
+				importedParts.Add($"{importedPrivateNoteCount} note{(importedPrivateNoteCount == 1 ? String.Empty : "s")}");
+			else
+				failedParts.Add("notes");
+		}
 
 		if (failedParts.Count == 0)
 		{
 			var warningSuffix = warnings.Count > 0
 				? $" {warnings.Count} custom icon{(warnings.Count == 1 ? String.Empty : "s")} used the default marker."
 				: String.Empty;
+			if (preservedLocalNoteCount > 0)
+				warningSuffix +=
+					$" {preservedLocalNoteCount} existing local note{(preservedLocalNoteCount == 1 ? " was" : "s were")} preserved.";
 			ShowAlert(
 				$"Imported {String.Join(" and ", importedParts)}.{warningSuffix}",
 				warnings.Count > 0 ? AlertType.Warning : AlertType.Success,
@@ -7315,7 +7714,8 @@ Directory the zip will be extracted to:
 				entry.Finding.Message))
 			.Select(group => new ModDiagnosticFindingGroupViewModel(
 				group.First().Finding,
-				group.Select(entry => entry.Snapshot)))
+				group.Select(entry => entry.Snapshot),
+				mods.Items))
 			.OrderByDescending(group => group.Severity)
 			.ThenBy(group => group.Code)
 			.ToArray();
@@ -7676,11 +8076,16 @@ Directory the zip will be extracted to:
 		Keys.ExportReduxLoadOrder.AddAction(ExportReduxLoadOrder, anyActiveObservable);
 
 		var canOpenDialogWindow = this.WhenAnyValue(x => x.MainProgressIsActive).Select(x => !x);
+		Keys.CompareLoadOrders.AddAction(
+			OpenLoadOrderComparison,
+			this.WhenAnyValue(x => x.ModOrderList.Count)
+				.CombineLatest(canOpenDialogWindow, (orderCount, canOpen) => orderCount >= 2 && canOpen));
 		Keys.ImportOrderFromSave.AddAction(ImportOrderFromSaveToCurrent, canOpenDialogWindow);
 		Keys.ImportOrderFromSaveAsNew.AddAction(ImportOrderFromSaveAsNew, canOpenDialogWindow);
 		Keys.ImportOrderFromFile.AddAction(ImportOrderFromFile, canOpenDialogWindow);
 		Keys.ImportReduxLoadOrder.AddAction(ImportReduxLoadOrder, canOpenDialogWindow);
 		Keys.ImportOrderFromZipFile.AddAction(ImportOrderFromArchive, canOpenDialogWindow);
+		Keys.InspectFileOverlaps.AddAction(OpenFileOverlapInspector, canOpenDialogWindow);
 
 		Keys.OpenDonationLink.AddAction(() =>
 		{
@@ -7829,6 +8234,9 @@ Directory the zip will be extracted to:
 		_hasProfile = hasNonNullProfile.ToProperty(this, nameof(HasProfile)).DisposeWith(Disposables);
 
 		Keys.ExportOrderToGame.AddAction(ExportLoadOrder, hasNonNullProfile);
+		Keys.RestorePoints.AddAction(
+			OpenRestorePoints,
+			hasNonNullProfile.CombineLatest(canOpenDialogWindow, (hasProfile, canOpen) => hasProfile && canOpen));
 
 		profileChanged.ObserveOn(RxApp.MainThreadScheduler).Subscribe((profile) =>
 		{

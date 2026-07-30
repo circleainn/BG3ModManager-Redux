@@ -1,3 +1,4 @@
+using DivinityModManager.AppServices;
 using DivinityModManager.Models;
 
 using Newtonsoft.Json;
@@ -163,7 +164,8 @@ public static class ReduxLoadOrderBundleService
 			presentation.CustomCategoryDisplayOrder == null ||
 			presentation.CategoryAssignments == null ||
 			presentation.Dividers == null ||
-			presentation.CustomIconAssets == null)
+			presentation.CustomIconAssets == null ||
+			presentation.PrivateModNotes == null)
 			throw new InvalidDataException("The bundled Redux presentation is incomplete.");
 		if (loadOrder.Order == null || loadOrder.Order.Count > 10000 ||
 			loadOrder.Order.Any(entry => entry == null || String.IsNullOrWhiteSpace(entry.UUID) ||
@@ -188,7 +190,8 @@ public static class ReduxLoadOrderBundleService
 		if (presentation.CustomCategories.Count > 128 ||
 			presentation.Dividers.Count > 256 ||
 			presentation.CategoryAssignments.Count > 10000 ||
-			presentation.CustomIconAssets.Count > 128)
+			presentation.CustomIconAssets.Count > 128 ||
+			presentation.PrivateModNotes.Count > orderUuids.Count)
 			throw new InvalidDataException("The Redux presentation exceeds the supported limits.");
 
 		if (presentation.CustomCategories.Any(category =>
@@ -218,11 +221,20 @@ public static class ReduxLoadOrderBundleService
 		if (presentation.Dividers.Any(divider =>
 				divider == null || (divider.Title?.Length ?? 0) > 160 ||
 				!IsValidColor(divider.Color) || (divider.IconId?.Length ?? 0) > 160 ||
+				(divider.Description?.Length ?? 0) > 240 ||
 				divider.FallbackPosition < 0 || divider.FallbackPosition > orderUuids.Count ||
 				(divider.BeforeModUuid?.Length ?? 0) > 128 || (divider.AfterModUuid?.Length ?? 0) > 128 ||
 				(!String.IsNullOrWhiteSpace(divider.BeforeModUuid) && !orderedUuidSet.Contains(divider.BeforeModUuid)) ||
 				(!String.IsNullOrWhiteSpace(divider.AfterModUuid) && !orderedUuidSet.Contains(divider.AfterModUuid))))
 			throw new InvalidDataException("The Redux presentation contains an invalid separator.");
+		if (presentation.PrivateModNotes.Any(note =>
+				note == null || String.IsNullOrWhiteSpace(note.ModUuid) ||
+				!orderedUuidSet.Contains(note.ModUuid) ||
+				String.IsNullOrWhiteSpace(note.Note) ||
+				note.Note.Length > ReduxModAnnotationService.MaximumNoteLength) ||
+			presentation.PrivateModNotes.Select(note => note.ModUuid)
+				.Distinct(StringComparer.OrdinalIgnoreCase).Count() != presentation.PrivateModNotes.Count)
+			throw new InvalidDataException("The Redux presentation contains invalid notes.");
 		if (presentation.CustomIconAssets.Any(asset =>
 				!ReduxCustomIconService.IsCustomReference(asset.Key) || asset.Key.Length > 160 ||
 				!IsSafeAssetPath(asset.Value)))

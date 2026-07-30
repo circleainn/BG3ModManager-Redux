@@ -15,6 +15,8 @@ public partial class ReduxLoadOrderImportWindow : AdonisUI.Controls.AdonisWindow
 
 	public bool ImportLoadOrder => ImportLoadOrderCheckBox.IsChecked == true;
 	public bool ImportPresentation => ImportPresentationCheckBox.IsChecked == true;
+	public bool ImportPrivateNotes => ImportPrivateNotesCheckBox.IsChecked == true &&
+		PrivateNotesOptionBorder.Visibility == Visibility.Visible;
 	public bool Accepted { get; private set; }
 
 	public ReduxLoadOrderImportWindow(
@@ -42,6 +44,7 @@ public partial class ReduxLoadOrderImportWindow : AdonisUI.Controls.AdonisWindow
 		var categoryCount = contents?.Presentation?.CustomCategories?.Count ?? 0;
 		var dividerCount = contents?.Presentation?.Dividers?.Count ?? 0;
 		var iconCount = contents?.Presentation?.CustomIconAssets?.Count ?? 0;
+		var privateNoteCount = contents?.Presentation?.PrivateModNotes?.Count ?? 0;
 		var installedCount = Math.Max(0, orderCount - _missingModCount);
 		BundleSummaryText.Text = contents?.LoadOrder?.Name ?? "Redux order";
 		var exportedAt = contents?.Presentation?.ExportedAtUtc ?? default;
@@ -55,6 +58,10 @@ public partial class ReduxLoadOrderImportWindow : AdonisUI.Controls.AdonisWindow
 		PresentationContentsText.Text =
 			$"{FormatCount(categoryCount, "custom category", "custom categories")} • " +
 			$"{FormatCount(dividerCount, "separator")} • {FormatCount(iconCount, "custom icon")}";
+		PrivateNotesContentsText.Text = FormatCount(privateNoteCount, "note");
+		PrivateNotesOptionBorder.Visibility =
+			privateNoteCount > 0 ? Visibility.Visible : Visibility.Collapsed;
+		ImportPrivateNotesCheckBox.IsChecked = privateNoteCount > 0;
 		UpdateImportButton();
 	}
 
@@ -101,7 +108,7 @@ public partial class ReduxLoadOrderImportWindow : AdonisUI.Controls.AdonisWindow
 	private void UpdateImportButton()
 	{
 		if (ImportButton != null)
-			ImportButton.IsEnabled = ImportLoadOrder || ImportPresentation;
+			ImportButton.IsEnabled = ImportLoadOrder || ImportPresentation || ImportPrivateNotes;
 
 		if (ImportImpactBorder == null || ImportImpactText == null) return;
 		var notices = new List<string>();

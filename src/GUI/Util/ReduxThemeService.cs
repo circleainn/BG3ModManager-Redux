@@ -82,6 +82,11 @@ public static class ReduxThemeService
 			if (settings == null) return;
 
 			Apply(resources, settings.ColorTheme, GetActiveTheme(settings));
+			// Apply accessibility after the theme so freshly loaded template resources
+			// cannot restore popup motion that Reduce Motion has disabled.
+			ReduxWindowBehavior.ConfigureAccessibility(
+				settings.ReduceMotion,
+				settings.DisableBackgroundEffects);
 		}
 		catch (Exception ex)
 		{

@@ -8,6 +8,7 @@ public partial class ReduxLoadOrderExportWindow : AdonisUI.Controls.AdonisWindow
 {
 	public bool Accepted { get; private set; }
 	public bool OpenContainingFolder => OpenFolderCheckBox.IsChecked == true;
+	public bool IncludePrivateNotes => IncludePrivateNotesCheckBox.IsChecked == true;
 
 	public ReduxLoadOrderExportWindow(
 		Window owner,
@@ -16,6 +17,7 @@ public partial class ReduxLoadOrderExportWindow : AdonisUI.Controls.AdonisWindow
 		int categoryCount,
 		int separatorCount,
 		int iconCount,
+		int privateNoteCount,
 		int unavailableIconCount)
 	{
 		InitializeComponent();
@@ -31,6 +33,10 @@ public partial class ReduxLoadOrderExportWindow : AdonisUI.Controls.AdonisWindow
 		CategoryCountText.Text = FormatCount(categoryCount, "category", "categories");
 		SeparatorCountText.Text = FormatCount(separatorCount, "separator");
 		IconCountText.Text = FormatCount(iconCount, "icon");
+		PrivateNotesTitleText.Text =
+			$"Include notes ({Math.Max(0, privateNoteCount)})";
+		IncludePrivateNotesCheckBox.IsEnabled = privateNoteCount > 0;
+		IncludePrivateNotesCheckBox.IsChecked = false;
 		if (unavailableIconCount > 0)
 		{
 			BundleSafetyText.Text +=

@@ -1,0 +1,251 @@
+<adonisUI:AdonisWindow x:Class="DivinityModManager.Views.ReduxLoadOrderComparisonWindow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+	xmlns:controls="clr-namespace:DivinityModManager.Controls"
+	xmlns:models="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
+	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+	Title="Compare Load Orders"
+	Width="720" Height="620" MinWidth="620" MinHeight="500" MaxWidth="900" MaxHeight="820"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontSize="{DynamicResource Redux.FontSize.12}"
+	FontWeight="{DynamicResource Redux.FontWeight.Body}"
+	ResizeMode="CanResizeWithGrip"
+	ShowInTaskbar="False"
+	WindowStartupLocation="CenterOwner"
+	WindowStyle="SingleBorderWindow"
+	Template="{DynamicResource ReduxWindowTemplate}"
+	Background="{DynamicResource ReduxWindowBrush}">
+	<shell:WindowChrome.WindowChrome>
+		<shell:WindowChrome
+			CaptionHeight="0"
+			CornerRadius="0"
+			GlassFrameThickness="0"
+			ResizeBorderThickness="6"
+			UseAeroCaptionButtons="False" />
+	</shell:WindowChrome.WindowChrome>
+	<Window.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+
+			<DataTemplate x:Key="ComparisonChangeTemplate">
+				<Border Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+					ClipToBounds="True">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="3" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<Border x:Name="ChangeRail" Background="{DynamicResource ReduxInfoBrush}" />
+						<controls:ReduxIcon x:Name="ChangeIcon"
+							Grid.Column="1" Width="16" Height="16" Margin="11,0,9,0"
+							VerticalAlignment="Center"
+							Foreground="{DynamicResource ReduxInfoBrush}"
+							StrokeData="{StaticResource Redux.Icon.ReorderStroke}" />
+						<StackPanel Grid.Column="2" Margin="0,8">
+							<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+								FontWeight="{DynamicResource Redux.FontWeight.Control}"
+								Text="{Binding Name}"
+								TextTrimming="CharacterEllipsis" />
+							<TextBlock x:Name="ChangeKindText" Margin="0,2,0,0"
+								Foreground="{DynamicResource ReduxInfoBrush}"
+								Text="{Binding ChangeSummary}" />
+						</StackPanel>
+						<TextBlock Grid.Column="3" Margin="12,0"
+							VerticalAlignment="Center"
+							Foreground="{DynamicResource ReduxTextMutedBrush}"
+							Text="{Binding PositionSummary}" />
+					</Grid>
+				</Border>
+				<DataTemplate.Triggers>
+					<DataTrigger Binding="{Binding Kind}" Value="{x:Static models:LoadOrderChangeKind.Activated}">
+						<Setter TargetName="ChangeRail" Property="Background" Value="{DynamicResource ReduxSuccessBrush}" />
+						<Setter TargetName="ChangeIcon" Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+						<Setter TargetName="ChangeIcon" Property="StrokeData" Value="{StaticResource Redux.Icon.AddStroke}" />
+						<Setter TargetName="ChangeKindText" Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding Kind}" Value="{x:Static models:LoadOrderChangeKind.Deactivated}">
+						<Setter TargetName="ChangeRail" Property="Background" Value="{DynamicResource ReduxErrorBrush}" />
+						<Setter TargetName="ChangeIcon" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+						<Setter TargetName="ChangeIcon" Property="StrokeData" Value="{StaticResource Redux.Icon.RemoveCircle}" />
+						<Setter TargetName="ChangeKindText" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+					</DataTrigger>
+				</DataTemplate.Triggers>
+			</DataTemplate>
+		</ResourceDictionary>
+	</Window.Resources>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.SwapHorizontalStroke}" />
+		<Border Grid.Row="1"
+			Padding="22,19"
+			Background="{DynamicResource ReduxAppBackgroundBrush}"
+			BorderBrush="{DynamicResource ReduxBorderBrush}"
+			BorderThickness="1">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+
+				<StackPanel>
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.20}"
+						FontWeight="{DynamicResource Redux.FontWeight.Title}"
+						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+						Text="Compare load orders" />
+					<TextBlock Margin="0,5,0,0"
+						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+						Text="See what the compared order adds, removes, or repositions. This view is read-only and does not change either order."
+						TextWrapping="Wrap" />
+				</StackPanel>
+
+				<Grid Grid.Row="1" Margin="0,17,0,0">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+					<StackPanel>
+						<TextBlock Margin="2,0,0,5"
+							Foreground="{DynamicResource ReduxTextMutedBrush}"
+							Text="Baseline order" />
+						<ComboBox x:Name="BaselineComboBox"
+							MinHeight="34"
+							DisplayMemberPath="Name"
+							SelectionChanged="OrderComboBox_SelectionChanged" />
+					</StackPanel>
+					<Button Grid.Column="1" Width="34" MinWidth="34" Height="34" Margin="9,20,9,0"
+						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+						ToolTip="Swap compared orders"
+						Click="SwapOrdersButton_Click">
+						<controls:ReduxIcon Width="16" Height="16"
+							StrokeData="{StaticResource Redux.Icon.SwapHorizontalStroke}" />
+					</Button>
+					<StackPanel Grid.Column="2">
+						<TextBlock Margin="2,0,0,5"
+							Foreground="{DynamicResource ReduxTextMutedBrush}"
+							Text="Compared order" />
+						<ComboBox x:Name="ComparedComboBox"
+							MinHeight="34"
+							DisplayMemberPath="Name"
+							SelectionChanged="OrderComboBox_SelectionChanged" />
+					</StackPanel>
+				</Grid>
+
+				<UniformGrid Grid.Row="2" Margin="0,14,0,13" Columns="3">
+					<Border Style="{StaticResource ReduxDialogSummaryCardStyle}">
+						<StackPanel>
+							<TextBlock x:Name="AddedCountText"
+								FontSize="{DynamicResource Redux.FontSize.20}"
+								FontWeight="{DynamicResource Redux.FontWeight.Title}"
+								Foreground="{DynamicResource ReduxSuccessBrush}"
+								Text="0" />
+							<TextBlock Margin="0,2,0,0"
+								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+								Text="Only in compared" />
+						</StackPanel>
+					</Border>
+					<Border Style="{StaticResource ReduxDialogSummaryCardStyle}">
+						<StackPanel>
+							<TextBlock x:Name="RemovedCountText"
+								FontSize="{DynamicResource Redux.FontSize.20}"
+								FontWeight="{DynamicResource Redux.FontWeight.Title}"
+								Foreground="{DynamicResource ReduxErrorBrush}"
+								Text="0" />
+							<TextBlock Margin="0,2,0,0"
+								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+								Text="Only in baseline" />
+						</StackPanel>
+					</Border>
+					<Border Margin="0" Style="{StaticResource ReduxDialogSummaryCardStyle}">
+						<StackPanel>
+							<TextBlock x:Name="MovedCountText"
+								FontSize="{DynamicResource Redux.FontSize.20}"
+								FontWeight="{DynamicResource Redux.FontWeight.Title}"
+								Foreground="{DynamicResource ReduxInfoBrush}"
+								Text="0" />
+							<TextBlock Margin="0,2,0,0"
+								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+								Text="Repositioned" />
+						</StackPanel>
+					</Border>
+				</UniformGrid>
+
+				<Grid Grid.Row="3">
+					<Border Background="{DynamicResource ReduxSurfaceBrush}"
+						BorderBrush="{DynamicResource ReduxBorderBrush}"
+						BorderThickness="1"
+						CornerRadius="{DynamicResource Redux.CornerRadius.Card}" />
+					<Grid Margin="10">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="*" />
+						</Grid.RowDefinitions>
+						<Grid Margin="2,0,2,9">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="Auto" />
+							</Grid.ColumnDefinitions>
+							<TextBlock x:Name="ComparisonTitleText"
+								Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+								FontWeight="{DynamicResource Redux.FontWeight.Control}"
+								Text="Differences" />
+							<TextBlock x:Name="OrderCountText" Grid.Column="1"
+								Foreground="{DynamicResource ReduxTextMutedBrush}" />
+						</Grid>
+						<Grid Grid.Row="1">
+							<ListBox x:Name="ChangeList"
+								Padding="0"
+								Background="Transparent"
+								BorderThickness="0"
+								HorizontalContentAlignment="Stretch"
+								ItemContainerStyle="{StaticResource ReduxPassiveResultItemStyle}"
+								ItemTemplate="{StaticResource ComparisonChangeTemplate}"
+								ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+								ScrollViewer.VerticalScrollBarVisibility="Auto" />
+							<StackPanel x:Name="NoChangesState"
+								HorizontalAlignment="Center" VerticalAlignment="Center">
+								<controls:ReduxIcon Width="28" Height="28"
+									HorizontalAlignment="Center"
+									Foreground="{DynamicResource ReduxSuccessBrush}"
+									StrokeData="{StaticResource Redux.Icon.Check}" />
+								<TextBlock Margin="0,9,0,0"
+									HorizontalAlignment="Center"
+									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+									FontWeight="{DynamicResource Redux.FontWeight.Control}"
+									Text="These orders match" />
+							</StackPanel>
+						</Grid>
+					</Grid>
+				</Grid>
+
+				<Grid Grid.Row="4" Margin="0,15,0,0">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<TextBlock VerticalAlignment="Center"
+						Foreground="{DynamicResource ReduxTextMutedBrush}"
+						Text="Positions refer to user-managed mods only." />
+					<Button Grid.Column="1" MinWidth="84"
+						Content="Close"
+						IsCancel="True"
+						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+						Click="CloseButton_Click" />
+				</Grid>
+			</Grid>
+		</Border>
+	</Grid>
+</adonisUI:AdonisWindow>

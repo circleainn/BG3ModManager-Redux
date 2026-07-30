@@ -1,0 +1,234 @@
+<adonisUI:AdonisWindow x:Class="DivinityModManager.Views.ReduxFileOverlapWindow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+	xmlns:controls="clr-namespace:DivinityModManager.Controls"
+	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+	Title="Active File Overlaps"
+	Width="820" Height="650" MinWidth="640" MinHeight="500" MaxWidth="1080" MaxHeight="880"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontSize="{DynamicResource Redux.FontSize.12}"
+	FontWeight="{DynamicResource Redux.FontWeight.Body}"
+	ResizeMode="CanResizeWithGrip"
+	ShowInTaskbar="False"
+	WindowStartupLocation="CenterOwner"
+	WindowStyle="SingleBorderWindow"
+	Template="{DynamicResource ReduxWindowTemplate}"
+	Background="{DynamicResource ReduxWindowBrush}">
+	<shell:WindowChrome.WindowChrome>
+		<shell:WindowChrome
+			CaptionHeight="0"
+			CornerRadius="0"
+			GlassFrameThickness="0"
+			ResizeBorderThickness="6"
+			UseAeroCaptionButtons="False" />
+	</shell:WindowChrome.WindowChrome>
+	<Window.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+			<SolidColorBrush x:Key="OverlapInfoSoftBrush"
+				Color="{DynamicResource ReduxInfoColor}"
+				Opacity="0.14" />
+
+			<DataTemplate x:Key="OverlapEntryTemplate">
+				<Border Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+					ClipToBounds="True">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="3" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<Border Background="{DynamicResource ReduxInfoBrush}" />
+						<StackPanel Grid.Column="1" Margin="12,10">
+							<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+								FontWeight="{DynamicResource Redux.FontWeight.Control}"
+								Text="{Binding InternalPath}"
+								TextTrimming="CharacterEllipsis"
+								ToolTip="{Binding InternalPath}" />
+							<ItemsControl Margin="0,6,0,0" ItemsSource="{Binding Packages}">
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Grid Margin="0,1">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto" />
+												<ColumnDefinition Width="*" />
+												<ColumnDefinition Width="Auto" />
+											</Grid.ColumnDefinitions>
+											<controls:ReduxIcon Width="13" Height="13" Margin="0,0,7,0"
+												VerticalAlignment="Center"
+												Foreground="{DynamicResource ReduxTextMutedBrush}"
+												StrokeData="{StaticResource Redux.Icon.Package}" />
+											<TextBlock Grid.Column="1"
+												Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+												Text="{Binding DisplayName}"
+												TextTrimming="CharacterEllipsis" />
+											<TextBlock Grid.Column="2" Margin="12,0,0,0"
+												Foreground="{DynamicResource ReduxTextMutedBrush}"
+												Text="{Binding PackageFileName}"
+												TextTrimming="CharacterEllipsis" />
+										</Grid>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</StackPanel>
+						<Border Grid.Column="2" Margin="12,10,12,0" Padding="8,3"
+							VerticalAlignment="Top"
+							Background="{DynamicResource OverlapInfoSoftBrush}"
+							BorderBrush="{DynamicResource ReduxInfoBrush}"
+							BorderThickness="1"
+							CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
+							<TextBlock Foreground="{DynamicResource ReduxInfoBrush}"
+								FontWeight="{DynamicResource Redux.FontWeight.Control}"
+								Text="{Binding PackageCountText}" />
+						</Border>
+					</Grid>
+				</Border>
+			</DataTemplate>
+		</ResourceDictionary>
+	</Window.Resources>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.Blocks}" />
+		<Border Grid.Row="1"
+			Padding="22,19"
+			Background="{DynamicResource ReduxAppBackgroundBrush}"
+			BorderBrush="{DynamicResource ReduxBorderBrush}"
+			BorderThickness="1">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+
+				<StackPanel>
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.20}"
+						FontWeight="{DynamicResource Redux.FontWeight.Title}"
+						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+						Text="Active file overlaps" />
+					<TextBlock Margin="0,5,0,0"
+						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+						Text="Shared internal PAK paths can be intentional overrides or patches. This read-only view reports overlaps; it does not determine compatibility or change any files."
+						TextWrapping="Wrap" />
+				</StackPanel>
+
+				<UniformGrid Grid.Row="1" Margin="0,16,0,13" Columns="3">
+					<Border Style="{StaticResource ReduxDialogSummaryCardStyle}">
+						<StackPanel>
+							<TextBlock x:Name="ScannedPackageCountText"
+								FontSize="{DynamicResource Redux.FontSize.20}"
+								FontWeight="{DynamicResource Redux.FontWeight.Title}"
+								Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+								Text="0" />
+							<TextBlock Margin="0,2,0,0"
+								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+								Text="Packages scanned" />
+						</StackPanel>
+					</Border>
+					<Border Style="{StaticResource ReduxDialogSummaryCardStyle}">
+						<StackPanel>
+							<TextBlock x:Name="OverlapPathCountText"
+								FontSize="{DynamicResource Redux.FontSize.20}"
+								FontWeight="{DynamicResource Redux.FontWeight.Title}"
+								Foreground="{DynamicResource ReduxInfoBrush}"
+								Text="0" />
+							<TextBlock Margin="0,2,0,0"
+								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+								Text="Overlapping paths" />
+						</StackPanel>
+					</Border>
+					<Border Margin="0" Style="{StaticResource ReduxDialogSummaryCardStyle}">
+						<StackPanel>
+							<TextBlock x:Name="AffectedPackageCountText"
+								FontSize="{DynamicResource Redux.FontSize.20}"
+								FontWeight="{DynamicResource Redux.FontWeight.Title}"
+								Foreground="{DynamicResource ReduxInfoBrush}"
+								Text="0" />
+							<TextBlock Margin="0,2,0,0"
+								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+								Text="Packages affected" />
+						</StackPanel>
+					</Border>
+				</UniformGrid>
+
+				<Grid Grid.Row="2" Margin="0,0,0,10">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<TextBox x:Name="SearchTextBox"
+						MinHeight="33"
+						IsEnabled="False"
+						VerticalContentAlignment="Center"
+						ToolTip="Filter internal paths or package names"
+						TextChanged="SearchTextBox_TextChanged" />
+					<TextBlock x:Name="VisibleResultCountText" Grid.Column="1"
+						Margin="12,0,2,0"
+						VerticalAlignment="Center"
+						Foreground="{DynamicResource ReduxTextMutedBrush}" />
+				</Grid>
+
+				<Grid Grid.Row="3">
+					<Border Background="{DynamicResource ReduxSurfaceBrush}"
+						BorderBrush="{DynamicResource ReduxBorderBrush}"
+						BorderThickness="1"
+						CornerRadius="{DynamicResource Redux.CornerRadius.Card}" />
+					<ListBox x:Name="OverlapList"
+						Margin="7"
+						Padding="0"
+						Background="Transparent"
+						BorderThickness="0"
+						HorizontalContentAlignment="Stretch"
+						ItemContainerStyle="{StaticResource ReduxPassiveResultItemStyle}"
+						ItemTemplate="{StaticResource OverlapEntryTemplate}"
+						ScrollViewer.CanContentScroll="True"
+						ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+						ScrollViewer.VerticalScrollBarVisibility="Auto"
+						VirtualizingPanel.IsVirtualizing="True"
+						VirtualizingPanel.VirtualizationMode="Recycling" />
+					<StackPanel x:Name="EmptyState"
+						HorizontalAlignment="Center" VerticalAlignment="Center">
+						<controls:ReduxIcon x:Name="EmptyStateIcon" Width="30" Height="30"
+							HorizontalAlignment="Center"
+							Foreground="{DynamicResource ReduxInfoBrush}"
+							StrokeData="{StaticResource Redux.Icon.Blocks}" />
+						<TextBlock x:Name="EmptyStateTitle" Margin="0,9,0,0"
+							HorizontalAlignment="Center"
+							Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+							FontWeight="{DynamicResource Redux.FontWeight.Control}"
+							Text="Reading package file tables" />
+						<TextBlock x:Name="EmptyStateDescription" Margin="0,4,0,0"
+							HorizontalAlignment="Center"
+							Foreground="{DynamicResource ReduxTextMutedBrush}"
+							Text="Redux is checking active and override packages." />
+					</StackPanel>
+				</Grid>
+
+				<Grid Grid.Row="4" Margin="0,13,0,0">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<TextBlock x:Name="ScanStatusText"
+						VerticalAlignment="Center"
+						Foreground="{DynamicResource ReduxTextMutedBrush}"
+						TextWrapping="Wrap" />
+					<Button x:Name="ScanActionButton" Grid.Column="1" MinWidth="84" Margin="14,0,0,0"
+						Content="Cancel"
+						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+						Click="CloseButton_Click" />
+				</Grid>
+			</Grid>
+		</Border>
+	</Grid>
+</adonisUI:AdonisWindow>

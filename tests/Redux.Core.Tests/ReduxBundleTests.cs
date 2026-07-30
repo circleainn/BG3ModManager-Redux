@@ -54,11 +54,56 @@ internal sealed class ReduxBundleTests
 				contents.Presentation.CategoryAssignments[SecondUuid]);
 			RegressionAssert.Equal("Quest-related additions.", contents.Presentation.CustomCategories[0].Description);
 			RegressionAssert.Equal("Chapter One", contents.Presentation.Dividers[0].Title);
+			RegressionAssert.Equal("Main quest sequence.", contents.Presentation.Dividers[0].Description);
 			RegressionAssert.True(contents.Presentation.Dividers[0].IsCollapsed);
 			RegressionAssert.Equal(1, contents.Presentation.Dividers[0].FallbackPosition);
 			RegressionAssert.SequenceEqual(
 				assets[CustomIconAsset],
 				contents.Assets[CustomIconAsset]);
+		});
+	}
+
+	public void PrivateNotesRoundTripOnlyWhenPresent()
+	{
+		WithTemporaryBundle(path =>
+		{
+			var withoutNotes = CreatePresentation();
+			RegressionAssert.True(ReduxLoadOrderBundleService.TryExport(
+				path, CreateOrder(), withoutNotes, CreateAssets(), out _));
+			RegressionAssert.True(ReduxLoadOrderBundleService.TryRead(path, out var initial, out _));
+			RegressionAssert.Equal(0, initial.Presentation.PrivateModNotes.Count);
+
+			var withNotes = CreatePresentation();
+			withNotes.PrivateModNotes.Add(new ReduxLoadOrderPrivateNote
+			{
+				ModUuid = SecondUuid,
+				Note = "Keep below the compatibility patch."
+			});
+			RegressionAssert.True(ReduxLoadOrderBundleService.TryExport(
+				path, CreateOrder(), withNotes, CreateAssets(), out _));
+			RegressionAssert.True(ReduxLoadOrderBundleService.TryRead(path, out var included, out _));
+			RegressionAssert.Equal(1, included.Presentation.PrivateModNotes.Count);
+			RegressionAssert.Equal(SecondUuid, included.Presentation.PrivateModNotes[0].ModUuid);
+			RegressionAssert.Equal(
+				"Keep below the compatibility patch.",
+				included.Presentation.PrivateModNotes[0].Note);
+		});
+	}
+
+	public void PrivateNotesCannotReferenceModsOutsideTheOrder()
+	{
+		WithTemporaryBundle(path =>
+		{
+			var presentation = CreatePresentation();
+			presentation.PrivateModNotes.Add(new ReduxLoadOrderPrivateNote
+			{
+				ModUuid = "33333333-3333-3333-3333-333333333333",
+				Note = "This mod is not part of the bundled order."
+			});
+			RegressionAssert.False(ReduxLoadOrderBundleService.TryExport(
+				path, CreateOrder(), presentation, CreateAssets(), out var error));
+			RegressionAssert.Contains(error, "invalid notes");
+			RegressionAssert.False(File.Exists(path));
 		});
 	}
 
@@ -242,6 +287,7 @@ internal sealed class ReduxBundleTests
 					Title = "Chapter One",
 					Color = "#42A77C",
 					IconId = String.Empty,
+					Description = "Main quest sequence.",
 					IsCollapsed = true,
 					FallbackPosition = 1,
 					BeforeModUuid = FirstUuid,

@@ -21,6 +21,10 @@ internal static class Program
 		var modules = new ReduxModuleStateTests();
 		var bundle = new ReduxBundleTests();
 		var contribution = new ContributionReportPrivacyTests();
+		var comparison = new LoadOrderComparisonTests();
+		var restorePoints = new LoadOrderRestorePointTests();
+		var annotations = new ModAnnotationTests();
+		var overlaps = new ModFileOverlapTests();
 		var tests = new (string Name, Action Run)[]
 		{
 			(nameof(source.ManualNexusAssociationWinsOverCachedModioMetadata), source.ManualNexusAssociationWinsOverCachedModioMetadata),
@@ -77,10 +81,31 @@ internal static class Program
 			(nameof(bundle.UnexpectedFilesAreRejectedDuringImport), bundle.UnexpectedFilesAreRejectedDuringImport),
 			(nameof(bundle.ExistingBundleCanBeAtomicallyReplaced), bundle.ExistingBundleCanBeAtomicallyReplaced),
 			(nameof(bundle.FailedReplacementPreservesTheExistingBundle), bundle.FailedReplacementPreservesTheExistingBundle),
+			(nameof(bundle.PrivateNotesRoundTripOnlyWhenPresent), bundle.PrivateNotesRoundTripOnlyWhenPresent),
+			(nameof(bundle.PrivateNotesCannotReferenceModsOutsideTheOrder), bundle.PrivateNotesCannotReferenceModsOutsideTheOrder),
 			(nameof(contribution.ContributionReportsIncludeOnlyUniqueInstalledUserMods), contribution.ContributionReportsIncludeOnlyUniqueInstalledUserMods),
 			(nameof(contribution.ContributionReportsStripPrivatePathsAndOrderingData), contribution.ContributionReportsStripPrivatePathsAndOrderingData),
 			(nameof(contribution.ContributionReportsRejectCredentialBearingProviderUrls), contribution.ContributionReportsRejectCredentialBearingProviderUrls),
-			(nameof(contribution.TamperedContributionReportsCannotBeSaved), contribution.TamperedContributionReportsCannotBeSaved)
+			(nameof(contribution.TamperedContributionReportsCannotBeSaved), contribution.TamperedContributionReportsCannotBeSaved),
+			(nameof(comparison.ReportsActivationDeactivationAndAutomaticDependencies), comparison.ReportsActivationDeactivationAndAutomaticDependencies),
+			(nameof(comparison.SavedOrderComparisonTreatsRightOnlyModsAsIntentionalAdditions), comparison.SavedOrderComparisonTreatsRightOnlyModsAsIntentionalAdditions),
+			(nameof(comparison.AddedOrRemovedModsDoNotCreateFalsePositionChanges), comparison.AddedOrRemovedModsDoNotCreateFalsePositionChanges),
+			(nameof(comparison.ReportsTheSmallestPlacementChangeForASingleMove), comparison.ReportsTheSmallestPlacementChangeForASingleMove),
+			(nameof(comparison.IgnoresDuplicateAndBlankEntriesButRetainsMissingBaselineMods), comparison.IgnoresDuplicateAndBlankEntriesButRetainsMissingBaselineMods),
+			(nameof(comparison.PreservesFirstExportState), comparison.PreservesFirstExportState),
+			(nameof(restorePoints.RoundTripPreservesProfileReasonAndOrder), restorePoints.RoundTripPreservesProfileReasonAndOrder),
+			(nameof(restorePoints.EmptyExportedOrderCanBeRestored), restorePoints.EmptyExportedOrderCanBeRestored),
+			(nameof(restorePoints.RetentionKeepsOnlyTheNewestTwentySnapshots), restorePoints.RetentionKeepsOnlyTheNewestTwentySnapshots),
+			(nameof(restorePoints.RestorePointsFromAnotherProfileAreRejected), restorePoints.RestorePointsFromAnotherProfileAreRejected),
+			(nameof(restorePoints.InvalidSnapshotsAreIgnoredWithoutLeavingTemporaryFiles), restorePoints.InvalidSnapshotsAreIgnoredWithoutLeavingTemporaryFiles),
+			(nameof(annotations.AnnotationsRoundTripWithoutPackageOrProfileData), annotations.AnnotationsRoundTripWithoutPackageOrProfileData),
+			(nameof(annotations.ClearingTheLastValueRemovesTheAnnotation), annotations.ClearingTheLastValueRemovesTheAnnotation),
+			(nameof(annotations.OversizedNotesAreRejectedBeforeTheStoreChanges), annotations.OversizedNotesAreRejectedBeforeTheStoreChanges),
+			(nameof(overlaps.NormalizesSlashAndCaseDifferences), overlaps.NormalizesSlashAndCaseDifferences),
+			(nameof(overlaps.DuplicatePathsInsideOnePackageAreNotOverlaps), overlaps.DuplicatePathsInsideOnePackageAreNotOverlaps),
+			(nameof(overlaps.ExcludesUniquePathsAndCountsAffectedPackages), overlaps.ExcludesUniquePathsAndCountsAffectedPackages),
+			(nameof(overlaps.OrdersBroadestOverlapsBeforePathName), overlaps.OrdersBroadestOverlapsBeforePathName),
+			(nameof(overlaps.MalformedPackagePathsAreReportedWithoutAbortingTheScan), overlaps.MalformedPackagePathsAreReportedWithoutAbortingTheScan)
 		};
 
 		var failures = 0;

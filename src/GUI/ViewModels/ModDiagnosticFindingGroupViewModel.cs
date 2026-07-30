@@ -19,10 +19,21 @@ public sealed class ModDiagnosticFindingGroupViewModel
 	public string AffectedCountText => $"{AffectedCount} mod{(AffectedCount == 1 ? String.Empty : "s")}";
 	public bool HasMultipleAffectedMods => AffectedCount > 1;
 	public bool HasErrors => Severity == ModHealthSeverity.Error;
+	public DivinityModData PrimaryRelatedMod { get; }
+	public bool CanRevealRelatedDependency { get; }
+	public bool CanOpenAffectedModSource { get; }
+	public bool HasDiagnosticActions => CanRevealRelatedDependency || CanOpenAffectedModSource;
+	public string RelatedDependencyActionText => Code switch
+	{
+		ModHealthFindingCode.InactiveDependency => "Show inactive dependency",
+		ModHealthFindingCode.DependencyVersionTooOld => "Show installed dependency",
+		_ => "Show dependency"
+	};
 
 	public ModDiagnosticFindingGroupViewModel(
 		ModHealthFinding finding,
-		IEnumerable<ModHealthSnapshot> affectedSnapshots)
+		IEnumerable<ModHealthSnapshot> affectedSnapshots,
+		IEnumerable<DivinityModData> installedMods)
 	{
 		if (finding == null) throw new ArgumentNullException(nameof(finding));
 
@@ -40,6 +51,21 @@ public sealed class ModDiagnosticFindingGroupViewModel
 
 		if (AffectedMods.Count == 0)
 			throw new ArgumentException("A finding group must contain at least one affected mod.", nameof(affectedSnapshots));
+
+		var installedByUuid = (installedMods ?? Enumerable.Empty<DivinityModData>())
+			.Where(mod => mod != null && !String.IsNullOrWhiteSpace(mod.UUID))
+			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
+			.ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+		PrimaryRelatedMod = finding.RelatedModUuids
+			.Select(uuid => installedByUuid.TryGetValue(uuid, out var mod) ? mod : null)
+			.FirstOrDefault(mod => mod != null);
+		CanRevealRelatedDependency = PrimaryRelatedMod != null && Code is
+			ModHealthFindingCode.InactiveDependency or
+			ModHealthFindingCode.DependencyVersionTooOld or
+			ModHealthFindingCode.DependencyLoadsLater;
+		CanOpenAffectedModSource = Code == ModHealthFindingCode.MissingDependency
+			&& AffectedMods.Count == 1
+			&& !String.IsNullOrWhiteSpace(PrimarySnapshot.Mod.Metadata?.SourcePageUrl);
 	}
 }
 

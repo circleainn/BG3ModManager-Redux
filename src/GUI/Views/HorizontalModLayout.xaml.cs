@@ -47,6 +47,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 {
 	private const string CategoryAssignmentMenuTag = "ReduxCategoryAssignment";
 	private const string SourceLinkMenuTag = "ReduxSourceLink";
+	private const string PrivateNoteMenuTag = "ReduxPrivateNote";
 	private Point _categoryDragStart;
 	private ModCategoryFilterItem _draggedCategory;
 	private CategoryDropIndicatorAdorner _categoryDropIndicator;
@@ -358,6 +359,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				Tag = VisualDividerMenuTag,
 				Icon = ReduxIcon.FromResource("Redux.Icon.Trash", true, "ReduxErrorBrush")
 			};
+			ApplySemanticMenuHover(remove, "ReduxErrorPillBackground", "ReduxErrorBrush");
 			remove.Click += (_, _) => ViewModel.RemoveVisualDivider(mod);
 			menu.Items.Add(edit);
 			menu.Items.Add(remove);
@@ -365,6 +367,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		}
 
 		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, CategoryAssignmentMenuTag)).ToList())
+		{
+			menu.Items.Remove(generatedItem);
+		}
+		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, PrivateNoteMenuTag)).ToList())
 		{
 			menu.Items.Remove(generatedItem);
 		}
@@ -405,29 +411,37 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				IsChecked = ViewModel.HasModCategoryOverride(mod, category),
 				Icon = ViewModel.Settings.ShowCategoryIconsInPills ? CreateCategoryAssignmentIcon(category) : null
 			};
-			// These rows are built in code, so the "Colored names" rule is applied here rather
-			// than by a template trigger. The menu is rebuilt each time it opens, so toggling
-			// the setting is picked up without any further notification plumbing.
-			if (DivinityApp.UseCategoryColorsForText
-				&& ColorConverter.ConvertFromString(ViewModel.GetCurrentCategoryColor(category)) is Color categoryColor)
+			if (ColorConverter.ConvertFromString(ViewModel.GetCurrentCategoryColor(category)) is Color categoryColor)
 			{
 				var labelBrush = new SolidColorBrush(categoryColor);
 				if (labelBrush.CanFreeze) labelBrush.Freeze();
-				categoryItem.Foreground = labelBrush;
+				if (DivinityApp.UseCategoryColorsForText)
+				{
+					categoryItem.Foreground = labelBrush;
+				}
 
 				// Same alpha the category pills use for their soft fill, so the row's hover
 				// matches the pill that the assignment produces.
 				var hoverBrush = new SolidColorBrush(Color.FromArgb(0x4D, categoryColor.R, categoryColor.G, categoryColor.B));
 				if (hoverBrush.CanFreeze) hoverBrush.Freeze();
-				ReduxMenuItemExtension.SetHoverBrush(categoryItem, hoverBrush);
-				// The rail is the hover surface's left border, drawn at full strength.
-				ReduxMenuItemExtension.SetRailBrush(categoryItem, labelBrush);
+				ReduxMenuItemExtension.SetSemanticHoverBrush(categoryItem, hoverBrush);
+				ReduxMenuItemExtension.SetSemanticRailBrush(categoryItem, labelBrush);
+				ReduxMenuItemExtension.SetUseSemanticHover(categoryItem, true);
 			}
 			categoryItem.Click += (_, _) => ViewModel.ToggleModCategoryAssignment(mod, category);
 			categoryMenu.Items.Add(categoryItem);
 		}
 
 		menu.Items.Insert(Math.Min(2, menu.Items.Count), categoryMenu);
+
+		var privateNoteItem = new MenuItem
+		{
+			Header = mod.HasPrivateNote ? "Edit Note..." : "Add Note...",
+			Tag = PrivateNoteMenuTag,
+			Icon = ReduxIcon.FromResource("Redux.Icon.ScrollText", true)
+		};
+		privateNoteItem.Click += (_, _) => ShowModNoteDialog(mod);
+		menu.Items.Insert(Math.Min(3, menu.Items.Count), privateNoteItem);
 
 		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, SourceLinkMenuTag)).ToList())
 		{
@@ -460,6 +474,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					Header = hasNexusLink ? "Change Nexus Mods Link..." : "Link to Nexus Mods...",
 					Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true)
 				};
+				ApplySemanticMenuHover(linkItem, "Redux.Pill.Nexus.Background", "Redux.Pill.Nexus.Border");
 				linkItem.Click += (_, _) => ShowManualNexusLinkDialog(mod);
 				sourceMenu.Items.Add(linkItem);
 				if (hasNexusLink)
@@ -470,6 +485,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 						Header = "Unlink Nexus Mods",
 						Icon = ReduxIcon.FromResource("Redux.Icon.UnlinkStroke", true, "ReduxErrorBrush")
 					};
+					ApplySemanticMenuHover(unlinkItem, "ReduxErrorPillBackground", "ReduxErrorBrush");
 					unlinkItem.Click += (_, _) =>
 					{
 						var result = ShowCategoryMessage(
@@ -513,6 +529,22 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		dividerMenu.Items.Add(addAbove);
 		dividerMenu.Items.Add(addBelow);
 		menu.Items.Insert(Math.Min(3, menu.Items.Count), dividerMenu);
+	}
+
+	private void ShowModNoteDialog(DivinityModData mod)
+	{
+		if (mod == null || mod.IsVisualDivider) return;
+		var dialog = new ReduxModNoteWindow(Window.GetWindow(this), mod);
+		dialog.ShowDialog();
+		if (!dialog.Accepted) return;
+		if (!ViewModel.TrySetModPrivateNote(mod, dialog.Note, out var error))
+			ShowCategoryMessage(error, "Notes", MessageBoxButton.OK, MessageBoxImage.Warning);
+	}
+
+	private void EditPrivateNoteButton_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is FrameworkElement { DataContext: DivinityModData mod })
+			ShowModNoteDialog(mod);
 	}
 
 	private FrameworkElement CreateCategoryAssignmentIcon(string category)
@@ -755,9 +787,21 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	public void FocusDiagnosticSnapshot(ModHealthSnapshot snapshot)
 	{
-		if (snapshot?.Mod == null) return;
+		FocusModEntry(snapshot?.Mod);
+	}
 
-		var mod = snapshot.Mod;
+	private void ApplySemanticMenuHover(MenuItem menuItem, string hoverResourceKey, string railResourceKey)
+	{
+		if (menuItem == null) return;
+		ReduxMenuItemExtension.SetSemanticHoverBrush(menuItem, TryFindResource(hoverResourceKey) as Brush);
+		ReduxMenuItemExtension.SetSemanticRailBrush(menuItem, TryFindResource(railResourceKey) as Brush);
+		ReduxMenuItemExtension.SetUseSemanticHover(menuItem, true);
+	}
+
+	public void FocusModEntry(DivinityModData mod)
+	{
+		if (mod == null) return;
+
 		var targetList = mod.IsForceLoaded && !mod.IsForceLoadedMergedMod && !mod.ForceAllowInLoadOrder
 			? ForceLoadedModsListView
 			: mod.IsActive
@@ -1106,6 +1150,14 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		Action<double> update,
 		System.Threading.CancellationToken token)
 	{
+		if (ReduxWindowBehavior.ReduceMotion)
+		{
+			if (token.IsCancellationRequested)
+				return System.Threading.Tasks.Task.FromResult(false);
+			update(to);
+			return System.Threading.Tasks.Task.FromResult(true);
+		}
+
 		var duration = GetPanelMotionMilliseconds();
 		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 		var completion = new System.Threading.Tasks.TaskCompletionSource<bool>();

@@ -19,6 +19,7 @@
     xmlns:mv="clr-namespace:DivinityModManager.Models.View"
     xmlns:reactiveui="http://reactiveui.net"
     xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+    xmlns:util="clr-namespace:DivinityModManager.Util"
     xmlns:vm="clr-namespace:DivinityModManager.ViewModels"
     xmlns:xc="http://schemas.xceed.com/wpf/xaml/toolkit"
     Title="Preferences"
@@ -123,6 +124,7 @@
 							<Grid x:Name="HeaderHost"
 								Margin="0,0,4,0"
 								Background="Transparent"
+								util:ReduxWindowBehavior.HoverLift="1"
 								RenderTransformOrigin="0.5,0.5"
 								TextElement.Foreground="{DynamicResource ReduxTextMutedBrush}">
 								<Grid.RenderTransform>
@@ -164,9 +166,6 @@
 											<Storyboard>
 												<DoubleAnimation Storyboard.TargetName="TabHoverSurface" Storyboard.TargetProperty="Opacity"
 													To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-												<DoubleAnimation Storyboard.TargetName="HeaderHost" Storyboard.TargetProperty="RenderTransform.Y"
-													To="{StaticResource Redux.Motion.HoverTranslateNegative}" Duration="{StaticResource Redux.Motion.Fast}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
 									</Trigger.EnterActions>
@@ -175,9 +174,6 @@
 											<Storyboard>
 												<DoubleAnimation Storyboard.TargetName="TabHoverSurface" Storyboard.TargetProperty="Opacity"
 													To="0" Duration="{StaticResource Redux.Motion.Standard}" />
-												<DoubleAnimation Storyboard.TargetName="HeaderHost" Storyboard.TargetProperty="RenderTransform.Y"
-													To="0" Duration="{StaticResource Redux.Motion.Standard}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
 									</Trigger.ExitActions>
@@ -271,6 +267,7 @@
 								BorderBrush="{TemplateBinding BorderBrush}"
 								BorderThickness="{TemplateBinding BorderThickness}"
 								CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+								util:ReduxWindowBehavior.HoverLift="1"
 								RenderTransformOrigin="0.5,0.5">
 								<Border.RenderTransform>
 									<TranslateTransform x:Name="ThemeCardTranslate" Y="0" />
@@ -302,9 +299,6 @@
 												<DoubleAnimation Storyboard.TargetName="ThemeCardHoverSurface" Storyboard.TargetProperty="Opacity"
 													To="0.38" Duration="{StaticResource Redux.Motion.Fast}"
 													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-												<DoubleAnimation Storyboard.TargetName="ThemeCardTranslate" Storyboard.TargetProperty="Y"
-													To="{StaticResource Redux.Motion.HoverTranslateNegative}" Duration="{StaticResource Redux.Motion.Fast}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
 										</BeginStoryboard>
 									</Trigger.EnterActions>
@@ -312,9 +306,6 @@
 										<BeginStoryboard>
 											<Storyboard>
 												<DoubleAnimation Storyboard.TargetName="ThemeCardHoverSurface" Storyboard.TargetProperty="Opacity"
-													To="0" Duration="{StaticResource Redux.Motion.Standard}"
-													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-												<DoubleAnimation Storyboard.TargetName="ThemeCardTranslate" Storyboard.TargetProperty="Y"
 													To="0" Duration="{StaticResource Redux.Motion.Standard}"
 													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 											</Storyboard>
@@ -937,7 +928,9 @@
 										<Setter Property="Template">
 											<Setter.Value>
 												<ControlTemplate TargetType="{x:Type ListViewItem}">
-											<Grid x:Name="HotkeyRowRoot" Background="Transparent" SnapsToDevicePixels="True" RenderTransformOrigin="0.5,0.5">
+											<Grid x:Name="HotkeyRowRoot" Background="Transparent"
+												util:ReduxWindowBehavior.HoverLift="1"
+												SnapsToDevicePixels="True" RenderTransformOrigin="0.5,0.5">
 												<Grid.RenderTransform>
 													<TranslateTransform x:Name="HotkeyRowTranslate" Y="0" />
 												</Grid.RenderTransform>
@@ -978,9 +971,6 @@
 																	<DoubleAnimation Storyboard.TargetName="RowHoverSurface" Storyboard.TargetProperty="Opacity"
 																		To="0.62" Duration="{StaticResource Redux.Motion.Fast}"
 																		EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-																	<DoubleAnimation Storyboard.TargetName="HotkeyRowTranslate" Storyboard.TargetProperty="Y"
-																		To="{StaticResource Redux.Motion.HoverTranslateNegative}" Duration="{StaticResource Redux.Motion.Fast}"
-																		EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 																</Storyboard>
 															</BeginStoryboard>
 														</Trigger.EnterActions>
@@ -988,9 +978,6 @@
 															<BeginStoryboard>
 																<Storyboard>
 																	<DoubleAnimation Storyboard.TargetName="RowHoverSurface" Storyboard.TargetProperty="Opacity"
-																		To="0" Duration="{StaticResource Redux.Motion.Standard}"
-																		EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-																	<DoubleAnimation Storyboard.TargetName="HotkeyRowTranslate" Storyboard.TargetProperty="Y"
 																		To="0" Duration="{StaticResource Redux.Motion.Standard}"
 																		EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 																</Storyboard>

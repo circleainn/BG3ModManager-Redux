@@ -59,6 +59,8 @@ public partial class MainViewControl : MainViewControlViewBase
 			[nameof(AppKeys.NewOrder)] = ("Redux.Icon.DocumentText", true, null),
 			[nameof(AppKeys.Save)] = ("Redux.Icon.Save", true, null),
 			[nameof(AppKeys.SaveAs)] = ("Redux.Icon.Duplicate", true, null),
+			[nameof(AppKeys.CompareLoadOrders)] = ("Redux.Icon.SwapHorizontalStroke", true, null),
+			[nameof(AppKeys.RestorePoints)] = ("Redux.Icon.ScrollText", true, null),
 			[nameof(AppKeys.ImportOrderFromSave)] = ("Redux.Icon.FolderOpen", true, null),
 			[nameof(AppKeys.ImportOrderFromSaveAsNew)] = ("Redux.Icon.AddCircle", true, null),
 			[nameof(AppKeys.ImportOrderFromFile)] = ("Redux.Icon.FolderOpen", true, null),
@@ -85,6 +87,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			[nameof(AppKeys.ExtractSelectedMods)] = ("Redux.Icon.Archive", true, null),
 			[nameof(AppKeys.ExtractSelectedAdventure)] = ("Redux.Icon.Archive", true, null),
 			[nameof(AppKeys.ToggleVersionGeneratorWindow)] = ("Redux.Icon.Build", true, null),
+			[nameof(AppKeys.InspectFileOverlaps)] = ("Redux.Icon.Blocks", true, null),
 			[nameof(AppKeys.DownloadScriptExtender)] = ("Redux.Icon.Download", true, null),
 			[nameof(AppKeys.SpeakActiveModOrder)] = ("Redux.Icon.VolumeHigh", true, null),
 			[nameof(AppKeys.StopSpeaking)] = ("Redux.Icon.StopCircle", true, "ReduxErrorBrush"),
@@ -350,6 +353,15 @@ public partial class MainViewControl : MainViewControlViewBase
 			});
 			helpMenuItem.Items.Add(creditsMenu);
 		}
+
+		// Generated top-menu commands do not pass through a XAML declaration where semantic
+		// hover brushes can be attached individually. Resolve them once after the menu is
+		// complete so destructive, source, and other explicitly coloured actions receive the
+		// same rail-and-wash treatment as context-menu and category entries.
+		foreach (var topLevelMenu in TopMenuBar.Items.OfType<MenuItem>())
+		{
+			ReduxMenuItemExtension.ApplySemanticHoverToMenu(topLevelMenu);
+		}
 	}
 
 	private async void GenerateReduxDatabaseContribution_Click(object sender, RoutedEventArgs e)
@@ -581,7 +593,7 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private void AnimateToolbarVisibility(bool hide)
 	{
-		if (!IsLoaded)
+		if (!IsLoaded || ReduxWindowBehavior.ReduceMotion)
 		{
 			SetInitialToolbarVisibility();
 			return;
@@ -883,6 +895,15 @@ public partial class MainViewControl : MainViewControlViewBase
 			_closingToolbarStatusMenus.Add(menu);
 		}
 
+		if (ReduxWindowBehavior.ReduceMotion)
+		{
+			menu.BeginAnimation(UIElement.OpacityProperty, null);
+			translate.BeginAnimation(TranslateTransform.YProperty, null);
+			menu.Opacity = show ? 1 : 0;
+			translate.Y = 0;
+			return;
+		}
+
 		menu.BeginAnimation(
 			UIElement.OpacityProperty,
 			new DoubleAnimation(show ? 1 : 0, duration) { EasingFunction = easing },
@@ -940,6 +961,13 @@ public partial class MainViewControl : MainViewControlViewBase
 		{
 			translate = translate.CloneCurrentValue();
 			element.RenderTransform = translate;
+		}
+
+		if (ReduxWindowBehavior.ReduceMotion)
+		{
+			translate.BeginAnimation(TranslateTransform.YProperty, null);
+			translate.Y = 0;
+			return;
 		}
 
 		var duration = isHovered
@@ -1012,6 +1040,29 @@ public partial class MainViewControl : MainViewControlViewBase
 			? MeasureToolbarDiagnosticExpandedWidth(button)
 			: ToolbarDiagnosticCompactWidth;
 
+		if (ReduxWindowBehavior.ReduceMotion)
+		{
+			button.BeginAnimation(FrameworkElement.WidthProperty, null);
+			button.Width = targetWidth;
+			if (button.Template.FindName("StatusLabel", button) is TextBlock immediateLabel)
+			{
+				immediateLabel.BeginAnimation(UIElement.OpacityProperty, null);
+				immediateLabel.Opacity = expand ? expandedLabelOpacity : compactLabelOpacity;
+			}
+			if (button.Template.FindName("StatusChevron", button) is FrameworkElement immediateChevron)
+			{
+				var immediateRotation = immediateChevron.RenderTransform as RotateTransform;
+				if (immediateRotation == null || immediateRotation.IsFrozen)
+				{
+					immediateRotation = immediateRotation?.CloneCurrentValue() ?? new RotateTransform();
+					immediateChevron.RenderTransform = immediateRotation;
+				}
+				immediateRotation.BeginAnimation(RotateTransform.AngleProperty, null);
+				immediateRotation.Angle = expand ? 90 : 0;
+			}
+			return;
+		}
+
 		button.BeginAnimation(
 			FrameworkElement.WidthProperty,
 			new DoubleAnimation(targetWidth, duration) { EasingFunction = easing },
@@ -1063,6 +1114,28 @@ public partial class MainViewControl : MainViewControlViewBase
 		{
 			button.FindVisualParent<ContextMenu>()?.SetCurrentValue(ContextMenu.IsOpenProperty, false);
 			ModLayout.FocusDiagnosticSnapshot(snapshot);
+		}
+
+		e.Handled = true;
+	}
+
+	private void ToolbarDiagnosticRelatedMod_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is Button { CommandParameter: DivinityModData mod } button)
+		{
+			button.FindVisualParent<ContextMenu>()?.SetCurrentValue(ContextMenu.IsOpenProperty, false);
+			ModLayout.FocusModEntry(mod);
+		}
+
+		e.Handled = true;
+	}
+
+	private void ToolbarDiagnosticAffectedSource_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is Button { CommandParameter: DivinityModData mod } button)
+		{
+			button.FindVisualParent<ContextMenu>()?.SetCurrentValue(ContextMenu.IsOpenProperty, false);
+			DivinityApp.Commands.OpenModSourcePage(mod);
 		}
 
 		e.Handled = true;

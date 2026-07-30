@@ -70,6 +70,24 @@
 						</StackPanel>
 					</CheckBox>
 				</Border>
+				<Border x:Name="PrivateNotesOptionBorder" Margin="0,8,0,0" Padding="14,12"
+					Background="{DynamicResource ReduxSurfaceBrush}"
+					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+					<CheckBox x:Name="ImportPrivateNotesCheckBox" IsChecked="True"
+						Style="{StaticResource ReduxCheckBoxStyle}"
+						Checked="ImportOption_Changed" Unchecked="ImportOption_Changed">
+						<StackPanel Margin="5,0,0,0">
+							<TextBlock FontWeight="SemiBold" Text="Notes" />
+							<TextBlock Margin="0,2,0,0"
+								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+								Text="Import the notes intentionally included by the bundle creator. Existing local notes are preserved."
+								TextWrapping="Wrap" />
+							<TextBlock x:Name="PrivateNotesContentsText" Margin="0,5,0,0"
+								Foreground="{DynamicResource ReduxTextMutedBrush}" />
+						</StackPanel>
+					</CheckBox>
+				</Border>
 			</StackPanel>
 
 			<Border x:Name="ImportImpactBorder" Grid.Row="2" Margin="0,12,0,0" Padding="12,10"

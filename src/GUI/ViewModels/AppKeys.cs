@@ -39,6 +39,20 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Save Order As...", true)]
 	public Hotkey SaveAs { get; private set; } = new Hotkey(Key.S, ModifierKeys.Control | ModifierKeys.Alt);
 
+	[MenuSettings(
+		"File",
+		"Compare Load Orders...",
+		false,
+		"Compare two available load orders without changing either one.")]
+	public Hotkey CompareLoadOrders { get; private set; } = new Hotkey(Key.None);
+
+	[MenuSettings(
+		"File",
+		"Restore Points...",
+		true,
+		"Load a Redux snapshot created before an earlier export as a working order.")]
+	public Hotkey RestorePoints { get; private set; } = new Hotkey(Key.None);
+
 	[MenuSettings("File", "Import Load Order from Save...")]
 	public Hotkey ImportOrderFromSave { get; private set; } = new Hotkey(Key.I, ModifierKeys.Control);
 
@@ -142,6 +156,13 @@ public class AppKeys : ReactiveObject
 
 	[MenuSettings("Tools", "Open Version Generator", Tooltip = "A tool for mod authors to generate version numbers for a mod's meta.lsx")]
 	public Hotkey ToggleVersionGeneratorWindow { get; private set; } = new Hotkey(Key.G, ModifierKeys.Control);
+
+	[MenuSettings(
+		"Tools",
+		"Inspect Active File Overlaps...",
+		false,
+		"Read active and override PAK file tables to find shared internal paths. Overlaps are not necessarily conflicts.")]
+	public Hotkey InspectFileOverlaps { get; private set; } = new Hotkey(Key.None);
 
 	[MenuSettings("Tools", "Download & Extract the Script Extender...")]
 	public Hotkey DownloadScriptExtender { get; private set; } = new Hotkey(Key.T, ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Alt);

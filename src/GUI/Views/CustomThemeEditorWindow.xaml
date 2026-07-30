@@ -5,19 +5,28 @@
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
 	xmlns:ext="clr-namespace:DivinityModManager.Controls.Extensions"
+	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
 	Title="Custom Theme Editor"
 	Width="820"
 	Height="650"
 	MinWidth="720"
 	MinHeight="540"
 	ResizeMode="CanResizeWithGrip"
+	WindowStyle="SingleBorderWindow"
+	Template="{DynamicResource ReduxWindowTemplate}"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	TextOptions.TextFormattingMode="Ideal" TextOptions.TextRenderingMode="ClearType"
-	Background="{DynamicResource ReduxSurfaceBrush}"
-	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
-	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}">
+	Background="{DynamicResource ReduxSurfaceBrush}">
+	<shell:WindowChrome.WindowChrome>
+		<shell:WindowChrome
+			CaptionHeight="0"
+			CornerRadius="0"
+			GlassFrameThickness="0"
+			ResizeBorderThickness="6"
+			UseAeroCaptionButtons="False" />
+	</shell:WindowChrome.WindowChrome>
 	<adonisUi:AdonisWindow.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
@@ -31,7 +40,17 @@
 			</Style>
 		</ResourceDictionary>
 	</adonisUi:AdonisWindow.Resources>
-	<Border Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<controls:ReduxWindowTitleBar
+			IconData="{DynamicResource Redux.Icon.ColorPalette}" />
+		<Border Grid.Row="1"
+			Background="{DynamicResource ReduxSurfaceBrush}"
+			BorderBrush="{DynamicResource ReduxBorderBrush}"
+			BorderThickness="0,1,0,0">
 		<Grid Margin="20">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
@@ -220,5 +239,6 @@
 				</Button>
 			</Grid>
 		</Grid>
-	</Border>
+		</Border>
+	</Grid>
 </adonisUi:AdonisWindow>

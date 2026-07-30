@@ -73,6 +73,9 @@ These core systems come from LaughingLeader's BG3 Mod Manager:
   shares one interaction language instead of independently tuned equivalents.
 - One shared Mod Diagnostics status-card presentation used by the toolbar, compact Toolbar menu, and
   selected-mod drawer, so diagnostic and optional guidance surfaces cannot drift out of sync.
+- Read-only dependency assistance inside Mod Diagnostics can reveal an installed dependency or open
+  an existing linked source page for author-provided requirements; it never installs, activates, or
+  reorders a mod.
 - Dynamic text trimming and header-based list-column minimum widths so long filenames do not lock a
   column at an excessive size.
 - Content-aware category-pane sizing based on visible labels and the active application typeface.
@@ -160,8 +163,12 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 
 - A Redux-only `.bg3redux` archive format containing a normal saved-order description plus a
   separately versioned presentation manifest.
-- Optional transfer of custom categories, explicit category assignments, category display order,
-  active-list separators, collapsed states, and reusable custom PNG icons.
+- Optional transfer of custom categories and descriptions, explicit category assignments,
+  category display order, active-list separators and descriptions, collapsed states, and reusable
+  custom PNG icons.
+- Per-mod notes stored atomically outside package metadata, with an unchecked export option
+  so they remain local unless deliberately included. Import preserves an existing local note
+  instead of silently overwriting it.
 - Choice of importing the saved order, its Redux presentation metadata, or both.
 - A pre-export review summarizing the saved order, custom categories, separators, and custom icons,
   with an explicit reminder that mod `.pak` files and `modsettings.lsx` are never included and an
@@ -269,6 +276,9 @@ Redux additionally adds:
   and focuses an affected mod when selected.
 - A compact row-level diagnostic indicator for duplicate UUIDs, inactive dependencies, and declared
   conflicts that otherwise have no dedicated status icon.
+- An on-demand Active File Overlaps inspector that reads the file tables of active and override
+  PAKs, lists internal paths shared by multiple packages, supports local result filtering, and
+  deliberately labels matches as overlaps rather than confirmed conflicts.
 - No automatic repair, installation, conflict resolution, or load-order reordering. Broader
   category- and compatibility-based load-order recommendations remain future work.
 - Rule-level extension boundaries (`IModHealthAnalyzer` and `IModHealthRule`) that keep default
@@ -305,12 +315,22 @@ foundation and reworks or extends its presentation through:
 - Atkinson Hyperlegible as a bundled typeface option.
 - Compact, Default, and Large interface text sizes.
 - Selectable dialog text, keyboard-operable dialogs, and theme-aware contrast resources.
+- Reduced-motion transitions and an independent option to disable dialog background blur and
+  dimming.
 
 ## Safer persistence and file operations
 
 - Atomic `settings.json` writes using temporary output, validation, replacement, and a rolling
   backup.
 - Atomic `modsettings.lsx` export using temporary validation and backup replacement.
+- A read-only Review Export step before `modsettings.lsx` is written, showing activations,
+  deactivations, meaningful placement changes, automatically added dependencies, and enabled
+  diagnostic results against the profile's currently exported order.
+- Automatic, atomic restore points created immediately before a confirmed game export. Redux keeps
+  a bounded per-profile history outside the normal Orders directory and loads a selected snapshot
+  as a working order rather than silently rewriting `modsettings.lsx`.
+- A read-only load-order comparison window for any two available orders, using insertion-aware
+  placement analysis so added or removed mods do not make every later entry appear repositioned.
 - Staged package imports so incomplete copies are not treated as installed mods.
 - Backups before an update replaces an existing package.
 - Recoverable and permanent deletion paths that update the interface only after filesystem success.

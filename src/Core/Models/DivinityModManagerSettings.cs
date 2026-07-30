@@ -157,6 +157,14 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("Text size", "Choose a curated interface text-size preset.", HideFromUI = true)]
 	[DataMember, Reactive] public ReduxTextSize TextSize { get; set; } = ReduxTextSize.Default;
 
+	[DefaultValue(false)]
+	[SettingsEntry("Reduce motion", "Use immediate window, pane, toolbar, and popup transitions while retaining simple hover feedback.")]
+	[DataMember, Reactive] public bool ReduceMotion { get; set; }
+
+	[DefaultValue(false)]
+	[SettingsEntry("Disable blur and dimming", "Keep Redux fully clear and undimmed behind dialogs and secondary windows.")]
+	[DataMember, Reactive] public bool DisableBackgroundEffects { get; set; }
+
 	[DefaultValue("")]
 	[DataMember, Reactive] public string ActiveCustomThemeId { get; set; } = String.Empty;
 
