@@ -68,6 +68,16 @@ link and retrieve current Nexus metadata through its normal source-integration p
 `fileId` may be added inside `nexus` when a release author wants to identify a specific Nexus file,
 but it is not required for the project connection.
 
+## Create the compact manifest
+
+Copy the recommended template above into a plain text file named `redux.mod.json`. Replace:
+
+- `moduleUuid` with the primary module UUID from the mod's `meta.lsx`;
+- `projectId` with the number at the end of the mod's Nexus Mods page URL.
+
+Place the completed file at the virtual root of the mod project before building the PAK. No Redux
+tool or post-build repacking step is required.
+
 ## Detailed manifest
 
 The original detailed form remains supported for compatibility and for authors who intentionally

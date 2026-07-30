@@ -455,7 +455,7 @@ public partial class MainViewControl : MainViewControlViewBase
 				"You can review this text-based report before sharing it.",
 				"Redux Database Contribution Saved",
 				MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK,
-				("Open Folder", () =>
+				("Open Folder", "Redux.Icon.FolderOpen", () =>
 				{
 					if (!String.IsNullOrWhiteSpace(outputDirectory))
 						ProcessHelper.TryOpenPath(outputDirectory, Directory.Exists);
@@ -489,6 +489,12 @@ public partial class MainViewControl : MainViewControlViewBase
 		var baseTheme = theme?.BaseTheme ?? ViewModel.Settings.ColorTheme;
 		ReduxThemeService.Apply(this.Resources, baseTheme, theme);
 		main.UpdateColorTheme(baseTheme, theme);
+	}
+
+	public void PreviewCustomThemeColors(ReduxCustomTheme theme)
+	{
+		ReduxThemeService.PreviewColors(this.Resources, theme);
+		main.PreviewCustomThemeColors(theme);
 	}
 
 	private void ComboBox_KeyDown_LoseFocus(object sender, KeyEventArgs e)
@@ -564,7 +570,7 @@ public partial class MainViewControl : MainViewControlViewBase
 							var message = $"Failed to rename file '{lastFilePath}' to '{nextFilePath}':\n{ex}";
 							ReduxMessageBox.ShowWithActions(main, message, "Failed to Rename Order",
 								MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
-								("Copy to Clipboard", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(message)));
+								("Copy to Clipboard", "Redux.Icon.Copy", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(message)));
 						}
 					}
 				}

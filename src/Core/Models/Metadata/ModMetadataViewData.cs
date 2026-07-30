@@ -25,16 +25,20 @@ public sealed class ModMetadataViewData : ReactiveObject
 		{
 			if (!_mod.OnlineMetadataEnabled) return null;
 
-			// An explicit user association is authoritative even if older
-			// automatic mod.io metadata remains in the local cache.
-			if (_mod.NexusModsData?.MetadataOrigin == NexusMetadataOrigin.Manual
+			// Explicit Nexus choices and Nexus archive provenance are authoritative
+			// even when the PAK also carries a native mod.io PublishHandle.
+			if (_mod.NexusModsData?.MetadataOrigin is NexusMetadataOrigin.Manual
+					or NexusMetadataOrigin.NexusArchiveImport
 				&& _mod.NexusModsData.HasMetadata)
 			{
 				return _mod.NexusModsData;
 			}
 
 			if (_mod.ModioData?.HasMetadata == true) return _mod.ModioData;
-			return _mod.CanOpenNexusModsLink ? _mod.NexusModsData : null;
+			return _mod.NexusModsEnabled
+				&& _mod.NexusModsData?.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START
+				? _mod.NexusModsData
+				: null;
 		}
 	}
 	private bool HasOnlineMetadata => Provider?.HasMetadata == true;
@@ -106,6 +110,7 @@ public sealed class ModMetadataViewData : ReactiveObject
 			? _mod.NexusModsData?.MetadataOrigin switch
 			{
 				NexusMetadataOrigin.Manual => "Manually linked from Nexus Mods",
+				NexusMetadataOrigin.NexusArchiveImport => "Linked from the imported Nexus Mods archive",
 				NexusMetadataOrigin.BundledProvenance => "Automatically linked from the Redux mod database",
 				_ => "Automatically linked from Nexus Mods"
 			}
@@ -146,6 +151,11 @@ public sealed class ModMetadataViewData : ReactiveObject
 		? _mod.NexusModsData?.UploadedBy
 		: Author;
 	public string UploaderLabel => $"Uploaded by {Uploader}";
+	public string AuthorActionLabel => SourceType == ModSourceType.NEXUSMODS
+		&& !String.IsNullOrWhiteSpace(Author)
+		&& String.Equals(Author, Uploader, StringComparison.OrdinalIgnoreCase)
+			? $"Created by {Author}"
+			: UploaderLabel;
 	public string AuthorPageUrl
 	{
 		get
@@ -265,6 +275,7 @@ public sealed class ModMetadataViewData : ReactiveObject
 		this.RaisePropertyChanged(nameof(AuthorLabel));
 		this.RaisePropertyChanged(nameof(Uploader));
 		this.RaisePropertyChanged(nameof(UploaderLabel));
+		this.RaisePropertyChanged(nameof(AuthorActionLabel));
 		this.RaisePropertyChanged(nameof(AuthorPageUrl));
 		this.RaisePropertyChanged(nameof(AuthorPageVisibility));
 		this.RaisePropertyChanged(nameof(LocalAuthorVisibility));

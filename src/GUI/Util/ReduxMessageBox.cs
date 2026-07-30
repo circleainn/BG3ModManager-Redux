@@ -27,12 +27,13 @@ public static class ReduxMessageBox
 	/// standard result buttons. Extra actions run their callback without closing the dialog.
 	/// </summary>
 	public static MessageBoxResult ShowWithActions(Window owner, string text, string caption, MessageBoxButton button,
-		MessageBoxImage icon, MessageBoxResult defaultResult, params (string Label, Action Callback)[] extraActions)
+		MessageBoxImage icon, MessageBoxResult defaultResult,
+		params (string Label, string IconKey, Action Callback)[] extraActions)
 	{
 		var window = new ReduxMessageBoxWindow(owner, text, caption, button, icon, defaultResult);
-		foreach (var (label, callback) in extraActions)
+		foreach (var (label, iconKey, callback) in extraActions)
 		{
-			window.AddExtraAction(label, callback);
+			window.AddExtraAction(label, iconKey, callback);
 		}
 		ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(window, owner);
 		return window.Result;

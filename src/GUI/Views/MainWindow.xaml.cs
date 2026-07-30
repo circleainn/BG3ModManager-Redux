@@ -559,6 +559,11 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		}
 	}
 
+	public void PreviewCustomThemeColors(ReduxCustomTheme customTheme)
+	{
+		ReduxThemeService.PreviewColors(this.Resources, customTheme);
+	}
+
 	public void PrepareForStartup()
 	{
 		_isPreparingStartup = true;

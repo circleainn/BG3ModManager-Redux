@@ -496,7 +496,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				var linkItem = new MenuItem
 				{
 					Header = hasNexusLink ? "Change Nexus Mods Link..." : "Link to Nexus Mods...",
-					Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true)
+					Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true, "Redux.Pill.Nexus.Border")
 				};
 				ApplySemanticMenuHover(linkItem, "Redux.Pill.Nexus.Background", "Redux.Pill.Nexus.Border");
 				linkItem.Click += (_, _) => ShowManualNexusLinkDialog(mod);

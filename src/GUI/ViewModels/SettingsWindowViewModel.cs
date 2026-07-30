@@ -100,6 +100,8 @@ public class SettingsWindowViewModel : ReactiveObject
 	public ICommand ExportExtenderUpdaterSettingsCommand { get; private set; }
 	public ICommand ResetSettingsCommand { get; private set; }
 	public ICommand ClearCacheCommand { get; private set; }
+	public ICommand ResetSourceCacheCommand { get; private set; }
+	public ICommand ClearSourceHistoryCommand { get; private set; }
 	public ICommand AddLaunchParamCommand { get; private set; }
 	public ICommand ClearLaunchParamsCommand { get; private set; }
 	public ReactiveCommand<DependencyPropertyChangedEventArgs, Unit> OnWindowShownCommand { get; private set; }
@@ -512,8 +514,78 @@ public class SettingsWindowViewModel : ReactiveObject
 				}
 				catch (Exception ex)
 				{
-					ShowAlert($"Error deleting workshop cache:\n{ex}", AlertType.Danger);
+					ShowAlert($"Error deleting local cache:\n{ex}", AlertType.Danger);
 				}
+			}
+		});
+
+		ResetSourceCacheCommand = ReactiveCommand.CreateFromTask(async () =>
+		{
+			const string message =
+				"Restore Redux's automatic Nexus Mods and mod.io source links?\n\n"
+				+ "Installed mods, load orders, API keys, and preferences will not be removed. "
+				+ "Manual Nexus links and explicit unlinks will be cleared. Valid automatically resolved metadata will be retained, "
+				+ "then Redux will reapply native identities, creator manifests, and reviewed metadata-database matches.";
+			var result = ReduxMessageBox.Show(
+				View,
+				message,
+				"Restore Automatic Source Links?",
+				MessageBoxButton.YesNo,
+				MessageBoxImage.Warning,
+				MessageBoxResult.No);
+			if (result == MessageBoxResult.Yes)
+			{
+				try
+				{
+					if (await Main.RestoreAutomaticSourceLinksAsync())
+					{
+						ShowAlert("Cleared manual source choices. Redux is restoring its automatic source links.", AlertType.Success, 20);
+					}
+					else
+					{
+						ShowAlert("No manual source choices were found. Redux is checking automatic source matches.", AlertType.Info, 20);
+					}
+				}
+				catch (Exception ex)
+				{
+					ShowAlert($"Error restoring automatic source links:\n{ex}", AlertType.Danger);
+				}
+			}
+		});
+
+		ClearSourceHistoryCommand = ReactiveCommand.Create(() =>
+		{
+			const string message =
+				"Forget all source-link history?\n\n"
+				+ "Redux will delete cached Nexus Mods and mod.io associations for installed and previously seen mods. "
+				+ "Installed PAKs, load orders, API keys, categories, notes, and preferences will not be removed.\n\n"
+				+ "Future imports or metadata refreshes can discover sources again from archive names, package identities, "
+				+ "creator manifests, the reviewed Redux database, or provider APIs.";
+			var result = ReduxMessageBox.Show(
+				View,
+				message,
+				"Clear Source History?",
+				MessageBoxButton.YesNo,
+				MessageBoxImage.Warning,
+				MessageBoxResult.No);
+			if (result != MessageBoxResult.Yes)
+			{
+				return;
+			}
+
+			try
+			{
+				var cleared = Main.ClearSourceHistory();
+				ShowAlert(
+					cleared > 0
+						? $"Forgot source metadata for {cleared} installed mod{(cleared == 1 ? "" : "s")} and cleared stored source history."
+						: "Cleared stored source history. No installed source associations were present.",
+					AlertType.Success,
+					20);
+			}
+			catch (Exception ex)
+			{
+				ShowAlert($"Error clearing source history:\n{ex}", AlertType.Danger);
 			}
 		});
 

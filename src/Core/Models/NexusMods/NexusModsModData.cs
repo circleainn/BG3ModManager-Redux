@@ -19,7 +19,8 @@ public enum NexusMetadataOrigin
 	LiveApi = 2,
 	Manual = 3,
 	ManualUnlinked = 4,
-	CreatorManifest = 5
+	CreatorManifest = 5,
+	NexusArchiveImport = 6
 }
 
 public class NexusModsModData : INotifyPropertyChanged, IExternalModMetadata

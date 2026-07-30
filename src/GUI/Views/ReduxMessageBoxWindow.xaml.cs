@@ -1,3 +1,4 @@
+using DivinityModManager.Controls;
 using DivinityModManager.Util;
 
 using System.Windows;
@@ -116,11 +117,18 @@ public partial class ReduxMessageBoxWindow : AdonisUI.Controls.AdonisWindow
 	/// Adds an extra action button (e.g. "Copy to Clipboard") alongside the standard result
 	/// buttons. Extra actions do not close the dialog unless requested.
 	/// </summary>
-	public void AddExtraAction(string label, Action callback, bool closesDialog = false)
+	public void AddExtraAction(string label, string iconKey, Action callback, bool closesDialog = false)
 	{
+		var icon = ReduxIcon.FromResource(iconKey, true);
+		icon.Width = 14;
+		icon.Height = 14;
+		icon.Margin = new Thickness(0, 0, 6, 0);
+		var content = new StackPanel { Orientation = Orientation.Horizontal };
+		content.Children.Add(icon);
+		content.Children.Add(new TextBlock { Text = label });
 		var button = new Button
 		{
-			Content = label,
+			Content = content,
 			MinWidth = 80,
 			Margin = new Thickness(0, 0, 8, 0),
 			Style = (Style)FindResource("ReduxSecondaryActionButtonStyle")

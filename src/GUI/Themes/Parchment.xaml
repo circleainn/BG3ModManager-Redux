@@ -43,6 +43,12 @@
 		<GradientStop Offset="0" Color="#3E8B3034" />
 		<GradientStop Offset="1" Color="#1E8B3034" />
 	</LinearGradientBrush>
+	<!-- Primary actions stay saturated across the full button instead of fading into the paper surface. -->
+	<LinearGradientBrush x:Key="ReduxPrimaryActionBackgroundBrush" StartPoint="0,0.5" EndPoint="1,0.5">
+		<GradientStop Offset="0" Color="#72272A" />
+		<GradientStop Offset="0.50" Color="#8B3034" />
+		<GradientStop Offset="1" Color="#AE4D3C" />
+	</LinearGradientBrush>
 	<LinearGradientBrush x:Key="ReduxSuccessPillBackground" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#3E3F6B35" />
 		<GradientStop Offset="1" Color="#1E3F6B35" />

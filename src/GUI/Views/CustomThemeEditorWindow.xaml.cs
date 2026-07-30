@@ -5,6 +5,7 @@ using DivinityModManager.Util;
 
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace DivinityModManager.Views;
 
@@ -13,6 +14,7 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 	private bool _initializing = true;
 	public ReduxCustomTheme Theme { get; }
 	public event Action<ReduxCustomTheme> PreviewChanged;
+	public event Action<ReduxCustomTheme> ColorPreviewChanged;
 
 	public CustomThemeEditorWindow(ReduxCustomTheme theme)
 	{
@@ -109,11 +111,32 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 		};
 		dialog.ConfigureColorOnlyCopy(
 			$"Change {label} color",
-			"Choose a color for this theme token. The custom theme preview updates after you save it.",
+			"Adjust this theme token and watch Redux update live. Cancel restores its previous color.",
 			"Theme color");
 		ReduxThemeService.Apply(dialog.Resources, Theme.BaseTheme, Theme);
-		if (dialog.ShowDialog() != true) return;
-		property.SetValue(Theme, dialog.CategoryColor);
+		// Keep whole-app preview work below input/render priority so dragging the
+		// picker remains fluid even while the main Redux surface updates behind it.
+		var previewTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
+		{
+			Interval = TimeSpan.FromMilliseconds(50)
+		};
+		previewTimer.Tick += (_, _) =>
+		{
+			previewTimer.Stop();
+			ReduxThemeService.PreviewColors(dialog.Resources, Theme);
+			ReduxThemeService.PreviewColors(Resources, Theme);
+			ColorPreviewChanged?.Invoke(Theme);
+		};
+		dialog.ColorPreviewChanged += color =>
+		{
+			property.SetValue(Theme, color);
+			if (!previewTimer.IsEnabled)
+				previewTimer.Start();
+		};
+
+		var accepted = dialog.ShowDialog() == true;
+		previewTimer.Stop();
+		property.SetValue(Theme, accepted ? dialog.CategoryColor : currentColor);
 		PreviewTheme();
 	}
 

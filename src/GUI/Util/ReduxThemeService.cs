@@ -208,11 +208,24 @@ public static class ReduxThemeService
 	{
 		if (resources == null) return;
 		foreach (var key in OverrideKeys) resources.Remove(key);
-		var baseTheme = customTheme != null && TryValidate(customTheme, out _) ? customTheme.BaseTheme : builtInTheme;
+		var hasValidCustomTheme = customTheme != null && TryValidate(customTheme, out _);
+		var baseTheme = hasValidCustomTheme ? customTheme.BaseTheme : builtInTheme;
 		ResourceLocator.SetColorScheme(resources, DivinityApp.GetThemeUri(baseTheme));
-		var palette = customTheme != null && TryValidate(customTheme, out _)
+		var palette = hasValidCustomTheme
 			? CreateResourceColors(customTheme)
 			: CreateBuiltInResourceColors(baseTheme);
+		ApplyPalette(resources, palette, baseTheme);
+	}
+
+	public static void PreviewColors(ResourceDictionary resources, ReduxCustomTheme customTheme)
+	{
+		if (resources == null || customTheme == null || !TryValidate(customTheme, out _)) return;
+		ApplyPalette(resources, CreateResourceColors(customTheme), customTheme.BaseTheme);
+	}
+
+	private static void ApplyPalette(ResourceDictionary resources, IReadOnlyDictionary<string, Color> palette,
+		ReduxThemeType baseTheme)
+	{
 		foreach (var entry in palette)
 		{
 			var owner = FindResourceOwner(resources, entry.Key) ?? resources;
@@ -221,7 +234,8 @@ public static class ReduxThemeService
 		var infoPillOwner = FindResourceOwner(resources, "ReduxInfoPillBackground") ?? resources;
 		infoPillOwner["ReduxInfoPillBackground"] = CreatePillGradient(palette["ReduxInfoColor"]);
 		var primaryActionOwner = FindResourceOwner(resources, "ReduxPrimaryActionBackgroundBrush") ?? resources;
-		primaryActionOwner["ReduxPrimaryActionBackgroundBrush"] = CreatePrimaryActionGradient(palette["ReduxAccentColor"]);
+		primaryActionOwner["ReduxPrimaryActionBackgroundBrush"] =
+			CreatePrimaryActionGradient(palette["ReduxAccentColor"], baseTheme == ReduxThemeType.Parchment);
 	}
 
 	private static LinearGradientBrush CreatePillGradient(Color color)
@@ -239,10 +253,17 @@ public static class ReduxThemeService
 		return brush;
 	}
 
-	private static LinearGradientBrush CreatePrimaryActionGradient(Color accent)
+	private static LinearGradientBrush CreatePrimaryActionGradient(Color accent, bool restrainedHueShift)
 	{
-		var leading = Mix(accent, ShiftHue(accent, -18), 0.48);
-		var trailing = Mix(accent, ShiftHue(accent, 18), 0.48);
+		// Warm/light surfaces need stronger value separation while keeping every stop
+		// derived from the selected accent. Scaling RGB preserves saturation better than
+		// mixing toward the paper surface or white.
+		var leading = restrainedHueShift
+			? ScaleBrightness(accent, 0.82)
+			: Mix(accent, ShiftHue(accent, -18), 0.48);
+		var trailing = restrainedHueShift
+			? ShiftHue(ScaleBrightness(accent, 1.25), 10)
+			: Mix(accent, ShiftHue(accent, 18), 0.48);
 		var brush = new LinearGradientBrush
 		{
 			StartPoint = new Point(0, 0.5),
@@ -413,6 +434,10 @@ public static class ReduxThemeService
 		(byte)Math.Round(left.R + ((right.R - left.R) * amount)),
 		(byte)Math.Round(left.G + ((right.G - left.G) * amount)),
 		(byte)Math.Round(left.B + ((right.B - left.B) * amount)));
+	private static Color ScaleBrightness(Color color, double scale) => Color.FromRgb(
+		(byte)Math.Clamp(Math.Round(color.R * scale), 0, 255),
+		(byte)Math.Clamp(Math.Round(color.G * scale), 0, 255),
+		(byte)Math.Clamp(Math.Round(color.B * scale), 0, 255));
 	private static Color ShiftHue(Color color, double degrees)
 	{
 		var red = color.R / 255d;

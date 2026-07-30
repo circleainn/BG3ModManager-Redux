@@ -201,6 +201,7 @@ public static class NexusModsDataLoader
 					mod.NexusModsData.MetadataOrigin = associationOrigin switch
 					{
 						NexusMetadataOrigin.Manual => NexusMetadataOrigin.Manual,
+						NexusMetadataOrigin.NexusArchiveImport => NexusMetadataOrigin.NexusArchiveImport,
 						NexusMetadataOrigin.BundledProvenance => NexusMetadataOrigin.BundledProvenance,
 						NexusMetadataOrigin.CreatorManifest => NexusMetadataOrigin.CreatorManifest,
 						_ => NexusMetadataOrigin.LiveApi

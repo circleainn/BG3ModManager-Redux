@@ -5,10 +5,10 @@
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
 	Title="Add Mod Category"
-	Width="700"
-	Height="700"
-	MinWidth="600"
-	MinHeight="540"
+	Width="740"
+	Height="800"
+	MinWidth="640"
+	MinHeight="620"
 	ResizeMode="CanResizeWithGrip"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
@@ -24,21 +24,30 @@
 		<SolidColorBrush x:Key="Redux.CategoryEditor.IconBrush" Color="#8A6AF1" />
 		<SolidColorBrush x:Key="Redux.CategoryEditor.HoverBrush" Color="#1F8A6AF1" />
 		<SolidColorBrush x:Key="Redux.CategoryEditor.CountHoverBrush" Color="#248A6AF1" />
+		<SolidColorBrush x:Key="Redux.CategoryEditor.HueBrush" Color="#8A6AF1" />
+		<SolidColorBrush x:Key="Redux.CategoryEditor.SaturationTrackBrush" Color="#8A6AF1" />
+		<SolidColorBrush x:Key="Redux.CategoryEditor.BrightnessTrackBrush" Color="#8A6AF1" />
+		<SolidColorBrush x:Key="Redux.CategoryEditor.RedTrackBrush" Color="#F05D70" />
+		<SolidColorBrush x:Key="Redux.CategoryEditor.GreenTrackBrush" Color="#3FC588" />
+		<SolidColorBrush x:Key="Redux.CategoryEditor.BlueTrackBrush" Color="#5B99FA" />
 		<Style x:Key="CategoryColorSwatchStyle" TargetType="Border">
-			<Setter Property="Width" Value="32" /><Setter Property="Height" Value="25" />
-			<Setter Property="Margin" Value="0,0,8,0" /><Setter Property="CornerRadius" Value="6" />
+			<Setter Property="Width" Value="34" /><Setter Property="Height" Value="28" />
+			<Setter Property="Margin" Value="0,0,7,7" /><Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Small}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
 			<Setter Property="BorderThickness" Value="1" /><Setter Property="Cursor" Value="Hand" />
-			<Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" /><Setter Property="BorderThickness" Value="2" /></Trigger></Style.Triggers>
+			<Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" /></Trigger></Style.Triggers>
 		</Style>
 		<Style x:Key="CategoryColorSliderStyle" TargetType="Slider">
 			<Setter Property="Height" Value="20" /><Setter Property="Minimum" Value="0" /><Setter Property="Maximum" Value="255" />
 			<Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Slider">
+				<Grid>
+					<Border Height="6" VerticalAlignment="Center" Background="{TemplateBinding Background}" CornerRadius="3" />
 				<Track x:Name="PART_Track" Height="16" VerticalAlignment="Center">
-					<Track.DecreaseRepeatButton><RepeatButton Command="Slider.DecreaseLarge"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Height="6" VerticalAlignment="Center" Background="{DynamicResource ReduxAccentBrush}" CornerRadius="3" /></ControlTemplate></RepeatButton.Template></RepeatButton></Track.DecreaseRepeatButton>
+					<Track.DecreaseRepeatButton><RepeatButton Background="Transparent" Command="Slider.DecreaseLarge"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Background="Transparent" /></ControlTemplate></RepeatButton.Template></RepeatButton></Track.DecreaseRepeatButton>
 					<Track.Thumb><Thumb Width="15" Height="15"><Thumb.Template><ControlTemplate TargetType="Thumb"><Ellipse Fill="{DynamicResource ReduxTextPrimaryBrush}" Stroke="{DynamicResource ReduxBorderStrongBrush}" StrokeThickness="1" /></ControlTemplate></Thumb.Template></Thumb></Track.Thumb>
-					<Track.IncreaseRepeatButton><RepeatButton Command="Slider.IncreaseLarge"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Height="6" VerticalAlignment="Center" Background="{DynamicResource ReduxBorderStrongBrush}" CornerRadius="3" /></ControlTemplate></RepeatButton.Template></RepeatButton></Track.IncreaseRepeatButton>
+					<Track.IncreaseRepeatButton><RepeatButton Background="Transparent" Command="Slider.IncreaseLarge"><RepeatButton.Template><ControlTemplate TargetType="RepeatButton"><Border Background="Transparent" /></ControlTemplate></RepeatButton.Template></RepeatButton></Track.IncreaseRepeatButton>
 				</Track>
+				</Grid>
 			</ControlTemplate></Setter.Value></Setter>
 		</Style>
 		<Style x:Key="CategoryIconChoiceStyle" TargetType="{x:Type ComboBoxItem}">
@@ -305,36 +314,60 @@
 		</Border>
 		<TextBlock x:Name="ColorFieldLabel" Grid.Row="5" Margin="0,8,0,5" FontWeight="SemiBold"
 			Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Category color" />
-		<Border Grid.Row="6" Padding="10" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+		<Border Grid.Row="6" Padding="12" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 			BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 			<Grid>
-				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="12" /><RowDefinition Height="Auto" /><RowDefinition Height="12" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-				<Grid.ColumnDefinitions><ColumnDefinition Width="214" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" MinWidth="250" /></Grid.ColumnDefinitions>
-				<Grid x:Name="SpectrumSurface" Width="200" Height="200" HorizontalAlignment="Center"
+				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="14" /><RowDefinition Height="Auto" /><RowDefinition Height="14" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+				<Grid.ColumnDefinitions><ColumnDefinition Width="228" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" MinWidth="270" /></Grid.ColumnDefinitions>
+				<Grid x:Name="SpectrumSurface" Width="218" Height="218" HorizontalAlignment="Center"
 					Background="Transparent" Cursor="Cross" SnapsToDevicePixels="True"
-					AutomationProperties.Name="Hue color ring"
+					AutomationProperties.Name="Hue and color field"
 					MouseLeftButtonDown="Spectrum_MouseLeftButtonDown" MouseMove="Spectrum_MouseMove" MouseLeftButtonUp="ColorSurface_MouseLeftButtonUp">
-					<Image x:Name="ColorWheelImage" Width="198" Height="198" Stretch="Fill"
+					<Image x:Name="ColorWheelImage" Width="216" Height="216" Stretch="Fill"
 						IsHitTestVisible="False" RenderOptions.BitmapScalingMode="HighQuality">
 						<Image.Clip>
 							<GeometryGroup FillRule="EvenOdd">
-								<EllipseGeometry Center="99,99" RadiusX="98" RadiusY="98" />
-								<EllipseGeometry Center="99,99" RadiusX="61" RadiusY="61" />
+								<EllipseGeometry Center="108,108" RadiusX="107" RadiusY="107" />
+								<EllipseGeometry Center="108,108" RadiusX="76" RadiusY="76" />
 							</GeometryGroup>
 						</Image.Clip>
 					</Image>
-					<Border Width="120" Height="120" HorizontalAlignment="Center" VerticalAlignment="Center"
-						Background="{Binding Background, ElementName=SelectedColorPreview}"
-						BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1"
-						CornerRadius="60" IsHitTestVisible="False">
-						<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-							<TextBlock HorizontalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.10}"
-								Foreground="{DynamicResource ReduxAccentForegroundBrush}" Text="SELECTED" />
-							<TextBlock HorizontalAlignment="Center" Margin="0,3,0,0" FontWeight="SemiBold"
-								Foreground="{DynamicResource ReduxAccentForegroundBrush}"
-								Text="{Binding Text, ElementName=HexColorTextBox}" />
-						</StackPanel>
-					</Border>
+					<Grid x:Name="ColorPlane" Width="142" Height="142" HorizontalAlignment="Center" VerticalAlignment="Center"
+						Background="Transparent"
+						MouseLeftButtonDown="ColorPlane_MouseLeftButtonDown"
+						MouseMove="ColorPlane_MouseMove"
+						MouseLeftButtonUp="ColorSurface_MouseLeftButtonUp">
+						<Grid.Clip>
+							<EllipseGeometry Center="71,71" RadiusX="71" RadiusY="71" />
+						</Grid.Clip>
+						<Grid>
+							<Ellipse Fill="{DynamicResource Redux.CategoryEditor.HueBrush}" IsHitTestVisible="False" />
+							<Ellipse IsHitTestVisible="False">
+								<Ellipse.Fill>
+									<LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+										<GradientStop Color="White" Offset="0" />
+										<GradientStop Color="#00FFFFFF" Offset="1" />
+									</LinearGradientBrush>
+								</Ellipse.Fill>
+							</Ellipse>
+							<Ellipse IsHitTestVisible="False">
+								<Ellipse.Fill>
+									<LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+										<GradientStop Color="#00000000" Offset="0" />
+										<GradientStop Color="Black" Offset="1" />
+									</LinearGradientBrush>
+								</Ellipse.Fill>
+							</Ellipse>
+							<Ellipse Fill="Transparent" Stroke="{DynamicResource ReduxBorderStrongBrush}"
+								StrokeThickness="1" IsHitTestVisible="False" />
+							<Ellipse x:Name="ColorPlaneMarker" Width="12" Height="12"
+								HorizontalAlignment="Left" VerticalAlignment="Top"
+								Fill="Transparent" Stroke="White" StrokeThickness="2"
+								IsHitTestVisible="False">
+								<Ellipse.Effect><DropShadowEffect BlurRadius="3" ShadowDepth="0" Opacity="0.85" Color="#FF111018" /></Ellipse.Effect>
+							</Ellipse>
+						</Grid>
+					</Grid>
 					<Ellipse x:Name="SpectrumMarker" Width="11" Height="11" HorizontalAlignment="Left" VerticalAlignment="Top"
 						Fill="{DynamicResource ReduxSurfaceBrush}" Stroke="White" StrokeThickness="2" IsHitTestVisible="False">
 						<Ellipse.Effect><DropShadowEffect BlurRadius="2" ShadowDepth="0" Opacity="0.7" Color="#FF111018" /></Ellipse.Effect>
@@ -343,15 +376,15 @@
 				<xctk:ColorCanvas x:Name="CategoryColorPicker" Visibility="Collapsed" UsingAlphaChannel="False" SelectedColorChanged="CategoryColorPicker_SelectedColorChanged" />
 				<StackPanel Grid.Column="2" VerticalAlignment="Top">
 					<TextBlock Margin="0,0,0,5" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold"
-						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Selected color" />
+						Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Current color" />
 					<Grid>
-						<Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-						<Border x:Name="SelectedColorPreview" Height="32" Margin="0,0,7,0" Background="#8A6AF1"
+						<Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+						<Border x:Name="SelectedColorPreview" Height="36" Margin="0,0,8,0" Background="#8A6AF1"
 							BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Small}" />
-						<TextBox x:Name="HexColorTextBox" Grid.Column="1" MinHeight="32" Padding="7,3" Text="#8A6AF1"
+						<TextBox x:Name="HexColorTextBox" Grid.Column="1" MinHeight="36" Padding="9,5" Text="#8A6AF1"
 							LostFocus="HexColorTextBox_Commit" KeyDown="HexColorTextBox_KeyDown" />
 					</Grid>
-					<Grid Margin="0,8,0,0">
+					<Grid Margin="0,10,0,0">
 						<Grid.ColumnDefinitions><ColumnDefinition Width="74" /><ColumnDefinition Width="*" /><ColumnDefinition Width="42" /></Grid.ColumnDefinitions>
 						<Grid.RowDefinitions>
 							<RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
@@ -359,32 +392,37 @@
 						</Grid.RowDefinitions>
 						<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Saturation" />
 						<Slider x:Name="SaturationSlider" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="100"
+							Background="{DynamicResource Redux.CategoryEditor.SaturationTrackBrush}"
 							ValueChanged="SaturationSlider_ValueChanged" />
 						<TextBlock Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="{Binding Value, ElementName=SaturationSlider, StringFormat={}{0:0}%}" />
 						<TextBlock Grid.Row="1" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Brightness" />
 						<Slider x:Name="BrightnessSlider" Grid.Row="1" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="100"
+							Background="{DynamicResource Redux.CategoryEditor.BrightnessTrackBrush}"
 							ValueChanged="BrightnessSlider_ValueChanged" />
 						<TextBlock Grid.Row="1" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="{Binding Value, ElementName=BrightnessSlider, StringFormat={}{0:0}%}" />
 						<TextBlock Grid.Row="2" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Red" />
 						<Slider x:Name="RedSlider" Grid.Row="2" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="255"
+							Background="{DynamicResource Redux.CategoryEditor.RedTrackBrush}"
 							ValueChanged="RgbSlider_ValueChanged" />
 						<TextBlock Grid.Row="2" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="{Binding Value, ElementName=RedSlider, StringFormat={}{0:0}}" />
 						<TextBlock Grid.Row="3" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Green" />
 						<Slider x:Name="GreenSlider" Grid.Row="3" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="255"
+							Background="{DynamicResource Redux.CategoryEditor.GreenTrackBrush}"
 							ValueChanged="RgbSlider_ValueChanged" />
 						<TextBlock Grid.Row="3" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="{Binding Value, ElementName=GreenSlider, StringFormat={}{0:0}}" />
 						<TextBlock Grid.Row="4" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Blue" />
 						<Slider x:Name="BlueSlider" Grid.Row="4" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="255"
+							Background="{DynamicResource Redux.CategoryEditor.BlueTrackBrush}"
 							ValueChanged="RgbSlider_ValueChanged" />
 						<TextBlock Grid.Row="4" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="{Binding Value, ElementName=BlueSlider, StringFormat={}{0:0}}" />
 					</Grid>
 				</StackPanel>
-				<Border Grid.Row="2" Grid.ColumnSpan="3" Padding="10,8" Background="{DynamicResource ReduxSurfaceBrush}"
+				<Border x:Name="IconChooserCard" Grid.Row="2" Grid.ColumnSpan="3" Padding="11,9" Background="{DynamicResource ReduxSurfaceBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}">
 					<Grid x:Name="IconChooserPanel">
 						<Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
@@ -435,7 +473,7 @@
 					</Grid>
 				</Border>
 				<Grid Grid.Row="4" Grid.ColumnSpan="3">
-					<Grid.ColumnDefinitions><ColumnDefinition Width="1*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="1*" /></Grid.ColumnDefinitions>
+					<Grid.ColumnDefinitions><ColumnDefinition Width="1*" /><ColumnDefinition Width="20" /><ColumnDefinition Width="1*" /></Grid.ColumnDefinitions>
 					<StackPanel>
 						<TextBlock Margin="0,0,0,7" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Redux presets" />
 						<WrapPanel>
@@ -484,8 +522,20 @@
 					<TextBlock Text="Reset to default" />
 				</StackPanel>
 			</Button>
-			<Button x:Name="ConfirmButton" MinWidth="84" Margin="0,0,8,0" Style="{StaticResource ReduxPrimaryActionButtonStyle}" IsDefault="True" Click="Add_Click" Content="Add" />
-			<Button MinWidth="84" Style="{StaticResource ReduxSecondaryActionButtonStyle}" IsCancel="True" Content="Cancel" />
+			<Button x:Name="ConfirmButton" MinWidth="84" Margin="0,0,8,0" Style="{StaticResource ReduxPrimaryActionButtonStyle}" IsDefault="True" Click="Add_Click">
+				<StackPanel Orientation="Horizontal">
+					<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
+						Foreground="{DynamicResource ReduxAccentForegroundBrush}"
+						StrokeData="{StaticResource Redux.Icon.Check}" />
+					<TextBlock Text="Add" />
+				</StackPanel>
+			</Button>
+			<Button MinWidth="84" Style="{StaticResource ReduxSecondaryActionButtonStyle}" IsCancel="True">
+				<StackPanel Orientation="Horizontal">
+					<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Close}" />
+					<TextBlock Text="Cancel" />
+				</StackPanel>
+			</Button>
 		</StackPanel>
 		</Border>
 	</Grid>

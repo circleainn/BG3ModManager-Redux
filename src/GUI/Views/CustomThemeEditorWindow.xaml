@@ -6,19 +6,24 @@
 	xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
 	xmlns:ext="clr-namespace:DivinityModManager.Controls.Extensions"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+	xmlns:util="clr-namespace:DivinityModManager.Util"
 	Title="Custom Theme Editor"
-	Width="820"
-	Height="650"
-	MinWidth="720"
-	MinHeight="540"
-	ResizeMode="CanResizeWithGrip"
+	Width="960"
+	Height="700"
+	MinWidth="840"
+	MinHeight="620"
+	MaxWidth="1280"
+	MaxHeight="920"
+	ResizeMode="CanResize"
 	WindowStyle="SingleBorderWindow"
 	Template="{DynamicResource ReduxWindowTemplate}"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
-	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
-	TextOptions.TextFormattingMode="Ideal" TextOptions.TextRenderingMode="ClearType"
-	Background="{DynamicResource ReduxSurfaceBrush}">
+	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontSize="{DynamicResource Redux.FontSize.12}"
+	TextOptions.TextFormattingMode="Ideal"
+	TextOptions.TextRenderingMode="ClearType"
+	Background="{DynamicResource ReduxWindowBrush}">
 	<shell:WindowChrome.WindowChrome>
 		<shell:WindowChrome
 			CaptionHeight="0"
@@ -27,218 +32,510 @@
 			ResizeBorderThickness="6"
 			UseAeroCaptionButtons="False" />
 	</shell:WindowChrome.WindowChrome>
+
 	<adonisUi:AdonisWindow.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-			<Style x:Key="ThemeColorButtonStyle" BasedOn="{StaticResource ReduxSecondaryActionButtonStyle}" TargetType="Button">
-				<Setter Property="Height" Value="52" />
-				<Setter Property="Margin" Value="0,0,10,10" />
-				<Setter Property="Padding" Value="10,7" />
+
+			<Style x:Key="ThemeEditorFieldLabelStyle" TargetType="TextBlock">
+				<Setter Property="Margin" Value="1,0,0,7" />
+				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.10}" />
+				<Setter Property="FontWeight" Value="SemiBold" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
+				<Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+			</Style>
+
+			<Style x:Key="ThemeColorButtonStyle" TargetType="Button">
+				<Setter Property="Height" Value="92" />
+				<Setter Property="MinWidth" Value="0" />
+				<Setter Property="Margin" Value="5" />
+				<Setter Property="Padding" Value="0" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+				<Setter Property="Cursor" Value="Hand" />
 				<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+				<Setter Property="VerticalContentAlignment" Value="Stretch" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="Button">
+							<Grid ClipToBounds="False">
+								<Border x:Name="Card"
+									Margin="0,1"
+									Padding="8,7"
+									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+									BorderBrush="{DynamicResource ReduxBorderBrush}"
+									BorderThickness="1"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+									RenderTransformOrigin="0.5,0.5"
+									util:ReduxWindowBehavior.HoverLift="1">
+									<Border.RenderTransform>
+										<TranslateTransform />
+									</Border.RenderTransform>
+									<Grid>
+										<Grid.RowDefinitions>
+											<RowDefinition Height="Auto" />
+											<RowDefinition Height="32" />
+											<RowDefinition Height="Auto" />
+										</Grid.RowDefinitions>
+										<TextBlock
+											FontWeight="SemiBold"
+											Foreground="{TemplateBinding Foreground}"
+											Text="{TemplateBinding Content}"
+											TextTrimming="CharacterEllipsis" />
+										<Border Grid.Row="1"
+											Margin="0,5,0,4"
+											Background="{TemplateBinding Background}"
+											BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
+											BorderThickness="1"
+											CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}">
+											<Border.Effect>
+												<DropShadowEffect BlurRadius="6" ShadowDepth="0" Opacity="0.16" Color="#FF000000" />
+											</Border.Effect>
+										</Border>
+										<Grid Grid.Row="2">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="*" />
+												<ColumnDefinition Width="Auto" />
+											</Grid.ColumnDefinitions>
+											<TextBlock
+												VerticalAlignment="Center"
+												FontSize="{DynamicResource Redux.FontSize.10}"
+												Foreground="{DynamicResource ReduxTextMutedBrush}"
+												Text="{TemplateBinding CommandParameter}"
+												TextTrimming="CharacterEllipsis" />
+											<controls:ReduxIcon Grid.Column="1"
+												Width="13" Height="13"
+												Margin="7,0,0,0"
+												VerticalAlignment="Center"
+												Foreground="{DynamicResource ReduxTextMutedBrush}"
+												StrokeData="{StaticResource Redux.Icon.Create}" />
+										</Grid>
+										<Border x:Name="FocusRing" Grid.RowSpan="3"
+											Margin="-5"
+											BorderBrush="{DynamicResource ReduxAccentBrush}"
+											BorderThickness="2"
+											CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+											IsHitTestVisible="False"
+											Opacity="0" />
+									</Grid>
+								</Border>
+							</Grid>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter TargetName="Card" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+									<Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+								</Trigger>
+								<Trigger Property="IsKeyboardFocused" Value="True">
+									<Setter TargetName="FocusRing" Property="Opacity" Value="1" />
+								</Trigger>
+								<Trigger Property="IsPressed" Value="True">
+									<Setter TargetName="Card" Property="Opacity" Value="0.78" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
 			</Style>
 		</ResourceDictionary>
 	</adonisUi:AdonisWindow.Resources>
+
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
-		<controls:ReduxWindowTitleBar
-			IconData="{DynamicResource Redux.Icon.ColorPalette}" />
+
+		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.ColorPalette}" />
+
 		<Border Grid.Row="1"
 			Background="{DynamicResource ReduxSurfaceBrush}"
-			BorderBrush="{DynamicResource ReduxBorderBrush}"
-			BorderThickness="0,1,0,0">
-		<Grid Margin="20">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
-				<RowDefinition Height="Auto" />
-			</Grid.RowDefinitions>
-			<TextBlock FontSize="{DynamicResource Redux.FontSize.19}" FontWeight="SemiBold" Text="Design a custom Redux palette" />
-			<TextBlock Grid.Row="1" Margin="0,5,0,16" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-				Text="Choose typography, category presentation, and eight semantic colors. Redux derives hover, selection, borders, muted text, and contrast-safe button text automatically."
-				TextWrapping="Wrap" />
+			BorderThickness="0">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="*" />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
 
-			<Grid Grid.Row="2">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="14" />
-					<ColumnDefinition Width="190" />
-					<ColumnDefinition Width="14" />
-					<ColumnDefinition Width="250" />
-				</Grid.ColumnDefinitions>
-				<StackPanel>
-					<TextBlock Margin="0,0,0,5" FontWeight="SemiBold" Text="Theme name" />
-					<TextBox x:Name="ThemeNameTextBox" MaxLength="50" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
-				</StackPanel>
-				<StackPanel Grid.Column="2">
-					<TextBlock Margin="0,0,0,5" FontWeight="SemiBold" Text="Start from" />
-					<ComboBox x:Name="BaseThemeComboBox" DisplayMemberPath="Description"
-						ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxThemeType}}}"
-						SelectedValuePath="Value" SelectionChanged="BaseThemeComboBox_SelectionChanged" />
-				</StackPanel>
-				<StackPanel Grid.Column="4">
-					<TextBlock Margin="0,0,0,5" FontWeight="SemiBold" Text="Default typeface" />
-					<Grid>
-						<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-						<ComboBox x:Name="TypographyFontComboBox" DisplayMemberPath="Name"
-							SelectionChanged="TypographyFontComboBox_SelectionChanged" />
-						<Button Grid.Column="1" Width="32" MinWidth="32" Margin="6,0,0,0" Padding="7"
-							Click="ImportCustomFont_Click" ToolTip="Import a TrueType or OpenType font">
-							<controls:ReduxIcon Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Download}" />
-						</Button>
-					</Grid>
-					<TextBlock Margin="2,5,0,0" FontSize="{DynamicResource Redux.FontSize.15}" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-						Text="Aa Qg 0O 1Il" />
-					<TextBlock Margin="0,10,0,5" FontWeight="SemiBold" Text="Default text size" />
-					<ComboBox x:Name="TextSizeComboBox" DisplayMemberPath="Description"
-						ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxTextSize}}}"
-						SelectedValuePath="Value" SelectionChanged="TextSizeComboBox_SelectionChanged" />
-				</StackPanel>
-			</Grid>
+				<ScrollViewer
+					HorizontalScrollBarVisibility="Disabled"
+					VerticalScrollBarVisibility="Auto"
+					PanningMode="VerticalOnly">
+					<StackPanel Margin="12,13,12,12">
+						<TextBlock
+							FontSize="{DynamicResource Redux.FontSize.19}"
+							FontWeight="SemiBold"
+							Text="Design a custom Redux palette" />
+						<TextBlock
+							MaxWidth="820"
+							Margin="0,4,0,12"
+							HorizontalAlignment="Left"
+							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+							Text="Choose typography, category presentation, and eight semantic colors. Redux derives hover, selection, borders, muted text, and contrast-safe button text automatically."
+							TextWrapping="Wrap" />
 
-			<StackPanel Grid.Row="3" Margin="0,16,0,14">
-				<Border Padding="10" Background="{DynamicResource ReduxSurfaceMutedBrush}"
-					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-					<Grid>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="Auto" />
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
-							<ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
-						</Grid.ColumnDefinitions>
-						<Border Height="30" Background="{Binding BackgroundColor}" CornerRadius="6,0,0,6" />
-						<Border Grid.Column="1" Height="30" Background="{Binding SurfaceColor}" />
-						<Border Grid.Column="2" Height="30" Background="{Binding AccentColor}" />
-						<Border Grid.Column="3" Height="30" Background="{Binding TextColor}" />
-						<Border Grid.Column="4" Height="30" Background="{Binding SuccessColor}" />
-						<Border Grid.Column="5" Height="30" Background="{Binding WarningColor}" />
-						<Border Grid.Column="6" Height="30" Background="{Binding ErrorColor}" />
-						<Border Grid.Column="7" Height="30" Background="{Binding InfoColor}" CornerRadius="0,6,6,0" />
-					</Grid>
-				</Border>
-				<Border Margin="0,10,0,0" Padding="12,9" Background="{DynamicResource ReduxSurfaceMutedBrush}"
-					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-					<Grid>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="Auto" />
-							<RowDefinition Height="Auto" />
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="*" />
-						</Grid.ColumnDefinitions>
-						<CheckBox IsChecked="{Binding UseCategoryColorsForInteractions}" Style="{StaticResource ReduxCheckBoxStyle}">
-							<StackPanel Margin="5,0,12,0">
-								<TextBlock FontWeight="SemiBold" Text="Category-colored interactions" />
-								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Use assigned category colors for hover and selection across mod lists, separators, and the Categories pane." TextWrapping="Wrap" />
-							</StackPanel>
-						</CheckBox>
-						<CheckBox x:Name="InterfaceIconsCheckBox" Grid.Column="1"
-							IsChecked="{Binding ShowCategoryIconsInPills}" Style="{StaticResource ReduxCheckBoxStyle}"
-							Unchecked="InterfaceIconsCheckBox_Unchecked">
-							<StackPanel Margin="5,0,12,0">
-								<TextBlock FontWeight="SemiBold" Text="Interface icons" />
-								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Show category, source, and status icons in lists, cards, and details." TextWrapping="Wrap" />
-							</StackPanel>
-						</CheckBox>
-						<CheckBox Grid.Row="1" Margin="0,10,0,0" IsChecked="{Binding UseCategoryColorsForSidebarText}" Style="{StaticResource ReduxCheckBoxStyle}">
-							<StackPanel Margin="5,0,0,0">
-								<TextBlock FontWeight="SemiBold" Text="Colored category labels" />
-								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Use category colors for labels throughout lists, cards, and details." TextWrapping="Wrap" />
-							</StackPanel>
-						</CheckBox>
-						<CheckBox Grid.Row="1" Grid.Column="1" Margin="0,10,0,0"
-							IsChecked="{Binding UseIconsOnly}" IsEnabled="{Binding IsChecked, ElementName=InterfaceIconsCheckBox}"
-							Style="{StaticResource ReduxCheckBoxStyle}">
-							<StackPanel Margin="5,0,12,0">
-								<TextBlock FontWeight="SemiBold" Text="Icons only" />
-								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Show compact category, source, and status icons without persistent label text." TextWrapping="Wrap" />
-							</StackPanel>
-						</CheckBox>
-					</Grid>
-				</Border>
-			</StackPanel>
+						<Grid Margin="0,0,0,15">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="1.4*" />
+								<ColumnDefinition Width="12" />
+								<ColumnDefinition Width="1*" />
+								<ColumnDefinition Width="12" />
+								<ColumnDefinition Width="0.85*" />
+								<ColumnDefinition Width="12" />
+								<ColumnDefinition Width="1.35*" />
+							</Grid.ColumnDefinitions>
 
-			<ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto">
-				<UniformGrid Columns="2">
-					<Button Tag="BackgroundColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
-						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Border Width="26" Height="26" Background="{Binding BackgroundColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
-							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Background" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding BackgroundColor}" /></StackPanel>
-						</Grid>
-					</Button>
-					<Button Tag="SurfaceColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
-						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Border Width="26" Height="26" Background="{Binding SurfaceColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
-							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Surface" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding SurfaceColor}" /></StackPanel>
-						</Grid>
-					</Button>
-					<Button Tag="AccentColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
-						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Border Width="26" Height="26" Background="{Binding AccentColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
-							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Accent" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding AccentColor}" /></StackPanel>
-						</Grid>
-					</Button>
-					<Button Tag="TextColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
-						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Border Width="26" Height="26" Background="{Binding TextColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
-							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Primary text" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding TextColor}" /></StackPanel>
-						</Grid>
-					</Button>
-					<Button Tag="SuccessColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
-						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Border Width="26" Height="26" Background="{Binding SuccessColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
-							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Success" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding SuccessColor}" /></StackPanel>
-						</Grid>
-					</Button>
-					<Button Tag="WarningColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
-						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Border Width="26" Height="26" Background="{Binding WarningColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
-							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Warning" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding WarningColor}" /></StackPanel>
-						</Grid>
-					</Button>
-					<Button Tag="ErrorColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
-						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Border Width="26" Height="26" Background="{Binding ErrorColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
-							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Error" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding ErrorColor}" /></StackPanel>
-						</Grid>
-					</Button>
-					<Button Tag="InfoColor" Click="ColorButton_Click" Style="{StaticResource ThemeColorButtonStyle}">
-						<Grid><Grid.ColumnDefinitions><ColumnDefinition Width="34" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-							<Border Width="26" Height="26" Background="{Binding InfoColor}" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}" />
-							<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Text="Information" /><TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{Binding InfoColor}" /></StackPanel>
-						</Grid>
-					</Button>
-				</UniformGrid>
-			</ScrollViewer>
+							<StackPanel>
+								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="THEME NAME" />
+								<Grid>
+									<TextBox x:Name="ThemeNameTextBox"
+										MinHeight="36"
+										MaxLength="50"
+										Padding="37,9,10,8"
+										Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" />
+									<controls:ReduxIcon
+										Width="17" Height="17"
+										Margin="12,0,0,0"
+										HorizontalAlignment="Left"
+										VerticalAlignment="Center"
+										IsHitTestVisible="False"
+										Foreground="{DynamicResource ReduxAccentBrush}"
+										StrokeData="{StaticResource Redux.Icon.ColorPalette}" />
+								</Grid>
+							</StackPanel>
 
-			<Grid Grid.Row="5" Margin="0,14,0,0">
-				<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Color changes preview immediately behind this window." />
-				<Button Grid.Column="1" MinWidth="90" Margin="0,0,8,0" Content="Cancel" IsCancel="True" Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="CancelButton_Click" />
-				<Button Grid.Column="2" MinWidth="110" IsDefault="True" Style="{StaticResource ReduxPrimaryActionButtonStyle}" Click="SaveButton_Click">
-					<StackPanel Orientation="Horizontal">
-						<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
-							Foreground="{DynamicResource ReduxAccentForegroundBrush}"
-							StrokeData="{StaticResource Redux.Icon.Save}" />
-						<TextBlock Text="Save Theme" />
+							<StackPanel Grid.Column="2">
+								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="START FROM" />
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto" />
+										<ColumnDefinition Width="*" />
+									</Grid.ColumnDefinitions>
+									<controls:ReduxIcon
+										Width="16" Height="16"
+										Margin="8,0,8,0"
+										VerticalAlignment="Center"
+										Foreground="{DynamicResource ReduxAccentBrush}"
+										StrokeData="{StaticResource Redux.Icon.Sparkles}" />
+									<ComboBox x:Name="BaseThemeComboBox" Grid.Column="1"
+										MinHeight="36"
+										DisplayMemberPath="Description"
+										ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxThemeType}}}"
+										SelectedValuePath="Value"
+										SelectionChanged="BaseThemeComboBox_SelectionChanged" />
+								</Grid>
+							</StackPanel>
+
+							<StackPanel Grid.Column="4">
+								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="TEXT SIZE" />
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto" />
+										<ColumnDefinition Width="*" />
+									</Grid.ColumnDefinitions>
+									<TextBlock
+										Margin="8,0"
+										VerticalAlignment="Center"
+										FontSize="{DynamicResource Redux.FontSize.17}"
+										FontWeight="SemiBold"
+										Foreground="{DynamicResource ReduxAccentBrush}"
+										Text="Tt" />
+									<ComboBox x:Name="TextSizeComboBox" Grid.Column="1"
+										MinHeight="36"
+										DisplayMemberPath="Description"
+										ItemsSource="{Binding Source={ext:EnumExtension {x:Type data:ReduxTextSize}}}"
+										SelectedValuePath="Value"
+										SelectionChanged="TextSizeComboBox_SelectionChanged" />
+								</Grid>
+							</StackPanel>
+
+							<StackPanel Grid.Column="6">
+								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="TYPEFACE" />
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto" />
+										<ColumnDefinition Width="*" />
+										<ColumnDefinition Width="Auto" />
+									</Grid.ColumnDefinitions>
+									<TextBlock
+										Margin="8,0"
+										VerticalAlignment="Center"
+										FontSize="{DynamicResource Redux.FontSize.17}"
+										FontWeight="SemiBold"
+										Foreground="{DynamicResource ReduxAccentBrush}"
+										Text="Aa" />
+									<ComboBox x:Name="TypographyFontComboBox" Grid.Column="1"
+										MinHeight="36"
+										DisplayMemberPath="Name"
+										SelectionChanged="TypographyFontComboBox_SelectionChanged" />
+									<Button Grid.Column="2"
+										Width="36" Height="36"
+										Margin="6,0,0,0"
+										Padding="8"
+										Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+										Click="ImportCustomFont_Click"
+										ToolTip="Import a TrueType or OpenType font">
+										<controls:ReduxIcon
+											Width="15" Height="15"
+											StrokeData="{StaticResource Redux.Icon.Download}" />
+									</Button>
+								</Grid>
+								<TextBlock
+									Margin="8,3,0,0"
+									FontSize="{DynamicResource Redux.FontSize.12}"
+									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+									Text="Aa Qg 0O 1Il" />
+							</StackPanel>
+						</Grid>
+
+						<Grid Margin="2,0">
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto" />
+									<RowDefinition Height="Auto" />
+								</Grid.RowDefinitions>
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto" />
+										<ColumnDefinition Width="*" />
+										<ColumnDefinition Width="Auto" />
+									</Grid.ColumnDefinitions>
+									<controls:ReduxIcon
+										Width="21" Height="21"
+										Margin="0,0,10,0"
+										VerticalAlignment="Top"
+										Foreground="{DynamicResource ReduxAccentBrush}"
+										StrokeData="{StaticResource Redux.Icon.ColorPalette}" />
+									<StackPanel Grid.Column="1">
+										<TextBlock
+											FontSize="{DynamicResource Redux.FontSize.14}"
+											FontWeight="SemiBold"
+											Text="Color palette" />
+										<TextBlock
+											Margin="0,3,0,0"
+											Foreground="{DynamicResource ReduxTextMutedBrush}"
+											Text="Select any token below to edit it. Derived hover, border, and contrast colors update automatically."
+											TextWrapping="Wrap" />
+									</StackPanel>
+									<Border Grid.Column="2"
+										Padding="0,2"
+										VerticalAlignment="Top"
+										Background="Transparent"
+										BorderThickness="0">
+										<TextBlock
+											HorizontalAlignment="Center"
+											Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+											Text="8 colors" />
+									</Border>
+								</Grid>
+
+								<UniformGrid Grid.Row="1"
+									Margin="-5,8,-5,-5"
+									Columns="8"
+									Rows="1">
+									<Button Content="Background" Tag="BackgroundColor"
+										Background="{Binding BackgroundColor}"
+										CommandParameter="{Binding BackgroundColor}"
+										Click="ColorButton_Click"
+										Style="{StaticResource ThemeColorButtonStyle}" />
+									<Button Content="Surface" Tag="SurfaceColor"
+										Background="{Binding SurfaceColor}"
+										CommandParameter="{Binding SurfaceColor}"
+										Click="ColorButton_Click"
+										Style="{StaticResource ThemeColorButtonStyle}" />
+									<Button Content="Accent" Tag="AccentColor"
+										Background="{Binding AccentColor}"
+										CommandParameter="{Binding AccentColor}"
+										Click="ColorButton_Click"
+										Style="{StaticResource ThemeColorButtonStyle}" />
+									<Button Content="Text" Tag="TextColor"
+										Background="{Binding TextColor}"
+										CommandParameter="{Binding TextColor}"
+										Click="ColorButton_Click"
+										Style="{StaticResource ThemeColorButtonStyle}" />
+									<Button Content="Success" Tag="SuccessColor"
+										Background="{Binding SuccessColor}"
+										CommandParameter="{Binding SuccessColor}"
+										Click="ColorButton_Click"
+										Style="{StaticResource ThemeColorButtonStyle}" />
+									<Button Content="Warning" Tag="WarningColor"
+										Background="{Binding WarningColor}"
+										CommandParameter="{Binding WarningColor}"
+										Click="ColorButton_Click"
+										Style="{StaticResource ThemeColorButtonStyle}" />
+									<Button Content="Error" Tag="ErrorColor"
+										Background="{Binding ErrorColor}"
+										CommandParameter="{Binding ErrorColor}"
+										Click="ColorButton_Click"
+										Style="{StaticResource ThemeColorButtonStyle}" />
+									<Button Content="Info" Tag="InfoColor"
+										Background="{Binding InfoColor}"
+										CommandParameter="{Binding InfoColor}"
+										Click="ColorButton_Click"
+										Style="{StaticResource ThemeColorButtonStyle}" />
+								</UniformGrid>
+						</Grid>
+
+						<Border
+							Margin="0,12,0,0"
+							Padding="2,13,2,0"
+							Background="Transparent"
+							BorderBrush="{DynamicResource ReduxBorderBrush}"
+							BorderThickness="0,1,0,0">
+							<Grid>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto" />
+									<RowDefinition Height="Auto" />
+								</Grid.RowDefinitions>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="28" />
+									<ColumnDefinition Width="*" />
+								</Grid.ColumnDefinitions>
+
+								<CheckBox
+									IsChecked="{Binding UseCategoryColorsForInteractions}"
+									Style="{StaticResource ReduxCheckBoxStyle}">
+									<Grid Margin="4,0,12,0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition Width="*" />
+										</Grid.ColumnDefinitions>
+										<controls:ReduxIcon
+											Width="18" Height="18"
+											Margin="0,0,12,0"
+											VerticalAlignment="Center"
+											Foreground="{DynamicResource ReduxAccentBrush}"
+											StrokeData="{StaticResource Redux.Icon.ReorderStroke}" />
+										<StackPanel Grid.Column="1">
+											<TextBlock FontWeight="SemiBold" Text="Category-colored interactions" />
+											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
+												Text="Use assigned category colors for hover and selection across mod lists, separators, and the Categories pane."
+												TextWrapping="Wrap" />
+										</StackPanel>
+									</Grid>
+								</CheckBox>
+
+								<CheckBox x:Name="InterfaceIconsCheckBox" Grid.Column="2"
+									IsChecked="{Binding ShowCategoryIconsInPills}"
+									Style="{StaticResource ReduxCheckBoxStyle}"
+									Unchecked="InterfaceIconsCheckBox_Unchecked">
+									<Grid Margin="4,0,12,0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition Width="*" />
+										</Grid.ColumnDefinitions>
+										<controls:ReduxIcon
+											Width="18" Height="18"
+											Margin="0,0,12,0"
+											VerticalAlignment="Center"
+											Foreground="{DynamicResource ReduxAccentBrush}"
+											StrokeData="{StaticResource Redux.Icon.ListStroke}" />
+										<StackPanel Grid.Column="1">
+											<TextBlock FontWeight="SemiBold" Text="Interface icons" />
+											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
+												Text="Show category, source, and status icons in lists, cards, and details."
+												TextWrapping="Wrap" />
+										</StackPanel>
+									</Grid>
+								</CheckBox>
+
+								<CheckBox Grid.Row="1"
+									Margin="0,10,0,0"
+									IsChecked="{Binding UseCategoryColorsForSidebarText}"
+									Style="{StaticResource ReduxCheckBoxStyle}">
+									<Grid Margin="4,0,12,0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition Width="*" />
+										</Grid.ColumnDefinitions>
+										<controls:ReduxIcon
+											Width="18" Height="18"
+											Margin="0,0,12,0"
+											VerticalAlignment="Center"
+											Foreground="{DynamicResource ReduxAccentBrush}"
+											StrokeData="{StaticResource Redux.Icon.Pricetag}" />
+										<StackPanel Grid.Column="1">
+											<TextBlock FontWeight="SemiBold" Text="Colored text" />
+											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
+												Text="Use contextual category and source colors for text throughout lists, cards, and details."
+												TextWrapping="Wrap" />
+										</StackPanel>
+									</Grid>
+								</CheckBox>
+
+								<CheckBox Grid.Row="1" Grid.Column="2"
+									Margin="0,10,0,0"
+									IsChecked="{Binding UseIconsOnly}"
+									IsEnabled="{Binding IsChecked, ElementName=InterfaceIconsCheckBox}"
+									Style="{StaticResource ReduxCheckBoxStyle}">
+									<Grid Margin="4,0,12,0">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="Auto" />
+											<ColumnDefinition Width="*" />
+										</Grid.ColumnDefinitions>
+										<controls:ReduxIcon
+											Width="18" Height="18"
+											Margin="0,0,12,0"
+											VerticalAlignment="Center"
+											Foreground="{DynamicResource ReduxAccentBrush}"
+											StrokeData="{StaticResource Redux.Icon.Albums}" />
+										<StackPanel Grid.Column="1">
+											<TextBlock FontWeight="SemiBold" Text="Icons only" />
+											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
+												Text="Show compact category, source, and status icons without persistent label text."
+												TextWrapping="Wrap" />
+										</StackPanel>
+									</Grid>
+								</CheckBox>
+							</Grid>
+						</Border>
 					</StackPanel>
-				</Button>
+				</ScrollViewer>
+
+				<Grid Grid.Row="1" Margin="12,9,12,10">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<controls:ReduxIcon
+						Width="17" Height="17"
+						Margin="0,0,9,0"
+						VerticalAlignment="Center"
+						Foreground="{DynamicResource ReduxTextMutedBrush}"
+						StrokeData="{StaticResource Redux.Icon.Information}" />
+					<TextBlock Grid.Column="1"
+						VerticalAlignment="Center"
+						Foreground="{DynamicResource ReduxTextMutedBrush}"
+						Text="Color changes preview immediately behind this window." />
+					<Button Grid.Column="2"
+						MinWidth="112"
+						Margin="16,0,10,0"
+						IsCancel="True"
+						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+						Click="CancelButton_Click">
+						<StackPanel Orientation="Horizontal">
+							<controls:ReduxIcon Width="14" Height="14" Margin="0,0,7,0" StrokeData="{StaticResource Redux.Icon.Close}" />
+							<TextBlock Text="Cancel" />
+						</StackPanel>
+					</Button>
+					<Button Grid.Column="3"
+						MinWidth="132"
+						IsDefault="True"
+						Style="{StaticResource ReduxPrimaryActionButtonStyle}"
+						Click="SaveButton_Click">
+						<StackPanel Orientation="Horizontal">
+							<controls:ReduxIcon
+								Width="15" Height="15"
+								Margin="0,0,7,0"
+								Foreground="{DynamicResource ReduxAccentForegroundBrush}"
+								StrokeData="{StaticResource Redux.Icon.Save}" />
+							<TextBlock Text="Save Theme" />
+						</StackPanel>
+					</Button>
+				</Grid>
 			</Grid>
-		</Grid>
 		</Border>
 	</Grid>
 </adonisUi:AdonisWindow>

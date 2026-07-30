@@ -15,15 +15,18 @@ namespace DivinityModManager.Views;
 public partial class CategoryNameDialog : AdonisWindow
 {
 	private bool _updatingColorControls;
-	private bool _draggingSpectrum;
+	private bool _draggingHue;
+	private bool _draggingColorPlane;
+	private bool _preserveHsvOnColorChange;
 	private double _hue;
 	private double _saturation;
 	private double _brightness;
-	private double _renderedWheelBrightness = Double.NaN;
+	private string _lastPreviewColor = String.Empty;
 	private readonly bool _allowEmptyName;
 	private readonly List<string> _savedColors;
 	private readonly ObservableCollection<IconChooserChoice> _iconChoices;
 	public IReadOnlyList<string> SavedColors => _savedColors;
+	public event Action<string> ColorPreviewChanged;
 	public bool ResetToDefaultRequested { get; private set; }
 	public string CategoryName => CategoryNameTextBox.Text?.Trim();
 	public string CategoryDescription => CategoryDescriptionTextBox.Text?.Trim() ?? String.Empty;
@@ -79,9 +82,12 @@ public partial class CategoryNameDialog : AdonisWindow
 		DialogHeading.Text = heading;
 		DialogHelperText.Text = helperText;
 		ColorFieldLabel.Text = fieldLabel;
-		IconChooserPanel.Visibility = Visibility.Collapsed;
+		CategoryNameTextBox.Visibility = Visibility.Collapsed;
+		IconChooserCard.Visibility = Visibility.Collapsed;
 		DescriptionEditorPanel.Visibility = Visibility.Collapsed;
 		CategoryPreviewPanel.Visibility = Visibility.Collapsed;
+		MinHeight = Math.Min(560, MaxHeight);
+		Height = Math.Min(620, MaxHeight);
 	}
 
 	public CategoryNameDialog(string categoryName = "", string color = "#8A6AF1", bool canEditName = true,
@@ -92,6 +98,8 @@ public partial class CategoryNameDialog : AdonisWindow
 	{
 		InitializeComponent();
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
+		MaxHeight = Math.Max(MinHeight, SystemParameters.WorkArea.Height - 32);
+		Height = Math.Min(860, MaxHeight);
 		_allowEmptyName = visualDividerMode;
 		_savedColors = (savedColors ?? Enumerable.Empty<string>())
 			.Where(IsValidHexColor).Select(value => value.ToUpperInvariant())
@@ -229,7 +237,21 @@ public partial class CategoryNameDialog : AdonisWindow
 		Resources["Redux.CategoryEditor.HoverBrush"] = hoverGradient;
 		Resources["Redux.CategoryEditor.CountHoverBrush"] =
 			new SolidColorBrush(Color.FromArgb(0x24, color.R, color.G, color.B));
-		RgbToHsv(color, out _hue, out _saturation, out _brightness);
+		if (!_preserveHsvOnColorChange)
+		{
+			RgbToHsv(color, out var calculatedHue, out _saturation, out _brightness);
+			// Hue is undefined for grayscale and black. Preserve the last meaningful hue
+			// so moving away from the left/bottom edge does not unexpectedly jump to red.
+			if (_saturation > 0.0001 && _brightness > 0.0001)
+				_hue = calculatedHue;
+		}
+		var pureHue = HsvToRgb(_hue, 1, 1);
+		Resources["Redux.CategoryEditor.HueBrush"] = new SolidColorBrush(pureHue);
+		Resources["Redux.CategoryEditor.SaturationTrackBrush"] = CreateHorizontalGradient(Colors.White, HsvToRgb(_hue, 1, _brightness));
+		Resources["Redux.CategoryEditor.BrightnessTrackBrush"] = CreateHorizontalGradient(Colors.Black, HsvToRgb(_hue, _saturation, 1));
+		Resources["Redux.CategoryEditor.RedTrackBrush"] = CreateHorizontalGradient(Color.FromRgb(0, color.G, color.B), Color.FromRgb(255, color.G, color.B));
+		Resources["Redux.CategoryEditor.GreenTrackBrush"] = CreateHorizontalGradient(Color.FromRgb(color.R, 0, color.B), Color.FromRgb(color.R, 255, color.B));
+		Resources["Redux.CategoryEditor.BlueTrackBrush"] = CreateHorizontalGradient(Color.FromRgb(color.R, color.G, 0), Color.FromRgb(color.R, color.G, 255));
 		_updatingColorControls = true;
 		SaturationSlider.Value = _saturation * 100;
 		BrightnessSlider.Value = _brightness * 100;
@@ -238,27 +260,133 @@ public partial class CategoryNameDialog : AdonisWindow
 		BlueSlider.Value = color.B;
 		_updatingColorControls = false;
 		UpdateModernColorSurface();
+		if (!_lastPreviewColor.Equals(hex, StringComparison.OrdinalIgnoreCase))
+		{
+			_lastPreviewColor = hex;
+			ColorPreviewChanged?.Invoke(hex);
+		}
+	}
+
+	private static LinearGradientBrush CreateHorizontalGradient(Color start, Color end)
+	{
+		var brush = new LinearGradientBrush(start, end, new Point(0, 0.5), new Point(1, 0.5));
+		brush.Freeze();
+		return brush;
 	}
 
 	private void UpdateModernColorSurface()
 	{
 		if (SpectrumSurface == null || ColorWheelImage == null) return;
 		RenderColorWheel();
+		Resources["Redux.CategoryEditor.HueBrush"] = new SolidColorBrush(HsvToRgb(_hue, 1, 1));
 		if (SpectrumSurface.ActualWidth > 0 && SpectrumSurface.ActualHeight > 0)
 		{
 			var centerX = SpectrumSurface.ActualWidth / 2;
 			var centerY = SpectrumSurface.ActualHeight / 2;
-			var ringRadius = Math.Min(SpectrumSurface.ActualWidth, SpectrumSurface.ActualHeight) * 0.40;
+			var ringRadius = Math.Min(SpectrumSurface.ActualWidth, SpectrumSurface.ActualHeight) * 0.42;
 			var angle = _hue * Math.PI / 180d;
 			SpectrumMarker.Margin = new Thickness(
 				centerX + Math.Cos(angle) * ringRadius - SpectrumMarker.Width / 2,
 				centerY + Math.Sin(angle) * ringRadius - SpectrumMarker.Height / 2, 0, 0);
 		}
+		if (ColorPlane?.ActualWidth > 0 && ColorPlane.ActualHeight > 0)
+		{
+			var markerPoint = ColorValuesToDiscPoint(_saturation, _brightness);
+			ColorPlaneMarker.Margin = new Thickness(
+				markerPoint.X - ColorPlaneMarker.Width / 2,
+				markerPoint.Y - ColorPlaneMarker.Height / 2,
+				0, 0);
+		}
+	}
+
+	private Point ColorValuesToDiscPoint(double saturation, double brightness)
+	{
+		var centerX = ColorPlane.ActualWidth / 2;
+		var centerY = ColorPlane.ActualHeight / 2;
+		var radius = Math.Max(0, Math.Min(centerX, centerY) - ColorPlaneMarker.Width / 2);
+		var squareX = saturation * 2 - 1;
+		var squareY = (1 - brightness) * 2 - 1;
+		if (Math.Abs(squareX) <= Double.Epsilon && Math.Abs(squareY) <= Double.Epsilon)
+			return new Point(centerX, centerY);
+
+		double discRadius;
+		double angle;
+		if (Math.Abs(squareX) > Math.Abs(squareY))
+		{
+			discRadius = squareX;
+			angle = Math.PI / 4 * (squareY / squareX);
+		}
+		else
+		{
+			discRadius = squareY;
+			angle = Math.PI / 2 - Math.PI / 4 * (squareX / squareY);
+		}
+
+		return new Point(
+			centerX + radius * discRadius * Math.Cos(angle),
+			centerY + radius * discRadius * Math.Sin(angle));
+	}
+
+	private void DiscPointToColorValues(Point point, out double saturation, out double brightness)
+	{
+		var centerX = ColorPlane.ActualWidth / 2;
+		var centerY = ColorPlane.ActualHeight / 2;
+		// Input uses the complete visible disc. The marker itself is inset separately
+		// when rendered, so the outer pixels do not become a hidden all-black clamp zone.
+		var radius = Math.Max(1, Math.Min(centerX, centerY));
+		var discX = (point.X - centerX) / radius;
+		var discY = (point.Y - centerY) / radius;
+		var discRadius = Math.Sqrt(discX * discX + discY * discY);
+		if (discRadius > 1)
+		{
+			discX /= discRadius;
+			discY /= discRadius;
+			discRadius = 1;
+		}
+
+		if (discRadius <= Double.Epsilon)
+		{
+			saturation = 0.5;
+			brightness = 0.5;
+			return;
+		}
+
+		var angle = Math.Atan2(discY, discX);
+		double squareX;
+		double squareY;
+		if (angle < -3 * Math.PI / 4)
+		{
+			squareX = -discRadius;
+			squareY = -discRadius * (angle + Math.PI) / (Math.PI / 4);
+		}
+		else if (angle < -Math.PI / 4)
+		{
+			squareY = -discRadius;
+			squareX = discRadius * (angle + Math.PI / 2) / (Math.PI / 4);
+		}
+		else if (angle < Math.PI / 4)
+		{
+			squareX = discRadius;
+			squareY = discRadius * angle / (Math.PI / 4);
+		}
+		else if (angle < 3 * Math.PI / 4)
+		{
+			squareY = discRadius;
+			squareX = -discRadius * (angle - Math.PI / 2) / (Math.PI / 4);
+		}
+		else
+		{
+			squareX = -discRadius;
+			squareY = -discRadius * (angle - Math.PI) / (Math.PI / 4);
+		}
+
+		saturation = Math.Clamp((squareX + 1) / 2, 0, 1);
+		brightness = 1 - Math.Clamp((squareY + 1) / 2, 0, 1);
 	}
 
 	private void RenderColorWheel()
 	{
-		if (ColorWheelImage == null || Math.Abs(_renderedWheelBrightness - _brightness) < 0.001) return;
+		if (ColorWheelImage == null || ColorWheelImage.Source != null) return;
 		// Render at 2x and let WPF downsample it for a smoother ring on scaled displays.
 		const int size = 396;
 		var pixels = new byte[size * size * 4];
@@ -287,10 +415,9 @@ public partial class CategoryNameDialog : AdonisWindow
 		bitmap.WritePixels(new Int32Rect(0, 0, size, size), pixels, size * 4, 0);
 		bitmap.Freeze();
 		ColorWheelImage.Source = bitmap;
-		_renderedWheelBrightness = _brightness;
 	}
 
-	private void SetSpectrumFromPoint(Point point)
+	private bool SetSpectrumFromPoint(Point point, bool requireRingHit)
 	{
 		var centerX = SpectrumSurface.ActualWidth / 2;
 		var centerY = SpectrumSurface.ActualHeight / 2;
@@ -300,17 +427,82 @@ public partial class CategoryNameDialog : AdonisWindow
 		var distance = Math.Sqrt(dx * dx + dy * dy);
 
 		// The center is a read-only preview. Only the visible hue ring changes hue.
-		if (distance < radius * 0.60 || distance > radius)
-			return;
+		if (requireRingHit && (distance < radius * 0.69 || distance > radius))
+			return false;
+		if (distance <= Double.Epsilon)
+			return false;
 
 		_hue = Math.Atan2(dy, dx) * 180d / Math.PI;
 		if (_hue < 0) _hue += 360;
-		CategoryColorPicker.SelectedColor = HsvToRgb(_hue, _saturation, _brightness);
+		SetSelectedHsvColor();
+		return true;
 	}
 
-	private void Spectrum_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) { _draggingSpectrum = true; SpectrumSurface.CaptureMouse(); SetSpectrumFromPoint(e.GetPosition(SpectrumSurface)); }
-	private void Spectrum_MouseMove(object sender, MouseEventArgs e) { if (_draggingSpectrum && e.LeftButton == MouseButtonState.Pressed) SetSpectrumFromPoint(e.GetPosition(SpectrumSurface)); }
-	private void ColorSurface_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) { _draggingSpectrum = false; Mouse.Capture(null); }
+	private void Spectrum_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		if (ColorPlane.IsMouseOver) return;
+		if (!SetSpectrumFromPoint(e.GetPosition(SpectrumSurface), requireRingHit: true)) return;
+		_draggingHue = true;
+		SpectrumSurface.CaptureMouse();
+		e.Handled = true;
+	}
+
+	private void Spectrum_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (_draggingHue && e.LeftButton == MouseButtonState.Pressed)
+			SetSpectrumFromPoint(e.GetPosition(SpectrumSurface), requireRingHit: false);
+	}
+
+	private void ColorSurface_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+	{
+		_draggingHue = false;
+		_draggingColorPlane = false;
+		Mouse.Capture(null);
+	}
+
+	private void SetColorPlaneFromPoint(Point point)
+	{
+		if (ColorPlane.ActualWidth <= 0 || ColorPlane.ActualHeight <= 0) return;
+		DiscPointToColorValues(point, out _saturation, out _brightness);
+		SetSelectedHsvColor();
+	}
+
+	private void SetSelectedHsvColor()
+	{
+		var selectedColor = HsvToRgb(_hue, _saturation, _brightness);
+		if (CategoryColorPicker.SelectedColor == selectedColor)
+		{
+			// Several nearby HSV positions can quantize to the same 8-bit RGB color,
+			// especially near black. Keep the pointers moving continuously even when
+			// the externally visible color has not changed by a full RGB step.
+			UpdateModernColorSurface();
+			return;
+		}
+
+		_preserveHsvOnColorChange = true;
+		try
+		{
+			CategoryColorPicker.SelectedColor = selectedColor;
+		}
+		finally
+		{
+			_preserveHsvOnColorChange = false;
+		}
+	}
+
+	private void ColorPlane_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		_draggingColorPlane = true;
+		ColorPlane.CaptureMouse();
+		SetColorPlaneFromPoint(e.GetPosition(ColorPlane));
+		e.Handled = true;
+	}
+
+	private void ColorPlane_MouseMove(object sender, MouseEventArgs e)
+	{
+		if (_draggingColorPlane && e.LeftButton == MouseButtonState.Pressed)
+			SetColorPlaneFromPoint(e.GetPosition(ColorPlane));
+	}
 
 	private static Color HsvToRgb(double hue, double saturation, double value)
 	{
@@ -340,15 +532,14 @@ public partial class CategoryNameDialog : AdonisWindow
 	{
 		if (_updatingColorControls || SaturationSlider == null) return;
 		_saturation = SaturationSlider.Value / 100d;
-		CategoryColorPicker.SelectedColor = HsvToRgb(_hue, _saturation, _brightness);
+		SetSelectedHsvColor();
 	}
 
 	private void BrightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 	{
 		if (_updatingColorControls || BrightnessSlider == null) return;
 		_brightness = BrightnessSlider.Value / 100d;
-		_renderedWheelBrightness = Double.NaN;
-		CategoryColorPicker.SelectedColor = HsvToRgb(_hue, _saturation, _brightness);
+		SetSelectedHsvColor();
 	}
 
 	private void RgbSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

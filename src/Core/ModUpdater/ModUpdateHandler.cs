@@ -192,7 +192,43 @@ public class ModUpdateHandler : ReactiveObject
 
 	public bool DeleteCache()
 	{
-		return Nexus.DeleteCache() || Modio.DeleteCache() || Workshop.DeleteCache() || Github.DeleteCache();
+		var deletedSources = DeleteSourceCache();
+		var deletedWorkshop = Workshop.DeleteCache();
+		var deletedGithub = Github.DeleteCache();
+
+		Workshop.CacheData = new();
+		Github.CacheData = new();
+
+		return deletedSources || deletedWorkshop || deletedGithub;
+	}
+
+	public bool DeleteSourceCache()
+	{
+		var deletedNexus = Nexus.DeleteCache();
+		var deletedModio = Modio.DeleteCache();
+
+		Nexus.CacheData = new();
+		Modio.CacheData = new();
+
+		return deletedNexus || deletedModio;
+	}
+
+	public int RemoveSourceAssociations(IEnumerable<string> modUuids)
+	{
+		var removed = 0;
+		foreach (var uuid in modUuids
+			.Where(uuid => !String.IsNullOrWhiteSpace(uuid))
+			.Distinct(StringComparer.OrdinalIgnoreCase))
+		{
+			var removedNexus = Nexus.CacheData.Mods.Remove(uuid);
+			var removedModio = Modio.CacheData.Mods.Remove(uuid);
+			if (removedNexus || removedModio)
+			{
+				removed++;
+			}
+		}
+
+		return removed;
 	}
 
 	public ModUpdateHandler()

@@ -53,6 +53,7 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
 	public bool HasPrivateNote { get; set; }
 	[Reactive] public int SourceComponentCount { get; set; } = 1;
+	[Reactive] public int SourceComponentIndex { get; set; } = 1;
 	[Reactive] public string SourceComponentSummary { get; set; }
 	[Reactive] public string SourceComponentTooltip { get; set; }
 	[Reactive] public Visibility SourceComponentVisibility { get; set; } = Visibility.Collapsed;

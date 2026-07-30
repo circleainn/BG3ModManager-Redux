@@ -1,4 +1,5 @@
 using System;
+using System.Windows;
 
 using DivinityModManager;
 using DivinityModManager.AppServices;
@@ -17,6 +18,69 @@ namespace Redux.Core.Tests;
 
 public sealed class SourceAssociationTests
 {
+	public void CurrentNexusArchiveNamesResolveTheirProject()
+	{
+		var camera = NexusModFileVersionData.FromFilePath(
+			"True Third-Person Camera - V1.1 23959 1.1 2026-07-21T07-13Z 5eYi6PhcB.zip");
+		var shirts = NexusModFileVersionData.FromFilePath(
+			"Shirts, Lots Of Shirts - StandardBTs 23751 1.0.0.27 2026-07-06T22-22Z D2O3Y0aeq.zip");
+
+		RegressionAssert.Equal(true, camera.Success);
+		RegressionAssert.Equal(23959L, camera.ModId);
+		RegressionAssert.Equal(-1L, camera.FileId);
+		RegressionAssert.Equal(true, shirts.Success);
+		RegressionAssert.Equal(23751L, shirts.ModId);
+		RegressionAssert.Equal(-1L, shirts.FileId);
+	}
+
+	public void TransitionalNexusArchiveNamesResolveTheirProject()
+	{
+		var result = NexusModFileVersionData.FromFilePath(
+			"KiiiNo CS Preset For Azurite III CS 184183 1 Z3mWyIk3g.rar");
+
+		RegressionAssert.Equal(true, result.Success);
+		RegressionAssert.Equal(184183L, result.ModId);
+		RegressionAssert.Equal(-1L, result.FileId);
+	}
+
+	public void LegacyNexusArchiveNamesResolveTheirProjectWithoutInventingAFileId()
+	{
+		var result = NexusModFileVersionData.FromFilePath(
+			"CET 1.37.1 - Scripting fixes-107-1-37-1-1759193708.zip");
+
+		RegressionAssert.Equal(true, result.Success);
+		RegressionAssert.Equal(107L, result.ModId);
+		RegressionAssert.Equal(-1L, result.FileId);
+	}
+
+	public void UnrelatedNumberedArchiveNamesRemainUnmatched()
+	{
+		var result = NexusModFileVersionData.FromFilePath("Personal Backup 23959 version 1.zip");
+
+		RegressionAssert.Equal(false, result.Success);
+		RegressionAssert.Equal(-1L, result.ModId);
+	}
+
+	public void MatchingNexusCreatorAndUploaderUseOneLinkedCreatorLabel()
+	{
+		var mod = CreateMod();
+		mod.NexusModsEnabled = true;
+		mod.NexusModsData.Update(new NexusModsModData
+		{
+			UUID = mod.UUID,
+			ModId = 23751,
+			Name = "Shirts - Lots Of Shirts",
+			Author = "BerrySemifreddo",
+			UploadedBy = "BerrySemifreddo",
+			IsUpdated = true,
+			MetadataOrigin = NexusMetadataOrigin.LiveApi
+		});
+
+		RegressionAssert.Equal("Created by BerrySemifreddo", mod.Metadata.AuthorActionLabel);
+		RegressionAssert.Equal(Visibility.Collapsed, mod.Metadata.LocalAuthorVisibility);
+		RegressionAssert.Equal(Visibility.Visible, mod.Metadata.AuthorPageVisibility);
+	}
+
 	public void ManualNexusAssociationWinsOverCachedModioMetadata()
 	{
 		var mod = CreateMod();
@@ -44,6 +108,62 @@ public sealed class SourceAssociationTests
 
 		RegressionAssert.Equal(ModSourceType.MODIO, mod.Metadata.SourceType);
 		RegressionAssert.Equal("Native mod.io project", mod.Metadata.Title);
+	}
+
+	public void NexusArchiveImportWinsOverNativeModioMetadata()
+	{
+		var mod = CreateMod();
+		mod.NexusModsEnabled = true;
+		mod.NexusModsData.Update(new NexusModsModData
+		{
+			UUID = mod.UUID,
+			ModId = 23751,
+			Name = "Shirts - Lots Of Shirts",
+			IsUpdated = true,
+			MetadataOrigin = NexusMetadataOrigin.NexusArchiveImport
+		});
+		mod.ModioData.Update(new ModioModData
+		{
+			UUID = mod.UUID,
+			ModId = 6197684,
+			Name = "Shirts, Lots Of Shirts",
+			MetadataOrigin = ModioMetadataOrigin.NativePackage
+		});
+
+		RegressionAssert.Equal(ModSourceType.NEXUSMODS, mod.Metadata.SourceType);
+		RegressionAssert.Equal("Shirts - Lots Of Shirts", mod.Metadata.Title);
+		RegressionAssert.True(mod.ModioData.HasMetadata);
+	}
+
+	public void DeletingAnInstalledModRetiresItsRememberedSourceAssociations()
+	{
+		var handler = new ModUpdateHandler();
+		var removedUuid = "52809d6a-2f2f-79d9-843e-4aad7396eac0";
+		var retainedUuid = "54ebec6c-00ce-48e1-8b75-53b6b72ecc3a";
+		handler.Nexus.CacheData.Mods[removedUuid] = new NexusModsModData
+		{
+			UUID = removedUuid,
+			ModId = 23751,
+			MetadataOrigin = NexusMetadataOrigin.NexusArchiveImport
+		};
+		handler.Modio.CacheData.Mods[removedUuid] = new ModioModData
+		{
+			UUID = removedUuid,
+			ModId = 6197684,
+			MetadataOrigin = ModioMetadataOrigin.NativePackage
+		};
+		handler.Nexus.CacheData.Mods[retainedUuid] = new NexusModsModData
+		{
+			UUID = retainedUuid,
+			ModId = 1420
+		};
+
+		var removed = handler.RemoveSourceAssociations([removedUuid]);
+
+		RegressionAssert.Equal(1, removed);
+		RegressionAssert.False(handler.Nexus.CacheData.Mods.ContainsKey(removedUuid));
+		RegressionAssert.False(handler.Modio.CacheData.Mods.ContainsKey(removedUuid));
+		RegressionAssert.True(handler.Nexus.CacheData.Mods.ContainsKey(retainedUuid));
 	}
 
 	public void LocalOnlyPresentationHidesProvidersWithoutDeletingCachedMetadata()

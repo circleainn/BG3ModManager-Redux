@@ -387,6 +387,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			Owner = mainWindow
 		};
 		dialog.PreviewChanged += preview => MainWindow.Self.MainView.PreviewCustomTheme(preview);
+		dialog.ColorPreviewChanged += preview => MainWindow.Self.MainView.PreviewCustomThemeColors(preview);
 
 		// Editing a theme from a modal Preferences window buried the live Redux
 		// preview beneath two dimmed surfaces. Temporarily remove Preferences
@@ -890,6 +891,8 @@ public partial class SettingsWindow : SettingsWindowBase
 		this.BindCommand(ViewModel, vm => vm.ResetSettingsCommand, view => view.ResetSettingsButton);
 		this.BindCommand(ViewModel, vm => vm.ClearLaunchParamsCommand, view => view.ClearLaunchParamsMenuItem);
 		this.BindCommand(ViewModel, vm => vm.ClearCacheCommand, view => view.ClearCacheButton);
+		this.BindCommand(ViewModel, vm => vm.ResetSourceCacheCommand, view => view.ResetSourceCacheButton);
+		this.BindCommand(ViewModel, vm => vm.ClearSourceHistoryCommand, view => view.ClearSourceHistoryButton);
 
 		this.Events().IsVisibleChanged.InvokeCommand(ViewModel.OnWindowShownCommand);
 

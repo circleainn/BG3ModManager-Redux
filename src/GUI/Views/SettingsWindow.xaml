@@ -638,8 +638,8 @@
 									<CheckBox ToolTip="Match sidebar category names to their assigned colors"
 										IsChecked="{Binding Settings.UseCategoryColorsForSidebarText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 										<StackPanel Margin="6,0,0,0">
-											<TextBlock FontWeight="SemiBold" Text="Colored category labels" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use category colors for labels throughout lists, cards, and details." TextWrapping="Wrap" />
+											<TextBlock FontWeight="SemiBold" Text="Colored text" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use contextual category and source colors for text throughout lists, cards, and details." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
 									<CheckBox Margin="0,8,10,0" ToolTip="Use compact icon-only category, source, and status labels"
@@ -1091,9 +1091,16 @@
 					    Text="Advanced"
 					    ToolTip="Advanced Mod Manager Settings (Data/settings.json)" />
 				</TabItem.Header>
+				<TabItem.Resources>
+					<Style TargetType="{x:Type StackPanel}">
+						<Setter Property="Margin" Value="0" />
+						<Setter Property="Orientation" Value="Vertical" />
+					</Style>
+				</TabItem.Resources>
 				<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-					<Grid Margin="18,14">
+					<Grid Margin="20,16">
 						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
 							<RowDefinition Height="Auto" />
 							<RowDefinition Height="Auto" />
 							<RowDefinition Height="Auto" />
@@ -1103,32 +1110,68 @@
 							Style="{StaticResource SettingsPageDescriptionStyle}"
 							Text="Diagnostics, launch arguments, and maintenance options. Change these only when needed." />
 						<Border Grid.Row="2" Style="{StaticResource SettingsSectionCardStyle}">
-							<Grid>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto" />
-									<RowDefinition Height="1" />
-									<RowDefinition Height="Auto" />
-								</Grid.RowDefinitions>
-								<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Diagnostics and launch behavior" />
-								<Border Grid.Row="1" Margin="0,10,0,0" Background="{DynamicResource ReduxBorderBrush}" />
-								<controls:AutoGrid x:Name="AdvancedSettingsAutoGrid"
-									Grid.Row="2"
-				    Margin="10,0"
-				    ChildMargin="8,4"
-				    ColumnCount="2"
-				    Columns="auto,*"
-				    RowCount="4"
-				    RowHeight="*"
-				    Rows="auto,auto,auto,auto">
-					<TextBlock x:Name="DebugModeTextBlock" behavior:TextBlockSettingsEntryAttributeBehavior.Property="DebugModeEnabled" behavior:TextBlockSettingsEntryAttributeBehavior.TargetType="{x:Type data:DivinityModManagerSettings}" />
-					<CheckBox x:Name="DebugModeCheckBox" VerticalAlignment="Center" ToolTip="{Binding ElementName=DebugModeTextBlock, Path=ToolTip}" />
-					<TextBlock Text="Enable Mod Manager Logs" ToolTip="Automatically save logs to _Logs" />
-					<CheckBox x:Name="LogEnabledCheckBox" VerticalAlignment="Center" />
-					<Button x:Name="GameLaunchParamsMainButton"
-					    VerticalAlignment="Center"
-					    Content="Launch Params"
-					    Style="{StaticResource SettingsActionButtonStyle}"
-					    ToolTip="Parameters to pass to the game executable when launching the game through the mod manager">
+							<StackPanel x:Name="AdvancedSettingsAutoGrid">
+								<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Diagnostics" />
+								<TextBlock Margin="0,3,0,10"
+									Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Logging and developer information used when investigating unexpected behavior."
+									TextWrapping="Wrap" />
+								<Grid Margin="0,4">
+									<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+									<StackPanel>
+										<TextBlock x:Name="DebugModeTextBlock"
+											FontWeight="SemiBold"
+											behavior:TextBlockSettingsEntryAttributeBehavior.Property="DebugModeEnabled"
+											behavior:TextBlockSettingsEntryAttributeBehavior.TargetType="{x:Type data:DivinityModManagerSettings}" />
+										<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}"
+											Text="Show additional diagnostics and experimental advisor details."
+											TextWrapping="Wrap" />
+									</StackPanel>
+									<CheckBox x:Name="DebugModeCheckBox" Grid.Column="1"
+										Margin="16,0,0,0"
+										VerticalAlignment="Center"
+										Style="{StaticResource ReduxCheckBoxStyle}"
+										ToolTip="{Binding ElementName=DebugModeTextBlock, Path=ToolTip}" />
+								</Grid>
+								<Grid Margin="0,8,0,4">
+									<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+									<StackPanel>
+										<TextBlock FontWeight="SemiBold" Text="Mod Manager logs" />
+										<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}"
+											Text="Automatically save diagnostic output in the _Logs folder."
+											TextWrapping="Wrap" />
+									</StackPanel>
+									<CheckBox x:Name="LogEnabledCheckBox" Grid.Column="1"
+										Margin="16,0,0,0"
+										VerticalAlignment="Center"
+										Style="{StaticResource ReduxCheckBoxStyle}" />
+								</Grid>
+							</StackPanel>
+						</Border>
+						<Border Grid.Row="3" Style="{StaticResource SettingsSectionCardStyle}">
+							<StackPanel>
+								<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Launch behavior" />
+								<TextBlock Margin="0,3,0,10"
+									Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Optional command-line arguments passed to Baldur's Gate 3 when launched through Redux."
+									TextWrapping="Wrap" />
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto" />
+										<ColumnDefinition Width="*" />
+										<ColumnDefinition Width="Auto" />
+									</Grid.ColumnDefinitions>
+									<Button x:Name="GameLaunchParamsMainButton"
+										Margin="0,0,8,0"
+										VerticalAlignment="Center"
+										Style="{StaticResource SettingsActionButtonStyle}"
+										ToolTip="Choose a common launch parameter">
+										<StackPanel Orientation="Horizontal">
+											<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
+												Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+												StrokeData="{StaticResource Redux.Icon.Terminal}" />
+											<TextBlock Text="Add parameter" />
+										</StackPanel>
 						<Button.ContextMenu>
 							<ContextMenu x:Name="GameLaunchParamsMainMenu">
 								<ContextMenu.ItemTemplate>
@@ -1148,35 +1191,90 @@
 								</ContextMenu.ItemContainerStyle>
 							</ContextMenu>
 						</Button.ContextMenu>
-					</Button>
-					<Grid>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="Auto" />
-						</Grid.ColumnDefinitions>
-						<TextBox x:Name="GameLaunchParamsTextBox"
-						    VerticalAlignment="Center"
-						    adonisExtensions:CornerRadiusExtension.CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
-						    Background="{DynamicResource ReduxSurfaceMutedBrush}"
-						    BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
-						    TextWrapping="Wrap"
-						    ToolTip="Parameters to pass to the game executable when launching the game through the mod manager" />
-						<Button x:Name="ClearLaunchParamsMenuItem"
-						    Grid.Column="1"
-						    Style="{StaticResource IconButtonStyle}"
-						    ToolTip="Clear current params">
-							<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Close}" />
-						</Button>
-					</Grid>
-					<TextBlock Text="Experimental" />
-					<Button x:Name="ClearCacheButton"
-					    HorizontalAlignment="Center"
-					    VerticalAlignment="Center"
-					    Content="Delete Cache"
-					    Style="{StaticResource SettingsWarningButtonStyle}"
-					    ToolTip="Delete the local mod cache, located in the mod manager's Data folder" />
-								</controls:AutoGrid>
-							</Grid>
+									</Button>
+									<TextBox x:Name="GameLaunchParamsTextBox"
+										Grid.Column="1"
+										MinHeight="30"
+										VerticalAlignment="Center"
+										adonisExtensions:CornerRadiusExtension.CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+										Background="{DynamicResource ReduxSurfaceMutedBrush}"
+										BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
+										TextWrapping="Wrap"
+										ToolTip="Parameters to pass to the game executable when launching the game through the mod manager" />
+									<Button x:Name="ClearLaunchParamsMenuItem"
+										Grid.Column="2"
+										Margin="6,0,0,0"
+										Style="{StaticResource IconButtonStyle}"
+										ToolTip="Clear current parameters">
+										<controls:ReduxIcon
+											Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+											StrokeData="{StaticResource Redux.Icon.Close}" />
+									</Button>
+								</Grid>
+								<Border Height="1" Margin="0,16,0,12" Background="{DynamicResource ReduxBorderBrush}" />
+								<TextBlock Style="{StaticResource SettingsSectionTitleStyle}" Text="Maintenance" />
+								<TextBlock Margin="0,3,0,10"
+									Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Repair cached state without changing installed packages or load orders."
+									TextWrapping="Wrap" />
+								<Grid Margin="0,4">
+									<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+									<StackPanel>
+										<TextBlock FontWeight="SemiBold" Text="Local caches" />
+										<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Remove generated local cache files; Redux rebuilds them when needed." TextWrapping="Wrap" />
+									</StackPanel>
+									<Button x:Name="ClearCacheButton" Grid.Column="1"
+										Margin="16,0,0,0"
+										VerticalAlignment="Center"
+										Style="{StaticResource SettingsWarningButtonStyle}"
+										ToolTip="Delete the local mod cache, located in the mod manager's Data folder">
+										<StackPanel Orientation="Horizontal">
+											<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
+												Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+												StrokeData="{StaticResource Redux.Icon.Trash}" />
+											<TextBlock Text="Delete Cache" />
+										</StackPanel>
+									</Button>
+								</Grid>
+								<Grid Margin="0,8,0,4">
+									<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+									<StackPanel>
+										<TextBlock FontWeight="SemiBold" Text="Source links and metadata" />
+										<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Discard manual choices and rebuild reviewed automatic source associations." TextWrapping="Wrap" />
+									</StackPanel>
+									<Button x:Name="ResetSourceCacheButton" Grid.Column="1"
+										Margin="16,0,0,0"
+										VerticalAlignment="Center"
+										Style="{StaticResource SettingsWarningButtonStyle}"
+										ToolTip="Clear manual source choices and restore Redux's native, manifest, and reviewed metadata-database associations">
+										<StackPanel Orientation="Horizontal">
+											<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
+												Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+												StrokeData="{StaticResource Redux.Icon.RefreshStroke}" />
+											<TextBlock Text="Restore Automatic Links" />
+										</StackPanel>
+									</Button>
+								</Grid>
+								<Grid Margin="0,8,0,0">
+									<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+									<StackPanel>
+										<TextBlock FontWeight="SemiBold" Text="Source-link history" />
+										<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Forget all remembered Nexus Mods and mod.io associations for clean retesting." TextWrapping="Wrap" />
+									</StackPanel>
+									<Button x:Name="ClearSourceHistoryButton" Grid.Column="1"
+										Margin="16,0,0,0"
+										VerticalAlignment="Center"
+										Style="{StaticResource SettingsWarningButtonStyle}"
+										ToolTip="Forget all cached Nexus Mods and mod.io associations without deleting installed mods, load orders, API keys, or preferences">
+										<StackPanel Orientation="Horizontal">
+											<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
+												Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+												StrokeData="{StaticResource Redux.Icon.UnlinkStroke}" />
+											<TextBlock Text="Clear Source History" />
+										</StackPanel>
+									</Button>
+								</Grid>
+							</StackPanel>
 						</Border>
 					</Grid>
 				</ScrollViewer>

@@ -8,6 +8,7 @@ using DivinityModManager.Models;
 using DivinityModManager.Models.App;
 using DivinityModManager.Models.Extender;
 using DivinityModManager.Models.Health;
+using DivinityModManager.Models.Modio;
 using DivinityModManager.Models.NexusMods;
 using DivinityModManager.ModUpdater;
 using DivinityModManager.ModUpdater.Cache;
@@ -433,6 +434,59 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public RxCommandUnit RefreshModUpdatesCommand { get; private set; }
 	public ICommand UpdateNexusModsLimitsCommand { get; private set; }
 	public EventHandler OnRefreshed { get; set; }
+
+	public async Task<bool> RestoreAutomaticSourceLinksAsync()
+	{
+		var changed = false;
+		foreach (var mod in UserMods.Where(mod =>
+			mod.NexusModsData?.MetadataOrigin is NexusMetadataOrigin.Manual or NexusMetadataOrigin.ManualUnlinked))
+		{
+			mod.NexusModsData.ResetSourceAssociation();
+			UpdateHandler.Nexus.CacheData.Mods.Remove(mod.UUID);
+			changed = true;
+		}
+
+		if (changed)
+		{
+			await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), CancellationToken.None);
+		}
+
+		if (Modules.SourceIntegrationsEnabled)
+		{
+			UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled;
+			UpdateHandler.Modio.IsEnabled = true;
+			RxApp.MainThreadScheduler.Schedule(() =>
+				LoadModioMetadataBackground(LoadNexusModsMetadataBackground));
+		}
+
+		return changed;
+	}
+
+	public int ClearSourceHistory()
+	{
+		CancelSourceMetadataRefreshes();
+
+		var clearedAssociations = 0;
+		foreach (var mod in mods.Items)
+		{
+			if (mod.NexusModsData?.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START
+				|| mod.ModioData?.HasMetadata == true)
+			{
+				clearedAssociations++;
+			}
+
+			mod.NexusModsData?.ResetSourceAssociation();
+			mod.ModioData = new ModioModData
+			{
+				UUID = mod.UUID
+			};
+		}
+
+		UpdateHandler.DeleteSourceCache();
+		ScheduleRefreshModCategories();
+		ScheduleModHealthRefresh();
+		return clearedAssociations;
+	}
 
 	private AppServices.IFileWatcherWrapper _modSettingsWatcher;
 
@@ -3907,8 +3961,8 @@ Directory the zip will be extracted to:
 				var finalMessage = string.Join(Environment.NewLine, messages);
 				ReduxMessageBox.ShowWithActions(Window, finalMessage, "Missing Mods in Load Order",
 					MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK,
-					("Copy to Clipboard", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(finalMessage)),
-					("Remove All Missing", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.ClearMissingModsCommand).Execute(null)));
+					("Copy to Clipboard", "Redux.Icon.Copy", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(finalMessage)),
+					("Remove All Missing", "Redux.Icon.Trash", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.ClearMissingModsCommand).Execute(null)));
 			}
 			else
 			{
@@ -3962,7 +4016,7 @@ Directory the zip will be extracted to:
 
 				ReduxMessageBox.ShowWithActions(Window, finalMessage,
 					"Mods Require the Script Extender - Install it with the Tools menu!", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
-					("Copy to Clipboard", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(finalMessage)));
+					("Copy to Clipboard", "Redux.Icon.Copy", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(finalMessage)));
 			}
 		}
 	}
@@ -4268,7 +4322,7 @@ Directory the zip will be extracted to:
 					ShowAlert(msg, AlertType.Danger);
 					ReduxMessageBox.ShowWithActions(Window, msg, "Mod Order Export Failed",
 						MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK,
-						("Copy to Clipboard", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(msg)));
+						("Copy to Clipboard", "Redux.Icon.Copy", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(msg)));
 					return Unit.Default;
 				}, RxApp.MainThreadScheduler);
 			}
@@ -4525,9 +4579,10 @@ Directory the zip will be extracted to:
 
 		if (fileNameInfo.Success)
 		{
-			// A Nexus-aware imported filename is an explicit source association and
-			// therefore takes precedence over an offline archive fingerprint.
+			// The archive name is direct Nexus provenance. Preserve that source choice
+			// even when the PAK also carries a native mod.io PublishHandle.
 			mod.NexusModsData.SetModVersion(fileNameInfo);
+			mod.NexusModsData.MetadataOrigin = NexusMetadataOrigin.NexusArchiveImport;
 			UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
 			return true;
 		}
@@ -7094,6 +7149,7 @@ Directory the zip will be extracted to:
 		foreach (var mod in mods)
 		{
 			mod.SourceComponentCount = 1;
+			mod.SourceComponentIndex = 1;
 			mod.SourceComponentSummary = null;
 			mod.SourceComponentTooltip = null;
 			mod.SourceComponentVisibility = Visibility.Collapsed;
@@ -7119,17 +7175,19 @@ Directory the zip will be extracted to:
 		foreach (var group in sourceGroups)
 		{
 			var linkedPackages = group.Select(item => item.Mod).ToList();
-			foreach (var mod in linkedPackages)
+			for (var index = 0; index < linkedPackages.Count; index++)
 			{
+				var mod = linkedPackages[index];
 				var sourceLabel = mod.Metadata.SourceLabel;
 				var fileIdentity = mod.Metadata.SourceType == ModSourceType.NEXUSMODS && mod.NexusModsData.LastFileId > 0
 					? $" This package is linked to Nexus file ID {mod.NexusModsData.LastFileId}."
 					: " The exact downloadable file is not known for this package.";
 
 				mod.SourceComponentCount = linkedPackages.Count;
+				mod.SourceComponentIndex = index + 1;
 				mod.SourceComponentSummary = $"{linkedPackages.Count} linked packages";
 				mod.SourceComponentTooltip =
-					$"{linkedPackages.Count} independently installed packages point to this {sourceLabel} page.{fileIdentity} " +
+					$"Package {index + 1} of {linkedPackages.Count}. These independently installed packages point to this {sourceLabel} page.{fileIdentity} " +
 					"Each package remains a separate mod and load-order entry.";
 				mod.SourceComponentVisibility = Visibility.Visible;
 			}
@@ -7203,6 +7261,8 @@ Directory the zip will be extracted to:
 	{
 		RxApp.MainThreadScheduler.Schedule(() =>
 		{
+			CancelSourceMetadataRefreshes();
+			var removedSourceAssociations = UpdateHandler.RemoveSourceAssociations(deletedMods);
 			mods.RemoveKeys(deletedMods);
 
 			if (removeFromLoadOrder)
@@ -7216,7 +7276,25 @@ Directory the zip will be extracted to:
 			ActiveMods.RemoveMany(ActiveMods.Where(x => deletedMods.Contains(x.UUID)));
 			// ForceLoadedMods is an intentionally read-only projection of the private mod cache.
 			// Removing the cache keys above updates that projection without violating its safety boundary.
+
+			if (removedSourceAssociations > 0)
+			{
+				_ = PersistSourceCachesAfterDeletionAsync();
+			}
 		});
+	}
+
+	private async Task PersistSourceCachesAfterDeletionAsync()
+	{
+		try
+		{
+			await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), CancellationToken.None);
+			await UpdateHandler.Modio.SaveCacheAsync(false, Version.ToString(), CancellationToken.None);
+		}
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Could not persist source-cache cleanup after deleting a mod:\n{ex}");
+		}
 	}
 
 	private void ExtractSelectedMods_ChooseFolder()
