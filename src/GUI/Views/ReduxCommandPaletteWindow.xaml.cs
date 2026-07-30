@@ -17,6 +17,7 @@ public sealed class ReduxCommandPaletteItem
 	public string Description { get; }
 	public string Gesture { get; }
 	public string IconKey { get; }
+	public int MinimumQueryLength { get; }
 	public bool HasGesture => !String.IsNullOrWhiteSpace(Gesture);
 	public bool CanExecute => _canExecute();
 
@@ -30,13 +31,15 @@ public sealed class ReduxCommandPaletteItem
 		string gesture,
 		string iconKey,
 		Action execute,
-		Func<bool> canExecute = null)
+		Func<bool> canExecute = null,
+		int minimumQueryLength = 0)
 	{
 		Name = name?.Trim() ?? String.Empty;
 		Category = category?.Trim() ?? String.Empty;
 		Description = description?.Trim() ?? String.Empty;
 		Gesture = gesture?.Trim() ?? String.Empty;
 		IconKey = iconKey?.Trim() ?? "terminal";
+		MinimumQueryLength = Math.Max(0, minimumQueryLength);
 		_execute = execute ?? (() => { });
 		_canExecute = canExecute ?? (() => true);
 	}
@@ -51,15 +54,20 @@ public sealed class ReduxCommandPaletteItem
 
 	public bool Matches(string query)
 	{
-		if (String.IsNullOrWhiteSpace(query))
+		var normalizedQuery = query?.Trim() ?? String.Empty;
+		if (normalizedQuery.Length < MinimumQueryLength)
+		{
+			return false;
+		}
+		if (normalizedQuery.Length == 0)
 		{
 			return true;
 		}
 
-		return Name.Contains(query, StringComparison.OrdinalIgnoreCase)
-			|| Category.Contains(query, StringComparison.OrdinalIgnoreCase)
-			|| Description.Contains(query, StringComparison.OrdinalIgnoreCase)
-			|| Gesture.Contains(query, StringComparison.OrdinalIgnoreCase);
+		return Name.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase)
+			|| Category.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase)
+			|| Description.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase)
+			|| Gesture.Contains(normalizedQuery, StringComparison.OrdinalIgnoreCase);
 	}
 }
 
@@ -209,7 +217,8 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 						searchableDetails,
 						String.Empty,
 						iconKey,
-						() => focusMod(mod));
+						() => focusMod(mod),
+						minimumQueryLength: 2);
 				}));
 		}
 
