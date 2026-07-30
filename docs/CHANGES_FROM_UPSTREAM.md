@@ -329,9 +329,10 @@ foundation and reworks or extends its presentation through:
 - A read-only Review Export step before `modsettings.lsx` is written, showing activations,
   deactivations, meaningful placement changes, automatically added dependencies, and enabled
   diagnostic results against the profile's currently exported order.
-- Automatic, atomic restore points created immediately before a confirmed game export. Redux keeps
-  a bounded per-profile history outside the normal Orders directory and loads a selected snapshot
-  as a working order rather than silently rewriting `modsettings.lsx`.
+- Atomic restore points created immediately before a confirmed game export or manually from the
+  restore-point browser. Redux keeps a bounded per-profile history outside the normal Orders
+  directory and loads a selected snapshot as a working order rather than silently rewriting
+  `modsettings.lsx`.
 - A read-only load-order comparison window for any two available orders, using insertion-aware
   placement analysis so added or removed mods do not make every later entry appear repositioned.
 - Staged package imports so incomplete copies are not treated as installed mods.

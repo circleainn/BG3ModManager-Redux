@@ -52,8 +52,8 @@ stronger organization, portable Redux data, richer metadata, and safer file hand
   profiles or saved orders, and filter by category without navigating menus.
 - Review activations, deactivations, placement changes, automatically added dependencies, and
   enabled Mod Diagnostics findings before Redux writes the selected order to the game profile.
-- Return to an earlier exported state from File > Restore Points. Redux keeps the 20 newest
-  pre-export snapshots per profile and loads a selected snapshot as a working order without
+- Return to an earlier state from File > Restore Points. Redux keeps the 20 newest pre-export or
+  manually captured snapshots per profile and loads a selected snapshot as a working order without
   changing game files until it is exported.
 - Compare any two available load orders from File > Compare Load Orders to see user-managed mods
   that were added, removed, or meaningfully repositioned without changing either order.

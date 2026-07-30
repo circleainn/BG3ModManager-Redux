@@ -131,7 +131,7 @@
 						Text="Load a previous exported order" />
 					<TextBlock Margin="0,5,0,0"
 						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-						Text="Redux creates a restore point immediately before each confirmed export. Loading one creates a working order; it does not change game files until you export again."
+						Text="Redux creates a restore point before each confirmed export. You can also capture the current working order at any time. Loading one never changes game files until you export again."
 						TextWrapping="Wrap" />
 				</StackPanel>
 
@@ -165,25 +165,34 @@
 							Text="No restore points yet" />
 						<TextBlock Margin="0,3,0,0"
 							Foreground="{DynamicResource ReduxTextMutedBrush}"
-							Text="A snapshot will appear here before the next confirmed export." />
+							Text="Create one now or confirm an export to begin the history." />
 					</StackPanel>
 				</Grid>
 
 				<Grid Grid.Row="2">
 					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="*" />
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
-					<TextBlock VerticalAlignment="Center"
+					<Button x:Name="CreateButton"
+						MinWidth="132"
+						Content="Create Restore Point"
+						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+						Click="CreateButton_Click" />
+					<TextBlock x:Name="StatusText"
+						Grid.Column="1"
+						Margin="12,0,0,0"
+						VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
 						Text="Redux keeps the 20 newest restore points for each profile." />
-					<Button Grid.Column="1" MinWidth="84" Margin="12,0,8,0"
+					<Button Grid.Column="2" MinWidth="84" Margin="12,0,8,0"
 						Content="Close"
 						IsCancel="True"
 						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
 						Click="CloseButton_Click" />
-					<Button x:Name="LoadButton" Grid.Column="2" MinWidth="150"
+					<Button x:Name="LoadButton" Grid.Column="3" MinWidth="150"
 						Content="Load as Working Order"
 						IsDefault="True"
 						IsEnabled="False"

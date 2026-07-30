@@ -3647,10 +3647,13 @@ Directory the zip will be extracted to:
 			return;
 		}
 
-		var restorePoints = LoadOrderRestorePointService.Load(
+		var dialog = new ReduxRestorePointsWindow(
+			Window,
 			GetRestorePointsDirectory(),
-			SelectedProfile.UUID);
-		var dialog = new ReduxRestorePointsWindow(Window, restorePoints);
+			SelectedProfile.UUID,
+			SelectedProfile.Name ?? SelectedProfile.ProfileName,
+			SelectedModOrder?.Name ?? "Current working order",
+			ActiveMods.Select(mod => mod.ToOrderEntry()).ToArray());
 		dialog.ShowDialog();
 		if (!dialog.Accepted || dialog.SelectedRestorePoint == null)
 		{
