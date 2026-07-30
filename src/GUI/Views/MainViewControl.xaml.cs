@@ -1177,6 +1177,68 @@ public partial class MainViewControl : MainViewControlViewBase
 		e.Handled = true;
 	}
 
+	private void ToolbarDiagnosticActivateDependency_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is not Button { CommandParameter: ModDiagnosticFindingGroupViewModel group } button
+			|| group.PrimaryRelatedMod == null
+			|| group.PrimaryRelatedMod.IsActive)
+		{
+			e.Handled = true;
+			return;
+		}
+
+		button.FindVisualParent<ContextMenu>()?.SetCurrentValue(ContextMenu.IsOpenProperty, false);
+		var dependency = group.PrimaryRelatedMod;
+		var requiredBy = String.Join(
+			", ",
+			group.AffectedMods
+				.Select(item => item.Mod.DisplayName)
+				.Distinct(StringComparer.CurrentCultureIgnoreCase));
+		var result = ReduxMessageBox.Show(
+			Window.GetWindow(this),
+			$"Activate {dependency.DisplayName}?\n\nRequired by: {requiredBy}\n\n"
+			+ "Redux will add the installed dependency to the end of the current working order. "
+			+ "Review its placement before exporting. No game files are changed until you export.",
+			"Activate Dependency",
+			MessageBoxButton.YesNo,
+			MessageBoxImage.Question,
+			MessageBoxResult.No);
+		if (result == MessageBoxResult.Yes)
+		{
+			ViewModel.AddActiveMod(dependency);
+			ViewModel.ShowAlert(
+				$"Activated {dependency.DisplayName}. Review its load-order position before exporting.",
+				AlertType.Success,
+				20);
+			ModLayout.FocusModEntry(dependency);
+		}
+
+		e.Handled = true;
+	}
+
+	private void ToolbarDiagnosticRelatedSource_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is Button { CommandParameter: DivinityModData mod } button)
+		{
+			button.FindVisualParent<ContextMenu>()?.SetCurrentValue(ContextMenu.IsOpenProperty, false);
+			DivinityApp.Commands.OpenModSourcePage(mod);
+		}
+
+		e.Handled = true;
+	}
+
+	private void ToolbarDiagnosticCopyDependencyUuid_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is Button { CommandParameter: string uuid } button
+			&& !String.IsNullOrWhiteSpace(uuid))
+		{
+			button.FindVisualParent<ContextMenu>()?.SetCurrentValue(ContextMenu.IsOpenProperty, false);
+			DivinityApp.Commands.CopyToClipboard(uuid);
+		}
+
+		e.Handled = true;
+	}
+
 	private void ToolbarDiagnosticAffectedSource_Click(object sender, RoutedEventArgs e)
 	{
 		if (sender is Button { CommandParameter: DivinityModData mod } button)

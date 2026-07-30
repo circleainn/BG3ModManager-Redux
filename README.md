@@ -76,17 +76,19 @@ Categories and separators are presentation data. Redux never writes them to the 
 - Disable source integrations with Local-only mode without deleting cached associations.
 - Review dependency, UUID, Script Extender, conflict, creator-manifest, Mod Fixer, override, and
   mod.io findings through Mod Diagnostics.
-- Use dependency-finding actions to reveal an installed dependency or open an already-linked mod
-  page for the author's requirements without automatically installing, activating, or moving mods.
+- Use dependency-finding actions to reveal an installed dependency, copy its UUID, open available
+  source pages, or explicitly activate an already-installed inactive dependency after confirmation.
+  Redux never downloads, installs, repairs, or reorders dependencies automatically.
 - Run the on-demand Active File Overlaps inspector from Tools to find internal PAK paths shared by
   active and override packages. Redux reports these as overlaps rather than definite conflicts,
   because patches and intentional overrides commonly share files.
 - Optionally include experimental declared-dependency placement and cycle guidance in the same
   Advisor status and finding list.
 
-Mod Diagnostics is read-only. It does not install, delete, repair, reorder, or rewrite mods. Provider
-matches are conveniences rather than compatibility guarantees; always follow the mod author's
-instructions.
+Mod Diagnostics analysis is read-only. Its dependency assistant changes the working order only when
+the user explicitly confirms activation of an already-installed dependency, and the change does not
+reach game files until export. Provider matches are conveniences rather than compatibility
+guarantees; always follow the mod author's instructions.
 
 ### Personalize Redux
 

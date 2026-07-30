@@ -20,15 +20,19 @@ public sealed class ModDiagnosticFindingGroupViewModel
 	public bool HasMultipleAffectedMods => AffectedCount > 1;
 	public bool HasErrors => Severity == ModHealthSeverity.Error;
 	public DivinityModData PrimaryRelatedMod { get; }
+	public string PrimaryRelatedModUuid { get; }
 	public bool CanRevealRelatedDependency { get; }
+	public bool CanActivateRelatedDependency { get; }
+	public bool CanOpenRelatedDependencySource { get; }
+	public bool CanCopyRelatedDependencyUuid { get; }
 	public bool CanOpenAffectedModSource { get; }
-	public bool HasDiagnosticActions => CanRevealRelatedDependency || CanOpenAffectedModSource;
-	public string RelatedDependencyActionText => Code switch
-	{
-		ModHealthFindingCode.InactiveDependency => "Show inactive dependency",
-		ModHealthFindingCode.DependencyVersionTooOld => "Show installed dependency",
-		_ => "Show dependency"
-	};
+	public bool HasDiagnosticActions =>
+		CanRevealRelatedDependency
+		|| CanActivateRelatedDependency
+		|| CanOpenRelatedDependencySource
+		|| CanCopyRelatedDependencyUuid
+		|| CanOpenAffectedModSource;
+	public string RelatedDependencyActionText => "Show in list";
 
 	public ModDiagnosticFindingGroupViewModel(
 		ModHealthFinding finding,
@@ -56,6 +60,7 @@ public sealed class ModDiagnosticFindingGroupViewModel
 			.Where(mod => mod != null && !String.IsNullOrWhiteSpace(mod.UUID))
 			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
 			.ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+		PrimaryRelatedModUuid = finding.RelatedModUuids.FirstOrDefault() ?? String.Empty;
 		PrimaryRelatedMod = finding.RelatedModUuids
 			.Select(uuid => installedByUuid.TryGetValue(uuid, out var mod) ? mod : null)
 			.FirstOrDefault(mod => mod != null);
@@ -63,6 +68,19 @@ public sealed class ModDiagnosticFindingGroupViewModel
 			ModHealthFindingCode.InactiveDependency or
 			ModHealthFindingCode.DependencyVersionTooOld or
 			ModHealthFindingCode.DependencyLoadsLater;
+		CanActivateRelatedDependency = PrimaryRelatedMod != null
+			&& !PrimaryRelatedMod.IsActive
+			&& Code == ModHealthFindingCode.InactiveDependency;
+		CanOpenRelatedDependencySource = PrimaryRelatedMod != null
+			&& !String.IsNullOrWhiteSpace(PrimaryRelatedMod.Metadata?.SourcePageUrl)
+			&& Code is ModHealthFindingCode.InactiveDependency
+				or ModHealthFindingCode.DependencyVersionTooOld
+				or ModHealthFindingCode.DependencyLoadsLater;
+		CanCopyRelatedDependencyUuid = !String.IsNullOrWhiteSpace(PrimaryRelatedModUuid)
+			&& Code is ModHealthFindingCode.MissingDependency
+				or ModHealthFindingCode.InactiveDependency
+				or ModHealthFindingCode.DependencyVersionTooOld
+				or ModHealthFindingCode.DependencyLoadsLater;
 		CanOpenAffectedModSource = Code == ModHealthFindingCode.MissingDependency
 			&& AffectedMods.Count == 1
 			&& !String.IsNullOrWhiteSpace(PrimarySnapshot.Mod.Metadata?.SourcePageUrl);

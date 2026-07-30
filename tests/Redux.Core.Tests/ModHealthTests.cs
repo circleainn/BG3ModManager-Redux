@@ -34,6 +34,16 @@ internal sealed class ModHealthTests
 
 		RegressionAssert.True(HasFinding(activeSnapshot, ModHealthFindingCode.InactiveDependency));
 		RegressionAssert.True(HasFinding(activeSnapshot, ModHealthFindingCode.MissingDependency));
+		RegressionAssert.SequenceEqual(
+			new[] { inactiveDependency.UUID },
+			activeSnapshot.Findings
+				.Single(finding => finding.Code == ModHealthFindingCode.InactiveDependency)
+				.RelatedModUuids);
+		RegressionAssert.SequenceEqual(
+			new[] { "missing" },
+			activeSnapshot.Findings
+				.Single(finding => finding.Code == ModHealthFindingCode.MissingDependency)
+				.RelatedModUuids);
 		RegressionAssert.Equal(0, activeSnapshot.LoadOrderAdviceCount);
 	}
 
@@ -53,6 +63,11 @@ internal sealed class ModHealthTests
 		RegressionAssert.True(HasFinding(
 			FindSnapshot(enabled, dependent.UUID),
 			ModHealthFindingCode.DependencyLoadsLater));
+		RegressionAssert.SequenceEqual(
+			new[] { dependency.UUID },
+			FindSnapshot(enabled, dependent.UUID).Findings
+				.Single(finding => finding.Code == ModHealthFindingCode.DependencyLoadsLater)
+				.RelatedModUuids);
 		RegressionAssert.SequenceEqual(
 			new[] { "Dependent", "Dependency" },
 			activeOrder.Select(mod => mod.Name));
@@ -213,6 +228,11 @@ internal sealed class ModHealthTests
 		RegressionAssert.True(HasFinding(
 			dependentSnapshot,
 			ModHealthFindingCode.DependencyVersionTooOld));
+		RegressionAssert.SequenceEqual(
+			new[] { dependency.UUID },
+			dependentSnapshot.Findings
+				.Single(finding => finding.Code == ModHealthFindingCode.DependencyVersionTooOld)
+				.RelatedModUuids);
 		RegressionAssert.Equal(originalVersion, dependency.Version.VersionInt);
 	}
 

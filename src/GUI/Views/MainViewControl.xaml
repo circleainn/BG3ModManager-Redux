@@ -290,6 +290,54 @@
 									<TextBlock VerticalAlignment="Center" Text="{Binding RelatedDependencyActionText}" />
 								</StackPanel>
 							</Button>
+							<Button Margin="0,0,6,0"
+								Click="ToolbarDiagnosticActivateDependency_Click"
+								CommandParameter="{Binding}"
+								Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+								ToolTip="Add the installed dependency to the end of the current working order"
+								Visibility="{Binding CanActivateRelatedDependency, Converter={StaticResource BoolToVisibilityConverter}}">
+								<StackPanel Orientation="Horizontal">
+									<controls:ReduxIcon Width="13"
+										Height="13"
+										Margin="0,0,5,0"
+										VerticalAlignment="Center"
+										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+										StrokeData="{StaticResource Redux.Icon.CircleCheck}" />
+									<TextBlock VerticalAlignment="Center" Text="Activate" />
+								</StackPanel>
+							</Button>
+							<Button Margin="0,0,6,0"
+								Click="ToolbarDiagnosticRelatedSource_Click"
+								CommandParameter="{Binding PrimaryRelatedMod}"
+								Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+								ToolTip="Open the installed dependency's linked source page"
+								Visibility="{Binding CanOpenRelatedDependencySource, Converter={StaticResource BoolToVisibilityConverter}}">
+								<StackPanel Orientation="Horizontal">
+									<controls:ReduxIcon Width="13"
+										Height="13"
+										Margin="0,0,5,0"
+										VerticalAlignment="Center"
+										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+										StrokeData="{StaticResource Redux.Icon.LinkStroke}" />
+									<TextBlock VerticalAlignment="Center" Text="Source page" />
+								</StackPanel>
+							</Button>
+							<Button Margin="0,0,6,0"
+								Click="ToolbarDiagnosticCopyDependencyUuid_Click"
+								CommandParameter="{Binding PrimaryRelatedModUuid}"
+								Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+								ToolTip="Copy the dependency UUID"
+								Visibility="{Binding CanCopyRelatedDependencyUuid, Converter={StaticResource BoolToVisibilityConverter}}">
+								<StackPanel Orientation="Horizontal">
+									<controls:ReduxIcon Width="13"
+										Height="13"
+										Margin="0,0,5,0"
+										VerticalAlignment="Center"
+										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+										StrokeData="{StaticResource Redux.Icon.Copy}" />
+									<TextBlock VerticalAlignment="Center" Text="Copy UUID" />
+								</StackPanel>
+							</Button>
 							<Button Click="ToolbarDiagnosticAffectedSource_Click"
 								CommandParameter="{Binding PrimarySnapshot.Mod}"
 								Style="{StaticResource ReduxSecondaryActionButtonStyle}"
@@ -302,7 +350,7 @@
 										VerticalAlignment="Center"
 										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 										StrokeData="{StaticResource Redux.Icon.LinkStroke}" />
-									<TextBlock VerticalAlignment="Center" Text="Open affected mod page" />
+									<TextBlock VerticalAlignment="Center" Text="Review requirements" />
 								</StackPanel>
 							</Button>
 						</WrapPanel>

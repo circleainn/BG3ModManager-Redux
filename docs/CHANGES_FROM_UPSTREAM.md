@@ -73,9 +73,10 @@ These core systems come from LaughingLeader's BG3 Mod Manager:
   shares one interaction language instead of independently tuned equivalents.
 - One shared Mod Diagnostics status-card presentation used by the toolbar, compact Toolbar menu, and
   selected-mod drawer, so diagnostic and optional guidance surfaces cannot drift out of sync.
-- Read-only dependency assistance inside Mod Diagnostics can reveal an installed dependency or open
-  an existing linked source page for author-provided requirements; it never installs, activates, or
-  reorders a mod.
+- Dependency assistance inside Mod Diagnostics can reveal an installed dependency, copy its UUID,
+  open available linked source pages, or explicitly activate an already-installed inactive
+  dependency after confirmation. Analysis stays read-only, and Redux never downloads, installs,
+  repairs, or reorders dependencies automatically.
 - Dynamic text trimming and header-based list-column minimum widths so long filenames do not lock a
   column at an excessive size.
 - Content-aware category-pane sizing based on visible labels and the active application typeface.
@@ -276,10 +277,13 @@ Redux additionally adds:
   and focuses an affected mod when selected.
 - A compact row-level diagnostic indicator for duplicate UUIDs, inactive dependencies, and declared
   conflicts that otherwise have no dedicated status icon.
+- Contextual dependency actions that identify the requiring mod, reveal an installed dependency,
+  copy its UUID, open available source pages, and—with explicit confirmation—append an installed
+  inactive dependency to the current working order for placement review before export.
 - An on-demand Active File Overlaps inspector that reads the file tables of active and override
   PAKs, lists internal paths shared by multiple packages, supports local result filtering, and
   deliberately labels matches as overlaps rather than confirmed conflicts.
-- No automatic repair, installation, conflict resolution, or load-order reordering. Broader
+- No automatic repair, installation, activation, conflict resolution, or load-order reordering. Broader
   category- and compatibility-based load-order recommendations remain future work.
 - Rule-level extension boundaries (`IModHealthAnalyzer` and `IModHealthRule`) that keep default
   checks and experimental guidance modular without coupling either family to list loading or

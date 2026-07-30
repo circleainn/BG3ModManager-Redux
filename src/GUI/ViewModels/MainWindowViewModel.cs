@@ -7849,7 +7849,11 @@ Directory the zip will be extracted to:
 				entry.Finding.Code,
 				entry.Finding.Severity,
 				entry.Finding.Title,
-				entry.Finding.Message))
+				entry.Finding.Message,
+				RelatedModUuids: String.Join(
+					"|",
+					entry.Finding.RelatedModUuids
+						.OrderBy(uuid => uuid, StringComparer.OrdinalIgnoreCase))))
 			.Select(group => new ModDiagnosticFindingGroupViewModel(
 				group.First().Finding,
 				group.Select(entry => entry.Snapshot),
