@@ -406,6 +406,10 @@ discussion is [issue #11](https://github.com/raincloudsfollow/BG3ModManager-Redu
 
 ## Low-priority ideas
 
+- Optional custom-category rules based on simple metadata such as author, filename, source,
+  dependencies, or Script Extender requirements. Any future implementation should preview matches,
+  keep manual assignments authoritative, and remain entirely opt-in. This is deferred and is not
+  part of the current development plan.
 - Optional Coolors URL import for custom themes. A future implementation could parse palette colors
   from a shared `coolors.co` URL, suggest mappings to Redux's semantic theme tokens, preserve
   accessible status colors by default, and let the user review the result before saving.
