@@ -50,9 +50,9 @@ stronger organization, portable Redux data, richer metadata, and safer file hand
 - Work from the grouped command toolbar or hide it and use the complete compact Toolbar menu.
 - Review activations, deactivations, placement changes, automatically added dependencies, and
   enabled Mod Diagnostics findings before Redux writes the selected order to the game profile.
-- Return to an earlier state from File > Restore Points. Redux keeps the 20 newest pre-export or
-  manually captured snapshots per profile, compares them with the current working order, and loads
-  a selected snapshot without changing game files until it is exported.
+- Open File > Load Order History to review the 20 newest pre-export or manually captured snapshots
+  for the current profile, see how each differs from the working order, compare it with saved orders,
+  and load a selected snapshot without changing game files until it is exported.
 - Compare any two available load orders from File > Compare Load Orders to see user-managed mods
   that were added, removed, or meaningfully repositioned without changing either order.
 - Open the selected-mod drawer for Overview, Description, Requirements, Files, and Changelog tabs,

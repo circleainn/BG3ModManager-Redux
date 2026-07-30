@@ -3,9 +3,10 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
+	xmlns:models="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Restore Points"
-	Width="640" Height="520" MinWidth="540" MinHeight="420" MaxWidth="780" MaxHeight="760"
+	Title="Load Order History"
+	Width="980" Height="680" MinWidth="820" MinHeight="560" MaxWidth="1260" MaxHeight="900"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="{DynamicResource Redux.FontWeight.Body}"
@@ -103,6 +104,54 @@
 					</Border>
 				</Grid>
 			</DataTemplate>
+
+			<DataTemplate x:Key="HistoryChangeTemplate">
+				<Border Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+					ClipToBounds="True">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="3" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<Border x:Name="ChangeRail" Background="{DynamicResource ReduxInfoBrush}" />
+						<controls:ReduxIcon x:Name="ChangeIcon"
+							Grid.Column="1" Width="16" Height="16" Margin="11,0,9,0"
+							VerticalAlignment="Center"
+							Foreground="{DynamicResource ReduxInfoBrush}"
+							StrokeData="{StaticResource Redux.Icon.ReorderStroke}" />
+						<StackPanel Grid.Column="2" Margin="0,8">
+							<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+								FontWeight="{DynamicResource Redux.FontWeight.Control}"
+								Text="{Binding Name}"
+								TextTrimming="CharacterEllipsis" />
+							<TextBlock x:Name="ChangeKindText" Margin="0,2,0,0"
+								Foreground="{DynamicResource ReduxInfoBrush}"
+								Text="{Binding ChangeSummary}" />
+						</StackPanel>
+						<TextBlock Grid.Column="3" Margin="12,0"
+							VerticalAlignment="Center"
+							Foreground="{DynamicResource ReduxTextMutedBrush}"
+							Text="{Binding PositionSummary}" />
+					</Grid>
+				</Border>
+				<DataTemplate.Triggers>
+					<DataTrigger Binding="{Binding Kind}" Value="{x:Static models:LoadOrderChangeKind.Activated}">
+						<Setter TargetName="ChangeRail" Property="Background" Value="{DynamicResource ReduxSuccessBrush}" />
+						<Setter TargetName="ChangeIcon" Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+						<Setter TargetName="ChangeIcon" Property="StrokeData" Value="{StaticResource Redux.Icon.AddStroke}" />
+						<Setter TargetName="ChangeKindText" Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+					</DataTrigger>
+					<DataTrigger Binding="{Binding Kind}" Value="{x:Static models:LoadOrderChangeKind.Deactivated}">
+						<Setter TargetName="ChangeRail" Property="Background" Value="{DynamicResource ReduxErrorBrush}" />
+						<Setter TargetName="ChangeIcon" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+						<Setter TargetName="ChangeIcon" Property="StrokeData" Value="{StaticResource Redux.Icon.RemoveCircle}" />
+						<Setter TargetName="ChangeKindText" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+					</DataTrigger>
+				</DataTemplate.Triggers>
+			</DataTemplate>
 		</ResourceDictionary>
 	</Window.Resources>
 
@@ -124,18 +173,37 @@
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 
-				<StackPanel>
-					<TextBlock FontSize="{DynamicResource Redux.FontSize.20}"
-						FontWeight="{DynamicResource Redux.FontWeight.Title}"
-						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-						Text="Load a previous exported order" />
-					<TextBlock Margin="0,5,0,0"
-						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-						Text="Redux creates a restore point before each confirmed export. You can also capture the current working order at any time. Loading one never changes game files until you export again."
-						TextWrapping="Wrap" />
-				</StackPanel>
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<StackPanel>
+						<TextBlock FontSize="{DynamicResource Redux.FontSize.20}"
+							FontWeight="{DynamicResource Redux.FontWeight.Title}"
+							Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+							Text="Load Order History" />
+						<TextBlock Margin="0,5,0,0"
+							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+							Text="Review snapshots, see what changed, and safely load an earlier order without touching game files until the next export."
+							TextWrapping="Wrap" />
+					</StackPanel>
+					<Button Grid.Column="1"
+						MinWidth="126"
+						Margin="18,0,0,0"
+						VerticalAlignment="Center"
+						Content="Compare Orders"
+						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+						Click="CompareOrdersButton_Click" />
+				</Grid>
 
 				<Grid Grid.Row="1" Margin="0,17,0,15">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="330" />
+						<ColumnDefinition Width="14" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+
 					<Border Background="{DynamicResource ReduxSurfaceBrush}"
 						BorderBrush="{DynamicResource ReduxBorderBrush}"
 						BorderThickness="1"
@@ -146,31 +214,25 @@
 								<RowDefinition Height="Auto" />
 								<RowDefinition Height="*" />
 							</Grid.RowDefinitions>
-							<Grid Margin="14,9,9,5">
+							<Grid Margin="14,10,10,6">
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="*" />
 									<ColumnDefinition Width="Auto" />
-									<ColumnDefinition Width="Auto" />
 								</Grid.ColumnDefinitions>
-								<TextBlock VerticalAlignment="Center"
-									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-									FontWeight="{DynamicResource Redux.FontWeight.Control}"
-									Text="Restore-point history" />
-								<Button x:Name="CompareButton"
+								<StackPanel VerticalAlignment="Center">
+									<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+										FontWeight="{DynamicResource Redux.FontWeight.Control}"
+										Text="Snapshots" />
+									<TextBlock x:Name="SnapshotCountText" Margin="0,2,0,0"
+										Foreground="{DynamicResource ReduxTextMutedBrush}"
+										Text="0 saved" />
+								</StackPanel>
+								<Button x:Name="CreateButton"
 									Grid.Column="1"
-									MinWidth="126"
-									Margin="8,0,6,0"
-									Content="Compare with Current"
-									IsEnabled="False"
+									MinWidth="88"
+									Content="Capture"
 									Style="{StaticResource ReduxSecondaryActionButtonStyle}"
-									Click="CompareButton_Click" />
-								<Button x:Name="DeleteButton"
-									Grid.Column="2"
-									MinWidth="74"
-									Content="Delete"
-									IsEnabled="False"
-									Style="{StaticResource ReduxDestructiveActionButtonStyle}"
-									Click="DeleteButton_Click" />
+									Click="CreateButton_Click" />
 							</Grid>
 							<ListBox x:Name="RestorePointList"
 								Grid.Row="1"
@@ -187,6 +249,7 @@
 								MouseDoubleClick="RestorePointList_MouseDoubleClick" />
 							<StackPanel x:Name="EmptyState"
 								Grid.Row="1"
+								Margin="18"
 								HorizontalAlignment="Center" VerticalAlignment="Center">
 								<controls:ReduxIcon Width="28" Height="28"
 									HorizontalAlignment="Center"
@@ -196,40 +259,180 @@
 									HorizontalAlignment="Center"
 									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 									FontWeight="{DynamicResource Redux.FontWeight.Control}"
-									Text="No restore points yet" />
+									Text="No snapshots yet" />
 								<TextBlock Margin="0,3,0,0"
+									HorizontalAlignment="Center"
 									Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Create one now or confirm an export to begin the history." />
+									Text="Capture the working order or confirm an export to begin."
+									TextAlignment="Center"
+									TextWrapping="Wrap" />
 							</StackPanel>
+						</Grid>
+					</Border>
+
+					<Border Grid.Column="2"
+						Background="{DynamicResource ReduxSurfaceBrush}"
+						BorderBrush="{DynamicResource ReduxBorderBrush}"
+						BorderThickness="1"
+						CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+						ClipToBounds="True">
+						<Grid Margin="16,14">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="*" />
+							</Grid.RowDefinitions>
+
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+								<StackPanel>
+									<TextBlock x:Name="SelectedCreatedText"
+										Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+										FontSize="{DynamicResource Redux.FontSize.16}"
+										FontWeight="{DynamicResource Redux.FontWeight.Title}"
+										Text="Select a snapshot" />
+									<TextBlock x:Name="SelectedReasonText" Margin="0,4,0,0"
+										Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+										Text="Choose a snapshot to review its changes."
+										TextTrimming="CharacterEllipsis" />
+								</StackPanel>
+								<Border Grid.Column="1"
+									Margin="12,0,0,0"
+									Padding="9,4"
+									VerticalAlignment="Center"
+									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+									BorderBrush="{DynamicResource ReduxBorderBrush}"
+									BorderThickness="1"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
+									<TextBlock x:Name="SelectedModCountText"
+										Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+										FontWeight="{DynamicResource Redux.FontWeight.Control}"
+										Text="0 mods" />
+								</Border>
+							</Grid>
+
+							<TextBlock x:Name="SelectedSourceText"
+								Grid.Row="1"
+								Margin="0,5,0,0"
+								Foreground="{DynamicResource ReduxTextMutedBrush}"
+								Text="Source order"
+								TextTrimming="CharacterEllipsis" />
+
+							<UniformGrid Grid.Row="2" Margin="0,14,0,13" Columns="3">
+								<Border Style="{StaticResource ReduxDialogSummaryCardStyle}">
+									<StackPanel>
+										<TextBlock x:Name="AddedCountText"
+											FontSize="{DynamicResource Redux.FontSize.20}"
+											FontWeight="{DynamicResource Redux.FontWeight.Title}"
+											Foreground="{DynamicResource ReduxSuccessBrush}"
+											Text="0" />
+										<TextBlock Margin="0,2,0,0"
+											Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+											Text="Added since" />
+									</StackPanel>
+								</Border>
+								<Border Style="{StaticResource ReduxDialogSummaryCardStyle}">
+									<StackPanel>
+										<TextBlock x:Name="RemovedCountText"
+											FontSize="{DynamicResource Redux.FontSize.20}"
+											FontWeight="{DynamicResource Redux.FontWeight.Title}"
+											Foreground="{DynamicResource ReduxErrorBrush}"
+											Text="0" />
+										<TextBlock Margin="0,2,0,0"
+											Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+											Text="Removed since" />
+									</StackPanel>
+								</Border>
+								<Border Margin="0" Style="{StaticResource ReduxDialogSummaryCardStyle}">
+									<StackPanel>
+										<TextBlock x:Name="MovedCountText"
+											FontSize="{DynamicResource Redux.FontSize.20}"
+											FontWeight="{DynamicResource Redux.FontWeight.Title}"
+											Foreground="{DynamicResource ReduxInfoBrush}"
+											Text="0" />
+										<TextBlock Margin="0,2,0,0"
+											Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+											Text="Repositioned" />
+									</StackPanel>
+								</Border>
+							</UniformGrid>
+
+							<Grid Grid.Row="3">
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto" />
+									<RowDefinition Height="*" />
+								</Grid.RowDefinitions>
+								<Grid Margin="2,0,2,8">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*" />
+										<ColumnDefinition Width="Auto" />
+									</Grid.ColumnDefinitions>
+									<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+										FontWeight="{DynamicResource Redux.FontWeight.Control}"
+										Text="Changes to the current working order" />
+									<TextBlock x:Name="DifferenceCountText"
+										Grid.Column="1"
+										Foreground="{DynamicResource ReduxTextMutedBrush}"
+										Text="0 changes" />
+								</Grid>
+								<Grid Grid.Row="1">
+									<ListBox x:Name="ChangeList"
+										Padding="0"
+										Background="Transparent"
+										BorderThickness="0"
+										HorizontalContentAlignment="Stretch"
+										ItemContainerStyle="{StaticResource ReduxPassiveResultItemStyle}"
+										ItemTemplate="{StaticResource HistoryChangeTemplate}"
+										ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+										ScrollViewer.VerticalScrollBarVisibility="Auto" />
+									<StackPanel x:Name="NoChangesState"
+										HorizontalAlignment="Center" VerticalAlignment="Center">
+										<controls:ReduxIcon Width="28" Height="28"
+											HorizontalAlignment="Center"
+											Foreground="{DynamicResource ReduxSuccessBrush}"
+											StrokeData="{StaticResource Redux.Icon.Check}" />
+										<TextBlock Margin="0,9,0,0"
+											HorizontalAlignment="Center"
+											Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+											FontWeight="{DynamicResource Redux.FontWeight.Control}"
+											Text="The current order matches this snapshot" />
+									</StackPanel>
+								</Grid>
+							</Grid>
 						</Grid>
 					</Border>
 				</Grid>
 
 				<Grid Grid.Row="2">
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="*" />
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
-					<Button x:Name="CreateButton"
-						MinWidth="116"
-						Content="Create Snapshot"
-						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
-						Click="CreateButton_Click" />
 					<TextBlock x:Name="StatusText"
-						Grid.Column="1"
-						Margin="12,0,0,0"
 						VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
 						TextTrimming="CharacterEllipsis"
-						Text="Redux keeps the 20 newest restore points for each profile." />
-					<Button Grid.Column="2" MinWidth="84" Margin="12,0,8,0"
+						Text="Redux keeps the 20 newest snapshots for each profile." />
+					<Button x:Name="DeleteButton"
+						Grid.Column="1"
+						MinWidth="74"
+						Margin="12,0,8,0"
+						Content="Delete"
+						IsEnabled="False"
+						Style="{StaticResource ReduxDestructiveActionButtonStyle}"
+						Click="DeleteButton_Click" />
+					<Button Grid.Column="2" MinWidth="84" Margin="0,0,8,0"
 						Content="Close"
 						IsCancel="True"
 						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
 						Click="CloseButton_Click" />
-					<Button x:Name="LoadButton" Grid.Column="3" MinWidth="140"
+					<Button x:Name="LoadButton" Grid.Column="3" MinWidth="150"
 						Content="Load Working Order"
 						IsDefault="True"
 						IsEnabled="False"

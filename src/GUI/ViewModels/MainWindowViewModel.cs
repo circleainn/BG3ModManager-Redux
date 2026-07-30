@@ -3631,9 +3631,9 @@ Directory the zip will be extracted to:
 	private static string GetRestorePointsDirectory() =>
 		DivinityApp.GetAppDirectory("Data", "RestorePoints");
 
-	private void OpenLoadOrderComparison()
+	private IReadOnlyList<DivinityLoadOrder> BuildComparableLoadOrders()
 	{
-		var comparableOrders = ModOrderList
+		return ModOrderList
 			.Where(order => order != null)
 			.Select(order => new DivinityLoadOrder
 			{
@@ -3659,7 +3659,12 @@ Directory the zip will be extracted to:
 					.ToList()
 			})
 			.ToArray();
-		if (comparableOrders.Length < 2)
+	}
+
+	private void OpenLoadOrderComparison()
+	{
+		var comparableOrders = BuildComparableLoadOrders();
+		if (comparableOrders.Count < 2)
 		{
 			ShowAlert("At least two load orders are needed for comparison.", AlertType.Info, 15);
 			return;
@@ -3667,7 +3672,7 @@ Directory the zip will be extracted to:
 
 		var baselineIndex = 0;
 		var comparedIndex = SelectedModOrderIndex > 0
-			? Math.Min(SelectedModOrderIndex, comparableOrders.Length - 1)
+			? Math.Min(SelectedModOrderIndex, comparableOrders.Count - 1)
 			: 1;
 		var dialog = new ReduxLoadOrderComparisonWindow(
 			Window,
@@ -3707,7 +3712,8 @@ Directory the zip will be extracted to:
 			SelectedProfile.UUID,
 			SelectedProfile.Name ?? SelectedProfile.ProfileName,
 			SelectedModOrder?.Name ?? "Current working order",
-			ActiveMods.Select(mod => mod.ToOrderEntry()).ToArray());
+			ActiveMods.Select(mod => mod.ToOrderEntry()).ToArray(),
+			BuildComparableLoadOrders());
 		dialog.ShowDialog();
 		if (!dialog.Accepted || dialog.SelectedRestorePoint == null)
 		{

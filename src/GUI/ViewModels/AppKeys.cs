@@ -48,9 +48,9 @@ public class AppKeys : ReactiveObject
 
 	[MenuSettings(
 		"File",
-		"Restore Points...",
+		"Load Order History...",
 		true,
-		"Load a Redux snapshot created before an earlier export as a working order.")]
+		"Review, compare, capture, or load Redux snapshots for the current profile.")]
 	public Hotkey RestorePoints { get; private set; } = new Hotkey(Key.None);
 
 	[MenuSettings("File", "Import Load Order from Save...")]
