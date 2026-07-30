@@ -17,7 +17,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -552,14 +551,11 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 	private void OpenCommandPalette()
 	{
-		var palette = new ReduxCommandPaletteWindow(this, ViewModel.Keys);
+		var palette = new ReduxCommandPaletteWindow(this, ViewModel);
 		ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(palette, this);
-		var selectedHotkey = palette.SelectedHotkey;
-		if (palette.Accepted
-			&& selectedHotkey?.CanExecuteCommand == true
-			&& selectedHotkey.Command is ICommand command)
+		if (palette.Accepted)
 		{
-			command.Execute(null);
+			palette.SelectedItem?.Execute();
 		}
 	}
 

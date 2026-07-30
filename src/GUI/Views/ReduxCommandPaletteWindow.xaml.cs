@@ -3,6 +3,7 @@ using DivinityModManager.Util;
 using DivinityModManager.ViewModels;
 
 using System.Reflection;
+using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Input;
 
@@ -14,21 +15,37 @@ public sealed class ReduxCommandPaletteItem
 	public string Category { get; }
 	public string Description { get; }
 	public string Gesture { get; }
+	public string IconKey { get; }
 	public bool HasGesture => !String.IsNullOrWhiteSpace(Gesture);
-	public bool CanExecute => Hotkey?.CanExecuteCommand == true;
-	public Hotkey Hotkey { get; }
+	public bool CanExecute => _canExecute();
+
+	private readonly Action _execute;
+	private readonly Func<bool> _canExecute;
 
 	public ReduxCommandPaletteItem(
-		Hotkey hotkey,
-		MenuSettingsAttribute settings)
+		string name,
+		string category,
+		string description,
+		string gesture,
+		string iconKey,
+		Action execute,
+		Func<bool> canExecute = null)
 	{
-		Hotkey = hotkey;
-		Name = settings?.DisplayName?.Trim() ?? hotkey?.DisplayName ?? String.Empty;
-		Category = hotkey?.Category ?? settings?.Parent ?? String.Empty;
-		Description = settings?.Tooltip?.Trim() ?? String.Empty;
-		Gesture = hotkey?.Key == Key.None
-			? String.Empty
-			: hotkey?.DisplayBindingText ?? String.Empty;
+		Name = name?.Trim() ?? String.Empty;
+		Category = category?.Trim() ?? String.Empty;
+		Description = description?.Trim() ?? String.Empty;
+		Gesture = gesture?.Trim() ?? String.Empty;
+		IconKey = iconKey?.Trim() ?? "terminal";
+		_execute = execute ?? (() => { });
+		_canExecute = canExecute ?? (() => true);
+	}
+
+	public void Execute()
+	{
+		if (CanExecute)
+		{
+			_execute();
+		}
 	}
 
 	public bool Matches(string query)
@@ -50,11 +67,11 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 	private readonly IReadOnlyList<ReduxCommandPaletteItem> _commands;
 
 	public bool Accepted { get; private set; }
-	public Hotkey SelectedHotkey { get; private set; }
+	public ReduxCommandPaletteItem SelectedItem { get; private set; }
 
 	public ReduxCommandPaletteWindow(
 		Window owner,
-		AppKeys keys)
+		MainWindowViewModel viewModel)
 	{
 		InitializeComponent();
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
@@ -70,7 +87,7 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 			ReduxThemeService.Apply(Resources, settings.ColorTheme, ReduxThemeService.GetActiveTheme(settings));
 		}
 
-		_commands = BuildCommandList(keys);
+		_commands = BuildCommandList(viewModel);
 		Loaded += (_, _) =>
 		{
 			RefreshResults();
@@ -79,30 +96,76 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 		};
 	}
 
-	private static IReadOnlyList<ReduxCommandPaletteItem> BuildCommandList(AppKeys keys)
+	private static IReadOnlyList<ReduxCommandPaletteItem> BuildCommandList(MainWindowViewModel viewModel)
 	{
-		if (keys == null)
+		if (viewModel?.Keys == null)
 		{
 			return [];
 		}
 
-		return typeof(AppKeys)
+		var commands = typeof(AppKeys)
 			.GetRuntimeProperties()
 			.Where(property => property.PropertyType == typeof(Hotkey))
 			.OrderBy(property => property.MetadataToken)
 			.Select(property => (
 				Property: property,
-				Hotkey: property.GetValue(keys) as Hotkey,
+				Hotkey: property.GetValue(viewModel.Keys) as Hotkey,
 				Settings: property.GetCustomAttribute<MenuSettingsAttribute>()))
 			.Where(item =>
 				item.Hotkey?.HasActions == true
 				&& item.Settings != null
 				&& item.Property.Name != nameof(AppKeys.OpenCommandPalette))
-			.Select(item => new ReduxCommandPaletteItem(item.Hotkey, item.Settings))
-			.ToArray();
+			.Select(item =>
+			{
+				var command = (ICommand)item.Hotkey.Command;
+				return new ReduxCommandPaletteItem(
+					item.Settings.DisplayName,
+					item.Hotkey.Category,
+					item.Settings.Tooltip,
+					item.Hotkey.Key == Key.None ? String.Empty : item.Hotkey.DisplayBindingText,
+					"terminal",
+					() => command.Execute(null),
+					() => item.Hotkey.CanExecuteCommand);
+			})
+			.ToList();
+
+		commands.AddRange(viewModel.Profiles.Select((profile, index) =>
+			new ReduxCommandPaletteItem(
+				$"Switch to profile: {profile.Name}",
+				"Profiles",
+				"Select this Baldur's Gate 3 profile.",
+				String.Empty,
+				"person",
+				() => viewModel.SelectedProfileIndex = index,
+				() => viewModel.SelectedProfileIndex != index && !viewModel.IsLocked)));
+
+		commands.AddRange(viewModel.ModOrderList.Select((order, index) =>
+			new ReduxCommandPaletteItem(
+				$"Load order: {order.Name}",
+				"Load orders",
+				"Load this saved order into the active and inactive lists.",
+				String.Empty,
+				"list",
+				() => viewModel.SelectedModOrderIndex = index,
+				() => viewModel.SelectedModOrderIndex != index && !viewModel.IsLocked)));
+
+		commands.AddRange(viewModel.ModCategoryFilters.Select(category =>
+			new ReduxCommandPaletteItem(
+				$"Filter category: {category.Name}",
+				"Category filters",
+				"Show mods assigned to this category.",
+				String.Empty,
+				"tag",
+				() => viewModel.SelectedModCategory = category.Name,
+				() => !String.Equals(
+					viewModel.SelectedModCategory,
+					category.Name,
+					StringComparison.OrdinalIgnoreCase))));
+
+		return commands;
 	}
 
-	private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+	private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
 		=> RefreshResults();
 
 	private void RefreshResults()
@@ -171,7 +234,7 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 		}
 
 		Accepted = true;
-		SelectedHotkey = item.Hotkey;
+		SelectedItem = item;
 		Close();
 	}
 }

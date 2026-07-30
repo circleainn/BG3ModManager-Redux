@@ -57,7 +57,7 @@
 											HorizontalAlignment="Center"
 											VerticalAlignment="Center"
 											Foreground="{DynamicResource ReduxAccentBrush}"
-											StrokeData="{StaticResource Redux.Icon.Terminal}" />
+											IconKey="{Binding IconKey}" />
 									</Border>
 									<StackPanel Grid.Column="1" Margin="10,0,12,0" VerticalAlignment="Center">
 										<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
@@ -197,7 +197,7 @@
 					<TextBlock Grid.Column="1"
 						VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="{Binding ElementName=CommandList, Path=Items.Count, StringFormat={}{0} commands}" />
+						Text="{Binding ElementName=CommandList, Path=Items.Count, StringFormat={}{0} actions}" />
 				</Grid>
 			</Grid>
 		</Border>
