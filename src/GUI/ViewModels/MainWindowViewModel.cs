@@ -2978,7 +2978,6 @@ Directory the zip will be extracted to:
 					{
 						return;
 					}
-					ShowOfflineNexusDatabaseWarningIfRequired(loadedUserMods, false);
 					ScheduleRefreshModCategories();
 				});
 			}
@@ -3210,8 +3209,6 @@ Directory the zip will be extracted to:
 					await UpdateHandler.Modio.SaveCacheAsync(false, Version.ToString(), cancellationToken);
 				}
 
-				ThrowIfSourceMetadataRefreshCanceled(cancellationToken);
-				await Observable.Start(() => ShowModioSupportWarningIfRequired(loadedUserMods), RxApp.MainThreadScheduler);
 			}
 			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested || !Modules.SourceIntegrationsEnabled)
 			{
@@ -3236,110 +3233,23 @@ Directory the zip will be extracted to:
 		});
 	}
 
-	private void ShowReduxPreviewWarningIfRequired()
+	public void ShowReduxTour()
 	{
-		if (Settings.ReduxPreviewWarningAcknowledged || !_firstRun)
+		var tourWindow = new ReduxOnboardingWindow(Window, Settings);
+		ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(tourWindow, Window);
+		if (!tourWindow.WasResolved)
 		{
 			return;
 		}
 
-		var warningWindow = new ReduxPreviewWarningWindow { Owner = Window };
-		ReduxThemeService.Apply(warningWindow.Resources, Settings.ColorTheme, ReduxThemeService.GetActiveTheme(Settings));
-		if (ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(warningWindow, Window) == true)
+		if (tourWindow.TourFinished)
 		{
-			Settings.ReduxPreviewWarningAcknowledged = true;
-			SaveSettings();
-		}
-	}
-
-	private void ShowModioSupportWarningIfRequired(IEnumerable<DivinityModData> loadedUserMods)
-	{
-		if (!Modules.SourceIntegrationsEnabled
-			|| Settings.ModioSupportWarningAcknowledged
-			|| !loadedUserMods.Any(mod => mod.Metadata.SourceType == ModSourceType.MODIO))
-		{
-			return;
+			Settings.LocalOnlyMode = tourWindow.SelectedLocalOnlyMode;
+			Settings.EnableModHealth = tourWindow.SelectedDiagnosticsEnabled;
+			Settings.EnableLoadOrderAdvisor = tourWindow.SelectedGuidanceEnabled;
 		}
 
-		if (!_startupPresentationReady)
-		{
-			_pendingModioWarningMods = loadedUserMods.ToList();
-			return;
-		}
-
-		var warningWindow = new ModioSupportWarningWindow
-		{
-			Owner = Window
-		};
-		ReduxThemeService.Apply(warningWindow.Resources, Settings.ColorTheme, ReduxThemeService.GetActiveTheme(Settings));
-
-		if (ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(warningWindow, Window) == true)
-		{
-			Settings.ModioSupportWarningAcknowledged = true;
-			SaveSettings();
-		}
-	}
-
-	private void ShowOfflineNexusDatabaseWarningIfRequired(IEnumerable<DivinityModData> loadedUserMods, bool isApplicationLaunch)
-	{
-		if (!Modules.SourceIntegrationsEnabled || Settings.OfflineNexusDatabaseWarningAcknowledged)
-		{
-			return;
-		}
-
-		var apiKeyMissing = String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey);
-		var bundledMatchUsed = loadedUserMods?.Any(mod => mod.NexusModsData?.UsesBundledProvenance == true) == true;
-		if (!bundledMatchUsed && !(isApplicationLaunch && apiKeyMissing))
-		{
-			return;
-		}
-
-		if (!_startupPresentationReady)
-		{
-			_pendingOfflineWarningMods = loadedUserMods?.ToList() ?? [];
-			_pendingOfflineWarningIsApplicationLaunch |= isApplicationLaunch;
-			return;
-		}
-
-		var warningWindow = new OfflineNexusDatabaseWarningWindow { Owner = Window };
-		ReduxThemeService.Apply(warningWindow.Resources, Settings.ColorTheme, ReduxThemeService.GetActiveTheme(Settings));
-		if (ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(warningWindow, Window) == true)
-		{
-			Settings.OfflineNexusDatabaseWarningAcknowledged = true;
-			SaveSettings();
-		}
-	}
-
-	/// <summary>
-	/// Releases startup-only modal UI after the staged main window has reached
-	/// its final monitor position and is ready to own centered dialogs.
-	/// </summary>
-	public void CompleteStartupPresentation()
-	{
-		if (_startupPresentationReady)
-		{
-			return;
-		}
-
-		_startupPresentationReady = true;
-		ShowReduxPreviewWarningIfRequired();
-		ShowOfflineNexusDatabaseWarningIfRequired(UserMods, true);
-
-		if (_pendingOfflineWarningMods != null)
-		{
-			var pendingMods = _pendingOfflineWarningMods;
-			var isApplicationLaunch = _pendingOfflineWarningIsApplicationLaunch;
-			_pendingOfflineWarningMods = null;
-			_pendingOfflineWarningIsApplicationLaunch = false;
-			ShowOfflineNexusDatabaseWarningIfRequired(pendingMods, isApplicationLaunch);
-		}
-
-		if (_pendingModioWarningMods != null)
-		{
-			var pendingMods = _pendingModioWarningMods;
-			_pendingModioWarningMods = null;
-			ShowModioSupportWarningIfRequired(pendingMods);
-		}
+		SaveSettings();
 	}
 
 	private async Task CheckForEmptyOrderAsync(IScheduler sch, CancellationToken token)
@@ -3397,10 +3307,6 @@ Directory the zip will be extracted to:
 	}
 
 	private bool _firstRun = true;
-	private bool _startupPresentationReady;
-	private IReadOnlyList<DivinityModData> _pendingModioWarningMods;
-	private IReadOnlyList<DivinityModData> _pendingOfflineWarningMods;
-	private bool _pendingOfflineWarningIsApplicationLaunch;
 
 	private async Task<Unit> RefreshAsync(IScheduler ctrl, CancellationToken t)
 	{

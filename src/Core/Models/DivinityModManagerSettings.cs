@@ -78,18 +78,6 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool LocalOnlyMode { get; set; }
 
 	[DefaultValue(false)]
-	[DataMember, Reactive] public bool ModioSupportWarningAcknowledged { get; set; }
-
-	[SettingsEntry("Show mod.io safety warning again", "Clear the saved acknowledgement so the mod.io safety warning appears again on the next metadata refresh or application launch.")]
-	[Reactive] public bool ResetModioSupportWarningAcknowledgement { get; set; }
-
-	[DefaultValue(false)]
-	[DataMember, Reactive] public bool OfflineNexusDatabaseWarningAcknowledged { get; set; }
-
-	[SettingsEntry("Show offline Nexus notice again", "Clear the saved acknowledgement so the offline metadata notice appears again when Redux uses its bundled Nexus database.")]
-	[Reactive] public bool ResetOfflineNexusDatabaseWarningAcknowledgement { get; set; }
-
-	[DefaultValue(false)]
 	[SettingsEntry("Enable story logging", "Enable the Osiris story log (osiris.log) when launching the game.")]
 	[DataMember, Reactive] public bool GameStoryLogEnabled { get; set; }
 
@@ -218,12 +206,6 @@ public class DivinityModManagerSettings : ReactiveObject
 			this.RaisePropertyChanged();
 		}
 	}
-
-	[DefaultValue(false)]
-	[DataMember, Reactive] public bool ReduxPreviewWarningAcknowledged { get; set; }
-
-	[SettingsEntry("Show Redux preview warning again", "Clear the saved acknowledgement so the alpha preview warning appears again the next time Redux starts.")]
-	[Reactive] public bool ResetReduxPreviewWarningAcknowledgement { get; set; }
 
 	// Redux mod-list column choices. These are managed from the column-header
 	// context menu, so they stay out of the main Settings window.
@@ -546,33 +528,6 @@ public class DivinityModManagerSettings : ReactiveObject
 			.Subscribe(b => DivinityApp.UseCategoryColorsForInteractions = b);
 		this.WhenAnyValue(x => x.ShowCategoryIconsInPills).Subscribe(b => DivinityApp.ShowInterfaceIcons = b);
 		this.WhenAnyValue(x => x.UseSourceIconsOnly).Subscribe(b => DivinityApp.UseIconsOnly = b);
-
-		this.WhenAnyValue(x => x.ResetModioSupportWarningAcknowledgement)
-			.Where(reset => reset)
-			.Subscribe(_ =>
-			{
-				ModioSupportWarningAcknowledged = false;
-				ResetModioSupportWarningAcknowledgement = false;
-				CanSaveSettings = true;
-			});
-
-		this.WhenAnyValue(x => x.ResetReduxPreviewWarningAcknowledgement)
-			.Where(reset => reset)
-			.Subscribe(_ =>
-			{
-				ReduxPreviewWarningAcknowledged = false;
-				ResetReduxPreviewWarningAcknowledgement = false;
-				CanSaveSettings = true;
-			});
-
-		this.WhenAnyValue(x => x.ResetOfflineNexusDatabaseWarningAcknowledgement)
-			.Where(reset => reset)
-			.Subscribe(_ =>
-			{
-				OfflineNexusDatabaseWarningAcknowledged = false;
-				ResetOfflineNexusDatabaseWarningAcknowledgement = false;
-				CanSaveSettings = true;
-			});
 
 		this.WhenAnyValue(x => x.DefaultExtenderLogDirectory, x => x.ExtenderSettings.LogDirectory)
 		.Select(x => GetExtenderLogsDirectory(x.Item1, x.Item2))

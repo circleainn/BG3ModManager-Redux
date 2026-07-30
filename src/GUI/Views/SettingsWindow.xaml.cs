@@ -112,10 +112,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		new("Warnings and maintenance",
 			nameof(DivinityModManagerSettings.CheckForUpdates),
 			nameof(DivinityModManagerSettings.DeleteModCrashSanityCheck),
-			nameof(DivinityModManagerSettings.DisableMissingModWarnings),
-			nameof(DivinityModManagerSettings.ResetModioSupportWarningAcknowledgement),
-			nameof(DivinityModManagerSettings.ResetOfflineNexusDatabaseWarningAcknowledgement),
-			nameof(DivinityModManagerSettings.ResetReduxPreviewWarningAcknowledgement))
+			nameof(DivinityModManagerSettings.DisableMissingModWarnings))
 	];
 
 	private static readonly SettingsGroup[] ExtenderSettingsGroups =
@@ -161,9 +158,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	private static bool IsSourceIntegrationSetting(string propertyName)
 	{
 		return propertyName == nameof(DivinityModManagerSettings.NexusModsAPIKey)
-			|| propertyName == nameof(DivinityModManagerSettings.ModioAPIKey)
-			|| propertyName == nameof(DivinityModManagerSettings.ResetModioSupportWarningAcknowledgement)
-			|| propertyName == nameof(DivinityModManagerSettings.ResetOfflineNexusDatabaseWarningAcknowledgement);
+			|| propertyName == nameof(DivinityModManagerSettings.ModioAPIKey);
 	}
 
 	private void ApplyModuleAvailability(string propertyName, TextBlock label, FrameworkElement control)

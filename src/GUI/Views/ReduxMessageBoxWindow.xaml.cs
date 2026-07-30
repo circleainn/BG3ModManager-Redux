@@ -10,7 +10,7 @@ namespace DivinityModManager.Views;
 
 /// <summary>
 /// Redux-owned replacement for Xceed's MessageBox. A plain AdonisWindow dialog matching the
-/// same visual language as the other Redux warning windows (ReduxPreviewWarningWindow, etc.),
+/// same visual language as other Redux dialogs,
 /// so confirmations no longer depend on a third-party control's own template/icons.
 /// </summary>
 public partial class ReduxMessageBoxWindow : AdonisUI.Controls.AdonisWindow

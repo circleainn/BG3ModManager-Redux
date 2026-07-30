@@ -317,6 +317,10 @@ foundation and reworks or extends its presentation through:
 
 - A top-level Accessibility menu beside Settings so the inherited speech tools are no longer buried
   under Tools.
+- An optional Redux overview in Help that collects preview, source, and mod.io restore guidance,
+  summarizes organization, export review, restore points, order comparison, personalization, and
+  Quick Access, and offers reversible Local-only and diagnostics choices without interrupting
+  startup.
 - An optional `F2` Quick Access menu for finding actions, profiles, saved orders, categories, and
   installed mods while respecting current command availability and customized keybindings.
 - A rebuilt keyboard-shortcut editor and direct accessibility navigation.
@@ -386,20 +390,6 @@ discussion is [issue #11](https://github.com/raincloudsfollow/BG3ModManager-Redu
 - Application localization (#475).
 - Broader category-, compatibility-, and author-rule-based Mod Diagnostics guidance beyond the
   current opt-in declared-dependency placement check.
-- An optional built-in Redux onboarding and feature tour. On first start, Redux should ask
-  "Would you like a tour of Redux and its features?" with clear Yes and No choices; declining must
-  immediately continue into the app without additional prompts. The tour should remain replayable
-  from Help and introduce active/inactive lists, safe exporting, categories and separators, the
-  selected-mod drawer, Mod Diagnostics, themes and typography, accessibility tools, source warnings,
-  and Redux-specific import/export without changing the user's load order or files. The tour should
-  fold the current Redux preview, mod.io support, and offline Nexus database explanations into a
-  coherent guided sequence instead of stacking separate startup dialogs, while preserving any
-  acknowledgement that is still required for an enabled feature.
-  The tour should
-  also explain optional source linking and offer a clear choice between enabling integrations or
-  starting in **Local-only mode**. It should identify Mod Diagnostics as optional, keep experimental
-  load-order guidance disabled unless the user deliberately enables it, and make every choice
-  reversible from Preferences.
 - Public Nexus SSO authentication.
 - Automatic Redux self-updating during the private alpha.
 - Linux, macOS, Wine, Proton, and self-contained .NET deployment are not planned targets.

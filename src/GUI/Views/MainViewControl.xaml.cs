@@ -363,6 +363,15 @@ public partial class MainViewControl : MainViewControlViewBase
 		if (menuItems.TryGetValue("Help", out var helpMenuItem))
 		{
 			helpMenuItem.Items.Add(new Separator());
+			var reduxTourMenuItem = new MenuItem
+			{
+				Header = "Take the Redux Tour...",
+				ToolTip = "Replay the optional introduction to Redux features and initial choices.",
+				Icon = ReduxIcon.FromResource("Redux.Icon.Compass", true)
+			};
+			reduxTourMenuItem.Click += (_, _) => ViewModel.ShowReduxTour();
+			helpMenuItem.Items.Add(reduxTourMenuItem);
+
 			var reportBugMenuItem = new MenuItem
 			{
 				Header = "Report a Bug...",

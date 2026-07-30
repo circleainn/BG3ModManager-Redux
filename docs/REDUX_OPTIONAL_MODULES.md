@@ -10,6 +10,12 @@ Provider services and source-related UI consume `SourceIntegrationsEnabled`; dia
 `ModDiagnosticsEnabled` and `LoadOrderGuidanceEnabled`. Feature code should not reinterpret the
 underlying preference values independently.
 
+The optional Redux overview in Help replaces the former standalone Redux Preview, offline Nexus,
+and mod.io safety windows. It presents module boundaries as reversible choices without interrupting
+startup: source integrations remain enabled by default, Mod Diagnostics remains enabled by default,
+and experimental load-order guidance remains disabled unless explicitly selected. Opening or
+closing the overview changes no package or load-order data.
+
 ## Source integrations
 
 Source integrations retain BG3MM's inherited Nexus Mods metadata, links, images, and update
