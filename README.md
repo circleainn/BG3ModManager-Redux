@@ -40,6 +40,7 @@ stronger organization, portable Redux data, richer metadata, and safer file hand
 - Manage active and inactive mods with BG3MM's established drag-and-drop load-order workflow.
 - Use profiles, campaigns, saved orders, search, filtering, and configurable columns.
 - Assign multiple categories to a mod or use conservative automatic category suggestions.
+- Assign or remove categories across a multi-selection from the same context menu.
 - Create categories with custom names, descriptions, colors, vector icons, or imported transparent
   PNG icons.
 - Click category pills directly in either mod list to filter both lists; the active filter is shown

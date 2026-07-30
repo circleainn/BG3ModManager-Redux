@@ -131,7 +131,7 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 - Conservative best-effort automatic assignment based on package metadata and reviewed aliases.
 - User-created custom categories with optional descriptions, reusable custom icons, and tooltip
   support.
-- Multiple categories per mod.
+- Multiple categories per mod, including one-step category assignment across a multi-selection.
 - Persistent category colors, icons, ordering, counts, filters, and new-mod indicators.
 - Fixed built-in category names with editable colors and icons, plus Reset to Default.
 - Dot and diamond fallback markers, with the dot used as the standard default.

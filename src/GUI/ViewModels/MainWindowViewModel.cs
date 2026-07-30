@@ -6853,35 +6853,86 @@ Directory the zip will be extracted to:
 
 	public void ToggleModCategoryAssignment(DivinityModData mod, string category)
 	{
-		if (mod == null || String.IsNullOrWhiteSpace(mod.UUID))
+		if (mod == null)
+		{
+			return;
+		}
+
+		var assignCategory = !String.IsNullOrWhiteSpace(category)
+			&& !category.Equals(NoCategoryAssignment, StringComparison.OrdinalIgnoreCase)
+			? !HasModCategoryOverride(mod, category)
+			: (bool?)null;
+		SetModCategoryAssignments([mod], category, assignCategory);
+	}
+
+	public void SetModCategoryAssignments(
+		IEnumerable<DivinityModData> mods,
+		string category,
+		bool? assignCategory = null)
+	{
+		var targets = (mods ?? Enumerable.Empty<DivinityModData>())
+			.Where(mod => mod != null
+				&& !mod.IsVisualDivider
+				&& !String.IsNullOrWhiteSpace(mod.UUID))
+			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
+			.Select(group => group.First())
+			.ToArray();
+		if (targets.Length == 0)
 		{
 			return;
 		}
 
 		if (String.IsNullOrWhiteSpace(category))
 		{
-			Settings.ModCategoryAssignments.Remove(mod.UUID);
-			Settings.ModCategoryOverrides.Remove(mod.UUID);
+			foreach (var mod in targets)
+			{
+				Settings.ModCategoryAssignments.Remove(mod.UUID);
+				Settings.ModCategoryOverrides.Remove(mod.UUID);
+			}
 		}
-		else
+		else if (category.Equals(NoCategoryAssignment, StringComparison.OrdinalIgnoreCase))
 		{
-			if (category.Equals(NoCategoryAssignment, StringComparison.OrdinalIgnoreCase))
+			foreach (var mod in targets)
 			{
 				Settings.ModCategoryAssignments[mod.UUID] = new List<string> { NoCategoryAssignment };
 				Settings.ModCategoryOverrides.Remove(mod.UUID);
-				SaveSettings();
-				ScheduleRefreshModCategories();
-				return;
 			}
-			if (!Settings.ModCategoryAssignments.TryGetValue(mod.UUID, out var categories))
+		}
+		else
+		{
+			var shouldAssign = assignCategory
+				?? !targets.All(mod => HasModCategoryOverride(mod, category));
+			foreach (var mod in targets)
 			{
-				categories = new List<string>();
-				Settings.ModCategoryAssignments[mod.UUID] = categories;
+				if (!Settings.ModCategoryAssignments.TryGetValue(mod.UUID, out var categories))
+				{
+					if (!shouldAssign)
+					{
+						continue;
+					}
+
+					categories = new List<string>();
+					Settings.ModCategoryAssignments[mod.UUID] = categories;
+				}
+				if (shouldAssign)
+				{
+					categories.RemoveAll(item => item.Equals(NoCategoryAssignment, StringComparison.OrdinalIgnoreCase));
+				}
+				var existing = categories.FirstOrDefault(item =>
+					item.Equals(category, StringComparison.OrdinalIgnoreCase));
+				if (shouldAssign && existing == null)
+				{
+					categories.Add(category);
+				}
+				else if (!shouldAssign && existing != null)
+				{
+					categories.Remove(existing);
+				}
+				if (categories.Count == 0)
+				{
+					Settings.ModCategoryAssignments.Remove(mod.UUID);
+				}
 			}
-			categories.RemoveAll(item => item.Equals(NoCategoryAssignment, StringComparison.OrdinalIgnoreCase));
-			var existing = categories.FirstOrDefault(item => item.Equals(category, StringComparison.OrdinalIgnoreCase));
-			if (existing != null) categories.Remove(existing); else categories.Add(category);
-			if (categories.Count == 0) Settings.ModCategoryAssignments.Remove(mod.UUID);
 		}
 
 		SaveSettings();

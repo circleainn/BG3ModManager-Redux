@@ -375,40 +375,61 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			menu.Items.Remove(generatedItem);
 		}
 
+		var categoryTargets = ViewModel.SelectedPakMods
+			.Where(selected => selected != null && !selected.IsVisualDivider)
+			.GroupBy(selected => selected.UUID, StringComparer.OrdinalIgnoreCase)
+			.Select(group => group.First())
+			.ToList();
+		if (categoryTargets.Count <= 1
+			|| !categoryTargets.Any(selected =>
+				selected.UUID.Equals(mod.UUID, StringComparison.OrdinalIgnoreCase)))
+		{
+			categoryTargets = [mod];
+		}
+		var hasBulkCategoryTargets = categoryTargets.Count > 1;
 		var categoryMenu = new MenuItem
 		{
-			Header = "Assign Category",
+			Header = hasBulkCategoryTargets
+				? $"Assign Category to {categoryTargets.Count} Mods"
+				: "Assign Category",
 			Tag = CategoryAssignmentMenuTag,
-			Icon = ReduxIcon.FromResource("Redux.Icon.Pricetag", true)
+			Icon = ReduxIcon.FromResource("Redux.Icon.Pricetag", true),
+			ToolTip = hasBulkCategoryTargets
+				? "Category changes apply to every selected mod."
+				: null
 		};
 		var automaticItem = new MenuItem
 		{
 			Header = "Automatic",
 			IsCheckable = true,
-			IsChecked = !ViewModel.HasModCategoryOverride(mod)
+			IsChecked = categoryTargets.All(target => !ViewModel.HasModCategoryOverride(target))
 		};
-		automaticItem.Click += (_, _) => ViewModel.ToggleModCategoryAssignment(mod, null);
+		automaticItem.Click += (_, _) => ViewModel.SetModCategoryAssignments(categoryTargets, null);
 		categoryMenu.Items.Add(automaticItem);
 		var noCategoryItem = new MenuItem
 		{
 			Header = "No Category",
 			IsCheckable = true,
-			IsChecked = ViewModel.HasNoCategoryAssignment(mod),
+			IsChecked = categoryTargets.All(ViewModel.HasNoCategoryAssignment),
 			Icon = ViewModel.Settings.ShowCategoryIconsInPills
 				? CreateCategoryAssignmentIcon(MainWindowViewModel.UncategorizedModsCategory)
 				: null
 		};
-		noCategoryItem.Click += (_, _) => ViewModel.ToggleModCategoryAssignment(mod, MainWindowViewModel.NoCategoryAssignment);
+		noCategoryItem.Click += (_, _) => ViewModel.SetModCategoryAssignments(
+			categoryTargets,
+			MainWindowViewModel.NoCategoryAssignment);
 		categoryMenu.Items.Add(noCategoryItem);
 		categoryMenu.Items.Add(new Separator());
 
 		foreach (var category in ViewModel.GetAssignableModCategories())
 		{
+			var allTargetsHaveCategory = categoryTargets.All(target =>
+				ViewModel.HasModCategoryOverride(target, category));
 			var categoryItem = new MenuItem
 			{
 				Header = category,
 				IsCheckable = true,
-				IsChecked = ViewModel.HasModCategoryOverride(mod, category),
+				IsChecked = allTargetsHaveCategory,
 				Icon = ViewModel.Settings.ShowCategoryIconsInPills ? CreateCategoryAssignmentIcon(category) : null
 			};
 			if (ColorConverter.ConvertFromString(ViewModel.GetCurrentCategoryColor(category)) is Color categoryColor)
@@ -428,7 +449,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				ReduxMenuItemExtension.SetSemanticRailBrush(categoryItem, labelBrush);
 				ReduxMenuItemExtension.SetUseSemanticHover(categoryItem, true);
 			}
-			categoryItem.Click += (_, _) => ViewModel.ToggleModCategoryAssignment(mod, category);
+			categoryItem.Click += (_, _) => ViewModel.SetModCategoryAssignments(
+				categoryTargets,
+				category,
+				!allTargetsHaveCategory);
 			categoryMenu.Items.Add(categoryItem);
 		}
 
