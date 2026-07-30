@@ -1,3 +1,4 @@
+using DivinityModManager.Models;
 using DivinityModManager.Models.App;
 using DivinityModManager.Util;
 using DivinityModManager.ViewModels;
@@ -71,7 +72,8 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 
 	public ReduxCommandPaletteWindow(
 		Window owner,
-		MainWindowViewModel viewModel)
+		MainWindowViewModel viewModel,
+		Action<DivinityModData> focusMod)
 	{
 		InitializeComponent();
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
@@ -87,7 +89,7 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 			ReduxThemeService.Apply(Resources, settings.ColorTheme, ReduxThemeService.GetActiveTheme(settings));
 		}
 
-		_commands = BuildCommandList(viewModel);
+		_commands = BuildCommandList(viewModel, focusMod);
 		Loaded += (_, _) =>
 		{
 			RefreshResults();
@@ -96,7 +98,9 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 		};
 	}
 
-	private static IReadOnlyList<ReduxCommandPaletteItem> BuildCommandList(MainWindowViewModel viewModel)
+	private static IReadOnlyList<ReduxCommandPaletteItem> BuildCommandList(
+		MainWindowViewModel viewModel,
+		Action<DivinityModData> focusMod)
 	{
 		if (viewModel?.Keys == null)
 		{
@@ -161,6 +165,53 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 					viewModel.SelectedModCategory,
 					category.Name,
 					StringComparison.OrdinalIgnoreCase))));
+
+		if (focusMod != null)
+		{
+			commands.AddRange(viewModel.UserMods
+				.Where(mod => mod != null
+					&& !mod.IsVisualDivider
+					&& !String.IsNullOrWhiteSpace(mod.UUID))
+				.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
+				.Select(group => group.First())
+				.OrderBy(mod => mod.GetDisplayName(), StringComparer.OrdinalIgnoreCase)
+				.Select(mod =>
+				{
+					var categories = mod.DisplayCategories?
+						.Select(category => category?.Name)
+						.Where(name => !String.IsNullOrWhiteSpace(name))
+						.Distinct(StringComparer.OrdinalIgnoreCase)
+						.ToArray() ?? [];
+					var listState = mod.IsForceLoaded && !mod.IsForceLoadedMergedMod && !mod.ForceAllowInLoadOrder
+						? "Always loaded"
+						: mod.IsActive
+							? "Active"
+							: "Inactive";
+					var categorySummary = categories.Length == 0
+						? listState
+						: $"{listState} · {String.Join(" · ", categories)}";
+					var searchableDetails = String.Join(
+						" ",
+						new[]
+						{
+							mod.Author,
+							mod.FileName,
+							mod.Folder,
+							mod.SourceComponentSummary,
+							String.Join(" ", categories)
+						}.Where(value => !String.IsNullOrWhiteSpace(value)));
+					var iconKey = mod.DisplayCategories?
+						.Select(category => category?.IconId)
+						.FirstOrDefault(value => !String.IsNullOrWhiteSpace(value)) ?? "package";
+					return new ReduxCommandPaletteItem(
+						$"Open mod: {mod.GetDisplayName()}",
+						$"Mods · {categorySummary}",
+						searchableDetails,
+						String.Empty,
+						iconKey,
+						() => focusMod(mod));
+				}));
+		}
 
 		return commands;
 	}

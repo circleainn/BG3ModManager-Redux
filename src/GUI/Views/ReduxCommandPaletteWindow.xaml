@@ -143,7 +143,7 @@
 							CaretBrush="{DynamicResource ReduxAccentBrush}"
 							FontSize="{DynamicResource Redux.FontSize.14}"
 							TextChanged="SearchBox_TextChanged"
-							ToolTip="Search commands by name or category" />
+							ToolTip="Search commands, mods, profiles, orders, or categories" />
 					</Grid>
 				</Border>
 
@@ -181,7 +181,7 @@
 							<TextBlock Margin="0,8,0,0"
 								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 								FontWeight="{DynamicResource Redux.FontWeight.Control}"
-								Text="No matching commands" />
+								Text="No matching results" />
 						</StackPanel>
 					</Grid>
 				</Border>
@@ -197,7 +197,7 @@
 					<TextBlock Grid.Column="1"
 						VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="{Binding ElementName=CommandList, Path=Items.Count, StringFormat={}{0} actions}" />
+						Text="{Binding ElementName=CommandList, Path=Items.Count, StringFormat={}{0} results}" />
 				</Grid>
 			</Grid>
 		</Border>

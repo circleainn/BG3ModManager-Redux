@@ -49,7 +49,7 @@ stronger organization, portable Redux data, richer metadata, and safer file hand
   and an optional text-only presentation.
 - Work from the grouped command toolbar or hide it and use the complete compact Toolbar menu.
 - Open the searchable command palette with `Ctrl+Shift+P` to run available Redux commands, switch
-  profiles or saved orders, and filter by category without navigating menus.
+  profiles or saved orders, filter by category, and locate installed mods without navigating menus.
 - Review activations, deactivations, placement changes, automatically added dependencies, and
   enabled Mod Diagnostics findings before Redux writes the selected order to the game profile.
 - Return to an earlier state from File > Restore Points. Redux keeps the 20 newest pre-export or

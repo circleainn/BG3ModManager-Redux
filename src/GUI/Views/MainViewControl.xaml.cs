@@ -1142,6 +1142,8 @@ public partial class MainViewControl : MainViewControlViewBase
 		e.Handled = true;
 	}
 
+	public void FocusModEntry(DivinityModData mod) => ModLayout.FocusModEntry(mod);
+
 	public void OnActivated()
 	{
 		// Toolbar buttons that open a modal dialog (file pickers, message boxes) can be left

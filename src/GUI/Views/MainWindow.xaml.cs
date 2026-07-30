@@ -551,7 +551,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 	private void OpenCommandPalette()
 	{
-		var palette = new ReduxCommandPaletteWindow(this, ViewModel);
+		var palette = new ReduxCommandPaletteWindow(this, ViewModel, MainView.FocusModEntry);
 		ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(palette, this);
 		if (palette.Accepted)
 		{
