@@ -310,6 +310,8 @@ foundation and reworks or extends its presentation through:
 
 - A top-level Accessibility menu beside Settings so the inherited speech tools are no longer buried
   under Tools.
+- A searchable `Ctrl+Shift+P` command palette that launches existing Redux commands and respects
+  their current availability and customized keybindings.
 - A rebuilt keyboard-shortcut editor and direct accessibility navigation.
 - A renamed and visually rebuilt Toolkit-project marker that more accurately describes its scope.
 - Atkinson Hyperlegible as a bundled typeface option.

@@ -235,6 +235,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			// Redux consolidates folder navigation into Quick Links. Donation/project
 			// destinations live under Credits and Quick Links, while their hotkeys remain active.
 			if (menuSettings.Parent.Equals("Go", StringComparison.OrdinalIgnoreCase) ||
+				prop.Name == nameof(AppKeys.OpenCommandPalette) ||
 				prop.Name == nameof(AppKeys.OpenDonationLink) ||
 				prop.Name == nameof(AppKeys.OpenRepositoryPage))
 			{

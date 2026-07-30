@@ -17,6 +17,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -521,6 +522,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 			ViewModel.Keys.OpenPreferences.AddAction(() => OpenPreferences(false));
 			ViewModel.Keys.OpenKeybindings.AddAction(() => OpenPreferences(SettingsWindowTab.Keybindings));
+			ViewModel.Keys.OpenCommandPalette.AddAction(OpenCommandPalette);
 			ViewModel.Keys.OpenAboutWindow.AddAction(ToggleAboutWindow);
 
 			ViewModel.Keys.ToggleVersionGeneratorWindow.AddAction(() =>
@@ -546,6 +548,19 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 			MainView.OnActivated();
 		});
+	}
+
+	private void OpenCommandPalette()
+	{
+		var palette = new ReduxCommandPaletteWindow(this, ViewModel.Keys);
+		ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(palette, this);
+		var selectedHotkey = palette.SelectedHotkey;
+		if (palette.Accepted
+			&& selectedHotkey?.CanExecuteCommand == true
+			&& selectedHotkey.Command is ICommand command)
+		{
+			command.Execute(null);
+		}
 	}
 
 	public void PrepareForStartup()

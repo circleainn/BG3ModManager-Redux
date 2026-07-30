@@ -64,6 +64,7 @@ public class Hotkey : ReactiveObject, IHotkey
 	private IObservable<bool> _canExecuteConditions;
 
 	private readonly List<Action> _actions;
+	public bool HasActions => _actions.Count > 0;
 
 	public void AddAction(Action action, IObservable<bool> actionCanExecute = null)
 	{

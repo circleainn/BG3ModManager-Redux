@@ -127,6 +127,14 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("Settings", "Open Keyboard Shortcuts")]
 	public Hotkey OpenKeybindings { get; private set; } = new Hotkey(Key.K, ModifierKeys.Control);
 
+	[MenuSettings(
+		"Shortcuts",
+		"Command Palette...",
+		false,
+		"Search and run an existing Redux command.")]
+	public Hotkey OpenCommandPalette { get; private set; } =
+		new Hotkey(Key.P, ModifierKeys.Control | ModifierKeys.Shift);
+
 	[MenuSettings("Settings", "Cycle Theme")]
 	public Hotkey ToggleViewTheme { get; private set; } = new Hotkey(Key.L, ModifierKeys.Control);
 

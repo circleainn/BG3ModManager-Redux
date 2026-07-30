@@ -664,6 +664,13 @@
 							</MenuItem>
 						</MenuItem>
 						<MenuItem Header="Shortcuts">
+							<MenuItem Command="{Binding Keys.OpenCommandPalette.Command}"
+								Header="Command Palette..."
+								InputGestureText="{Binding Keys.OpenCommandPalette.DisplayBindingText}"
+								ToolTip="Search and run an available Redux command.">
+								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Terminal}" /></MenuItem.Icon>
+							</MenuItem>
+							<Separator />
 							<MenuItem Header="FOLDERS" IsEnabled="False" />
 							<MenuItem Command="{Binding Keys.OpenModsFolder.Command}" Header="Mods Folder" InputGestureText="{Binding Keys.OpenModsFolder.DisplayBindingText}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>

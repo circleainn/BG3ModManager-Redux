@@ -1,0 +1,205 @@
+<adonisUI:AdonisWindow x:Class="DivinityModManager.Views.ReduxCommandPaletteWindow"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+	xmlns:controls="clr-namespace:DivinityModManager.Controls"
+	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+	Title="Command Palette"
+	Width="620" Height="530" MinWidth="520" MinHeight="420" MaxWidth="760" MaxHeight="760"
+	FontFamily="{DynamicResource Redux.FontFamily.UI}"
+	FontSize="{DynamicResource Redux.FontSize.12}"
+	FontWeight="{DynamicResource Redux.FontWeight.Body}"
+	ResizeMode="CanResizeWithGrip"
+	ShowInTaskbar="False"
+	WindowStartupLocation="CenterOwner"
+	WindowStyle="SingleBorderWindow"
+	Template="{DynamicResource ReduxWindowTemplate}"
+	Background="{DynamicResource ReduxWindowBrush}"
+	PreviewKeyDown="Window_PreviewKeyDown">
+	<shell:WindowChrome.WindowChrome>
+		<shell:WindowChrome
+			CaptionHeight="0"
+			CornerRadius="0"
+			GlassFrameThickness="0"
+			ResizeBorderThickness="6"
+			UseAeroCaptionButtons="False" />
+	</shell:WindowChrome.WindowChrome>
+	<Window.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+
+			<Style x:Key="CommandPaletteItemStyle" TargetType="{x:Type ListBoxItem}">
+				<Setter Property="Margin" Value="0,0,0,3" />
+				<Setter Property="Padding" Value="0" />
+				<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="BorderThickness" Value="0" />
+				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type ListBoxItem}">
+							<Border x:Name="ItemChrome"
+								Padding="11,8"
+								Background="Transparent"
+								CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto" />
+										<ColumnDefinition Width="*" />
+										<ColumnDefinition Width="Auto" />
+									</Grid.ColumnDefinitions>
+									<Border Width="30" Height="30"
+										Background="{DynamicResource ReduxAccentSoftBrush}"
+										CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+										<controls:ReduxIcon Width="15" Height="15"
+											HorizontalAlignment="Center"
+											VerticalAlignment="Center"
+											Foreground="{DynamicResource ReduxAccentBrush}"
+											StrokeData="{StaticResource Redux.Icon.Terminal}" />
+									</Border>
+									<StackPanel Grid.Column="1" Margin="10,0,12,0" VerticalAlignment="Center">
+										<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+											FontWeight="{DynamicResource Redux.FontWeight.Control}"
+											Text="{Binding Name}"
+											TextTrimming="CharacterEllipsis" />
+										<TextBlock Margin="0,2,0,0"
+											Foreground="{DynamicResource ReduxTextMutedBrush}"
+											Text="{Binding Category}"
+											TextTrimming="CharacterEllipsis" />
+									</StackPanel>
+									<Border Grid.Column="2"
+										Padding="7,3"
+										VerticalAlignment="Center"
+										Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+										BorderBrush="{DynamicResource ReduxBorderBrush}"
+										BorderThickness="1"
+										CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
+										Visibility="{Binding HasGesture, Converter={StaticResource BoolToVisibilityConverter}}">
+										<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+											FontSize="{DynamicResource Redux.FontSize.11}"
+											Text="{Binding Gesture}" />
+									</Border>
+								</Grid>
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter TargetName="ItemChrome" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+								</Trigger>
+								<Trigger Property="IsSelected" Value="True">
+									<Setter TargetName="ItemChrome" Property="Background" Value="{DynamicResource ReduxSelectionBrush}" />
+								</Trigger>
+								<Trigger Property="IsEnabled" Value="False">
+									<Setter TargetName="ItemChrome" Property="Opacity" Value="0.45" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
+		</ResourceDictionary>
+	</Window.Resources>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.Terminal}" />
+		<Border Grid.Row="1"
+			Padding="18"
+			Background="{DynamicResource ReduxAppBackgroundBrush}"
+			BorderBrush="{DynamicResource ReduxBorderBrush}"
+			BorderThickness="1">
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+
+				<Border Padding="12,9"
+					Background="{DynamicResource ReduxSurfaceBrush}"
+					BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
+					BorderThickness="1"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<controls:ReduxIcon Width="16" Height="16"
+							Margin="0,0,9,0"
+							VerticalAlignment="Center"
+							Foreground="{DynamicResource ReduxTextMutedBrush}"
+							StrokeData="{StaticResource Redux.Icon.Funnel}" />
+						<TextBox x:Name="SearchBox"
+							Grid.Column="1"
+							Padding="0"
+							Background="Transparent"
+							BorderThickness="0"
+							Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+							CaretBrush="{DynamicResource ReduxAccentBrush}"
+							FontSize="{DynamicResource Redux.FontSize.14}"
+							TextChanged="SearchBox_TextChanged"
+							ToolTip="Search commands by name or category" />
+					</Grid>
+				</Border>
+
+				<Border Grid.Row="1" Margin="0,12,0,10"
+					Background="{DynamicResource ReduxSurfaceBrush}"
+					BorderBrush="{DynamicResource ReduxBorderBrush}"
+					BorderThickness="1"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+					ClipToBounds="True">
+					<Grid>
+						<ListBox x:Name="CommandList"
+							Margin="5"
+							Padding="0"
+							Background="Transparent"
+							BorderThickness="0"
+							HorizontalContentAlignment="Stretch"
+							MouseDoubleClick="CommandList_MouseDoubleClick"
+							ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+							ScrollViewer.VerticalScrollBarVisibility="Auto">
+							<ListBox.ItemContainerStyle>
+								<Style BasedOn="{StaticResource CommandPaletteItemStyle}" TargetType="{x:Type ListBoxItem}">
+									<Setter Property="IsEnabled" Value="{Binding CanExecute}" />
+								</Style>
+							</ListBox.ItemContainerStyle>
+						</ListBox>
+						<StackPanel x:Name="EmptyState"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"
+							IsHitTestVisible="False"
+							Visibility="Collapsed">
+							<controls:ReduxIcon Width="25" Height="25"
+								HorizontalAlignment="Center"
+								Foreground="{DynamicResource ReduxTextMutedBrush}"
+								StrokeData="{StaticResource Redux.Icon.Terminal}" />
+							<TextBlock Margin="0,8,0,0"
+								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+								FontWeight="{DynamicResource Redux.FontWeight.Control}"
+								Text="No matching commands" />
+						</StackPanel>
+					</Grid>
+				</Border>
+
+				<Grid Grid.Row="2">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<TextBlock VerticalAlignment="Center"
+						Foreground="{DynamicResource ReduxTextMutedBrush}"
+						Text="↑↓ Navigate   Enter Run   Esc Close" />
+					<TextBlock Grid.Column="1"
+						VerticalAlignment="Center"
+						Foreground="{DynamicResource ReduxTextMutedBrush}"
+						Text="{Binding ElementName=CommandList, Path=Items.Count, StringFormat={}{0} commands}" />
+				</Grid>
+			</Grid>
+		</Border>
+	</Grid>
+</adonisUI:AdonisWindow>
