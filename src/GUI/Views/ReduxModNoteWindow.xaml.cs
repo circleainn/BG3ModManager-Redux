@@ -9,10 +9,16 @@ namespace DivinityModManager.Views;
 
 public partial class ReduxModNoteWindow : AdonisUI.Controls.AdonisWindow
 {
+	private bool _requiresSharedNoteText;
 	public bool Accepted { get; private set; }
 	public string Note => NoteTextBox.Text?.Trim() ?? String.Empty;
 
 	public ReduxModNoteWindow(Window owner, DivinityModData mod)
+		: this(owner, mod == null ? [] : [mod])
+	{
+	}
+
+	public ReduxModNoteWindow(Window owner, IReadOnlyList<DivinityModData> mods)
 	{
 		InitializeComponent();
 		if (owner?.IsLoaded == true) Owner = owner;
@@ -20,8 +26,26 @@ public partial class ReduxModNoteWindow : AdonisUI.Controls.AdonisWindow
 		if (settings != null)
 			ReduxThemeService.Apply(Resources, settings.ColorTheme, ReduxThemeService.GetActiveTheme(settings));
 
-		ModNameText.Text = mod?.DisplayName ?? "Selected mod";
-		NoteTextBox.Text = mod?.PrivateNote ?? String.Empty;
+		var targets = (mods ?? [])
+			.Where(mod => mod != null)
+			.ToArray();
+		if (targets.Length <= 1)
+		{
+			ModNameText.Text = targets.FirstOrDefault()?.DisplayName ?? "Selected mod";
+			NoteTextBox.Text = targets.FirstOrDefault()?.PrivateNote ?? String.Empty;
+		}
+		else
+		{
+			var notes = targets
+				.Select(mod => mod.PrivateNote?.Trim() ?? String.Empty)
+				.Distinct(StringComparer.Ordinal)
+				.ToArray();
+			_requiresSharedNoteText = notes.Length > 1;
+			ModNameText.Text = _requiresSharedNoteText
+				? $"{targets.Length} selected mods \u00B7 existing notes differ, so enter the shared note to apply."
+				: $"{targets.Length} selected mods \u00B7 saving applies the same note to every selected mod.";
+			NoteTextBox.Text = notes.Length == 1 ? notes[0] : String.Empty;
+		}
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
 		ReduxWindowBehavior.AttachRoundedCorners(this);
 		Loaded += (_, _) =>
@@ -40,6 +64,8 @@ public partial class ReduxModNoteWindow : AdonisUI.Controls.AdonisWindow
 		CharacterCountText.Text =
 			$"{NoteTextBox.Text.Length:N0} / {ReduxModAnnotationService.MaximumNoteLength:N0}";
 		ClearButton.IsEnabled = !String.IsNullOrWhiteSpace(NoteTextBox.Text);
+		if (SaveButton != null)
+			SaveButton.IsEnabled = !_requiresSharedNoteText || !String.IsNullOrWhiteSpace(NoteTextBox.Text);
 	}
 
 	private void SaveButton_Click(object sender, RoutedEventArgs e)

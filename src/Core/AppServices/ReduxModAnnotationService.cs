@@ -131,6 +131,44 @@ public static class ReduxModAnnotationService
 		return TryValidate(store, out error);
 	}
 
+	public static bool TrySetMany(
+		ReduxModAnnotationStore store,
+		IEnumerable<string> modUuids,
+		string privateNote,
+		out string error)
+	{
+		error = String.Empty;
+		if (store == null)
+		{
+			error = "The annotation store is unavailable.";
+			return false;
+		}
+
+		var targets = (modUuids ?? Enumerable.Empty<string>())
+			.Where(uuid => !String.IsNullOrWhiteSpace(uuid))
+			.Select(uuid => uuid.Trim())
+			.Distinct(StringComparer.OrdinalIgnoreCase)
+			.ToArray();
+		if (targets.Length == 0)
+		{
+			error = "Choose at least one mod before editing notes.";
+			return false;
+		}
+
+		var proposed = store.Clone();
+		foreach (var uuid in targets)
+		{
+			if (!TrySet(proposed, uuid, privateNote, out error))
+			{
+				return false;
+			}
+		}
+
+		store.SchemaVersion = proposed.SchemaVersion;
+		store.Mods = proposed.Mods;
+		return true;
+	}
+
 	public static ReduxModAnnotation Find(ReduxModAnnotationStore store, string modUuid) =>
 		store?.Mods?.FirstOrDefault(annotation =>
 			annotation != null

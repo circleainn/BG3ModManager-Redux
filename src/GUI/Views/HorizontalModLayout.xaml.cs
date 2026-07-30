@@ -48,6 +48,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private const string CategoryAssignmentMenuTag = "ReduxCategoryAssignment";
 	private const string SourceLinkMenuTag = "ReduxSourceLink";
 	private const string PrivateNoteMenuTag = "ReduxPrivateNote";
+	private const string BulkActionsMenuTag = "ReduxBulkActions";
+	private const string BulkHiddenSeparatorTag = "ReduxBulkHiddenSeparator";
 	private Point _categoryDragStart;
 	private ModCategoryFilterItem _draggedCategory;
 	private CategoryDropIndicatorAdorner _categoryDropIndicator;
@@ -314,10 +316,23 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		var mod = item?.DataContext as DivinityModData;
 		var menu = item?.ContextMenu ?? listView.ContextMenu;
 		if (menu == null) return;
+		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, BulkActionsMenuTag)).ToList())
+		{
+			menu.Items.Remove(generatedItem);
+		}
+		foreach (var baseItem in menu.Items.OfType<MenuItem>().Where(IsSingleModContextAction))
+		{
+			baseItem.ClearValue(VisibilityProperty);
+		}
+		foreach (var hiddenSeparator in menu.Items.OfType<Separator>().Where(entry => Equals(entry.Tag, BulkHiddenSeparatorTag)))
+		{
+			hiddenSeparator.Tag = null;
+			hiddenSeparator.ClearValue(VisibilityProperty);
+		}
 		foreach (var hiddenEntry in menu.Items.OfType<FrameworkElement>().Where(entry => Equals(entry.Tag, "ReduxHiddenForDivider")).ToList())
 		{
 			hiddenEntry.Tag = null;
-			hiddenEntry.Visibility = Visibility.Visible;
+			hiddenEntry.ClearValue(VisibilityProperty);
 		}
 
 		if (mod == null)
@@ -375,14 +390,18 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			menu.Items.Remove(generatedItem);
 		}
 
-		var categoryTargets = ViewModel.SelectedPakMods
-			.Where(selected => selected != null && !selected.IsVisualDivider)
+		var categoryTargets = listView.SelectedItems
+			.OfType<DivinityModData>()
+			.Where(selected =>
+				selected != null
+				&& !selected.IsVisualDivider
+				&& !String.IsNullOrWhiteSpace(selected.UUID))
 			.GroupBy(selected => selected.UUID, StringComparer.OrdinalIgnoreCase)
 			.Select(group => group.First())
 			.ToList();
 		if (categoryTargets.Count <= 1
 			|| !categoryTargets.Any(selected =>
-				selected.UUID.Equals(mod.UUID, StringComparison.OrdinalIgnoreCase)))
+				String.Equals(selected.UUID, mod.UUID, StringComparison.OrdinalIgnoreCase)))
 		{
 			categoryTargets = [mod];
 		}
@@ -456,16 +475,92 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			categoryMenu.Items.Add(categoryItem);
 		}
 
-		menu.Items.Insert(Math.Min(2, menu.Items.Count), categoryMenu);
-
 		var privateNoteItem = new MenuItem
 		{
-			Header = mod.HasPrivateNote ? "Edit Note..." : "Add Note...",
+			Header = hasBulkCategoryTargets
+				? $"Set Note for {categoryTargets.Count} Mods..."
+				: mod.HasPrivateNote ? "Edit Note..." : "Add Note...",
 			Tag = PrivateNoteMenuTag,
-			Icon = ReduxIcon.FromResource("Redux.Icon.ScrollText", true)
+			Icon = ReduxIcon.FromResource("Redux.Icon.ScrollText", true),
+			ToolTip = hasBulkCategoryTargets
+				? "Saving applies the same note to every selected mod."
+				: null
 		};
-		privateNoteItem.Click += (_, _) => ShowModNoteDialog(mod);
-		menu.Items.Insert(Math.Min(3, menu.Items.Count), privateNoteItem);
+		privateNoteItem.Click += (_, _) => ShowModNoteDialog(categoryTargets);
+
+		if (hasBulkCategoryTargets)
+		{
+			var bulkTargetsAreActive = listView == ActiveModsListView;
+			var bulkActions = new MenuItem
+			{
+				Header = $"Selected Mods ({categoryTargets.Count})",
+				Tag = BulkActionsMenuTag,
+				Icon = ReduxIcon.FromResource("Redux.Icon.ListStroke", true)
+			};
+			if (listView == ActiveModsListView || listView == InactiveModsListView)
+			{
+				var moveSelected = new MenuItem
+				{
+					Header = bulkTargetsAreActive ? "Move to Inactive Mods" : "Move to Active Mods",
+					Icon = ReduxIcon.FromResource(
+						bulkTargetsAreActive ? "Redux.Icon.ArrowForwardStroke" : "Redux.Icon.ArrowBackStroke",
+						true)
+				};
+				moveSelected.Click += (_, _) => MoveSelectedMods(listView);
+				bulkActions.Items.Add(moveSelected);
+			}
+			bulkActions.Items.Add(categoryMenu);
+			bulkActions.Items.Add(privateNoteItem);
+
+			if (categoryTargets.Any(target => target.HasPrivateNote))
+			{
+				var clearNotes = new MenuItem
+				{
+					Header = "Clear Notes",
+					Icon = ReduxIcon.FromResource("Redux.Icon.RemoveCircle", true)
+				};
+				clearNotes.Click += (_, _) => ClearSelectedModNotes(categoryTargets);
+				bulkActions.Items.Add(clearNotes);
+			}
+
+			bulkActions.Items.Add(new Separator());
+			var deleteSelected = new MenuItem
+			{
+				Header = $"Delete {categoryTargets.Count} Selected Mods...",
+				IsEnabled = categoryTargets.Any(target => target.CanDelete),
+				Icon = ReduxIcon.FromResource("Redux.Icon.Trash", true, "ReduxErrorBrush")
+			};
+			ApplySemanticMenuHover(deleteSelected, "ReduxErrorPillBackground", "ReduxErrorBrush");
+			deleteSelected.Click += (_, _) => ViewModel.DeleteSelectedMods(categoryTargets);
+			bulkActions.Items.Add(deleteSelected);
+
+			var clearSelection = new MenuItem
+			{
+				Header = "Clear Selection",
+				Icon = ReduxIcon.FromResource("Redux.Icon.CloseCircle", true)
+			};
+			clearSelection.Click += (_, _) => DeselectAll();
+			bulkActions.Items.Add(clearSelection);
+			menu.Items.Insert(0, bulkActions);
+
+			foreach (var baseItem in menu.Items.OfType<MenuItem>().Where(IsSingleModContextAction))
+			{
+				baseItem.Visibility = Visibility.Collapsed;
+			}
+			var firstBaseSeparator = menu.Items
+				.OfType<Separator>()
+				.FirstOrDefault(separator => separator.Tag == null);
+			if (firstBaseSeparator != null)
+			{
+				firstBaseSeparator.Tag = BulkHiddenSeparatorTag;
+				firstBaseSeparator.Visibility = Visibility.Collapsed;
+			}
+		}
+		else
+		{
+			menu.Items.Insert(Math.Min(2, menu.Items.Count), categoryMenu);
+			menu.Items.Insert(Math.Min(3, menu.Items.Count), privateNoteItem);
+		}
 
 		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, SourceLinkMenuTag)).ToList())
 		{
@@ -476,7 +571,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			var sourceMenu = new MenuItem
 			{
-				Header = "Source Link",
+				Header = hasBulkCategoryTargets ? $"Source Link for {mod.DisplayName}" : "Source Link",
 				Tag = SourceLinkMenuTag,
 				Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true)
 			};
@@ -555,13 +650,56 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		menu.Items.Insert(Math.Min(3, menu.Items.Count), dividerMenu);
 	}
 
-	private void ShowModNoteDialog(DivinityModData mod)
+	private static bool IsSingleModContextAction(MenuItem item)
 	{
-		if (mod == null || mod.IsVisualDivider) return;
-		var dialog = new ReduxModNoteWindow(Window.GetWindow(this), mod);
+		if (item == null) return false;
+		if (ReferenceEquals(item.Command, DivinityApp.Commands.MoveModToActiveCommand)
+			|| ReferenceEquals(item.Command, DivinityApp.Commands.MoveModToInactiveCommand)
+			|| ReferenceEquals(item.Command, DivinityApp.Commands.DeleteModCommand))
+			return true;
+
+		return item.Header is string header
+			&& (header == "Move to Active Mods"
+				|| header == "Move to Inactive Mods"
+				|| header == "Delete Mod...");
+	}
+
+	private void ShowModNoteDialog(DivinityModData mod) =>
+		ShowModNoteDialog(mod == null ? [] : [mod]);
+
+	private void ShowModNoteDialog(IReadOnlyList<DivinityModData> targetMods)
+	{
+		var targets = (targetMods ?? [])
+			.Where(mod => mod != null && !mod.IsVisualDivider && !String.IsNullOrWhiteSpace(mod.UUID))
+			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
+			.Select(group => group.First())
+			.ToArray();
+		if (targets.Length == 0) return;
+
+		var dialog = new ReduxModNoteWindow(Window.GetWindow(this), targets);
 		dialog.ShowDialog();
 		if (!dialog.Accepted) return;
-		if (!ViewModel.TrySetModPrivateNote(mod, dialog.Note, out var error))
+		if (!ViewModel.TrySetModPrivateNotes(targets, dialog.Note, out var error))
+			ShowCategoryMessage(error, "Notes", MessageBoxButton.OK, MessageBoxImage.Warning);
+	}
+
+	private void ClearSelectedModNotes(IReadOnlyList<DivinityModData> targetMods)
+	{
+		var targets = (targetMods ?? [])
+			.Where(mod => mod != null && !mod.IsVisualDivider && mod.HasPrivateNote)
+			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
+			.Select(group => group.First())
+			.ToArray();
+		if (targets.Length == 0) return;
+
+		var result = ShowCategoryMessage(
+			$"Clear notes from {targets.Length} selected {(targets.Length == 1 ? "mod" : "mods")}?\n\nInstalled packages and load orders will not be changed.",
+			"Clear Notes",
+			MessageBoxButton.YesNo,
+			MessageBoxImage.Question);
+		if (result != MessageBoxResult.Yes) return;
+
+		if (!ViewModel.TrySetModPrivateNotes(targets, String.Empty, out var error))
 			ShowCategoryMessage(error, "Notes", MessageBoxButton.OK, MessageBoxImage.Warning);
 	}
 
@@ -1507,9 +1645,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private IDisposable _updateScroll;
 
-	private void MoveSelectedMods()
+	private void MoveSelectedMods(ModListView sourceList = null)
 	{
-		if (ListHasFocus(ActiveModsListView))
+		if (sourceList == ActiveModsListView || (sourceList == null && ListHasFocus(ActiveModsListView)))
 		{
 			var selectedMods = ViewModel.ActiveMods.Where(x => x.IsSelected).ToList();
 
@@ -1561,7 +1699,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				//FocusMod(ActiveModsListView, ActiveModsListView.SelectedItem);
 			});
 		}
-		else if (ListHasFocus(InactiveModsListView))
+		else if (sourceList == InactiveModsListView || (sourceList == null && ListHasFocus(InactiveModsListView)))
 		{
 			var selectedMods = ViewModel.InactiveMods.Where(x => x.IsSelected).ToList();
 

@@ -1848,22 +1848,40 @@ Directory the zip will be extracted to:
 	}
 
 	public bool TrySetModPrivateNote(DivinityModData mod, string note, out string error)
+		=> TrySetModPrivateNotes(mod == null ? [] : [mod], note, out error);
+
+	public bool TrySetModPrivateNotes(
+		IEnumerable<DivinityModData> targetMods,
+		string note,
+		out string error)
 	{
 		error = String.Empty;
-		if (mod == null)
+		var targets = (targetMods ?? Enumerable.Empty<DivinityModData>())
+			.Where(mod => mod != null && !String.IsNullOrWhiteSpace(mod.UUID))
+			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
+			.Select(group => group.First())
+			.ToArray();
+		if (targets.Length == 0)
 		{
-			error = "Choose a mod before editing its notes.";
+			error = "Choose at least one mod before editing notes.";
 			return false;
 		}
 
 		var proposed = _modAnnotationStore.Clone();
-		if (!ReduxModAnnotationService.TrySet(proposed, mod.UUID, note, out error) ||
+		if (!ReduxModAnnotationService.TrySetMany(
+				proposed,
+				targets.Select(mod => mod.UUID),
+				note,
+				out error) ||
 			!ReduxModAnnotationService.TrySave(GetModAnnotationsPath(), proposed, out error))
 			return false;
 
 		_modAnnotationStore = proposed;
+		var targetUuids = targets
+			.Select(mod => mod.UUID)
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
 		foreach (var matchingMod in mods.Items.Where(item =>
-			String.Equals(item.UUID, mod.UUID, StringComparison.OrdinalIgnoreCase)))
+			targetUuids.Contains(item.UUID)))
 			ApplyModAnnotation(matchingMod);
 		return true;
 	}
@@ -7263,6 +7281,23 @@ Directory the zip will be extracted to:
 		DeleteMods([mod]);
 	}
 
+	public void DeleteSelectedMods(IEnumerable<DivinityModData> targetMods)
+	{
+		var selectedMods = (targetMods ?? Enumerable.Empty<DivinityModData>())
+			.Where(mod => mod != null && !mod.IsVisualDivider)
+			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
+			.Select(group => group.First())
+			.ToArray();
+		var eligibleMods = selectedMods.Where(mod => mod.CanDelete).ToList();
+		if (eligibleMods.Count > 0)
+			DeleteMods(eligibleMods);
+		else
+			View.DeleteFilesView.ViewModel.Close();
+
+		if (selectedMods.Any(mod => mod.IsEditorMod))
+			ShowAlert("Editor mods cannot be deleted with the Mod Manager", AlertType.Warning, 60);
+	}
+
 	public void RemoveDeletedMods(HashSet<string> deletedMods, bool removeFromLoadOrder = true)
 	{
 		RxApp.MainThreadScheduler.Schedule(() =>
@@ -8285,21 +8320,7 @@ Directory the zip will be extracted to:
 
 			if (targetList != null)
 			{
-				var selectedMods = targetList.Where(x => x.IsSelected);
-				var selectedEligableMods = selectedMods.Where(x => x.CanDelete).ToList();
-
-				if (selectedEligableMods.Count > 0)
-				{
-					DeleteMods(selectedEligableMods);
-				}
-				else
-				{
-					this.View.DeleteFilesView.ViewModel.Close();
-				}
-				if (selectedMods.Any(x => x.IsEditorMod))
-				{
-					ShowAlert("Editor mods cannot be deleted with the Mod Manager", AlertType.Warning, 60);
-				}
+				DeleteSelectedMods(targetList.Where(mod => mod.IsSelected));
 			}
 			else
 			{

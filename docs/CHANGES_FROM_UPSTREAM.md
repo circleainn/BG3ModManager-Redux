@@ -133,6 +133,8 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 - User-created custom categories with optional descriptions, reusable custom icons, and tooltip
   support.
 - Multiple categories per mod, including one-step category assignment across a multi-selection.
+- A selection-aware context group for moving, categorizing, annotating, deleting, or clearing a
+  multi-selection without obscuring the familiar single-mod commands.
 - Persistent category colors, icons, ordering, counts, filters, and new-mod indicators.
 - Fixed built-in category names with editable colors and icons, plus Reset to Default.
 - Dot and diamond fallback markers, with the dot used as the standard default.
@@ -167,7 +169,8 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 - Optional transfer of custom categories and descriptions, explicit category assignments,
   category display order, active-list separators and descriptions, collapsed states, and reusable
   custom PNG icons.
-- Per-mod notes stored atomically outside package metadata, with an unchecked export option
+- Per-mod notes stored atomically outside package metadata, including atomic shared-note updates
+  across a multi-selection, with an unchecked export option
   so they remain local unless deliberately included. Import preserves an existing local note
   instead of silently overwriting it.
 - Choice of importing the saved order, its Redux presentation metadata, or both.

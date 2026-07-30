@@ -109,6 +109,7 @@ internal static class Program
 			(nameof(annotations.AnnotationsRoundTripWithoutPackageOrProfileData), annotations.AnnotationsRoundTripWithoutPackageOrProfileData),
 			(nameof(annotations.ClearingTheLastValueRemovesTheAnnotation), annotations.ClearingTheLastValueRemovesTheAnnotation),
 			(nameof(annotations.OversizedNotesAreRejectedBeforeTheStoreChanges), annotations.OversizedNotesAreRejectedBeforeTheStoreChanges),
+			(nameof(annotations.BulkNotesUpdateAtomically), annotations.BulkNotesUpdateAtomically),
 			(nameof(overlaps.NormalizesSlashAndCaseDifferences), overlaps.NormalizesSlashAndCaseDifferences),
 			(nameof(overlaps.DuplicatePathsInsideOnePackageAreNotOverlaps), overlaps.DuplicatePathsInsideOnePackageAreNotOverlaps),
 			(nameof(overlaps.ExcludesUniquePathsAndCountsAffectedPackages), overlaps.ExcludesUniquePathsAndCountsAffectedPackages),

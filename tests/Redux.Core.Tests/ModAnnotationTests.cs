@@ -59,6 +59,32 @@ internal sealed class ModAnnotationTests
 		RegressionAssert.Equal("Original", annotation.PrivateNote);
 	}
 
+	public void BulkNotesUpdateAtomically()
+	{
+		var first = Guid.NewGuid().ToString();
+		var second = Guid.NewGuid().ToString();
+		var store = new ReduxModAnnotationStore();
+		RegressionAssert.True(ReduxModAnnotationService.TrySet(store, first, "First", out _));
+		RegressionAssert.True(ReduxModAnnotationService.TrySet(store, second, "Second", out _));
+
+		RegressionAssert.False(ReduxModAnnotationService.TrySetMany(
+			store,
+			new[] { first, second },
+			new string('x', ReduxModAnnotationService.MaximumNoteLength + 1),
+			out _));
+		RegressionAssert.Equal("First", ReduxModAnnotationService.Find(store, first).PrivateNote);
+		RegressionAssert.Equal("Second", ReduxModAnnotationService.Find(store, second).PrivateNote);
+
+		RegressionAssert.True(ReduxModAnnotationService.TrySetMany(
+			store,
+			new[] { first, second, first },
+			"Shared note",
+			out _));
+		RegressionAssert.Equal(2, store.Mods.Count);
+		RegressionAssert.Equal("Shared note", ReduxModAnnotationService.Find(store, first).PrivateNote);
+		RegressionAssert.Equal("Shared note", ReduxModAnnotationService.Find(store, second).PrivateNote);
+	}
+
 	private static void WithTemporaryPath(Action<string> action)
 	{
 		var directory = Path.Combine(Path.GetTempPath(), "ReduxAnnotationTests", Guid.NewGuid().ToString("N"));

@@ -41,6 +41,8 @@ stronger organization, portable Redux data, richer metadata, and safer file hand
 - Use profiles, campaigns, saved orders, search, filtering, and configurable columns.
 - Assign multiple categories to a mod or use conservative automatic category suggestions.
 - Assign or remove categories across a multi-selection from the same context menu.
+- Use the selection-aware context group to move or delete several selected mods, apply or clear a
+  shared note, or clear the current selection.
 - Create categories with custom names, descriptions, colors, vector icons, or imported transparent
   PNG icons.
 - Click category pills directly in either mod list to filter both lists; the active filter is shown
@@ -58,7 +60,7 @@ stronger organization, portable Redux data, richer metadata, and safer file hand
 - Open the selected-mod drawer for Overview, Description, Requirements, Files, and Changelog tabs,
   or use hover cards for quick information.
 - Keep per-mod notes in Redux for installation reminders, compatibility context, or
-  personal load-order guidance.
+  personal load-order guidance, including an atomic shared-note action for a multi-selection.
 - Keep force-loaded packages visible in the dedicated Override Mods section outside the numbered
   order.
 
