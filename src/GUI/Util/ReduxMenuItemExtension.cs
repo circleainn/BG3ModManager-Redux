@@ -210,6 +210,15 @@ public static class ReduxMenuItemExtension
 			hoverBrush = menuItem.TryFindResource("ReduxErrorPillBackground") as Brush;
 			railBrush = menuItem.TryFindResource("ReduxErrorBrush") as Brush;
 		}
+		else if (IsPositiveCommitAction(header))
+		{
+			hoverBrush = menuItem.TryFindResource("ReduxSuccessPillBackground") as Brush;
+			railBrush = menuItem.TryFindResource("ReduxSuccessBrush") as Brush;
+			if (menuItem.Icon is ReduxIcon positiveIcon && railBrush != null)
+			{
+				positiveIcon.SetResourceReference(Control.ForegroundProperty, "ReduxSuccessBrush");
+			}
+		}
 		else if (menuItem.Icon is ReduxIcon icon
 			&& icon.ReadLocalValue(Control.ForegroundProperty) != DependencyProperty.UnsetValue
 			&& icon.Foreground is Brush iconBrush)
@@ -236,6 +245,13 @@ public static class ReduxMenuItemExtension
 			|| header.Contains("Unlink", StringComparison.OrdinalIgnoreCase)
 			|| header.Contains("Clear", StringComparison.OrdinalIgnoreCase)
 			|| header.StartsWith("Stop ", StringComparison.OrdinalIgnoreCase);
+	}
+
+	private static bool IsPositiveCommitAction(string header)
+	{
+		if (String.IsNullOrWhiteSpace(header)) return false;
+		return header.StartsWith("Export", StringComparison.OrdinalIgnoreCase)
+			|| header.StartsWith("Save ", StringComparison.OrdinalIgnoreCase);
 	}
 
 	private static Brush CreateSoftHoverBrush(Brush brush)

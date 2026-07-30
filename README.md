@@ -48,8 +48,6 @@ stronger organization, portable Redux data, richer metadata, and safer file hand
 - Add collapsible visual separators with names, descriptions, colors, icons, remembered positions,
   and an optional text-only presentation.
 - Work from the grouped command toolbar or hide it and use the complete compact Toolbar menu.
-- Open the searchable command palette with `Ctrl+Shift+P` to run available Redux commands, switch
-  profiles or saved orders, filter by category, and locate installed mods without navigating menus.
 - Review activations, deactivations, placement changes, automatically added dependencies, and
   enabled Mod Diagnostics findings before Redux writes the selected order to the game profile.
 - Return to an earlier state from File > Restore Points. Redux keeps the 20 newest pre-export or
@@ -128,6 +126,9 @@ Redux places the inherited Speak Active Order and Stop Speaking commands in a de
 Accessibility menu. It also provides scalable text presets, Atkinson Hyperlegible, selectable
 dialog text, keyboard-accessible Redux dialogs, a rebuilt shortcut editor, reduced-motion
 transitions, and an option to disable background blur and dimming.
+
+Press `F2` to open the optional Quick Access menu for finding actions, mods, profiles, saved
+orders, and categories without navigating the full menu system.
 
 CrossSpeak, Windows speech fallback, screen-reader helpers, speech commands, configurable hotkeys,
 and the original Toolkit/editor-project marker come from upstream BG3MM. Redux retains those

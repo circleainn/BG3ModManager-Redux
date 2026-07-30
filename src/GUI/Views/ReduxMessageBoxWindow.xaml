@@ -3,14 +3,23 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
+	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
 	Width="480" MinWidth="480" MaxWidth="480"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}" FontWeight="{DynamicResource Redux.FontWeight.Body}"
 	ResizeMode="NoResize" SizeToContent="Height" ShowInTaskbar="False"
-	Background="{DynamicResource ReduxAppBackgroundBrush}"
+	Background="{DynamicResource ReduxSurfaceBrush}"
 	WindowStyle="SingleBorderWindow"
 	Template="{DynamicResource ReduxWindowTemplate}"
 	WindowStartupLocation="CenterOwner"
 	KeyDown="Window_KeyDown">
+	<shell:WindowChrome.WindowChrome>
+		<shell:WindowChrome
+			CaptionHeight="0"
+			CornerRadius="0"
+			GlassFrameThickness="0"
+			ResizeBorderThickness="0"
+			UseAeroCaptionButtons="False" />
+	</shell:WindowChrome.WindowChrome>
 	<Window.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 	</ResourceDictionary.MergedDictionaries></ResourceDictionary></Window.Resources>
@@ -42,7 +51,9 @@
 		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.HelpCircle}" />
 		<Border Grid.Row="1"
 			Padding="22"
-			Background="{DynamicResource ReduxAppBackgroundBrush}">
+			Background="{DynamicResource ReduxSurfaceBrush}"
+			BorderBrush="{DynamicResource ReduxBorderBrush}"
+			BorderThickness="0,1,0,0">
 			<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
@@ -65,7 +76,7 @@
 			</Grid>
 
 			<Border Grid.Row="1" Margin="0,16,0,0" Padding="14,12"
-				Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}"
+				Background="{DynamicResource ReduxSurfaceElevatedBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}"
 				BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 				<ScrollViewer MaxHeight="320" VerticalScrollBarVisibility="Auto">
 					<TextBox x:Name="MessageTextBox"

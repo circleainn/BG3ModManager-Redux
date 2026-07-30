@@ -319,12 +319,18 @@ public static class ReduxWindowBehavior
 		if (!state.IsAttached)
 		{
 			state.IsAttached = true;
+			element.Loaded += HoverMotionElement_Loaded;
 			element.MouseEnter += HoverMotionElement_MouseEnter;
 			element.MouseLeave += HoverMotionElement_MouseLeave;
 			HoverMotionElements.Add(new WeakReference<FrameworkElement>(element));
 		}
 
 		ApplyHoverMotion(element, element.IsMouseOver);
+	}
+
+	private static void HoverMotionElement_Loaded(object sender, RoutedEventArgs e)
+	{
+		if (sender is FrameworkElement element) ApplyHoverMotion(element, element.IsMouseOver);
 	}
 
 	private static void HoverMotionElement_MouseEnter(object sender, EventArgs e)
@@ -355,10 +361,11 @@ public static class ReduxWindowBehavior
 	{
 		var configuredLift = Math.Max(0, GetHoverLift(element));
 		var configuredScale = Math.Max(1, GetHoverScale(element));
+		var transform = GetMutableHoverTransform(element);
 		if (ReduceMotion)
 		{
 			ResetHoverMotion(
-				element.RenderTransform,
+				transform,
 				configuredLift > 0,
 				configuredScale > 1);
 			return;
@@ -367,13 +374,35 @@ public static class ReduxWindowBehavior
 		var duration = TimeSpan.FromMilliseconds(isHovered ? 120 : 160);
 		var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
 		ApplyHoverMotion(
-			element.RenderTransform,
+			transform,
 			isHovered ? -configuredLift : 0,
 			isHovered ? configuredScale : 1,
 			duration,
 			easing,
 			configuredLift > 0,
 			configuredScale > 1);
+	}
+
+	private static Transform GetMutableHoverTransform(FrameworkElement element)
+	{
+		var transform = element.RenderTransform;
+		if (transform == null || ReferenceEquals(transform, Transform.Identity))
+		{
+			return transform;
+		}
+
+		if (!transform.IsFrozen)
+		{
+			return transform;
+		}
+
+		// Freezables supplied by a sealed Style can be shared and frozen. Animating
+		// that object is a no-op, and clearing it for Reduce Motion can leave every
+		// control using the style without its normal hover path. Give this element a
+		// local mutable copy so accessibility changes remain isolated and reversible.
+		var mutableTransform = transform.CloneCurrentValue();
+		element.RenderTransform = mutableTransform;
+		return mutableTransform;
 	}
 
 	private static void ResetHoverMotion(Transform transform, bool resetTranslation, bool resetScale)

@@ -294,6 +294,46 @@ public partial class MainViewControl : MainViewControlViewBase
 
 		if (menuItems.TryGetValue("Accessibility", out var accessibilityMenuItem))
 		{
+			var reduceMotionItem = new MenuItem
+			{
+				Header = "Reduce Motion",
+				IsCheckable = true,
+				StaysOpenOnClick = true,
+				ToolTip = "Use immediate transitions while retaining simple visual feedback.",
+				Icon = ReduxIcon.FromResource("Redux.Icon.CircleMinus", true)
+			};
+			BindingOperations.SetBinding(
+				reduceMotionItem,
+				MenuItem.IsCheckedProperty,
+				new Binding("Settings.ReduceMotion")
+				{
+					Source = ViewModel,
+					Mode = BindingMode.TwoWay,
+					UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+				});
+
+			var disableBackgroundEffectsItem = new MenuItem
+			{
+				Header = "Disable Blur and Dimming",
+				IsCheckable = true,
+				StaysOpenOnClick = true,
+				ToolTip = "Keep Redux clear and undimmed behind dialogs and secondary windows.",
+				Icon = ReduxIcon.FromResource("Redux.Icon.Eye", true)
+			};
+			BindingOperations.SetBinding(
+				disableBackgroundEffectsItem,
+				MenuItem.IsCheckedProperty,
+				new Binding("Settings.DisableBackgroundEffects")
+				{
+					Source = ViewModel,
+					Mode = BindingMode.TwoWay,
+					UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+				});
+
+			accessibilityMenuItem.Items.Add(new Separator());
+			accessibilityMenuItem.Items.Add(reduceMotionItem);
+			accessibilityMenuItem.Items.Add(disableBackgroundEffectsItem);
+
 			var keyboardShortcutsItem = new MenuItem
 			{
 				Header = "Keyboard Shortcuts...",

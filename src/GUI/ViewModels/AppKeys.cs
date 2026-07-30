@@ -129,11 +129,11 @@ public class AppKeys : ReactiveObject
 
 	[MenuSettings(
 		"Shortcuts",
-		"Command Palette...",
+		"Quick Access...",
 		false,
-		"Search and run an existing Redux command.")]
+		"Find an action, mod, profile, order, or category.")]
 	public Hotkey OpenCommandPalette { get; private set; } =
-		new Hotkey(Key.P, ModifierKeys.Control | ModifierKeys.Shift);
+		new Hotkey(Key.F2);
 
 	[MenuSettings("Settings", "Cycle Theme")]
 	public Hotkey ToggleViewTheme { get; private set; } = new Hotkey(Key.L, ModifierKeys.Control);

@@ -665,10 +665,10 @@
 						</MenuItem>
 						<MenuItem Header="Shortcuts">
 							<MenuItem Command="{Binding Keys.OpenCommandPalette.Command}"
-								Header="Command Palette..."
+								Header="Quick Access..."
 								InputGestureText="{Binding Keys.OpenCommandPalette.DisplayBindingText}"
-								ToolTip="Search and run an available Redux command.">
-								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Terminal}" /></MenuItem.Icon>
+								ToolTip="Find an action, mod, profile, order, or category.">
+								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Flash}" /></MenuItem.Icon>
 							</MenuItem>
 							<Separator />
 							<MenuItem Header="FOLDERS" IsEnabled="False" />

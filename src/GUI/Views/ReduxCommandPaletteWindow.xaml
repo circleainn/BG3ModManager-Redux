@@ -4,7 +4,7 @@
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Command Palette"
+	Title="Quick Access"
 	Width="620" Height="530" MinWidth="520" MinHeight="420" MaxWidth="760" MaxHeight="760"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontSize="{DynamicResource Redux.FontSize.12}"
@@ -106,7 +106,7 @@
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
-		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.Terminal}" />
+		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.Flash}" />
 		<Border Grid.Row="1"
 			Padding="18"
 			Background="{DynamicResource ReduxAppBackgroundBrush}"
@@ -143,7 +143,7 @@
 							CaretBrush="{DynamicResource ReduxAccentBrush}"
 							FontSize="{DynamicResource Redux.FontSize.14}"
 							TextChanged="SearchBox_TextChanged"
-							ToolTip="Search commands, mods, profiles, orders, or categories" />
+							ToolTip="Find actions, mods, profiles, orders, or categories" />
 					</Grid>
 				</Border>
 
@@ -177,7 +177,7 @@
 							<controls:ReduxIcon Width="25" Height="25"
 								HorizontalAlignment="Center"
 								Foreground="{DynamicResource ReduxTextMutedBrush}"
-								StrokeData="{StaticResource Redux.Icon.Terminal}" />
+								StrokeData="{StaticResource Redux.Icon.Flash}" />
 							<TextBlock Margin="0,8,0,0"
 								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 								FontWeight="{DynamicResource Redux.FontWeight.Control}"
@@ -193,7 +193,7 @@
 					</Grid.ColumnDefinitions>
 					<TextBlock VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="↑↓ Navigate   Enter Run   Esc Close" />
+						Text="&#x2191;&#x2193; Navigate   Enter Open   Esc Close" />
 					<TextBlock Grid.Column="1"
 						VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
