@@ -109,6 +109,7 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 	{
 		SelectedRestorePoint = RestorePointList.SelectedItem as LoadOrderRestorePoint;
 		LoadButton.IsEnabled = SelectedRestorePoint != null;
+		DeleteButton.IsEnabled = SelectedRestorePoint != null;
 	}
 
 	private void RestorePointList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -120,6 +121,51 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 	}
 
 	private void LoadButton_Click(object sender, RoutedEventArgs e) => AcceptSelection();
+
+	private async void DeleteButton_Click(object sender, RoutedEventArgs e)
+	{
+		var restorePoint = RestorePointList.SelectedItem as LoadOrderRestorePoint;
+		if (restorePoint == null)
+		{
+			return;
+		}
+
+		var result = ReduxMessageBox.Show(
+			this,
+			$"Delete the restore point from {restorePoint.CreatedSummary}?\n\nThis removes only the Redux snapshot. It does not change the working order, installed mods, or game files.",
+			"Delete Restore Point",
+			MessageBoxButton.YesNo,
+			MessageBoxImage.Warning,
+			MessageBoxResult.No);
+		if (result != MessageBoxResult.Yes)
+		{
+			return;
+		}
+
+		DeleteButton.IsEnabled = false;
+		LoadButton.IsEnabled = false;
+		StatusText.Text = "Deleting restore point…";
+		var deletion = await Task.Run(() =>
+		{
+			var deleted = LoadOrderRestorePointService.TryDelete(
+				_restorePointsDirectory,
+				_profileUuid,
+				restorePoint.Id,
+				out var error);
+			return (Deleted: deleted, Error: error);
+		});
+
+		if (!deletion.Deleted)
+		{
+			StatusText.Text = "Could not delete the restore point.";
+			DivinityApp.Log($"Could not delete load-order restore point: {deletion.Error}");
+			RefreshRestorePoints();
+			return;
+		}
+
+		RefreshRestorePoints();
+		StatusText.Text = "Restore point deleted.";
+	}
 
 	private void AcceptSelection()
 	{

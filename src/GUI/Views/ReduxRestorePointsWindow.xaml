@@ -175,10 +175,11 @@
 						<ColumnDefinition Width="*" />
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="Auto" />
+						<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
 					<Button x:Name="CreateButton"
-						MinWidth="132"
-						Content="Create Restore Point"
+						MinWidth="116"
+						Content="Create Snapshot"
 						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
 						Click="CreateButton_Click" />
 					<TextBlock x:Name="StatusText"
@@ -186,14 +187,23 @@
 						Margin="12,0,0,0"
 						VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
+						TextTrimming="CharacterEllipsis"
 						Text="Redux keeps the 20 newest restore points for each profile." />
-					<Button Grid.Column="2" MinWidth="84" Margin="12,0,8,0"
+					<Button x:Name="DeleteButton"
+						Grid.Column="2"
+						MinWidth="84"
+						Margin="12,0,8,0"
+						Content="Delete"
+						IsEnabled="False"
+						Style="{StaticResource ReduxDestructiveActionButtonStyle}"
+						Click="DeleteButton_Click" />
+					<Button Grid.Column="3" MinWidth="84" Margin="0,0,8,0"
 						Content="Close"
 						IsCancel="True"
 						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
 						Click="CloseButton_Click" />
-					<Button x:Name="LoadButton" Grid.Column="3" MinWidth="150"
-						Content="Load as Working Order"
+					<Button x:Name="LoadButton" Grid.Column="4" MinWidth="140"
+						Content="Load Working Order"
 						IsDefault="True"
 						IsEnabled="False"
 						Style="{StaticResource ReduxPrimaryActionButtonStyle}"

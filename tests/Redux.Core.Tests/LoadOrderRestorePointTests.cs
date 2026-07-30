@@ -131,6 +131,42 @@ internal sealed class LoadOrderRestorePointTests
 		});
 	}
 
+	public void DeleteRemovesOnlyTheMatchingProfileSnapshot()
+	{
+		WithTemporaryDirectory(root =>
+		{
+			var profileUuid = Guid.NewGuid().ToString();
+			RegressionAssert.True(LoadOrderRestorePointService.TryCreate(
+				root,
+				profileUuid,
+				"Public",
+				"Current",
+				"First",
+				[Entry("First")],
+				out var first,
+				out _));
+			RegressionAssert.True(LoadOrderRestorePointService.TryCreate(
+				root,
+				profileUuid,
+				"Public",
+				"Current",
+				"Second",
+				[Entry("Second")],
+				out var second,
+				out _));
+
+			RegressionAssert.True(LoadOrderRestorePointService.TryDelete(
+				root,
+				profileUuid,
+				first.Id,
+				out var error));
+			RegressionAssert.Equal(String.Empty, error);
+			var remaining = LoadOrderRestorePointService.Load(root, profileUuid);
+			RegressionAssert.Equal(1, remaining.Count);
+			RegressionAssert.Equal(second.Id, remaining[0].Id);
+		});
+	}
+
 	private static DivinityLoadOrderEntry Entry(string name) => new()
 	{
 		UUID = Guid.NewGuid().ToString(),

@@ -98,6 +98,7 @@ internal static class Program
 			(nameof(restorePoints.RetentionKeepsOnlyTheNewestTwentySnapshots), restorePoints.RetentionKeepsOnlyTheNewestTwentySnapshots),
 			(nameof(restorePoints.RestorePointsFromAnotherProfileAreRejected), restorePoints.RestorePointsFromAnotherProfileAreRejected),
 			(nameof(restorePoints.InvalidSnapshotsAreIgnoredWithoutLeavingTemporaryFiles), restorePoints.InvalidSnapshotsAreIgnoredWithoutLeavingTemporaryFiles),
+			(nameof(restorePoints.DeleteRemovesOnlyTheMatchingProfileSnapshot), restorePoints.DeleteRemovesOnlyTheMatchingProfileSnapshot),
 			(nameof(annotations.AnnotationsRoundTripWithoutPackageOrProfileData), annotations.AnnotationsRoundTripWithoutPackageOrProfileData),
 			(nameof(annotations.ClearingTheLastValueRemovesTheAnnotation), annotations.ClearingTheLastValueRemovesTheAnnotation),
 			(nameof(annotations.OversizedNotesAreRejectedBeforeTheStoreChanges), annotations.OversizedNotesAreRejectedBeforeTheStoreChanges),

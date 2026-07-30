@@ -110,6 +110,51 @@ public static class LoadOrderRestorePointService
 		}
 	}
 
+	public static bool TryDelete(
+		string rootDirectory,
+		string profileUuid,
+		string restorePointId,
+		out string error)
+	{
+		error = String.Empty;
+		if (String.IsNullOrWhiteSpace(restorePointId))
+		{
+			error = "A restore-point identifier is required.";
+			return false;
+		}
+
+		try
+		{
+			var profileDirectory = GetProfileDirectory(rootDirectory, profileUuid);
+			if (!Directory.Exists(profileDirectory))
+			{
+				error = "The restore point no longer exists.";
+				return false;
+			}
+
+			foreach (var filePath in Directory.EnumerateFiles(profileDirectory, "*.json", SearchOption.TopDirectoryOnly))
+			{
+				if (!TryRead(filePath, profileUuid, out var restorePoint, out _)
+					|| !String.Equals(restorePoint.Id, restorePointId, StringComparison.OrdinalIgnoreCase))
+				{
+					continue;
+				}
+
+				File.Delete(filePath);
+				return true;
+			}
+
+			error = "The restore point no longer exists.";
+			return false;
+		}
+		catch (Exception ex)
+		{
+			error = ex.Message;
+			DivinityApp.Log($"Could not delete load-order restore point: {ex}");
+			return false;
+		}
+	}
+
 	public static bool TryRead(
 		string filePath,
 		string expectedProfileUuid,
