@@ -223,7 +223,14 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 	}
 
 	private void CommandList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-		=> AcceptSelection();
+	{
+		if (ItemsControl.ContainerFromElement(
+				CommandList,
+				e.OriginalSource as DependencyObject) is ListBoxItem)
+		{
+			AcceptSelection();
+		}
+	}
 
 	private void AcceptSelection()
 	{

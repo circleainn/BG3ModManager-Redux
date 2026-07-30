@@ -331,8 +331,8 @@ foundation and reworks or extends its presentation through:
   diagnostic results against the profile's currently exported order.
 - Atomic restore points created immediately before a confirmed game export or manually from the
   restore-point browser. Redux keeps a bounded per-profile history outside the normal Orders
-  directory and loads a selected snapshot as a working order rather than silently rewriting
-  `modsettings.lsx`.
+  directory, can compare a snapshot with the current working order, and loads a selected snapshot
+  as a working order rather than silently rewriting `modsettings.lsx`.
 - A read-only load-order comparison window for any two available orders, using insertion-aware
   placement analysis so added or removed mods do not make every later entry appear repositioned.
 - Staged package imports so incomplete copies are not treated as installed mods.

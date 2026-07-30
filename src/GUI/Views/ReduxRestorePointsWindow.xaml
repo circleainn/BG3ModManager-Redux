@@ -139,41 +139,76 @@
 					<Border Background="{DynamicResource ReduxSurfaceBrush}"
 						BorderBrush="{DynamicResource ReduxBorderBrush}"
 						BorderThickness="1"
-						CornerRadius="{DynamicResource Redux.CornerRadius.Card}" />
-					<ListBox x:Name="RestorePointList"
-						Margin="7"
-						Padding="0"
-						Background="Transparent"
-						BorderThickness="0"
-						HorizontalContentAlignment="Stretch"
-						ItemContainerStyle="{StaticResource RestorePointItemStyle}"
-						ItemTemplate="{StaticResource RestorePointTemplate}"
-						ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-						ScrollViewer.VerticalScrollBarVisibility="Auto"
-						SelectionChanged="RestorePointList_SelectionChanged"
-						MouseDoubleClick="RestorePointList_MouseDoubleClick" />
-					<StackPanel x:Name="EmptyState"
-						HorizontalAlignment="Center" VerticalAlignment="Center">
-						<controls:ReduxIcon Width="28" Height="28"
-							HorizontalAlignment="Center"
-							Foreground="{DynamicResource ReduxTextMutedBrush}"
-							StrokeData="{StaticResource Redux.Icon.ScrollText}" />
-						<TextBlock Margin="0,9,0,0"
-							HorizontalAlignment="Center"
-							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							FontWeight="{DynamicResource Redux.FontWeight.Control}"
-							Text="No restore points yet" />
-						<TextBlock Margin="0,3,0,0"
-							Foreground="{DynamicResource ReduxTextMutedBrush}"
-							Text="Create one now or confirm an export to begin the history." />
-					</StackPanel>
+						CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+						ClipToBounds="True">
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="*" />
+							</Grid.RowDefinitions>
+							<Grid Margin="14,9,9,5">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*" />
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
+								<TextBlock VerticalAlignment="Center"
+									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+									FontWeight="{DynamicResource Redux.FontWeight.Control}"
+									Text="Restore-point history" />
+								<Button x:Name="CompareButton"
+									Grid.Column="1"
+									MinWidth="126"
+									Margin="8,0,6,0"
+									Content="Compare with Current"
+									IsEnabled="False"
+									Style="{StaticResource ReduxSecondaryActionButtonStyle}"
+									Click="CompareButton_Click" />
+								<Button x:Name="DeleteButton"
+									Grid.Column="2"
+									MinWidth="74"
+									Content="Delete"
+									IsEnabled="False"
+									Style="{StaticResource ReduxDestructiveActionButtonStyle}"
+									Click="DeleteButton_Click" />
+							</Grid>
+							<ListBox x:Name="RestorePointList"
+								Grid.Row="1"
+								Margin="7"
+								Padding="0"
+								Background="Transparent"
+								BorderThickness="0"
+								HorizontalContentAlignment="Stretch"
+								ItemContainerStyle="{StaticResource RestorePointItemStyle}"
+								ItemTemplate="{StaticResource RestorePointTemplate}"
+								ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+								ScrollViewer.VerticalScrollBarVisibility="Auto"
+								SelectionChanged="RestorePointList_SelectionChanged"
+								MouseDoubleClick="RestorePointList_MouseDoubleClick" />
+							<StackPanel x:Name="EmptyState"
+								Grid.Row="1"
+								HorizontalAlignment="Center" VerticalAlignment="Center">
+								<controls:ReduxIcon Width="28" Height="28"
+									HorizontalAlignment="Center"
+									Foreground="{DynamicResource ReduxTextMutedBrush}"
+									StrokeData="{StaticResource Redux.Icon.ScrollText}" />
+								<TextBlock Margin="0,9,0,0"
+									HorizontalAlignment="Center"
+									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+									FontWeight="{DynamicResource Redux.FontWeight.Control}"
+									Text="No restore points yet" />
+								<TextBlock Margin="0,3,0,0"
+									Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Create one now or confirm an export to begin the history." />
+							</StackPanel>
+						</Grid>
+					</Border>
 				</Grid>
 
 				<Grid Grid.Row="2">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="*" />
-						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
@@ -189,20 +224,12 @@
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
 						TextTrimming="CharacterEllipsis"
 						Text="Redux keeps the 20 newest restore points for each profile." />
-					<Button x:Name="DeleteButton"
-						Grid.Column="2"
-						MinWidth="84"
-						Margin="12,0,8,0"
-						Content="Delete"
-						IsEnabled="False"
-						Style="{StaticResource ReduxDestructiveActionButtonStyle}"
-						Click="DeleteButton_Click" />
-					<Button Grid.Column="3" MinWidth="84" Margin="0,0,8,0"
+					<Button Grid.Column="2" MinWidth="84" Margin="12,0,8,0"
 						Content="Close"
 						IsCancel="True"
 						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
 						Click="CloseButton_Click" />
-					<Button x:Name="LoadButton" Grid.Column="4" MinWidth="140"
+					<Button x:Name="LoadButton" Grid.Column="3" MinWidth="140"
 						Content="Load Working Order"
 						IsDefault="True"
 						IsEnabled="False"

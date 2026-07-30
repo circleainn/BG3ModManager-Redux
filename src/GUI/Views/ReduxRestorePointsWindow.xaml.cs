@@ -110,17 +110,52 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 		SelectedRestorePoint = RestorePointList.SelectedItem as LoadOrderRestorePoint;
 		LoadButton.IsEnabled = SelectedRestorePoint != null;
 		DeleteButton.IsEnabled = SelectedRestorePoint != null;
+		CompareButton.IsEnabled = SelectedRestorePoint != null;
 	}
 
 	private void RestorePointList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
 	{
-		if (RestorePointList.SelectedItem is LoadOrderRestorePoint)
+		if (ItemsControl.ContainerFromElement(
+				RestorePointList,
+				e.OriginalSource as DependencyObject) is ListBoxItem)
 		{
 			AcceptSelection();
 		}
 	}
 
 	private void LoadButton_Click(object sender, RoutedEventArgs e) => AcceptSelection();
+
+	private void CompareButton_Click(object sender, RoutedEventArgs e)
+	{
+		var restorePoint = RestorePointList.SelectedItem as LoadOrderRestorePoint;
+		if (restorePoint == null)
+		{
+			return;
+		}
+
+		var restorePointOrder = new DivinityLoadOrder
+		{
+			Name = $"Restore point · {restorePoint.CreatedSummary}",
+			Order = restorePoint.Order
+				.Where(entry => entry != null)
+				.Select(entry => entry.Clone())
+				.ToList()
+		};
+		var currentOrder = new DivinityLoadOrder
+		{
+			Name = $"Current · {_sourceOrderName}",
+			Order = _workingOrder
+				.Where(entry => entry != null)
+				.Select(entry => entry.Clone())
+				.ToList()
+		};
+		var dialog = new ReduxLoadOrderComparisonWindow(
+			this,
+			[restorePointOrder, currentOrder],
+			0,
+			1);
+		dialog.ShowDialog();
+	}
 
 	private async void DeleteButton_Click(object sender, RoutedEventArgs e)
 	{
