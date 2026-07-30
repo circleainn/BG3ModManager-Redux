@@ -45,6 +45,9 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 	[Reactive] public ReduxCreatorManifestData CreatorManifest { get; set; } = ReduxCreatorManifestData.NotPresent;
 	[Reactive] public string DisplayCategory { get; set; }
 	[Reactive] public List<ModCategoryDisplayData> DisplayCategories { get; set; } = new();
+	[Reactive] public bool ShowInterfaceIcons { get; set; } = true;
+	[Reactive] public bool UseIconsOnly { get; set; }
+	[Reactive] public bool UseCategoryColorsForText { get; set; }
 	[Reactive] public int SourceComponentCount { get; set; } = 1;
 	[Reactive] public string SourceComponentSummary { get; set; }
 	[Reactive] public string SourceComponentTooltip { get; set; }

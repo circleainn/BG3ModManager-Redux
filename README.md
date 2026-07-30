@@ -79,8 +79,8 @@ instructions.
 - Choose Manrope, Atkinson Hyperlegible, Monaspace Neon, Minipax, Chivo, or Segoe UI.
 - Import local `.ttf` and `.otf` files with safe fallback to Manrope.
 - Use Compact, Default, or Large interface text.
-- Configure category-colored text and interaction feedback, category and source icons, and compact
-  source-label presentation.
+- Configure category-colored labels and interaction feedback, interface icons, and a compact
+  icons-only mode for category, source, and status labels.
 - Reuse Redux's shared dialogs, title bars, menus, tooltips, controls, and motion language across
   built-in and custom themes.
 

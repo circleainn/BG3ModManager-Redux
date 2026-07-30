@@ -6535,8 +6535,20 @@ Directory the zip will be extracted to:
 		foreach (var mod in allMods)
 		{
 			var categories = GetEffectiveModCategories(mod);
+			mod.ShowInterfaceIcons = Settings.ShowCategoryIconsInPills;
+			mod.UseIconsOnly = Settings.UseIconsOnly;
+			mod.UseCategoryColorsForText = Settings.UseCategoryColorsForSidebarText;
 			mod.DisplayCategory = categories.FirstOrDefault() ?? UncategorizedModsCategory;
-			mod.DisplayCategories = categories.Select(category => new ModCategoryDisplayData(category, GetCategoryColor(category), GetCategoryIcon(category))).ToList();
+			mod.DisplayCategories = categories
+				.Select(category => new ModCategoryDisplayData(
+					category,
+					GetCategoryColor(category),
+					GetCategoryIcon(category),
+					GetCategoryDescription(category),
+					Settings.ShowCategoryIconsInPills,
+					Settings.UseIconsOnly,
+					Settings.UseCategoryColorsForSidebarText))
+				.ToList();
 		}
 		var currentModIds = allMods.Select(mod => mod.UUID).Where(id => !String.IsNullOrWhiteSpace(id))
 			.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
@@ -7955,6 +7967,19 @@ Directory the zip will be extracted to:
 			});
 
 		Settings.WhenAnyValue(x => x.HideEmptyModCategories)
+			.Skip(1)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(_ => ScheduleRefreshModCategories());
+
+		// Category pills are reused by normal list cells, detached hover cards, and the
+		// selected-mod drawer. Carry presentation state with each display item so all three
+		// surfaces update together instead of relying on fragile popup-tree bindings.
+		Settings.WhenAnyValue(
+				x => x.ShowCategoryIconsInPills,
+				x => x.UseSourceIconsOnly,
+				x => x.UseCategoryColorsForSidebarText,
+				x => x.UseCategoryColorsForHover,
+				x => x.UseCategoryColorsForSidebarSelection)
 			.Skip(1)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ScheduleRefreshModCategories());

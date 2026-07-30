@@ -163,7 +163,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public ObservableCollection<ReduxCustomTheme> CustomThemes { get; set; } = new();
 
 	[DefaultValue(true)]
-	[SettingsEntry("Match category hover colors", "Use a mod's primary category color when hovering its row. Disable this to use the standard Redux accent.", HideFromUI = true)]
+	[SettingsEntry("Match category interaction colors", "Use category colors for hover and selection throughout Redux. Disable this to use the standard Redux accent.", HideFromUI = true)]
 	[DataMember, Reactive] public bool UseCategoryColorsForHover { get; set; } = true;
 
 	[DefaultValue(true)]
@@ -171,12 +171,45 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool UseCategoryColorsForSidebarText { get; set; } = true;
 
 	[DefaultValue(true)]
-	[SettingsEntry("Match category selection colors", "Use each category's color for hover and selection in the Categories pane.", HideFromUI = true)]
+	[SettingsEntry("Legacy category selection colors", "Retained for compatibility with earlier Redux settings.", HideFromUI = true)]
 	[DataMember, Reactive] public bool UseCategoryColorsForSidebarSelection { get; set; } = true;
 
+	/// <summary>
+	/// Unified presentation setting. The two serialized fields are retained so settings from
+	/// earlier Redux builds continue to load without migration or data loss.
+	/// </summary>
+	[IgnoreDataMember]
+	public bool UseCategoryColorsForInteractions
+	{
+		get => UseCategoryColorsForHover || UseCategoryColorsForSidebarSelection;
+		set
+		{
+			if (UseCategoryColorsForHover == value && UseCategoryColorsForSidebarSelection == value) return;
+			UseCategoryColorsForHover = value;
+			UseCategoryColorsForSidebarSelection = value;
+			this.RaisePropertyChanged();
+		}
+	}
+
 	[DefaultValue(false)]
-	[SettingsEntry("Source icons only", "Show provider icons without source text in mod-list source columns.", HideFromUI = true)]
+	[SettingsEntry("Legacy source icons only", "Retained for compatibility with earlier Redux settings.", HideFromUI = true)]
 	[DataMember, Reactive] public bool UseSourceIconsOnly { get; set; }
+
+	/// <summary>
+	/// Unified compact-label setting. The serialized source-only field is retained so existing
+	/// settings and custom themes continue to load without migration.
+	/// </summary>
+	[IgnoreDataMember]
+	public bool UseIconsOnly
+	{
+		get => UseSourceIconsOnly;
+		set
+		{
+			if (UseSourceIconsOnly == value) return;
+			UseSourceIconsOnly = value;
+			this.RaisePropertyChanged();
+		}
+	}
 
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool ReduxPreviewWarningAcknowledged { get; set; }
@@ -498,7 +531,13 @@ public class DivinityModManagerSettings : ReactiveObject
 		// by ancestor lookup, so mirror the flag onto DivinityApp and let every template bind to
 		// it the same way.
 		this.WhenAnyValue(x => x.UseCategoryColorsForSidebarText).Subscribe(b => DivinityApp.UseCategoryColorsForText = b);
+		this.WhenAnyValue(
+				x => x.UseCategoryColorsForHover,
+				x => x.UseCategoryColorsForSidebarSelection,
+				(hover, selection) => hover || selection)
+			.Subscribe(b => DivinityApp.UseCategoryColorsForInteractions = b);
 		this.WhenAnyValue(x => x.ShowCategoryIconsInPills).Subscribe(b => DivinityApp.ShowInterfaceIcons = b);
+		this.WhenAnyValue(x => x.UseSourceIconsOnly).Subscribe(b => DivinityApp.UseIconsOnly = b);
 
 		this.WhenAnyValue(x => x.ResetModioSupportWarningAcknowledgement)
 			.Where(reset => reset)

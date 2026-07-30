@@ -72,7 +72,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		if (ViewModel?.Settings != null)
 		{
-			ViewModel.Settings.UseSourceIconsOnly = false;
+			ViewModel.Settings.UseIconsOnly = false;
 		}
 	}
 	private static readonly SettingsGroup[] GeneralSettingsGroups =
@@ -394,9 +394,9 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		var working = ReduxThemeService.CreateFromBase("My Custom Theme", ViewModel.Settings.ColorTheme,
 			ViewModel.Settings.TypographyFont, ViewModel.Settings.TextSize, ViewModel.Settings.CustomTypographyFont,
-			ViewModel.Settings.UseCategoryColorsForHover, ViewModel.Settings.ShowCategoryIconsInPills,
-			ViewModel.Settings.UseCategoryColorsForSidebarText, ViewModel.Settings.UseCategoryColorsForSidebarSelection,
-			ViewModel.Settings.UseSourceIconsOnly);
+			ViewModel.Settings.UseCategoryColorsForInteractions, ViewModel.Settings.ShowCategoryIconsInPills,
+			ViewModel.Settings.UseCategoryColorsForSidebarText,
+			ViewModel.Settings.UseIconsOnly);
 		if (!EditCustomTheme(working)) return;
 		ViewModel.Settings.CustomThemes.Add(working);
 		ActivateCustomTheme(working);

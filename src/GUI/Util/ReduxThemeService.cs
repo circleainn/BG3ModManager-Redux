@@ -93,9 +93,9 @@ public static class ReduxThemeService
 
 	public static ReduxCustomTheme CreateFromBase(string name, ReduxThemeType baseTheme,
 		ReduxTypographyFont typographyFont = 0, ReduxTextSize textSize = 0, string customTypographyFont = "",
-		bool? useCategoryColorsForHover = null, bool? showCategoryIconsInPills = null,
-		bool? useCategoryColorsForSidebarText = null, bool? useCategoryColorsForSidebarSelection = null,
-		bool? useSourceIconsOnly = null)
+		bool? useCategoryColorsForInteractions = null, bool? showCategoryIconsInPills = null,
+		bool? useCategoryColorsForSidebarText = null,
+		bool? useIconsOnly = null)
 	{
 		if (!BaseColors.TryGetValue(baseTheme, out var colors))
 		{
@@ -109,11 +109,10 @@ public static class ReduxThemeService
 			TypographyFont = NormalizeTypography(typographyFont, baseTheme),
 			CustomTypographyFont = customTypographyFont ?? String.Empty,
 			TextSize = NormalizeTextSize(textSize),
-			UseCategoryColorsForHover = useCategoryColorsForHover ?? baseTheme == ReduxThemeType.ReduxDark,
+			UseCategoryColorsForInteractions = useCategoryColorsForInteractions ?? baseTheme == ReduxThemeType.ReduxDark,
 			ShowCategoryIconsInPills = showCategoryIconsInPills ?? true,
 			UseCategoryColorsForSidebarText = useCategoryColorsForSidebarText ?? baseTheme == ReduxThemeType.ReduxDark,
-			UseCategoryColorsForSidebarSelection = useCategoryColorsForSidebarSelection ?? baseTheme == ReduxThemeType.ReduxDark,
-			UseSourceIconsOnly = (showCategoryIconsInPills ?? true) && (useSourceIconsOnly ?? false),
+			UseIconsOnly = (showCategoryIconsInPills ?? true) && (useIconsOnly ?? false),
 			BackgroundColor = colors[0],
 			SurfaceColor = colors[1],
 			AccentColor = colors[2],
@@ -137,31 +136,28 @@ public static class ReduxThemeService
 		theme.WarningColor = defaults.WarningColor;
 		theme.ErrorColor = defaults.ErrorColor;
 		theme.InfoColor = defaults.InfoColor;
-		theme.UseCategoryColorsForHover = defaults.UseCategoryColorsForHover;
+		theme.UseCategoryColorsForInteractions = defaults.UseCategoryColorsForInteractions;
 		theme.ShowCategoryIconsInPills = defaults.ShowCategoryIconsInPills;
 		theme.UseCategoryColorsForSidebarText = defaults.UseCategoryColorsForSidebarText;
-		theme.UseCategoryColorsForSidebarSelection = defaults.UseCategoryColorsForSidebarSelection;
-		theme.UseSourceIconsOnly = defaults.UseSourceIconsOnly;
+		theme.UseIconsOnly = defaults.UseIconsOnly;
 	}
 
 	public static void ApplyBuiltInCategoryPresentation(DivinityModManagerSettings settings, ReduxThemeType theme)
 	{
 		if (settings == null) return;
-		settings.UseCategoryColorsForHover = theme == ReduxThemeType.ReduxDark;
+		settings.UseCategoryColorsForInteractions = theme == ReduxThemeType.ReduxDark;
 		settings.ShowCategoryIconsInPills = true;
 		settings.UseCategoryColorsForSidebarText = theme == ReduxThemeType.ReduxDark;
-		settings.UseCategoryColorsForSidebarSelection = theme == ReduxThemeType.ReduxDark;
-		settings.UseSourceIconsOnly = false;
+		settings.UseIconsOnly = false;
 	}
 
 	public static void ApplyCustomCategoryPresentation(DivinityModManagerSettings settings, ReduxCustomTheme theme)
 	{
 		if (settings == null || theme == null) return;
-		settings.UseCategoryColorsForHover = theme.UseCategoryColorsForHover;
+		settings.UseCategoryColorsForInteractions = theme.UseCategoryColorsForInteractions;
 		settings.ShowCategoryIconsInPills = theme.ShowCategoryIconsInPills;
 		settings.UseCategoryColorsForSidebarText = theme.UseCategoryColorsForSidebarText;
-		settings.UseCategoryColorsForSidebarSelection = theme.UseCategoryColorsForSidebarSelection;
-		settings.UseSourceIconsOnly = theme.ShowCategoryIconsInPills && theme.UseSourceIconsOnly;
+		settings.UseIconsOnly = theme.ShowCategoryIconsInPills && theme.UseIconsOnly;
 	}
 
 	public static bool TryValidate(ReduxCustomTheme theme, out string error)

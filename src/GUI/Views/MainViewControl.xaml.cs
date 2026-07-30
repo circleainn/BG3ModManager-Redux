@@ -920,11 +920,51 @@ public partial class MainViewControl : MainViewControlViewBase
 		}
 	}
 
-	// Compact width is the icon+chevron cluster with even 8px insets:
-	// 1 border + 8 + 15 icon + 4 + 11 chevron + 8 + 1 border.
-	private const double ToolbarDiagnosticCompactWidth = 48;
+	// Compact width is the icon+chevron cluster with balanced 7px insets.
+	private const double ToolbarDiagnosticCompactWidth = 44;
 	private const double ToolbarDiagnosticFallbackExpandedWidth = 126;
 	private const double ToolbarDiagnosticMaxExpandedWidth = 240;
+
+	private static void AnimateToolbarHoverSurface(FrameworkElement element, bool isHovered)
+	{
+		if (element == null)
+			return;
+
+		var translate = element.RenderTransform as TranslateTransform;
+		if (translate == null)
+		{
+			translate = new TranslateTransform();
+			element.RenderTransform = translate;
+		}
+		else if (translate.IsFrozen)
+		{
+			translate = translate.CloneCurrentValue();
+			element.RenderTransform = translate;
+		}
+
+		var duration = isHovered
+			? new Duration(TimeSpan.FromMilliseconds(120))
+			: new Duration(TimeSpan.FromMilliseconds(150));
+		var easing = element.TryFindResource("Redux.Motion.EaseOut") as IEasingFunction
+			?? new QuadraticEase { EasingMode = EasingMode.EaseOut };
+
+		translate.BeginAnimation(
+			TranslateTransform.YProperty,
+			new DoubleAnimation(isHovered ? -1 : 0, duration) { EasingFunction = easing },
+			HandoffBehavior.SnapshotAndReplace);
+	}
+
+	private void ToolbarComboBox_MouseEnter(object sender, MouseEventArgs e)
+	{
+		if (sender is ComboBox comboBox)
+			AnimateToolbarHoverSurface(comboBox, true);
+	}
+
+	private void ToolbarComboBox_MouseLeave(object sender, MouseEventArgs e)
+	{
+		if (sender is ComboBox comboBox)
+			AnimateToolbarHoverSurface(comboBox, false);
+	}
 
 	/// <summary>
 	/// Width the expanded status control needs for its current summary text. The label is
@@ -962,8 +1002,8 @@ public partial class MainViewControl : MainViewControlViewBase
 
 		button.ApplyTemplate();
 
-		// Width is the only layout-affecting part of this interaction. Keep that
-		// transition short and let opacity/rotation provide the softer finish.
+		// Width is the only layout-affecting part of this interaction. The status chrome
+		// remains stationary so its popup anchor and neighboring controls stay visually stable.
 		var duration = new Duration(TimeSpan.FromMilliseconds(expand ? 175 : 145));
 		var easing = button.TryFindResource("Redux.Motion.EaseOut") as IEasingFunction
 			?? new QuadraticEase { EasingMode = EasingMode.EaseOut };
@@ -1007,16 +1047,25 @@ public partial class MainViewControl : MainViewControlViewBase
 				HandoffBehavior.SnapshotAndReplace);
 		}
 
-		// No hover lift on the status chrome: translating the button while its popup slides
-		// open made the two animations fight, so the dropdown appeared to stutter.
 	}
 
 	private void ToolbarModDiagnosticsMenuItem_Click(object sender, RoutedEventArgs e)
 	{
 		if (sender is MenuItem { DataContext: ModHealthSnapshot snapshot })
-			ModLayout.FocusModHealthSnapshot(snapshot);
+			ModLayout.FocusDiagnosticSnapshot(snapshot);
 		else if (sender is MenuItem { DataContext: ModDiagnosticFindingGroupViewModel group })
-			ModLayout.FocusModHealthSnapshot(group.PrimarySnapshot);
+			ModLayout.FocusDiagnosticSnapshot(group.PrimarySnapshot);
+	}
+
+	private void ToolbarDiagnosticAffectedMod_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is Button { CommandParameter: ModHealthSnapshot snapshot } button)
+		{
+			button.FindVisualParent<ContextMenu>()?.SetCurrentValue(ContextMenu.IsOpenProperty, false);
+			ModLayout.FocusDiagnosticSnapshot(snapshot);
+		}
+
+		e.Handled = true;
 	}
 
 	public void OnActivated()

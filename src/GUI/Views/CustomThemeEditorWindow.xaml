@@ -116,13 +116,12 @@
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="*" />
 						</Grid.ColumnDefinitions>
-						<CheckBox IsChecked="{Binding UseCategoryColorsForHover}" Style="{StaticResource ReduxCheckBoxStyle}">
+						<CheckBox IsChecked="{Binding UseCategoryColorsForInteractions}" Style="{StaticResource ReduxCheckBoxStyle}">
 							<StackPanel Margin="5,0,12,0">
-								<TextBlock FontWeight="SemiBold" Text="Category hover" />
-									<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-										Text="Use each mod or separator's assigned color for row hover and selection." TextWrapping="Wrap" />
+								<TextBlock FontWeight="SemiBold" Text="Category-colored interactions" />
+								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Use assigned category colors for hover and selection across mod lists, separators, and the Categories pane." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
 						<CheckBox x:Name="InterfaceIconsCheckBox" Grid.Column="1"
@@ -130,31 +129,24 @@
 							Unchecked="InterfaceIconsCheckBox_Unchecked">
 							<StackPanel Margin="5,0,12,0">
 								<TextBlock FontWeight="SemiBold" Text="Interface icons" />
-									<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-										Text="Show category and source icons in lists, hover cards, and details." TextWrapping="Wrap" />
+								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Show category, source, and status icons in lists, cards, and details." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
-						<CheckBox Grid.Column="2" IsChecked="{Binding UseCategoryColorsForSidebarText}" Style="{StaticResource ReduxCheckBoxStyle}">
+						<CheckBox Grid.Row="1" Margin="0,10,0,0" IsChecked="{Binding UseCategoryColorsForSidebarText}" Style="{StaticResource ReduxCheckBoxStyle}">
 							<StackPanel Margin="5,0,0,0">
-									<TextBlock FontWeight="SemiBold" Text="Colored category labels" />
+								<TextBlock FontWeight="SemiBold" Text="Colored category labels" />
 								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-										Text="Use category colors for labels in the Categories pane and hover cards." TextWrapping="Wrap" />
-							</StackPanel>
-						</CheckBox>
-						<CheckBox Grid.Row="1" Margin="0,10,0,0" IsChecked="{Binding UseCategoryColorsForSidebarSelection}" Style="{StaticResource ReduxCheckBoxStyle}">
-							<StackPanel Margin="5,0,12,0">
-								<TextBlock FontWeight="SemiBold" Text="Category selection" />
-								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-										Text="Use category colors for hover and selection in the Categories pane." TextWrapping="Wrap" />
+									Text="Use category colors for labels throughout lists, cards, and details." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
 						<CheckBox Grid.Row="1" Grid.Column="1" Margin="0,10,0,0"
-							IsChecked="{Binding UseSourceIconsOnly}" IsEnabled="{Binding IsChecked, ElementName=InterfaceIconsCheckBox}"
+							IsChecked="{Binding UseIconsOnly}" IsEnabled="{Binding IsChecked, ElementName=InterfaceIconsCheckBox}"
 							Style="{StaticResource ReduxCheckBoxStyle}">
 							<StackPanel Margin="5,0,12,0">
-								<TextBlock FontWeight="SemiBold" Text="Source icons only" />
+								<TextBlock FontWeight="SemiBold" Text="Icons only" />
 								<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
-										Text="Show source icons without text in source columns." TextWrapping="Wrap" />
+									Text="Show compact category, source, and status icons without persistent label text." TextWrapping="Wrap" />
 							</StackPanel>
 						</CheckBox>
 					</Grid>

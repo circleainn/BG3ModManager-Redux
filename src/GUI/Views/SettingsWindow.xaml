@@ -627,12 +627,12 @@
 									</StackPanel>
 								</StackPanel>
 								<Border Grid.Column="1" Background="{DynamicResource ReduxBorderBrush}" />
-								<UniformGrid Grid.Column="2" Margin="14,0,0,0" Columns="3" VerticalAlignment="Center">
-									<CheckBox Margin="0,0,10,0" ToolTip="Use the category color for mod-row hover"
-										IsChecked="{Binding Settings.UseCategoryColorsForHover, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+								<UniformGrid Grid.Column="2" Margin="14,0,0,0" Columns="2" VerticalAlignment="Center">
+									<CheckBox Margin="0,0,10,0" ToolTip="Use category colors for hover and selection throughout Redux"
+										IsChecked="{Binding Settings.UseCategoryColorsForInteractions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 										<StackPanel Margin="6,0,0,0">
-											<TextBlock FontWeight="SemiBold" Text="Category hover" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use each mod or separator's assigned color for row hover and selection." TextWrapping="Wrap" />
+											<TextBlock FontWeight="SemiBold" Text="Category-colored interactions" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use assigned category colors for hover and selection across mod lists, separators, and the Categories pane." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
 									<CheckBox x:Name="InterfaceIconsCheckBox" Margin="0,0,10,0"
@@ -641,29 +641,22 @@
 										Unchecked="InterfaceIconsCheckBox_Unchecked">
 										<StackPanel Margin="6,0,0,0">
 											<TextBlock FontWeight="SemiBold" Text="Interface icons" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Show category and source icons in lists, hover cards, and details." TextWrapping="Wrap" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Show category, source, and status icons in lists, cards, and details." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
 									<CheckBox ToolTip="Match sidebar category names to their assigned colors"
 										IsChecked="{Binding Settings.UseCategoryColorsForSidebarText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
 										<StackPanel Margin="6,0,0,0">
 											<TextBlock FontWeight="SemiBold" Text="Colored category labels" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use category colors for labels in the Categories pane and hover cards." TextWrapping="Wrap" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use category colors for labels throughout lists, cards, and details." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
-									<CheckBox Margin="0,8,10,0" ToolTip="Match category hover and selection to each category color"
-										IsChecked="{Binding Settings.UseCategoryColorsForSidebarSelection, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-										<StackPanel Margin="6,0,0,0">
-											<TextBlock FontWeight="SemiBold" Text="Category selection" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Use category colors for hover and selection in the Categories pane." TextWrapping="Wrap" />
-										</StackPanel>
-									</CheckBox>
-									<CheckBox Margin="0,8,10,0" ToolTip="Show only provider icons in source columns"
-										IsChecked="{Binding Settings.UseSourceIconsOnly, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+									<CheckBox Margin="0,8,10,0" ToolTip="Use compact icon-only category, source, and status labels"
+										IsChecked="{Binding Settings.UseIconsOnly, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										IsEnabled="{Binding IsChecked, ElementName=InterfaceIconsCheckBox}">
 										<StackPanel Margin="6,0,0,0">
-											<TextBlock FontWeight="SemiBold" Text="Source icons only" />
-											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Show source icons without text in source columns." TextWrapping="Wrap" />
+											<TextBlock FontWeight="SemiBold" Text="Icons only" />
+											<TextBlock Margin="0,3,0,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Show compact category, source, and status icons without persistent label text." TextWrapping="Wrap" />
 										</StackPanel>
 									</CheckBox>
 								</UniformGrid>

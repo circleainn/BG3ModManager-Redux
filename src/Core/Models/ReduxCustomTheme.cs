@@ -28,8 +28,31 @@ public class ReduxCustomTheme : ReactiveObject
 	[DataMember, Reactive] public bool UseCategoryColorsForSidebarText { get; set; }
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool UseCategoryColorsForSidebarSelection { get; set; }
+	[IgnoreDataMember]
+	public bool UseCategoryColorsForInteractions
+	{
+		get => UseCategoryColorsForHover || UseCategoryColorsForSidebarSelection;
+		set
+		{
+			if (UseCategoryColorsForHover == value && UseCategoryColorsForSidebarSelection == value) return;
+			UseCategoryColorsForHover = value;
+			UseCategoryColorsForSidebarSelection = value;
+			this.RaisePropertyChanged();
+		}
+	}
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool UseSourceIconsOnly { get; set; }
+	[IgnoreDataMember]
+	public bool UseIconsOnly
+	{
+		get => UseSourceIconsOnly;
+		set
+		{
+			if (UseSourceIconsOnly == value) return;
+			UseSourceIconsOnly = value;
+			this.RaisePropertyChanged();
+		}
+	}
 	[DataMember, Reactive] public string BackgroundColor { get; set; } = "#0D0B10";
 	[DataMember, Reactive] public string SurfaceColor { get; set; } = "#17121D";
 	[DataMember, Reactive] public string AccentColor { get; set; } = "#9676FF";
@@ -47,11 +70,10 @@ public class ReduxCustomTheme : ReactiveObject
 		TypographyFont = TypographyFont,
 		CustomTypographyFont = CustomTypographyFont,
 		TextSize = TextSize,
-		UseCategoryColorsForHover = UseCategoryColorsForHover,
+		UseCategoryColorsForInteractions = UseCategoryColorsForInteractions,
 		ShowCategoryIconsInPills = ShowCategoryIconsInPills,
 		UseCategoryColorsForSidebarText = UseCategoryColorsForSidebarText,
-		UseCategoryColorsForSidebarSelection = UseCategoryColorsForSidebarSelection,
-		UseSourceIconsOnly = UseSourceIconsOnly,
+		UseIconsOnly = UseIconsOnly,
 		BackgroundColor = BackgroundColor,
 		SurfaceColor = SurfaceColor,
 		AccentColor = AccentColor,

@@ -23,6 +23,9 @@ This page tracks what Redux inherits, what it reworks or extends, and what it ad
   sizing pass from overwriting a user resize.
 - Added direct category filtering from pills in the active and inactive lists, synchronized with
   the category navigator and a clearable filtered-view notice in both list headers.
+- Unified category-colored interactions, interface icons, colored category labels, and compact
+  icons-only presentation across mod lists, hover cards, the selected-mod drawer, status surfaces,
+  and custom themes.
 - Consolidated diagnostics and optional load-order guidance into one Mod Diagnostics presentation
   across the toolbar, compact top menu, selected-mod drawer, hover information, and affected-mod
   navigation.
@@ -95,8 +98,8 @@ These core systems come from LaughingLeader's BG3 Mod Manager:
   launch instead of producing a Windows retry loop.
 - Manrope fallback when an imported font is missing, invalid, or unavailable on another machine.
 - An Open Fonts Folder action and protection against deleting Redux-shipped fonts.
-- Theme-aware category-colored row hover, category icons in pills, and category-colored names.
-  Built-in themes provide deliberate defaults, and custom themes preserve all three preferences.
+- Theme-aware category-colored interactions and names, interface icons, and compact icons-only
+  labels. Built-in themes provide deliberate defaults, and custom themes preserve each preference.
 
 ## Shared icon system and branding
 

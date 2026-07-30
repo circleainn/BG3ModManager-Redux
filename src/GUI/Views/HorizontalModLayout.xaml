@@ -300,7 +300,7 @@
 												<Setter Property="Background" Value="{DynamicResource ReduxSelectionPillBackground}" />
 												<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 												<Style.Triggers>
-													<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarSelection, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
+													<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
 														<Setter Property="Background" Value="{Binding Color, Converter={StaticResource StringToGradientBrushConverter}, ConverterParameter=42\,22}" />
 														<Setter Property="BorderBrush" Value="{Binding Color}" />
 													</DataTrigger>
@@ -319,7 +319,7 @@
 												<Setter Property="Background" Value="{DynamicResource ReduxAccentPillBackground}" />
 												<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
 												<Style.Triggers>
-													<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarSelection, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
+													<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
 														<Setter Property="Background" Value="{Binding Color, Converter={StaticResource StringToGradientBrushConverter}, ConverterParameter=28\,10}" />
 														<Setter Property="BorderBrush" Value="{Binding Color}" />
 													</DataTrigger>
@@ -662,18 +662,24 @@
 			<!-- The drawer uses a stable compact status pill. Its snapshot is supplied through Tag
 			     because the drawer header's DataContext wraps the selected mod. -->
 			<Style x:Key="ModDetailsHealthIndicatorStyle" BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="{x:Type Border}">
-				<Setter Property="Margin" Value="9,0,0,0" />
-				<Setter Property="Padding" Value="8,2" />
+				<Setter Property="Margin" Value="0" />
 				<Setter Property="VerticalAlignment" Value="Center" />
-				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Pill}" />
 				<Setter Property="Background" Value="{DynamicResource ReduxWarningPillBackground}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
-				<Setter Property="BorderThickness" Value="1.5" />
+				<Setter Property="BorderThickness" Value="2" />
 				<Style.Triggers>
 					<DataTrigger Binding="{Binding Tag.HasErrors, RelativeSource={RelativeSource Self}}" Value="True">
 						<Setter Property="Background" Value="{DynamicResource ReduxErrorPillBackground}" />
 						<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
 					</DataTrigger>
+					<MultiDataTrigger>
+						<MultiDataTrigger.Conditions>
+							<Condition Binding="{Binding UseIconsOnly}" Value="True" />
+							<Condition Binding="{Binding ShowInterfaceIcons}" Value="True" />
+						</MultiDataTrigger.Conditions>
+						<Setter Property="MinWidth" Value="{DynamicResource Redux.StatusPill.IconOnlyWidth}" />
+						<Setter Property="Padding" Value="{DynamicResource Redux.StatusPill.IconOnlyPadding}" />
+					</MultiDataTrigger>
 				</Style.Triggers>
 			</Style>
 			<Style x:Key="ModDetailsAuthorChipStyle" BasedOn="{StaticResource ModDetailsMetadataChipStyle}" TargetType="{x:Type Border}">
@@ -686,36 +692,60 @@
 			<!-- The drawer header is auto-sized, so its pill must measure naturally instead of
 				 using the list-cell template's arranged-width clamp. -->
 			<DataTemplate x:Key="ModDetailsTitleCategoryPillItemTemplate">
-				<Border Style="{StaticResource ReduxCategoryPillStyle}">
+				<Border>
+					<Border.Style>
+						<Style BasedOn="{StaticResource ReduxCategoryPillBaseStyle}" TargetType="{x:Type Border}">
+							<Setter Property="Margin" Value="0,0,6,0" />
+							<Setter Property="BorderThickness" Value="2" />
+						</Style>
+					</Border.Style>
+					<Border.ToolTip>
+						<ToolTip Content="{Binding}"
+							ContentTemplate="{StaticResource ReduxCategoryPillToolTipTemplate}"
+							Style="{StaticResource ReduxRichToolTipStyle}" />
+					</Border.ToolTip>
 					<StackPanel Orientation="Horizontal">
-						<c:ReduxIcon Width="12" Height="12" Margin="0,0,5,0"
-							IconKey="{Binding IconId}" Foreground="{Binding Color}">
-							<c:ReduxIcon.Style>
-								<Style BasedOn="{StaticResource {x:Type c:ReduxIcon}}" TargetType="{x:Type c:ReduxIcon}">
+						<ContentControl Width="14"
+							Height="14"
+							Content="{Binding}"
+							ContentTemplate="{StaticResource ReduxCategoryGlyphTemplate}">
+							<ContentControl.Style>
+								<Style TargetType="{x:Type ContentControl}">
+									<Setter Property="Margin" Value="0,0,5,0" />
 									<Setter Property="Visibility" Value="Collapsed" />
 									<Style.Triggers>
+										<DataTrigger Binding="{Binding ShowInterfaceIcons}" Value="True">
+											<Setter Property="Visibility" Value="Visible" />
+										</DataTrigger>
 										<MultiDataTrigger>
 											<MultiDataTrigger.Conditions>
-												<Condition Binding="{Binding HasIcon}" Value="True" />
-												<Condition Binding="{Binding DataContext.Settings.ShowCategoryIconsInPills, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}" Value="True" />
+												<Condition Binding="{Binding UseIconsOnly}" Value="True" />
+												<Condition Binding="{Binding ShowInterfaceIcons}" Value="True" />
 											</MultiDataTrigger.Conditions>
-											<Setter Property="Visibility" Value="Visible" />
+											<Setter Property="Margin" Value="0" />
 										</MultiDataTrigger>
 									</Style.Triggers>
 								</Style>
-							</c:ReduxIcon.Style>
-						</c:ReduxIcon>
+							</ContentControl.Style>
+						</ContentControl>
 						<TextBlock FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="Medium"
 							Text="{Binding Name}">
 							<TextBlock.Style>
 								<Style TargetType="{x:Type TextBlock}">
-									<!-- Follows the "Colored names" setting. Bound to the static mirror so this works
-									     inside tooltips, which are their own visual tree. -->
+									<!-- Presentation state travels with the category item so the drawer
+									     stays synchronized with list and hover-card pills. -->
 									<Setter Property="Foreground" Value="{Binding Color}" />
 									<Style.Triggers>
-										<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForText)}" Value="False">
+										<DataTrigger Binding="{Binding UseCategoryColorsForText}" Value="False">
 											<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 										</DataTrigger>
+										<MultiDataTrigger>
+											<MultiDataTrigger.Conditions>
+												<Condition Binding="{Binding UseIconsOnly}" Value="True" />
+												<Condition Binding="{Binding ShowInterfaceIcons}" Value="True" />
+											</MultiDataTrigger.Conditions>
+											<Setter Property="Visibility" Value="Collapsed" />
+										</MultiDataTrigger>
 									</Style.Triggers>
 								</Style>
 							</TextBlock.Style>
@@ -751,7 +781,7 @@
 						<Setter Property="Foreground" Value="{StaticResource Redux.Pill.Modio.Border}" />
 					</DataTrigger>
 					<!-- "Colored names" off: label goes neutral; icon and chrome keep carrying the colour. -->
-					<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForText)}" Value="False">
+					<DataTrigger Binding="{Binding UseCategoryColorsForText}" Value="False">
 						<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 					</DataTrigger>
 				</Style.Triggers>
@@ -764,8 +794,37 @@
 			</DataTemplate>
 			<DataTemplate x:Key="PlatformSourceButtonTemplate" DataType="{x:Type data:DivinityModData}">
 				<StackPanel Orientation="Horizontal">
-					<ContentControl Margin="0,0,6,0" Content="{Binding}" ContentTemplate="{StaticResource PlatformIconPresenterTemplate}" />
-					<TextBlock VerticalAlignment="Center" Text="{Binding Metadata.SourcePageButtonLabel}" />
+					<ContentControl Content="{Binding}" ContentTemplate="{StaticResource PlatformIconPresenterTemplate}">
+						<ContentControl.Style>
+							<Style TargetType="{x:Type ContentControl}">
+								<Setter Property="Margin" Value="0,0,6,0" />
+								<Style.Triggers>
+									<MultiDataTrigger>
+										<MultiDataTrigger.Conditions>
+											<Condition Binding="{Binding UseIconsOnly}" Value="True" />
+											<Condition Binding="{Binding ShowInterfaceIcons}" Value="True" />
+										</MultiDataTrigger.Conditions>
+										<Setter Property="Margin" Value="0" />
+									</MultiDataTrigger>
+								</Style.Triggers>
+							</Style>
+						</ContentControl.Style>
+					</ContentControl>
+					<TextBlock VerticalAlignment="Center" Text="{Binding Metadata.SourcePageButtonLabel}">
+						<TextBlock.Style>
+							<Style TargetType="{x:Type TextBlock}">
+								<Style.Triggers>
+									<MultiDataTrigger>
+										<MultiDataTrigger.Conditions>
+											<Condition Binding="{Binding UseIconsOnly}" Value="True" />
+											<Condition Binding="{Binding ShowInterfaceIcons}" Value="True" />
+										</MultiDataTrigger.Conditions>
+										<Setter Property="Visibility" Value="Collapsed" />
+									</MultiDataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
+					</TextBlock>
 				</StackPanel>
 			</DataTemplate>
 			<DataTemplate x:Key="PlatformChangelogButtonTemplate" DataType="{x:Type data:DivinityModData}">
@@ -973,7 +1032,13 @@
 								Content="{Binding}"
 								ContentTemplate="{StaticResource PlatformSourceButtonTemplate}"
 								Style="{StaticResource ModDetailsSourceButtonStyle}"
-								Visibility="{Binding Metadata.OnlineSourceVisibility}" />
+								Visibility="{Binding Metadata.OnlineSourceVisibility}">
+								<Button.ToolTip>
+									<ToolTip Content="{Binding}"
+										ContentTemplate="{DynamicResource ReduxSourceLabelToolTipTemplate}"
+										Style="{StaticResource ReduxRichToolTipStyle}" />
+								</Button.ToolTip>
+							</Button>
 						</WrapPanel>
 						<Border Grid.Row="3"
 							Margin="0,3,0,0"
@@ -1477,7 +1542,7 @@
 													<MultiDataTrigger.Conditions>
 														<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}" Value="True" />
 														<Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}" Value="False" />
-														<Condition Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarSelection, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True" />
+														<Condition Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True" />
 													</MultiDataTrigger.Conditions>
 													<Setter Property="Background" Value="{Binding CountHoverColor}" />
 												</MultiDataTrigger>
@@ -1487,7 +1552,7 @@
 												<MultiDataTrigger>
 													<MultiDataTrigger.Conditions>
 														<Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}" Value="True" />
-														<Condition Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarSelection, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True" />
+														<Condition Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True" />
 													</MultiDataTrigger.Conditions>
 													<Setter Property="Background" Value="{Binding CountSelectionColor}" />
 												</MultiDataTrigger>
@@ -2061,10 +2126,11 @@
 						MaxWidth="420"
 						Text="{Binding Content.Metadata.Title, ElementName=ModDetailsContent, TargetNullValue='Selected Mod'}"
 						TextTrimming="CharacterEllipsis" />
-					<ContentControl Grid.Column="2" Margin="9,0,0,0" VerticalAlignment="Center"
+					<ContentControl Grid.Column="2" Margin="6,0,0,0" VerticalAlignment="Center"
 						Content="{Binding Content, ElementName=ModDetailsContent}"
 						ContentTemplate="{StaticResource ModDetailsCategoryTemplate}" />
 					<Border Grid.Column="3"
+						DataContext="{Binding Content, ElementName=ModDetailsContent}"
 						Style="{StaticResource ModDetailsHealthIndicatorStyle}"
 						Tag="{Binding Content.HealthSnapshot, ElementName=ModDetailsContent}"
 						Visibility="{Binding Content.HealthSnapshot.NeedsAttention, ElementName=ModDetailsContent, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
@@ -2078,15 +2144,49 @@
 							</ToolTip>
 						</Border.ToolTip>
 						<StackPanel Orientation="Horizontal">
-							<c:ReduxIcon Width="14" Height="14" Margin="0,0,4,0"
+							<c:ReduxIcon Width="{DynamicResource Redux.StatusPill.IconSize}"
+								Height="{DynamicResource Redux.StatusPill.IconSize}"
 								IconKey="search-alert"
-								Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}" />
-							<TextBlock VerticalAlignment="Center" FontWeight="SemiBold"
+								Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}">
+								<c:ReduxIcon.Style>
+									<Style BasedOn="{StaticResource {x:Type c:ReduxIcon}}" TargetType="{x:Type c:ReduxIcon}">
+										<Setter Property="Margin" Value="0,0,5,0" />
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding ShowInterfaceIcons}" Value="False">
+												<Setter Property="Visibility" Value="Collapsed" />
+											</DataTrigger>
+											<MultiDataTrigger>
+												<MultiDataTrigger.Conditions>
+													<Condition Binding="{Binding UseIconsOnly}" Value="True" />
+													<Condition Binding="{Binding ShowInterfaceIcons}" Value="True" />
+												</MultiDataTrigger.Conditions>
+												<Setter Property="Margin" Value="0" />
+											</MultiDataTrigger>
+										</Style.Triggers>
+									</Style>
+								</c:ReduxIcon.Style>
+							</c:ReduxIcon>
+							<TextBlock VerticalAlignment="Center" FontWeight="Medium"
+								FontSize="{DynamicResource Redux.FontSize.11}"
 								Foreground="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
-								Text="{Binding Content.HealthSnapshot.StatusTitle, ElementName=ModDetailsContent}" />
+								Text="{Binding HealthSnapshot.StatusTitle}">
+								<TextBlock.Style>
+									<Style TargetType="{x:Type TextBlock}">
+										<Style.Triggers>
+											<MultiDataTrigger>
+												<MultiDataTrigger.Conditions>
+													<Condition Binding="{Binding UseIconsOnly}" Value="True" />
+													<Condition Binding="{Binding ShowInterfaceIcons}" Value="True" />
+												</MultiDataTrigger.Conditions>
+												<Setter Property="Visibility" Value="Collapsed" />
+											</MultiDataTrigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+							</TextBlock>
 						</StackPanel>
 					</Border>
-					<Border Grid.Column="4" MaxWidth="360" Margin="9,0,8,0"
+					<Border Grid.Column="4" MaxWidth="360" Margin="6,0,8,0"
 						HorizontalAlignment="Left" VerticalAlignment="Center"
 						Style="{StaticResource ModDetailsMetadataChipStyle}"
 						ToolTip="{Binding Content.FileName, ElementName=ModDetailsContent}">

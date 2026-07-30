@@ -72077,7 +72077,7 @@
       "name": "Hairstyles of Faerun",
       "folder": "HSoF",
       "fileNames": [
-        "Hairstyles of FaerÃƒÂ»n.pak"
+        "Hairstyles of Faerûn.pak"
       ],
       "authors": [
         "Aloija"
@@ -72373,26 +72373,26 @@
     },
     {
       "uuid": "10a48e15-e1f3-48a4-91a5-f18dfbc47f3a",
-      "name": "Ã¢â„¢Â¡ Mantis' Arcane Inspired Preset Collection",
+      "name": "♡ Mantis' Arcane Inspired Preset Collection",
       "folder": "MantisARCANEINSPIRED",
       "fileNames": [
         "MANTIS' ARCANE INSPIRED PRESETS.pak"
       ],
       "authors": [
-        "Ã¢â„¢Â¡ Mantis"
+        "♡ Mantis"
       ],
       "modId": 14698,
       "matchBasis": "normalized-name-and-author"
     },
     {
       "uuid": "e8fba8b7-3ea5-48a9-9cac-697bbb576e4e",
-      "name": "Ã¢â„¢Â¡ Mantis' Resident Evil Preset Collection",
+      "name": "♡ Mantis' Resident Evil Preset Collection",
       "folder": "MantisRE4",
       "fileNames": [
         "MANTIS' RESIDENT EVIL PRESET COLLECTION.pak"
       ],
       "authors": [
-        "Ã¢â„¢Â¡ Mantis"
+        "♡ Mantis"
       ],
       "modId": 17212,
       "matchBasis": "normalized-name-and-author"

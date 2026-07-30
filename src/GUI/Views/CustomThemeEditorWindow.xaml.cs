@@ -91,7 +91,7 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 
 	private void InterfaceIconsCheckBox_Unchecked(object sender, RoutedEventArgs e)
 	{
-		Theme.UseSourceIconsOnly = false;
+		Theme.UseIconsOnly = false;
 	}
 
 	private void ColorButton_Click(object sender, RoutedEventArgs e)

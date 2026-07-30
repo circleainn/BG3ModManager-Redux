@@ -258,7 +258,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		var dialog = new CategoryNameDialog(color: ViewModel.GetSuggestedCustomCategoryColor(),
 			savedColors: ViewModel.Settings.SavedCategoryColors,
-			useCategoryColorsForSidebarSelection: ViewModel.Settings.UseCategoryColorsForSidebarSelection,
+			useCategoryColorsForSidebarSelection: ViewModel.Settings.UseCategoryColorsForInteractions,
 			useCategoryColorsForSidebarText: ViewModel.Settings.UseCategoryColorsForSidebarText,
 			showInterfaceIcons: ViewModel.Settings.ShowCategoryIconsInPills) { Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
@@ -287,7 +287,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			iconId: ViewModel.GetCurrentCategoryIcon(category),
 			canResetToDefault: ViewModel.CanResetCategoryStyle(category),
 			description: ViewModel.GetCurrentCategoryDescription(category),
-			useCategoryColorsForSidebarSelection: ViewModel.Settings.UseCategoryColorsForSidebarSelection,
+			useCategoryColorsForSidebarSelection: ViewModel.Settings.UseCategoryColorsForInteractions,
 			useCategoryColorsForSidebarText: ViewModel.Settings.UseCategoryColorsForSidebarText,
 			showInterfaceIcons: ViewModel.Settings.ShowCategoryIconsInPills) { Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
@@ -576,7 +576,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (!activeList) return;
 		var dialog = new CategoryNameDialog(color: ViewModel.GetSuggestedCustomCategoryColor(),
 			savedColors: ViewModel.Settings.SavedCategoryColors, visualDividerMode: true,
-			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForHover)
+			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForInteractions)
 			{ Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme, ReduxThemeService.GetActiveTheme(ViewModel.Settings));
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
@@ -599,7 +599,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (divider == null) return;
 		var dialog = new CategoryNameDialog(divider.Title, divider.Color, true,
 			ViewModel.Settings.SavedCategoryColors, true, divider.IconId,
-			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForHover,
+			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForInteractions,
 			description: divider.Description,
 			hideSeparatorLine: divider.HideLine)
 			{ Owner = Window.GetWindow(this) };
@@ -753,17 +753,26 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		this.ForceLoadedModsListView.ClearSelectedItems();
 	}
 
-	public void FocusModHealthSnapshot(ModHealthSnapshot snapshot)
+	public void FocusDiagnosticSnapshot(ModHealthSnapshot snapshot)
 	{
 		if (snapshot?.Mod == null) return;
+
+		var mod = snapshot.Mod;
+		var targetList = mod.IsForceLoaded && !mod.IsForceLoadedMergedMod && !mod.ForceAllowInLoadOrder
+			? ForceLoadedModsListView
+			: mod.IsActive
+				? ActiveModsListView
+				: InactiveModsListView;
+
 		ViewModel.SelectedModCategory = MainWindowViewModel.AllModsCategory;
 		ViewModel.ActiveModFilterText = String.Empty;
+		ViewModel.InactiveModFilterText = String.Empty;
 		Dispatcher.BeginInvoke(new Action(() =>
 		{
 			DeselectAll();
-			ActiveModsListView.SelectedItem = snapshot.Mod;
-			ActiveModsListView.ScrollIntoView(snapshot.Mod);
-			ActiveModsListView.Focus();
+			targetList.SelectedItem = mod;
+			targetList.ScrollIntoView(mod);
+			targetList.Focus();
 		}));
 	}
 
@@ -2121,7 +2130,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			? MeasureColumnText(listView, columnName, fontWeight: FontWeights.SemiBold) + 28
 			: 0d;
 		var sourceIconsOnly = ViewModel?.Settings.ShowCategoryIconsInPills == true &&
-			ViewModel.Settings.UseSourceIconsOnly;
+			ViewModel.Settings.UseIconsOnly;
 		var fallbackWidth = columnName == "Source" && sourceIconsOnly
 			? 64d
 			: GetFallbackMinimumColumnWidth(columnName);
@@ -2201,14 +2210,23 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					// FontSize comes from the Redux.FontSize.11 token, which scales with the
 					// Compact/Default/Large text-size preset, so a hardcoded "11" here
 					// under-measures whenever text size isn't Default.
-					var categoryIconAllowance = ViewModel?.Settings.ShowCategoryIconsInPills == true ? 17 : 0;
-					var pillFontSize = GetPillFontSize(listView);
-					candidateWidth = (mod.DisplayCategories?.Sum(category => MeasureColumnText(listView, category.Name, pillFontSize, FontWeights.SemiBold) + 24 + categoryIconAllowance) ?? 0) + 20;
+					var categoryIconsOnly = ViewModel?.Settings.ShowCategoryIconsInPills == true &&
+						ViewModel.Settings.UseIconsOnly;
+					if (categoryIconsOnly)
+					{
+						candidateWidth = ((mod.DisplayCategories?.Count ?? 0) * 29d) + 20d;
+					}
+					else
+					{
+						var categoryIconAllowance = ViewModel?.Settings.ShowCategoryIconsInPills == true ? 17 : 0;
+						var pillFontSize = GetPillFontSize(listView);
+						candidateWidth = (mod.DisplayCategories?.Sum(category => MeasureColumnText(listView, category.Name, pillFontSize, FontWeights.SemiBold) + 24 + categoryIconAllowance) ?? 0) + 20;
+					}
 					break;
 				case "Source":
 					// 14px provider icon + 6 margin + 16 padding + 3 border + a generous cushion.
 					var sourceIconsOnly = ViewModel?.Settings.ShowCategoryIconsInPills == true &&
-						ViewModel.Settings.UseSourceIconsOnly;
+						ViewModel.Settings.UseIconsOnly;
 					candidateWidth = sourceIconsOnly
 						? 40
 						: MeasureColumnText(listView, mod.DisplaySource, GetPillFontSize(listView), FontWeights.SemiBold) +
@@ -2268,6 +2286,17 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private double GetInitialCategoryColumnWidth(ModListView listView)
 	{
+		if (ViewModel?.Settings.ShowCategoryIconsInPills == true && ViewModel.Settings.UseIconsOnly)
+		{
+			var widestIconRow = listView.Items
+				.OfType<DivinityModData>()
+				.Where(mod => !mod.IsVisualDivider)
+				.Select(mod => ((mod.DisplayCategories?.Count ?? 0) * 29d) + 20d)
+				.DefaultIfEmpty(GetDefaultColumnWidth("Category"))
+				.Max();
+			return Math.Ceiling(Math.Min(Math.Max(widestIconRow, GetHeaderMinimumColumnWidth(listView, "Category")), 260d));
+		}
+
 		var iconAllowance = ViewModel?.Settings.ShowCategoryIconsInPills == true ? 17 : 0;
 		var pillFontSize = GetPillFontSize(listView);
 		var widestPill = listView.Items

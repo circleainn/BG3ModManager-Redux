@@ -152,6 +152,23 @@ public static class DivinityApp
 		}
 	}
 
+	private static bool _useCategoryColorsForInteractions = true;
+
+	/// <summary>
+	/// Mirrors the unified category-interaction preference for popup-hosted rows. Popup content
+	/// has a separate visual tree, so it cannot reliably discover the main window settings.
+	/// </summary>
+	public static bool UseCategoryColorsForInteractions
+	{
+		get => _useCategoryColorsForInteractions;
+		set
+		{
+			if (_useCategoryColorsForInteractions == value) return;
+			_useCategoryColorsForInteractions = value;
+			NotifyStaticPropertyChanged();
+		}
+	}
+
 	private static bool _showInterfaceIcons = true;
 
 	/// <summary>
@@ -165,6 +182,22 @@ public static class DivinityApp
 		{
 			if (_showInterfaceIcons == value) return;
 			_showInterfaceIcons = value;
+			NotifyStaticPropertyChanged();
+		}
+	}
+
+	private static bool _useIconsOnly;
+
+	/// <summary>
+	/// Mirrors the compact icon-only preference for templates hosted outside the main visual tree.
+	/// </summary>
+	public static bool UseIconsOnly
+	{
+		get => _useIconsOnly;
+		set
+		{
+			if (_useIconsOnly == value) return;
+			_useIconsOnly = value;
 			NotifyStaticPropertyChanged();
 		}
 	}

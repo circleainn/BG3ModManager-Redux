@@ -98,42 +98,24 @@
 						<ColumnDefinition Width="Auto" />
 						<ColumnDefinition Width="*" />
 					</Grid.ColumnDefinitions>
-					<Border Width="24"
+					<Grid Width="24"
 						Height="24"
 						Margin="9,0,0,0"
-						VerticalAlignment="Center"
-						CornerRadius="{DynamicResource Redux.CornerRadius.Small}">
-						<Border.Style>
-							<Style TargetType="Border">
-								<Setter Property="Background" Value="Transparent" />
-								<Setter Property="BorderThickness" Value="0" />
-								<Style.Triggers>
-									<DataTrigger
-										Binding="{Binding IconSource, RelativeSource={RelativeSource AncestorType={x:Type local:ReduxWindowTitleBar}}}"
-										Value="{x:Null}">
-										<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
-										<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-										<Setter Property="BorderThickness" Value="1" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</Border.Style>
-						<Grid>
-							<local:ReduxIcon Width="13"
-								Height="13"
-								HorizontalAlignment="Center"
-								VerticalAlignment="Center"
-								Foreground="{DynamicResource ReduxAccentHoverBrush}"
-								StrokeData="{Binding IconData, RelativeSource={RelativeSource AncestorType={x:Type local:ReduxWindowTitleBar}}}" />
-							<Image Width="20"
-								Height="20"
-								HorizontalAlignment="Center"
-								VerticalAlignment="Center"
-								RenderOptions.BitmapScalingMode="HighQuality"
-								Source="{Binding IconSource, RelativeSource={RelativeSource AncestorType={x:Type local:ReduxWindowTitleBar}}}"
-								Stretch="Uniform" />
-						</Grid>
-					</Border>
+						VerticalAlignment="Center">
+						<local:ReduxIcon Width="15"
+							Height="15"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"
+							Foreground="{DynamicResource ReduxAccentHoverBrush}"
+							StrokeData="{Binding IconData, RelativeSource={RelativeSource AncestorType={x:Type local:ReduxWindowTitleBar}}}" />
+						<Image Width="20"
+							Height="20"
+							HorizontalAlignment="Center"
+							VerticalAlignment="Center"
+							RenderOptions.BitmapScalingMode="HighQuality"
+							Source="{Binding IconSource, RelativeSource={RelativeSource AncestorType={x:Type local:ReduxWindowTitleBar}}}"
+							Stretch="Uniform" />
+					</Grid>
 					<TextBlock Grid.Column="1"
 						Margin="9,0,8,0"
 						VerticalAlignment="Center"

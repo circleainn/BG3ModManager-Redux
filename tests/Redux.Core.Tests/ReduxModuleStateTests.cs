@@ -42,6 +42,55 @@ internal sealed class ReduxModuleStateTests
 		RegressionAssert.True(modules.LoadOrderGuidanceEnabled);
 	}
 
+	public void CategoryInteractionSettingSynchronizesLegacyPresentationFlags()
+	{
+		var settings = new DivinityModManagerSettings
+		{
+			UseCategoryColorsForHover = false,
+			UseCategoryColorsForSidebarSelection = true
+		};
+
+		RegressionAssert.True(settings.UseCategoryColorsForInteractions);
+
+		settings.UseCategoryColorsForInteractions = false;
+		RegressionAssert.False(settings.UseCategoryColorsForHover);
+		RegressionAssert.False(settings.UseCategoryColorsForSidebarSelection);
+
+		settings.UseCategoryColorsForInteractions = true;
+		RegressionAssert.True(settings.UseCategoryColorsForHover);
+		RegressionAssert.True(settings.UseCategoryColorsForSidebarSelection);
+	}
+
+	public void IconsOnlySettingSynchronizesLegacySourceFlag()
+	{
+		var settings = new DivinityModManagerSettings();
+
+		settings.UseIconsOnly = true;
+		RegressionAssert.True(settings.UseSourceIconsOnly);
+
+		settings.UseSourceIconsOnly = false;
+		RegressionAssert.False(settings.UseIconsOnly);
+	}
+
+	public void CustomThemeClonePreservesUnifiedPresentationSettings()
+	{
+		var theme = new ReduxCustomTheme
+		{
+			UseCategoryColorsForHover = false,
+			UseCategoryColorsForSidebarSelection = true,
+			ShowCategoryIconsInPills = true,
+			UseIconsOnly = true
+		};
+
+		var clone = theme.Clone();
+
+		RegressionAssert.True(clone.UseCategoryColorsForInteractions);
+		RegressionAssert.True(clone.UseCategoryColorsForHover);
+		RegressionAssert.True(clone.UseCategoryColorsForSidebarSelection);
+		RegressionAssert.True(clone.UseIconsOnly);
+		RegressionAssert.True(clone.UseSourceIconsOnly);
+	}
+
 	public void LoadOrderGuidanceRequiresDiagnosticsWithoutLosingItsPreference()
 	{
 		var settings = new DivinityModManagerSettings

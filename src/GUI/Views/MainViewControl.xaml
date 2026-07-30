@@ -75,37 +75,175 @@
 					</Setter.Value>
 				</Setter>
 			</Style>
+			<Style x:Key="ToolbarDiagnosticAffectedModButtonStyle" TargetType="{x:Type Button}">
+				<Setter Property="MinHeight" Value="24" />
+				<Setter Property="HorizontalAlignment" Value="Stretch" />
+				<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+				<Setter Property="Padding" Value="7,3" />
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="BorderThickness" Value="0" />
+				<Setter Property="Cursor" Value="Hand" />
+				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type Button}">
+							<Border x:Name="AffectedModChrome"
+								Background="{TemplateBinding Background}"
+								CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+								RenderTransformOrigin="0.5,0.5">
+								<Border.RenderTransform>
+									<TranslateTransform x:Name="AffectedModTranslate" Y="0" />
+								</Border.RenderTransform>
+								<Grid>
+									<Border x:Name="AffectedModHoverSurface"
+										Margin="{DynamicResource Redux.Interaction.SurfaceMargin}"
+										CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+										OpacityMask="{StaticResource Redux.Hover.WashMask}"
+										IsHitTestVisible="False"
+										Opacity="0">
+										<Border.Style>
+											<Style TargetType="{x:Type Border}">
+												<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+												<Style.Triggers>
+													<DataTrigger
+														Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForInteractions)}"
+														Value="True">
+														<Setter Property="Background"
+															Value="{Binding Mod.DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=4D, FallbackValue=#4D8F879E}" />
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</Border.Style>
+									</Border>
+									<Border x:Name="AffectedModHoverRail"
+										Margin="{DynamicResource Redux.Interaction.SurfaceMargin}"
+										BorderThickness="{DynamicResource Redux.Rail.Thickness}"
+										CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+										IsHitTestVisible="False"
+										Opacity="0">
+										<Border.Style>
+											<Style TargetType="{x:Type Border}">
+												<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+												<Style.Triggers>
+													<DataTrigger
+														Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForInteractions)}"
+														Value="True">
+														<Setter Property="BorderBrush"
+															Value="{Binding Mod.DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}, FallbackValue=#8F879E}" />
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</Border.Style>
+									</Border>
+									<ContentPresenter Margin="{TemplateBinding Padding}" />
+								</Grid>
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Trigger.EnterActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="AffectedModHoverSurface"
+													Storyboard.TargetProperty="Opacity"
+													To="0.62"
+													Duration="{StaticResource Redux.Motion.Fast}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+												<DoubleAnimation Storyboard.TargetName="AffectedModHoverRail"
+													Storyboard.TargetProperty="Opacity"
+													To="1"
+													Duration="{StaticResource Redux.Motion.Fast}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+												<DoubleAnimation Storyboard.TargetName="AffectedModTranslate"
+													Storyboard.TargetProperty="Y"
+													To="{StaticResource Redux.Motion.HoverTranslateNegative}"
+													Duration="{StaticResource Redux.Motion.Fast}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.EnterActions>
+									<Trigger.ExitActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="AffectedModHoverSurface"
+													Storyboard.TargetProperty="Opacity"
+													To="0"
+													Duration="{StaticResource Redux.Motion.Standard}" />
+												<DoubleAnimation Storyboard.TargetName="AffectedModHoverRail"
+													Storyboard.TargetProperty="Opacity"
+													To="0"
+													Duration="{StaticResource Redux.Motion.Standard}" />
+												<DoubleAnimation Storyboard.TargetName="AffectedModTranslate"
+													Storyboard.TargetProperty="Y"
+													To="0"
+													Duration="{StaticResource Redux.Motion.Standard}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.ExitActions>
+								</Trigger>
+								<Trigger Property="IsKeyboardFocused" Value="True">
+									<Setter TargetName="AffectedModHoverSurface" Property="Opacity" Value="0.62" />
+									<Setter TargetName="AffectedModHoverRail" Property="Opacity" Value="1" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
 			<DataTemplate x:Key="ToolbarDiagnosticAffectedModTemplate">
-				<Grid Margin="0,3,0,0">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
-					<ContentControl Width="14"
-						Height="14"
-						Margin="0,0,6,0"
-						VerticalAlignment="Center"
-						Content="{Binding Mod.DisplayCategories[0]}"
-						ContentTemplate="{DynamicResource ReduxCategoryGlyphTemplate}" />
-					<TextBlock Grid.Column="1"
-						VerticalAlignment="Center"
-						FontSize="{DynamicResource Redux.FontSize.11}"
-						FontWeight="SemiBold"
-						Text="{Binding Mod.DisplayName}"
-						TextTrimming="CharacterEllipsis"
-						ToolTip="{Binding Mod.DisplayName}">
-						<TextBlock.Style>
-							<Style TargetType="{x:Type TextBlock}">
-								<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForText)}" Value="True">
-										<Setter Property="Foreground" Value="{Binding Mod.DisplayCategories[0].Color}" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</TextBlock.Style>
-					</TextBlock>
-				</Grid>
+				<Button Click="ToolbarDiagnosticAffectedMod_Click"
+					CommandParameter="{Binding Snapshot}"
+					Style="{StaticResource ToolbarDiagnosticAffectedModButtonStyle}"
+					ToolTip="{Binding Mod.DisplayName, StringFormat=Focus {0}}">
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<ContentControl Width="14"
+							Height="14"
+							Margin="0,0,6,0"
+							VerticalAlignment="Center"
+							Content="{Binding Mod.DisplayCategories[0]}"
+							ContentTemplate="{DynamicResource ReduxCategoryGlyphTemplate}">
+							<ContentControl.Style>
+								<Style TargetType="{x:Type ContentControl}">
+									<Setter Property="Visibility" Value="Visible" />
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons)}" Value="False">
+											<Setter Property="Visibility" Value="Collapsed" />
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</ContentControl.Style>
+						</ContentControl>
+						<TextBlock Grid.Column="1"
+							VerticalAlignment="Center"
+							FontSize="{DynamicResource Redux.FontSize.11}"
+							FontWeight="SemiBold"
+							Text="{Binding Mod.DisplayName}"
+							TextTrimming="CharacterEllipsis">
+							<TextBlock.Style>
+								<Style TargetType="{x:Type TextBlock}">
+									<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForText)}" Value="True">
+											<Setter Property="Foreground" Value="{Binding Mod.DisplayCategories[0].Color}" />
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</TextBlock.Style>
+						</TextBlock>
+						<controls:ReduxIcon Grid.Column="2"
+							Width="10"
+							Height="10"
+							Margin="8,0,0,0"
+							VerticalAlignment="Center"
+							Foreground="{DynamicResource ReduxTextMutedBrush}"
+							StrokeData="{StaticResource Redux.Icon.ChevronRightStroke}" />
+					</Grid>
+				</Button>
 			</DataTemplate>
 			<DataTemplate x:Key="ToolbarDiagnosticFindingGroupTemplate">
 				<Border Style="{StaticResource ReduxStatusFindingStyle}">
@@ -134,9 +272,15 @@
 							</Border>
 						</Grid>
 						<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding Message}" />
-						<ItemsControl Margin="0,3,0,0"
+						<ItemsControl Margin="0,4,0,0"
 							ItemTemplate="{StaticResource ToolbarDiagnosticAffectedModTemplate}"
-							ItemsSource="{Binding AffectedMods}" />
+							ItemsSource="{Binding AffectedMods}">
+							<ItemsControl.ItemContainerStyle>
+								<Style TargetType="{x:Type ContentPresenter}">
+									<Setter Property="HorizontalAlignment" Value="Stretch" />
+								</Style>
+							</ItemsControl.ItemContainerStyle>
+						</ItemsControl>
 					</StackPanel>
 				</Border>
 			</DataTemplate>
@@ -318,7 +462,6 @@
 					<Grid.Resources>
 						<ControlTemplate x:Key="CompactTopBarStatusButtonTemplate" TargetType="{x:Type Button}">
 							<Border x:Name="StatusChrome"
-								Margin="0,1"
 								Background="{TemplateBinding Background}"
 								BorderBrush="{TemplateBinding BorderBrush}"
 								BorderThickness="{TemplateBinding BorderThickness}"
@@ -330,8 +473,8 @@
 										CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
 										IsHitTestVisible="False"
 										Opacity="0" />
-									<controls:ReduxIcon Width="13"
-										Height="13"
+									<controls:ReduxIcon Width="{DynamicResource Redux.StatusPill.IconSize}"
+										Height="{DynamicResource Redux.StatusPill.IconSize}"
 										HorizontalAlignment="Center"
 										VerticalAlignment="Center"
 										Foreground="{TemplateBinding Foreground}"
@@ -348,13 +491,13 @@
 							</ControlTemplate.Triggers>
 						</ControlTemplate>
 						<Style x:Key="CompactTopBarStatusButtonStyle" TargetType="{x:Type Button}">
-							<Setter Property="Width" Value="27" />
-							<Setter Property="Height" Value="22" />
+							<Setter Property="Width" Value="{DynamicResource Redux.StatusPill.IconOnlyWidth}" />
+							<Setter Property="Height" Value="{DynamicResource Redux.StatusPill.Height}" />
 							<Setter Property="Margin" Value="3,0" />
 							<Setter Property="Padding" Value="0" />
 							<Setter Property="Background" Value="{DynamicResource ReduxSuccessPillBackground}" />
 							<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
-							<Setter Property="BorderThickness" Value="1.25" />
+							<Setter Property="BorderThickness" Value="1.5" />
 							<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
 							<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 							<Setter Property="Cursor" Value="Hand" />
@@ -843,6 +986,8 @@
 								<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 								<Setter Property="ItemContainerStyle" Value="{StaticResource ToolbarComboBoxItemStyle}" />
 								<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
+								<EventSetter Event="MouseEnter" Handler="ToolbarComboBox_MouseEnter" />
+								<EventSetter Event="MouseLeave" Handler="ToolbarComboBox_MouseLeave" />
 							</Style>
 							<Style x:Key="ToolbarTextButtonStyle" BasedOn="{StaticResource ToolbarButtonBaseStyle}" TargetType="{x:Type Button}">
 								<Setter Property="Width" Value="Auto" />
@@ -868,7 +1013,6 @@
 							</Style>
 							<ControlTemplate x:Key="ToolbarDiagnosticStatusButtonTemplate" TargetType="{x:Type Button}">
 								<Border x:Name="StatusChrome"
-									Margin="0,1"
 									Background="{TemplateBinding Background}"
 									BorderBrush="{TemplateBinding BorderBrush}"
 									BorderThickness="{TemplateBinding BorderThickness}"
@@ -881,11 +1025,12 @@
 									</Border.RenderTransform>
 									<Grid>
 										<Border x:Name="StatusHoverSurface"
-											CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
+											Margin="1"
+											CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
 											Background="{TemplateBinding Foreground}"
 											IsHitTestVisible="False"
 											Opacity="0" />
-										<StackPanel x:Name="StatusContent" Margin="9,0" Orientation="Horizontal">
+										<StackPanel x:Name="StatusContent" Margin="7,0" Orientation="Horizontal">
 											<controls:ReduxIcon x:Name="StatusIcon"
 												Width="14"
 												Height="14"
@@ -893,9 +1038,9 @@
 												Foreground="{TemplateBinding Foreground}"
 												IconKey="{TemplateBinding Tag}" />
 											<controls:ReduxIcon x:Name="StatusChevron"
-												Width="9"
-												Height="9"
-												Margin="3,0,0,0"
+												Width="8"
+												Height="8"
+												Margin="4,0,0,0"
 												VerticalAlignment="Center"
 												Foreground="{TemplateBinding Foreground}"
 												RenderTransformOrigin="0.5,0.5"
@@ -905,7 +1050,7 @@
 												</controls:ReduxIcon.RenderTransform>
 											</controls:ReduxIcon>
 											<TextBlock x:Name="StatusLabel"
-												Margin="7,0,0,0"
+												Margin="6,0,0,0"
 												VerticalAlignment="Center"
 												FontWeight="SemiBold"
 												Foreground="{TemplateBinding Foreground}"
@@ -916,7 +1061,7 @@
 								</Border>
 								<ControlTemplate.Triggers>
 									<Trigger Property="IsMouseOver" Value="True">
-										<Setter TargetName="StatusHoverSurface" Property="Opacity" Value="0.08" />
+										<Setter TargetName="StatusHoverSurface" Property="Opacity" Value="0.1" />
 									</Trigger>
 									<!-- "Colored names" off: the label goes neutral; the severity icon still carries the state. -->
 									<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForText)}" Value="False">
@@ -930,8 +1075,8 @@
 									 the theme accent while the control is expanded. -->
 								<Setter Property="Cursor" Value="Hand" />
 								<Setter Property="FocusVisualStyle" Value="{x:Null}" />
-								<Setter Property="Width" Value="48" />
-								<Setter Property="MinWidth" Value="48" />
+								<Setter Property="Width" Value="44" />
+								<Setter Property="MinWidth" Value="44" />
 								<Setter Property="MaxWidth" Value="240" />
 								<Setter Property="Height" Value="{DynamicResource Redux.ControlHeight.Standard}" />
 								<Setter Property="Margin" Value="6,0,0,0" />
@@ -941,7 +1086,7 @@
 								<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
 								<Setter Property="Content" Value="No issues found" />
 								<Setter Property="Tag" Value="check" />
-								<Setter Property="BorderThickness" Value="1.5" />
+								<Setter Property="BorderThickness" Value="2" />
 								<Setter Property="HorizontalAlignment" Value="Right" />
 								<Setter Property="Template" Value="{StaticResource ToolbarDiagnosticStatusButtonTemplate}" />
 								<Setter Property="ToolTip" Value="{x:Null}" />
@@ -1057,7 +1202,12 @@
 									<ColumnDefinition Width="*" />
 									<ColumnDefinition Width="Auto" />
 								</Grid.ColumnDefinitions>
-								<TextBlock Grid.ColumnSpan="3" Style="{StaticResource ToolbarGroupLabelStyle}" Text="Order &amp; Export" />
+								<TextBlock Grid.ColumnSpan="2" Style="{StaticResource ToolbarGroupLabelStyle}" Text="Order &amp; Export" />
+								<TextBlock Grid.Column="2"
+									Margin="0,0,0,3"
+									HorizontalAlignment="Right"
+									Style="{StaticResource ToolbarGroupLabelStyle}"
+									Text="Status" />
 								<StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
 									<controls:ReduxIcon Margin="1,0,5,0" StrokeData="{StaticResource Redux.Icon.ListStroke}" Foreground="{DynamicResource ReduxTextSecondaryBrush}" />
 									<ComboBox x:Name="OrdersComboBox"
