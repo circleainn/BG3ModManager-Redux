@@ -1,10 +1,8 @@
-﻿using System.Diagnostics;
-
 namespace DivinityModManager.ViewModels;
 
 public class MainWindowExceptionHandler : IObserver<Exception>
 {
-	private MainWindowViewModel _viewModel;
+	private readonly MainWindowViewModel _viewModel;
 
 	public MainWindowExceptionHandler(MainWindowViewModel vm)
 	{
@@ -14,15 +12,11 @@ public class MainWindowExceptionHandler : IObserver<Exception>
 	public void OnNext(Exception value)
 	{
 		DivinityApp.Log($"Error: [{value.Source}]({value.GetType()}): {value.Message}\n{value.StackTrace}");
-		//if (Debugger.IsAttached) Debugger.Break();
-		//RxApp.MainThreadScheduler.Schedule(() => { throw value; });
 	}
 
 	public void OnError(Exception error)
 	{
 		DivinityApp.Log($"Error: [{error.Source}]({error.GetType()}): {error.Message}\n{error.StackTrace}");
-		if (Debugger.IsAttached) Debugger.Break();
-
 		RxApp.MainThreadScheduler.Schedule(() =>
 		{
 			if (_viewModel.MainProgressIsActive)
@@ -30,13 +24,10 @@ public class MainWindowExceptionHandler : IObserver<Exception>
 				_viewModel.MainProgressIsActive = false;
 			}
 			_viewModel.View.AlertBar.SetDangerAlert(error.Message);
-			//throw error;
 		});
 	}
 
 	public void OnCompleted()
 	{
-		if (Debugger.IsAttached) Debugger.Break();
-		//RxApp.MainThreadScheduler.Schedule(() => { throw new NotImplementedException(); });
 	}
 }

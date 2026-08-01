@@ -35,12 +35,10 @@ public static class GridViewAutoSizeColumnsBehavior
 				if (enabled)
 				{
 					listView.Loaded += OnDataChangedChanged;
-					//listView.SizeChanged += OnGridViewSizeChanged;
 				}
 				else
 				{
 					listView.Loaded -= OnDataChangedChanged;
-					//listView.SizeChanged -= OnGridViewSizeChanged;
 				}
 			}
 		}

@@ -1,3 +1,4 @@
+import re
 import shutil
 import sys
 import zipfile
@@ -47,7 +48,11 @@ FORBIDDEN_FILE_NAMES = {
 
 FORBIDDEN_SUFFIXES = {
 	".bak",
+	".bg3redux",
+	".bg3redux-report",
 	".binlog",
+	".dmp",
+	".dump",
 	".log",
 	".p12",
 	".pdb",
@@ -143,8 +148,25 @@ def replace_fixed_width(data: bytes, old: bytes, new: bytes) -> tuple[bytes, int
 	return data.replace(old, replacement), data.count(old)
 
 
+def sanitize_windows_pdb_paths(data: bytes) -> tuple[bytes, int]:
+	"""Replace compiler PDB lookup paths that expose a developer profile directory."""
+	pattern = re.compile(rb"[A-Za-z]:\\Users\\[^\x00\r\n]{1,768}?\.pdb\x00", re.IGNORECASE)
+	replacement_path = b"R:\\Build\\dependency.pdb\x00"
+	count = 0
+
+	def replace(match: re.Match[bytes]) -> bytes:
+		nonlocal count
+		count += 1
+		value = match.group(0)
+		if len(replacement_path) > len(value):
+			return b"\x00" * len(value)
+		return replacement_path + (b"\x00" * (len(value) - len(replacement_path)))
+
+	return pattern.sub(replace, data), count
+
+
 def sanitize_binary_build_metadata() -> None:
-	"""Remove local workspace paths left in PE/PDB lookup metadata by compilers."""
+	"""Remove machine-specific paths left in PE/PDB lookup metadata by compilers."""
 	real_root = str(ROOT)
 	encodings = (
 		(real_root.encode("utf-8"), NEUTRAL_BUILD_ROOT.encode("utf-8")),
@@ -159,6 +181,8 @@ def sanitize_binary_build_metadata() -> None:
 		for old, new in encodings:
 			data, count = replace_fixed_width(data, old, new)
 			changed += count
+		data, count = sanitize_windows_pdb_paths(data)
+		changed += count
 		if changed:
 			path.write_bytes(data)
 
@@ -170,6 +194,8 @@ def private_path_markers() -> tuple[str, ...]:
 		ROOT.as_posix(),
 		str(Path.home()),
 		Path.home().as_posix(),
+		"c:\\users\\",
+		"c:/users/",
 	}
 	return tuple(sorted(marker.lower() for marker in candidates if marker))
 
@@ -201,6 +227,8 @@ def collect_package_files() -> list[Path]:
 			raise SystemExit(f"User-state directory cannot be packaged: {relative_path}")
 		if lower_name in FORBIDDEN_FILE_NAMES:
 			raise SystemExit(f"Private or runtime file cannot be packaged: {relative_path}")
+		if lower_name.startswith(".env."):
+			raise SystemExit(f"Environment file cannot be packaged: {relative_path}")
 		if relative_path.suffix.lower() in FORBIDDEN_SUFFIXES:
 			raise SystemExit(f"Development or temporary file cannot be packaged: {relative_path}")
 

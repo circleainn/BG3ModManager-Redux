@@ -92,14 +92,6 @@ public partial class HotkeyEditorControl : UserControl
 			return;
 		}
 
-		// Pressing enter without modifiers removes focus
-		// If the hotkey's default key is Return, and it's set to Return, stop editing as well.
-		//if (modifiers == ModifierKeys.None && key == Key.Return && (Hotkey.DefaultKey != Key.Return || Hotkey.Key == Hotkey.DefaultKey))
-		//{
-		//	SetEditing(false);
-		//	return;
-		//}
-
 		// If no actual key was pressed - return
 		if (key == Key.LeftCtrl ||
 			key == Key.RightCtrl ||

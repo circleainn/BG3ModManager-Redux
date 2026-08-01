@@ -16,8 +16,6 @@ public class MainArgs
 		}
 		using (var updater = new Updater(args.Updater, args.BinFolder))
 		{
-			//updater.ShowConsoleWindow();
-			//updater.SetGameVersion(Path.Join(args.BinFolder, "bg3.exe");
 			Console.WriteLine($"Updating...");
 			updater.Update();
 		}

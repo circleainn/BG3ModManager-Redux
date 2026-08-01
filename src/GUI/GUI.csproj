@@ -85,12 +85,6 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</Content>
-		<None Include="..\..\licenses\BG3ModManager-Redux-MIT.txt">
-			<Link>licenses\BG3ModManager-Redux-MIT.txt</Link>
-			<TargetPath>licenses\BG3ModManager-Redux-MIT.txt</TargetPath>
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-		</None>
 		<None Include="..\..\licenses\Third-Party-Notices.md">
 			<Link>licenses\Third-Party-Notices.md</Link>
 			<TargetPath>licenses\Third-Party-Notices.md</TargetPath>

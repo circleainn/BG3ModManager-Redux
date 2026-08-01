@@ -3,6 +3,15 @@ _Assets/
 PublishRelease.py
 _Backup/
 
+# Redux user exports and diagnostic artifacts
+*.bg3redux
+*.bg3redux-report
+*.dmp
+*.dump
+.env
+.env.*
+!.env.example
+
 ## Visual Studio Code specific files and folder
 .vscode/*
 !.vscode/settings.json

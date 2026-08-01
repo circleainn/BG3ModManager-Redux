@@ -137,14 +137,10 @@ public class DeleteFilesViewData : BaseProgressViewModel
 		}
 	}
 
-	private bool IsClosingAllowed(bool isDeletingDupes, int totalFiles) => !isDeletingDupes || totalFiles <= 0;
-
 	public DeleteFilesViewData() : base()
 	{
 		RemoveFromLoadOrder = true;
 		PermanentlyDelete = false;
-
-		//this.WhenAnyValue(x => x.IsDeletingDuplicates, x => x.Files.Count).Select(x => IsClosingAllowed(x.Item1, x.Item2)).BindTo(this, x => x.CanClose);
 
 		_removeFromLoadOrderVisibility = this.WhenAnyValue(x => x.IsDeletingDuplicates).Select(x => x ? Visibility.Collapsed : Visibility.Visible).ToProperty(this, nameof(RemoveFromLoadOrderVisibility), true, RxApp.MainThreadScheduler);
 		_title = this.WhenAnyValue(x => x.IsDeletingDuplicates).Select(b => !b ? "Files to Delete" : "Duplicate Mods to Delete").ToProperty(this, nameof(Title), true, RxApp.MainThreadScheduler);

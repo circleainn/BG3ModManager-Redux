@@ -611,8 +611,6 @@
 				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
 			</Style>
-			<SolidColorBrush x:Key="ModHealth.InfoSoftBrush" Color="{DynamicResource ReduxInfoColor}" Opacity="0.14" />
-			<SolidColorBrush x:Key="ModHealth.ErrorSoftBrush" Color="{DynamicResource ReduxErrorColor}" Opacity="0.14" />
 			<!-- The drawer uses a stable compact status pill. Its snapshot is supplied through Tag
 			     because the drawer header's DataContext wraps the selected mod. -->
 			<Style x:Key="ModDetailsHealthIndicatorStyle" BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="{x:Type Border}">

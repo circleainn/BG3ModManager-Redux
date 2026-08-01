@@ -1287,7 +1287,6 @@ public partial class MainViewControl : MainViewControlViewBase
 		this.OneWayBind(ViewModel, vm => vm.IsDeletingFiles, view => view.ModListRectangle.Visibility, BoolToVisibilityConverter.FromBool);
 		this.OneWayBind(ViewModel, vm => vm.MainProgressIsActive, view => view.MainBusyIndicator.IsBusy);
 
-		//this.OneWayBind(ViewModel, vm => vm, view => view.ModLayout.ViewModel);
 		this.WhenAnyValue(x => x.ViewModel).BindTo(this, x => x.ModLayout.ViewModel);
 
 		this.OneWayBind(ViewModel, vm => vm.StatusBarRightText, view => view.StatusBarLoadingOperationTextBlock.Text);
@@ -1353,7 +1352,6 @@ public partial class MainViewControl : MainViewControlViewBase
 		var whenUpdatesViewData = ViewModel.WhenAnyValue(x => x.ModUpdatesViewData);
 		whenUpdatesViewData.BindTo(this, x => x.ModUpdaterPanel.ViewModel);
 		whenUpdatesViewData.BindTo(this, x => x.ModUpdaterPanel.DataContext);
-		//this.OneWayBind(ViewModel, vm => vm.ModUpdatesViewData, view => view.ModUpdaterPanel.ViewModel);
 
 		RegisterKeyBindings();
 

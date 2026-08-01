@@ -18,7 +18,6 @@ public partial class DeleteFilesConfirmationView : DeleteFilesConfirmationViewBa
 		var longestName = ViewModel.Files.OrderByDescending(x => x.DisplayName.Length).FirstOrDefault()?.DisplayName ?? "";
 		if (!String.IsNullOrEmpty(longestName))
 		{
-			//DivinityApp.LogMessage($"Autosizing active mods grid for name {longestName}");
 			var targetWidth = ElementHelper.MeasureText(FilesListView, longestName,
 				FilesListView.FontFamily,
 				FilesListView.FontStyle,
@@ -77,7 +76,6 @@ public partial class DeleteFilesConfirmationView : DeleteFilesConfirmationViewBa
 				d(this.OneWayBind(ViewModel, vm => vm.CancelRunCommand, v => v.TaskProgressContent.CancelCommand));
 				d(this.BindCommand(ViewModel, vm => vm.CloseCommand, v => v.CancelButton));
 
-				//d(ViewModel.WhenAnyValue(x => x.IsDeletingDuplicates).Select(GetLastColumnWidth).BindTo(ViewModel, vm => vm.DuplicateColumnWidth));
 				d(ViewModel.WhenAnyValue(x => x.IsDeletingDuplicates).Subscribe(b =>
 				{
 					if (!b)

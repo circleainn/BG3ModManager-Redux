@@ -658,7 +658,6 @@ public partial class SettingsWindow : SettingsWindowBase
 						ToolTip = !isBlankTooltip ? prop.Attribute.Tooltip : null,
 						VerticalAlignment = VerticalAlignment.Center
 					};
-					//cb.HorizontalAlignment = HorizontalAlignment.Right;
 					cb.SetBinding(CheckBox.IsCheckedProperty, new Binding(prop.Property.Name)
 					{
 						Source = source,
@@ -716,7 +715,6 @@ public partial class SettingsWindow : SettingsWindowBase
 						HorizontalAlignment = HorizontalAlignment.Stretch,
 						VerticalAlignment = VerticalAlignment.Center,
 						VerticalContentAlignment = VerticalAlignment.Center,
-						//utb.HorizontalAlignment = HorizontalAlignment.Stretch;
 						TextAlignment = TextAlignment.Left
 					};
 					utb.SetBinding(UnfocusableTextBox.TextProperty, new Binding(prop.Property.Name)
@@ -806,7 +804,6 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		ViewModel = new SettingsWindowViewModel(this, main);
 		Services.RegisterSingleton(ViewModel);
-		//main.WhenAnyValue(x => x.Settings).BindTo(ViewModel, vm => vm.Settings);
 
 		var settingsFilePath = DivinityApp.GetAppDirectory("Data", "settings.json");
 		var keybindingsFilePath = DivinityApp.GetAppDirectory("Data", "keybindings.json");
@@ -874,8 +871,6 @@ public partial class SettingsWindow : SettingsWindowBase
 		this.OneWayBind(ViewModel, vm => vm.TargetVersion, view => view.UpdaterTargetVersionComboBox.Tag);
 		this.Bind(ViewModel, vm => vm.TargetVersion, view => view.UpdaterTargetVersionComboBox.SelectedItem);
 		this.Bind(ViewModel, vm => vm.TargetVersionIndex, view => view.UpdaterTargetVersionComboBox.SelectedIndex);
-
-		//this.WhenAnyValue(x => x.UpdaterTargetVersionComboBox.SelectedItem).Subscribe(ViewModel.OnTargetVersionSelected);
 
 		this.Bind(ViewModel, vm => vm.SelectedTabIndex, view => view.PreferencesTabControl.SelectedIndex, TabToIndex, IndexToTab);
 		this.OneWayBind(ViewModel, vm => vm.ExtenderUpdaterVisibility, view => view.ScriptExtenderUpdaterTab.Visibility);
@@ -979,7 +974,6 @@ public partial class SettingsWindow : SettingsWindowBase
 				nextIndex = 0;
 			}
 			PreferencesTabControl.SelectedIndex = nextIndex;
-			//Keyboard.Focus((FrameworkElement)PreferencesTabControl.SelectedContent);
 			//MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 		}
 	}

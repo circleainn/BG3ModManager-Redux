@@ -47,7 +47,6 @@ public class DivinityGameMasterCampaign : DivinityBaseModData
 							Children = new Dictionary<string, List<Node>>()
 						};
 						dependenciesNode.AppendChild(modNode);
-						//nodeList.Add(modNode);
 					}
 				}
 			}

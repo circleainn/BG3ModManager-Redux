@@ -470,7 +470,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		DivinityApp.DateTimeColumnFormat = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
 		DivinityApp.DateTimeTooltipFormat = CultureInfo.CurrentCulture.DateTimeFormat.LongDatePattern;
 
-		RxExceptionHandler.view = this;
+		RxExceptionHandler.View = this;
 
 		ViewModel = new MainWindowViewModel();
 		MainView = new MainViewControl(this, ViewModel);

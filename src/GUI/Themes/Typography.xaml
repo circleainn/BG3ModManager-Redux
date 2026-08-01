@@ -25,10 +25,6 @@
 	<sys:Double x:Key="Redux.FontSize.18">18</sys:Double>
 	<sys:Double x:Key="Redux.FontSize.19">19</sys:Double>
 	<sys:Double x:Key="Redux.FontSize.20">20</sys:Double>
-	<sys:Double x:Key="Redux.FontSize.21">21</sys:Double>
-	<sys:Double x:Key="Redux.FontSize.22">22</sys:Double>
-	<sys:Double x:Key="Redux.FontSize.23">23</sys:Double>
 	<sys:Double x:Key="Redux.FontSize.24">24</sys:Double>
 	<sys:Double x:Key="Redux.FontSize.32">32</sys:Double>
-	<sys:Double x:Key="Redux.FontSize.34">34</sys:Double>
 </ResourceDictionary>

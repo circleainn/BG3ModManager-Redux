@@ -26,7 +26,6 @@ public partial class AlertBar : UserControl
 	public AlertBar()
 	{
 		InitializeComponent();
-		// grdWrapper.DataContext = this;
 
 		_syncContext = SynchronizationContext.Current;
 	}
@@ -128,7 +127,6 @@ public partial class AlertBar : UserControl
 				if (peer == null)
 					peer = UIElementAutomationPeer.CreatePeerForElement(this);
 				peer.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
-				//peer.RaiseAutomationEvent(AutomationEvents.TextPatternOnTextChanged);
 			}
 		}
 	}

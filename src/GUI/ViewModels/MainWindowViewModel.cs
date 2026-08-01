@@ -421,7 +421,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public ICommand OpenAdventureModInFileExplorerCommand { get; private set; }
 	public ICommand CopyAdventureModPathToClipboardCommand { get; private set; }
 	public ICommand ConfirmCommand { get; set; }
-	public ICommand FocusFilterCommand { get; set; }
 	public ICommand SaveSettingsSilentlyCommand { get; private set; }
 	public ICommand SelectModCategoryCommand { get; private set; }
 	public ICommand ClearModCategoryFilterCommand { get; private set; }
@@ -1047,7 +1046,6 @@ Directory the zip will be extracted to:
 			ProcessHelper.TryOpenPath(Path.GetDirectoryName(Settings.GameExecutablePath), Directory.Exists);
 		}, canOpenGameFolder);
 
-		//var canOpenLogsFolder = Settings.WhenAnyValue(x => x.ExtenderLogDirectory).Select(StringExtensions.DirectoryExists);
 		Keys.OpenLogsFolder.AddAction(() =>
 		{
 			if (!string.IsNullOrWhiteSpace(Settings.ExtenderLogDirectory) && !Directory.Exists(Settings.ExtenderLogDirectory))
@@ -1089,18 +1087,6 @@ Directory the zip will be extracted to:
 					launchParams = launchParams + " " + "-storylog 1";
 				}
 			}
-
-			/*if (Settings.SkipLauncher && launchParams.IndexOf("skip-launcher") < 0)
-			{
-				if (String.IsNullOrWhiteSpace(launchParams))
-				{
-					launchParams = "--skip-launcher";
-				}
-				else
-				{
-					launchParams = "--skip-launcher " + launchParams;
-				}
-			}*/
 
 			if (Settings.LaunchType == LaunchGameType.Exe)
 			{
@@ -3816,7 +3802,6 @@ Directory the zip will be extracted to:
 		outputPath = DivinityModDataLoader.MakeSafeFilename(outputPath, '_');
 		var modOrderName = Path.GetFileNameWithoutExtension(outputPath);
 
-		//dialog.RestoreDirectory = true;
 		dialog.FileName = outputPath;
 		dialog.CheckFileExists = false;
 		dialog.CheckPathExists = false;
@@ -3924,7 +3909,6 @@ Directory the zip will be extracted to:
 		{
 			var missingResults = new MissingModsResults();
 
-			//DivinityApp.LogMessage($"Mod Order: {String.Join("\n", order.Order.Select(x => x.Name))}");
 			DivinityApp.Log("Checking mods for extender requirements.");
 			for (int i = 0; i < order.Order.Count; i++)
 			{
@@ -4343,7 +4327,6 @@ Directory the zip will be extracted to:
 			}
 			//if(!Path.GetExtension(dialog.FileName).Equals(".zip", StringComparison.OrdinalIgnoreCase))
 			//{
-			//	view.AlertBar.SetDangerAlert($"Currently only .zip format archives are supported.", -1);
 			//	return;
 			//}
 			MainProgressTitle = "Importing mod archive";
@@ -5052,7 +5035,6 @@ Directory the zip will be extracted to:
 			}
 			var outputName = $"{baseOrderName}-{DateTime.Now.ToString(sysFormat + "_HH-mm-ss")}.zip";
 
-			//dialog.RestoreDirectory = true;
 			dialog.FileName = DivinityModDataLoader.MakeSafeFilename(outputName, '_');
 			dialog.CheckFileExists = false;
 			dialog.CheckPathExists = false;
@@ -5127,7 +5109,6 @@ Directory the zip will be extracted to:
 			}
 			string outputName = $"{baseOrderName}-{DateTime.Now.ToString(sysFormat + "_HH-mm-ss")}.tsv";
 
-			//dialog.RestoreDirectory = true;
 			dialog.FileName = DivinityModDataLoader.MakeSafeFilename(outputName, '_');
 			dialog.CheckFileExists = false;
 			dialog.CheckPathExists = false;
@@ -6232,7 +6213,6 @@ Directory the zip will be extracted to:
 	public void OnFilterTextChanged(string searchText, IEnumerable<DivinityModData> modDataList)
 	{
 		int totalHidden = 0;
-		//DivinityApp.LogMessage("Filtering mod list with search term " + searchText);
 		if (String.IsNullOrWhiteSpace(searchText))
 		{
 			foreach (var m in modDataList)
@@ -7346,7 +7326,6 @@ Directory the zip will be extracted to:
 
 	private void ExtractSelectedMods_Start()
 	{
-		//var selectedMods = Mods.Where(x => x.IsSelected && !x.IsEditorMod).ToList();
 
 		if (SelectedPakMods.Count == 1)
 		{
@@ -7677,7 +7656,6 @@ Directory the zip will be extracted to:
 					DivinityApp.IgnoredDependencyMods.Add(uuid);
 				}
 
-				//DivinityApp.LogMessage("Ignored mods:\n" + String.Join("\n", DivinityApp.IgnoredMods.Select(x => x.Name)));
 			}
 		}
 
@@ -8636,7 +8614,6 @@ Directory the zip will be extracted to:
 
 		var fwService = Services.Get<IFileWatcherService>();
 		_modSettingsWatcher = fwService.WatchDirectory("", "*modsettings.lsx");
-		//modSettingsWatcher.PauseWatcher(true);
 		this.WhenAnyValue(x => x.SelectedProfile).WhereNotNull().Select(x => x.Folder).Subscribe(path =>
 		{
 			_modSettingsWatcher.SetDirectory(path);
@@ -8648,8 +8625,6 @@ Directory the zip will be extracted to:
 		{
 			if (SelectedModOrder != null && HasExported)
 			{
-				//var exeName = !Settings.LaunchDX11 ? "bg3" : "bg3_dx11";
-				//var isGameRunning = Process.GetProcessesByName(exeName).Length > 0;
 				checkModSettingsTask?.Dispose();
 				checkModSettingsTask = RxApp.TaskpoolScheduler.ScheduleAsync(TimeSpan.FromSeconds(2), async (sch, cts) =>
 				{
@@ -8660,7 +8635,6 @@ Directory the zip will be extracted to:
 						ShowAlert("The active load order (modsettings.lsx) has been reset externally", AlertType.Danger);
 						RxApp.MainThreadScheduler.Schedule(() =>
 						{
-							//Window.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Indeterminate;
 							Window.FlashTaskbar();
 							var result = ReduxMessageBox.Show(Window,
 							"The active load order (modsettings.lsx) has been reset externally, which has deactivated your mods.\nOne or more mods may be invalid in your current load order.",

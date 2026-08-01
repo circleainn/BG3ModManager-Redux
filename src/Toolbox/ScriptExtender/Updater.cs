@@ -38,34 +38,6 @@ public class Updater : IDisposable
 	private readonly bool _loaded = false;
 	public bool IsLoaded => _loaded;
 
-#if DEBUG
-	/*[DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool SymInitialize(IntPtr hProcess, string UserSearchPath, [MarshalAs(UnmanagedType.Bool)] bool fInvadeProcess);
-
-	[DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool SymCleanup(IntPtr hProcess);
-
-	[DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-	public static extern ulong SymLoadModuleEx(IntPtr hProcess, IntPtr hFile,
-		 string ImageName, string ModuleName, long BaseOfDll, int DllSize, IntPtr Data, int Flags);
-
-	[DllImport("dbghelp.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-	[return: MarshalAs(UnmanagedType.Bool)]
-	public static extern bool SymEnumerateSymbols64(IntPtr hProcess,
-	   ulong BaseOfDll, SymEnumerateSymbolsProc64 EnumSymbolsCallback, IntPtr UserContext);
-
-	public delegate bool SymEnumerateSymbolsProc64(string SymbolName,
-		  ulong SymbolAddress, uint SymbolSize, IntPtr UserContext);
-
-	public static bool EnumSyms(string name, ulong address, uint size, IntPtr context)
-	{
-		Console.WriteLine(name);
-		return true;
-	}*/
-#endif
-
 	private T? GetWrapper<T>(string funcName) where T : Delegate
 	{
 		var address = NativeMethods.GetProcAddress(_dll, funcName);
@@ -83,15 +55,6 @@ public class Updater : IDisposable
 
 		if (_dll != IntPtr.Zero)
 		{
-#if DEBUG
-			/*IntPtr hCurrentProcess = Process.GetCurrentProcess().Handle;
-			var status = SymInitialize(hCurrentProcess, null, false);
-			var baseOfDll = SymLoadModuleEx(hCurrentProcess, IntPtr.Zero, updaterPath, null, 0, 0, IntPtr.Zero, 0);
-			if (SymEnumerateSymbols64(hCurrentProcess, baseOfDll, EnumSyms, IntPtr.Zero) == false)
-			{
-				Console.WriteLine("Failed to enum symbols.");
-			}*/
-#endif
 			_initializeUpdaterWrapper = GetWrapper<SEUpdaterInitialize>("SEUpdaterInitialize");
 			_setGameVersionWrapper = GetWrapper<SESetGameVersion>("SESetGameVersion");
 			_updateWrapper = GetWrapper<SEUpdate>("SEUpdate");

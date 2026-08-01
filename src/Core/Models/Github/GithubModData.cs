@@ -8,7 +8,6 @@ public class GithubModData : ReactiveObject
 
 	public void Update(GithubModData data)
 	{
-		//TODO
 		Author = data.Author;
 		Repository = data.Repository;
 		LatestRelease = data.LatestRelease;

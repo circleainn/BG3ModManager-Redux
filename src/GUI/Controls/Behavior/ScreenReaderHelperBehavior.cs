@@ -110,7 +110,6 @@ public static class ScreenReaderHelperBehavior
 						if (!String.IsNullOrEmpty(propValue))
 						{
 							System.Windows.Automation.AutomationProperties.SetName(depObj, propValue);
-							//Trace.WriteLine($"Set AutomationProperties.Name to {propValue}");
 						}
 					}
 				}
@@ -123,7 +122,6 @@ public static class ScreenReaderHelperBehavior
 						if (!String.IsNullOrEmpty(propValue))
 						{
 							System.Windows.Automation.AutomationProperties.SetHelpText(depObj, propValue);
-							//Trace.WriteLine($"Set AutomationProperties.HelpText to {propValue}");
 						}
 					}
 				}

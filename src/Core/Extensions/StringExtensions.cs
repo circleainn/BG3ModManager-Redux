@@ -12,13 +12,7 @@ public static class StringExtensions
 		return !String.IsNullOrWhiteSpace(path) && File.Exists(path);
 	}
 
-	/*
-	 * MaybeAddReplacement("%LOCALAPPDATA%", Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
-		MaybeAddReplacement("%APPDATA%", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
-		MaybeAddReplacement("%USERPROFILE%", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
-	 * */
-
-	private static Dictionary<string, string> _specialPaths = new Dictionary<string, string>()
+	private static readonly Dictionary<string, string> _specialPaths = new()
 	{
 		{ "%LOCALAPPDATA%", Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) },
 		{ "%APPDATA%", Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) },

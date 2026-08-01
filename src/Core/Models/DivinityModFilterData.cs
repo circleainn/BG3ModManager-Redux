@@ -56,7 +56,6 @@ public struct DivinityModFilterData
 
 		if (PropertyContains("Name"))
 		{
-			//DivinityApp.LogMessage($"Searching for '{FilterValue}' in '{mod.Name}' | {mod.Name.IndexOf(FilterValue)}");
 			if (ValueContains(mod.Name)) return true;
 		}
 

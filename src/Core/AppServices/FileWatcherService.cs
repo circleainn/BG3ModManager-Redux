@@ -65,13 +65,14 @@ namespace DivinityModManager.AppServices
 
 		public void PauseWatcher(bool paused, double pauseFor = -1)
 		{
+			_pauseToggleTask?.Dispose();
+			_pauseToggleTask = null;
 			_watcher.EnableRaisingEvents = !paused;
 			if (paused && pauseFor > 0)
 			{
-				_pauseToggleTask?.Dispose();
 				_pauseToggleTask = RxApp.TaskpoolScheduler.Schedule(TimeSpan.FromMilliseconds(pauseFor), () =>
 				{
-					_watcher.EnableRaisingEvents = false;
+					_watcher.EnableRaisingEvents = IsEnabled;
 				});
 			}
 		}

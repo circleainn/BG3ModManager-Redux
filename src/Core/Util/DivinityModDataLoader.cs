@@ -181,7 +181,6 @@ public static partial class DivinityModDataLoader
 
 			if (versionNode != null)
 			{
-				//DivinityApp.LogMessage($"Version node: {versionNode.ToString()}");
 				//DOS2 Classic Mods <version major="3" minor="1" revision="3" build="5" />
 				//DE Mods <version major="3" minor="6" revision="2" build="0" />
 				//BG3 Mods <version major="4" minor="0" revision="9" build="331"/>
@@ -202,7 +201,6 @@ public static partial class DivinityModDataLoader
 					ulong.TryParse(headerBuildStr, out headerBuild);
 				}
 
-				//DivinityApp.LogMessage($"Version: {headerMajor}.{headerMinor}.{headerRevision}.{headerBuild}");
 			}
 
 			var moduleInfoNode = xDoc.Descendants("node").FirstOrDefault(n => n.Attribute("id")?.Value == "ModuleInfo");
@@ -212,14 +210,6 @@ public static partial class DivinityModDataLoader
 				var name = UnescapeXml(GetAttributeValueWithId(moduleInfoNode, "Name", ""));
 				var description = UnescapeXml(GetAttributeValueWithId(moduleInfoNode, "Description", ""));
 				var author = UnescapeXml(GetAttributeValueWithId(moduleInfoNode, "Author", ""));
-				/*
-				if (DivinityApp.MODS_GiftBag.Any(x => x.UUID == uuid))
-				{
-					name = UnescapeXml(GetAttributeWithId(moduleInfoNode, "DisplayName", name));
-					description = UnescapeXml(GetAttributeWithId(moduleInfoNode, "DescriptionName", description));
-					author = "Larian Studios";
-				}
-				*/
 
 				DivinityModData modData = new DivinityModData(isBaseGameMod)
 				{
@@ -309,7 +299,6 @@ public static partial class DivinityModDataLoader
 				{
 					var publishVersion = DivinityModVersion2.FromInt(SafeConvertStringUnsigned(GetAttributeValueWithId(publishVersionNode, VersionAttributes, "")));
 					modData.PublishVersion = publishVersion;
-					//DivinityApp.LogMessage($"{modData.Folder} PublishVersion is {publishVersion.Version}");
 				}
 
 				return modData;
@@ -592,7 +581,6 @@ public static partial class DivinityModDataLoader
 
 		if (metaFile != null)
 		{
-			//DivinityApp.LogMessage($"Parsing meta.lsx for mod pak '{pakPath}'.");
 			using (var stream = metaFile.CreateContentReader())
 			{
 				using var sr = new System.IO.StreamReader(stream);
@@ -606,12 +594,6 @@ public static partial class DivinityModDataLoader
 		}
 		else if (isOverridingBuiltinDirectory)
 		{
-			//var pakData = new DivinityPakFile()
-			//{
-			//	FilePath = pakPath,
-			//	BuiltinOverrideModsText = String.Join(Environment.NewLine, builtinModOverrides.Values.OrderBy(x => x.Name).Select(x => $"{x.Folder} ({x.Name})"))
-			//};
-			//overridePaks.Add(pakData);
 			modData = new DivinityModData()
 			{
 				FilePath = pakPath,
@@ -713,7 +695,6 @@ public static partial class DivinityModDataLoader
 				}
 			}
 
-			//DivinityApp.Log($"Loaded mod '{modData.Name}'.");
 			return modData;
 		}
 		else

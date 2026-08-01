@@ -591,7 +591,6 @@ RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.Com
 		string header = match.Groups[1].Value;
 		int level = match.Groups[2].Value.StartsWith("=", StringComparison.Ordinal) ? 1 : 2;
 
-		//TODO: Style the paragraph based on the header level
 		return CreateHeader(level, RunSpanGamut(header.Trim()));
 	}
 

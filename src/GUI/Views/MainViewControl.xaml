@@ -1062,17 +1062,6 @@
 								<EventSetter Event="MouseEnter" Handler="ToolbarComboBox_MouseEnter" />
 								<EventSetter Event="MouseLeave" Handler="ToolbarComboBox_MouseLeave" />
 							</Style>
-							<Style x:Key="ToolbarTextButtonStyle" BasedOn="{StaticResource ToolbarButtonBaseStyle}" TargetType="{x:Type Button}">
-								<Setter Property="Width" Value="Auto" />
-								<Setter Property="Height" Value="{DynamicResource Redux.ControlHeight.Standard}" />
-								<Setter Property="Margin" Value="1,0" />
-								<Setter Property="Padding" Value="10,0" />
-								<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
-								<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
-								<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-								<Setter Property="BorderThickness" Value="1" />
-								<Setter Property="Tag" Value="{Binding}" />
-							</Style>
 							<Style x:Key="ToolbarWorkflowButtonStyle" BasedOn="{StaticResource ReduxPrimaryActionButtonStyle}" TargetType="{x:Type Button}">
 								<Setter Property="Width" Value="Auto" />
 								<Setter Property="Height" Value="{DynamicResource Redux.ControlHeight.Standard}" />

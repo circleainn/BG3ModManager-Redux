@@ -58,6 +58,5 @@ public class DivinityProfileActiveModData
 		Version = GetULongAttribute(attributes, "Version", 0UL);
 		PublishHandle = GetULongAttribute(attributes, "PublishHandle", 0UL);
 
-		//DivinityApp.LogMessage($"[DivinityProfileActiveModData] Name({Name}) UUID({UUID})");
 	}
 }

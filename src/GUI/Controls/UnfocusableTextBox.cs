@@ -47,7 +47,6 @@ public class UnfocusableTextBox : TextBox
 		base.OnKeyDown(e);
 		if (e.Key == Key.Return)
 		{
-			//Keyboard.ClearFocus();
 			MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 			lastText = Text;
 			if (UpdateBindingOnFocusLost)
@@ -63,7 +62,6 @@ public class UnfocusableTextBox : TextBox
 		else if (e.Key == Key.Escape && CanUndoTextOnEscape)
 		{
 			if (CanUndoTextOnEscape && Text != lastText) Text = lastText;
-			//Keyboard.ClearFocus();
 			MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 			e.Handled = true;
 		}

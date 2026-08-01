@@ -117,10 +117,6 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 	{
 		OnUpdateCheckCommand = ReactiveCommand.CreateFromTask<UpdateInfoEventArgs>(OnUpdateCheckAsync, null, RxApp.TaskpoolScheduler);
 
-		//Observable.FromEventPattern<AutoUpdater.CheckForUpdateEventHandler, UpdateInfoEventArgs>(
-		//  handler => AutoUpdater.CheckForUpdateEvent += handler,
-		//  handler => AutoUpdater.CheckForUpdateEvent -= handler).ObserveOn(RxApp.TaskpoolScheduler).InvokeCommand(OnUpdateCheckCommand);
-
 		var canConfirm = this.WhenAnyValue(x => x.CanConfirm);
 		ConfirmCommand = ReactiveCommand.Create(() =>
 		{

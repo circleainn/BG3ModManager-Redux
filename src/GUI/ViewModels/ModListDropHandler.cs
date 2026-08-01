@@ -264,7 +264,6 @@ public class ModListDropHandler : DefaultDropHandler
 		if (isActive)
 		{
 			_viewModel.OnFilterTextChanged(_viewModel.ActiveModFilterText, _viewModel.ActiveMods);
-			//_viewModel.Layout.FixActiveModsScrollbar();
 		}
 		else
 		{

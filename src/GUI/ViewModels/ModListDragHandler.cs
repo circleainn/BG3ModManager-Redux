@@ -148,7 +148,6 @@ public class ModListDragHandler : DefaultDragHandler
 	{
 		if (exception is COMException)
 		{
-			//dragError.Message.IndexOf("A drag operation is already in progress") > -1
 			DragCancelled();
 			return true;
 		}

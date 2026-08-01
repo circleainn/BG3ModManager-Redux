@@ -96,8 +96,6 @@ public class SettingsWindowViewModel : ReactiveObject
 
 	public ICommand SaveSettingsCommand { get; private set; }
 	public ICommand OpenSettingsFolderCommand { get; private set; }
-	public ICommand ExportExtenderSettingsCommand { get; private set; }
-	public ICommand ExportExtenderUpdaterSettingsCommand { get; private set; }
 	public ICommand ResetSettingsCommand { get; private set; }
 	public ICommand ClearCacheCommand { get; private set; }
 	public ICommand ResetSourceCacheCommand { get; private set; }
@@ -195,7 +193,6 @@ public class SettingsWindowViewModel : ReactiveObject
 						TargetVersion = null;
 						ScriptExtenderUpdates.Clear();
 						ScriptExtenderUpdates.Add(_emptyVersion);
-						//ScriptExtenderUpdates.AddRange(res.Versions.OrderByDescending(x => x.BuildDate));
 						ScriptExtenderUpdates.AddRange(res.Versions.OrderByDescending(x => x.BuildDate));
 						if (lastBuildDate != null)
 						{

@@ -42,10 +42,8 @@
 		menu rows. An explicit height is what keeps them identical: their containers are
 		different heights, so margin-derived rails could never match across all three.
 	-->
-	<sys:Double x:Key="Redux.Rail.Width">3</sys:Double>
 	<Thickness x:Key="Redux.Rail.Thickness">3,0,0,0</Thickness>
 	<sys:Double x:Key="Redux.Rail.Height">28</sys:Double>
-	<CornerRadius x:Key="Redux.Rail.CornerRadius">2</CornerRadius>
 	<Thickness x:Key="Redux.Interaction.RowPadding">10,6</Thickness>
 	<Thickness x:Key="Redux.Interaction.SurfaceMargin">2,1</Thickness>
 	<sys:Double x:Key="Redux.Interaction.HoverBorder">1.5</sys:Double>
@@ -61,9 +59,6 @@
 	<Thickness x:Key="Redux.StatusCard.DividerMargin">0,5,0,4</Thickness>
 	<Thickness x:Key="Redux.StatusCard.FindingMargin">1,0,1,2</Thickness>
 	<Thickness x:Key="Redux.StatusCard.FindingContentMargin">10,0,0,0</Thickness>
-	<!-- GridLength, not Double: this feeds ColumnDefinition.Width, and a Double there throws
-	     InvalidCastException when the popup's visual tree is built. -->
-	<GridLength x:Key="Redux.StatusCard.RailWidth">2</GridLength>
 	<Thickness x:Key="Redux.StatusCard.RailThickness">2,0,0,0</Thickness>
 	<Style x:Key="ReduxStatusCardChromeStyle" TargetType="{x:Type Border}">
 		<Setter Property="MaxWidth" Value="{DynamicResource Redux.StatusCard.MaxWidth}" />
@@ -121,96 +116,6 @@
 					Text="{Binding Title}"
 					TextWrapping="Wrap" />
 				<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding Message}" />
-			</StackPanel>
-		</Border>
-	</DataTemplate>
-	<!-- DynamicResource for the icon geometries: this card is declared long before they are, and StaticResource only resolves backwards. -->
-	<DataTemplate x:Key="ReduxStatusCardBodyTemplate" DataType="{x:Type health:ModHealthSnapshot}">
-		<StackPanel>
-			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="*" />
-				</Grid.ColumnDefinitions>
-				<Border Style="{StaticResource ReduxStatusCardBadgeStyle}">
-					<!-- Keep the badge on ReduxIcon's proven geometry route. A native Path in
-					     this popup can receive DependencyProperty.UnsetValue for Data during
-					     template creation and crash the window on hover. -->
-					<controls:ReduxIcon x:Name="StatusCardIcon"
-						Width="15"
-						Height="15"
-						HorizontalAlignment="Center"
-						VerticalAlignment="Center"
-						Foreground="{DynamicResource ReduxInfoBrush}"
-						StrokeData="{DynamicResource Redux.Icon.Information}" />
-				</Border>
-				<StackPanel Grid.Column="1" VerticalAlignment="Center">
-					<TextBlock Style="{StaticResource ReduxStatusCardTitleStyle}" Text="{Binding StatusTitle}" />
-					<TextBlock Style="{StaticResource ReduxStatusCardSubtitleStyle}" Text="{Binding StatusDescription}" />
-				</StackPanel>
-			</Grid>
-			<Border Style="{StaticResource ReduxStatusCardDividerStyle}" />
-			<ItemsControl ItemsSource="{Binding Findings}" ItemTemplate="{StaticResource ReduxStatusFindingTemplate}" />
-		</StackPanel>
-		<DataTemplate.Triggers>
-			<DataTrigger Binding="{Binding IsClear}" Value="True">
-				<Setter TargetName="StatusCardIcon" Property="StrokeData" Value="{DynamicResource Redux.Icon.ShieldCheck}" />
-				<Setter TargetName="StatusCardIcon" Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
-			</DataTrigger>
-			<DataTrigger Binding="{Binding HasWarnings}" Value="True">
-				<Setter TargetName="StatusCardIcon" Property="StrokeData" Value="{DynamicResource Redux.Icon.SearchAlert}" />
-				<Setter TargetName="StatusCardIcon" Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
-			</DataTrigger>
-			<DataTrigger Binding="{Binding HasErrors}" Value="True">
-				<Setter TargetName="StatusCardIcon" Property="StrokeData" Value="{DynamicResource Redux.Icon.Warning}" />
-				<Setter TargetName="StatusCardIcon" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
-			</DataTrigger>
-		</DataTemplate.Triggers>
-	</DataTemplate>
-	<DataTemplate x:Key="ReduxStatusCardTemplate" DataType="{x:Type health:ModHealthSnapshot}">
-		<Border Style="{StaticResource ReduxStatusCardChromeStyle}">
-			<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ReduxStatusCardBodyTemplate}" />
-		</Border>
-	</DataTemplate>
-	<!--
-		Toolbar status menus can contain several snapshots, so each card includes its affected
-		mod as context. The context and findings share one outer surface; placing the name above
-		ReduxStatusCardTemplate leaves it floating outside the rounded popup chrome.
-	-->
-	<DataTemplate x:Key="ReduxStatusCardListItemTemplate" DataType="{x:Type health:ModHealthSnapshot}">
-		<Border Margin="0,0,0,4" Style="{StaticResource ReduxStatusCardChromeStyle}">
-			<StackPanel>
-				<Grid Margin="0,0,0,6">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
-					<ContentControl Width="14"
-						Height="14"
-						Margin="0,0,6,0"
-						VerticalAlignment="Center"
-						Content="{Binding Mod.DisplayCategories[0]}"
-						ContentTemplate="{DynamicResource ReduxCategoryGlyphTemplate}" />
-					<TextBlock Grid.Column="1"
-						VerticalAlignment="Center"
-						FontWeight="SemiBold"
-						Text="{Binding Mod.DisplayName}"
-						TextTrimming="CharacterEllipsis"
-						ToolTip="{Binding Mod.DisplayName}">
-						<TextBlock.Style>
-							<Style TargetType="{x:Type TextBlock}">
-								<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.11}" />
-								<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.UseCategoryColorsForText)}" Value="True">
-										<Setter Property="Foreground" Value="{Binding Mod.DisplayCategories[0].Color}" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</TextBlock.Style>
-					</TextBlock>
-				</Grid>
-				<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ReduxStatusCardBodyTemplate}" />
 			</StackPanel>
 		</Border>
 	</DataTemplate>
@@ -296,24 +201,12 @@
 		inset resources for common padding/margin shapes. New presentation work should
 		prefer these tokens over introducing nearby one-off values.
 	-->
-	<sys:Double x:Key="Redux.Space.2">2</sys:Double>
-	<sys:Double x:Key="Redux.Space.4">4</sys:Double>
-	<sys:Double x:Key="Redux.Space.6">6</sys:Double>
-	<sys:Double x:Key="Redux.Space.8">8</sys:Double>
-	<sys:Double x:Key="Redux.Space.12">12</sys:Double>
-	<sys:Double x:Key="Redux.Space.16">16</sys:Double>
-	<sys:Double x:Key="Redux.Space.20">20</sys:Double>
-	<sys:Double x:Key="Redux.Space.24">24</sys:Double>
-	<sys:Double x:Key="Redux.Space.32">32</sys:Double>
 	<Thickness x:Key="Redux.Inset.Compact">6,3</Thickness>
-	<Thickness x:Key="Redux.Inset.Control">10,6</Thickness>
-	<Thickness x:Key="Redux.Inset.Surface">12</Thickness>
 	<Thickness x:Key="Redux.Inset.Card">16</Thickness>
 	<Thickness x:Key="Redux.TabHeader.Padding">10,5</Thickness>
 	<Thickness x:Key="Redux.TabHeader.HoverMargin">1,2</Thickness>
 	<sys:Double x:Key="Redux.ControlHeight.Compact">28</sys:Double>
 	<sys:Double x:Key="Redux.ControlHeight.Standard">32</sys:Double>
-	<sys:Double x:Key="Redux.ControlHeight.Comfortable">36</sys:Double>
 	<!-- Compact semantic status pills shared by hover cards, the mod drawer, and toolbar indicators. -->
 	<sys:Double x:Key="Redux.StatusPill.Height">24</sys:Double>
 	<sys:Double x:Key="Redux.StatusPill.IconOnlyWidth">30</sys:Double>
@@ -412,8 +305,6 @@
 	<QuadraticEase x:Key="Redux.Motion.EaseOut" EasingMode="EaseOut" />
 	<CubicEase x:Key="Redux.Motion.EaseInOut" EasingMode="EaseInOut" />
 	<SineEase x:Key="Redux.Motion.PanelEase" EasingMode="EaseInOut" />
-	<sys:Double x:Key="Redux.Motion.HoverTranslateNegative">-1</sys:Double>
-	<sys:Double x:Key="Redux.Motion.PressScale">0.98</sys:Double>
 	<!--
 		Popup menu rows use their own template because AdonisUI paints its highlight
 		inside the base MenuItem template. Styling MenuItem.Background alone therefore
@@ -736,14 +627,6 @@
 		</Setter>
 	</Style>
 	<!--  Shared source-pill palette. Keep list, drawer, and preview treatments visually identical.  -->
-	<LinearGradientBrush x:Key="Redux.Pill.Local.Background" StartPoint="0,0" EndPoint="1,0">
-		<GradientStop Offset="0" Color="#248F879E" />
-		<GradientStop Offset="1" Color="#0E8F879E" />
-	</LinearGradientBrush>
-	<LinearGradientBrush x:Key="Redux.Pill.Local.Border" StartPoint="0,0" EndPoint="1,0">
-		<GradientStop Offset="0" Color="#8C8F879E" />
-		<GradientStop Offset="1" Color="#508F879E" />
-	</LinearGradientBrush>
 	<LinearGradientBrush x:Key="Redux.Pill.Nexus.Background" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#3EF9A332" />
 		<GradientStop Offset="1" Color="#1EF9A332" />
@@ -762,13 +645,6 @@
 	</LinearGradientBrush>
 	<!--  Warning tint for chips/buttons; ReduxAccentSoftBrush/ReduxSuccessSoftBrush have hand-tuned per-theme colors, warning does not yet, so this derives from the semantic warning color instead.  -->
 	<SolidColorBrush x:Key="ReduxWarningSoftBrush" Color="{DynamicResource ReduxWarningColor}" Opacity="0.14" />
-	<SolidColorBrush x:Key="ReduxWarningHoverSoftBrush" Color="{DynamicResource ReduxWarningColor}" Opacity="0.23" />
-	<!-- Status indicators share one restrained translucent treatment across success,
-	     warning, and error states. Keep these separate from the broader hand-tuned
-	     soft surfaces used by cards and content elsewhere in Redux. -->
-	<SolidColorBrush x:Key="ReduxStatusSuccessSoftBrush" Color="{DynamicResource ReduxSuccessColor}" Opacity="0.14" />
-	<SolidColorBrush x:Key="ReduxStatusWarningSoftBrush" Color="{DynamicResource ReduxWarningColor}" Opacity="0.14" />
-	<SolidColorBrush x:Key="ReduxStatusErrorSoftBrush" Color="{DynamicResource ReduxErrorColor}" Opacity="0.14" />
 
 	<!-- Shared secondary-window building blocks. Keep summary metrics and passive
 	     result lists aligned across export review, comparison, and inspection tools. -->
@@ -975,10 +851,6 @@
 		<PathGeometry Figures="M12 22V12" />
 	</GeometryGroup>
 	<GeometryGroup x:Key="Redux.Icon.ShieldHalfFill">
-		<PathGeometry Figures="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
-		<PathGeometry Figures="M12 22V2" />
-	</GeometryGroup>
-	<GeometryGroup x:Key="Redux.Icon.ShieldHalfStroke">
 		<PathGeometry Figures="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
 		<PathGeometry Figures="M12 22V2" />
 	</GeometryGroup>
@@ -1852,10 +1724,6 @@
 		<Setter Property="Foreground" Value="{DynamicResource ReduxDestructiveActionForegroundBrush}" />
 		<Setter Property="Padding" Value="16,7" />
 	</Style>
-	<Style x:Key="ReduxGhostActionButtonStyle" BasedOn="{StaticResource ReduxActionButtonBaseStyle}" TargetType="{x:Type Button}">
-		<Setter Property="Background" Value="Transparent" />
-		<Setter Property="BorderBrush" Value="Transparent" />
-	</Style>
 	<!--
 		Shared "accent-soft pill" button chrome (Settings action buttons, drawer source/author
 		buttons). Variants set only sizing (Height/Padding/Margin) and color-trigger overrides
@@ -1953,8 +1821,6 @@
 	<BitmapImage x:Key="DefaultIcon" UriSource="pack://application:,,,/Resources/Icons/DefaultIcon_16x.png" />
 	<BitmapImage x:Key="DivinityEngine" UriSource="pack://application:,,,/Resources/Icons/DivinityEngineGlasses_64x.png" />
 	<BitmapImage x:Key="DivinityEngine2" UriSource="pack://application:,,,/Resources/Icons/DivinityEngine2_64x.png" />
-	<BitmapImage x:Key="ExpandDownImage" UriSource="pack://application:,,,/Resources/Icons/ExpandChevronDown_16x.png" />
-	<BitmapImage x:Key="ExpandUpImage" UriSource="pack://application:,,,/Resources/Icons/ExpandChevronUp_16x.png" />
 	<BitmapImage x:Key="HighPriority" UriSource="pack://application:,,,/Resources/Icons/HighPriority_16x.png" />
 	<BitmapImage x:Key="MissingDependencyIcon" UriSource="pack://application:,,,/Resources/Icons/FileMissing_16x.png" />
 	<BitmapImage x:Key="StatusCriticalError" UriSource="pack://application:,,,/Resources/Icons/StatusCriticalError_16x.png" />
@@ -4961,16 +4827,4 @@
 		<Setter Property="ClipValueToMinMax" Value="True" />
 	</Style>
 	<Style BasedOn="{StaticResource ReduxLongUpDownStyle}" TargetType="{x:Type xc:LongUpDown}" />
-	<!--
-	<SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type xcthemes:ResourceKeys}, ResourceId=ControlDisabledBackgroundKey}" Color="Red" />
-	<SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type xcthemes:ResourceKeys}, ResourceId=ControlNormalBackgroundKey}" Color="Red" />
-	<SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type xcthemes:ResourceKeys}, ResourceId=ButtonNormalBackgroundKey}" Color="Red" />
-	<SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type xcthemes:ResourceKeys}, ResourceId=ButtonMouseOverBackgroundKey}" Color="Red" />
-	<SolidColorBrush x:Key="{ComponentResourceKey TypeInTargetAssembly={x:Type xcthemes:ResourceKeys}, ResourceId=ButtonFocusedBackgroundKey}" Color="Red" />
-	<Style x:Key="{x:Static xcthemes:ResourceKeys.SpinnerButtonStyleKey}" TargetType="RepeatButton">
-		<Setter Property="Background" Value="Red" />
-		<Setter Property="BorderBrush" Value="Pink" />
-	</Style>
-	-->
-
 </ResourceDictionary>

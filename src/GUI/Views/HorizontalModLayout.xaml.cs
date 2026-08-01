@@ -1675,7 +1675,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 			_updateScroll = RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(250), _ =>
 			{
-				//InactiveModsListView.UpdateLayout();
 				if (scrollTargetIndex <= 0)
 				{
 					ScrollToTop(InactiveModsListView);
@@ -1687,7 +1686,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				else
 				{
 					ScrollToMod(InactiveModsListView, selectedMod);
-					//FocusMod(InactiveModsListView, selectedMod);
 				}
 
 				if (nextSelectedIndex >= ViewModel.ActiveMods.Count)
@@ -1696,7 +1694,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				}
 
 				ActiveModsListView.SelectedIndex = nextSelectedIndex;
-				//FocusMod(ActiveModsListView, ActiveModsListView.SelectedItem);
 			});
 		}
 		else if (sourceList == InactiveModsListView || (sourceList == null && ListHasFocus(InactiveModsListView)))
@@ -1728,7 +1725,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 			_updateScroll = RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(250), _ =>
 			{
-				//ActiveModsListView.UpdateLayout();
 				if (scrollTargetIndex <= 0)
 				{
 					ScrollToTop(ActiveModsListView);
@@ -1740,7 +1736,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				else
 				{
 					ScrollToMod(ActiveModsListView, selectedMod);
-					//FocusMod(ActiveModsListView, selectedMod);
 				}
 
 				if (nextSelectedIndex >= ViewModel.InactiveMods.Count)
@@ -1749,7 +1744,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				}
 
 				InactiveModsListView.SelectedIndex = nextSelectedIndex;
-				//FocusMod(InactiveModsListView, InactiveModsListView.SelectedItem);
 			});
 		}
 	}
@@ -1779,7 +1773,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (modListView.ItemContainerGenerator.ContainerFromItem(mod) is ListViewItem item)
 		{
 			FocusManager.SetFocusedElement(modListView, item);
-			//item.BringIntoView();
 			return true;
 		}
 		return false;
@@ -1942,7 +1935,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 						}
 					}
 
-					//InactiveModsListView.UnselectAll();
 					FocusList(ActiveModsListView);
 				});
 
@@ -1957,7 +1949,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 							InactiveModsListView.SelectedIndex = 0;
 						}
 					}
-					//ActiveModsListView.UnselectAll();
 					FocusList(InactiveModsListView);
 				});
 
@@ -1976,7 +1967,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					}
 				});
 
-				//InactiveModsListView.InputBindings.Add(new InputBinding(ViewModel.MoveLeftCommand, new KeyGesture(Key.Left)));
 				ViewModel.Keys.ToggleFilterFocus.AddAction(() =>
 				{
 					if (ListHasFocus(ActiveModsListView))
@@ -2002,8 +1992,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 						}
 					}
 				});
-
-				//ActiveModsListView.InputBindings.Add(new InputBinding(ViewModel.MoveRightCommand, new KeyGesture(Key.Right)));
 
 				d(ViewModel.WhenAnyValue(x => x.ActiveSelected).Subscribe((c) =>
 				{
@@ -2031,7 +2019,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					}
 				}));
 			}
-			//BindingHelper.CreateCommandBinding(ViewModel.View.EditFocusActiveListMenuItem, "MoveLeftCommand", ViewModel);
 		});
 	}
 

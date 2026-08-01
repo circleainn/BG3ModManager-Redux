@@ -32,9 +32,9 @@ stronger organization, portable Redux data, richer metadata, and safer file hand
 - **Safer persistence** through a read-only game-export review, automatic pre-export restore
   points, staged imports, validated atomic writes, backups, recoverable deletion paths, and
   privacy-checked release packaging.
-- **A concise optional Redux overview** available from Help that collects preview, source, and
-  mod.io guidance, explains Redux's core workflow, and offers reversible starting choices without
-  interrupting startup.
+- **A concise first-run welcome setup** for choosing a built-in theme, optional source and
+  diagnostic modules, provider keys, and accessibility preferences. It remains available from
+  Help and previews reversible appearance and accessibility choices before they are saved.
 
 ## Features
 
@@ -134,10 +134,11 @@ Accessibility menu. It also provides scalable text presets, Atkinson Hyperlegibl
 dialog text, keyboard-accessible Redux dialogs, a rebuilt shortcut editor, reduced-motion
 transitions, and an option to disable background blur and dimming.
 
-Redux starts without informational warning dialogs. A short optional overview covering its preview
-status, source and mod.io limitations, organization, safe exporting, restore points, order
-comparison, personalization, accessibility, and optional diagnostics remains available from
-**Help > Take the Redux Tour**. Opening it changes no installed packages or game files.
+Redux starts without separate informational warning dialogs. On first launch, one welcome window
+offers built-in appearance, optional module, provider-key, and accessibility choices; it can be
+reopened from **Help > Welcome to Redux**. Appearance, module availability, motion, and background
+effects preview reversibly, while API keys and all selected settings are stored only after
+**Save & Continue**. The window never changes installed packages, load orders, or game files.
 
 Press `F2` to open the optional Quick Access menu for finding actions, mods, profiles, saved
 orders, and categories without navigating the full menu system.

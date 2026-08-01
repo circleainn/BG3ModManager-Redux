@@ -317,10 +317,9 @@ foundation and reworks or extends its presentation through:
 
 - A top-level Accessibility menu beside Settings so the inherited speech tools are no longer buried
   under Tools.
-- An optional Redux overview in Help that collects preview, source, and mod.io restore guidance,
-  summarizes organization, export review, restore points, order comparison, personalization, and
-  Quick Access, and offers reversible Local-only and diagnostics choices without interrupting
-  startup.
+- A single first-run welcome setup, also available from Help, for choosing a built-in theme,
+  source integrations, diagnostics, experimental guidance, provider keys, and accessibility
+  preferences without changing installed packages or load orders.
 - An optional `F2` Quick Access menu for finding actions, profiles, saved orders, categories, and
   installed mods while respecting current command availability and customized keybindings.
 - A rebuilt keyboard-shortcut editor and direct accessibility navigation.

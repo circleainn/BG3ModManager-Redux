@@ -34,7 +34,6 @@ public partial class ExportOrderToArchiveView : ExportOrderToArchiveViewViewBase
 				d(this.Bind(ViewModel, vm => vm.SelectedOrderType, view => view.OrderTypeComboBox.SelectedItem));
 				d(this.Bind(ViewModel, vm => vm.OrderTypes, view => view.OrderTypeComboBox.ItemsSource));
 
-				//d(this.BindCommand(ViewModel, vm => vm.SelectAllCommand, v => v.ConfirmButton));
 				d(this.BindCommand(ViewModel, vm => vm.RunCommand, v => v.ConfirmButton));
 				d(this.OneWayBind(ViewModel, vm => vm.CancelRunCommand, v => v.TaskProgressContent.CancelCommand));
 				d(this.BindCommand(ViewModel, vm => vm.CloseCommand, v => v.CancelButton));
