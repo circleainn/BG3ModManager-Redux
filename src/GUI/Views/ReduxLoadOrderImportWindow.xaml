@@ -3,18 +3,27 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
-	Title="Import Redux Bundle"
+	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+	Title="Import Redux Modlist"
 	Width="540" MinWidth="540" MaxWidth="540"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	ResizeMode="NoResize" SizeToContent="Height" ShowInTaskbar="False"
-	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
-	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
+	Background="{DynamicResource ReduxSurfaceBrush}"
+	WindowStyle="SingleBorderWindow"
+	Template="{DynamicResource ReduxWindowTemplate}"
 	WindowStartupLocation="CenterOwner">
+	<shell:WindowChrome.WindowChrome>
+		<shell:WindowChrome CaptionHeight="0" CornerRadius="0" GlassFrameThickness="0"
+			ResizeBorderThickness="6" UseAeroCaptionButtons="False" />
+	</shell:WindowChrome.WindowChrome>
 	<Window.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 	</ResourceDictionary.MergedDictionaries></ResourceDictionary></Window.Resources>
-	<Border Padding="22" Background="{DynamicResource ReduxAppBackgroundBrush}"
-		BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
+	<Grid>
+		<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.Download}" />
+	<Border Grid.Row="1" Padding="22" Background="{DynamicResource ReduxAppBackgroundBrush}"
+		BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="0,1,0,0">
 		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
@@ -30,7 +39,7 @@
 					Foreground="{DynamicResource ReduxAccentHoverBrush}" StrokeData="{StaticResource Redux.Icon.Download}" />
 				<StackPanel Grid.Column="1" VerticalAlignment="Center">
 					<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold"
-						Text="Choose bundle contents" />
+						Text="Choose what to import" />
 					<TextBlock x:Name="BundleSummaryText" Margin="0,4,0,0"
 						Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap" />
 					<TextBlock x:Name="BundleMetadataText" Margin="0,3,0,0"
@@ -47,7 +56,7 @@
 						<StackPanel Margin="5,0,0,0">
 							<TextBlock FontWeight="SemiBold" Text="Load order" />
 							<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-								Text="Create a saved load order from the mod sequence in this bundle." TextWrapping="Wrap" />
+								Text="Create a saved load order from the mod sequence in this modlist." TextWrapping="Wrap" />
 							<TextBlock x:Name="LoadOrderAvailabilityText" Margin="0,5,0,0"
 								Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap" />
 						</StackPanel>
@@ -61,7 +70,7 @@
 						<StackPanel Margin="5,0,0,0">
 							<TextBlock FontWeight="SemiBold" Text="Categories and separators" />
 							<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-								Text="Merge Redux-only categories, assignments, custom icons, and active-list separators." TextWrapping="Wrap" />
+								Text="Merge categories, assignments, custom icons, and active-list separators." TextWrapping="Wrap" />
 							<TextBlock x:Name="PresentationContentsText" Margin="0,5,0,0"
 								Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap" />
 						</StackPanel>
@@ -78,7 +87,7 @@
 							<TextBlock FontWeight="SemiBold" Text="Notes" />
 							<TextBlock Margin="0,2,0,0"
 								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-								Text="Import the notes intentionally included by the bundle creator. Existing local notes are preserved."
+								Text="Import notes included by the person who exported this modlist. Existing notes are kept."
 								TextWrapping="Wrap" />
 							<TextBlock x:Name="PrivateNotesContentsText" Margin="0,5,0,0"
 								Foreground="{DynamicResource ReduxTextMutedBrush}" />
@@ -125,4 +134,5 @@
 			</StackPanel>
 		</Grid>
 	</Border>
+	</Grid>
 </adonisUI:AdonisWindow>

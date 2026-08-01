@@ -66,15 +66,15 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DefaultValue("")]
 	// REDUX RELEASE BLOCKER: Before public release, register with Nexus Mods, obtain an SSO application slug,
 	// replace the personal API key testing flow with browser SSO, and re-review API usage/rate limits.
-	[SettingsEntry("Nexus Mods API key", "Personal API key used to retrieve Nexus Mods metadata and updates. This alpha stores the key locally in Data/settings.json; you can revoke it from your Nexus Mods account at any time.")]
+	[SettingsEntry("Nexus Mods API key", "Personal key used for mod information and update checks. It is stored in Data/settings.json and can be revoked from your Nexus Mods account.")]
 	[DataMember, Reactive] public string NexusModsAPIKey { get; set; }
 
 	[DefaultValue("")]
-	[SettingsEntry("mod.io API key", "Read-only API key used to retrieve metadata for mods installed through BG3's in-game Mod Manager. The key is stored locally in Data/settings.json.")]
+	[SettingsEntry("mod.io API key", "Read-only key used for mod information. It is stored in Data/settings.json.")]
 	[DataMember, Reactive] public string ModioAPIKey { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Disable source integrations (local-only mode)", "Stop Nexus Mods and mod.io requests, hide source-linking controls, and present installed mods as Local. Existing source links and API keys remain saved and return when this is turned off.")]
+	[SettingsEntry("Disable online mod information", "Do not contact Nexus Mods or mod.io. Existing links and API keys are kept for later.")]
 	[DataMember, Reactive] public bool LocalOnlyMode { get; set; }
 
 	[DefaultValue(false)]
@@ -90,7 +90,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool DisableLauncherModWarnings { get; set; }
 
 	[DefaultValue(LaunchGameType.Exe)]
-	[SettingsEntry("Launch method", "Choose whether Redux launches the executable directly, uses Steam, or runs a custom target.")]
+	[SettingsEntry("Launch method", "Choose whether the manager launches the game directly, through Steam, or with a custom target.")]
 	[DataMember, Reactive] public LaunchGameType LaunchType { get; set; }
 
 	[DefaultValue("")]
@@ -104,7 +104,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[ObservableAsProperty] public Visibility CustomLaunchVisibility { get; }
 
 	[DefaultValue("Orders")]
-	[SettingsEntry("Load-order folder", "The folder where Redux stores load-order .json files.")]
+	[SettingsEntry("Load-order folder", "The folder used for saved load-order .json files.")]
 	[DataMember, Reactive] public string LoadOrderPath { get; set; }
 
 	[DefaultValue(false)]
@@ -120,7 +120,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool CheckForUpdates { get; set; }
 
 	[DefaultValue("")]
-	[SettingsEntry("BG3 AppData folder override", "Advanced: override %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3. Redux uses this folder for profiles, installed mods, and exported load orders.")]
+	[SettingsEntry("BG3 AppData folder override", "Override %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 for profiles, installed mods, and exported load orders.")]
 	[DataMember, Reactive] public string DocumentsFolderPathOverride { get; set; }
 
 	[DefaultValue(false)]
@@ -131,26 +131,26 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool DarkThemeEnabled { get; set; }
 
 	[DefaultValue(ReduxThemeType.ReduxDark)]
-	[SettingsEntry("Theme", "Choose the Redux color palette. Themes change colors only; layout, typography, icons, and behavior remain shared.", HideFromUI = true)]
+	[SettingsEntry("Theme", "Choose the app's colors.", HideFromUI = true)]
 	[DataMember, Reactive] public ReduxThemeType ColorTheme { get; set; } = ReduxThemeType.ReduxDark;
 
 	[DefaultValue(ReduxTypographyFont.Manrope)]
-	[SettingsEntry("App font", "Choose the typeface used throughout Redux. Text sizing is managed separately.", HideFromUI = true)]
+	[SettingsEntry("App font", "Choose the font used throughout the app.", HideFromUI = true)]
 	[DataMember, Reactive] public ReduxTypographyFont TypographyFont { get; set; } = ReduxTypographyFont.Manrope;
 
 	[DefaultValue("")]
 	[DataMember, Reactive] public string CustomTypographyFont { get; set; } = String.Empty;
 
 	[DefaultValue(ReduxTextSize.Default)]
-	[SettingsEntry("Text size", "Choose a curated interface text-size preset.", HideFromUI = true)]
+	[SettingsEntry("Text size", "Choose an interface text size.", HideFromUI = true)]
 	[DataMember, Reactive] public ReduxTextSize TextSize { get; set; } = ReduxTextSize.Default;
 
 	[DefaultValue(false)]
-	[SettingsEntry("Reduce motion", "Use immediate window, pane, toolbar, and popup transitions while retaining simple hover feedback.")]
+	[SettingsEntry("Reduce motion", "Remove animated movement and use immediate transitions.")]
 	[DataMember, Reactive] public bool ReduceMotion { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Disable blur and dimming", "Keep Redux fully clear and undimmed behind dialogs and secondary windows.")]
+	[SettingsEntry("Disable blur and dimming", "Keep the main window clear behind dialogs and secondary windows.")]
 	[DataMember, Reactive] public bool DisableBackgroundEffects { get; set; }
 
 	[DefaultValue(false)]
@@ -163,7 +163,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public ObservableCollection<ReduxCustomTheme> CustomThemes { get; set; } = new();
 
 	[DefaultValue(true)]
-	[SettingsEntry("Match category interaction colors", "Use category colors for hover and selection throughout Redux. Disable this to use the standard Redux accent.", HideFromUI = true)]
+	[SettingsEntry("Use category colors for selection", "Use category colors when hovering over or selecting mods.", HideFromUI = true)]
 	[DataMember, Reactive] public bool UseCategoryColorsForHover { get; set; } = true;
 
 	[DefaultValue(true)]
@@ -303,7 +303,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, IgnoreSetFrom] public ScriptExtenderUpdateConfig ExtenderUpdaterSettings { get; set; }
 
 	[DefaultValue(DivinityGameLaunchWindowAction.None)]
-	[SettingsEntry("After launching the game", "Choose whether Redux stays open, minimizes, or closes after it launches the game.")]
+	[SettingsEntry("After launching the game", "Choose whether the manager stays open, minimizes, or closes.")]
 	[DataMember, Reactive]
 	public DivinityGameLaunchWindowAction ActionOnGameLaunch { get; set; }
 
@@ -312,15 +312,15 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool DisableMissingModWarnings { get; set; }
 
 	[DefaultValue(true)]
-	[SettingsEntry("Enable mod diagnostics", "Run read-only checks for clearly detectable package, dependency, conflict, Script Extender, override, and optional load-order conditions. This does not edit mods or the load order. Disabling it stops analysis and removes diagnostic indicators.")]
+	[SettingsEntry("Enable mod diagnostics", "Check packages, dependencies, Script Extender requirements, overrides, and optional load-order issues. This never edits mods or the load order.")]
 	[DataMember, Reactive] public bool EnableModHealth { get; set; } = true;
 
 	[DefaultValue(false)]
-	[SettingsEntry("Disable mod.io diagnostic notices", "Hide the diagnostic notice about subscribed mod.io files being restorable by Baldur's Gate 3. This only hides that one notice - mod.io metadata, source linking, source labels, and cached source data are unaffected.")]
+	[SettingsEntry("Disable mod.io warnings", "Hide the warning that BG3 may restore subscribed mod.io files. Online mod information is unaffected.")]
 	[DataMember, Reactive] public bool DisableModioWarnings { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Include experimental load-order guidance", "Add conservative declared-dependency placement and cycle guidance to mod diagnostics. It never reorders mods automatically and remains disabled by default because valid placement can vary by mod.")]
+	[SettingsEntry("Include Load Order Advisor", "Check whether mods load before their required dependencies. It never reorders mods automatically.")]
 	[DataMember, Reactive] public bool EnableLoadOrderAdvisor { get; set; }
 
 	[DefaultValue(false)]
@@ -333,7 +333,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember] public WindowSettings Window { get; set; }
 
 	[DefaultValue(false)]
-	[SettingsEntry("Remember window position", "Restore the main window to its previous screen position when Redux starts.")]
+	[SettingsEntry("Remember window position", "Restore the main window to its previous screen position at startup.")]
 	[DataMember, Reactive] public bool SaveWindowLocation { get; set; }
 
 	[DefaultValue(true)]

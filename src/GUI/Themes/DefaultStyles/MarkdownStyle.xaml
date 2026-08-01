@@ -12,7 +12,6 @@
 		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.32}" />
 		<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUI:Brushes.AccentForegroundBrush}}" />
 		<Setter Property="FontWeight" Value="Normal" />
-		<!-- <Setter Property="TextDecorations" Value="Underline" /> -->
 		<Setter Property="Padding" Value="0" />
 		<Setter Property="Margin" Value="0" />
 	</Style>

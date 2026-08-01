@@ -1,4 +1,4 @@
-# Optional Redux modules
+# Optional features
 
 Redux preserves the inherited mod-manager core and layers newer features around it. Provider
 metadata and diagnostics must not become prerequisites for scanning packages, managing the active
@@ -10,22 +10,18 @@ Provider services and source-related UI consume `SourceIntegrationsEnabled`; dia
 `ModDiagnosticsEnabled` and `LoadOrderGuidanceEnabled`. Feature code should not reinterpret the
 underlying preference values independently.
 
-The first-run welcome setup, also available from Help, replaces the former standalone Redux
-Preview, offline Nexus, and mod.io safety windows. It presents module boundaries as reversible
-choices: source integrations and Mod Diagnostics remain enabled by default, while experimental
-load-order guidance remains disabled unless explicitly selected. Theme, module, motion, and
-background-effect choices preview live and are restored when the window is dismissed. Provider
-keys and selected preferences are stored only after **Save & Continue**. The setup changes no
-package or load-order data.
+The first-run setup is also available from Help. Online mod information and Mod Diagnostics are
+enabled by default; experimental load-order guidance is not. Theme, motion, and background effects
+preview live and return to their previous values if the window is dismissed. API keys and settings
+are stored only after **Save & Continue**. The setup does not change packages or load orders.
 
-## Source integrations
+## Online mod information
 
-Source integrations retain BG3MM's inherited Nexus Mods metadata, links, images, and update
-foundation, then extend it with mod.io, manual relinking, richer Redux presentation, and the
-reviewed Redux database fallback. The complete provider layer can be disabled with **Local-only
-mode** in Preferences.
+This feature retains BG3MM's Nexus Mods metadata, links, images, and update foundation, then adds
+mod.io, manual page linking, and the reviewed Redux database fallback. It can be disabled with
+**Disable online mod information** in Preferences.
 
-While Local-only mode is enabled, Redux:
+When online mod information is disabled, Redux:
 
 - does not request Nexus Mods or mod.io metadata;
 - cancels dedicated provider metadata work already in progress;
@@ -37,14 +33,13 @@ While Local-only mode is enabled, Redux:
 
 Package scanning and core manager behavior continue normally.
 
-The inherited **Refresh Mod Updates** operation also services Workshop and GitHub metadata. Switching
-to Local-only mode does not cancel that whole shared operation: source-provider stages that have not
-started are skipped, and an already-running provider request is allowed to finish disposal without
-interrupting the unrelated inherited providers.
+The inherited **Refresh Mod Updates** operation also services Workshop and GitHub metadata.
+Disabling online mod information does not cancel the whole shared operation. Nexus Mods and mod.io
+stages that have not started are skipped; unrelated update sources continue normally.
 
-Local-only mode does not disable Mod Diagnostics. Its checks use locally parsed package metadata and
-remain useful without provider integration. Provider-specific findings, such as the mod.io
-restoration notice, naturally disappear while source identities are masked.
+Disabling online information does not disable Mod Diagnostics. Its checks use locally parsed
+package information and remain useful offline. Source-specific warnings, such as the mod.io restore
+notice, disappear while online identities are hidden.
 
 ## Mod Diagnostics
 
@@ -83,7 +78,7 @@ internal rule boundary or the saved opt-in preference.
 
 ## Extension requirements
 
-Optional Redux modules must remain:
+Optional features must remain:
 
 - reversible through a clear preference;
 - read-only unless a separate, explicit user action authorizes a change;

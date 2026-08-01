@@ -3,18 +3,27 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
-	Title="Export Redux Bundle"
+	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+	Title="Export Redux Modlist"
 	Width="520" MinWidth="520" MaxWidth="520"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	ResizeMode="NoResize" SizeToContent="Height" ShowInTaskbar="False"
-	TitleBarBackground="{DynamicResource ReduxSurfaceElevatedBrush}"
-	TitleBarForeground="{DynamicResource ReduxTextPrimaryBrush}"
+	Background="{DynamicResource ReduxSurfaceBrush}"
+	WindowStyle="SingleBorderWindow"
+	Template="{DynamicResource ReduxWindowTemplate}"
 	WindowStartupLocation="CenterOwner">
+	<shell:WindowChrome.WindowChrome>
+		<shell:WindowChrome CaptionHeight="0" CornerRadius="0" GlassFrameThickness="0"
+			ResizeBorderThickness="6" UseAeroCaptionButtons="False" />
+	</shell:WindowChrome.WindowChrome>
 	<Window.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 	</ResourceDictionary.MergedDictionaries></ResourceDictionary></Window.Resources>
-	<Border Padding="22" Background="{DynamicResource ReduxAppBackgroundBrush}"
-		BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
+	<Grid>
+		<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.CloudUpload}" />
+	<Border Grid.Row="1" Padding="22" Background="{DynamicResource ReduxAppBackgroundBrush}"
+		BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="0,1,0,0">
 		<Grid>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
@@ -32,7 +41,7 @@
 					Foreground="{DynamicResource ReduxAccentHoverBrush}" StrokeData="{StaticResource Redux.Icon.CloudUpload}" />
 				<StackPanel Grid.Column="1" VerticalAlignment="Center">
 					<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold"
-						Text="Review bundle contents" />
+						Text="Review modlist contents" />
 					<TextBlock x:Name="OrderNameText" Margin="0,4,0,0"
 						Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap" />
 				</StackPanel>
@@ -86,7 +95,7 @@
 						StrokeData="{StaticResource Redux.Icon.Information}" />
 					<TextBlock x:Name="BundleSafetyText" Grid.Column="1"
 						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-						Text="The bundle does not contain mod .pak files or modsettings.lsx. It cannot install mods or change the game export until someone explicitly uses Export to Game."
+						Text="This modlist does not contain mod .pak files or modsettings.lsx. It cannot install mods or change the game until someone uses Export to Game."
 						TextWrapping="Wrap" />
 				</Grid>
 			</Border>
@@ -127,4 +136,5 @@
 			</StackPanel>
 		</Grid>
 	</Border>
+	</Grid>
 </adonisUI:AdonisWindow>

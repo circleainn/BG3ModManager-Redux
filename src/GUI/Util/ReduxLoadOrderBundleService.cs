@@ -63,7 +63,7 @@ public static class ReduxLoadOrderBundleService
 
 			var bytes = buffer.ToArray();
 			if (bytes.Length <= 0 || bytes.LongLength > MaximumArchiveBytes)
-				throw new InvalidDataException("The Redux bundle is too large.");
+				throw new InvalidDataException("The Redux Modlist is too large.");
 
 			AtomicFileWriter.WriteAllBytes(path, bytes, validateTemporaryFile: temporaryPath =>
 				TryRead(temporaryPath, out _, out validationError));
@@ -76,7 +76,7 @@ public static class ReduxLoadOrderBundleService
 				? validationError
 				: exception is InvalidDataException
 					? exception.Message
-					: "Redux could not create that load-order bundle.";
+					: "The Redux Modlist could not be created.";
 			return false;
 		}
 	}
@@ -89,29 +89,29 @@ public static class ReduxLoadOrderBundleService
 		{
 			var file = new FileInfo(path);
 			if (!file.Exists || file.Length <= 0 || file.Length > MaximumArchiveBytes)
-				throw new InvalidDataException("Choose a valid Redux load-order bundle smaller than 32 MB.");
+				throw new InvalidDataException("Choose a valid Redux Modlist smaller than 32 MB.");
 
 			using var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
 			using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
 			if (archive.Entries.Count is < 2 or > MaximumEntries)
-				throw new InvalidDataException("The Redux bundle contains an invalid number of files.");
+				throw new InvalidDataException("The Redux Modlist contains an invalid number of files.");
 			if (archive.Entries.Select(entry => entry.FullName)
 				.Distinct(StringComparer.OrdinalIgnoreCase).Count() != archive.Entries.Count)
-				throw new InvalidDataException("The Redux bundle contains duplicate file names.");
+				throw new InvalidDataException("The Redux Modlist contains duplicate file names.");
 			if (archive.Entries.Sum(entry => entry.Length) > MaximumExpandedBytes)
-				throw new InvalidDataException("The Redux bundle expands beyond the supported size.");
+				throw new InvalidDataException("The Redux Modlist expands beyond the supported size.");
 
 			var loadOrderEntry = archive.GetEntry(LoadOrderEntryName)
-				?? throw new InvalidDataException("The bundle is missing loadorder.json.");
+				?? throw new InvalidDataException("The Redux Modlist is missing its load order.");
 			var presentationEntry = archive.GetEntry(PresentationEntryName)
-				?? throw new InvalidDataException("The bundle is missing presentation.json.");
+				?? throw new InvalidDataException("The Redux Modlist is missing its layout data.");
 
 			var loadOrder = JsonConvert.DeserializeObject<DivinityLoadOrder>(
 					ReadTextEntry(loadOrderEntry), ReaderSettings)
-				?? throw new InvalidDataException("The bundled load order is invalid.");
+				?? throw new InvalidDataException("The Redux Modlist load order is invalid.");
 			var presentation = JsonConvert.DeserializeObject<ReduxLoadOrderPresentation>(
 					ReadTextEntry(presentationEntry), ReaderSettings)
-				?? throw new InvalidDataException("The bundled Redux presentation is invalid.");
+				?? throw new InvalidDataException("The Redux Modlist layout data is invalid.");
 			Validate(loadOrder, presentation);
 
 			var expectedEntries = presentation.CustomIconAssets.Values
@@ -119,22 +119,22 @@ public static class ReduxLoadOrderBundleService
 				.Append(PresentationEntryName)
 				.ToHashSet(StringComparer.OrdinalIgnoreCase);
 			if (archive.Entries.Any(entry => !expectedEntries.Contains(entry.FullName)))
-				throw new InvalidDataException("The Redux bundle contains an unexpected file.");
+				throw new InvalidDataException("The Redux Modlist contains an unexpected file.");
 
 			var assets = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
 			foreach (var assetPath in presentation.CustomIconAssets.Values.Distinct(StringComparer.OrdinalIgnoreCase))
 			{
 				if (!IsSafeAssetPath(assetPath))
-					throw new InvalidDataException("The bundle contains an unsafe custom-icon path.");
+					throw new InvalidDataException("The Redux Modlist contains an unsafe custom-icon path.");
 				var entry = archive.GetEntry(assetPath)
-					?? throw new InvalidDataException($"The bundle is missing custom icon '{assetPath}'.");
+					?? throw new InvalidDataException($"The Redux Modlist is missing custom icon '{assetPath}'.");
 				if (entry.Length is <= 0 or > MaximumAssetBytes)
-					throw new InvalidDataException("A bundled custom icon is too large.");
+					throw new InvalidDataException("A custom icon in the Redux Modlist is too large.");
 				using var assetStream = entry.Open();
 				using var assetBuffer = new MemoryStream();
 				assetStream.CopyTo(assetBuffer);
 				if (assetBuffer.Length > MaximumAssetBytes)
-					throw new InvalidDataException("A bundled custom icon expands beyond the allowed size.");
+					throw new InvalidDataException("A custom icon in the Redux Modlist expands beyond the allowed size.");
 				assets[assetPath] = assetBuffer.ToArray();
 			}
 
@@ -149,7 +149,7 @@ public static class ReduxLoadOrderBundleService
 		catch (Exception exception)
 		{
 			DivinityApp.Log($"Failed to read Redux load-order bundle: {exception}");
-			error = exception is InvalidDataException ? exception.Message : "Redux could not read that load-order bundle.";
+			error = exception is InvalidDataException ? exception.Message : "The Redux Modlist could not be read.";
 			return false;
 		}
 	}
@@ -158,7 +158,7 @@ public static class ReduxLoadOrderBundleService
 	{
 		if (!String.Equals(presentation.Format, ReduxLoadOrderPresentation.CurrentFormat, StringComparison.Ordinal) ||
 			presentation.SchemaVersion != ReduxLoadOrderPresentation.CurrentSchemaVersion)
-			throw new InvalidDataException("This Redux bundle uses an unsupported format version.");
+			throw new InvalidDataException("This Redux Modlist uses an unsupported format version.");
 		if (presentation.OrderedModUuids == null ||
 			presentation.CustomCategories == null ||
 			presentation.CustomCategoryDisplayOrder == null ||
@@ -166,18 +166,18 @@ public static class ReduxLoadOrderBundleService
 			presentation.Dividers == null ||
 			presentation.CustomIconAssets == null ||
 			presentation.PrivateModNotes == null)
-			throw new InvalidDataException("The bundled Redux presentation is incomplete.");
+			throw new InvalidDataException("The Redux Modlist layout data is incomplete.");
 		if (loadOrder.Order == null || loadOrder.Order.Count > 10000 ||
 			loadOrder.Order.Any(entry => entry == null || String.IsNullOrWhiteSpace(entry.UUID) ||
 				entry.UUID.Length > 128 || (entry.Name?.Length ?? 0) > 256))
-			throw new InvalidDataException("The bundled load order contains invalid entries.");
+			throw new InvalidDataException("The Redux Modlist contains invalid load-order entries.");
 		if (String.IsNullOrWhiteSpace(presentation.LoadOrderName) || presentation.LoadOrderName.Length > 256)
-			throw new InvalidDataException("The bundled load-order name is invalid.");
+			throw new InvalidDataException("The Redux Modlist name is invalid.");
 		if ((presentation.CreatorVersion?.Length ?? 0) > 64 ||
 			(presentation.CreatorInternalVersion?.Length ?? 0) > 32 ||
 			(!String.IsNullOrWhiteSpace(presentation.CreatorInternalVersion) &&
 			 !Version.TryParse(presentation.CreatorInternalVersion, out _)))
-			throw new InvalidDataException("The Redux bundle contains invalid creator-version metadata.");
+			throw new InvalidDataException("The Redux Modlist contains invalid version information.");
 
 		// DivinityLoadOrder's established serialized contract contains only Order.
 		// Redux presentation metadata owns the portable bundle name.
@@ -186,13 +186,13 @@ public static class ReduxLoadOrderBundleService
 		var orderUuids = loadOrder.Order.Select(entry => entry.UUID).ToList();
 		if (orderUuids.Distinct(StringComparer.OrdinalIgnoreCase).Count() != orderUuids.Count ||
 			!orderUuids.SequenceEqual(presentation.OrderedModUuids, StringComparer.OrdinalIgnoreCase))
-			throw new InvalidDataException("The load order and Redux presentation do not describe the same mod sequence.");
+			throw new InvalidDataException("The Redux Modlist contains inconsistent load-order data.");
 		if (presentation.CustomCategories.Count > 128 ||
 			presentation.Dividers.Count > 256 ||
 			presentation.CategoryAssignments.Count > 10000 ||
 			presentation.CustomIconAssets.Count > 128 ||
 			presentation.PrivateModNotes.Count > orderUuids.Count)
-			throw new InvalidDataException("The Redux presentation exceeds the supported limits.");
+			throw new InvalidDataException("The Redux Modlist layout exceeds the supported limits.");
 
 		if (presentation.CustomCategories.Any(category =>
 				category == null || String.IsNullOrWhiteSpace(category.Name) || category.Name.Length > 80 ||
@@ -200,7 +200,7 @@ public static class ReduxLoadOrderBundleService
 				(category.Description?.Length ?? 0) > 240) ||
 			presentation.CustomCategories.Select(category => category.Name)
 				.Distinct(StringComparer.OrdinalIgnoreCase).Count() != presentation.CustomCategories.Count)
-			throw new InvalidDataException("The Redux presentation contains an invalid custom category.");
+			throw new InvalidDataException("The Redux Modlist contains an invalid custom category.");
 		var customCategoryNames = presentation.CustomCategories
 			.Select(category => category.Name)
 			.ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -209,7 +209,7 @@ public static class ReduxLoadOrderBundleService
 				String.IsNullOrWhiteSpace(name) || name.Length > 80 || !customCategoryNames.Contains(name)) ||
 			presentation.CustomCategoryDisplayOrder.Distinct(StringComparer.OrdinalIgnoreCase).Count() !=
 				presentation.CustomCategoryDisplayOrder.Count)
-			throw new InvalidDataException("The Redux presentation contains an invalid category order.");
+			throw new InvalidDataException("The Redux Modlist contains an invalid category order.");
 
 		var orderedUuidSet = orderUuids.ToHashSet(StringComparer.OrdinalIgnoreCase);
 		if (presentation.CategoryAssignments.Any(assignment =>
@@ -217,7 +217,7 @@ public static class ReduxLoadOrderBundleService
 				assignment.Value == null || assignment.Value.Count > 32 ||
 				assignment.Value.Any(category => String.IsNullOrWhiteSpace(category) || category.Length > 80) ||
 				assignment.Value.Distinct(StringComparer.OrdinalIgnoreCase).Count() != assignment.Value.Count))
-			throw new InvalidDataException("The Redux presentation contains invalid category assignments.");
+			throw new InvalidDataException("The Redux Modlist contains invalid category assignments.");
 		if (presentation.Dividers.Any(divider =>
 				divider == null || (divider.Title?.Length ?? 0) > 160 ||
 				!IsValidColor(divider.Color) || (divider.IconId?.Length ?? 0) > 160 ||
@@ -226,7 +226,7 @@ public static class ReduxLoadOrderBundleService
 				(divider.BeforeModUuid?.Length ?? 0) > 128 || (divider.AfterModUuid?.Length ?? 0) > 128 ||
 				(!String.IsNullOrWhiteSpace(divider.BeforeModUuid) && !orderedUuidSet.Contains(divider.BeforeModUuid)) ||
 				(!String.IsNullOrWhiteSpace(divider.AfterModUuid) && !orderedUuidSet.Contains(divider.AfterModUuid))))
-			throw new InvalidDataException("The Redux presentation contains an invalid separator.");
+			throw new InvalidDataException("The Redux Modlist contains an invalid separator.");
 		if (presentation.PrivateModNotes.Any(note =>
 				note == null || String.IsNullOrWhiteSpace(note.ModUuid) ||
 				!orderedUuidSet.Contains(note.ModUuid) ||
@@ -234,18 +234,18 @@ public static class ReduxLoadOrderBundleService
 				note.Note.Length > ReduxModAnnotationService.MaximumNoteLength) ||
 			presentation.PrivateModNotes.Select(note => note.ModUuid)
 				.Distinct(StringComparer.OrdinalIgnoreCase).Count() != presentation.PrivateModNotes.Count)
-			throw new InvalidDataException("The Redux presentation contains invalid notes.");
+			throw new InvalidDataException("The Redux Modlist contains invalid notes.");
 		if (presentation.CustomIconAssets.Any(asset =>
 				!ReduxCustomIconService.IsCustomReference(asset.Key) || asset.Key.Length > 160 ||
 				!IsSafeAssetPath(asset.Value)))
-			throw new InvalidDataException("The Redux presentation contains an invalid custom-icon reference.");
+			throw new InvalidDataException("The Redux Modlist contains an invalid custom-icon reference.");
 
 		var referencedCustomIcons = presentation.CustomCategories.Select(category => category.IconId)
 			.Concat(presentation.Dividers.Select(divider => divider.IconId))
 			.Where(ReduxCustomIconService.IsCustomReference)
 			.ToHashSet(StringComparer.OrdinalIgnoreCase);
 		if (!referencedCustomIcons.SetEquals(presentation.CustomIconAssets.Keys))
-			throw new InvalidDataException("The Redux presentation contains inconsistent custom-icon references.");
+			throw new InvalidDataException("The Redux Modlist contains inconsistent custom-icon references.");
 	}
 
 	private static bool IsValidColor(string color) =>

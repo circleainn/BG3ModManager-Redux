@@ -108,11 +108,11 @@
 				<TextBlock FontSize="{DynamicResource Redux.FontSize.26}"
 				    FontWeight="{DynamicResource Redux.FontWeight.Title}"
 				    Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-				    Text="Starting Redux" />
+				    Text="Starting BG3 Mod Manager Redux" />
 				<TextBlock Margin="0,6,0,0"
 				    FontSize="{DynamicResource Redux.FontSize.12}"
 				    Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-				    Text="Preparing your modding workspace" />
+				    Text="Loading settings" />
 			</StackPanel>
 
 			<Grid Grid.Row="2">
@@ -126,7 +126,7 @@
 						<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
 					<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-					    Text="{Binding MainProgressWorkText, FallbackValue='Preparing startup services...', TargetNullValue='Preparing startup services...'}"
+					    Text="{Binding MainProgressWorkText, FallbackValue='Loading settings...', TargetNullValue='Loading settings...'}"
 					    TextTrimming="CharacterEllipsis" />
 					<TextBlock Grid.Column="1" Margin="12,0,0,0"
 					    FontWeight="{DynamicResource Redux.FontWeight.Control}"

@@ -8,7 +8,7 @@
 	xmlns:local="clr-namespace:DivinityModManager.Views"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Redux Updater"
+	Title="App Update"
 	Width="900"
 	Height="620"
 	MinWidth="680"
@@ -66,7 +66,7 @@
 		<TextBlock Grid.Row="3"
 			Padding="4"
 			FontSize="{DynamicResource Redux.FontSize.24}"
-			Text="Changelog"
+			Text="Release notes"
 			TextAlignment="Center" />
 		<FlowDocumentScrollViewer x:Name="UpdateChangelogView"
 			Grid.Row="4"
@@ -98,8 +98,7 @@
 				<Button x:Name="ConfirmButton"
 					HorizontalAlignment="Center"
 					Background="{DynamicResource ReduxSuccessBrush}"
-					Content="Download"
-					ToolTip="Download Update">
+					Content="Download">
 					<Button.Resources>
 						<Style TargetType="Border">
 							<Setter Property="CornerRadius" Value="5" />
@@ -108,8 +107,7 @@
 				</Button>
 				<Button x:Name="SkipButton"
 					HorizontalAlignment="Center"
-					Content="Skip"
-					ToolTip="Skip Update">
+					Content="Skip">
 					<Button.Resources>
 						<Style TargetType="Border">
 							<Setter Property="CornerRadius" Value="5" />

@@ -24,7 +24,6 @@
 			<conv:ModDetailsMediaWidthConverter x:Key="ModDetailsMediaWidthConverter" />
 			<conv:NexusDescriptionToPlainTextConverter x:Key="NexusDescriptionToPlainTextConverter" />
 			<Style x:Key="ListViewItemMouseEvents" BasedOn="{StaticResource DivinityModDataListItem}" TargetType="{x:Type ListViewItem}">
-				<!--<EventSetter Event="PreviewMouseLeftButtonDown" Handler="ListViewItem_ModifySelection" />-->
 			</Style>
 			<Style x:Key="ModOrderListViewWithDrag" BasedOn="{StaticResource ModOrderListView}" TargetType="ListView">
 				<Setter Property="dd:DragDrop.DragDirectlySelectedOnly" Value="True" />
@@ -1135,7 +1134,7 @@
 								<TextBlock HorizontalAlignment="Center" FontWeight="SemiBold" Text="No installed dependencies declared" />
 								<TextBlock Margin="0,5,0,0"
 									Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="This mod's local metadata does not list another mod as a dependency."
+									Text="This mod does not list another mod as a dependency."
 									TextAlignment="Center"
 									TextWrapping="Wrap" />
 							</StackPanel>
@@ -1236,7 +1235,7 @@
 					<TextBlock Grid.Row="1"
 						Margin="0,3,0,10"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="Stored locally unless explicitly included in a Redux bundle."
+						Text="Stored on this computer unless included in a Redux Modlist."
 						TextWrapping="Wrap" />
 					<Border Grid.Row="2"
 						Padding="12,10"
@@ -1389,7 +1388,7 @@
 						<TextBlock Style="{StaticResource ModSectionTitle}" Text="Categories">
 							<TextBlock.ToolTip>
 								<ToolTip MaxWidth="340">
-									<TextBlock Text="Redux automatically suggests categories from the information available for each mod. Provider tags and package details can be incomplete, so reviewing the suggestion and adjusting it when needed is recommended."
+							<TextBlock Text="Category suggestions use available mod information and may need correction."
 										TextWrapping="Wrap" />
 								</ToolTip>
 							</TextBlock.ToolTip>
@@ -1676,7 +1675,7 @@
 						AutomationProperties.HelpText="The active list is sorted by metadata. Click the number-sign column to restore load-order editing."
 						FontSize="{DynamicResource Redux.FontSize.11}"
 						Foreground="{DynamicResource ReduxWarningBrush}"
-						Text="Sorted view — drag disabled; click # to edit order"
+						Text="Sorted view — click # to return to load-order view"
 						TextTrimming="CharacterEllipsis"
 						ToolTip="The active list is sorted by metadata, so visible rows no longer match load-order positions. Click the # column to restore load-order editing and drag-and-drop."
 						Visibility="{Binding IsActiveListMetadataSorted, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />

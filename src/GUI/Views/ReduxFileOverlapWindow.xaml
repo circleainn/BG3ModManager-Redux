@@ -210,7 +210,7 @@
 						<TextBlock x:Name="EmptyStateDescription" Margin="0,4,0,0"
 							HorizontalAlignment="Center"
 							Foreground="{DynamicResource ReduxTextMutedBrush}"
-							Text="Redux is checking active and override packages." />
+							Text="Checking active and override packages." />
 					</StackPanel>
 				</Grid>
 

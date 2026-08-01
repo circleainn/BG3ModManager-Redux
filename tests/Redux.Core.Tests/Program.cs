@@ -78,6 +78,7 @@ internal static class Program
 			(nameof(modules.CategoryInteractionSettingSynchronizesLegacyPresentationFlags), modules.CategoryInteractionSettingSynchronizesLegacyPresentationFlags),
 			(nameof(modules.IconsOnlySettingSynchronizesLegacySourceFlag), modules.IconsOnlySettingSynchronizesLegacySourceFlag),
 			(nameof(modules.CustomThemeClonePreservesUnifiedPresentationSettings), modules.CustomThemeClonePreservesUnifiedPresentationSettings),
+			(nameof(modules.CustomThemePreviewRegeneratesEverySemanticPillGradient), modules.CustomThemePreviewRegeneratesEverySemanticPillGradient),
 			(nameof(modules.LocalOnlyModeChangesOnlySourceIntegrations), modules.LocalOnlyModeChangesOnlySourceIntegrations),
 			(nameof(modules.LoadOrderGuidanceRequiresDiagnosticsWithoutLosingItsPreference), modules.LoadOrderGuidanceRequiresDiagnosticsWithoutLosingItsPreference),
 			(nameof(modules.DisposedModuleStateStopsTrackingSettings), modules.DisposedModuleStateStopsTrackingSettings),

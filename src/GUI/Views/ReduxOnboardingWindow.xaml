@@ -131,17 +131,17 @@
 								<TextBlock FontSize="{DynamicResource Redux.FontSize.20}"
 									FontWeight="{DynamicResource Redux.FontWeight.Title}"
 									Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-									Text="Hi there! Welcome to Redux." />
+									Text="Welcome to BG3 Mod Manager Redux" />
 								<TextBlock Margin="0,4,0,0"
 									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-									Text="Redux is currently an early preview. Features may change, and some optional tools may not yet work perfectly. Choose a comfortable starting setup below; everything remains adjustable in Preferences."
+									Text="This is an early preview, so features may change or need more work. Choose a starting setup below; you can change everything later in Preferences."
 									TextWrapping="Wrap" />
 							</StackPanel>
 						</Grid>
 
 						<Border Margin="0,0,0,10" Style="{StaticResource WelcomeSectionStyle}">
 							<StackPanel>
-								<TextBlock Style="{StaticResource WelcomeSectionTitleStyle}" Text="Select your look" />
+								<TextBlock Style="{StaticResource WelcomeSectionTitleStyle}" Text="Choose a theme" />
 								<UniformGrid Margin="0,9,0,0" Columns="3">
 									<RadioButton x:Name="ReduxDarkThemeCard"
 										GroupName="WelcomeThemes"
@@ -207,7 +207,7 @@
 
 						<Border Margin="0,0,0,10" Style="{StaticResource WelcomeSectionStyle}">
 							<StackPanel>
-								<TextBlock Style="{StaticResource WelcomeSectionTitleStyle}" Text="Optional Redux modules" />
+								<TextBlock Style="{StaticResource WelcomeSectionTitleStyle}" Text="Optional features" />
 								<Grid Margin="0,9,0,0">
 									<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 									<CheckBox x:Name="SourceIntegrationsCheckBox"
@@ -218,8 +218,8 @@
 											<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 											<controls:ReduxIcon Width="17" Height="17" Margin="0,1,9,0" Foreground="{DynamicResource ReduxInfoBrush}" StrokeData="{DynamicResource Redux.Icon.LinkStroke}" />
 											<StackPanel Grid.Column="1">
-												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Source integrations" />
-												<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Connect installed packages with Nexus Mods and mod.io metadata, links, images, and update information. Turn this off for a fully Local view." />
+											<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Online mod information" />
+											<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Link installed mods to Nexus Mods or mod.io to show descriptions, authors, versions, images, and update dates." />
 											</StackPanel>
 										</Grid>
 									</CheckBox>
@@ -247,7 +247,7 @@
 												<controls:ReduxIcon Width="17" Height="17" Margin="0,1,9,0" Foreground="{DynamicResource ReduxWarningBrush}" StrokeData="{DynamicResource Redux.Icon.Flag}" />
 												<StackPanel Grid.Column="1">
 													<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Experimental load-order guidance" />
-													<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Add cautious placement and cycle advice. Redux never sorts or changes the order automatically." />
+													<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Check whether a mod loads before its required dependencies. The manager never sorts or changes the order automatically." />
 												</StackPanel>
 											</Grid>
 										</CheckBox>
@@ -266,8 +266,8 @@
 											<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 											<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" Foreground="{DynamicResource ReduxInfoBrush}" StrokeData="{DynamicResource Redux.Icon.Key}" />
 											<StackPanel Grid.Column="1">
-												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Metadata service keys" />
-												<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Optional. Keys are stored locally and can be changed or removed later in Preferences." />
+											<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Mod service keys" />
+											<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Optional. Keys are stored on this computer and can be changed or removed later in Preferences." />
 											</StackPanel>
 										</Grid>
 										<Grid Margin="24,9,0,0">
@@ -277,14 +277,14 @@
 													<ContentControl Width="15" Height="15" Margin="0,0,6,0" ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" />
 													<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Nexus Mods API key" />
 												</StackPanel>
-												<TextBox x:Name="NexusApiKeyTextBox" Height="30" ToolTip="Personal Nexus Mods API key used for live metadata and update information" />
+											<TextBox x:Name="NexusApiKeyTextBox" Height="30" ToolTip="Personal Nexus Mods API key used for mod information and update checks" />
 											</StackPanel>
 											<StackPanel Grid.Column="2">
 												<StackPanel Margin="1,0,0,4" Orientation="Horizontal">
 													<ContentControl Width="15" Height="15" Margin="0,0,6,0" ContentTemplate="{DynamicResource ModioPlatformIconTemplate}" />
 													<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="mod.io API key" />
 												</StackPanel>
-												<TextBox x:Name="ModioApiKeyTextBox" Height="30" ToolTip="Read-only mod.io API key used for live metadata" />
+											<TextBox x:Name="ModioApiKeyTextBox" Height="30" ToolTip="Read-only mod.io API key used for mod information" />
 											</StackPanel>
 										</Grid>
 									</StackPanel>

@@ -257,7 +257,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Import Redux Font",
+			Title = "Import Font",
 			Filter = "Font files (*.ttf;*.otf)|*.ttf;*.otf|TrueType font (*.ttf)|*.ttf|OpenType font (*.otf)|*.otf",
 			CheckFileExists = true,
 			Multiselect = false
@@ -283,7 +283,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			? ""
 			: $"\n\n{affectedThemes} custom theme{(affectedThemes == 1 ? "" : "s")} will fall back to Manrope.";
 		var result = ReduxMessageBox.Show(this,
-			$"Remove '{choice.Name}' from Redux?{usageNote}", "Remove Custom Font",
+			$"Remove '{choice.Name}'?{usageNote}", "Remove Custom Font",
 			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 		if (result != MessageBoxResult.Yes) return;
 		if (!ReduxCustomFontService.TryDelete(choice.CustomReference, out var error))
@@ -322,7 +322,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		catch (Exception exception)
 		{
 			DivinityApp.Log($"Could not open the Redux custom fonts folder: {exception.Message}");
-			ReduxMessageBox.Show(this, "Redux could not open the custom fonts folder.", "Custom Fonts",
+			ReduxMessageBox.Show(this, "The custom fonts folder could not be opened.", "Custom Fonts",
 				MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
 	}
@@ -476,8 +476,8 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Import Redux Custom Theme",
-			Filter = "Redux theme (*.json)|*.json|All files (*.*)|*.*",
+			Title = "Import Custom Theme",
+			Filter = "Theme file (*.json)|*.json|All files (*.*)|*.*",
 			CheckFileExists = true,
 			Multiselect = false
 		};
@@ -502,8 +502,8 @@ public partial class SettingsWindow : SettingsWindowBase
 		var safeName = String.Concat(selected.Name.Select(character => Path.GetInvalidFileNameChars().Contains(character) ? '_' : character));
 		var dialog = new Microsoft.Win32.SaveFileDialog
 		{
-			Title = "Export Redux Custom Theme",
-			Filter = "Redux theme (*.json)|*.json",
+			Title = "Export Custom Theme",
+			Filter = "Theme file (*.json)|*.json",
 			FileName = $"{safeName}.json",
 			AddExtension = true,
 			DefaultExt = ".json"

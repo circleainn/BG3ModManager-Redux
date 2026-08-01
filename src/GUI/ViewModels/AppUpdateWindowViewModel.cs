@@ -75,7 +75,7 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 				SkipButtonText = "Skip";
 				CanSkip = true;
 				UpdateVersion = Version.Parse(args.CurrentVersion);
-				if (_showAlert) MainWindow.Self.ViewModel.ShowAlert("Update found!", AlertType.Success, 20);
+				if (_showAlert) MainWindow.Self.ViewModel.ShowAlert("Update available", AlertType.Success, 20);
 			}
 			else
 			{
@@ -83,7 +83,7 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 				CanConfirm = false;
 				CanSkip = true;
 				SkipButtonText = "Close";
-				if (_showAlert) MainWindow.Self.ViewModel.ShowAlert("Already up-to-date", AlertType.Info, 20);
+				if (_showAlert) MainWindow.Self.ViewModel.ShowAlert("Already up to date", AlertType.Info, 20);
 			}
 
 			if (args.IsUpdateAvailable || _showAlert)
@@ -97,7 +97,7 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 		catch(Exception ex)
 		{
 			DivinityApp.Log($"Error checking for update:\n{ex}");
-			if (_showAlert) MainWindow.Self.ViewModel.ShowAlert($"Error occurred when checking for updates: {ex.Message}", AlertType.Danger, 60);
+			if (_showAlert) MainWindow.Self.ViewModel.ShowAlert("The update check failed. Check the log for details.", AlertType.Danger, 60);
 
 			if (ex is System.Net.WebException)
 			{

@@ -74,7 +74,7 @@
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
 						<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}"
-							Text="Stored locally unless explicitly included in a Redux bundle."
+							Text="Stored on this computer unless included in a Redux Modlist."
 							TextWrapping="Wrap" />
 						<TextBlock x:Name="CharacterCountText" Grid.Column="1" Margin="12,0,0,0"
 							Foreground="{DynamicResource ReduxTextMutedBrush}" />

@@ -571,7 +571,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			var sourceMenu = new MenuItem
 			{
-				Header = hasBulkCategoryTargets ? $"Source Link for {mod.DisplayName}" : "Source Link",
+				Header = hasBulkCategoryTargets ? $"Mod Page for {mod.DisplayName}" : "Mod Page",
 				Tag = SourceLinkMenuTag,
 				Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true)
 			};
@@ -579,9 +579,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			{
 				sourceMenu.Items.Add(new MenuItem
 				{
-					Header = "Native mod.io identity detected",
+					Header = "Linked to mod.io",
 					IsEnabled = false,
-					ToolTip = "Redux keeps the stronger mod.io identity for this package.",
+					ToolTip = "This package identifies itself as a mod.io mod.",
 					Icon = ReduxIcon.FromResource("Redux.Icon.Information", true, "ReduxInfoBrush")
 				});
 			}
@@ -590,7 +590,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				var hasNexusLink = mod.NexusModsData?.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START;
 				var linkItem = new MenuItem
 				{
-					Header = hasNexusLink ? "Change Nexus Mods Link..." : "Link to Nexus Mods...",
+					Header = hasNexusLink ? "Change Linked Mod Page..." : "Link Mod Page...",
 					Icon = ReduxIcon.FromResource("Redux.Icon.LinkStroke", true, "Redux.Pill.Nexus.Border")
 				};
 				ApplySemanticMenuHover(linkItem, "Redux.Pill.Nexus.Background", "Redux.Pill.Nexus.Border");
@@ -601,7 +601,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					sourceMenu.Items.Add(new Separator());
 					var unlinkItem = new MenuItem
 					{
-						Header = "Unlink Nexus Mods",
+						Header = "Unlink Mod Page",
 						Icon = ReduxIcon.FromResource("Redux.Icon.UnlinkStroke", true, "ReduxErrorBrush")
 					};
 					ApplySemanticMenuHover(unlinkItem, "ReduxErrorPillBackground", "ReduxErrorBrush");
@@ -609,7 +609,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					{
 						var result = ShowCategoryMessage(
 							$"Remove the Nexus Mods source link from '{mod.DisplayName}'?\n\nThe installed package and its load-order position will not be changed.",
-							"Unlink Nexus Mods", MessageBoxButton.YesNo, MessageBoxImage.Question);
+							"Unlink Mod Page", MessageBoxButton.YesNo, MessageBoxImage.Question);
 						if (result == MessageBoxResult.Yes) ViewModel.UnlinkNexusMod(mod);
 					};
 					sourceMenu.Items.Add(unlinkItem);

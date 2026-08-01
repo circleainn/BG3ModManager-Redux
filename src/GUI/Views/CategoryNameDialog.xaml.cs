@@ -127,18 +127,18 @@ public partial class CategoryNameDialog : AdonisWindow
 		UpdateCustomIconControls();
 		if (ColorConverter.ConvertFromString(color) is Color selectedColor) CategoryColorPicker.SelectedColor = selectedColor;
 		Title = visualDividerMode ? (String.IsNullOrEmpty(categoryName) ? "Add Separator" : "Edit Separator") : canEditName ? "Add Mod Category" : "Edit Category";
-		DialogHeading.Text = visualDividerMode ? "Style a separator" : canEditName ? "Create a custom mod category" : $"Edit {categoryName}";
+		DialogHeading.Text = visualDividerMode ? "Style a separator" : canEditName ? "Create a category" : $"Edit {categoryName}";
 		DialogHelperText.Text = visualDividerMode
-			? "Choose a color, marker or icon, and optional label. Leave the name empty for a line-only separator."
+			? "Choose a name, color, and icon. Leave the name empty for a line-only separator."
 			: canEditName
 			? "Choose a unique name, optional description, color, and marker or icon. Dot is the default."
 			: canResetToDefault
-			? "Redux category names stay fixed. Customize its color and marker or icon, or restore the Redux defaults."
+			? "Built-in category names cannot be changed. Change its color and icon, or reset it to the default."
 			: "Choose a color and marker or icon. Dot is the default.";
 		ConfirmButton.Content = visualDividerMode ? "Save" : canEditName ? "Add" : "Save";
 		ResetToDefaultButton.Visibility = canResetToDefault ? Visibility.Visible : Visibility.Collapsed;
 		if (canResetToDefault)
-			CategoryNameTextBox.ToolTip = "Redux category names are fixed. Create a custom category for a different name.";
+			CategoryNameTextBox.ToolTip = "Create a custom category to use a different name.";
 		if (visualDividerMode)
 		{
 			DescriptionEditorPanel.Visibility = Visibility.Visible;
@@ -618,7 +618,7 @@ public partial class CategoryNameDialog : AdonisWindow
 		if (CategoryIconComboBox.SelectedItem is not IconChooserChoice choice ||
 			!ReduxCustomIconService.IsCustomReference(choice.Id)) return;
 		var result = ShowReduxMessage(
-			"Remove this custom icon from Redux? Categories and separators using it will fall back to the default dot.",
+			"Remove this imported icon? Categories and separators using it will use the default dot.",
 			"Remove Custom Icon", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning);
 		if (result != System.Windows.MessageBoxResult.Yes) return;
 		if (!ReduxCustomIconService.TryDelete(choice.Id, out var error))

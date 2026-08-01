@@ -90,7 +90,7 @@
 						TextWrapping="Wrap">
 						<Run Text="Version " />
 						<Run Text="{x:Static app:DivinityApp.REDUX_DISPLAY_VERSION}" />
-						<Run Text="  •  A modern interface for Baldur's Gate 3 mod management" />
+						<Run Text="  •  A community-made update to BG3 Mod Manager" />
 					</TextBlock>
 				</StackPanel>
 			</Grid>
@@ -109,7 +109,7 @@
 
 				<Border Style="{StaticResource AboutSectionCardStyle}">
 					<StackPanel>
-						<TextBlock Style="{StaticResource Redux.Text.SectionTitle}" Text="Redux Project" />
+						<TextBlock Style="{StaticResource Redux.Text.SectionTitle}" Text="Current Project" />
 						<TextBlock Margin="0,5,0,14"
 							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="Maintained by raincloudsfollow."
@@ -126,11 +126,11 @@
 								<RowDefinition MinHeight="29" />
 							</Grid.RowDefinitions>
 							<TextBlock Style="{StaticResource AboutLabelStyle}" Text="Project" />
-							<c:HyperlinkText Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Open Redux on GitHub" URL="{x:Static app:DivinityApp.URL_REDUX_REPO}" />
+							<c:HyperlinkText Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Open on GitHub" URL="{x:Static app:DivinityApp.URL_REDUX_REPO}" />
 							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="Releases" />
-							<c:HyperlinkText Grid.Row="1" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="View Redux releases" URL="{x:Static app:DivinityApp.URL_REDUX_RELEASES}" />
+							<c:HyperlinkText Grid.Row="1" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="View releases" URL="{x:Static app:DivinityApp.URL_REDUX_RELEASES}" />
 							<TextBlock Grid.Row="2" Style="{StaticResource AboutLabelStyle}" Text="Issues" />
-							<c:HyperlinkText Grid.Row="2" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Report a Redux issue" URL="{x:Static app:DivinityApp.URL_REDUX_BUG_REPORT}" />
+							<c:HyperlinkText Grid.Row="2" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Report an issue" URL="{x:Static app:DivinityApp.URL_REDUX_BUG_REPORT}" />
 							<TextBlock Grid.Row="3" Style="{StaticResource AboutLabelStyle}" Text="License" />
 							<c:HyperlinkText Grid.Row="3" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="MIT License" URL="{x:Static app:DivinityApp.URL_REDUX_LICENSE}" />
 						</Grid>
@@ -142,7 +142,7 @@
 						<TextBlock Style="{StaticResource Redux.Text.SectionTitle}" Text="Original Project" />
 						<TextBlock Margin="0,5,0,14"
 							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Redux builds on LaughingLeader's BG3 Mod Manager and preserves its core mod-management behavior."
+							Text="This project builds on LaughingLeader's BG3 Mod Manager and keeps its familiar load-order and package-management foundation."
 							TextWrapping="Wrap" />
 						<Grid>
 							<Grid.ColumnDefinitions>
@@ -169,7 +169,7 @@
 				Margin="0,16,0,0"
 				HorizontalAlignment="Center"
 				Style="{StaticResource Redux.Text.Caption}"
-				Text="Organize. Sort. Launch." />
+				Text="Built on the original BG3 Mod Manager." />
 		</Grid>
 		</Border>
 	</Grid>

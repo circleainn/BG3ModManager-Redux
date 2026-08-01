@@ -146,7 +146,7 @@ internal sealed class ReduxBundleTests
 					[CustomIconAsset] = new byte[] { 1, 2, 3, 4 }
 				},
 				out var error));
-			RegressionAssert.Contains(error, "same mod sequence");
+			RegressionAssert.Contains(error, "inconsistent load-order data");
 			RegressionAssert.False(File.Exists(path));
 		});
 	}
@@ -233,7 +233,7 @@ internal sealed class ReduxBundleTests
 				invalidReplacement,
 				CreateAssets(),
 				out var exportError));
-			RegressionAssert.Contains(exportError, "same mod sequence");
+			RegressionAssert.Contains(exportError, "inconsistent load-order data");
 
 			RegressionAssert.True(ReduxLoadOrderBundleService.TryRead(
 				path,

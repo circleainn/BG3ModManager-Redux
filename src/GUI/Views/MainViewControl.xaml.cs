@@ -317,7 +317,7 @@ public partial class MainViewControl : MainViewControlViewBase
 				Header = "Disable Blur and Dimming",
 				IsCheckable = true,
 				StaysOpenOnClick = true,
-				ToolTip = "Keep Redux clear and undimmed behind dialogs and secondary windows.",
+				ToolTip = "Keep the main window clear behind dialogs and secondary windows.",
 				Icon = ReduxIcon.FromResource("Redux.Icon.Eye", true)
 			};
 			BindingOperations.SetBinding(
@@ -351,7 +351,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			if (toolsMenuItem.Items.Count > 0) toolsMenuItem.Items.Add(new Separator());
 			var contributionItem = new MenuItem
 			{
-				Header = "Export Redux Database Contribution...",
+				Header = "Generate Redux Database Contribution...",
 				ToolTip = "Scan every installed user mod and create one privacy-limited, shareable report.",
 				Icon = ReduxIcon.FromResource("Redux.Icon.Database", true)
 			};
@@ -365,8 +365,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			helpMenuItem.Items.Add(new Separator());
 			var reduxWelcomeMenuItem = new MenuItem
 			{
-				Header = "Welcome to Redux...",
-				ToolTip = "Review Redux's optional modules, appearance, and accessibility setup.",
+				Header = "Welcome Setup...",
 				Icon = ReduxIcon.FromResource("Redux.Icon.Sparkles", true)
 			};
 			reduxWelcomeMenuItem.Click += (_, _) => ViewModel.ShowReduxWelcome();
@@ -375,7 +374,6 @@ public partial class MainViewControl : MainViewControlViewBase
 			var reportBugMenuItem = new MenuItem
 			{
 				Header = "Report a Bug...",
-				ToolTip = "Open the BG3 Mod Manager Redux bug report form on GitHub",
 				Icon = ReduxIcon.FromResource("Redux.Icon.Bug", true)
 			};
 			reportBugMenuItem.Click += (_, _) => ProcessHelper.TryOpenUrl(DivinityApp.URL_REDUX_BUG_REPORT);
@@ -421,7 +419,7 @@ public partial class MainViewControl : MainViewControlViewBase
 		if (installedMods.Count == 0)
 		{
 			ReduxMessageBox.Show(main,
-				"Redux has not detected any installed user mods to include.",
+				"No installed user mods were found.",
 				"Redux Database Contribution",
 				MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK);
 			return;
@@ -430,7 +428,7 @@ public partial class MainViewControl : MainViewControlViewBase
 		var consent = ReduxMessageBox.Show(main,
 			$"Create one contribution report for all {installedMods.Count} installed mod package(s)?\n\n" +
 			"The report includes mod names, authors, versions, module UUIDs, PAK filenames, exact file sizes and fingerprints, " +
-			"and source IDs already known to Redux.\n\n" +
+				"and known Nexus Mods or mod.io IDs.\n\n" +
 			"It does not include absolute paths, load order, profile names, settings, API keys, or other credentials. " +
 			"Generating exact fingerprints may take a while for a large mod library.",
 			"Generate Redux Database Contribution?",
@@ -475,7 +473,7 @@ public partial class MainViewControl : MainViewControlViewBase
 		{
 			DivinityApp.Log($"Failed to generate a Redux database contribution report:\n{ex}");
 			ReduxMessageBox.Show(main,
-				$"Redux could not create the contribution report.\n\n{ex.Message}",
+				"The contribution report could not be created. Check the log for details.",
 				"Redux Database Contribution",
 				MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}

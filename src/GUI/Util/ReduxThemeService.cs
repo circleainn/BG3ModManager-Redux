@@ -231,8 +231,15 @@ public static class ReduxThemeService
 			var owner = FindResourceOwner(resources, entry.Key) ?? resources;
 			owner[entry.Key] = entry.Value;
 		}
-		var infoPillOwner = FindResourceOwner(resources, "ReduxInfoPillBackground") ?? resources;
-		infoPillOwner["ReduxInfoPillBackground"] = CreatePillGradient(palette["ReduxInfoColor"]);
+		// Pill gradients contain alpha-bearing color stops, so WPF cannot express them as
+		// simple DynamicResource color references. Regenerate every semantic variant when
+		// the palette changes; otherwise custom themes inherit the base theme's pill colors.
+		SetBrushResource(resources, "ReduxAccentPillBackground", CreatePillGradient(palette["ReduxAccentColor"]));
+		SetBrushResource(resources, "ReduxSelectionPillBackground", CreateSelectionPillGradient(palette["ReduxSelectionColor"]));
+		SetBrushResource(resources, "ReduxSuccessPillBackground", CreatePillGradient(palette["ReduxSuccessColor"]));
+		SetBrushResource(resources, "ReduxWarningPillBackground", CreatePillGradient(palette["ReduxWarningColor"]));
+		SetBrushResource(resources, "ReduxErrorPillBackground", CreatePillGradient(palette["ReduxErrorColor"]));
+		SetBrushResource(resources, "ReduxInfoPillBackground", CreatePillGradient(palette["ReduxInfoColor"]));
 		// Reapply the built-in art direction explicitly. This also prevents a generated
 		// custom-theme brush from surviving when the user switches back to the same base theme.
 		var primaryActionOwner = FindResourceOwner(resources, "ReduxPrimaryActionBackgroundBrush") ?? resources;
@@ -252,12 +259,33 @@ public static class ReduxThemeService
 			: System.Windows.Media.Colors.White);
 	}
 
+	private static void SetBrushResource(ResourceDictionary resources, string key, Brush brush)
+	{
+		var owner = FindResourceOwner(resources, key) ?? resources;
+		owner[key] = brush;
+	}
+
 	private static LinearGradientBrush CreatePillGradient(Color color)
 	{
 		var leading = color;
 		leading.A = 0x3E;
 		var trailing = color;
 		trailing.A = 0x1E;
+		var brush = new LinearGradientBrush(
+			leading,
+			trailing,
+			new Point(0, 0),
+			new Point(1, 0));
+		if (brush.CanFreeze) brush.Freeze();
+		return brush;
+	}
+
+	private static LinearGradientBrush CreateSelectionPillGradient(Color color)
+	{
+		var leading = color;
+		leading.A = 0xFF;
+		var trailing = color;
+		trailing.A = 0xD9;
 		var brush = new LinearGradientBrush(
 			leading,
 			trailing,

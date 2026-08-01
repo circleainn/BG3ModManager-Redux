@@ -45,8 +45,8 @@ public sealed class ModHealthSnapshot
 				? Mod.Index.ToString()
 				: Mod.LoadOrderDisplayText;
 			return advice.Length == 0
-				? $"Mod diagnostics — load-order guidance{Environment.NewLine}Current position: {position}{Environment.NewLine}No evidence-based placement change is recommended."
-				: $"Mod diagnostics — load-order guidance{Environment.NewLine}Current position: {position}{Environment.NewLine}{String.Join(Environment.NewLine + Environment.NewLine, advice)}";
+				? $"Load Order Advisor{Environment.NewLine}Current position: {position}{Environment.NewLine}No placement change is recommended."
+				: $"Load Order Advisor{Environment.NewLine}Current position: {position}{Environment.NewLine}{String.Join(Environment.NewLine + Environment.NewLine, advice)}";
 		}
 	}
 	public bool NeedsAttention => HasErrors || HasWarnings;
@@ -62,17 +62,17 @@ public sealed class ModHealthSnapshot
 				? "Compatibility information"
 				: "No issues detected";
 	public string StatusDescription => HasErrors
-		? "Redux found conditions likely to prevent this mod or one of its dependencies from working as expected."
+		? "This mod or one of its dependencies may not work as expected."
 		: HasWarnings
-			? "Redux found conditions worth reviewing before exporting the load order or launching the game."
+			? "Review these warnings before exporting or launching the game."
 			: HasInfo
-				? "Redux found loading or compatibility behavior worth knowing about."
-				: "No issues were detected from the package metadata and runtime state currently available to Redux.";
+				? "This mod has loading or compatibility information."
+				: "No issues found.";
 	public string FindingCountSummary
 	{
 		get
 		{
-			if (!HasFindings) return "Read-only analysis is clear";
+			if (!HasFindings) return "No issues found";
 			var parts = new List<string>();
 			if (ErrorCount > 0) parts.Add($"{ErrorCount} error{(ErrorCount == 1 ? String.Empty : "s")}");
 			if (WarningCount > 0) parts.Add($"{WarningCount} warning{(WarningCount == 1 ? String.Empty : "s")}");

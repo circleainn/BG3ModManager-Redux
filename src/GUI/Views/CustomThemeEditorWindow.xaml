@@ -165,13 +165,13 @@
 						<TextBlock
 							FontSize="{DynamicResource Redux.FontSize.19}"
 							FontWeight="SemiBold"
-							Text="Design a custom Redux palette" />
+							Text="Create a custom theme" />
 						<TextBlock
 							MaxWidth="820"
 							Margin="0,4,0,12"
 							HorizontalAlignment="Left"
 							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Choose typography, category presentation, and eight semantic colors. Redux derives hover, selection, borders, muted text, and contrast-safe button text automatically."
+							Text="Choose colors, font, text size, and category options."
 							TextWrapping="Wrap" />
 
 						<Grid Margin="0,0,0,15">
@@ -205,7 +205,7 @@
 							</StackPanel>
 
 							<StackPanel Grid.Column="2">
-								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="START FROM" />
+								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="BASE THEME" />
 								<Grid>
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="Auto" />
@@ -250,7 +250,7 @@
 							</StackPanel>
 
 							<StackPanel Grid.Column="6">
-								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="TYPEFACE" />
+								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="FONT" />
 								<Grid>
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="Auto" />
@@ -313,7 +313,7 @@
 										<TextBlock
 											Margin="0,3,0,0"
 											Foreground="{DynamicResource ReduxTextMutedBrush}"
-											Text="Select any token below to edit it. Derived hover, border, and contrast colors update automatically."
+											Text="Select a color to edit. Related colors update automatically."
 											TextWrapping="Wrap" />
 									</StackPanel>
 									<Border Grid.Column="2"
@@ -407,9 +407,9 @@
 											Foreground="{DynamicResource ReduxAccentBrush}"
 											StrokeData="{StaticResource Redux.Icon.ReorderStroke}" />
 										<StackPanel Grid.Column="1">
-											<TextBlock FontWeight="SemiBold" Text="Category-colored interactions" />
+											<TextBlock FontWeight="SemiBold" Text="Use category colors for selection" />
 											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-												Text="Use assigned category colors for hover and selection across mod lists, separators, and the Categories pane."
+												Text="Use category colors when hovering over or selecting mods."
 												TextWrapping="Wrap" />
 										</StackPanel>
 									</Grid>
@@ -431,7 +431,7 @@
 											Foreground="{DynamicResource ReduxAccentBrush}"
 											StrokeData="{StaticResource Redux.Icon.ListStroke}" />
 										<StackPanel Grid.Column="1">
-											<TextBlock FontWeight="SemiBold" Text="Interface icons" />
+											<TextBlock FontWeight="SemiBold" Text="Show icons" />
 											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
 												Text="Show category, source, and status icons in lists, cards, and details."
 												TextWrapping="Wrap" />
@@ -480,9 +480,9 @@
 											Foreground="{DynamicResource ReduxAccentBrush}"
 											StrokeData="{StaticResource Redux.Icon.Albums}" />
 										<StackPanel Grid.Column="1">
-											<TextBlock FontWeight="SemiBold" Text="Icons only" />
+											<TextBlock FontWeight="SemiBold" Text="Hide icon labels" />
 											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-												Text="Show compact category, source, and status icons without persistent label text."
+												Text="Show icons without their text labels."
 												TextWrapping="Wrap" />
 										</StackPanel>
 									</Grid>
@@ -508,7 +508,7 @@
 					<TextBlock Grid.Column="1"
 						VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="Color changes preview immediately behind this window." />
+					Text="Changes preview live." />
 					<Button Grid.Column="2"
 						MinWidth="112"
 						Margin="16,0,10,0"

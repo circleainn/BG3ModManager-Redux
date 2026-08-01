@@ -664,7 +664,7 @@ Directory the zip will be extracted to:
 			}
 			else
 			{
-				ShowAlert("The 'Game Executable Path' is not set or is not valid", AlertType.Danger);
+				ShowAlert("Set a valid game executable path in Preferences.", AlertType.Danger);
 			}
 		}
 		else
@@ -948,7 +948,7 @@ Directory the zip will be extracted to:
 
 		if (!ProcessHelper.TryOpenPath(exePath, File.Exists, launchParams, workingDirectory))
 		{
-			ShowAlert($"Failed to start game exe '{exePath}' - Check the 'Game Executable Path' in the preferences", AlertType.Danger);
+			ShowAlert("The game could not be started. Check the executable path in Preferences.", AlertType.Danger);
 		}
 
 		if (!isLoggingEnabled) Window.ToggleLogging(false);
@@ -1106,11 +1106,11 @@ Directory the zip will be extracted to:
 				{
 					if (string.IsNullOrWhiteSpace(exePath))
 					{
-						ShowAlert("No game executable path set", AlertType.Danger, 30);
+						ShowAlert("Set the game executable path in Preferences.", AlertType.Danger, 30);
 					}
 					else
 					{
-						ShowAlert($"Failed to find game exe at, \"{exePath}\"", AlertType.Danger, 90);
+						ShowAlert($"The game executable was not found at '{exePath}'.", AlertType.Danger, 90);
 					}
 					return;
 				}
@@ -1144,7 +1144,7 @@ Directory the zip will be extracted to:
 				}
 				else
 				{
-					ShowAlert("The 'Launch - Custom Action' is empty. Set it in the preferences.", AlertType.Warning, 30);
+					ShowAlert("Set a custom launch action in Preferences first.", AlertType.Warning, 30);
 				}
 			}
 
@@ -1618,7 +1618,7 @@ Directory the zip will be extracted to:
 			}
 			else
 			{
-				ShowAlert("Failed to find %LOCALAPPDATA% folder - This is weird", AlertType.Danger);
+				ShowAlert("The Local AppData folder could not be found.", AlertType.Danger);
 				DivinityApp.Log($"Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify) return a non-existent path?\nResult({Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments, Environment.SpecialFolderOption.DoNotVerify)})");
 			}
 
@@ -1710,7 +1710,7 @@ Directory the zip will be extracted to:
 					}
 					else
 					{
-						ShowAlert("Failed to find Data folder with given installation directory", AlertType.Danger);
+					ShowAlert("The BG3 Data folder was not found in the selected installation folder.", AlertType.Danger);
 					}
 					if (File.Exists(exePath))
 					{
@@ -2072,7 +2072,7 @@ Directory the zip will be extracted to:
 					$"Duplicate toolkit projects were found in the Data folder:\n\n{message}",
 					"Duplicate Toolkit Projects",
 					MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-					ShowAlert($"Found duplicate toolkit mods in the Data folder", AlertType.Danger, 60);
+					ShowAlert("Duplicate Toolkit projects were found in the BG3 Data folder.", AlertType.Danger, 60);
 				});
 			}
 			var baseModsDict = baseMods.DistinctBy(x => x.UUID).ToDictionary(x => x.UUID, x => x);
@@ -2089,7 +2089,7 @@ Directory the zip will be extracted to:
 			{
 				await Observable.Start(() =>
 				{
-					ShowAlert($"{dupeCount} duplicate mod(s) found", AlertType.Danger, 30);
+					ShowAlert($"{dupeCount} duplicate mod{(dupeCount == 1 ? String.Empty : "s")} found.", AlertType.Danger, 30);
 					DeleteMods(modLoadingResults.Duplicates, true, modLoadingResults.Mods);
 				}, RxApp.MainThreadScheduler);
 			}
@@ -2419,7 +2419,7 @@ Directory the zip will be extracted to:
 					{
 						if (result.Mods.Count > 1)
 						{
-							ShowAlert($"Successfully imported {total} mods", AlertType.Success, 20);
+							ShowAlert($"Imported {total} mods.", AlertType.Success, 20);
 						}
 						else if (total == 1)
 						{
@@ -2429,7 +2429,7 @@ Directory the zip will be extracted to:
 						}
 						else
 						{
-							ShowAlert("Skipped importing mod - No .pak file found", AlertType.Success, 20);
+							ShowAlert("No .pak file was found to import.", AlertType.Warning, 20);
 						}
 						var selectNext = result.Mods.Select(x => x.UUID).ToHashSet();
 						RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(20), () =>
@@ -2448,7 +2448,7 @@ Directory the zip will be extracted to:
 						}
 						else
 						{
-							ShowAlert($"Only imported {total}/{result.TotalPaks} mods - Check the log", AlertType.Danger, 60);
+							ShowAlert($"Imported {total} of {result.TotalPaks} mods. Check the log for details.", AlertType.Danger, 60);
 						}
 					}
 				});
@@ -3040,7 +3040,7 @@ Directory the zip will be extracted to:
 		error = null;
 		if (!Modules.SourceIntegrationsEnabled)
 		{
-			error = "Source linking is unavailable while Local-only mode is enabled.";
+			error = "Mod-page linking is unavailable while online mod information is disabled.";
 			return false;
 		}
 		if (mod == null)
@@ -3050,7 +3050,7 @@ Directory the zip will be extracted to:
 		}
 		if (mod.Metadata.SourceType == ModSourceType.MODIO)
 		{
-			error = "This mod has a native mod.io identity. Redux will not replace that stronger source association with a Nexus link.";
+			error = "This package identifies itself as a mod.io mod, so its link cannot be replaced with a Nexus Mods page.";
 			return false;
 		}
 
@@ -3449,7 +3449,7 @@ Directory the zip will be extracted to:
 
 				if (!GameDirectoryFound)
 				{
-					ShowAlert("Game Data folder is not valid. Please set it in the preferences window and refresh", AlertType.Danger);
+					ShowAlert("Set a valid BG3 Data folder in Preferences, then refresh.", AlertType.Danger);
 					Window.OpenPreferences(false, true);
 				}
 			}, RxApp.MainThreadScheduler);
@@ -4261,7 +4261,7 @@ Directory the zip will be extracted to:
 		{
 			await Observable.Start(() =>
 			{
-				ShowAlert("SelectedProfile or SelectedModOrder is null! Failed to export mod order", AlertType.Danger);
+				ShowAlert("Select a profile and load order before exporting.", AlertType.Danger);
 				return Unit.Default;
 			}, RxApp.MainThreadScheduler);
 		}
@@ -4973,7 +4973,7 @@ Directory the zip will be extracted to:
 		{
 			RxApp.MainThreadScheduler.Schedule(() =>
 			{
-				ShowAlert("SelectedProfile or SelectedModOrder is null! Failed to export mod order", AlertType.Danger);
+				ShowAlert("Select a profile and load order before exporting.", AlertType.Danger);
 			});
 		}
 
@@ -5060,7 +5060,7 @@ Directory the zip will be extracted to:
 		}
 		else
 		{
-			ShowAlert("SelectedProfile or SelectedModOrder is null! Failed to export mod order", AlertType.Danger);
+			ShowAlert("Select a profile and load order before exporting.", AlertType.Danger);
 		}
 
 	}
@@ -5153,7 +5153,7 @@ Directory the zip will be extracted to:
 		else
 		{
 			DivinityApp.Log($"SelectedProfile({SelectedProfile}) SelectedModOrder({SelectedModOrder})");
-			ShowAlert("SelectedProfile or SelectedModOrder is null! Failed to export mod order", AlertType.Danger);
+			ShowAlert("Select a profile and load order before exporting.", AlertType.Danger);
 		}
 	}
 
@@ -5453,8 +5453,8 @@ Directory the zip will be extracted to:
 		{
 			AddExtension = true,
 			DefaultExt = ReduxLoadOrderBundleService.FileExtension,
-			Filter = "Redux bundle (*.bg3redux)|*.bg3redux",
-			Title = "Export Redux Bundle...",
+			Filter = "Redux modlist (*.bg3redux)|*.bg3redux",
+			Title = "Export Redux Modlist...",
 			InitialDirectory = GetInitialStartingDirectory(GetOrdersDirectory()),
 			FileName = DivinityModDataLoader.MakeSafeFilename($"{orderName}{ReduxLoadOrderBundleService.FileExtension}", '_'),
 			OverwritePrompt = true
@@ -5469,7 +5469,7 @@ Directory the zip will be extracted to:
 				$"{presentation.CustomIconAssets.Count} custom icon(s), " +
 				$"{presentation.PrivateModNotes.Count} note(s), creator {presentation.CreatorVersion} " +
 				$"({presentation.CreatorInternalVersion}).");
-			ShowAlert($"Exported Redux bundle '{Path.GetFileName(dialog.FileName)}'.", AlertType.Success, 15);
+			ShowAlert($"Exported Redux modlist '{Path.GetFileName(dialog.FileName)}'.", AlertType.Success, 15);
 			if (reviewWindow.OpenContainingFolder)
 			{
 				try
@@ -5723,7 +5723,7 @@ Directory the zip will be extracted to:
 			Settings.ModCategoryDescriptions = descriptions;
 			Settings.ModCategoryAssignments = assignments;
 			Settings.VisualModListDividers = dividers;
-			if (!SaveSettings()) throw new IOException("Redux could not save the imported presentation.");
+			if (!SaveSettings()) throw new IOException("The imported categories and separators could not be saved.");
 			RefreshModCategories();
 			RefreshVisualDividers();
 			return true;
@@ -5842,8 +5842,8 @@ Directory the zip will be extracted to:
 			CheckFileExists = true,
 			CheckPathExists = true,
 			DefaultExt = ReduxLoadOrderBundleService.FileExtension,
-			Filter = "Redux bundle (*.bg3redux)|*.bg3redux",
-			Title = "Import Redux Bundle...",
+			Filter = "Redux modlist (*.bg3redux)|*.bg3redux",
+			Title = "Import Redux Modlist...",
 			InitialDirectory = GetInitialStartingDirectory(GetOrdersDirectory())
 		};
 		if (dialog.ShowDialog(Window) != true) return;
@@ -7197,7 +7197,7 @@ Directory the zip will be extracted to:
 			View.DeleteFilesView.ViewModel.Close();
 
 		if (selectedMods.Any(mod => mod.IsEditorMod))
-			ShowAlert("Editor mods cannot be deleted with the Mod Manager", AlertType.Warning, 60);
+			ShowAlert("Toolkit projects cannot be deleted here.", AlertType.Warning, 60);
 	}
 
 	public void RemoveDeletedMods(HashSet<string> deletedMods, bool removeFromLoadOrder = true)

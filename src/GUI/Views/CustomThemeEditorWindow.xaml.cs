@@ -77,7 +77,7 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Import Redux Font",
+			Title = "Import Font",
 			Filter = "Font files (*.ttf;*.otf)|*.ttf;*.otf|TrueType font (*.ttf)|*.ttf|OpenType font (*.otf)|*.otf",
 			CheckFileExists = true,
 			Multiselect = false
@@ -111,7 +111,7 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 		};
 		dialog.ConfigureColorOnlyCopy(
 			$"Change {label} color",
-			"Adjust this theme token and watch Redux update live. Cancel restores its previous color.",
+			"Changes preview live. Cancel restores the previous color.",
 			"Theme color");
 		ReduxThemeService.Apply(dialog.Resources, Theme.BaseTheme, Theme);
 		// Keep whole-app preview work below input/render priority so dragging the

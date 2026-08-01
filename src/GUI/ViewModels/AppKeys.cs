@@ -20,7 +20,7 @@ public class AppKeys : ReactiveObject
 		{
 			["File"] = "Load orders and files",
 			["Edit"] = "Mod lists",
-			["Settings"] = "Workspace and appearance",
+			["Settings"] = "Settings and appearance",
 			["Go"] = "Folders and launch",
 			["Tools"] = "Tools",
 			["Accessibility"] = "Accessibility",
@@ -50,7 +50,7 @@ public class AppKeys : ReactiveObject
 		"File",
 		"Load Order History...",
 		true,
-		"Review, compare, capture, or load Redux snapshots for the current profile.")]
+		"Review, compare, capture, or load snapshots for the current profile.")]
 	public Hotkey RestorePoints { get; private set; } = new Hotkey(Key.None);
 
 	[MenuSettings("File", "Import Load Order from Save...")]
@@ -64,9 +64,9 @@ public class AppKeys : ReactiveObject
 
 	[MenuSettings(
 		"File",
-		"Import Redux Bundle...",
+		"Import Redux Modlist...",
 		false,
-		"Import a portable .bg3redux bundle containing a saved load order and optional Redux categories, separators, and icons.")]
+		"Import a .bg3redux modlist with optional categories, separators, icons, and notes.")]
 	public Hotkey ImportReduxLoadOrder { get; private set; } = new Hotkey(Key.None);
 
 	[MenuSettings("File", "Import Load Order and Mods from Archive...", true)]
@@ -80,9 +80,9 @@ public class AppKeys : ReactiveObject
 
 	[MenuSettings(
 		"File",
-		"Export Redux Bundle...",
+		"Export Redux Modlist...",
 		false,
-		"Share the active load order together with Redux categories, separators, and reusable custom icons in a portable .bg3redux file.")]
+		"Save the active load order and optional categories, separators, icons, and notes to a .bg3redux file.")]
 	public Hotkey ExportReduxLoadOrder { get; private set; } = new Hotkey(Key.None);
 
 	[MenuSettings("File", "Export Active Mods to ZIP...")]

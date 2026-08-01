@@ -26,7 +26,7 @@ public sealed class ModIdentityHealthRule : IModHealthRule
 				ModHealthFindingCode.DuplicateUuid,
 				ModHealthSeverity.Error,
 				"Duplicate mod UUID",
-				"More than one installed package uses this UUID. Redux is only reporting the duplicate; it has not changed either file.",
+				"More than one installed package uses this UUID. Neither file was changed.",
 				new[] { mod.UUID }));
 		}
 	}
@@ -53,7 +53,7 @@ public sealed class ModDependencyHealthRule : IModHealthRule
 					ModHealthFindingCode.SelfDependency,
 					ModHealthSeverity.Error,
 					"Invalid self-dependency",
-					$"{mod.DisplayName} declares its own UUID as a dependency. Redux is reporting the package metadata and has not altered it.",
+					$"{mod.DisplayName} declares its own UUID as a dependency. The package was not changed.",
 					new[] { dependency.UUID }));
 				continue;
 			}
@@ -251,8 +251,8 @@ public sealed class CreatorManifestHealthRule : IModHealthRule
 			ModHealthSeverity.Warning,
 			"Embedded creator manifest ignored",
 			String.IsNullOrWhiteSpace(manifest.Diagnostic)
-				? "This package contains a redux.mod.json file that could not be validated. Redux did not apply its claims or change any existing source association."
-				: $"{manifest.Diagnostic} Redux did not apply its claims or change any existing source association."));
+				? "This package contains a redux.mod.json file that could not be validated. Its mod-page information was ignored."
+				: $"{manifest.Diagnostic} Its mod-page information was ignored."));
 	}
 }
 
@@ -342,8 +342,8 @@ public sealed class ModSourceHealthRule : IModHealthRule
 			findings.Add(new ModHealthFinding(
 				ModHealthFindingCode.ModioManagedSource,
 				ModHealthSeverity.Warning,
-				"Limited mod.io support",
-				"A subscribed mod.io mod can be restored or redownloaded by Baldur's Gate 3 after its local file is removed."));
+				"mod.io may restore this mod",
+				"Removing the local file does not unsubscribe from it. BG3 may download it again."));
 		}
 	}
 }

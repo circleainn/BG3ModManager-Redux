@@ -1418,7 +1418,7 @@
 										DisplayMemberPath="Description"
 										ItemsSource="{Binding Source={ext:EnumExtension {x:Type dapp:DivinityGameLaunchWindowAction}}}"
 										SelectedValuePath="Value"
-										ToolTip="Choose what Redux does after launching the game." />
+									ToolTip="Choose what happens after launching the game." />
 									<Button x:Name="OpenGameButton"
 										Style="{StaticResource ToolbarWorkflowButtonStyle}"
 										ToolTip="Launch Game (Ctrl+Shift+G)">

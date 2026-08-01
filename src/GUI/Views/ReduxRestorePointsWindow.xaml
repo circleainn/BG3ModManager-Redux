@@ -418,7 +418,7 @@
 						VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
 						TextTrimming="CharacterEllipsis"
-						Text="Redux keeps the 20 newest snapshots for each profile." />
+							Text="The 20 newest snapshots are kept for each profile." />
 					<Button x:Name="DeleteButton"
 						Grid.Column="1"
 						MinWidth="74"

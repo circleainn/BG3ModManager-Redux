@@ -44,8 +44,8 @@ public sealed class ReduxExportReviewData
 		RepositionedCount = comparison.Repositioned.Count;
 		AutomaticallyAddedCount = comparison.AutomaticallyAdded.Count;
 		IncludedDependencySummary = AutomaticallyAddedCount == 1
-			? "Redux will include 1 already-installed dependency required by this order."
-			: $"Redux will include {AutomaticallyAddedCount} already-installed dependencies required by this order.";
+			? "1 installed dependency will be included with this order."
+			: $"{AutomaticallyAddedCount} installed dependencies will be included with this order.";
 		Changes = comparison.Changes.Select(change => new ReduxExportReviewChangeItem(change)).ToArray();
 		ChangeListTitle = comparison.HasChanges
 			? $"Changes ({comparison.Changes.Count})"
@@ -55,29 +55,29 @@ public sealed class ReduxExportReviewData
 			: "No earlier exported load order is available for comparison.";
 		BaselineSummary = comparison.HasPreviousOrder
 			? "Compared with the load order currently exported to this profile."
-			: "This appears to be the first export Redux can compare for this profile.";
+			: "No previous export is available for this profile.";
 
 		HasDiagnosticErrors = healthErrorCount > 0;
 		HasDiagnosticWarnings = healthWarningCount > 0 || missingDependencyCount > 0;
 		if (HasDiagnosticErrors)
 		{
-			DiagnosticTitle = "Export has diagnostic errors";
+			DiagnosticTitle = "Fix errors before exporting";
 		}
 		else if (HasDiagnosticWarnings)
 		{
-			DiagnosticTitle = "Review diagnostics before exporting";
+			DiagnosticTitle = "Review warnings before exporting";
 		}
 		else
 		{
-			DiagnosticTitle = "No diagnostic warnings detected";
+			DiagnosticTitle = "No issues found";
 		}
 
 		var diagnosticParts = new List<string>();
-		if (healthErrorCount > 0) diagnosticParts.Add(FormatCount(healthErrorCount, "health error"));
-		if (healthWarningCount > 0) diagnosticParts.Add(FormatCount(healthWarningCount, "health warning"));
-		if (guidanceCount > 0) diagnosticParts.Add(FormatCount(guidanceCount, "load-order guidance note"));
+		if (healthErrorCount > 0) diagnosticParts.Add(FormatCount(healthErrorCount, "error"));
+		if (healthWarningCount > 0) diagnosticParts.Add(FormatCount(healthWarningCount, "warning"));
+		if (guidanceCount > 0) diagnosticParts.Add(FormatCount(guidanceCount, "Load Order Advisor note"));
 		DiagnosticSummary = diagnosticParts.Count == 0
-			? "The enabled read-only checks found no errors or warnings in the proposed order."
+			? "No errors or warnings were found in this order."
 			: String.Join(" · ", diagnosticParts) + ".";
 		DependencySummary = missingDependencyCount == 0
 			? "No missing dependencies detected."

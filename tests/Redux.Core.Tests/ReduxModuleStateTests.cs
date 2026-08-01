@@ -1,5 +1,7 @@
 using System;
 using System.Threading;
+using System.Windows;
+using System.Windows.Media;
 
 using DivinityModManager.Models;
 using DivinityModManager.Models.App;
@@ -89,6 +91,47 @@ internal sealed class ReduxModuleStateTests
 		RegressionAssert.True(clone.UseCategoryColorsForSidebarSelection);
 		RegressionAssert.True(clone.UseIconsOnly);
 		RegressionAssert.True(clone.UseSourceIconsOnly);
+	}
+
+	public void CustomThemePreviewRegeneratesEverySemanticPillGradient()
+	{
+		var theme = ReduxThemeService.CreateFromBase("Gradient test", ReduxThemeType.ReduxDark);
+		theme.AccentColor = "#123456";
+		theme.SuccessColor = "#238A57";
+		theme.WarningColor = "#C07819";
+		theme.ErrorColor = "#D23A4E";
+		theme.InfoColor = "#367BC0";
+
+		var resources = new ResourceDictionary();
+		foreach (var key in new[]
+		{
+			"ReduxAccentPillBackground", "ReduxSelectionPillBackground", "ReduxSuccessPillBackground",
+			"ReduxWarningPillBackground", "ReduxErrorPillBackground", "ReduxInfoPillBackground",
+			"ReduxPrimaryActionBackgroundBrush", "ReduxDestructiveActionBackgroundBrush",
+			"ReduxDestructiveActionForegroundBrush"
+		})
+		{
+			resources[key] = Brushes.Transparent;
+		}
+
+		ReduxThemeService.PreviewColors(resources, theme);
+
+		AssertPillColor(resources, "ReduxAccentPillBackground", Color.FromRgb(0x12, 0x34, 0x56));
+		AssertPillColor(resources, "ReduxSelectionPillBackground", Color.FromRgb(0x15, 0x1E, 0x30));
+		AssertPillColor(resources, "ReduxSuccessPillBackground", Color.FromRgb(0x23, 0x8A, 0x57));
+		AssertPillColor(resources, "ReduxWarningPillBackground", Color.FromRgb(0xC0, 0x78, 0x19));
+		AssertPillColor(resources, "ReduxErrorPillBackground", Color.FromRgb(0xD2, 0x3A, 0x4E));
+		AssertPillColor(resources, "ReduxInfoPillBackground", Color.FromRgb(0x36, 0x7B, 0xC0));
+	}
+
+	private static void AssertPillColor(ResourceDictionary resources, string key, Color expected)
+	{
+		var brush = resources[key] as LinearGradientBrush;
+		RegressionAssert.True(brush != null);
+		var actual = brush!.GradientStops[0].Color;
+		RegressionAssert.Equal(expected.R, actual.R);
+		RegressionAssert.Equal(expected.G, actual.G);
+		RegressionAssert.Equal(expected.B, actual.B);
 	}
 
 	public void LoadOrderGuidanceRequiresDiagnosticsWithoutLosingItsPreference()

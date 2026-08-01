@@ -23,8 +23,8 @@ This page tracks what Redux inherits, what it reworks or extends, and what it ad
   sizing pass from overwriting a user resize.
 - Added direct category filtering from pills in the active and inactive lists, synchronized with
   the category navigator and a clearable filtered-view notice in both list headers.
-- Unified category-colored interactions, interface icons, colored category labels, and compact
-  icons-only presentation across mod lists, hover cards, the selected-mod drawer, status surfaces,
+- Unified category-colored selection, icons, colored text, and compact icon-only labels across mod
+  lists, hover cards, the selected-mod drawer, status surfaces,
   and custom themes.
 - Consolidated diagnostics and optional load-order guidance into one Mod Diagnostics presentation
   across the toolbar, compact top menu, selected-mod drawer, hover information, and affected-mod
@@ -79,7 +79,7 @@ These core systems come from LaughingLeader's BG3 Mod Manager:
   repairs, or reorders dependencies automatically.
 - Dynamic text trimming and header-based list-column minimum widths so long filenames do not lock a
   column at an excessive size.
-- Content-aware category-pane sizing based on visible labels and the active application typeface.
+- Content-aware category-pane sizing based on visible labels and the active application font.
 - Updated application branding, executable metadata, version display, and Redux iconography.
 - A Redux-owned startup surface with live initialization status. The main window is prepared
   off-screen and revealed only after its visual tree and workspace initialization are ready,
@@ -88,13 +88,13 @@ These core systems come from LaughingLeader's BG3 Mod Manager:
 ## Themes, typography, and appearance
 
 - A Theme & Appearance page with live built-in-theme selection and semantic color previews.
-- Reusable custom themes based on a Redux palette, personalized semantic colors, a preferred
-  typeface, and a preferred text-size preset.
+- Reusable custom themes with personalized colors, a preferred font, and a preferred text-size
+  preset.
 - Custom-theme creation, editing, duplication, deletion, JSON import, JSON export, and persistence
   across application restarts.
 - Compact, Default, and Large text-size presets implemented through shared dynamic typography
   resources rather than per-control scaling.
-- Bundled Manrope, Atkinson Hyperlegible, Monaspace Neon, Minipax, and Chivo typefaces, plus the
+- Bundled Manrope, Atkinson Hyperlegible, Monaspace Neon, Minipax, and Chivo fonts, plus the
   Windows-provided Segoe UI option. Built-in Redux themes default to Manrope.
 - A reusable local font library for `.ttf` and `.otf` files up to 10 MB.
 - Immediate imported-font discovery and preview without restarting Redux.
@@ -102,8 +102,8 @@ These core systems come from LaughingLeader's BG3 Mod Manager:
   launch instead of producing a Windows retry loop.
 - Manrope fallback when an imported font is missing, invalid, or unavailable on another machine.
 - An Open Fonts Folder action and protection against deleting Redux-shipped fonts.
-- Theme-aware category-colored interactions and names, interface icons, and compact icons-only
-  labels. Built-in themes provide deliberate defaults, and custom themes preserve each preference.
+- Theme-aware category-colored selection, colored text, icons, and compact icon-only labels.
+  Built-in themes provide deliberate defaults, and custom themes preserve each preference.
 
 ## Shared icon system and branding
 
@@ -162,9 +162,9 @@ The upstream manager did not provide Redux's persistent category system. Redux a
 - Presentation-only behavior: separators are never written to `modsettings.lsx` or exported as
   mods.
 
-## Portable Redux bundles
+## Portable Redux Modlists
 
-- A Redux-only `.bg3redux` archive format containing a normal saved-order description plus a
+- A `.bg3redux` Modlist format containing a normal saved-order description plus a
   separately versioned presentation manifest.
 - Optional transfer of custom categories and descriptions, explicit category assignments,
   category display order, active-list separators and descriptions, collapsed states, and reusable
@@ -173,12 +173,12 @@ The upstream manager did not provide Redux's persistent category system. Redux a
   across a multi-selection, with an unchecked export option
   so they remain local unless deliberately included. Import preserves an existing local note
   instead of silently overwriting it.
-- Choice of importing the saved order, its Redux presentation metadata, or both.
+- Choice of importing the saved order, its categories and separators, or both.
 - A pre-export review summarizing the saved order, custom categories, separators, and custom icons,
   with an explicit reminder that mod `.pak` files and `modsettings.lsx` are never included and an
-  opt-in action to reveal the finished bundle in File Explorer.
-- Creator-version and export-time metadata, including a compatibility warning when a bundle was
-  created by a newer Redux build while still rejecting unsupported bundle schemas.
+  opt-in action to reveal the finished Modlist in File Explorer.
+- Creator-version and export-time metadata, including a compatibility warning when a Modlist was
+  created by a newer build while still rejecting unsupported format versions.
 - A pre-import impact summary that reports locally available and missing mods by name, identifies
   category-name conflicts that will be renamed, and summarizes the presentation contents before
   either selected component is applied.
@@ -188,7 +188,7 @@ The upstream manager did not provide Redux's persistent category system. Redux a
   when a neighboring mod is unavailable.
 - Size, expanded-size, entry-count, duplicate-entry, path, schema, UUID, color, category-order,
   and custom-icon cross-reference validation before an archive is accepted.
-- Complete separation from the game export path: Redux bundles never contain or write
+- Complete separation from the game export path: Redux Modlists never contain or write
   `modsettings.lsx`.
 
 ## Selected-mod details and hover information
@@ -231,7 +231,7 @@ tooltip metadata. Redux reworked that presentation into a provider model and ext
   identity metadata remains attached after installation, with read-only runtime discovery,
   strict validation against parsed package metadata, seamless provider resolution, and
   non-destructive diagnostics.
-- A reversible Local-only mode that suppresses Nexus Mods and mod.io requests, pauses bundled
+- A reversible **Disable online mod information** option that suppresses Nexus Mods and mod.io requests, pauses bundled
   database enrichment, hides the Source column and source-assignment actions, and presents
   installed packages as Local without deleting their stored associations.
 - mod.io matching validated against package `PublishHandle` information.
@@ -300,7 +300,8 @@ Redux additionally adds:
 - Selectable read-only message text for copying error details.
 - Standard OK, OK/Cancel, Yes/No, and Yes/No/Cancel behavior plus contextual auxiliary actions.
 - Consistent keyboard default, cancellation, Enter, and Escape behavior.
-- Dedicated Redux preview, mod.io support, and offline Nexus database warning windows.
+- One optional welcome and setup window in place of the former separate preview, mod.io, and
+  offline Nexus notices.
 - A unified notification system for success, information, warning, and error messages.
 - A Redux-styled Help window with Markdown rendering.
 - A Redux-styled Version Generator and updated About window.
@@ -318,7 +319,7 @@ foundation and reworks or extends its presentation through:
 - A top-level Accessibility menu beside Settings so the inherited speech tools are no longer buried
   under Tools.
 - A single first-run welcome setup, also available from Help, for choosing a built-in theme,
-  source integrations, diagnostics, experimental guidance, provider keys, and accessibility
+  online mod information, diagnostics, experimental guidance, API keys, and accessibility
   preferences without changing installed packages or load orders.
 - An optional `F2` Quick Access menu for finding actions, profiles, saved orders, categories, and
   installed mods while respecting current command availability and customized keybindings.

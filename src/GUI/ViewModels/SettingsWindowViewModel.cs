@@ -457,7 +457,7 @@ public class SettingsWindowViewModel : ReactiveObject
 		ResetSettingsCommand = ReactiveCommand.Create(() =>
 		{
 			var tabName = TabToName(SelectedTabIndex);
-			MessageBoxResult result = ReduxMessageBox.Show(View, $"Reset {tabName} to Default?\nCurrent settings will be lost.", $"Confirm {tabName} Reset",
+			MessageBoxResult result = ReduxMessageBox.Show(View, $"Reset {tabName} settings?\nCurrent changes on this page will be lost.", "Reset Settings?",
 				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 			if (result == MessageBoxResult.Yes)
 			{
@@ -494,7 +494,7 @@ public class SettingsWindowViewModel : ReactiveObject
 
 		ClearCacheCommand = ReactiveCommand.Create(() =>
 		{
-			MessageBoxResult result = ReduxMessageBox.Show(View, $"Delete local mod cache?\nThis cannot be undone.", "Confirm Delete Cache",
+			MessageBoxResult result = ReduxMessageBox.Show(View, "Delete the local mod cache?\nIt will be rebuilt when needed.", "Delete Cache?",
 				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 			if (result == MessageBoxResult.Yes)
 			{
@@ -502,16 +502,17 @@ public class SettingsWindowViewModel : ReactiveObject
 				{
 					if (Main.UpdateHandler.DeleteCache())
 					{
-						ShowAlert($"Deleted local cache in {DivinityApp.GetAppDirectory("Data")}", AlertType.Success, 20);
+						ShowAlert("Deleted the local mod cache.", AlertType.Success, 20);
 					}
 					else
 					{
-						ShowAlert($"No cache to delete.", AlertType.Warning, 20);
+						ShowAlert("The local mod cache is already empty.", AlertType.Info, 20);
 					}
 				}
 				catch (Exception ex)
 				{
-					ShowAlert($"Error deleting local cache:\n{ex}", AlertType.Danger);
+					DivinityApp.Log($"Error deleting local cache:\n{ex}");
+					ShowAlert("The local mod cache could not be deleted. Check the log for details.", AlertType.Danger);
 				}
 			}
 		});
@@ -519,14 +520,13 @@ public class SettingsWindowViewModel : ReactiveObject
 		ResetSourceCacheCommand = ReactiveCommand.CreateFromTask(async () =>
 		{
 			const string message =
-				"Restore Redux's automatic Nexus Mods and mod.io source links?\n\n"
-				+ "Installed mods, load orders, API keys, and preferences will not be removed. "
-				+ "Manual Nexus links and explicit unlinks will be cleared. Valid automatically resolved metadata will be retained, "
-				+ "then Redux will reapply native identities, creator manifests, and reviewed metadata-database matches.";
+				"Restore automatic Nexus Mods and mod.io links?\n\n"
+				+ "Manual links and explicit unlinks will be cleared. Installed mods, load orders, API keys, and settings will not change. "
+				+ "Links found in package data, creator manifests, and the built-in database will be restored.";
 			var result = ReduxMessageBox.Show(
 				View,
 				message,
-				"Restore Automatic Source Links?",
+				"Restore Automatic Links?",
 				MessageBoxButton.YesNo,
 				MessageBoxImage.Warning,
 				MessageBoxResult.No);
@@ -536,16 +536,17 @@ public class SettingsWindowViewModel : ReactiveObject
 				{
 					if (await Main.RestoreAutomaticSourceLinksAsync())
 					{
-						ShowAlert("Cleared manual source choices. Redux is restoring its automatic source links.", AlertType.Success, 20);
+						ShowAlert("Cleared manual choices and restored automatic links.", AlertType.Success, 20);
 					}
 					else
 					{
-						ShowAlert("No manual source choices were found. Redux is checking automatic source matches.", AlertType.Info, 20);
+						ShowAlert("No manual link choices were found.", AlertType.Info, 20);
 					}
 				}
 				catch (Exception ex)
 				{
-					ShowAlert($"Error restoring automatic source links:\n{ex}", AlertType.Danger);
+					DivinityApp.Log($"Error restoring automatic source links:\n{ex}");
+					ShowAlert("Automatic links could not be restored. Check the log for details.", AlertType.Danger);
 				}
 			}
 		});
@@ -553,15 +554,13 @@ public class SettingsWindowViewModel : ReactiveObject
 		ClearSourceHistoryCommand = ReactiveCommand.Create(() =>
 		{
 			const string message =
-				"Forget all source-link history?\n\n"
-				+ "Redux will delete cached Nexus Mods and mod.io associations for installed and previously seen mods. "
-				+ "Installed PAKs, load orders, API keys, categories, notes, and preferences will not be removed.\n\n"
-				+ "Future imports or metadata refreshes can discover sources again from archive names, package identities, "
-				+ "creator manifests, the reviewed Redux database, or provider APIs.";
+				"Forget all mod-page link history?\n\n"
+				+ "Cached Nexus Mods and mod.io links will be removed. Installed PAKs, load orders, API keys, categories, notes, and settings will not change.\n\n"
+				+ "Future imports can find links again from archive names, package data, creator manifests, the built-in database, or online services.";
 			var result = ReduxMessageBox.Show(
 				View,
 				message,
-				"Clear Source History?",
+				"Clear Link History?",
 				MessageBoxButton.YesNo,
 				MessageBoxImage.Warning,
 				MessageBoxResult.No);
@@ -575,14 +574,15 @@ public class SettingsWindowViewModel : ReactiveObject
 				var cleared = Main.ClearSourceHistory();
 				ShowAlert(
 					cleared > 0
-						? $"Forgot source metadata for {cleared} installed mod{(cleared == 1 ? "" : "s")} and cleared stored source history."
-						: "Cleared stored source history. No installed source associations were present.",
+						? $"Cleared saved links for {cleared} installed mod{(cleared == 1 ? "" : "s")}."
+						: "Cleared link history. No installed mod links were saved.",
 					AlertType.Success,
 					20);
 			}
 			catch (Exception ex)
 			{
-				ShowAlert($"Error clearing source history:\n{ex}", AlertType.Danger);
+				DivinityApp.Log($"Error clearing source history:\n{ex}");
+				ShowAlert("Link history could not be cleared. Check the log for details.", AlertType.Danger);
 			}
 		});
 

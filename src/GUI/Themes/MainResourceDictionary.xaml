@@ -2075,18 +2075,6 @@
 	<DataTemplate DataType="{x:Type data:DivinityLoadOrder}">
 		<TextBlock Text="{Binding Name}" />
 	</DataTemplate>
-	<!--<DataTemplate DataType="{x:Type data:DivinityModSeparator}">
-		<Grid>
-			<Grid.RowDefinitions>
-				<RowDefinition Height="*" />
-				<RowDefinition Height="Auto" />
-			</Grid.RowDefinitions>
-			<Rectangle Fill="Orange" Opacity="0.2" IsHitTestVisible="False" />
-			<TextBlock Text="Unordered Mods:" Background="Transparent" Margin="4" />
-			<Separator BorderThickness="1" BorderBrush="Orange" Grid.Row="1" />
-		</Grid>
-	</DataTemplate>-->
-
 	<Style x:Key="DependencyTextStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
 		<Style.Triggers>
 			<DataTrigger Binding="{Binding Converter={StaticResource ModExistsConverter}}" Value="True">
@@ -2100,30 +2088,8 @@
 
 	<Style x:Key="ConflictTextStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
 		<Style.Triggers>
-			<!--  Mod exists and is not active  -->
-			<!--<MultiDataTrigger>
-				<MultiDataTrigger.Conditions>
-					<Condition Binding="{Binding Converter={StaticResource ModIsActiveConverter}}" Value="False" />
-					<Condition Binding="{Binding Converter={StaticResource ModExistsConverter}}" Value="True" />
-				</MultiDataTrigger.Conditions>
-				<MultiDataTrigger.Setters>
-					<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUI:Brushes.SuccessBrush}}" />
-					<Setter Property="FontWeight" Value="Regular" />
-				</MultiDataTrigger.Setters>
-			</MultiDataTrigger>-->
-			<!--  Mod exists and is active  -->
-			<!--<MultiDataTrigger>
-				<MultiDataTrigger.Conditions>
-					<Condition Binding="{Binding Converter={StaticResource ModIsActiveConverter}}" Value="True" />
-					<Condition Binding="{Binding Converter={StaticResource ModExistsConverter}}" Value="True" />
-				</MultiDataTrigger.Conditions>
-				<MultiDataTrigger.Setters>
-					<Setter Property="Foreground" Value="{DynamicResource {x:Static adonisUI:Brushes.ErrorBrush}}" />
-					<Setter Property="FontWeight" Value="Bold" />
-				</MultiDataTrigger.Setters>
-			</MultiDataTrigger>-->
 			<DataTrigger Binding="{Binding Converter={StaticResource ModExistsConverter}}" Value="True">
-		<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
 				<Setter Property="FontWeight" Value="Bold" />
 			</DataTrigger>
 		</Style.Triggers>
@@ -2723,7 +2689,6 @@
 			IsSelected is set via ActiveModListView_ItemContainerStatusChanged.UpdateViewSelection instead,
 			so focus and selection can be more finely controlled.
 		-->
-		<!--<Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />-->
 		<Setter Property="Visibility" Value="{Binding Visibility, FallbackValue='Visible'}" />
 		<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 		<Style.Triggers>
@@ -2872,66 +2837,6 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
-	<DataTemplate x:Key="TagTemplate">
-		<Border Background="{DynamicResource {x:Static divThemes:DivinityColors.TagBackgroundBrush}}" BorderThickness="2" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
-			<TextBlock Padding="12,2" Foreground="{DynamicResource {x:Static adonisUI:Brushes.Layer3InteractionForegroundBrush}}" Text="{Binding}">
-				<TextBlock.Effect>
-					<DropShadowEffect BlurRadius="4"
-					    Direction="330"
-					    Opacity="0.5"
-					    ShadowDepth="4"
-					    Color="Black" />
-				</TextBlock.Effect>
-			</TextBlock>
-			<Border.Effect>
-				<DropShadowEffect BlurRadius="4"
-				    Direction="330"
-				    Opacity="0.35"
-				    ShadowDepth="2"
-				    Color="Black" />
-			</Border.Effect>
-		</Border>
-	</DataTemplate>
-	<DataTemplate x:Key="ModeTagTemplate">
-		<Border Background="{DynamicResource {x:Static divThemes:DivinityColors.ModeTagBackgroundBrush}}" BorderThickness="2" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
-			<TextBlock Padding="12,2" Foreground="{DynamicResource {x:Static adonisUI:Brushes.Layer3InteractionForegroundBrush}}" Text="{Binding}">
-				<TextBlock.Effect>
-					<DropShadowEffect BlurRadius="4"
-					    Direction="330"
-					    Opacity="0.5"
-					    ShadowDepth="4"
-					    Color="Black" />
-				</TextBlock.Effect>
-			</TextBlock>
-			<Border.Effect>
-				<DropShadowEffect BlurRadius="4"
-				    Direction="330"
-				    Opacity="0.35"
-				    ShadowDepth="2"
-				    Color="Black" />
-			</Border.Effect>
-		</Border>
-	</DataTemplate>
-	<DataTemplate x:Key="CustomTagTemplate">
-		<Border Background="{DynamicResource {x:Static divThemes:DivinityColors.CustomTagBackgroundBrush}}" BorderThickness="2" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
-			<TextBlock Padding="12,2" Foreground="{DynamicResource {x:Static adonisUI:Brushes.Layer3InteractionForegroundBrush}}" Text="{Binding}">
-				<TextBlock.Effect>
-					<DropShadowEffect BlurRadius="4"
-					    Direction="330"
-					    Opacity="0.5"
-					    ShadowDepth="4"
-					    Color="Black" />
-				</TextBlock.Effect>
-			</TextBlock>
-			<Border.Effect>
-				<DropShadowEffect BlurRadius="4"
-				    Direction="330"
-				    Opacity="0.35"
-				    ShadowDepth="2"
-				    Color="Black" />
-			</Border.Effect>
-		</Border>
-	</DataTemplate>
 	<!--
 		Single source of truth for pill/chip chrome (category pills and drawer metadata
 		chips). Variants set only Background/BorderBrush/coloring logic via BasedOn;
@@ -2973,6 +2878,32 @@
 			</Trigger>
 		</Style.Triggers>
 	</Style>
+	<!-- Legacy metadata tags now use the same semantic pill chrome as the rest of Redux. -->
+	<Style x:Key="ReduxLegacyTagChromeStyle" BasedOn="{StaticResource ReduxPillBaseStyle}" TargetType="{x:Type Border}" />
+	<Style x:Key="ReduxLegacyTagTextStyle" BasedOn="{StaticResource Redux.Text.Body}" TargetType="{x:Type TextBlock}">
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.11}" />
+	</Style>
+	<DataTemplate x:Key="TagTemplate">
+		<Border Style="{StaticResource ReduxLegacyTagChromeStyle}"
+			Background="{DynamicResource ReduxInfoPillBackground}"
+			BorderBrush="{DynamicResource ReduxInfoBrush}">
+			<TextBlock Style="{StaticResource ReduxLegacyTagTextStyle}" Text="{Binding}" />
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="ModeTagTemplate">
+		<Border Style="{StaticResource ReduxLegacyTagChromeStyle}"
+			Background="{DynamicResource ReduxAccentPillBackground}"
+			BorderBrush="{DynamicResource ReduxAccentBrush}">
+			<TextBlock Style="{StaticResource ReduxLegacyTagTextStyle}" Text="{Binding}" />
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="CustomTagTemplate">
+		<Border Style="{StaticResource ReduxLegacyTagChromeStyle}"
+			Background="{DynamicResource ReduxSuccessPillBackground}"
+			BorderBrush="{DynamicResource ReduxSuccessBrush}">
+			<TextBlock Style="{StaticResource ReduxLegacyTagTextStyle}" Text="{Binding}" />
+		</Border>
+	</DataTemplate>
 	<Style x:Key="ReduxStatusPillBaseStyle"
 		BasedOn="{StaticResource ReduxPillBaseStyle}"
 		TargetType="{x:Type Border}">
@@ -3202,7 +3133,6 @@
 					<Setter Property="TextWrapping" Value="Wrap" />
 					<Setter Property="Margin" Value="2" />
 					<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-					<!--<Setter Property="FontFamily" Value="Arial" />-->
 				</Style>
 				<Style BasedOn="{StaticResource {x:Type ListBox}}" TargetType="ListBox" />
 			</StackPanel.Resources>
@@ -3599,7 +3529,7 @@
 				    Foreground="{DynamicResource ReduxErrorBrush}" />
 				<TextBlock Grid.Column="1"
 				    FontWeight="Bold"
-				    Foreground="Red"
+				    Foreground="{DynamicResource ReduxErrorBrush}"
 				    Text="This mod has an invalid UUID, and will likely fail to load, resetting your load order." />
 				<controls:ReduxIcon Grid.Column="2"
 				    Width="16"
