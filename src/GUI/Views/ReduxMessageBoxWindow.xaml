@@ -66,10 +66,8 @@
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
-				<Border x:Name="IconBadge" Width="42" Height="42" Margin="0,0,14,0" VerticalAlignment="Top"
-					Background="{DynamicResource ReduxSurfaceElevatedBrush}" BorderThickness="1" CornerRadius="21">
-					<controls:ReduxIcon x:Name="SeverityIcon" Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center" />
-				</Border>
+				<controls:ReduxIcon x:Name="SeverityIcon" Width="24" Height="24" Margin="0,0,14,0"
+					HorizontalAlignment="Center" VerticalAlignment="Center" />
 				<TextBlock x:Name="CaptionText" Grid.Column="1"
 					FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="{DynamicResource Redux.FontWeight.Title}"
 					Foreground="{DynamicResource ReduxTextPrimaryBrush}" TextWrapping="Wrap" VerticalAlignment="Center" />

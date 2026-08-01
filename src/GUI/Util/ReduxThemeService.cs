@@ -214,17 +214,17 @@ public static class ReduxThemeService
 		var palette = hasValidCustomTheme
 			? CreateResourceColors(customTheme)
 			: CreateBuiltInResourceColors(baseTheme);
-		ApplyPalette(resources, palette, baseTheme);
+		ApplyPalette(resources, palette, baseTheme, hasValidCustomTheme);
 	}
 
 	public static void PreviewColors(ResourceDictionary resources, ReduxCustomTheme customTheme)
 	{
 		if (resources == null || customTheme == null || !TryValidate(customTheme, out _)) return;
-		ApplyPalette(resources, CreateResourceColors(customTheme), customTheme.BaseTheme);
+		ApplyPalette(resources, CreateResourceColors(customTheme), customTheme.BaseTheme, isCustomTheme: true);
 	}
 
 	private static void ApplyPalette(ResourceDictionary resources, IReadOnlyDictionary<string, Color> palette,
-		ReduxThemeType baseTheme)
+		ReduxThemeType baseTheme, bool isCustomTheme)
 	{
 		foreach (var entry in palette)
 		{
@@ -233,9 +233,23 @@ public static class ReduxThemeService
 		}
 		var infoPillOwner = FindResourceOwner(resources, "ReduxInfoPillBackground") ?? resources;
 		infoPillOwner["ReduxInfoPillBackground"] = CreatePillGradient(palette["ReduxInfoColor"]);
+		// Reapply the built-in art direction explicitly. This also prevents a generated
+		// custom-theme brush from surviving when the user switches back to the same base theme.
 		var primaryActionOwner = FindResourceOwner(resources, "ReduxPrimaryActionBackgroundBrush") ?? resources;
-		primaryActionOwner["ReduxPrimaryActionBackgroundBrush"] =
-			CreatePrimaryActionGradient(palette["ReduxAccentColor"], baseTheme == ReduxThemeType.Parchment);
+		primaryActionOwner["ReduxPrimaryActionBackgroundBrush"] = isCustomTheme
+			? CreatePrimaryActionGradient(palette["ReduxAccentColor"], restrainedHueShift: false)
+			: baseTheme == ReduxThemeType.Parchment
+				? CreateGradient("#681D2B", "#962735", "#B7383D")
+				: CreatePrimaryActionGradient(palette["ReduxAccentColor"], restrainedHueShift: false);
+
+		var destructiveActionOwner = FindResourceOwner(resources, "ReduxDestructiveActionBackgroundBrush") ?? resources;
+		destructiveActionOwner["ReduxDestructiveActionBackgroundBrush"] = isCustomTheme
+			? CreateDestructiveActionGradient(palette["ReduxErrorColor"])
+			: CreateBuiltInDestructiveActionGradient(baseTheme);
+		var destructiveForegroundOwner = FindResourceOwner(resources, "ReduxDestructiveActionForegroundBrush") ?? resources;
+		destructiveForegroundOwner["ReduxDestructiveActionForegroundBrush"] = new SolidColorBrush(isCustomTheme
+			? BestForeground(ScaleBrightness(palette["ReduxErrorColor"], 0.72))
+			: System.Windows.Media.Colors.White);
 	}
 
 	private static LinearGradientBrush CreatePillGradient(Color color)
@@ -273,6 +287,52 @@ public static class ReduxThemeService
 				new GradientStop(leading, 0),
 				new GradientStop(accent, 0.52),
 				new GradientStop(trailing, 1)
+			]
+		};
+		if (brush.CanFreeze) brush.Freeze();
+		return brush;
+	}
+
+	private static LinearGradientBrush CreateDestructiveActionGradient(Color error)
+	{
+		// Destructive actions need to remain unmistakably red. The general primary-action
+		// gradient spreads hue and value for a colorful accent, which makes pale error
+		// colors drift toward coral. A small redward hue correction plus a restrained
+		// value ramp keeps the user's semantic error color recognizable without washing out.
+		var red = ShiftHue(error, 6);
+		var brush = new LinearGradientBrush
+		{
+			StartPoint = new Point(0, 0.5),
+			EndPoint = new Point(1, 0.5),
+			GradientStops =
+			[
+				new GradientStop(ScaleBrightness(red, 0.68), 0),
+				new GradientStop(ScaleBrightness(red, 0.82), 0.52),
+				new GradientStop(ScaleBrightness(red, 0.96), 1)
+			]
+		};
+		if (brush.CanFreeze) brush.Freeze();
+		return brush;
+	}
+
+	private static LinearGradientBrush CreateBuiltInDestructiveActionGradient(ReduxThemeType theme) => theme switch
+	{
+		ReduxThemeType.ReduxLight => CreateGradient("#7E1231", "#BA1E3D", "#DC3046"),
+		ReduxThemeType.Parchment => CreateGradient("#74122E", "#A91D39", "#CC3340"),
+		_ => CreateGradient("#8D1739", "#CB2948", "#EF3C50")
+	};
+
+	private static LinearGradientBrush CreateGradient(string leading, string middle, string trailing)
+	{
+		var brush = new LinearGradientBrush
+		{
+			StartPoint = new Point(0, 0.5),
+			EndPoint = new Point(1, 0.5),
+			GradientStops =
+			[
+				new GradientStop(Parse(leading), 0),
+				new GradientStop(Parse(middle), 0.48),
+				new GradientStop(Parse(trailing), 1)
 			]
 		};
 		if (brush.CanFreeze) brush.Freeze();

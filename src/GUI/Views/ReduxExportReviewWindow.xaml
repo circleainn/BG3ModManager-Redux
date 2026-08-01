@@ -115,17 +115,10 @@
 								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="*" />
 							</Grid.ColumnDefinitions>
-							<Border Width="42" Height="42" Margin="0,0,14,0"
-								VerticalAlignment="Top"
-								Background="{DynamicResource ReduxAccentSoftBrush}"
-								BorderBrush="{DynamicResource ReduxAccentBrush}"
-								BorderThickness="1"
-								CornerRadius="21">
-								<controls:ReduxIcon Width="21" Height="21"
-									HorizontalAlignment="Center" VerticalAlignment="Center"
-									Foreground="{DynamicResource ReduxAccentHoverBrush}"
-									StrokeData="{StaticResource Redux.Icon.CloudUpload}" />
-							</Border>
+							<controls:ReduxIcon Width="24" Height="24" Margin="0,0,14,0"
+								HorizontalAlignment="Center" VerticalAlignment="Center"
+								Foreground="{DynamicResource ReduxAccentHoverBrush}"
+								StrokeData="{StaticResource Redux.Icon.CloudUpload}" />
 							<StackPanel Grid.Column="1" VerticalAlignment="Center">
 								<TextBlock FontSize="{DynamicResource Redux.FontSize.20}"
 									FontWeight="{DynamicResource Redux.FontWeight.Title}"

@@ -3,15 +3,16 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
+	xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
 	Title="Welcome to BG3 Mod Manager Redux"
-	Width="720"
-	Height="535"
-	MinWidth="650"
-	MinHeight="500"
+	Width="740"
+	MinWidth="700"
+	MinHeight="560"
 	MaxWidth="900"
-	MaxHeight="720"
-	ResizeMode="CanResizeWithGrip"
+	MaxHeight="780"
+	SizeToContent="Height"
+	ResizeMode="NoResize"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
 	WindowStyle="SingleBorderWindow"
@@ -37,32 +38,61 @@
 				<ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 
-			<Style x:Key="TourCardStyle" TargetType="Border">
-				<Setter Property="Margin" Value="0,0,0,10" />
+			<Style x:Key="WelcomeSectionStyle" TargetType="Border">
 				<Setter Property="Padding" Value="14,12" />
 				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceBrush}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
 				<Setter Property="BorderThickness" Value="1" />
-				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Control}" />
+				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Card}" />
 			</Style>
-			<Style x:Key="TourIconStyle"
-				BasedOn="{StaticResource {x:Type controls:ReduxIcon}}"
-				TargetType="controls:ReduxIcon">
-				<Setter Property="Width" Value="18" />
-				<Setter Property="Height" Value="18" />
-				<Setter Property="Margin" Value="0,1,12,0" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
-				<Setter Property="VerticalAlignment" Value="Top" />
-			</Style>
-			<Style x:Key="TourTitleStyle" TargetType="TextBlock">
+			<Style x:Key="WelcomeSectionTitleStyle" TargetType="TextBlock">
+				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.14}" />
+				<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Title}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+			</Style>
+			<Style x:Key="WelcomeChoiceTitleStyle" TargetType="TextBlock">
 				<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Control}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 				<Setter Property="TextWrapping" Value="Wrap" />
 			</Style>
-			<Style x:Key="TourDescriptionStyle" TargetType="TextBlock">
+			<Style x:Key="WelcomeChoiceDescriptionStyle" TargetType="TextBlock">
 				<Setter Property="Margin" Value="0,3,0,0" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
+				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.10}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
 				<Setter Property="TextWrapping" Value="Wrap" />
+			</Style>
+			<Style x:Key="WelcomeThemeCardStyle" TargetType="RadioButton">
+				<Setter Property="Margin" Value="0,0,8,0" />
+				<Setter Property="Cursor" Value="Hand" />
+				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="RadioButton">
+							<Border x:Name="Card"
+								Padding="10"
+								Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+								BorderBrush="{DynamicResource ReduxBorderBrush}"
+								BorderThickness="1"
+								CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+								<ContentPresenter />
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter TargetName="Card" Property="Background" Value="{DynamicResource ReduxHoverBrush}" />
+									<Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
+								</Trigger>
+								<Trigger Property="IsChecked" Value="True">
+									<Setter TargetName="Card" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+									<Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+									<Setter TargetName="Card" Property="BorderThickness" Value="2" />
+								</Trigger>
+								<Trigger Property="IsKeyboardFocused" Value="True">
+									<Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
 			</Style>
 		</ResourceDictionary>
 	</Window.Resources>
@@ -72,281 +102,250 @@
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
-		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.Compass}" />
+		<controls:ReduxWindowTitleBar
+			IconData="{DynamicResource Redux.Icon.Sparkles}"
+			ShowWindowControls="False" />
 
 		<Border Grid.Row="1"
-			Padding="24,20,24,18"
+			Padding="22,16,22,18"
 			Background="{DynamicResource ReduxAppBackgroundBrush}"
 			BorderBrush="{DynamicResource ReduxBorderBrush}"
 			BorderThickness="0,1,0,0">
 			<Grid>
 				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
 					<RowDefinition Height="*" />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*" />
-						<ColumnDefinition Width="Auto" />
-					</Grid.ColumnDefinitions>
+				<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 					<StackPanel>
-						<TextBlock x:Name="PageTitleText"
-							FontSize="{DynamicResource Redux.FontSize.20}"
-							FontWeight="{DynamicResource Redux.FontWeight.Title}"
-							Foreground="{DynamicResource ReduxTextPrimaryBrush}" />
-						<TextBlock x:Name="PageSubtitleText"
-							Margin="0,4,0,0"
-							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							TextWrapping="Wrap" />
-					</StackPanel>
-					<Border Grid.Column="1"
-						Margin="18,0,0,0"
-						Padding="10,5"
-						VerticalAlignment="Top"
-						Background="{DynamicResource ReduxAccentSoftBrush}"
-						BorderBrush="{DynamicResource ReduxAccentBrush}"
-						BorderThickness="1"
-						CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
-						<TextBlock x:Name="StepText"
-							Foreground="{DynamicResource ReduxAccentHoverBrush}"
-							FontWeight="{DynamicResource Redux.FontWeight.Control}" />
-					</Border>
-				</Grid>
+						<Grid Margin="2,0,2,14">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<controls:ReduxIcon Width="24" Height="24" Margin="0,2,12,0"
+								Foreground="{DynamicResource ReduxAccentHoverBrush}"
+								StrokeData="{DynamicResource Redux.Icon.Sparkles}" />
+							<StackPanel Grid.Column="1">
+								<TextBlock FontSize="{DynamicResource Redux.FontSize.20}"
+									FontWeight="{DynamicResource Redux.FontWeight.Title}"
+									Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+									Text="Hi there! Welcome to Redux." />
+								<TextBlock Margin="0,4,0,0"
+									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+									Text="Redux is currently an early preview. Features may change, and some optional tools may not yet work perfectly. Choose a comfortable starting setup below; everything remains adjustable in Preferences."
+									TextWrapping="Wrap" />
+							</StackPanel>
+						</Grid>
 
-				<Grid Grid.Row="1" Margin="0,16,0,0">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*" />
-						<ColumnDefinition Width="*" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
-					<Border x:Name="Progress0" Height="4" Margin="0,0,5,0" CornerRadius="2" />
-					<Border x:Name="Progress1" Grid.Column="1" Height="4" Margin="0,0,5,0" CornerRadius="2" />
-					<Border x:Name="Progress2" Grid.Column="2" Height="4" CornerRadius="2" />
-				</Grid>
+						<Border Margin="0,0,0,10" Style="{StaticResource WelcomeSectionStyle}">
+							<StackPanel>
+								<TextBlock Style="{StaticResource WelcomeSectionTitleStyle}" Text="Select your look" />
+								<UniformGrid Margin="0,9,0,0" Columns="3">
+									<RadioButton x:Name="ReduxDarkThemeCard"
+										GroupName="WelcomeThemes"
+										Style="{StaticResource WelcomeThemeCardStyle}"
+										Tag="{x:Static data:ReduxThemeType.ReduxDark}"
+										Click="ThemeCard_Click">
+										<Grid>
+											<Grid.ColumnDefinitions><ColumnDefinition Width="54" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+											<Border Height="42" Margin="0,0,10,0" Background="#17121D" BorderBrush="#4B3A5C" BorderThickness="1" CornerRadius="5">
+												<StackPanel Margin="7" VerticalAlignment="Center">
+													<Border Height="7" Background="#33283F" CornerRadius="2" />
+													<Border Width="26" Height="5" Margin="0,6,0,0" HorizontalAlignment="Left" Background="#9676FF" CornerRadius="2" />
+												</StackPanel>
+											</Border>
+											<StackPanel Grid.Column="1" VerticalAlignment="Center">
+												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Redux Dark" />
+												<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Focused and easy on the eyes." />
+											</StackPanel>
+										</Grid>
+									</RadioButton>
+									<RadioButton x:Name="ReduxLightThemeCard"
+										GroupName="WelcomeThemes"
+										Style="{StaticResource WelcomeThemeCardStyle}"
+										Tag="{x:Static data:ReduxThemeType.ReduxLight}"
+										Click="ThemeCard_Click">
+										<Grid>
+											<Grid.ColumnDefinitions><ColumnDefinition Width="54" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+											<Border Height="42" Margin="0,0,10,0" Background="#F1EDF4" BorderBrush="#C5B9D1" BorderThickness="1" CornerRadius="5">
+												<StackPanel Margin="7" VerticalAlignment="Center">
+													<Border Height="7" Background="#DDD6E5" CornerRadius="2" />
+													<Border Width="26" Height="5" Margin="0,6,0,0" HorizontalAlignment="Left" Background="#694AD6" CornerRadius="2" />
+												</StackPanel>
+											</Border>
+											<StackPanel Grid.Column="1" VerticalAlignment="Center">
+												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Redux Light" />
+												<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Clean and bright." />
+											</StackPanel>
+										</Grid>
+									</RadioButton>
+									<RadioButton x:Name="ParchmentThemeCard"
+										GroupName="WelcomeThemes"
+										Margin="0"
+										Style="{StaticResource WelcomeThemeCardStyle}"
+										Tag="{x:Static data:ReduxThemeType.Parchment}"
+										Click="ThemeCard_Click">
+										<Grid>
+											<Grid.ColumnDefinitions><ColumnDefinition Width="54" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+											<Border Height="42" Margin="0,0,10,0" Background="#EBDEC5" BorderBrush="#AD9876" BorderThickness="1" CornerRadius="5">
+												<StackPanel Margin="7" VerticalAlignment="Center">
+													<Border Height="7" Background="#D1C0A2" CornerRadius="2" />
+													<Border Width="26" Height="5" Margin="0,6,0,0" HorizontalAlignment="Left" Background="#8B3034" CornerRadius="2" />
+												</StackPanel>
+											</Border>
+											<StackPanel Grid.Column="1" VerticalAlignment="Center">
+												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Parchment" />
+												<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Warm and classic." />
+											</StackPanel>
+										</Grid>
+									</RadioButton>
+								</UniformGrid>
+							</StackPanel>
+						</Border>
 
-				<ScrollViewer Grid.Row="2"
-					Margin="0,18,0,12"
-					HorizontalScrollBarVisibility="Disabled"
-					VerticalScrollBarVisibility="Auto">
-					<Grid>
-						<StackPanel x:Name="WelcomePage">
-							<Border Style="{StaticResource TourCardStyle}"
-								Background="{DynamicResource ReduxWarningSoftBrush}"
-								BorderBrush="{DynamicResource ReduxWarningBrush}">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="Auto" />
-										<ColumnDefinition Width="*" />
-									</Grid.ColumnDefinitions>
-									<controls:ReduxIcon Style="{StaticResource TourIconStyle}"
-										Foreground="{DynamicResource ReduxWarningBrush}"
-										StrokeData="{DynamicResource Redux.Icon.Warning}" />
-									<StackPanel Grid.Column="1">
-										<TextBlock Style="{StaticResource TourTitleStyle}"
-											Text="Redux is still an early preview" />
-										<TextBlock Style="{StaticResource TourDescriptionStyle}"
-											Text="Features, source matches, and interface details may change between builds. Keep backups and review exported orders before launching the game." />
-									</StackPanel>
-								</Grid>
-							</Border>
-
-							<Border Style="{StaticResource TourCardStyle}">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="Auto" />
-										<ColumnDefinition Width="*" />
-									</Grid.ColumnDefinitions>
-									<controls:ReduxIcon Style="{StaticResource TourIconStyle}"
-										Foreground="{DynamicResource ReduxInfoBrush}"
-										StrokeData="{DynamicResource Redux.Icon.Information}" />
-									<StackPanel Grid.Column="1">
-										<TextBlock Style="{StaticResource TourTitleStyle}"
-											Text="Source information stays optional" />
-										<TextBlock Style="{StaticResource TourDescriptionStyle}"
-											Text="Redux can associate packages with Nexus Mods and mod.io metadata, but a source match is not a compatibility guarantee. You can use Local-only mode at any time." />
-									</StackPanel>
-								</Grid>
-							</Border>
-
-							<Border Style="{StaticResource TourCardStyle}"
-								Background="{DynamicResource ReduxWarningSoftBrush}"
-								BorderBrush="{DynamicResource ReduxWarningBrush}">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="Auto" />
-										<ColumnDefinition Width="*" />
-									</Grid.ColumnDefinitions>
-									<controls:ReduxIcon Style="{StaticResource TourIconStyle}"
-										Foreground="{DynamicResource ReduxWarningBrush}"
-										StrokeData="{DynamicResource Redux.Icon.GameController}" />
-									<StackPanel Grid.Column="1">
-										<TextBlock Style="{StaticResource TourTitleStyle}"
-											Text="Subscribed mod.io files can return" />
-										<TextBlock Style="{StaticResource TourDescriptionStyle}"
-											Text="Baldur’s Gate 3 may restore or redownload a subscribed mod.io mod after its local file is removed. Unsubscribe through mod.io or the in-game Mod Manager to remove it fully." />
-									</StackPanel>
-								</Grid>
-							</Border>
-
-						</StackPanel>
-
-						<StackPanel x:Name="WorkflowPage" Visibility="Collapsed">
-							<Border Style="{StaticResource TourCardStyle}">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="Auto" />
-										<ColumnDefinition Width="*" />
-									</Grid.ColumnDefinitions>
-									<controls:ReduxIcon Style="{StaticResource TourIconStyle}"
-										StrokeData="{DynamicResource Redux.Icon.ListStroke}" />
-									<StackPanel Grid.Column="1">
-										<TextBlock Style="{StaticResource TourTitleStyle}"
-											Text="Organize without changing installed packages" />
-										<TextBlock Style="{StaticResource TourDescriptionStyle}"
-											Text="Use active and inactive lists, categories, separators, notes, filtering, and saved orders to shape a readable working load order." />
-									</StackPanel>
-								</Grid>
-							</Border>
-
-							<Border Style="{StaticResource TourCardStyle}">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="Auto" />
-										<ColumnDefinition Width="*" />
-									</Grid.ColumnDefinitions>
-									<controls:ReduxIcon Style="{StaticResource TourIconStyle}"
-										Foreground="{DynamicResource ReduxSuccessBrush}"
-										StrokeData="{DynamicResource Redux.Icon.Save}" />
-									<StackPanel Grid.Column="1">
-										<TextBlock Style="{StaticResource TourTitleStyle}"
-											Text="Review, restore, and compare" />
-										<TextBlock Style="{StaticResource TourDescriptionStyle}"
-											Text="Export review shows pending changes and diagnostics before Redux writes anything. Restore points and order comparison help you recover or understand earlier states." />
-									</StackPanel>
-								</Grid>
-							</Border>
-
-							<Border Style="{StaticResource TourCardStyle}">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="Auto" />
-										<ColumnDefinition Width="*" />
-									</Grid.ColumnDefinitions>
-									<controls:ReduxIcon Style="{StaticResource TourIconStyle}"
-										Foreground="{DynamicResource ReduxInfoBrush}"
-										StrokeData="{DynamicResource Redux.Icon.ColorPalette}" />
-									<StackPanel Grid.Column="1">
-										<TextBlock Style="{StaticResource TourTitleStyle}"
-											Text="Make the interface yours" />
-										<TextBlock Style="{StaticResource TourDescriptionStyle}"
-											Text="Themes, typography, category presentation, Quick Access (F2), keyboard shortcuts, reduced motion, and background-effect controls are available without changing the core workflow." />
-									</StackPanel>
-								</Grid>
-							</Border>
-
-							<TextBlock Margin="2,2,0,0"
-								Foreground="{DynamicResource ReduxTextMutedBrush}"
-								Text="The real interface is the tour: hover controls for details, use Help when needed, and revisit this overview from Help > Take the Redux Tour."
-								TextWrapping="Wrap" />
-						</StackPanel>
-
-						<StackPanel x:Name="ChoicesPage" Visibility="Collapsed">
-							<Border Style="{StaticResource TourCardStyle}">
-								<StackPanel>
-									<TextBlock Style="{StaticResource TourTitleStyle}" Text="Source integrations" />
-									<TextBlock Style="{StaticResource TourDescriptionStyle}"
-										Text="Choose whether Redux presents Nexus Mods and mod.io metadata or keeps every installed package Local." />
-									<RadioButton x:Name="SourceIntegrationsRadio"
-										Margin="2,12,0,0"
-										GroupName="SourceMode"
-										FontWeight="{DynamicResource Redux.FontWeight.Control}"
-										Content="Enable source integrations" />
-									<RadioButton x:Name="LocalOnlyRadio"
-										Margin="2,8,0,0"
-										GroupName="SourceMode"
-										FontWeight="{DynamicResource Redux.FontWeight.Control}"
-										Content="Use Local-only mode" />
-								</StackPanel>
-							</Border>
-
-							<Border Style="{StaticResource TourCardStyle}">
-								<StackPanel>
-									<CheckBox x:Name="DiagnosticsCheckBox"
+						<Border Margin="0,0,0,10" Style="{StaticResource WelcomeSectionStyle}">
+							<StackPanel>
+								<TextBlock Style="{StaticResource WelcomeSectionTitleStyle}" Text="Optional Redux modules" />
+								<Grid Margin="0,9,0,0">
+									<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+									<CheckBox x:Name="SourceIntegrationsCheckBox"
 										Style="{StaticResource ReduxCheckBoxStyle}"
-										Checked="DiagnosticsCheckBox_Changed"
-										Unchecked="DiagnosticsCheckBox_Changed">
-										<StackPanel>
-											<TextBlock Style="{StaticResource TourTitleStyle}" Text="Enable Mod Diagnostics" />
-											<TextBlock Style="{StaticResource TourDescriptionStyle}"
-												Text="Run conservative, read-only checks and show findings only when Redux detects something worth reviewing." />
-										</StackPanel>
+										Checked="SourceIntegrationsCheckBox_Changed"
+										Unchecked="SourceIntegrationsCheckBox_Changed">
+										<Grid>
+											<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+											<controls:ReduxIcon Width="17" Height="17" Margin="0,1,9,0" Foreground="{DynamicResource ReduxInfoBrush}" StrokeData="{DynamicResource Redux.Icon.LinkStroke}" />
+											<StackPanel Grid.Column="1">
+												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Source integrations" />
+												<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Connect installed packages with Nexus Mods and mod.io metadata, links, images, and update information. Turn this off for a fully Local view." />
+											</StackPanel>
+										</Grid>
 									</CheckBox>
-									<CheckBox x:Name="GuidanceCheckBox"
-										Margin="24,12,0,0"
-										Style="{StaticResource ReduxCheckBoxStyle}">
-										<StackPanel>
-											<TextBlock Style="{StaticResource TourTitleStyle}" Text="Include experimental load-order guidance" />
-											<TextBlock Style="{StaticResource TourDescriptionStyle}"
-												Text="Adds limited dependency-placement and cycle guidance. Redux never reorders the list automatically." />
-										</StackPanel>
-									</CheckBox>
-								</StackPanel>
-							</Border>
+									<StackPanel Grid.Column="2">
+										<CheckBox x:Name="DiagnosticsCheckBox"
+											Style="{StaticResource ReduxCheckBoxStyle}"
+											Checked="DiagnosticsCheckBox_Changed"
+											Unchecked="DiagnosticsCheckBox_Changed">
+											<Grid>
+												<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+												<controls:ReduxIcon Width="17" Height="17" Margin="0,1,9,0" Foreground="{DynamicResource ReduxSuccessBrush}" StrokeData="{DynamicResource Redux.Icon.SearchAlert}" />
+												<StackPanel Grid.Column="1">
+													<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Mod Diagnostics" />
+													<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Run conservative, read-only package and dependency checks. Findings appear only when something may need review." />
+												</StackPanel>
+											</Grid>
+										</CheckBox>
+										<CheckBox x:Name="GuidanceCheckBox"
+											Margin="0,9,0,0"
+											Style="{StaticResource ReduxCheckBoxStyle}"
+											Checked="GuidanceCheckBox_Changed"
+											Unchecked="GuidanceCheckBox_Changed">
+											<Grid>
+												<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+												<controls:ReduxIcon Width="17" Height="17" Margin="0,1,9,0" Foreground="{DynamicResource ReduxWarningBrush}" StrokeData="{DynamicResource Redux.Icon.Flag}" />
+												<StackPanel Grid.Column="1">
+													<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Experimental load-order guidance" />
+													<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Add cautious placement and cycle advice. Redux never sorts or changes the order automatically." />
+												</StackPanel>
+											</Grid>
+										</CheckBox>
+									</StackPanel>
+								</Grid>
+								<Border x:Name="SourceCredentialsPanel"
+									Margin="0,11,0,0"
+									Padding="10"
+									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+									BorderBrush="{DynamicResource ReduxBorderBrush}"
+									BorderThickness="1"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+									Visibility="Collapsed">
+									<StackPanel>
+										<Grid>
+											<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+											<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" Foreground="{DynamicResource ReduxInfoBrush}" StrokeData="{DynamicResource Redux.Icon.Key}" />
+											<StackPanel Grid.Column="1">
+												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Metadata service keys" />
+												<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Optional. Keys are stored locally and can be changed or removed later in Preferences." />
+											</StackPanel>
+										</Grid>
+										<Grid Margin="24,9,0,0">
+											<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+											<StackPanel>
+												<StackPanel Margin="1,0,0,4" Orientation="Horizontal">
+													<ContentControl Width="15" Height="15" Margin="0,0,6,0" ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" />
+													<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Nexus Mods API key" />
+												</StackPanel>
+												<TextBox x:Name="NexusApiKeyTextBox" Height="30" ToolTip="Personal Nexus Mods API key used for live metadata and update information" />
+											</StackPanel>
+											<StackPanel Grid.Column="2">
+												<StackPanel Margin="1,0,0,4" Orientation="Horizontal">
+													<ContentControl Width="15" Height="15" Margin="0,0,6,0" ContentTemplate="{DynamicResource ModioPlatformIconTemplate}" />
+													<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="mod.io API key" />
+												</StackPanel>
+												<TextBox x:Name="ModioApiKeyTextBox" Height="30" ToolTip="Read-only mod.io API key used for live metadata" />
+											</StackPanel>
+										</Grid>
+									</StackPanel>
+								</Border>
+							</StackPanel>
+						</Border>
 
-							<TextBlock Margin="2,2,0,0"
-								Foreground="{DynamicResource ReduxTextMutedBrush}"
-								Text="All choices are reversible in Preferences. Skipping keeps Redux’s current defaults."
-								TextWrapping="Wrap" />
-						</StackPanel>
-					</Grid>
+						<Border Style="{StaticResource WelcomeSectionStyle}">
+							<StackPanel>
+								<TextBlock Style="{StaticResource WelcomeSectionTitleStyle}" Text="Accessibility" />
+								<Grid Margin="0,9,0,0">
+									<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+									<CheckBox x:Name="ReduceMotionCheckBox"
+										Style="{StaticResource ReduxCheckBoxStyle}"
+										Checked="AccessibilityCheckBox_Changed"
+										Unchecked="AccessibilityCheckBox_Changed">
+										<Grid>
+											<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+											<controls:ReduxIcon Width="17" Height="17" Margin="0,1,9,0" Foreground="{DynamicResource ReduxAccentHoverBrush}" StrokeData="{DynamicResource Redux.Icon.Flash}" />
+											<StackPanel Grid.Column="1">
+												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Reduce motion" />
+												<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Remove animated movement and use immediate, quieter transitions." />
+											</StackPanel>
+										</Grid>
+									</CheckBox>
+									<CheckBox x:Name="DisableBackgroundEffectsCheckBox" Grid.Column="2"
+										Style="{StaticResource ReduxCheckBoxStyle}"
+										Checked="AccessibilityCheckBox_Changed"
+										Unchecked="AccessibilityCheckBox_Changed">
+										<Grid>
+											<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+											<controls:ReduxIcon Width="17" Height="17" Margin="0,1,9,0" Foreground="{DynamicResource ReduxAccentHoverBrush}" StrokeData="{DynamicResource Redux.Icon.Eye}" />
+											<StackPanel Grid.Column="1">
+												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Disable blur and dimming" />
+												<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Keep the main interface clear behind dialogs and secondary windows." />
+											</StackPanel>
+										</Grid>
+									</CheckBox>
+								</Grid>
+							</StackPanel>
+						</Border>
+					</StackPanel>
 				</ScrollViewer>
 
-				<Grid Grid.Row="3">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*" />
-						<ColumnDefinition Width="Auto" />
-					</Grid.ColumnDefinitions>
+				<Grid Grid.Row="1" Margin="2,14,2,0">
+					<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
 					<TextBlock VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="One introduction. No stacked startup warnings."
+						Text="You can revisit this window from Help and change every option later in Preferences."
 						TextWrapping="Wrap" />
 					<StackPanel Grid.Column="1" Margin="18,0,0,0" Orientation="Horizontal">
-						<Button x:Name="SkipButton"
-							MinWidth="92"
-							Click="SkipButton_Click"
-							Style="{StaticResource ReduxSecondaryActionButtonStyle}">
+						<Button MinWidth="92" Click="CloseButton_Click" IsCancel="True" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
 							<StackPanel Orientation="Horizontal">
-								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
-									StrokeData="{DynamicResource Redux.Icon.Close}" />
-								<TextBlock x:Name="SkipButtonText" Text="Skip Tour" />
+								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" StrokeData="{DynamicResource Redux.Icon.Close}" />
+								<TextBlock Text="Not now" />
 							</StackPanel>
 						</Button>
-						<Button x:Name="BackButton"
-							MinWidth="86"
-							Margin="8,0,0,0"
-							Click="BackButton_Click"
-							Style="{StaticResource ReduxSecondaryActionButtonStyle}">
+						<Button MinWidth="132" Margin="8,0,0,0" Click="SaveButton_Click" IsDefault="True" Style="{StaticResource ReduxPrimaryActionButtonStyle}">
 							<StackPanel Orientation="Horizontal">
-								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
-									StrokeData="{DynamicResource Redux.Icon.ArrowBackStroke}" />
-								<TextBlock Text="Back" />
-							</StackPanel>
-						</Button>
-						<Button x:Name="NextButton"
-							MinWidth="106"
-							Margin="8,0,0,0"
-							Click="NextButton_Click"
-							IsDefault="True"
-							Style="{StaticResource ReduxPrimaryActionButtonStyle}">
-							<StackPanel Orientation="Horizontal">
-								<TextBlock x:Name="NextButtonText" Text="Continue" />
-								<controls:ReduxIcon x:Name="NextButtonIcon"
-									Width="14" Height="14" Margin="6,0,0,0"
-									Foreground="{DynamicResource ReduxAccentForegroundBrush}"
-									StrokeData="{DynamicResource Redux.Icon.ArrowForwardStroke}" />
+								<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" Foreground="{DynamicResource ReduxAccentForegroundBrush}" StrokeData="{DynamicResource Redux.Icon.Check}" />
+								<TextBlock Text="Save &amp; Continue" />
 							</StackPanel>
 						</Button>
 					</StackPanel>

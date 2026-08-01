@@ -480,39 +480,16 @@
 			<RowDefinition Height="*" />
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
-		<xc:BusyIndicator x:Name="MainBusyIndicator" Style="{StaticResource BusyIndicatorProgressStyle}" Visibility="Hidden">
+		<xc:BusyIndicator x:Name="MainBusyIndicator" Style="{StaticResource BusyIndicatorProgressStyle}">
 			<xc:BusyIndicator.BusyContent>
-				<Grid Margin="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="*" />
-						<RowDefinition Height="Auto" />
-					</Grid.RowDefinitions>
-					<TextBlock HorizontalAlignment="Center"
-					    FontSize="{DynamicResource Redux.FontSize.16}"
-					    FontWeight="Bold"
-					    Text="{Binding MainProgressTitle, FallbackValue='Archiving...'}" />
-					<DockPanel Grid.Row="1" Margin="8">
-						<TextBlock HorizontalAlignment="Center"
-						    VerticalAlignment="Center"
-						    DockPanel.Dock="Bottom"
-						    Text="{Binding MainProgressWorkText, FallbackValue='Archiving pak 4/10...'}"
-						    TextAlignment="Center" />
-						<ProgressBar MinHeight="15" Style="{StaticResource ReduxProgressBarStyle}"
-						    VerticalAlignment="Center"
-						    DockPanel.Dock="Top"
-						    Maximum="1"
-						    Value="{Binding MainProgressValue, FallbackValue='0'}" />
-					</DockPanel>
-					<Button Grid.Row="2"
-					    Margin="8,0,8,8"
-					    Padding="20,4"
-					    HorizontalAlignment="Center"
-					    VerticalAlignment="Center"
-					    Command="{Binding CancelMainProgressCommand}"
-					    Content="Cancel"
-					    Visibility="{Binding CanCancelProgress, Converter={StaticResource BoolToVisibilityConverter}}" />
-				</Grid>
+				<controls:ReduxOperationProgress
+					CanCancel="{Binding CanCancelProgress}"
+					CancelCommand="{Binding CancelMainProgressCommand}"
+					IconBrush="{DynamicResource ReduxAccentHoverBrush}"
+					IconKey="package"
+					ProgressValue="{Binding MainProgressValue}"
+					Status="{Binding MainProgressWorkText}"
+					Title="{Binding MainProgressTitle}" />
 			</xc:BusyIndicator.BusyContent>
 			<Grid>
 				<Grid.RowDefinitions>
@@ -526,7 +503,18 @@
 				    HorizontalAlignment="Stretch"
 				    VerticalAlignment="Stretch"
 				    Panel.ZIndex="98"
-				    Fill="{DynamicResource ReduxWindowBrush}" />
+				    Fill="{DynamicResource ReduxWindowBrush}"
+				    Opacity="0.64">
+					<Rectangle.Style>
+						<Style TargetType="{x:Type Rectangle}">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding Settings.DisableBackgroundEffects}" Value="True">
+									<Setter Property="Opacity" Value="0" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</Rectangle.Style>
+				</Rectangle>
 				<Grid Background="{DynamicResource ReduxWindowBrush}">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="*" />

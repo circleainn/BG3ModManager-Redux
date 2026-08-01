@@ -32,33 +32,33 @@
 			<ScaleTransform ScaleX="1" ScaleY="1" CenterX="280" CenterY="160" />
 		</Grid.RenderTransform>
 
-		<Border Background="{DynamicResource ReduxWindowBrush}"
-		    BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
+		<Border Background="{DynamicResource ReduxSplashSurfaceBrush}"
+		    BorderBrush="{DynamicResource ReduxSplashBorderBrush}"
 		    BorderThickness="1"
 		    CornerRadius="{DynamicResource Redux.CornerRadius.Card}" />
 
 		<!-- Broad semantic-color fields replace the old bokeh/card composition. -->
 		<Ellipse Width="330" Height="230" Margin="-150,-125,0,0"
 		    HorizontalAlignment="Left" VerticalAlignment="Top"
-		    Fill="{DynamicResource ReduxAccentBrush}" Opacity="0.24"
+		    Fill="{DynamicResource ReduxAccentBrush}" Opacity="{DynamicResource Redux.Splash.AccentOpacity}"
 		    IsHitTestVisible="False">
 			<Ellipse.Effect><BlurEffect Radius="70" /></Ellipse.Effect>
 		</Ellipse>
 		<Ellipse Width="300" Height="220" Margin="0,-135,-130,0"
 		    HorizontalAlignment="Right" VerticalAlignment="Top"
-		    Fill="{DynamicResource ReduxErrorBrush}" Opacity="0.14"
+		    Fill="{DynamicResource ReduxErrorBrush}" Opacity="{DynamicResource Redux.Splash.ErrorOpacity}"
 		    IsHitTestVisible="False">
 			<Ellipse.Effect><BlurEffect Radius="75" /></Ellipse.Effect>
 		</Ellipse>
 		<Ellipse Width="310" Height="200" Margin="-100,0,0,-125"
 		    HorizontalAlignment="Left" VerticalAlignment="Bottom"
-		    Fill="{DynamicResource ReduxWarningBrush}" Opacity="0.13"
+		    Fill="{DynamicResource ReduxWarningBrush}" Opacity="{DynamicResource Redux.Splash.WarningOpacity}"
 		    IsHitTestVisible="False">
 			<Ellipse.Effect><BlurEffect Radius="78" /></Ellipse.Effect>
 		</Ellipse>
 		<Ellipse Width="340" Height="220" Margin="0,0,-145,-130"
 		    HorizontalAlignment="Right" VerticalAlignment="Bottom"
-		    Fill="{DynamicResource ReduxSuccessBrush}" Opacity="0.16"
+		    Fill="{DynamicResource ReduxSuccessBrush}" Opacity="{DynamicResource Redux.Splash.SuccessOpacity}"
 		    IsHitTestVisible="False">
 			<Ellipse.Effect><BlurEffect Radius="80" /></Ellipse.Effect>
 		</Ellipse>

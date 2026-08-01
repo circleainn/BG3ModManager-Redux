@@ -412,6 +412,15 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		}
 	}
 
+	public void PreviewColorTheme(ReduxThemeType theme, ReduxCustomTheme customTheme = null)
+	{
+		if (MainView != null)
+		{
+			ReduxThemeService.Apply(MainView.Resources, theme, customTheme);
+		}
+		UpdateColorTheme(theme, customTheme);
+	}
+
 	private void OnClosing()
 	{
 		if (ViewModel.Settings.SaveWindowLocation) UpdateWindowSettings();

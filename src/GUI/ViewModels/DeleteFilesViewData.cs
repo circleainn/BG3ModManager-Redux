@@ -56,71 +56,69 @@ public class DeleteFilesViewData : BaseProgressViewModel
 	public override async Task<bool> Run(CancellationToken cts)
 	{
 		var targetFiles = Files.Where(x => x.IsSelected).ToList();
-
-		await UpdateProgress($"Confirming deletion...", "", 0d);
-
-		var result = await DivinityInteractions.ConfirmModDeletion.Handle(new DeleteFilesViewConfirmationData { Total = targetFiles.Count, PermanentlyDelete = PermanentlyDelete, Token = cts });
-		if (result)
+		if (targetFiles.Count == 0)
 		{
-			var eventArgs = new FileDeletionCompleteEventArgs()
-			{
-				IsDeletingDuplicates = IsDeletingDuplicates,
-				RemoveFromLoadOrder = !IsDeletingDuplicates && RemoveFromLoadOrder,
-			};
+			return false;
+		}
 
-			await Observable.Start(() => IsProgressActive = true, RxApp.MainThreadScheduler);
-			await UpdateProgress($"Deleting {targetFiles.Count} mod file(s)...", "", 0d);
-			double progressInc = 1d / targetFiles.Count;
-			foreach (var f in targetFiles)
+		var eventArgs = new FileDeletionCompleteEventArgs()
+		{
+			IsDeletingDuplicates = IsDeletingDuplicates,
+			RemoveFromLoadOrder = !IsDeletingDuplicates && RemoveFromLoadOrder,
+		};
+
+		await Observable.Start(() => IsProgressActive = true, RxApp.MainThreadScheduler);
+		await UpdateProgress($"Deleting {targetFiles.Count} mod file(s)...", "", 0d);
+		double progressInc = 1d / targetFiles.Count;
+		foreach (var f in targetFiles)
+		{
+			try
 			{
-				try
+				if (cts.IsCancellationRequested)
 				{
-					if (cts.IsCancellationRequested)
+					DivinityApp.Log("Deletion stopped.");
+					break;
+				}
+				if (!File.Exists(f.FilePath))
+				{
+					DivinityApp.Log($"Mod file was already absent: '{f.FilePath}'. Removing the stale UI entry.");
+					eventArgs.DeletedFiles.Add(f);
+				}
+				else
+				{
+					await UpdateProgress("", $"Deleting {f.FilePath}...");
+					var deleteReportedSuccess = RecycleBinHelper.DeleteFile(f.FilePath, false, PermanentlyDelete, out var deleteError);
+					if (deleteReportedSuccess && !File.Exists(f.FilePath))
 					{
-						DivinityApp.Log("Deletion stopped.");
-						break;
-					}
-					if (!File.Exists(f.FilePath))
-					{
-						DivinityApp.Log($"Mod file was already absent: '{f.FilePath}'. Removing the stale UI entry.");
 						eventArgs.DeletedFiles.Add(f);
+						DivinityApp.Log($"Deleted mod file '{f.FilePath}' ({(PermanentlyDelete ? "permanently" : "Recycle Bin")}).");
 					}
 					else
 					{
-						await UpdateProgress("", $"Deleting {f.FilePath}...");
-						var deleteReportedSuccess = RecycleBinHelper.DeleteFile(f.FilePath, false, PermanentlyDelete, out var deleteError);
-						if (deleteReportedSuccess && !File.Exists(f.FilePath))
-						{
-							eventArgs.DeletedFiles.Add(f);
-							DivinityApp.Log($"Deleted mod file '{f.FilePath}' ({(PermanentlyDelete ? "permanently" : "Recycle Bin")}).");
-						}
-						else
-						{
-							var reason = !String.IsNullOrWhiteSpace(deleteError)
-								? deleteError
-								: File.Exists(f.FilePath) ? "The file still exists after the delete operation." : "The delete operation failed.";
-							var failure = $"{Path.GetFileName(f.FilePath)}: {reason}";
-							eventArgs.FailureMessages.Add(failure);
-							DivinityApp.Log($"Failed to delete mod file '{f.FilePath}': {reason}");
-						}
+						var reason = !String.IsNullOrWhiteSpace(deleteError)
+							? deleteError
+							: File.Exists(f.FilePath) ? "The file still exists after the delete operation." : "The delete operation failed.";
+						var failure = $"{Path.GetFileName(f.FilePath)}: {reason}";
+						eventArgs.FailureMessages.Add(failure);
+						DivinityApp.Log($"Failed to delete mod file '{f.FilePath}': {reason}");
 					}
 				}
-				catch (Exception ex)
-				{
-					var failure = $"{Path.GetFileName(f.FilePath)}: {ex.Message}";
-					eventArgs.FailureMessages.Add(failure);
-					DivinityApp.Log($"Error deleting file '{f.FilePath}':\n{ex}");
-				}
-				await UpdateProgress("", "", ProgressValue + progressInc);
 			}
-			await UpdateProgress("", "", 1d);
-			await Task.Delay(500);
-			RxApp.MainThreadScheduler.Schedule(() =>
+			catch (Exception ex)
 			{
-				FileDeletionComplete?.Invoke(this, eventArgs);
-				Close();
-			});
+				var failure = $"{Path.GetFileName(f.FilePath)}: {ex.Message}";
+				eventArgs.FailureMessages.Add(failure);
+				DivinityApp.Log($"Error deleting file '{f.FilePath}':\n{ex}");
+			}
+			await UpdateProgress("", "", ProgressValue + progressInc);
 		}
+		await UpdateProgress("", "", 1d);
+		await Task.Delay(500);
+		RxApp.MainThreadScheduler.Schedule(() =>
+		{
+			FileDeletionComplete?.Invoke(this, eventArgs);
+			Close();
+		});
 		return true;
 	}
 

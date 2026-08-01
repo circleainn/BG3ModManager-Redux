@@ -123,6 +123,7 @@ public partial class App : Application
 
 				mainWindow.Activate();
 				await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ContextIdle);
+				mainWindow.ViewModel.ShowReduxWelcome(onlyIfUnseen: true);
 			};
 			mainWindow.ViewModel.PropertyChanged += initializedHandler;
 

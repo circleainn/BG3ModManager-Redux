@@ -30,6 +30,12 @@ public partial class ReduxWindowTitleBar : UserControl
 		typeof(ReduxWindowTitleBar),
 		new PropertyMetadata(new Thickness(0, 0, 0, 1)));
 
+	public static readonly DependencyProperty ShowWindowControlsProperty = DependencyProperty.Register(
+		nameof(ShowWindowControls),
+		typeof(bool),
+		typeof(ReduxWindowTitleBar),
+		new PropertyMetadata(true));
+
 	public Geometry? IconData
 	{
 		get => (Geometry?)GetValue(IconDataProperty);
@@ -46,6 +52,12 @@ public partial class ReduxWindowTitleBar : UserControl
 	{
 		get => (Thickness)GetValue(BottomBorderThicknessProperty);
 		set => SetValue(BottomBorderThicknessProperty, value);
+	}
+
+	public bool ShowWindowControls
+	{
+		get => (bool)GetValue(ShowWindowControlsProperty);
+		set => SetValue(ShowWindowControlsProperty, value);
 	}
 
 	public ReduxWindowTitleBar()

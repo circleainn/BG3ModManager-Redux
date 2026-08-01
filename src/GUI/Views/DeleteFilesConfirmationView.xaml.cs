@@ -65,17 +65,16 @@ public partial class DeleteFilesConfirmationView : DeleteFilesConfirmationViewBa
 
 				d(this.OneWayBind(ViewModel, vm => vm.Title, v => v.TitleTextBlock.Text));
 
-				d(this.OneWayBind(ViewModel, vm => vm.ProgressTitle, v => v.TaskProgressTitleText.Text));
-				d(this.OneWayBind(ViewModel, vm => vm.ProgressWorkText, v => v.TaskProgressWorkText.Text));
-				d(this.OneWayBind(ViewModel, vm => vm.ProgressValue, v => v.TaskProgressBar.Value));
-				d(this.OneWayBind(ViewModel, vm => vm.IsProgressActive, view => view.TaskProgressBar.Visibility, BoolToVisibilityConverter.FromBool));
+				d(this.OneWayBind(ViewModel, vm => vm.ProgressTitle, v => v.TaskProgressContent.Title));
+				d(this.OneWayBind(ViewModel, vm => vm.ProgressWorkText, v => v.TaskProgressContent.Status));
+				d(this.OneWayBind(ViewModel, vm => vm.ProgressValue, v => v.TaskProgressContent.ProgressValue));
 				d(this.Bind(ViewModel, vm => vm.PermanentlyDelete, view => view.DeletionOptionCheckbox.IsChecked));
 
 				d(this.Bind(ViewModel, vm => vm.RemoveFromLoadOrder, view => view.RemoveFromLoadOrderCheckbox.IsChecked));
 				d(this.Bind(ViewModel, vm => vm.RemoveFromLoadOrderVisibility, view => view.RemoveFromLoadOrderCheckbox.Visibility));
 
 				d(this.BindCommand(ViewModel, vm => vm.RunCommand, v => v.ConfirmButton));
-				d(this.BindCommand(ViewModel, vm => vm.CancelRunCommand, v => v.CancelProgressButton));
+				d(this.OneWayBind(ViewModel, vm => vm.CancelRunCommand, v => v.TaskProgressContent.CancelCommand));
 				d(this.BindCommand(ViewModel, vm => vm.CloseCommand, v => v.CancelButton));
 
 				//d(ViewModel.WhenAnyValue(x => x.IsDeletingDuplicates).Select(GetLastColumnWidth).BindTo(ViewModel, vm => vm.DuplicateColumnWidth));

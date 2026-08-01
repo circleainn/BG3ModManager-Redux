@@ -2,6 +2,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
     xmlns:local="clr-namespace:DivinityModManager.Themes"
+	xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:xcthemes="clr-namespace:Xceed.Wpf.Toolkit.Themes;assembly=DotNetProjects.Wpf.Extended.Toolkit">
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="pack://application:,,,/AdonisUI;component/ColorSchemes/Dark.xaml" />
@@ -68,6 +69,12 @@
 		<GradientStop Offset="1" Color="#1EF0B43C" />
 	</LinearGradientBrush>
 	<SolidColorBrush x:Key="ReduxErrorBrush" Color="{DynamicResource ReduxErrorColor}" />
+	<LinearGradientBrush x:Key="ReduxDestructiveActionBackgroundBrush" StartPoint="0,0.5" EndPoint="1,0.5">
+		<GradientStop Offset="0" Color="#8D1739" />
+		<GradientStop Offset="0.48" Color="#CB2948" />
+		<GradientStop Offset="1" Color="#EF3C50" />
+	</LinearGradientBrush>
+	<SolidColorBrush x:Key="ReduxDestructiveActionForegroundBrush" Color="#FFFFFF" />
 	<LinearGradientBrush x:Key="ReduxErrorPillBackground" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#3EF05D70" />
 		<GradientStop Offset="1" Color="#1EF05D70" />
@@ -82,6 +89,12 @@
 	<SolidColorBrush x:Key="ReduxTextMutedBrush" Color="{DynamicResource ReduxTextMutedColor}" />
 	<SolidColorBrush x:Key="ReduxAccentForegroundBrush" Color="{DynamicResource ReduxAccentForegroundColor}" />
 	<SolidColorBrush x:Key="ReduxGithubIconBrush" Color="{DynamicResource ReduxGithubIconColor}" />
+	<SolidColorBrush x:Key="ReduxSplashSurfaceBrush" Color="{DynamicResource ReduxWindowColor}" />
+	<SolidColorBrush x:Key="ReduxSplashBorderBrush" Color="{DynamicResource ReduxBorderStrongColor}" />
+	<sys:Double x:Key="Redux.Splash.AccentOpacity">0.24</sys:Double>
+	<sys:Double x:Key="Redux.Splash.ErrorOpacity">0.14</sys:Double>
+	<sys:Double x:Key="Redux.Splash.WarningOpacity">0.13</sys:Double>
+	<sys:Double x:Key="Redux.Splash.SuccessOpacity">0.16</sys:Double>
 	<SolidColorBrush x:Key="ReduxIconBrush" Color="{DynamicResource ReduxAccentColor}" />
 	<!-- Keep stock Adonis controls on the Redux palette after every theme switch. -->
 	<SolidColorBrush x:Key="{x:Static adonisUi:Brushes.ForegroundBrush}" Color="{DynamicResource ReduxTextPrimaryColor}" />

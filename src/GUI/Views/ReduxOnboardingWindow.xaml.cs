@@ -1,47 +1,62 @@
-using DivinityModManager.Controls;
 using DivinityModManager.Models;
 using DivinityModManager.Util;
 
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
+
+using WpfScreenHelper;
 
 namespace DivinityModManager.Views;
 
 public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 {
-	private static readonly string[] PageTitles =
-	[
-		"Welcome to Redux",
-		"How Redux fits your workflow",
-		"Choose how Redux starts"
-	];
-
-	private static readonly string[] PageSubtitles =
-	[
-		"Preview, source, and mod.io guidance are collected here instead of appearing as separate startup warnings.",
-		"Redux adds context and safeguards around the familiar BG3 Mod Manager workflow.",
-		"These safe defaults can be changed at any time in Preferences."
-	];
-
-	private readonly StackPanel[] _pages;
-	private readonly Border[] _progressSegments;
-	private int _pageIndex;
+	private readonly MainWindow _ownerWindow;
+	private readonly DivinityModManagerSettings _settings;
+	private readonly ReduxThemeType _initialTheme;
+	private readonly ReduxCustomTheme _initialCustomTheme;
+	private readonly bool _initialLocalOnlyMode;
+	private readonly bool _initialDiagnosticsEnabled;
+	private readonly bool _initialGuidanceEnabled;
+	private readonly bool _initialReduceMotion;
+	private readonly bool _initialDisableBackgroundEffects;
+	private bool _themePreviewActive;
+	private bool _modulePreviewActive;
+	private bool _accessibilityPreviewActive;
+	private bool _isInitializing = true;
+	private double _availableHeight = 780;
 
 	public bool WasResolved { get; private set; }
-	public bool TourFinished { get; private set; }
-	public bool SelectedLocalOnlyMode => LocalOnlyRadio.IsChecked == true;
+	public bool ApplyChanges { get; private set; }
+	public ReduxThemeType SelectedTheme => ReduxDarkThemeCard.IsChecked == true
+		? ReduxThemeType.ReduxDark
+		: ReduxLightThemeCard.IsChecked == true
+			? ReduxThemeType.ReduxLight
+			: ReduxThemeType.Parchment;
+	public bool SelectedLocalOnlyMode => SourceIntegrationsCheckBox.IsChecked != true;
 	public bool SelectedDiagnosticsEnabled => DiagnosticsCheckBox.IsChecked == true;
-	public bool SelectedGuidanceEnabled =>
-		SelectedDiagnosticsEnabled && GuidanceCheckBox.IsChecked == true;
+	public bool SelectedGuidanceEnabled => SelectedDiagnosticsEnabled && GuidanceCheckBox.IsChecked == true;
+	public bool SelectedReduceMotion => ReduceMotionCheckBox.IsChecked == true;
+	public bool SelectedDisableBackgroundEffects => DisableBackgroundEffectsCheckBox.IsChecked == true;
+	public string SelectedNexusApiKey => NexusApiKeyTextBox.Text?.Trim() ?? String.Empty;
+	public string SelectedModioApiKey => ModioApiKeyTextBox.Text?.Trim() ?? String.Empty;
 
-	public ReduxOnboardingWindow(
-		Window owner,
-		DivinityModManagerSettings settings)
+	public ReduxOnboardingWindow(Window owner, DivinityModManagerSettings settings)
 	{
 		InitializeComponent();
-		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
+		ReduxWindowBehavior.AttachDialogTransitions(this, 30);
 		ReduxWindowBehavior.AttachRoundedCorners(this);
+		_ownerWindow = owner as MainWindow;
+		_settings = settings;
+		_initialTheme = settings?.ColorTheme ?? ReduxThemeType.ReduxDark;
+		_initialCustomTheme = ReduxThemeService.GetActiveTheme(settings);
+		_initialLocalOnlyMode = settings?.LocalOnlyMode == true;
+		_initialDiagnosticsEnabled = settings?.EnableModHealth == true;
+		_initialGuidanceEnabled = settings?.EnableLoadOrderAdvisor == true;
+		_initialReduceMotion = settings?.ReduceMotion == true;
+		_initialDisableBackgroundEffects = settings?.DisableBackgroundEffects == true;
+		ApplyAdaptiveDefaultSize(owner);
 
 		if (owner?.IsLoaded == true)
 		{
@@ -50,53 +65,168 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 
 		if (settings != null)
 		{
-			ReduxThemeService.Apply(
-				Resources,
-				settings.ColorTheme,
-				ReduxThemeService.GetActiveTheme(settings));
-			SourceIntegrationsRadio.IsChecked = !settings.LocalOnlyMode;
-			LocalOnlyRadio.IsChecked = settings.LocalOnlyMode;
+			ReduxThemeService.Apply(Resources, settings.ColorTheme, ReduxThemeService.GetActiveTheme(settings));
+			ReduxDarkThemeCard.IsChecked = settings.ColorTheme == ReduxThemeType.ReduxDark;
+			ReduxLightThemeCard.IsChecked = settings.ColorTheme == ReduxThemeType.ReduxLight;
+			ParchmentThemeCard.IsChecked = settings.ColorTheme == ReduxThemeType.Parchment;
+			SourceIntegrationsCheckBox.IsChecked = !settings.LocalOnlyMode;
 			DiagnosticsCheckBox.IsChecked = settings.EnableModHealth;
-			GuidanceCheckBox.IsChecked =
-				settings.EnableModHealth && settings.EnableLoadOrderAdvisor;
+			GuidanceCheckBox.IsChecked = settings.EnableModHealth && settings.EnableLoadOrderAdvisor;
+			NexusApiKeyTextBox.Text = settings.NexusModsAPIKey ?? String.Empty;
+			ModioApiKeyTextBox.Text = settings.ModioAPIKey ?? String.Empty;
+			ReduceMotionCheckBox.IsChecked = settings.ReduceMotion;
+			DisableBackgroundEffectsCheckBox.IsChecked = settings.DisableBackgroundEffects;
 		}
 		else
 		{
-			SourceIntegrationsRadio.IsChecked = true;
+			ReduxDarkThemeCard.IsChecked = true;
+			SourceIntegrationsCheckBox.IsChecked = true;
 			DiagnosticsCheckBox.IsChecked = true;
 		}
 
-		SkipButtonText.Text = "Close";
-
-		_pages = [WelcomePage, WorkflowPage, ChoicesPage];
-		_progressSegments = [Progress0, Progress1, Progress2];
+		_isInitializing = false;
 		UpdateDiagnosticsState();
-		UpdatePage();
+		UpdateSourceIntegrationState();
 	}
 
-	private void UpdatePage()
+	private void ApplyAdaptiveDefaultSize(Window owner)
 	{
-		for (var index = 0; index < _pages.Length; index++)
+		var workArea = owner != null ? Screen.FromWindow(owner).WorkingArea : SystemParameters.WorkArea;
+		var targetWidth = Math.Clamp(workArea.Width * 0.44, 720, 780);
+		_availableHeight = Math.Max(MinHeight, workArea.Height - 48);
+		Width = Math.Max(MinWidth, Math.Min(targetWidth, workArea.Width - 48));
+		MaxHeight = _availableHeight;
+		SizeToContent = SizeToContent.Height;
+	}
+
+	private void ThemeCard_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is RadioButton { Tag: ReduxThemeType theme })
 		{
-			_pages[index].Visibility =
-				index == _pageIndex ? Visibility.Visible : Visibility.Collapsed;
-			_progressSegments[index].SetResourceReference(
-				Border.BackgroundProperty,
-				index <= _pageIndex ? "ReduxAccentBrush" : "ReduxBorderBrush");
+			ReduxThemeService.Apply(Resources, theme);
+			_ownerWindow?.PreviewColorTheme(theme);
+			_themePreviewActive = true;
+		}
+	}
+
+	private void SourceIntegrationsCheckBox_Changed(object sender, RoutedEventArgs e)
+	{
+		if (!_isInitializing)
+		{
+			UpdateSourceIntegrationState();
+			ApplyModulePreview();
+		}
+	}
+
+	private void UpdateSourceIntegrationState()
+	{
+		if (SourceCredentialsPanel == null)
+		{
+			return;
 		}
 
-		PageTitleText.Text = PageTitles[_pageIndex];
-		PageSubtitleText.Text = PageSubtitles[_pageIndex];
-		StepText.Text = $"{_pageIndex + 1} of {_pages.Length}";
-		BackButton.Visibility = _pageIndex == 0 ? Visibility.Collapsed : Visibility.Visible;
+		var showCredentials = SourceIntegrationsCheckBox.IsChecked == true;
+		if (!IsLoaded || ReduxWindowBehavior.ReduceMotion)
+		{
+			SourceCredentialsPanel.BeginAnimation(FrameworkElement.HeightProperty, null);
+			SourceCredentialsPanel.BeginAnimation(UIElement.OpacityProperty, null);
+			SourceCredentialsPanel.ClearValue(FrameworkElement.HeightProperty);
+			SourceCredentialsPanel.Opacity = 1;
+			SourceCredentialsPanel.Visibility = showCredentials ? Visibility.Visible : Visibility.Collapsed;
+			return;
+		}
 
-		var isLastPage = _pageIndex == _pages.Length - 1;
-		NextButtonText.Text = isLastPage ? "Finish" : "Continue";
-		NextButtonIcon.SetResourceReference(
-			ReduxIcon.StrokeDataProperty,
-			isLastPage ? "Redux.Icon.Check" : "Redux.Icon.ArrowForwardStroke");
+		AnimateSourceCredentials(showCredentials);
+	}
 
-		NextButton.IsEnabled = true;
+	private void AnimateSourceCredentials(bool show)
+	{
+		var panel = SourceCredentialsPanel;
+		panel.BeginAnimation(FrameworkElement.HeightProperty, null);
+		panel.BeginAnimation(UIElement.OpacityProperty, null);
+
+		if (show)
+		{
+			panel.Visibility = Visibility.Visible;
+			panel.ClearValue(FrameworkElement.HeightProperty);
+			var measureWidth = panel.ActualWidth;
+			if (measureWidth <= 1 && panel.Parent is FrameworkElement parent)
+			{
+				measureWidth = parent.ActualWidth;
+			}
+			if (measureWidth <= 1)
+			{
+				measureWidth = Math.Max(1, ActualWidth - 72);
+			}
+			panel.Measure(new Size(measureWidth, Double.PositiveInfinity));
+			var targetHeight = Math.Max(1, panel.DesiredSize.Height);
+			panel.Height = 0;
+			panel.Opacity = 0;
+			AnimateSourceCredentialsTo(panel, targetHeight, 1, collapseWhenComplete: false);
+			return;
+		}
+
+		var currentHeight = Math.Max(1, panel.ActualHeight);
+		panel.Height = currentHeight;
+		panel.Opacity = 1;
+		AnimateSourceCredentialsTo(panel, 0, 0, collapseWhenComplete: true);
+	}
+
+	private static void AnimateSourceCredentialsTo(
+		FrameworkElement panel,
+		double targetHeight,
+		double targetOpacity,
+		bool collapseWhenComplete)
+	{
+		var duration = TimeSpan.FromMilliseconds(180);
+		var easing = new CubicEase { EasingMode = EasingMode.EaseInOut };
+		var heightAnimation = new DoubleAnimation(targetHeight, duration) { EasingFunction = easing };
+		var opacityAnimation = new DoubleAnimation(targetOpacity, duration) { EasingFunction = easing };
+
+		heightAnimation.Completed += (_, _) =>
+		{
+			panel.BeginAnimation(FrameworkElement.HeightProperty, null);
+			panel.BeginAnimation(UIElement.OpacityProperty, null);
+			panel.ClearValue(FrameworkElement.HeightProperty);
+			panel.Opacity = 1;
+			if (collapseWhenComplete)
+			{
+				panel.Visibility = Visibility.Collapsed;
+			}
+		};
+
+		panel.BeginAnimation(FrameworkElement.HeightProperty, heightAnimation, HandoffBehavior.SnapshotAndReplace);
+		panel.BeginAnimation(UIElement.OpacityProperty, opacityAnimation, HandoffBehavior.SnapshotAndReplace);
+	}
+
+	private void DiagnosticsCheckBox_Changed(object sender, RoutedEventArgs e)
+	{
+		if (!_isInitializing)
+		{
+			UpdateDiagnosticsState();
+			ApplyModulePreview();
+		}
+	}
+
+	private void GuidanceCheckBox_Changed(object sender, RoutedEventArgs e)
+	{
+		if (!_isInitializing)
+		{
+			ApplyModulePreview();
+		}
+	}
+
+	private void ApplyModulePreview()
+	{
+		if (_settings == null || _isInitializing)
+		{
+			return;
+		}
+
+		_settings.LocalOnlyMode = SelectedLocalOnlyMode;
+		_settings.EnableModHealth = SelectedDiagnosticsEnabled;
+		_settings.EnableLoadOrderAdvisor = SelectedGuidanceEnabled;
+		_modulePreviewActive = true;
 	}
 
 	private void UpdateDiagnosticsState()
@@ -106,56 +236,37 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 			return;
 		}
 
-		var diagnosticsEnabled = DiagnosticsCheckBox.IsChecked == true;
-		GuidanceCheckBox.IsEnabled = diagnosticsEnabled;
-		if (!diagnosticsEnabled)
+		GuidanceCheckBox.IsEnabled = DiagnosticsCheckBox.IsChecked == true;
+		if (!GuidanceCheckBox.IsEnabled)
 		{
 			GuidanceCheckBox.IsChecked = false;
 		}
 	}
 
-	private void DiagnosticsCheckBox_Changed(object sender, RoutedEventArgs e) =>
-		UpdateDiagnosticsState();
-
-	private void SkipButton_Click(object sender, RoutedEventArgs e)
+	private void AccessibilityCheckBox_Changed(object sender, RoutedEventArgs e)
 	{
-		if (!SkipButton.IsEnabled)
+		if (_isInitializing)
 		{
 			return;
 		}
 
+		ReduxWindowBehavior.ConfigureAccessibility(
+			SelectedReduceMotion,
+			SelectedDisableBackgroundEffects);
+		_accessibilityPreviewActive = true;
+	}
+
+	private void CloseButton_Click(object sender, RoutedEventArgs e)
+	{
 		WasResolved = true;
-		TourFinished = false;
+		ApplyChanges = false;
 		Close();
 	}
 
-	private void BackButton_Click(object sender, RoutedEventArgs e)
+	private void SaveButton_Click(object sender, RoutedEventArgs e)
 	{
-		if (_pageIndex <= 0)
-		{
-			return;
-		}
-
-		_pageIndex--;
-		UpdatePage();
-	}
-
-	private void NextButton_Click(object sender, RoutedEventArgs e)
-	{
-		if (!NextButton.IsEnabled)
-		{
-			return;
-		}
-
-		if (_pageIndex < _pages.Length - 1)
-		{
-			_pageIndex++;
-			UpdatePage();
-			return;
-		}
-
 		WasResolved = true;
-		TourFinished = true;
+		ApplyChanges = true;
 		Close();
 	}
 
@@ -164,7 +275,24 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 		if (!WasResolved)
 		{
 			WasResolved = true;
-			TourFinished = false;
+			ApplyChanges = false;
+		}
+
+		if (!ApplyChanges && _themePreviewActive)
+		{
+			_ownerWindow?.PreviewColorTheme(_initialTheme, _initialCustomTheme);
+		}
+		if (!ApplyChanges && _modulePreviewActive && _settings != null)
+		{
+			_settings.LocalOnlyMode = _initialLocalOnlyMode;
+			_settings.EnableModHealth = _initialDiagnosticsEnabled;
+			_settings.EnableLoadOrderAdvisor = _initialGuidanceEnabled;
+		}
+		if (!ApplyChanges && _accessibilityPreviewActive)
+		{
+			ReduxWindowBehavior.ConfigureAccessibility(
+				_initialReduceMotion,
+				_initialDisableBackgroundEffects);
 		}
 
 		base.OnClosing(e);

@@ -77,20 +77,12 @@
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
-				<Border Width="48"
-					Height="48"
-					VerticalAlignment="Top"
-					Background="{DynamicResource ReduxAccentSoftBrush}"
-					BorderBrush="{DynamicResource ReduxAccentBrush}"
-					BorderThickness="1"
-					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-					<c:ReduxIcon Width="23"
-						Height="23"
-						HorizontalAlignment="Center"
-						VerticalAlignment="Center"
-						Foreground="{DynamicResource ReduxAccentHoverBrush}"
-						StrokeData="{StaticResource Redux.Icon.Information}" />
-				</Border>
+				<c:ReduxIcon Width="26"
+					Height="26"
+					HorizontalAlignment="Center"
+					VerticalAlignment="Center"
+					Foreground="{DynamicResource ReduxAccentHoverBrush}"
+					StrokeData="{StaticResource Redux.Icon.Information}" />
 				<StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
 					<TextBlock x:Name="TitleText" Style="{StaticResource Redux.Text.PageTitle}" />
 					<TextBlock Margin="0,4,0,0"

@@ -153,6 +153,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("Disable blur and dimming", "Keep Redux fully clear and undimmed behind dialogs and secondary windows.")]
 	[DataMember, Reactive] public bool DisableBackgroundEffects { get; set; }
 
+	[DefaultValue(false)]
+	[SettingsEntry("Welcome setup completed", "Tracks whether the compact Redux welcome and initial setup window has been shown.", HideFromUI = true)]
+	[DataMember, Reactive] public bool HasSeenReduxWelcome { get; set; }
+
 	[DefaultValue("")]
 	[DataMember, Reactive] public string ActiveCustomThemeId { get; set; } = String.Empty;
 

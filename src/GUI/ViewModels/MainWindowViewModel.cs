@@ -350,9 +350,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	[Reactive] public bool HighlightExtenderDownload { get; set; }
 	[Reactive] public bool GameDirectoryFound { get; set; }
 
-	private readonly ObservableAsPropertyHelper<bool> _hideModList;
-	public bool HideModList => _hideModList.Value;
-
 	private readonly ObservableAsPropertyHelper<bool> _hasForceLoadedMods;
 	public bool HasForceLoadedMods => _hasForceLoadedMods.Value;
 
@@ -2380,8 +2377,8 @@ Directory the zip will be extracted to:
 	{
 		if (!MainProgressIsActive)
 		{
-			MainProgressTitle = "Importing mods.";
-			MainProgressWorkText = "";
+			MainProgressTitle = "Importing mods";
+			MainProgressWorkText = "Preparing selected files…";
 			MainProgressValue = 0d;
 			MainProgressIsActive = true;
 			IsRefreshing = true;
@@ -3233,20 +3230,39 @@ Directory the zip will be extracted to:
 		});
 	}
 
-	public void ShowReduxTour()
+	public void ShowReduxWelcome(bool onlyIfUnseen = false)
 	{
-		var tourWindow = new ReduxOnboardingWindow(Window, Settings);
-		ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(tourWindow, Window);
-		if (!tourWindow.WasResolved)
+		if (onlyIfUnseen && Settings.HasSeenReduxWelcome)
 		{
 			return;
 		}
 
-		if (tourWindow.TourFinished)
+		var welcomeWindow = new ReduxOnboardingWindow(Window, Settings);
+		ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(welcomeWindow, Window);
+		if (!welcomeWindow.WasResolved)
 		{
-			Settings.LocalOnlyMode = tourWindow.SelectedLocalOnlyMode;
-			Settings.EnableModHealth = tourWindow.SelectedDiagnosticsEnabled;
-			Settings.EnableLoadOrderAdvisor = tourWindow.SelectedGuidanceEnabled;
+			return;
+		}
+
+		Settings.HasSeenReduxWelcome = true;
+		if (welcomeWindow.ApplyChanges)
+		{
+			var themeChanged = !String.IsNullOrWhiteSpace(Settings.ActiveCustomThemeId)
+				|| Settings.ColorTheme != welcomeWindow.SelectedTheme;
+			if (themeChanged)
+			{
+				Settings.ActiveCustomThemeId = String.Empty;
+				ReduxThemeService.ApplyBuiltInCategoryPresentation(Settings, welcomeWindow.SelectedTheme);
+				Settings.ColorTheme = welcomeWindow.SelectedTheme;
+			}
+
+			Settings.LocalOnlyMode = welcomeWindow.SelectedLocalOnlyMode;
+			Settings.EnableModHealth = welcomeWindow.SelectedDiagnosticsEnabled;
+			Settings.EnableLoadOrderAdvisor = welcomeWindow.SelectedGuidanceEnabled;
+			Settings.NexusModsAPIKey = welcomeWindow.SelectedNexusApiKey;
+			Settings.ModioAPIKey = welcomeWindow.SelectedModioApiKey;
+			Settings.ReduceMotion = welcomeWindow.SelectedReduceMotion;
+			Settings.DisableBackgroundEffects = welcomeWindow.SelectedDisableBackgroundEffects;
 		}
 
 		SaveSettings();
@@ -4330,8 +4346,8 @@ Directory the zip will be extracted to:
 			//	view.AlertBar.SetDangerAlert($"Currently only .zip format archives are supported.", -1);
 			//	return;
 			//}
-			MainProgressTitle = $"Importing mods from '{dialog.FileName}'.";
-			MainProgressWorkText = "";
+			MainProgressTitle = "Importing mod archive";
+			MainProgressWorkText = $"Preparing {Path.GetFileName(dialog.FileName)}…";
 			MainProgressValue = 0d;
 			MainProgressIsActive = true;
 			var result = new ImportOperationResults()
@@ -8589,31 +8605,10 @@ Directory the zip will be extracted to:
 
 		SaveSettingsSilentlyCommand = ReactiveCommand.Create(SaveSettings);
 
-		_isDeletingFiles = this.WhenAnyValue(x => x.View.DeleteFilesView.ViewModel.IsVisible).ToProperty(this, nameof(IsDeletingFiles), true, RxApp.MainThreadScheduler);
-
-		_hideModList = this.WhenAnyValue(x => x.MainProgressIsActive, x => x.IsDeletingFiles, (a, b) => a || b)
-			.ToProperty(this, nameof(HideModList), true, false, RxApp.MainThreadScheduler);
+		_isDeletingFiles = this.WhenAnyValue(x => x.View.DeleteFilesView.ViewModel.IsVisible).ToProperty(this, nameof(IsDeletingFiles), false, RxApp.MainThreadScheduler);
 
 		var forceLoadedModsConnection = this.ForceLoadedMods.ToObservableChangeSet().ObserveOn(RxApp.MainThreadScheduler);
 		_hasForceLoadedMods = forceLoadedModsConnection.Count().StartWith(0).Select(x => x > 0).ToProperty(this, nameof(HasForceLoadedMods), false, true, RxApp.MainThreadScheduler);
-
-		DivinityInteractions.ConfirmModDeletion.RegisterHandler(async interaction =>
-		{
-			var sentenceStart = interaction.Input.PermanentlyDelete ? "Permanently delete" : "Delete";
-			var msg = $"{sentenceStart} {interaction.Input.Total} mod file(s)?";
-
-			var confirmed = await Observable.Start((Func<bool>)(() =>
-			{
-				MessageBoxResult result = ReduxMessageBox.Show(Window, msg, "Confirm Mod Deletion",
-				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
-				if (result == MessageBoxResult.Yes)
-				{
-					return true;
-				}
-				return false;
-			}), RxApp.MainThreadScheduler);
-			interaction.SetOutput(confirmed);
-		});
 
 		CanSaveOrder = true;
 		LayoutMode = 0;

@@ -26,37 +26,9 @@
 	</UserControl.Style>
 	<xc:BusyIndicator x:Name="ProgressIndicator" Style="{StaticResource BusyIndicatorProgressStyle}">
 		<xc:BusyIndicator.BusyContent>
-			<Grid Margin="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="*" />
-					<RowDefinition Height="Auto" />
-				</Grid.RowDefinitions>
-				<TextBlock x:Name="TaskProgressTitleText"
-				    HorizontalAlignment="Center"
-				    FontSize="{DynamicResource Redux.FontSize.16}"
-				    FontWeight="Bold" />
-				<DockPanel Grid.Row="1" Margin="8">
-					<TextBlock x:Name="TaskProgressWorkText"
-					    HorizontalAlignment="Center"
-					    VerticalAlignment="Center"
-					    DockPanel.Dock="Bottom"
-					    TextAlignment="Center" />
-					<ProgressBar x:Name="TaskProgressBar"
-						Style="{StaticResource ReduxProgressBarStyle}"
-					    MinHeight="15"
-					    VerticalAlignment="Center"
-					    DockPanel.Dock="Top"
-					    Maximum="1" />
-				</DockPanel>
-				<Button x:Name="CancelProgressButton"
-				    Grid.Row="2"
-				    Margin="8,0,8,8"
-				    Padding="20,4"
-				    HorizontalAlignment="Center"
-				    VerticalAlignment="Center"
-				    Content="Cancel" />
-			</Grid>
+			<controls:ReduxOperationProgress x:Name="TaskProgressContent"
+				IconBrush="{DynamicResource ReduxAccentHoverBrush}"
+				IconKey="archive" />
 		</xc:BusyIndicator.BusyContent>
 		<Grid>
 			<Grid.Resources>

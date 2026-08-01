@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:sys="clr-namespace:System;assembly=mscorlib">
 	<!--
 		Parchment intentionally reuses the shared Redux Light control mappings.
 		Only semantic colors are overridden here; layouts, fonts, icons, templates,
@@ -35,6 +36,21 @@
 	<Color x:Key="ReduxAccentForegroundColor">#FFF8EB</Color>
 	<Color x:Key="ReduxGithubIconColor">#000000</Color>
 	<!--
+		Parchment needs a distinct splash composition, not a low-contrast version of the
+		four-colour dark-theme wash. A stronger paper ramp carries the surface while one
+		burgundy field and one forest field provide intentional opposing focal points.
+	-->
+	<LinearGradientBrush x:Key="ReduxSplashSurfaceBrush" StartPoint="0,0" EndPoint="1,1">
+		<GradientStop Offset="0" Color="#F5E8CE" />
+		<GradientStop Offset="0.48" Color="#E9D5B2" />
+		<GradientStop Offset="1" Color="#CFAD7F" />
+	</LinearGradientBrush>
+	<SolidColorBrush x:Key="ReduxSplashBorderBrush" Color="#876642" />
+	<sys:Double x:Key="Redux.Splash.AccentOpacity">0.18</sys:Double>
+	<sys:Double x:Key="Redux.Splash.ErrorOpacity">0</sys:Double>
+	<sys:Double x:Key="Redux.Splash.WarningOpacity">0</sys:Double>
+	<sys:Double x:Key="Redux.Splash.SuccessOpacity">0.085</sys:Double>
+	<!--
 		Light.xaml's Redux*PillBackground gradients bake in Light's own hex rather than a
 		DynamicResource Color, so they don't automatically pick up Parchment's overrides above
 		the way a plain Color-bound SolidColorBrush does. Restated here with Parchment's colors.
@@ -45,10 +61,16 @@
 	</LinearGradientBrush>
 	<!-- Primary actions stay saturated across the full button instead of fading into the paper surface. -->
 	<LinearGradientBrush x:Key="ReduxPrimaryActionBackgroundBrush" StartPoint="0,0.5" EndPoint="1,0.5">
-		<GradientStop Offset="0" Color="#72272A" />
-		<GradientStop Offset="0.50" Color="#8B3034" />
-		<GradientStop Offset="1" Color="#AE4D3C" />
+		<GradientStop Offset="0" Color="#681D2B" />
+		<GradientStop Offset="0.48" Color="#962735" />
+		<GradientStop Offset="1" Color="#B7383D" />
 	</LinearGradientBrush>
+	<LinearGradientBrush x:Key="ReduxDestructiveActionBackgroundBrush" StartPoint="0,0.5" EndPoint="1,0.5">
+		<GradientStop Offset="0" Color="#74122E" />
+		<GradientStop Offset="0.48" Color="#A91D39" />
+		<GradientStop Offset="1" Color="#CC3340" />
+	</LinearGradientBrush>
+	<SolidColorBrush x:Key="ReduxDestructiveActionForegroundBrush" Color="#FFF8EB" />
 	<LinearGradientBrush x:Key="ReduxSuccessPillBackground" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#3E3F6B35" />
 		<GradientStop Offset="1" Color="#1E3F6B35" />

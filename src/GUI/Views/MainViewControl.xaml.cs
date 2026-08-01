@@ -363,14 +363,14 @@ public partial class MainViewControl : MainViewControlViewBase
 		if (menuItems.TryGetValue("Help", out var helpMenuItem))
 		{
 			helpMenuItem.Items.Add(new Separator());
-			var reduxTourMenuItem = new MenuItem
+			var reduxWelcomeMenuItem = new MenuItem
 			{
-				Header = "Take the Redux Tour...",
-				ToolTip = "Replay the optional introduction to Redux features and initial choices.",
-				Icon = ReduxIcon.FromResource("Redux.Icon.Compass", true)
+				Header = "Welcome to Redux...",
+				ToolTip = "Review Redux's optional modules, appearance, and accessibility setup.",
+				Icon = ReduxIcon.FromResource("Redux.Icon.Sparkles", true)
 			};
-			reduxTourMenuItem.Click += (_, _) => ViewModel.ShowReduxTour();
-			helpMenuItem.Items.Add(reduxTourMenuItem);
+			reduxWelcomeMenuItem.Click += (_, _) => ViewModel.ShowReduxWelcome();
+			helpMenuItem.Items.Add(reduxWelcomeMenuItem);
 
 			var reportBugMenuItem = new MenuItem
 			{
@@ -1284,11 +1284,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => Mouse.Synchronize());
 
-		this.WhenAnyValue(x => x.ViewModel.MainProgressIsActive).Take(1).Delay(TimeSpan.FromMilliseconds(25)).ObserveOn(RxApp.MainThreadScheduler).Subscribe(b =>
-		{
-			this.MainBusyIndicator.Visibility = Visibility.Visible;
-		});
-		this.OneWayBind(ViewModel, vm => vm.HideModList, view => view.ModListRectangle.Visibility, BoolToVisibilityConverter.FromBool);
+		this.OneWayBind(ViewModel, vm => vm.IsDeletingFiles, view => view.ModListRectangle.Visibility, BoolToVisibilityConverter.FromBool);
 		this.OneWayBind(ViewModel, vm => vm.MainProgressIsActive, view => view.MainBusyIndicator.IsBusy);
 
 		//this.OneWayBind(ViewModel, vm => vm, view => view.ModLayout.ViewModel);

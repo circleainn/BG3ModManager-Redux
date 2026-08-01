@@ -103,14 +103,13 @@ public partial class ReduxMessageBoxWindow : AdonisUI.Controls.AdonisWindow
 
 		if (iconKey == null)
 		{
-			IconBadge.Visibility = Visibility.Collapsed;
+			SeverityIcon.Visibility = Visibility.Collapsed;
 			return;
 		}
 
 		var brush = TryFindResource(brushKey) as Brush;
 		SeverityIcon.IconKey = iconKey;
 		SeverityIcon.Foreground = brush;
-		IconBadge.BorderBrush = brush;
 	}
 
 	/// <summary>
