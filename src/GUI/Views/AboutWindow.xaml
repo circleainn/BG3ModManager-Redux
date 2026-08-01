@@ -10,7 +10,7 @@
 	Height="500"
 	MinWidth="640"
 	MinHeight="450"
-	ResizeMode="CanResizeWithGrip"
+	ResizeMode="CanResize"
 	WindowStyle="SingleBorderWindow"
 	Template="{DynamicResource ReduxWindowTemplate}"
 	ShowInTaskbar="False"

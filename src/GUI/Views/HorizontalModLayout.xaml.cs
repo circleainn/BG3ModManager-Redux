@@ -23,6 +23,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace DivinityModManager.Views;
 
@@ -52,9 +53,13 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private const string BulkHiddenSeparatorTag = "ReduxBulkHiddenSeparator";
 	private Point _categoryDragStart;
 	private ModCategoryFilterItem _draggedCategory;
-	private CategoryDropIndicatorAdorner _categoryDropIndicator;
+	private ReduxDropIndicatorAdorner _categoryDropIndicator;
 	private ListBoxItem _categoryDropTarget;
 	private bool _categoryDropAfter;
+	private ReduxDropTargetMotionState _categoryDropMotion;
+	private ReduxDropIndicatorAdorner _modListDropIndicator;
+	private ListView _modListDropIndicatorOwner;
+	private ReduxDropTargetMotionState _modListDropMotion;
 	private const string VisualDividerMenuTag = "ReduxVisualDivider";
 	private const double DefaultModDetailsRowHeight = 295;
 	private const double MinimumExpandedModDetailsRowHeight = 295;
@@ -167,7 +172,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private void CategoryListBox_DragOver(object sender, DragEventArgs e)
 	{
 		if (!e.Data.GetDataPresent(typeof(ModCategoryFilterItem)) ||
-			(e.OriginalSource as DependencyObject)?.FindVisualParent<ListBoxItem>() is not ListBoxItem targetItem)
+			sender is not ListBox listBox ||
+			!TryResolveDropSlot(listBox, e.GetPosition(listBox), true, out var targetItem, out var insertAfter))
 		{
 			ClearCategoryDropIndicator();
 			e.Effects = DragDropEffects.None;
@@ -175,71 +181,273 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			return;
 		}
 
-		var insertAfter = e.GetPosition(targetItem).Y > targetItem.ActualHeight / 2;
-		if (targetItem.DataContext is ModCategoryFilterItem target &&
-			target.Name.Equals(MainWindowViewModel.AllModsCategory, StringComparison.OrdinalIgnoreCase)) insertAfter = true;
 		ShowCategoryDropIndicator(targetItem, insertAfter);
 		e.Effects = DragDropEffects.Move;
 		e.Handled = true;
 	}
 
-	private void CategoryListBox_DragLeave(object sender, DragEventArgs e) => ClearCategoryDropIndicator();
+	private void CategoryListBox_DragLeave(object sender, DragEventArgs e)
+	{
+		if (sender is not FrameworkElement list) return;
+		var position = e.GetPosition(list);
+		if (position.X >= 0 && position.Y >= 0 && position.X <= list.ActualWidth && position.Y <= list.ActualHeight) return;
+		ClearCategoryDropIndicator();
+	}
 
 	private void CategoryListBox_Drop(object sender, DragEventArgs e)
 	{
 		if (e.Data.GetData(typeof(ModCategoryFilterItem)) is not ModCategoryFilterItem source ||
-			(e.OriginalSource as DependencyObject)?.FindVisualParent<ListBoxItem>() is not ListBoxItem targetItem ||
+			sender is not ListBox listBox ||
+			!TryResolveDropSlot(listBox, e.GetPosition(listBox), true, out var targetItem, out var insertAfter) ||
 			targetItem.DataContext is not ModCategoryFilterItem target)
 		{
 			ClearCategoryDropIndicator();
 			return;
 		}
 
-		var insertAfter = e.GetPosition(targetItem).Y > targetItem.ActualHeight / 2;
-		if (target.Name.Equals(MainWindowViewModel.AllModsCategory, StringComparison.OrdinalIgnoreCase)) insertAfter = true;
 		ClearCategoryDropIndicator();
 		ViewModel.MoveModCategory(source.Name, target.Name, insertAfter);
 		e.Handled = true;
 	}
 
+	private static bool TryResolveDropSlot(
+		ItemsControl itemsControl,
+		Point pointer,
+		bool keepFirstItemFixed,
+		out ListBoxItem target,
+		out bool insertAfter)
+	{
+		target = null;
+		insertAfter = false;
+		var containers = new List<(ListBoxItem Item, double Center)>();
+		for (var index = 0; index < itemsControl.Items.Count; index++)
+		{
+			if (itemsControl.ItemContainerGenerator.ContainerFromIndex(index) is not ListBoxItem item || !item.IsVisible) continue;
+			var top = item.TranslatePoint(new Point(), itemsControl).Y;
+			containers.Add((item, top + (item.ActualHeight / 2)));
+		}
+
+		if (containers.Count == 0) return false;
+		containers.Sort((left, right) => left.Center.CompareTo(right.Center));
+
+		// The first Categories entry is the fixed All Mods item. Clamping the slot
+		// below it also makes the visual gap between it and the next pill droppable.
+		var minimumSlot = keepFirstItemFixed && containers.Count > 1 ? 1 : 0;
+		var slot = containers.FindIndex(entry => pointer.Y < entry.Center);
+		if (slot < 0) slot = containers.Count;
+		slot = Math.Max(minimumSlot, slot);
+
+		if (slot >= containers.Count)
+		{
+			target = containers[^1].Item;
+			insertAfter = true;
+		}
+		else
+		{
+			target = containers[slot].Item;
+			insertAfter = false;
+		}
+		return true;
+	}
+
 	private void ShowCategoryDropIndicator(ListBoxItem target, bool insertAfter)
 	{
 		if (_categoryDropTarget == target && _categoryDropAfter == insertAfter && _categoryDropIndicator != null) return;
-		ClearCategoryDropIndicator();
-		var layer = AdornerLayer.GetAdornerLayer(target);
+		var layer = AdornerLayer.GetAdornerLayer(CategoryListBox);
 		if (layer == null) return;
 		var brush = TryFindResource("ReduxAccentHoverBrush") as Brush ?? System.Windows.Media.Brushes.Gray;
+		var offset = target.TranslatePoint(new Point(), CategoryListBox).Y + (insertAfter ? target.ActualHeight : 0);
 		_categoryDropTarget = target;
 		_categoryDropAfter = insertAfter;
-		_categoryDropIndicator = new CategoryDropIndicatorAdorner(target, insertAfter, brush);
-		layer.Add(_categoryDropIndicator);
+		if (_categoryDropIndicator == null)
+		{
+			_categoryDropIndicator = new ReduxDropIndicatorAdorner(CategoryListBox, offset, brush);
+			layer.Add(_categoryDropIndicator);
+		}
+		else
+		{
+			_categoryDropIndicator.MoveTo(offset);
+		}
+		var motionTarget = target.Template.FindName("CategorySurface", target) as FrameworkElement ?? target;
+		ReduxDropFeedback.SetTarget(ref _categoryDropMotion, motionTarget, insertAfter);
 	}
 
 	private void ClearCategoryDropIndicator()
 	{
 		if (_categoryDropIndicator != null)
+		{
+			_categoryDropIndicator.Detach();
 			AdornerLayer.GetAdornerLayer(_categoryDropIndicator.AdornedElement)?.Remove(_categoryDropIndicator);
+		}
 		_categoryDropIndicator = null;
 		_categoryDropTarget = null;
+		ReduxDropFeedback.Clear(ref _categoryDropMotion);
 	}
 
-	private sealed class CategoryDropIndicatorAdorner : Adorner
+	private void ModListView_PreviewDragOver(object sender, DragEventArgs e)
 	{
-		private readonly bool _after;
-		private readonly Pen _pen;
-
-		public CategoryDropIndicatorAdorner(UIElement adornedElement, bool after, Brush brush) : base(adornedElement)
+		if (e.Data.GetDataPresent(DataFormats.FileDrop))
 		{
-			_after = after;
-			_pen = new Pen(brush, 2);
-			IsHitTestVisible = false;
+			ClearModListDropIndicator();
+			return;
 		}
 
-		protected override void OnRender(DrawingContext drawingContext)
+		if (sender is not ListView listView)
 		{
-			var y = _after ? AdornedElement.RenderSize.Height - 1 : 1;
-			drawingContext.DrawLine(_pen, new Point(3, y), new Point(Math.Max(3, AdornedElement.RenderSize.Width - 3), y));
+			ClearModListDropIndicator();
+			return;
 		}
+
+		if (_modListDropIndicatorOwner != null && _modListDropIndicatorOwner != listView)
+			ClearModListDropIndicator();
+
+		if (!TryResolveModListDropSlot(
+				listView,
+				e.OriginalSource as DependencyObject,
+				e.GetPosition(listView),
+				out var insertIndex,
+				out var indicatorOffset,
+				out var targetItem,
+				out var insertAfter))
+		{
+			ClearModListDropIndicator();
+			return;
+		}
+
+		ShowModListDropIndicator(listView, indicatorOffset, insertIndex, targetItem, insertAfter);
+	}
+
+	private void ModListView_PreviewDragLeave(object sender, DragEventArgs e)
+	{
+		if (sender is not FrameworkElement list) return;
+		var position = e.GetPosition(list);
+		if (position.X >= 0 && position.Y >= 0 && position.X <= list.ActualWidth && position.Y <= list.ActualHeight) return;
+		ClearModListDropIndicator();
+	}
+
+	private void ModListView_PreviewDrop(object sender, DragEventArgs e) =>
+		ScheduleClearModListDropIndicator(sender as ListView);
+
+	private void ModListView_PreviewQueryContinueDrag(object sender, QueryContinueDragEventArgs e)
+	{
+		if (e.EscapePressed || e.Action == DragAction.Cancel)
+			ClearModListDropIndicator();
+		else if (e.Action == DragAction.Drop)
+			ScheduleClearModListDropIndicator(sender as ListView);
+	}
+
+	private static bool TryResolveModListDropSlot(
+		ListView listView,
+		DependencyObject originalSource,
+		Point pointer,
+		out int insertIndex,
+		out double indicatorOffset,
+		out ListBoxItem targetItem,
+		out bool insertAfter)
+	{
+		insertIndex = -1;
+		indicatorOffset = Math.Clamp(pointer.Y, 1, Math.Max(1, listView.ActualHeight - 1));
+		targetItem = null;
+		insertAfter = false;
+
+		if (originalSource != null &&
+			ItemsControl.ContainerFromElement(listView, originalSource) is ListBoxItem target)
+		{
+			var targetIndex = listView.ItemContainerGenerator.IndexFromContainer(target);
+			if (targetIndex < 0) return false;
+			var targetTop = target.TranslatePoint(new Point(), listView).Y;
+			insertAfter = pointer.Y >= targetTop + (target.ActualHeight / 2);
+			insertIndex = targetIndex + (insertAfter ? 1 : 0);
+			targetItem = target;
+			return true;
+		}
+
+		// A pointer can briefly sit in row padding rather than over a container. Only
+		// that uncommon path inspects the realized viewport; the normal drag path is O(1).
+		var realizedRows = listView.FindVisualChildren<ListViewItem>()
+			.Where(row => row.IsVisible && ItemsControl.ItemsControlFromItemContainer(row) == listView)
+			.Select(row =>
+			{
+				var top = row.TranslatePoint(new Point(), listView).Y;
+				return (Item: (ListBoxItem)row, Index: listView.ItemContainerGenerator.IndexFromContainer(row), Top: top,
+					Center: top + (row.ActualHeight / 2), Bottom: top + row.ActualHeight);
+			})
+			.Where(row => row.Index >= 0)
+			.OrderBy(row => row.Top)
+			.ToList();
+		if (realizedRows.Count == 0) return false;
+		var slot = realizedRows.FindIndex(row => pointer.Y < row.Center);
+		if (slot < 0)
+		{
+			targetItem = realizedRows[^1].Item;
+			insertAfter = true;
+			insertIndex = realizedRows[^1].Index + 1;
+		}
+		else
+		{
+			targetItem = realizedRows[slot].Item;
+			insertAfter = false;
+			insertIndex = realizedRows[slot].Index;
+		}
+		indicatorOffset = Math.Clamp(pointer.Y, realizedRows[0].Top, realizedRows[^1].Bottom);
+		return true;
+	}
+
+	private void ShowModListDropIndicator(
+		ListView listView,
+		double indicatorOffset,
+		int insertIndex,
+		ListBoxItem targetItem,
+		bool insertAfter)
+	{
+		if (_modListDropIndicatorOwner != null && _modListDropIndicatorOwner != listView)
+			ClearModListDropIndicator();
+
+		var layer = AdornerLayer.GetAdornerLayer(listView);
+		if (layer == null) return;
+
+		var brush = TryFindResource("ReduxAccentHoverBrush") as Brush ?? System.Windows.Media.Brushes.Gray;
+		_modListDropIndicatorOwner = listView;
+		ReduxDropFeedback.SetStableInsertIndex(listView, insertIndex);
+		if (_modListDropIndicator == null)
+		{
+			_modListDropIndicator = new ReduxDropIndicatorAdorner(listView, indicatorOffset, brush);
+			layer.Add(_modListDropIndicator);
+		}
+		else
+		{
+			_modListDropIndicator.FollowTo(indicatorOffset);
+		}
+
+		var dividerSurface = targetItem?.Template.FindName("VisualDivider", targetItem) as FrameworkElement;
+		var rowSurface = targetItem?.Template.FindName("RowBorder", targetItem) as FrameworkElement;
+		var motionTarget = dividerSurface?.Visibility == Visibility.Visible ? dividerSurface : rowSurface ?? targetItem;
+		ReduxDropFeedback.SetTarget(ref _modListDropMotion, motionTarget, insertAfter);
+	}
+
+	private void ScheduleClearModListDropIndicator(ListView owner)
+	{
+		var scheduledIndicator = _modListDropIndicator;
+		Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+		{
+			if ((owner == null || _modListDropIndicatorOwner == owner) &&
+				ReferenceEquals(_modListDropIndicator, scheduledIndicator))
+				ClearModListDropIndicator();
+		}));
+	}
+
+	private void ClearModListDropIndicator()
+	{
+		if (_modListDropIndicatorOwner != null)
+			ReduxDropFeedback.SetStableInsertIndex(_modListDropIndicatorOwner, -1);
+		if (_modListDropIndicator != null)
+		{
+			_modListDropIndicator.Detach();
+			AdornerLayer.GetAdornerLayer(_modListDropIndicator.AdornedElement)?.Remove(_modListDropIndicator);
+		}
+		_modListDropIndicator = null;
+		_modListDropIndicatorOwner = null;
+		ReduxDropFeedback.Clear(ref _modListDropMotion);
 	}
 
 	private void SaveCategoryFilterMenuItem_Click(object sender, RoutedEventArgs e)
@@ -1807,6 +2015,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	public HorizontalModLayout()
 	{
 		InitializeComponent();
+		Unloaded += HorizontalModLayout_Unloaded;
 		CaptureModListColumnWidths();
 
 		ModDetailsToggleButton.Checked += ModDetailsToggleButton_Checked;
@@ -2020,6 +2229,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				}));
 			}
 		});
+	}
+
+	private void HorizontalModLayout_Unloaded(object sender, RoutedEventArgs e)
+	{
+		ClearCategoryDropIndicator();
+		ClearModListDropIndicator();
 	}
 
 	private void HorizontalModLayout_KeyDown(Key key)

@@ -209,46 +209,100 @@
 					</Setter.Value>
 				</Setter>
 			</Style>
-			<!--
-				Invisible until hover, matching the selected-mod drawer's resize handle
-				(ModDetailsGridSplitter): a rail that's always faintly visible reads as
-				permanent chrome; fading it in only on hover keeps it discoverable without
-				adding a line to every pane at rest.
-			-->
+			<!-- Pane-resize handles mirror the rounded insertion rail without adding permanent chrome. -->
 			<Style x:Key="ReduxVerticalSplitterStyle" TargetType="{x:Type GridSplitter}">
 				<Setter Property="Background" Value="Transparent" />
 				<Setter Property="Cursor" Value="SizeWE" />
+				<Setter Property="ResizeDirection" Value="Columns" />
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type GridSplitter}">
 							<Grid Background="Transparent">
-								<Border x:Name="SplitterLine"
-									Width="3"
+								<Border x:Name="SplitterHalo"
+									Width="6"
+									Margin="0,6"
 									HorizontalAlignment="Center"
 									Background="{DynamicResource ReduxAccentHoverBrush}"
-									CornerRadius="1.5"
+									CornerRadius="3"
+									Opacity="0" />
+								<Border x:Name="SplitterRail"
+									Width="2"
+									Margin="0,6"
+									HorizontalAlignment="Center"
+									Background="{DynamicResource ReduxAccentHoverBrush}"
+									CornerRadius="1"
 									Opacity="0" />
 							</Grid>
 							<ControlTemplate.Triggers>
 								<EventTrigger RoutedEvent="MouseEnter">
 									<BeginStoryboard>
 										<Storyboard>
-											<DoubleAnimation Storyboard.TargetName="SplitterLine" Storyboard.TargetProperty="Opacity"
-												To="0.9" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											<DoubleAnimation Storyboard.TargetName="SplitterHalo" Storyboard.TargetProperty="Opacity"
+												To="0.18" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											<DoubleAnimation Storyboard.TargetName="SplitterRail" Storyboard.TargetProperty="Opacity"
+												To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 										</Storyboard>
 									</BeginStoryboard>
 								</EventTrigger>
 								<EventTrigger RoutedEvent="MouseLeave">
 									<BeginStoryboard>
 										<Storyboard>
-											<DoubleAnimation Storyboard.TargetName="SplitterLine" Storyboard.TargetProperty="Opacity"
+											<DoubleAnimation Storyboard.TargetName="SplitterHalo" Storyboard.TargetProperty="Opacity"
+												To="0" Duration="{StaticResource Redux.Motion.Standard}" />
+											<DoubleAnimation Storyboard.TargetName="SplitterRail" Storyboard.TargetProperty="Opacity"
 												To="0" Duration="{StaticResource Redux.Motion.Standard}" />
 										</Storyboard>
 									</BeginStoryboard>
 								</EventTrigger>
-								<Trigger Property="IsDragging" Value="True">
-									<Setter TargetName="SplitterLine" Property="Opacity" Value="1" />
-								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
+			<Style x:Key="ReduxHorizontalSplitterStyle" TargetType="{x:Type GridSplitter}">
+				<Setter Property="Background" Value="Transparent" />
+				<Setter Property="Cursor" Value="SizeNS" />
+				<Setter Property="ResizeDirection" Value="Rows" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type GridSplitter}">
+							<Grid Background="Transparent">
+								<Border x:Name="SplitterHalo"
+									Height="6"
+									Margin="10,0"
+									VerticalAlignment="Center"
+									Background="{DynamicResource ReduxAccentHoverBrush}"
+									CornerRadius="3"
+									Opacity="0" />
+								<Border x:Name="SplitterRail"
+									Height="2"
+									Margin="10,0"
+									VerticalAlignment="Center"
+									Background="{DynamicResource ReduxAccentHoverBrush}"
+									CornerRadius="1"
+									Opacity="0" />
+							</Grid>
+							<ControlTemplate.Triggers>
+								<EventTrigger RoutedEvent="MouseEnter">
+									<BeginStoryboard>
+										<Storyboard>
+											<DoubleAnimation Storyboard.TargetName="SplitterHalo" Storyboard.TargetProperty="Opacity"
+												To="0.18" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											<DoubleAnimation Storyboard.TargetName="SplitterRail" Storyboard.TargetProperty="Opacity"
+												To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+										</Storyboard>
+									</BeginStoryboard>
+								</EventTrigger>
+								<EventTrigger RoutedEvent="MouseLeave">
+									<BeginStoryboard>
+										<Storyboard>
+											<DoubleAnimation Storyboard.TargetName="SplitterHalo" Storyboard.TargetProperty="Opacity"
+												To="0" Duration="{StaticResource Redux.Motion.Standard}" />
+											<DoubleAnimation Storyboard.TargetName="SplitterRail" Storyboard.TargetProperty="Opacity"
+												To="0" Duration="{StaticResource Redux.Motion.Standard}" />
+										</Storyboard>
+									</BeginStoryboard>
+								</EventTrigger>
 							</ControlTemplate.Triggers>
 						</ControlTemplate>
 					</Setter.Value>
@@ -1758,6 +1812,10 @@
 					GridViewColumnHeader.PreviewMouseLeftButtonUp="ListViewColumnHeader_PreviewMouseLeftButtonUp"
 					GridViewColumnHeader.PreviewMouseRightButtonUp="ListViewColumnHeader_RightClick"
 					ItemContainerStyle="{StaticResource ListViewItemMouseEvents}"
+					PreviewDragOver="ModListView_PreviewDragOver"
+					PreviewDragLeave="ModListView_PreviewDragLeave"
+					PreviewDrop="ModListView_PreviewDrop"
+					PreviewQueryContinueDrag="ModListView_PreviewQueryContinueDrag"
 					ScrollViewer.VerticalScrollBarVisibility="Auto"
 					Style="{StaticResource ModOrderListViewWithDrag}"
 					View="{DynamicResource ModGridView}"
@@ -1986,6 +2044,10 @@
 				GridViewColumnHeader.PreviewMouseLeftButtonUp="ListViewColumnHeader_PreviewMouseLeftButtonUp"
 				GridViewColumnHeader.PreviewMouseRightButtonUp="ListViewColumnHeader_RightClick"
 				ItemContainerStyle="{StaticResource ListViewItemMouseEvents}"
+				PreviewDragOver="ModListView_PreviewDragOver"
+				PreviewDragLeave="ModListView_PreviewDragLeave"
+				PreviewDrop="ModListView_PreviewDrop"
+				PreviewQueryContinueDrag="ModListView_PreviewQueryContinueDrag"
 				ScrollViewer.VerticalScrollBarVisibility="Auto"
 				View="{DynamicResource InactiveModGridView}"
 				VirtualizingPanel.IsVirtualizing="True"
@@ -2031,79 +2093,10 @@
 			Height="6"
 			HorizontalAlignment="Stretch"
 			VerticalAlignment="Stretch"
-			Background="Transparent"
-			Cursor="SizeNS"
 			ResizeBehavior="PreviousAndNext"
-			ResizeDirection="Rows"
 			ShowsPreview="False"
-			Visibility="Collapsed">
-			<GridSplitter.PreviewStyle>
-				<Style TargetType="{x:Type Control}">
-					<Setter Property="Template">
-						<Setter.Value>
-							<ControlTemplate TargetType="{x:Type Control}">
-								<Border Height="3"
-									Margin="10,0"
-									VerticalAlignment="Center"
-									Background="{DynamicResource ReduxAccentHoverBrush}"
-									CornerRadius="2">
-									<Border.Effect>
-										<DropShadowEffect BlurRadius="10"
-											Color="{DynamicResource ReduxAccentHoverColor}"
-											Opacity="0.9"
-											ShadowDepth="0" />
-									</Border.Effect>
-								</Border>
-							</ControlTemplate>
-						</Setter.Value>
-					</Setter>
-				</Style>
-			</GridSplitter.PreviewStyle>
-			<GridSplitter.Template>
-				<ControlTemplate TargetType="{x:Type GridSplitter}">
-					<Grid Background="Transparent">
-						<Border x:Name="InteractionGlow"
-							Height="3"
-							Margin="10,0"
-							HorizontalAlignment="Stretch"
-							VerticalAlignment="Center"
-							Background="{DynamicResource ReduxAccentHoverBrush}"
-							CornerRadius="2"
-							Opacity="0">
-							<Border.Effect>
-								<DropShadowEffect BlurRadius="8"
-									Color="{DynamicResource ReduxAccentHoverColor}"
-									Opacity="0.8"
-									ShadowDepth="0" />
-							</Border.Effect>
-						</Border>
-					</Grid>
-					<ControlTemplate.Triggers>
-						<EventTrigger RoutedEvent="MouseEnter">
-							<BeginStoryboard>
-								<Storyboard>
-									<DoubleAnimation Storyboard.TargetName="InteractionGlow"
-										Storyboard.TargetProperty="Opacity"
-										To="0.9"
-										Duration="{StaticResource Redux.Motion.Fast}"
-										EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-								</Storyboard>
-							</BeginStoryboard>
-						</EventTrigger>
-						<EventTrigger RoutedEvent="MouseLeave">
-							<BeginStoryboard>
-								<Storyboard>
-									<DoubleAnimation Storyboard.TargetName="InteractionGlow"
-										Storyboard.TargetProperty="Opacity"
-										To="0"
-										Duration="{StaticResource Redux.Motion.Standard}" />
-								</Storyboard>
-							</BeginStoryboard>
-						</EventTrigger>
-					</ControlTemplate.Triggers>
-				</ControlTemplate>
-			</GridSplitter.Template>
-		</GridSplitter>
+			Style="{StaticResource ReduxHorizontalSplitterStyle}"
+			Visibility="Collapsed" />
 		<Border x:Name="ModDetailsPanel"
 			Grid.Row="2"
 			Grid.ColumnSpan="5"

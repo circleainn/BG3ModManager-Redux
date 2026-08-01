@@ -1,7 +1,7 @@
 ﻿
 
 using DivinityModManager.Models;
-
+using DivinityModManager.Controls;
 using GongSolutions.Wpf.DragDrop;
 using GongSolutions.Wpf.DragDrop.Utilities;
 
@@ -86,10 +86,13 @@ public class ModListDropHandler : DefaultDropHandler
 			return;
 		}
 		base.DragOver(dropInfo);
+		if (dropInfo.Effects != DragDropEffects.None && dropInfo.DropTargetAdorner == DropTargetAdorners.Insert)
+			dropInfo.DropTargetAdorner = null;
 		if (ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayInactiveMods) &&
 			ExtractData(dropInfo.Data).OfType<DivinityModData>().Any(item => item.IsVisualDivider))
 		{
 			dropInfo.Effects = DragDropEffects.None;
+			dropInfo.DropTargetAdorner = null;
 			return;
 		}
 		if (dropInfo.Effects == DragDropEffects.None && dropInfo.Data is DataObject data && data.ContainsFileDropList())
@@ -139,6 +142,13 @@ public class ModListDropHandler : DefaultDropHandler
 		var insertIndex = dropInfo.UnfilteredInsertIndex;
 		if (_viewModel.IsVisualModCollection(dropInfo.TargetCollection))
 		{
+			var previewInsertIndex = dropInfo.VisualTarget is DependencyObject visualTarget
+				? ReduxDropFeedback.GetStableInsertIndex(visualTarget)
+				: -1;
+			if (previewInsertIndex >= 0)
+				insertIndex = previewInsertIndex;
+			if (dropInfo.VisualTarget is DependencyObject target)
+				ReduxDropFeedback.SetStableInsertIndex(target, -1);
 			var destinationActive = ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayActiveMods);
 			var visualData = ExtractData(dropInfo.Data).OfType<DivinityModData>().ToList();
 			if (!destinationActive && visualData.Any(item => item.IsVisualDivider)) return;

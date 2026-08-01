@@ -124,11 +124,35 @@ internal sealed class ReduxModuleStateTests
 		AssertPillColor(resources, "ReduxInfoPillBackground", Color.FromRgb(0x36, 0x7B, 0xC0));
 	}
 
+	public void CustomThemeBackgroundEditsPreserveUntouchedBaseRoles()
+	{
+		var theme = ReduxThemeService.CreateFromBase("Background test", ReduxThemeType.ReduxDark);
+		theme.BackgroundColor = "#0C0B10";
+		var resources = new ResourceDictionary();
+
+		ReduxThemeService.PreviewColors(resources, theme);
+
+		AssertResourceColor(resources, "ReduxWindowColor", Color.FromRgb(0x0C, 0x0B, 0x10));
+		AssertResourceColor(resources, "ReduxSurfaceElevatedColor", Color.FromRgb(0x1C, 0x16, 0x23));
+		AssertResourceColor(resources, "ReduxTextPrimaryColor", Color.FromRgb(0xF2, 0xED, 0xF7));
+		AssertResourceColor(resources, "ReduxTextSecondaryColor", Color.FromRgb(0xC8, 0xBD, 0xD4));
+		AssertResourceColor(resources, "ReduxTextMutedColor", Color.FromRgb(0xA0, 0x94, 0xAE));
+	}
+
 	private static void AssertPillColor(ResourceDictionary resources, string key, Color expected)
 	{
 		var brush = resources[key] as LinearGradientBrush;
 		RegressionAssert.True(brush != null);
 		var actual = brush!.GradientStops[0].Color;
+		RegressionAssert.Equal(expected.R, actual.R);
+		RegressionAssert.Equal(expected.G, actual.G);
+		RegressionAssert.Equal(expected.B, actual.B);
+	}
+
+	private static void AssertResourceColor(ResourceDictionary resources, string key, Color expected)
+	{
+		RegressionAssert.True(resources[key] is Color);
+		var actual = (Color)resources[key];
 		RegressionAssert.Equal(expected.R, actual.R);
 		RegressionAssert.Equal(expected.G, actual.G);
 		RegressionAssert.Equal(expected.B, actual.B);

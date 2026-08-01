@@ -13,7 +13,7 @@
 	Height="620"
 	MinWidth="680"
 	MinHeight="460"
-	ResizeMode="CanResizeWithGrip"
+	ResizeMode="CanResize"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
 	WindowStyle="SingleBorderWindow"

@@ -426,10 +426,12 @@ public static class ReduxThemeService
 
 	private static Dictionary<string, Color> CreateResourceColors(ReduxCustomTheme theme)
 	{
-		// An untouched custom theme should be visually identical to its selected Redux base.
-		// Preserve the hand-tuned built-in interaction and surface colors until a palette token changes.
-		if (MatchesBasePalette(theme)) return CreateBuiltInResourceColors(theme.BaseTheme);
-
+		// Begin with the hand-tuned base palette and regenerate only the roles affected by
+		// an edited semantic token. Previously, changing one token switched every derived
+		// color to the generic formula, so a tiny background hue change also altered headers,
+		// borders and typography that the user had not touched.
+		var palette = CreateBuiltInResourceColors(theme.BaseTheme);
+		var baseColors = BaseColors[theme.BaseTheme];
 		var background = Parse(theme.BackgroundColor);
 		var surface = Parse(theme.SurfaceColor);
 		var accent = Parse(theme.AccentColor);
@@ -440,47 +442,65 @@ public static class ReduxThemeService
 		var info = Parse(theme.InfoColor);
 		var isDark = RelativeLuminance(background) < 0.42;
 		var contrastTarget = isDark ? System.Windows.Media.Colors.White : System.Windows.Media.Colors.Black;
+		var backgroundChanged = !ColorsMatch(theme.BackgroundColor, baseColors[0]);
+		var surfaceChanged = !ColorsMatch(theme.SurfaceColor, baseColors[1]);
+		var accentChanged = !ColorsMatch(theme.AccentColor, baseColors[2]);
+		var textChanged = !ColorsMatch(theme.TextColor, baseColors[3]);
+		var successChanged = !ColorsMatch(theme.SuccessColor, baseColors[4]);
 
-		return new Dictionary<string, Color>
+		if (backgroundChanged)
 		{
-			["ReduxWindowColor"] = background,
-			["ReduxListInteriorColor"] = Mix(background, surface, 0.42),
-			["ReduxSurfaceColor"] = surface,
-			["ReduxSurfaceElevatedColor"] = Mix(surface, contrastTarget, 0.055),
-			["ReduxSurfaceMutedColor"] = Mix(surface, text, isDark ? 0.075 : 0.09),
-			["ReduxBorderColor"] = Mix(surface, text, isDark ? 0.16 : 0.18),
-			["ReduxBorderStrongColor"] = Mix(surface, text, isDark ? 0.28 : 0.32),
-			["ReduxHoverColor"] = Mix(surface, accent, 0.12),
-			["ReduxPressedColor"] = Mix(surface, accent, 0.20),
-			["ReduxAccentColor"] = accent,
-			["ReduxAccentHoverColor"] = Mix(accent, contrastTarget, 0.18),
-			["ReduxAccentSoftColor"] = Mix(surface, accent, 0.22),
-			["ReduxSelectionColor"] = Mix(surface, accent, 0.34),
-			["ReduxSuccessColor"] = success,
-			["ReduxSuccessSoftColor"] = Mix(surface, success, 0.18),
-			["ReduxWarningColor"] = warning,
-			["ReduxErrorColor"] = error,
-			["ReduxInfoColor"] = info,
-			["ReduxTextPrimaryColor"] = text,
-			["ReduxTextSecondaryColor"] = Mix(surface, text, 0.78),
-			["ReduxTextMutedColor"] = Mix(surface, text, 0.58),
-			["ReduxAccentForegroundColor"] = BestForeground(accent),
-			["ReduxGithubIconColor"] = theme.BaseTheme == ReduxThemeType.ReduxDark
-				? System.Windows.Media.Colors.White
-				: System.Windows.Media.Colors.Black
-		};
+			palette["ReduxWindowColor"] = background;
+			palette["ReduxListInteriorColor"] = Mix(background, surface, 0.42);
+		}
+		if (surfaceChanged)
+		{
+			palette["ReduxSurfaceColor"] = surface;
+			palette["ReduxListInteriorColor"] = Mix(background, surface, 0.42);
+			palette["ReduxSurfaceElevatedColor"] = Mix(surface, contrastTarget, 0.055);
+			palette["ReduxSurfaceMutedColor"] = Mix(surface, text, isDark ? 0.075 : 0.09);
+			palette["ReduxBorderColor"] = Mix(surface, text, isDark ? 0.16 : 0.18);
+			palette["ReduxBorderStrongColor"] = Mix(surface, text, isDark ? 0.28 : 0.32);
+			palette["ReduxHoverColor"] = Mix(surface, accent, 0.12);
+			palette["ReduxPressedColor"] = Mix(surface, accent, 0.20);
+			palette["ReduxAccentSoftColor"] = Mix(surface, accent, 0.22);
+			palette["ReduxSelectionColor"] = Mix(surface, accent, 0.34);
+			palette["ReduxSuccessSoftColor"] = Mix(surface, success, 0.18);
+			palette["ReduxTextSecondaryColor"] = Mix(surface, text, 0.78);
+			palette["ReduxTextMutedColor"] = Mix(surface, text, 0.58);
+		}
+		if (accentChanged)
+		{
+			palette["ReduxAccentColor"] = accent;
+			palette["ReduxAccentHoverColor"] = Mix(accent, contrastTarget, 0.18);
+			palette["ReduxAccentSoftColor"] = Mix(surface, accent, 0.22);
+			palette["ReduxSelectionColor"] = Mix(surface, accent, 0.34);
+			palette["ReduxHoverColor"] = Mix(surface, accent, 0.12);
+			palette["ReduxPressedColor"] = Mix(surface, accent, 0.20);
+			palette["ReduxAccentForegroundColor"] = BestForeground(accent);
+		}
+		if (textChanged)
+		{
+			palette["ReduxTextPrimaryColor"] = text;
+			palette["ReduxTextSecondaryColor"] = Mix(surface, text, 0.78);
+			palette["ReduxTextMutedColor"] = Mix(surface, text, 0.58);
+			palette["ReduxSurfaceMutedColor"] = Mix(surface, text, isDark ? 0.075 : 0.09);
+			palette["ReduxBorderColor"] = Mix(surface, text, isDark ? 0.16 : 0.18);
+			palette["ReduxBorderStrongColor"] = Mix(surface, text, isDark ? 0.28 : 0.32);
+		}
+		if (successChanged)
+		{
+			palette["ReduxSuccessColor"] = success;
+			palette["ReduxSuccessSoftColor"] = Mix(surface, success, 0.18);
+		}
+		if (!ColorsMatch(theme.WarningColor, baseColors[5])) palette["ReduxWarningColor"] = warning;
+		if (!ColorsMatch(theme.ErrorColor, baseColors[6])) palette["ReduxErrorColor"] = error;
+		if (!ColorsMatch(theme.InfoColor, baseColors[7])) palette["ReduxInfoColor"] = info;
+		return palette;
 	}
 
-	private static bool MatchesBasePalette(ReduxCustomTheme theme)
-	{
-		if (!BaseColors.TryGetValue(theme.BaseTheme, out var colors)) return false;
-		var selected = new[]
-		{
-			theme.BackgroundColor, theme.SurfaceColor, theme.AccentColor, theme.TextColor,
-			theme.SuccessColor, theme.WarningColor, theme.ErrorColor, theme.InfoColor
-		};
-		return selected.Select(Normalize).SequenceEqual(colors, StringComparer.OrdinalIgnoreCase);
-	}
+	private static bool ColorsMatch(string left, string right) =>
+		Normalize(left).Equals(Normalize(right), StringComparison.OrdinalIgnoreCase);
 
 	private static IEnumerable<(string Label, string Value)> GetEditableColors(ReduxCustomTheme theme)
 	{

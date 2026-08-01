@@ -174,12 +174,6 @@
 					CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
 					IsHitTestVisible="False"
 					SnapsToDevicePixels="True" />
-				<ResizeGrip x:Name="WindowResizeGrip"
-					HorizontalAlignment="Right"
-					VerticalAlignment="Bottom"
-					IsTabStop="False"
-					Visibility="Collapsed"
-					shell:WindowChrome.ResizeGripDirection="BottomRight" />
 			</Grid>
 		</Border>
 		<ControlTemplate.Triggers>
@@ -187,13 +181,6 @@
 				<Setter TargetName="WindowSurface" Property="CornerRadius" Value="0" />
 				<Setter TargetName="WindowOutline" Property="Visibility" Value="Collapsed" />
 			</Trigger>
-			<MultiTrigger>
-				<MultiTrigger.Conditions>
-					<Condition Property="ResizeMode" Value="CanResizeWithGrip" />
-					<Condition Property="WindowState" Value="Normal" />
-				</MultiTrigger.Conditions>
-				<Setter TargetName="WindowResizeGrip" Property="Visibility" Value="Visible" />
-			</MultiTrigger>
 		</ControlTemplate.Triggers>
 	</ControlTemplate>
 	<!--
@@ -2360,6 +2347,7 @@
 							Padding="0,4"
 							Background="Transparent"
 							util:ReduxWindowBehavior.HoverLift="1"
+							util:ReduxWindowBehavior.SuppressHoverMotion="{Binding DataContext.IsDragging, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
 							ToolTip="{Binding VisualDividerDescription}"
 							ToolTipService.IsEnabled="{Binding HasVisualDividerDescription}"
 							Visibility="{Binding ShowVisualDivider, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -2480,6 +2468,7 @@
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="{TemplateBinding BorderThickness}"
 							util:ReduxWindowBehavior.HoverLift="1"
+							util:ReduxWindowBehavior.SuppressHoverMotion="{Binding DataContext.IsDragging, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
 							RenderTransformOrigin="0.5,0.5"
 							SnapsToDevicePixels="True">
 							<Border.RenderTransform>
@@ -2591,13 +2580,17 @@
 						</Border>
 					</StackPanel>
 					<ControlTemplate.Triggers>
-						<Trigger Property="IsMouseOver" Value="True">
+						<MultiDataTrigger>
+							<MultiDataTrigger.Conditions>
+								<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource TemplatedParent}}" Value="True" />
+								<Condition Binding="{Binding DataContext.IsDragging, RelativeSource={RelativeSource AncestorType={x:Type ListView}}, FallbackValue=False}" Value="False" />
+							</MultiDataTrigger.Conditions>
 							<!-- Suppress inherited ListViewItem hover chrome. Redux draws its
 								own category-aware surface and rail below; allowing the base
 								background/border through creates a muddy fill and duplicate line. -->
 							<Setter TargetName="RowBorder" Property="Background" Value="Transparent" />
 							<Setter TargetName="RowBorder" Property="BorderBrush" Value="Transparent" />
-							<Trigger.EnterActions>
+							<MultiDataTrigger.EnterActions>
 								<BeginStoryboard>
 									<Storyboard>
 										<DoubleAnimation Storyboard.TargetName="RowHoverSurface"
@@ -2622,8 +2615,8 @@
 											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 									</Storyboard>
 								</BeginStoryboard>
-							</Trigger.EnterActions>
-							<Trigger.ExitActions>
+							</MultiDataTrigger.EnterActions>
+							<MultiDataTrigger.ExitActions>
 								<BeginStoryboard>
 									<Storyboard>
 										<DoubleAnimation Storyboard.TargetName="RowHoverSurface"
@@ -2644,8 +2637,8 @@
 											Duration="{StaticResource Redux.Motion.Standard}" />
 									</Storyboard>
 								</BeginStoryboard>
-							</Trigger.ExitActions>
-						</Trigger>
+							</MultiDataTrigger.ExitActions>
+						</MultiDataTrigger>
 						<Trigger Property="IsSelected" Value="True">
 							<Setter TargetName="RowBorder" Property="Background" Value="Transparent" />
 							<Setter TargetName="RowBorder" Property="BorderBrush" Value="Transparent" />
@@ -2656,18 +2649,6 @@
 							<!-- Selection already owns the category-colored leading rail. Do not
 								draw the animated hover rail beside it. -->
 						</Trigger>
-						<MultiDataTrigger>
-							<MultiDataTrigger.Conditions>
-								<Condition Binding="{Binding IsVisualDivider}" Value="True" />
-								<Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource TemplatedParent}}" Value="True" />
-								<Condition Binding="{Binding DataContext.IsDragging, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True" />
-							</MultiDataTrigger.Conditions>
-							<Setter TargetName="VisualDivider" Property="Effect">
-								<Setter.Value>
-									<DropShadowEffect BlurRadius="13" Color="{DynamicResource ReduxAccentHoverColor}" Opacity="0.9" ShadowDepth="0" />
-								</Setter.Value>
-							</Setter>
-						</MultiDataTrigger>
 						<DataTrigger Binding="{Binding IsVisualDivider}" Value="True">
 							<Setter TargetName="RowBorder" Property="Visibility" Value="Collapsed" />
 						</DataTrigger>

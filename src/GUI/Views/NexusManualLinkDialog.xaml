@@ -7,7 +7,7 @@
 	Title="Link Nexus Mods Page"
 	Width="520" MinWidth="440" MinHeight="210" MaxHeight="480"
 	SizeToContent="Height"
-	ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
+	ResizeMode="CanResize" ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	Background="{DynamicResource ReduxSurfaceBrush}"

@@ -10,7 +10,7 @@
 	Height="800"
 	MinWidth="640"
 	MinHeight="620"
-	ResizeMode="CanResizeWithGrip"
+	ResizeMode="CanResize"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
@@ -531,10 +531,10 @@
 			</Button>
 			<Button x:Name="ConfirmButton" MinWidth="84" Margin="0,0,8,0" Style="{StaticResource ReduxPrimaryActionButtonStyle}" IsDefault="True" Click="Add_Click">
 				<StackPanel Orientation="Horizontal">
-					<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
+					<controls:ReduxIcon x:Name="ConfirmButtonIcon" Width="14" Height="14" Margin="0,0,6,0"
 						Foreground="{DynamicResource ReduxAccentForegroundBrush}"
 						StrokeData="{StaticResource Redux.Icon.Check}" />
-					<TextBlock Text="Add" />
+					<TextBlock x:Name="ConfirmButtonText" Text="Add" />
 				</StackPanel>
 			</Button>
 			<Button MinWidth="84" Style="{StaticResource ReduxSecondaryActionButtonStyle}" IsCancel="True">

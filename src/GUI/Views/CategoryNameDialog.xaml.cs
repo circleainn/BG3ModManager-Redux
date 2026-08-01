@@ -86,6 +86,8 @@ public partial class CategoryNameDialog : AdonisWindow
 		IconChooserCard.Visibility = Visibility.Collapsed;
 		DescriptionEditorPanel.Visibility = Visibility.Collapsed;
 		CategoryPreviewPanel.Visibility = Visibility.Collapsed;
+		ConfirmButtonText.Text = "Save";
+		ConfirmButtonIcon.StrokeData = FindResource("Redux.Icon.Save") as Geometry;
 		MinHeight = Math.Min(560, MaxHeight);
 		Height = Math.Min(620, MaxHeight);
 	}

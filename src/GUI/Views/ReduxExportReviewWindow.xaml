@@ -10,7 +10,7 @@
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="{DynamicResource Redux.FontWeight.Body}"
-	ResizeMode="CanResizeWithGrip"
+	ResizeMode="CanResize"
 	SizeToContent="Height"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"

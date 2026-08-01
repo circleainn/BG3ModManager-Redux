@@ -8,7 +8,7 @@
 	Width="560" MinWidth="460" MaxWidth="720"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontSize="{DynamicResource Redux.FontSize.12}"
-	ResizeMode="CanResizeWithGrip"
+	ResizeMode="CanResize"
 	SizeToContent="Height"
 	ShowInTaskbar="False"
 	Background="{DynamicResource ReduxSurfaceBrush}"

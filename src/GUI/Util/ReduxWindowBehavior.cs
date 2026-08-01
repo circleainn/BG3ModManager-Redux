@@ -115,6 +115,12 @@ public static class ReduxWindowBehavior
 		typeof(ReduxWindowBehavior),
 		new PropertyMetadata(1d, HoverMotionPropertyChanged));
 
+	public static readonly DependencyProperty SuppressHoverMotionProperty = DependencyProperty.RegisterAttached(
+		"SuppressHoverMotion",
+		typeof(bool),
+		typeof(ReduxWindowBehavior),
+		new PropertyMetadata(false, HoverMotionPropertyChanged));
+
 	public static double GetHoverLift(DependencyObject element) =>
 		(double)element.GetValue(HoverLiftProperty);
 
@@ -126,6 +132,12 @@ public static class ReduxWindowBehavior
 
 	public static void SetHoverScale(DependencyObject element, double value) =>
 		element.SetValue(HoverScaleProperty, value);
+
+	public static bool GetSuppressHoverMotion(DependencyObject element) =>
+		(bool)element.GetValue(SuppressHoverMotionProperty);
+
+	public static void SetSuppressHoverMotion(DependencyObject element, bool value) =>
+		element.SetValue(SuppressHoverMotionProperty, value);
 
 	public static readonly DependencyProperty ManagedPopupAnimationProperty = DependencyProperty.RegisterAttached(
 		"ManagedPopupAnimation",
@@ -362,7 +374,7 @@ public static class ReduxWindowBehavior
 		var configuredLift = Math.Max(0, GetHoverLift(element));
 		var configuredScale = Math.Max(1, GetHoverScale(element));
 		var transform = GetMutableHoverTransform(element);
-		if (ReduceMotion)
+		if (ReduceMotion || GetSuppressHoverMotion(element))
 		{
 			ResetHoverMotion(
 				transform,
