@@ -255,7 +255,7 @@
 		<Setter Property="FontWeight" Value="{DynamicResource Redux.FontWeight.Title}" />
 		<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
 	</Style>
-	<Style BasedOn="{StaticResource {x:Type ContextMenu}}" TargetType="{x:Type ContextMenu}">
+	<Style x:Key="ReduxContextMenuStyle" BasedOn="{StaticResource {x:Type ContextMenu}}" TargetType="{x:Type ContextMenu}">
 		<Setter Property="OverridesDefaultStyle" Value="True" />
 		<Setter Property="util:ReduxWindowBehavior.ManageContextMenuMotion" Value="True" />
 		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
@@ -289,6 +289,7 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
+	<Style BasedOn="{StaticResource ReduxContextMenuStyle}" TargetType="{x:Type ContextMenu}" />
 	<!--
 		Short, functional motion only: hover feedback and state transitions. StaticResource
 		only in Storyboards/Timelines - DynamicResource there crashes when the owning
@@ -546,7 +547,8 @@
 			</Trigger>
 		</ControlTemplate.Triggers>
 	</ControlTemplate>
-	<Style BasedOn="{StaticResource {x:Type MenuItem}}"
+	<Style x:Key="ReduxPopupMenuItemStyle"
+		   BasedOn="{StaticResource {x:Type MenuItem}}"
 		   TargetType="{x:Type MenuItem}">
 		<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius"
 				Value="{DynamicResource Redux.CornerRadius.ControlInner}" />
@@ -565,6 +567,7 @@
 			</Trigger>
 		</Style.Triggers>
 	</Style>
+	<Style BasedOn="{StaticResource ReduxPopupMenuItemStyle}" TargetType="{x:Type MenuItem}" />
 	<!-- Shared chrome for compact collapse/expand controls. Each caller supplies its directional chevron. -->
 	<Style x:Key="ReduxChromeToggleStyle" TargetType="{x:Type ToggleButton}">
 		<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
@@ -2012,7 +2015,7 @@
 	<Style BasedOn="{StaticResource {x:Type TextBox}}" TargetType="{x:Type controls:UnfocusableTextBox}">
 		<Setter Property="ContextMenu" Value="{StaticResource TextBoxContextMenu}" />
 	</Style>
-	<Style BasedOn="{StaticResource {x:Type ToolTip}}" TargetType="{x:Type ToolTip}">
+	<Style x:Key="ReduxToolTipStyle" BasedOn="{StaticResource {x:Type ToolTip}}" TargetType="{x:Type ToolTip}">
 		<Setter Property="OverridesDefaultStyle" Value="True" />
 		<Setter Property="HasDropShadow" Value="True" />
 		<Setter Property="MaxWidth" Value="440" />
@@ -2050,6 +2053,7 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
+	<Style BasedOn="{StaticResource ReduxToolTipStyle}" TargetType="{x:Type ToolTip}" />
 	<!-- Rich safety/status tooltips provide their own themed card and must not inherit ordinary tooltip chrome. -->
 	<Style x:Key="ReduxRichToolTipStyle" TargetType="{x:Type ToolTip}">
 		<Setter Property="OverridesDefaultStyle" Value="True" />

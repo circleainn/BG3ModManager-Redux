@@ -262,8 +262,8 @@ internal sealed class ReduxBundleTests
 		return new ReduxLoadOrderPresentation
 		{
 			LoadOrderName = "Portable Test Order",
-			CreatorVersion = "0.1.0-alpha.8",
-			CreatorInternalVersion = "0.1.0.8",
+			CreatorVersion = "0.1.0-alpha.9",
+			CreatorInternalVersion = "0.1.0.9",
 			OrderedModUuids = new List<string> { FirstUuid, SecondUuid },
 			CustomCategories = new List<ReduxLoadOrderCategory>
 			{

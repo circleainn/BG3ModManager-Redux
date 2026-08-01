@@ -861,7 +861,10 @@ public partial class SettingsWindow : SettingsWindowBase
 		this.OneWayBind(ViewModel, vm => vm.LaunchParams, view => view.GameLaunchParamsMainMenu.ItemsSource);
 		GameLaunchParamsMainButton.Events().Click.Subscribe(e =>
 		{
-			this.GameLaunchParamsMainButton.ContextMenu.IsOpen = true;
+			var menu = GameLaunchParamsMainButton.ContextMenu;
+			menu.PlacementTarget = GameLaunchParamsMainButton;
+			menu.Placement = PlacementMode.Bottom;
+			menu.IsOpen = true;
 		});
 
 		this.Bind(ViewModel, vm => vm.Settings.GameLaunchParams, view => view.GameLaunchParamsTextBox.Text);

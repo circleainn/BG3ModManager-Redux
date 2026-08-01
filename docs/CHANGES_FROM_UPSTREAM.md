@@ -7,7 +7,30 @@ parsing through LSLib, game-path detection, and launch behavior. Confirmed inher
 received targeted correctness and safety fixes without redesigning those core formats or workflows.
 
 This page tracks what Redux inherits, what it reworks or extends, and what it adds through version
-`0.1.0-alpha.8`.
+`0.1.0-alpha.9`.
+
+## 0.1.0-alpha.9 workflow and interface update
+
+- Added a compact, optional welcome window for choosing a built-in theme, configuring source
+  integrations and diagnostics, and selecting reduced-motion or reduced-effects accessibility
+  preferences. Choices preview live while credentials are saved only on confirmation.
+- Added export review, automatic pre-export restore points, load-order comparison, restore-point
+  management, selection-aware bulk actions, and a compact Quick Access menu.
+- Expanded portable Redux Modlists with category and separator descriptions, reusable custom icons,
+  and optional notes while retaining previews and validation on import and export.
+- Added personal mod notes, category-pill filtering, optional compact icon-only labels, linked-package
+  indicators, and more consistent category-aware interactions across lists, cards, menus, and the
+  selected-mod drawer.
+- Improved Nexus archive-name recognition, reviewed source-link rebuilding and history clearing,
+  metadata attribution, and privacy-safe database contribution reports.
+- Expanded Mod Diagnostics with conservative dependency assistance, optional load-order guidance,
+  file-overlap inspection, and shared toolbar, menu, drawer, and hover-card presentation.
+- Reworked custom-theme editing and shared color selection around the semantic Redux palette, with
+  live preview, smoother color-wheel input, and stronger Dark, Light, Parchment, and custom-theme
+  parity.
+- Unified secondary windows, dialogs, menus, tooltips, progress surfaces, buttons, hover behavior,
+  accessibility motion handling, and theme resources while removing superseded startup notices and
+  accumulated legacy presentation code.
 
 ## 0.1.0-alpha.8 stabilization update
 

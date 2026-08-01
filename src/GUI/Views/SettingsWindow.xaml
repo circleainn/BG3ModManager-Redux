@@ -61,6 +61,71 @@
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxAccentForegroundBrush}" />
 			</Style>
+			<Style x:Key="LaunchParameterMenuItemStyle" TargetType="{x:Type MenuItem}">
+				<Setter Property="MinHeight" Value="28" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type MenuItem}">
+							<Grid MinWidth="210" SnapsToDevicePixels="False">
+								<Border x:Name="HoverSurface"
+									Margin="1"
+									Background="{DynamicResource ReduxAccentSoftBrush}"
+									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+									OpacityMask="{StaticResource Redux.Hover.WashMask}"
+									IsHitTestVisible="False"
+									Opacity="0" />
+								<Border x:Name="HoverRail"
+									Margin="1"
+									BorderBrush="{DynamicResource ReduxAccentBrush}"
+									BorderThickness="{DynamicResource Redux.Rail.Thickness}"
+									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+									IsHitTestVisible="False"
+									Opacity="0" />
+								<TextBlock Margin="11,5"
+									VerticalAlignment="Center"
+									Foreground="{TemplateBinding Foreground}"
+									Text="{Binding Name}"
+									TextTrimming="CharacterEllipsis" />
+							</Grid>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsHighlighted" Value="True">
+									<Trigger.EnterActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="HoverSurface"
+													Storyboard.TargetProperty="Opacity" To="1"
+													Duration="{StaticResource Redux.Motion.Fast}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+												<DoubleAnimation Storyboard.TargetName="HoverRail"
+													Storyboard.TargetProperty="Opacity" To="1"
+													Duration="{StaticResource Redux.Motion.Fast}"
+													EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.EnterActions>
+									<Trigger.ExitActions>
+										<BeginStoryboard>
+											<Storyboard>
+												<DoubleAnimation Storyboard.TargetName="HoverSurface"
+													Storyboard.TargetProperty="Opacity" To="0"
+													Duration="{StaticResource Redux.Motion.Standard}" />
+												<DoubleAnimation Storyboard.TargetName="HoverRail"
+													Storyboard.TargetProperty="Opacity" To="0"
+													Duration="{StaticResource Redux.Motion.Standard}" />
+											</Storyboard>
+										</BeginStoryboard>
+									</Trigger.ExitActions>
+								</Trigger>
+								<Trigger Property="IsEnabled" Value="False">
+									<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
 			<Style x:Key="HotkeyRowActionButtonStyle" BasedOn="{StaticResource ReduxAccentPillButtonStyle}" TargetType="{x:Type Button}">
 				<Setter Property="Width" Value="24" />
 				<Setter Property="Height" Value="24" />
@@ -1162,14 +1227,15 @@
 											<TextBlock Text="Add parameter" />
 										</StackPanel>
 						<Button.ContextMenu>
-							<ContextMenu x:Name="GameLaunchParamsMainMenu">
-								<ContextMenu.ItemTemplate>
-									<DataTemplate DataType="vm:GameLaunchParamEntry">
-										<TextBlock Text="{Binding}" />
-									</DataTemplate>
-								</ContextMenu.ItemTemplate>
+							<ContextMenu x:Name="GameLaunchParamsMainMenu"
+								MaxHeight="340"
+								MinWidth="218"
+								Style="{StaticResource ReduxContextMenuStyle}">
+								<ContextMenu.Resources>
+									<Style BasedOn="{StaticResource ReduxToolTipStyle}" TargetType="{x:Type ToolTip}" />
+								</ContextMenu.Resources>
 								<ContextMenu.ItemContainerStyle>
-									<Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="MenuItem">
+									<Style BasedOn="{StaticResource LaunchParameterMenuItemStyle}" TargetType="MenuItem">
 										<Setter Property="Header" Value="{Binding Name}" />
 										<Setter Property="ToolTip" Value="{Binding Description}" />
 										<Setter Property="ToolTipService.IsEnabled" Value="{Binding HasToolTip, FallbackValue=False}" />

@@ -142,7 +142,11 @@
 						<Border Margin="0,0,0,10" Style="{StaticResource WelcomeSectionStyle}">
 							<StackPanel>
 								<TextBlock Style="{StaticResource WelcomeSectionTitleStyle}" Text="Choose a theme" />
-								<UniformGrid Margin="0,9,0,0" Columns="3">
+								<TextBlock Margin="0,3,0,0"
+									Foreground="{DynamicResource ReduxTextMutedBrush}"
+									Text="Create and reuse custom themes later in Preferences."
+									TextWrapping="Wrap" />
+								<UniformGrid Margin="0,8,0,0" Columns="3">
 									<RadioButton x:Name="ReduxDarkThemeCard"
 										GroupName="WelcomeThemes"
 										Style="{StaticResource WelcomeThemeCardStyle}"
