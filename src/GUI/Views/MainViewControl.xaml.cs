@@ -355,6 +355,17 @@ public partial class MainViewControl : MainViewControlViewBase
 				ToolTip = "Scan every installed user mod and create one privacy-limited, shareable report.",
 				Icon = ReduxIcon.FromResource("Redux.Icon.Database", true)
 			};
+			contributionItem.SetResourceReference(
+				ReduxMenuItemExtension.SemanticHoverBrushProperty,
+				"ReduxSuccessPillBackground");
+			contributionItem.SetResourceReference(
+				ReduxMenuItemExtension.SemanticRailBrushProperty,
+				"ReduxSuccessBrush");
+			ReduxMenuItemExtension.SetUseSemanticHover(contributionItem, true);
+			if (contributionItem.Icon is ReduxIcon contributionIcon)
+			{
+				contributionIcon.SetResourceReference(Control.ForegroundProperty, "ReduxSuccessBrush");
+			}
 			contributionItem.Click += GenerateReduxDatabaseContribution_Click;
 			toolsMenuItem.Items.Add(contributionItem);
 		}

@@ -193,47 +193,42 @@ public static class ReduxMenuItemExtension
 			_ => String.Empty
 		};
 
-		Brush hoverBrush = null;
-		Brush railBrush = null;
+		string hoverBrushResource = null;
+		string railBrushResource = null;
 		if (header.Contains("Nexus Mods", StringComparison.OrdinalIgnoreCase))
 		{
-			hoverBrush = menuItem.TryFindResource("Redux.Pill.Nexus.Background") as Brush;
-			railBrush = menuItem.TryFindResource("Redux.Pill.Nexus.Border") as Brush;
+			hoverBrushResource = "Redux.Pill.Nexus.Background";
+			railBrushResource = "Redux.Pill.Nexus.Border";
 		}
 		else if (header.Contains("mod.io", StringComparison.OrdinalIgnoreCase))
 		{
-			hoverBrush = menuItem.TryFindResource("Redux.Pill.Modio.Background") as Brush;
-			railBrush = menuItem.TryFindResource("Redux.Pill.Modio.Border") as Brush;
+			hoverBrushResource = "Redux.Pill.Modio.Background";
+			railBrushResource = "Redux.Pill.Modio.Border";
 		}
 		else if (IsDestructiveOrStopAction(header))
 		{
-			hoverBrush = menuItem.TryFindResource("ReduxErrorPillBackground") as Brush;
-			railBrush = menuItem.TryFindResource("ReduxErrorBrush") as Brush;
+			hoverBrushResource = "ReduxErrorPillBackground";
+			railBrushResource = "ReduxErrorBrush";
 		}
 		else if (IsPositiveCommitAction(header))
 		{
-			hoverBrush = menuItem.TryFindResource("ReduxSuccessPillBackground") as Brush;
-			railBrush = menuItem.TryFindResource("ReduxSuccessBrush") as Brush;
-			if (menuItem.Icon is ReduxIcon positiveIcon && railBrush != null)
+			hoverBrushResource = "ReduxSuccessPillBackground";
+			railBrushResource = "ReduxSuccessBrush";
+			if (menuItem.Icon is ReduxIcon positiveIcon)
 			{
 				positiveIcon.SetResourceReference(Control.ForegroundProperty, "ReduxSuccessBrush");
 			}
 		}
-		else if (menuItem.Icon is ReduxIcon icon
-			&& icon.ReadLocalValue(Control.ForegroundProperty) != DependencyProperty.UnsetValue
-			&& icon.Foreground is Brush iconBrush)
-		{
-			railBrush = iconBrush;
-			hoverBrush = CreateSoftHoverBrush(iconBrush);
-		}
-
-		if (hoverBrush == null || railBrush == null)
+		if (hoverBrushResource == null || railBrushResource == null)
 		{
 			return;
 		}
 
-		SetSemanticHoverBrush(menuItem, hoverBrush);
-		SetSemanticRailBrush(menuItem, railBrush);
+		// Keep semantic menu roles live across built-in and custom theme changes. Resolving the
+		// brush here would cache the object from whichever theme happened to be active when the
+		// submenu first opened, while the icon's DynamicResource continued updating independently.
+		menuItem.SetResourceReference(SemanticHoverBrushProperty, hoverBrushResource);
+		menuItem.SetResourceReference(SemanticRailBrushProperty, railBrushResource);
 		SetUseSemanticHover(menuItem, true);
 	}
 
@@ -251,33 +246,8 @@ public static class ReduxMenuItemExtension
 	{
 		if (String.IsNullOrWhiteSpace(header)) return false;
 		return header.StartsWith("Export", StringComparison.OrdinalIgnoreCase)
-			|| header.StartsWith("Save ", StringComparison.OrdinalIgnoreCase);
-	}
-
-	private static Brush CreateSoftHoverBrush(Brush brush)
-	{
-		if (brush is SolidColorBrush solid)
-		{
-			var color = solid.Color;
-			color.A = 0x4D;
-			var soft = new SolidColorBrush(color);
-			if (soft.CanFreeze) soft.Freeze();
-			return soft;
-		}
-
-		if (brush is LinearGradientBrush gradient)
-		{
-			var soft = gradient.CloneCurrentValue();
-			foreach (var stop in soft.GradientStops)
-			{
-				var color = stop.Color;
-				color.A = 0x4D;
-				stop.Color = color;
-			}
-			if (soft.CanFreeze) soft.Freeze();
-			return soft;
-		}
-
-		return brush;
+			|| (header.StartsWith("Save ", StringComparison.OrdinalIgnoreCase)
+				&& !header.Contains("Folder", StringComparison.OrdinalIgnoreCase))
+			|| header.StartsWith("Generate Redux Database Contribution", StringComparison.OrdinalIgnoreCase);
 	}
 }

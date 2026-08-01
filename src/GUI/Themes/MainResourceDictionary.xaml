@@ -3676,8 +3676,30 @@
 					    StrokeData="{StaticResource Redux.Icon.ScrollText}"
 					    Foreground="{DynamicResource ReduxAccentHoverBrush}"
 					    IsHitTestVisible="True"
-					    ToolTip="Notes added"
-					    Visibility="{Binding HasPrivateNote, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
+					    ToolTipService.ShowDuration="20000"
+					    Visibility="{Binding HasPrivateNote, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+						<controls:ReduxIcon.ToolTip>
+							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
+								<Border MaxWidth="390"
+									Padding="12,10"
+									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+									BorderBrush="{DynamicResource ReduxAccentBrush}"
+									BorderThickness="1"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+									<StackPanel>
+										<TextBlock FontSize="{DynamicResource Redux.FontSize.13}"
+											FontWeight="SemiBold"
+											Foreground="{DynamicResource ReduxAccentHoverBrush}"
+											Text="Note:" />
+										<TextBlock Margin="0,5,0,0"
+											Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+											Text="{Binding PrivateNote}"
+											TextWrapping="Wrap" />
+									</StackPanel>
+								</Border>
+							</ToolTip>
+						</controls:ReduxIcon.ToolTip>
+					</controls:ReduxIcon>
 					<controls:ReduxIcon Width="16"
 					    Height="16"
 					    MaxWidth="16"
