@@ -23,6 +23,16 @@ public static class ReduxModDatabaseService
 	public static int ExactPakCount => _index.Value.ExactPakCount;
 	public static int ExactArchiveCount => _index.Value.ExactArchiveCount;
 	public static ReduxModDatabaseMatch TryResolveProject(long modId) => CreateMatch(modId, -1, ReduxOfflineMatchKind.Unknown);
+	public static ReduxModDatabaseMatch TryResolveModuleUuid(string uuid)
+	{
+		if (String.IsNullOrWhiteSpace(uuid)
+			|| !_index.Value.ModulesByUuid.TryGetValue(uuid.Trim(), out var module))
+		{
+			return null;
+		}
+
+		return CreateMatch(module.ModId, -1, ReduxOfflineMatchKind.ModuleIdentity);
+	}
 
 	public static bool CouldMatchPak(string filePath) => CouldMatchBySize(filePath, ".pak", _index.Value.PaksBySize);
 	public static bool CouldMatchArchive(string filePath) => CouldMatchBySize(filePath, null, _index.Value.ArchivesBySize);
@@ -69,12 +79,8 @@ public static class ReduxModDatabaseService
 	public static ReduxModDatabaseMatch TryResolveIdentity(DivinityModData mod)
 	{
 		if (mod == null) return null;
-		if (!String.IsNullOrWhiteSpace(mod.UUID)
-			&& _index.Value.ModulesByUuid.TryGetValue(mod.UUID.Trim(), out var module)
-			&& _index.Value.ProjectsById.ContainsKey(module.ModId))
-		{
-			return CreateMatch(module.ModId, -1, ReduxOfflineMatchKind.ModuleIdentity);
-		}
+		var moduleMatch = TryResolveModuleUuid(mod.UUID);
+		if (moduleMatch != null) return moduleMatch;
 
 		var author = Normalize(mod.Author);
 		if (String.IsNullOrWhiteSpace(author)) return null;

@@ -304,8 +304,9 @@ Redux additionally adds:
 - A compact row-level diagnostic indicator for duplicate UUIDs, inactive dependencies, and declared
   conflicts that otherwise have no dedicated status icon.
 - Contextual dependency actions that identify the requiring mod, reveal an installed dependency,
-  copy its UUID, open available source pages, and—with explicit confirmation—append an installed
-  inactive dependency to the current working order for placement review before export.
+  copy its UUID, open installed or reviewed missing-dependency source pages, and—with explicit
+  confirmation—append an installed inactive dependency to the current working order for placement
+  review before export.
 - An on-demand Active File Overlaps inspector that reads the file tables of active and override
   PAKs, lists internal paths shared by multiple packages, supports local result filtering, and
   deliberately labels matches as overlaps rather than confirmed conflicts.

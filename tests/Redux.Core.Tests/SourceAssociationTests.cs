@@ -5,12 +5,14 @@ using DivinityModManager;
 using DivinityModManager.AppServices;
 using DivinityModManager.Models;
 using DivinityModManager.Models.Cache;
+using DivinityModManager.Models.Health;
 using DivinityModManager.Models.Metadata;
 using DivinityModManager.Models.Modio;
 using DivinityModManager.Models.NexusMods;
 using DivinityModManager.ModUpdater;
 using DivinityModManager.ModUpdater.Cache;
 using DivinityModManager.Util;
+using DivinityModManager.ViewModels;
 
 using Newtonsoft.Json;
 
@@ -18,6 +20,59 @@ namespace Redux.Core.Tests;
 
 public sealed class SourceAssociationTests
 {
+	private const string ReviewedModuleUuid = "069e5871-efe8-44bb-b02a-fe957df5ae0e";
+
+	public void ReviewedModuleUuidResolvesItsProject()
+	{
+		var match = ReduxModDatabaseService.TryResolveModuleUuid(ReviewedModuleUuid);
+
+		RegressionAssert.True(match != null);
+		RegressionAssert.Equal(3902L, match!.ModId);
+		RegressionAssert.True(ReduxModDatabaseService.TryResolveModuleUuid(String.Empty) == null);
+		RegressionAssert.True(ReduxModDatabaseService.TryResolveModuleUuid("11111111-1111-1111-1111-111111111111") == null);
+	}
+
+	public void MissingDependencyOffersReviewedSourceOnlyWhenIntegrationsAreEnabled()
+	{
+		var affectedMod = CreateMod();
+		var finding = new ModHealthFinding(
+			ModHealthFindingCode.MissingDependency,
+			ModHealthSeverity.Error,
+			"Missing dependency",
+			"A reviewed dependency is not installed.",
+			new[] { ReviewedModuleUuid });
+		var snapshot = new ModHealthSnapshot(affectedMod, new[] { finding });
+
+		var enabled = new ModDiagnosticFindingGroupViewModel(
+			finding,
+			new[] { snapshot },
+			Array.Empty<DivinityModData>(),
+			sourceIntegrationsEnabled: true);
+		RegressionAssert.True(enabled.CanOpenRelatedDependencySource);
+		RegressionAssert.Contains(enabled.PrimaryRelatedSourceUrl, "/baldursgate3/mods/3902");
+
+		var localOnly = new ModDiagnosticFindingGroupViewModel(
+			finding,
+			new[] { snapshot },
+			Array.Empty<DivinityModData>(),
+			sourceIntegrationsEnabled: false);
+		RegressionAssert.False(localOnly.CanOpenRelatedDependencySource);
+
+		var unknownFinding = new ModHealthFinding(
+			ModHealthFindingCode.MissingDependency,
+			ModHealthSeverity.Error,
+			"Missing dependency",
+			"An unknown dependency is not installed.",
+			new[] { "11111111-1111-1111-1111-111111111111" });
+		var unknown = new ModDiagnosticFindingGroupViewModel(
+			unknownFinding,
+			new[] { new ModHealthSnapshot(affectedMod, new[] { unknownFinding }) },
+			Array.Empty<DivinityModData>(),
+			sourceIntegrationsEnabled: true);
+		RegressionAssert.False(unknown.CanOpenRelatedDependencySource);
+		RegressionAssert.True(unknown.CanCopyRelatedDependencyUuid);
+	}
+
 	public void CurrentNexusArchiveNamesResolveTheirProject()
 	{
 		var camera = NexusModFileVersionData.FromFilePath(

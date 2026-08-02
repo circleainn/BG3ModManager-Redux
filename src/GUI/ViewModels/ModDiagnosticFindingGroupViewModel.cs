@@ -1,3 +1,4 @@
+using DivinityModManager.AppServices;
 using DivinityModManager.Models;
 using DivinityModManager.Models.Health;
 
@@ -21,6 +22,7 @@ public sealed class ModDiagnosticFindingGroupViewModel
 	public bool HasErrors => Severity == ModHealthSeverity.Error;
 	public DivinityModData PrimaryRelatedMod { get; }
 	public string PrimaryRelatedModUuid { get; }
+	public string PrimaryRelatedSourceUrl { get; }
 	public bool CanRevealRelatedDependency { get; }
 	public bool CanActivateRelatedDependency { get; }
 	public bool CanOpenRelatedDependencySource { get; }
@@ -37,7 +39,8 @@ public sealed class ModDiagnosticFindingGroupViewModel
 	public ModDiagnosticFindingGroupViewModel(
 		ModHealthFinding finding,
 		IEnumerable<ModHealthSnapshot> affectedSnapshots,
-		IEnumerable<DivinityModData> installedMods)
+		IEnumerable<DivinityModData> installedMods,
+		bool sourceIntegrationsEnabled)
 	{
 		if (finding == null) throw new ArgumentNullException(nameof(finding));
 
@@ -64,6 +67,9 @@ public sealed class ModDiagnosticFindingGroupViewModel
 		PrimaryRelatedMod = finding.RelatedModUuids
 			.Select(uuid => installedByUuid.TryGetValue(uuid, out var mod) ? mod : null)
 			.FirstOrDefault(mod => mod != null);
+		PrimaryRelatedSourceUrl = sourceIntegrationsEnabled
+			? ResolveRelatedSourceUrl(PrimaryRelatedMod, PrimaryRelatedModUuid)
+			: String.Empty;
 		CanRevealRelatedDependency = PrimaryRelatedMod != null && Code is
 			ModHealthFindingCode.InactiveDependency or
 			ModHealthFindingCode.DependencyVersionTooOld or
@@ -71,19 +77,31 @@ public sealed class ModDiagnosticFindingGroupViewModel
 		CanActivateRelatedDependency = PrimaryRelatedMod != null
 			&& !PrimaryRelatedMod.IsActive
 			&& Code == ModHealthFindingCode.InactiveDependency;
-		CanOpenRelatedDependencySource = PrimaryRelatedMod != null
-			&& !String.IsNullOrWhiteSpace(PrimaryRelatedMod.Metadata?.SourcePageUrl)
+		CanOpenRelatedDependencySource = !String.IsNullOrWhiteSpace(PrimaryRelatedSourceUrl)
 			&& Code is ModHealthFindingCode.InactiveDependency
 				or ModHealthFindingCode.DependencyVersionTooOld
-				or ModHealthFindingCode.DependencyLoadsLater;
+				or ModHealthFindingCode.DependencyLoadsLater
+				or ModHealthFindingCode.MissingDependency;
 		CanCopyRelatedDependencyUuid = !String.IsNullOrWhiteSpace(PrimaryRelatedModUuid)
 			&& Code is ModHealthFindingCode.MissingDependency
 				or ModHealthFindingCode.InactiveDependency
 				or ModHealthFindingCode.DependencyVersionTooOld
 				or ModHealthFindingCode.DependencyLoadsLater;
-		CanOpenAffectedModSource = Code == ModHealthFindingCode.MissingDependency
+		CanOpenAffectedModSource = sourceIntegrationsEnabled
+			&& Code == ModHealthFindingCode.MissingDependency
 			&& AffectedMods.Count == 1
 			&& !String.IsNullOrWhiteSpace(PrimarySnapshot.Mod.Metadata?.SourcePageUrl);
+	}
+
+	private static string ResolveRelatedSourceUrl(DivinityModData installedMod, string relatedUuid)
+	{
+		var installedUrl = installedMod?.Metadata?.SourcePageUrl;
+		if (!String.IsNullOrWhiteSpace(installedUrl)) return installedUrl;
+
+		return ReduxModDatabaseService.TryResolveModuleUuid(relatedUuid)
+			?.CreateMetadata(relatedUuid)
+			.SourcePageUrl
+			?? String.Empty;
 	}
 }
 

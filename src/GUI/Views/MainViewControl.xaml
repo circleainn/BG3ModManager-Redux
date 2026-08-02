@@ -308,9 +308,9 @@
 							</Button>
 							<Button Margin="0,0,6,0"
 								Click="ToolbarDiagnosticRelatedSource_Click"
-								CommandParameter="{Binding PrimaryRelatedMod}"
+								CommandParameter="{Binding PrimaryRelatedSourceUrl}"
 								Style="{StaticResource ReduxSecondaryActionButtonStyle}"
-								ToolTip="Open the installed dependency's linked source page"
+								ToolTip="Open the dependency's known source page"
 								Visibility="{Binding CanOpenRelatedDependencySource, Converter={StaticResource BoolToVisibilityConverter}}">
 								<StackPanel Orientation="Horizontal">
 									<controls:ReduxIcon Width="13"
@@ -319,7 +319,7 @@
 										VerticalAlignment="Center"
 										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 										StrokeData="{StaticResource Redux.Icon.LinkStroke}" />
-									<TextBlock VerticalAlignment="Center" Text="Source page" />
+									<TextBlock VerticalAlignment="Center" Text="Dependency page" />
 								</StackPanel>
 							</Button>
 							<Button Margin="0,0,6,0"

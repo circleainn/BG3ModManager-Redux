@@ -60,6 +60,12 @@ self-dependency metadata, installed dependencies below a declared minimum versio
 conflicts, Script Extender availability, legacy Mod Fixer and override behavior, provider-specific
 safety notes, and invalid embedded Redux creator manifests.
 
+Dependency findings provide conservative follow-up actions without installing anything. Redux can
+show or activate an installed inactive dependency, open a known source page, or copy the declared
+UUID. For a completely missing dependency, a source-page action appears only when the reviewed
+bundled database maps that exact module UUID to one Nexus project. Unknown or ambiguous UUIDs keep
+the copy-only fallback, and source actions remain hidden when online mod information is disabled.
+
 ### Experimental load-order guidance
 
 Load-order guidance is an experimental, opt-in Mod Diagnostics rule family—not an automatic sorting

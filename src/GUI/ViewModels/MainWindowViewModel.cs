@@ -7792,7 +7792,8 @@ Directory the zip will be extracted to:
 			.Select(group => new ModDiagnosticFindingGroupViewModel(
 				group.First().Finding,
 				group.Select(entry => entry.Snapshot),
-				mods.Items))
+				mods.Items,
+				Modules.SourceIntegrationsEnabled))
 			.OrderByDescending(group => group.Severity)
 			.ThenBy(group => group.Code)
 			.ToArray();

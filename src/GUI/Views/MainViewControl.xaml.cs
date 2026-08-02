@@ -1236,10 +1236,11 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private void ToolbarDiagnosticRelatedSource_Click(object sender, RoutedEventArgs e)
 	{
-		if (sender is Button { CommandParameter: DivinityModData mod } button)
+		if (sender is Button { CommandParameter: string sourceUrl } button
+			&& !String.IsNullOrWhiteSpace(sourceUrl))
 		{
 			button.FindVisualParent<ContextMenu>()?.SetCurrentValue(ContextMenu.IsOpenProperty, false);
-			DivinityApp.Commands.OpenModSourcePage(mod);
+			DivinityApp.Commands.OpenURL(sourceUrl);
 		}
 
 		e.Handled = true;

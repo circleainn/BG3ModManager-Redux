@@ -55,6 +55,10 @@ When a dependency is already installed, an available action can reveal it, copy 
 linked page, or activate it after confirmation. Activating a dependency changes only the working
 order until the user exports it.
 
+For a missing dependency, Redux can open a known Nexus page when its reviewed database contains an
+exact module-UUID match. Unknown dependencies retain the copy-UUID fallback; Redux does not install
+them automatically.
+
 The optional Load Order Advisor is experimental and disabled by default. It checks declared
 dependency placement and cycles; it does not attempt to infer a complete load order.
 
