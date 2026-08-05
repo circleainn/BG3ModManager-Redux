@@ -22,16 +22,18 @@ public static class VisualDividerDragPolicy
 
 		if (sourceItem.IsVisualDivider)
 		{
-			// A separator owns every row beneath it until the next separator, so it always
-			// travels with that section. Moving the bare marker used to leave the section
-			// behind, silently handing those mods to the separator above it.
-			var section = new List<DivinityModData> { sourceItem };
+			if (!sourceItem.IsVisualDividerCollapsed)
+			{
+				return new[] { sourceItem };
+			}
+
+			var collapsedSection = new List<DivinityModData> { sourceItem };
 			for (var index = sourceIndex + 1; index < items.Count; index++)
 			{
 				if (items[index].IsVisualDivider) break;
-				section.Add(items[index]);
+				collapsedSection.Add(items[index]);
 			}
-			return section;
+			return collapsedSection;
 		}
 
 		if (!canDragNormalItem(sourceItem)) return Array.Empty<DivinityModData>();

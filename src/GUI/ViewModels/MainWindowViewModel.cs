@@ -187,15 +187,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	[Reactive] public string ActiveDiagnosticSummaryText { get; set; } = String.Empty;
 	public ObservableCollectionExtended<DivinityModData> DisplayActiveMods { get; } = new();
 	public ObservableCollectionExtended<DivinityModData> DisplayInactiveMods { get; } = new();
-	// Rows inside a collapsed section are withheld from the display collections so the
-	// virtualizing panel never has to measure zero-height containers. Drag/drop still
-	// needs the complete ordering, so it is kept here instead.
-	private readonly List<DivinityModData> _activeVisualSequence = new();
-	private readonly List<DivinityModData> _inactiveVisualSequence = new();
-	public IReadOnlyList<DivinityModData> ActiveVisualSequence => _activeVisualSequence;
-	public IReadOnlyList<DivinityModData> InactiveVisualSequence => _inactiveVisualSequence;
-	private bool _activeVisualCollapseSuppressed;
-	private bool _inactiveVisualCollapseSuppressed;
 	private bool _updatingVisualModLists;
 	private IDisposable _refreshVisualDividersTask;
 
@@ -311,8 +302,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	[Reactive] public bool IsLoadingOrder { get; set; }
 	[Reactive] public bool OrderJustLoaded { get; set; }
 	[Reactive] public bool IsDragging { get; set; }
-	/// <summary>True while the drag payload is a collapsed separator and the whole block it owns.</summary>
-	public bool IsDraggingSeparatorSection { get; set; }
 	/// <summary>True when Active Mods is displayed in a metadata-sorted view rather than the real # load order.</summary>
 	[Reactive] public bool IsActiveListMetadataSorted { get; set; }
 	[Reactive] public bool AppSettingsLoaded { get; set; }
@@ -5058,7 +5047,11 @@ Directory the zip will be extracted to:
 				}
 			}, TaskCreationOptions.AttachedToParent);
 
-			await childTask.WaitAsync(token);
+			var awaiter = childTask.GetAwaiter();
+			while (!awaiter.IsCompleted)
+			{
+				await Task.Delay(0, token);
+			}
 		}, token);
 
 		return task;
@@ -6584,25 +6577,6 @@ Directory the zip will be extracted to:
 		return true;
 	}
 
-	/// <summary>
-	/// A metadata sort ignores separators entirely, so every row has to be published
-	/// while one is active or mods inside collapsed sections would vanish from the sort.
-	/// </summary>
-	public void SetVisualDividerCollapseSuppressed(bool activeList, bool suppressed)
-	{
-		if (activeList)
-		{
-			if (_activeVisualCollapseSuppressed == suppressed) return;
-			_activeVisualCollapseSuppressed = suppressed;
-		}
-		else
-		{
-			if (_inactiveVisualCollapseSuppressed == suppressed) return;
-			_inactiveVisualCollapseSuppressed = suppressed;
-		}
-		RefreshVisualDividers();
-	}
-
 	public bool CanSetAllVisualDividersCollapsed(bool activeList, bool collapsed) =>
 		Settings.VisualModListDividers?.Any(divider =>
 			divider.IsActiveList == activeList && divider.IsCollapsed != collapsed) == true;
@@ -6625,23 +6599,9 @@ Directory the zip will be extracted to:
 	{
 		var dragged = draggedItems?.Distinct().ToList() ?? new List<DivinityModData>();
 		if (dragged.Count == 0) return;
-		// The drop index addresses the visible rows; the reorder has to happen against the
-		// full sequence so rows hidden by a collapsed section keep their place.
-		insertIndex = VisualModListDropPolicy.ResolveSequenceInsertIndex(
-			destinationActive ? _activeVisualSequence : _inactiveVisualSequence,
-			destinationActive ? DisplayActiveMods : DisplayInactiveMods,
-			insertIndex);
-		// A collapsed section travels as one block, so it may only land on a section
-		// boundary. Dropping it mid-section would adopt every row beneath it.
-		if (dragged[0].IsVisualDivider)
-		{
-			insertIndex = VisualModListDropPolicy.SnapToSectionBoundary(
-				destinationActive ? _activeVisualSequence : _inactiveVisualSequence,
-				insertIndex);
-		}
 		var result = VisualModListDropPolicy.Apply(
-			_activeVisualSequence,
-			_inactiveVisualSequence,
+			DisplayActiveMods,
+			DisplayInactiveMods,
 			dragged,
 			destinationActive,
 			insertIndex);
@@ -6759,40 +6719,23 @@ Directory the zip will be extracted to:
 			var show = String.IsNullOrWhiteSpace(SelectedModCategory) || SelectedModCategory.Equals(AllModsCategory, StringComparison.OrdinalIgnoreCase);
 			void Build(ObservableCollectionExtended<DivinityModData> target, IEnumerable<DivinityModData> mods, bool active)
 			{
-				var sequence = mods.ToList();
-				foreach (var mod in sequence) mod.IsHiddenByVisualDivider = false;
-				var suppressCollapse = active ? _activeVisualCollapseSuppressed : _inactiveVisualCollapseSuppressed;
+				var result = mods.ToList();
+				foreach (var mod in result) mod.IsHiddenByVisualDivider = false;
 				if (show)
 				{
 					foreach (var divider in (Settings.VisualModListDividers ?? new()).Where(x => x.IsActiveList == active).OrderBy(x => x.Position))
-						sequence.Insert(Math.Clamp(divider.Position, 0, sequence.Count), CreateVisualDividerItem(divider));
+						result.Insert(Math.Clamp(divider.Position, 0, result.Count), CreateVisualDividerItem(divider));
 					var collapseFollowingRows = false;
-					foreach (var item in sequence)
+					foreach (var item in result)
 					{
 						if (item.IsVisualDivider)
 						{
 							collapseFollowingRows = GetVisualDivider(item)?.IsCollapsed == true;
 							continue;
 						}
-						item.IsHiddenByVisualDivider = collapseFollowingRows && !suppressCollapse;
+						item.IsHiddenByVisualDivider = collapseFollowingRows;
 					}
 				}
-				// Reuse the divider instances already on screen. Drag/drop matches rows by
-				// reference, so a freshly built divider would not line up with the row the
-				// list view is actually displaying.
-				for (var index = 0; index < sequence.Count; index++)
-				{
-					var rebuiltDivider = sequence[index];
-					if (!rebuiltDivider.IsVisualDivider) continue;
-					var existing = target.FirstOrDefault(item => VisualModItemsMatch(item, rebuiltDivider));
-					if (existing == null) continue;
-					UpdateMatchedVisualModItem(existing, rebuiltDivider);
-					sequence[index] = existing;
-				}
-				var fullSequence = active ? _activeVisualSequence : _inactiveVisualSequence;
-				fullSequence.Clear();
-				fullSequence.AddRange(sequence);
-				var result = sequence.Where(item => !item.IsHiddenByVisualDivider).ToList();
 				if (target.Count == 0)
 				{
 					target.AddRange(result);

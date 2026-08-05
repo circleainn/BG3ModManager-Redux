@@ -408,43 +408,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			return;
 		}
 
-		SnapCollapsedSectionDropSlot(listView, ref insertIndex, ref indicatorOffset, ref targetItem, ref insertAfter);
 		ShowModListDropIndicator(listView, indicatorOffset, insertIndex, targetItem, insertAfter);
-	}
-
-	/// <summary>
-	/// Keeps the drop indicator on the boundary a collapsed section will actually land on,
-	/// so the preview matches what <see cref="MainWindowViewModel.ApplyVisualModListDrop"/> does.
-	/// </summary>
-	private void SnapCollapsedSectionDropSlot(
-		ListView listView,
-		ref int insertIndex,
-		ref double indicatorOffset,
-		ref ListBoxItem targetItem,
-		ref bool insertAfter)
-	{
-		if (ViewModel?.IsDraggingSeparatorSection != true) return;
-
-		var items = listView.Items.OfType<DivinityModData>().ToList();
-		var snapped = VisualModListDropPolicy.SnapToSectionBoundary(items, insertIndex);
-		if (snapped == insertIndex) return;
-		insertIndex = snapped;
-
-		if (snapped < items.Count &&
-			listView.ItemContainerGenerator.ContainerFromIndex(snapped) is ListBoxItem boundaryRow)
-		{
-			targetItem = boundaryRow;
-			insertAfter = false;
-			indicatorOffset = boundaryRow.TranslatePoint(new Point(), listView).Y;
-		}
-		else if (snapped > 0 &&
-			listView.ItemContainerGenerator.ContainerFromIndex(snapped - 1) is ListBoxItem lastRow)
-		{
-			targetItem = lastRow;
-			insertAfter = true;
-			indicatorOffset = lastRow.TranslatePoint(new Point(), listView).Y + lastRow.ActualHeight;
-		}
-		indicatorOffset = Math.Clamp(indicatorOffset, 1, Math.Max(1, listView.ActualHeight - 1));
 	}
 
 	private void ModListView_PreviewDragLeave(object sender, DragEventArgs e)
@@ -1526,20 +1490,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		}
 
 		var currentDividerItem = GetCurrentDividerItem();
-		if (currentDividerItem == null)
-		{
-			// The row is present but its rebuilt twin is not, so fall back to the stored
-			// state rather than dropping the click.
-			ViewModel.ToggleVisualDividerCollapsed(dividerItem);
-			return;
-		}
+		if (currentDividerItem == null) return;
 		dividerItem = currentDividerItem;
-		// The saved separator is the authority. The row only mirrors it, and acting on a
-		// stale mirror would spend the click without changing anything.
-		var storedDivider = ViewModel.GetVisualDivider(dividerItem);
-		var collapseSection = storedDivider != null
-			? !storedDivider.IsCollapsed
-			: !dividerItem.IsVisualDividerCollapsed;
+		var collapseSection = !dividerItem.IsVisualDividerCollapsed;
 		if (ReduxWindowBehavior.ReduceMotion)
 		{
 			ViewModel.SetVisualDividerCollapsed(dividerItem, collapseSection);
@@ -1606,11 +1559,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		VisualDividerAnimation transition = null;
 		void Finish(bool completed)
 		{
-			// Release the borrowed containers before the collapse mutates the collection.
-			// Recycling can hand them to different mods, and a late restore would then
-			// stamp this animation's transform and opacity onto unrelated rows.
-			foreach (var row in sectionRows) row.Restore();
-			foreach (var row in followingRows) row.Restore();
 			try
 			{
 				if (completed)
@@ -1618,6 +1566,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			}
 			finally
 			{
+				foreach (var row in sectionRows) row.Restore();
+				foreach (var row in followingRows) row.Restore();
 				var finalDividerItem = GetCurrentDividerItem();
 				if (finalDividerItem != null)
 					finalDividerItem.VisualDividerChevronAngle = finalDividerItem.IsVisualDividerCollapsed ? -90 : 0;
@@ -3317,8 +3267,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				// non-mod rows by a synthetic Index value.
 				dataView.Filter = null;
 				if (lv == ActiveModsListView && ViewModel != null) ViewModel.IsActiveListMetadataSorted = false;
-				if (lv == ActiveModsListView || lv == InactiveModsListView)
-					ViewModel?.SetVisualDividerCollapseSuppressed(lv == ActiveModsListView, false);
 				ViewModel?.RefreshVisualDividers();
 				dataView.Refresh();
 				return;
@@ -3331,7 +3279,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			if (lv == ActiveModsListView || lv == InactiveModsListView)
 			{
 				if (lv == ActiveModsListView && ViewModel != null) ViewModel.IsActiveListMetadataSorted = true;
-				ViewModel?.SetVisualDividerCollapseSuppressed(lv == ActiveModsListView, true);
+				foreach (var mod in lv.ItemsSource.OfType<DivinityModData>().Where(item => !item.IsVisualDivider))
+					mod.IsHiddenByVisualDivider = false;
 				dataView.Filter = item => item is not DivinityModData mod || !mod.IsVisualDivider;
 			}
 			SortDescription sd = new SortDescription(sortBy, direction);

@@ -80,7 +80,7 @@ public class ModListDragHandler : DefaultDragHandler
 			if (dragInfo.SourceCollection == _viewModel.DisplayActiveMods)
 			{
 				var selected = VisualDividerDragPolicy.ResolveDragItems(
-					_viewModel.ActiveVisualSequence,
+					_viewModel.DisplayActiveMods,
 					sourceItem,
 					x => x.Visibility == Visibility.Visible);
 				dragInfo.Data = selected.Count > 0 ? selected : null;
@@ -88,7 +88,7 @@ public class ModListDragHandler : DefaultDragHandler
 			else if (dragInfo.SourceCollection == _viewModel.DisplayInactiveMods)
 			{
 				var selected = VisualDividerDragPolicy.ResolveDragItems(
-					_viewModel.InactiveVisualSequence,
+					_viewModel.DisplayInactiveMods,
 					sourceItem,
 					x => x.Visibility == Visibility.Visible && x.CanDrag);
 				dragInfo.Data = selected.Count > 0 ? selected : null;
@@ -103,9 +103,6 @@ public class ModListDragHandler : DefaultDragHandler
 				var selected = _viewModel.InactiveMods.Where(x => x.IsSelected && x.Visibility == Visibility.Visible && x.CanDrag);
 				dragInfo.Data = selected;
 			}
-			_viewModel.IsDraggingSeparatorSection =
-				dragInfo.Data is IReadOnlyList<DivinityModData> { Count: > 0 } payload &&
-				payload[0].IsVisualDivider;
 			if (dragInfo.Data != null)
 			{
 				_viewModel.IsDragging = true;
@@ -122,7 +119,6 @@ public class ModListDragHandler : DefaultDragHandler
 	public override void DragDropOperationFinished(DragDropEffects operationResult, IDragInfo dragInfo)
 	{
 		_viewModel.IsDragging = false;
-		_viewModel.IsDraggingSeparatorSection = false;
 		_stopDraggingFallbackTask?.Dispose();
 	}
 
@@ -157,7 +153,6 @@ public class ModListDragHandler : DefaultDragHandler
 	public override void DragCancelled()
 	{
 		_viewModel.IsDragging = false;
-		_viewModel.IsDraggingSeparatorSection = false;
 		if (_lastDragInfo != null)
 		{
 			_lastDragInfo.Effects = DragDropEffects.None;

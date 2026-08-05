@@ -16,58 +16,23 @@ public static class VisualModListDropPolicy
 		if (targetIndex < 0 || targetIndex >= visualItems.Count)
 			return Math.Clamp(targetIndex, 0, visualItems.Count);
 
-		// Rows owned by a collapsed separator are not published to the list view, so
-		// the row after a collapsed separator is already past its hidden block.
-		return targetIndex + (insertAfter ? 1 : 0);
-	}
-
-	/// <summary>
-	/// Translates a drop index addressing the visible rows into an index in the full
-	/// sequence, which also contains the rows hidden by collapsed separators.
-	/// </summary>
-	public static int ResolveSequenceInsertIndex(
-		IReadOnlyList<DivinityModData> sequence,
-		IReadOnlyList<DivinityModData> visibleItems,
-		int visibleIndex)
-	{
-		ArgumentNullException.ThrowIfNull(sequence);
-		ArgumentNullException.ThrowIfNull(visibleItems);
-		if (visibleIndex <= 0) return 0;
-		if (visibleIndex >= visibleItems.Count) return sequence.Count;
-
-		var anchor = visibleItems[visibleIndex];
-		for (var index = 0; index < sequence.Count; index++)
+		var insertIndex = targetIndex + (insertAfter ? 1 : 0);
+		if (!insertAfter || visualItems[targetIndex] is not DivinityModData
+			{ IsVisualDivider: true, IsVisualDividerCollapsed: true })
 		{
-			if (ReferenceEquals(sequence[index], anchor)) return index;
+			return insertIndex;
 		}
-		return sequence.Count;
-	}
 
-	/// <summary>
-	/// Moves an insertion point to the nearest section boundary. Section membership is
-	/// positional, so dropping a collapsed block in the middle of a run of mods would
-	/// silently make the rows below it part of the dropped section. A collapsed section
-	/// is a self-contained block and may only land between sections.
-	/// </summary>
-	public static int SnapToSectionBoundary(IReadOnlyList<DivinityModData> items, int insertIndex)
-	{
-		ArgumentNullException.ThrowIfNull(items);
-		insertIndex = Math.Clamp(insertIndex, 0, items.Count);
-		if (IsSectionBoundary(items, insertIndex)) return insertIndex;
-
-		for (var distance = 1; distance <= items.Count; distance++)
+		// The rows owned by a collapsed separator remain in the collection even
+		// though they have no visible containers. "After" the visible separator
+		// therefore means after its complete hidden block, at the next separator.
+		while (insertIndex < visualItems.Count &&
+			visualItems[insertIndex] is DivinityModData { IsVisualDivider: false })
 		{
-			var before = insertIndex - distance;
-			if (before >= 0 && IsSectionBoundary(items, before)) return before;
-			var after = insertIndex + distance;
-			if (after <= items.Count && IsSectionBoundary(items, after)) return after;
+			insertIndex++;
 		}
-		return items.Count;
+		return insertIndex;
 	}
-
-	// The end of the list always closes the final section, so it is always a boundary.
-	private static bool IsSectionBoundary(IReadOnlyList<DivinityModData> items, int index) =>
-		index >= items.Count || items[index].IsVisualDivider;
 
 	public static VisualModListDropResult Apply(
 		IEnumerable<DivinityModData> activeItems,
