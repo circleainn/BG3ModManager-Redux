@@ -5,6 +5,7 @@ namespace DivinityModManager.Models.Health;
 /// </summary>
 public sealed class ModHealthSnapshot
 {
+	private readonly string _loadOrderPositionSignature;
 	public DivinityModData Mod { get; }
 	public IReadOnlyList<ModHealthFinding> Findings { get; }
 	public IReadOnlyList<ModHealthFinding> GeneralHealthFindings { get; }
@@ -98,6 +99,7 @@ public sealed class ModHealthSnapshot
 	public ModHealthSnapshot(DivinityModData mod, IEnumerable<ModHealthFinding> findings)
 	{
 		Mod = mod ?? throw new ArgumentNullException(nameof(mod));
+		_loadOrderPositionSignature = $"{mod.Index}|{mod.LoadOrderDisplayText}";
 		Findings = (findings ?? Enumerable.Empty<ModHealthFinding>())
 			.OrderByDescending(finding => finding.Severity)
 			.ThenBy(finding => finding.Code)
@@ -131,6 +133,36 @@ public sealed class ModHealthSnapshot
 				ModHealthFindingCode.ContainsFileOverrides or
 				ModHealthFindingCode.AlwaysLoadedWithLoadOrderEntry)
 			.ToArray();
+	}
+
+	/// <summary>
+	/// Returns true when replacing this snapshot would not change anything presented
+	/// to the user. Retaining equivalent snapshots avoids invalidating health bindings
+	/// on every mod row after an unrelated library change.
+	/// </summary>
+	public bool HasEquivalentFindings(ModHealthSnapshot other)
+	{
+		if (other == null || !ReferenceEquals(Mod, other.Mod) || Findings.Count != other.Findings.Count)
+			return false;
+		if ((HasLoadOrderAdvice || other.HasLoadOrderAdvice)
+			&& !String.Equals(_loadOrderPositionSignature, other._loadOrderPositionSignature, StringComparison.Ordinal))
+			return false;
+
+		for (var index = 0; index < Findings.Count; index++)
+		{
+			var left = Findings[index];
+			var right = other.Findings[index];
+			if (left.Code != right.Code
+				|| left.Severity != right.Severity
+				|| !String.Equals(left.Title, right.Title, StringComparison.Ordinal)
+				|| !String.Equals(left.Message, right.Message, StringComparison.Ordinal)
+				|| !left.RelatedModUuids.SequenceEqual(right.RelatedModUuids, StringComparer.OrdinalIgnoreCase))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private static bool IsLoadOrderAdvice(ModHealthFinding finding) =>

@@ -1,5 +1,6 @@
 using DivinityModManager.Models;
 using DivinityModManager.Models.NexusMods;
+using DivinityModManager.Util;
 
 using Newtonsoft.Json;
 
@@ -230,9 +231,13 @@ public sealed class ReduxModDatabaseMatch
 	public NexusModsModData CreateMetadata(string uuid)
 	{
 		Uri.TryCreate(_fingerprint?.PictureUrl ?? Project.PictureUrl, UriKind.Absolute, out var picture);
+		var categoryId = (Project.Categories ?? new List<string>())
+			.Select(category => AutomaticModCategoryClassifier.TryGetNexusCategoryId(category, out var id) ? id : 0)
+			.FirstOrDefault(id => id > 0);
 		return new NexusModsModData
 		{
 			UUID = uuid, ModId = ModId, LastFileId = FileId,
+			CategoryId = categoryId,
 			Name = !String.IsNullOrWhiteSpace(_fingerprint?.Name) ? _fingerprint.Name : Project.Name,
 			Author = !String.IsNullOrWhiteSpace(_fingerprint?.Author) ? _fingerprint.Author : Project.Authors?.FirstOrDefault(),
 			UploadedBy = Project.UploadedBy,
@@ -245,7 +250,7 @@ public sealed class ReduxModDatabaseMatch
 
 internal interface IReduxFingerprint { string Name { get; } string Author { get; } string Version { get; } string PictureUrl { get; } }
 internal sealed class ReduxModDatabase { [JsonProperty("schemaVersion")] public int SchemaVersion { get; set; } [JsonProperty("projects")] public List<ReduxProjectRecord> Projects { get; set; } = new(); [JsonProperty("exactPakFingerprints")] public List<ReduxPakFingerprint> ExactPakFingerprints { get; set; } = new(); [JsonProperty("exactArchiveFingerprints")] public List<ReduxArchiveFingerprint> ExactArchiveFingerprints { get; set; } = new(); [JsonProperty("moduleIdentities")] public List<ReduxModuleIdentity> ModuleIdentities { get; set; } = new(); }
-public sealed class ReduxProjectRecord { [JsonProperty("modId")] public long ModId { get; set; } [JsonProperty("name")] public string Name { get; set; } [JsonProperty("authors")] public List<string> Authors { get; set; } = new(); [JsonProperty("uploadedBy")] public string UploadedBy { get; set; } [JsonProperty("aliases")] public List<string> Aliases { get; set; } = new(); [JsonProperty("pictureUrl")] public string PictureUrl { get; set; } }
+public sealed class ReduxProjectRecord { [JsonProperty("modId")] public long ModId { get; set; } [JsonProperty("name")] public string Name { get; set; } [JsonProperty("authors")] public List<string> Authors { get; set; } = new(); [JsonProperty("uploadedBy")] public string UploadedBy { get; set; } [JsonProperty("aliases")] public List<string> Aliases { get; set; } = new(); [JsonProperty("categories")] public List<string> Categories { get; set; } = new(); [JsonProperty("pictureUrl")] public string PictureUrl { get; set; } }
 internal sealed class ReduxPakFingerprint : IReduxFingerprint { [JsonProperty("hash")] public string Hash { get; set; } [JsonProperty("size")] public long Size { get; set; } [JsonProperty("modId")] public long ModId { get; set; } [JsonProperty("fileId")] public long FileId { get; set; } [JsonProperty("name")] public string Name { get; set; } [JsonProperty("author")] public string Author { get; set; } [JsonProperty("version")] public string Version { get; set; } [JsonProperty("pictureUrl")] public string PictureUrl { get; set; } }
 internal sealed class ReduxArchiveFingerprint : IReduxFingerprint { [JsonProperty("md5")] public string Md5 { get; set; } [JsonProperty("size")] public long Size { get; set; } [JsonProperty("modId")] public long ModId { get; set; } [JsonProperty("fileId")] public long FileId { get; set; } [JsonProperty("name")] public string Name { get; set; } [JsonProperty("author")] public string Author { get; set; } [JsonProperty("version")] public string Version { get; set; } public string PictureUrl => null; }
 internal sealed class ReduxModuleIdentity { [JsonProperty("uuid")] public string Uuid { get; set; } [JsonProperty("modId")] public long ModId { get; set; } }

@@ -297,12 +297,7 @@ public static class DivinityFileUtils
 				catch (Exception) { return false; }
 			}, TaskCreationOptions.AttachedToParent);
 
-			var awaiter = childTask.GetAwaiter();
-			while (!awaiter.IsCompleted)
-			{
-				await Task.Delay(0, token);
-			}
-			return childTask.Result;
+			return await childTask.WaitAsync(token);
 		}, token);
 
 		return task;

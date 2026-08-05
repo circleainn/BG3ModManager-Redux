@@ -349,6 +349,15 @@ public partial class MainViewControl : MainViewControlViewBase
 		if (menuItems.TryGetValue("Tools", out var toolsMenuItem))
 		{
 			if (toolsMenuItem.Items.Count > 0) toolsMenuItem.Items.Add(new Separator());
+			var packagePreflightItem = new MenuItem
+			{
+				Header = "Inspect Mod Package...",
+				ToolTip = "Inspect a PAK or release archive without installing it.",
+				Icon = ReduxIcon.FromResource("Redux.Icon.Package", true)
+			};
+			packagePreflightItem.Click += InspectModPackage_Click;
+			toolsMenuItem.Items.Add(packagePreflightItem);
+
 			var contributionItem = new MenuItem
 			{
 				Header = "Generate Redux Database Contribution...",
@@ -421,6 +430,27 @@ public partial class MainViewControl : MainViewControlViewBase
 		{
 			ReduxMenuItemExtension.ApplySemanticHoverToMenu(topLevelMenu);
 		}
+	}
+
+	private void InspectModPackage_Click(object sender, RoutedEventArgs e)
+	{
+		var dialog = new Microsoft.Win32.OpenFileDialog
+		{
+			Title = "Inspect Mod Package",
+			Filter = "Mod packages and archives (*.pak;*.zip;*.7z;*.rar;*.tar;*.gz)|*.pak;*.zip;*.7z;*.7zip;*.rar;*.tar;*.tar.gz;*.tgz;*.gz;*.gzip|Baldur's Gate 3 package (*.pak)|*.pak|Archive files (*.zip;*.7z;*.rar;*.tar;*.gz)|*.zip;*.7z;*.7zip;*.rar;*.tar;*.tar.gz;*.tgz;*.gz;*.gzip|All files (*.*)|*.*",
+			DefaultExt = ".pak",
+			AddExtension = true,
+			CheckFileExists = true,
+			Multiselect = false
+		};
+		if (dialog.ShowDialog(main) != true) return;
+
+		var installedMods = ViewModel.UserMods?
+			.Where(mod => mod != null && !mod.IsVisualDivider)
+			.ToArray()
+			?? [];
+		var preflight = new ReduxPackagePreflightWindow(main, dialog.FileName, installedMods);
+		preflight.ShowDialog();
 	}
 
 	private async void GenerateReduxDatabaseContribution_Click(object sender, RoutedEventArgs e)

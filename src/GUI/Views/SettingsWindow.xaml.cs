@@ -885,6 +885,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		this.BindCommand(ViewModel, vm => vm.ClearLaunchParamsCommand, view => view.ClearLaunchParamsMenuItem);
 		this.BindCommand(ViewModel, vm => vm.ClearCacheCommand, view => view.ClearCacheButton);
 		this.BindCommand(ViewModel, vm => vm.ResetSourceCacheCommand, view => view.ResetSourceCacheButton);
+		this.BindCommand(ViewModel, vm => vm.RestoreAutomaticCategoriesCommand, view => view.RestoreAutomaticCategoriesButton);
 		this.BindCommand(ViewModel, vm => vm.ClearSourceHistoryCommand, view => view.ClearSourceHistoryButton);
 
 		this.Events().IsVisibleChanged.InvokeCommand(ViewModel.OnWindowShownCommand);

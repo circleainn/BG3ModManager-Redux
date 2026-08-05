@@ -99,6 +99,7 @@ public class SettingsWindowViewModel : ReactiveObject
 	public ICommand ResetSettingsCommand { get; private set; }
 	public ICommand ClearCacheCommand { get; private set; }
 	public ICommand ResetSourceCacheCommand { get; private set; }
+	public ICommand RestoreAutomaticCategoriesCommand { get; private set; }
 	public ICommand ClearSourceHistoryCommand { get; private set; }
 	public ICommand AddLaunchParamCommand { get; private set; }
 	public ICommand ClearLaunchParamsCommand { get; private set; }
@@ -548,6 +549,39 @@ public class SettingsWindowViewModel : ReactiveObject
 					DivinityApp.Log($"Error restoring automatic source links:\n{ex}");
 					ShowAlert("Automatic links could not be restored. Check the log for details.", AlertType.Danger);
 				}
+			}
+		});
+
+		RestoreAutomaticCategoriesCommand = ReactiveCommand.Create(() =>
+		{
+			const string message =
+				"Restore automatic categories for every mod?\n\n"
+				+ "All manual category assignments, including explicit No Category choices, will be cleared. "
+				+ "Redux will immediately classify each mod again using its current automatic rules and linked source metadata.\n\n"
+				+ "Custom category definitions, colors, icons, descriptions, sidebar order, separators, notes, sources, installed mods, and load order will not change.";
+			var result = ReduxMessageBox.Show(
+				View,
+				message,
+				"Restore Automatic Categories?",
+				MessageBoxButton.YesNo,
+				MessageBoxImage.Warning,
+				MessageBoxResult.No);
+			if (result != MessageBoxResult.Yes) return;
+
+			try
+			{
+				var restored = Main.RestoreAutomaticModCategories();
+				ShowAlert(
+					restored > 0
+						? $"Restored automatic categories for {restored} mod{(restored == 1 ? "" : "s")}."
+						: "All mods were already using automatic categories.",
+					restored > 0 ? AlertType.Success : AlertType.Info,
+					20);
+			}
+			catch (Exception ex)
+			{
+				DivinityApp.Log($"Error restoring automatic mod categories:\n{ex}");
+				ShowAlert("Automatic categories could not be restored. Check the log for details.", AlertType.Danger);
 			}
 		});
 

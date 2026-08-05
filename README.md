@@ -113,6 +113,12 @@ Redux reworks and extends many of these systems while retaining their credit. Se
 Redux retains BG3MM's package extraction, UUID and folder-name copying, metadata inspection, custom
 `meta.lsx` tags, and encoded version generator.
 
+Use **Tools > Inspect Mod Package** to run a read-only release preflight on a `.pak` or common
+release archive. It reports module identity, declared dependencies, embedded creator metadata,
+Script Extender or Osiris signals, override behavior, and common development files without
+installing or modifying the package. The result is a conservative packaging check, not a guarantee
+of in-game compatibility.
+
 A mod author may also place an optional root-level
 [`redux.mod.json`](docs/REDUX_CREATOR_MANIFEST.md) inside a PAK. Redux validates its module claim
 against parsed `meta.lsx` data before using it for Nexus Mods or mod.io identification. Invalid
@@ -145,6 +151,7 @@ are local data and are not included in application packages.
 - [Building from source](docs/BUILDING.md)
 - [Optional features](docs/REDUX_OPTIONAL_MODULES.md)
 - [Redux mod database](docs/REDUX_MOD_DATABASE.md)
+- [Mod developer tools](docs/MOD_DEVELOPER_TOOLS.md)
 - [Creator manifest reference](docs/REDUX_CREATOR_MANIFEST.md)
 - [Creator manifest JSON schema](docs/schemas/redux.mod.schema.json)
 

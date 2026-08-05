@@ -3,6 +3,8 @@
 using GongSolutions.Wpf.DragDrop;
 using GongSolutions.Wpf.DragDrop.Utilities;
 
+using DivinityModManager.Util;
+
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -66,16 +68,30 @@ public class ModListDragHandler : DefaultDragHandler
 		if (dragInfo != null)
 		{
 			_lastDragInfo = dragInfo;
+			var originalData = dragInfo.Data;
+			var sourceItem = dragInfo.SourceItem as DivinityModData;
+			if (sourceItem == null && dragInfo.VisualSourceItem is FrameworkElement sourceElement)
+				sourceItem = sourceElement.DataContext as DivinityModData;
+			if (sourceItem == null)
+				sourceItem = originalData as DivinityModData;
+			if (sourceItem == null && originalData is IEnumerable<DivinityModData> originalItems)
+				sourceItem = originalItems.FirstOrDefault();
 			dragInfo.Data = null;
 			if (dragInfo.SourceCollection == _viewModel.DisplayActiveMods)
 			{
-				var selected = _viewModel.DisplayActiveMods.Where(x => x.IsSelected && (x.IsVisualDivider || x.Visibility == Visibility.Visible));
-				dragInfo.Data = selected;
+				var selected = VisualDividerDragPolicy.ResolveDragItems(
+					_viewModel.ActiveVisualSequence,
+					sourceItem,
+					x => x.Visibility == Visibility.Visible);
+				dragInfo.Data = selected.Count > 0 ? selected : null;
 			}
 			else if (dragInfo.SourceCollection == _viewModel.DisplayInactiveMods)
 			{
-				var selected = _viewModel.DisplayInactiveMods.Where(x => x.IsSelected && (x.IsVisualDivider || (x.Visibility == Visibility.Visible && x.CanDrag)));
-				dragInfo.Data = selected;
+				var selected = VisualDividerDragPolicy.ResolveDragItems(
+					_viewModel.InactiveVisualSequence,
+					sourceItem,
+					x => x.Visibility == Visibility.Visible && x.CanDrag);
+				dragInfo.Data = selected.Count > 0 ? selected : null;
 			}
 			else if (dragInfo.SourceCollection == _viewModel.ActiveMods)
 			{
@@ -87,6 +103,9 @@ public class ModListDragHandler : DefaultDragHandler
 				var selected = _viewModel.InactiveMods.Where(x => x.IsSelected && x.Visibility == Visibility.Visible && x.CanDrag);
 				dragInfo.Data = selected;
 			}
+			_viewModel.IsDraggingSeparatorSection =
+				dragInfo.Data is IReadOnlyList<DivinityModData> { Count: > 0 } payload &&
+				payload[0].IsVisualDivider;
 			if (dragInfo.Data != null)
 			{
 				_viewModel.IsDragging = true;
@@ -103,6 +122,7 @@ public class ModListDragHandler : DefaultDragHandler
 	public override void DragDropOperationFinished(DragDropEffects operationResult, IDragInfo dragInfo)
 	{
 		_viewModel.IsDragging = false;
+		_viewModel.IsDraggingSeparatorSection = false;
 		_stopDraggingFallbackTask?.Dispose();
 	}
 
@@ -137,6 +157,7 @@ public class ModListDragHandler : DefaultDragHandler
 	public override void DragCancelled()
 	{
 		_viewModel.IsDragging = false;
+		_viewModel.IsDraggingSeparatorSection = false;
 		if (_lastDragInfo != null)
 		{
 			_lastDragInfo.Effects = DragDropEffects.None;

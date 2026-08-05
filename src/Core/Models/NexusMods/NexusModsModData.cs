@@ -213,6 +213,7 @@ public class NexusModsModData : INotifyPropertyChanged, IExternalModMetadata
 	{
 		ModId = -1;
 		LastFileId = -1;
+		CategoryId = 0;
 		Name = Summary = Description = Version = Author = UploadedBy = Status = null;
 		PictureUrl = UploadedUsersProfileUrl = null;
 		Available = DescriptionLoaded = ChangelogsLoaded = IsUpdated = false;

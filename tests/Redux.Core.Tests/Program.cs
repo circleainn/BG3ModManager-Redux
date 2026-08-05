@@ -25,6 +25,14 @@ internal static class Program
 		var restorePoints = new LoadOrderRestorePointTests();
 		var annotations = new ModAnnotationTests();
 		var overlaps = new ModFileOverlapTests();
+		var preflight = new PackagePreflightTests();
+		var archivePreflight = new ArchivePackagePreflightTests();
+		var interactionPerformance = new InteractionPerformanceTests();
+		var interactionBehavior = new InteractionBehaviorTests();
+		var automaticCategories = new AutomaticModCategoryTests();
+		var visualDividerDrag = new VisualDividerDragPolicyTests();
+		var settingsMaintenance = new SettingsMaintenanceTests();
+		var startupNotifications = new StartupNotificationQueueTests();
 		var tests = new (string Name, Action Run)[]
 		{
 			(nameof(source.ReviewedModuleUuidResolvesItsProject), source.ReviewedModuleUuidResolvesItsProject),
@@ -118,7 +126,47 @@ internal static class Program
 			(nameof(overlaps.DuplicatePathsInsideOnePackageAreNotOverlaps), overlaps.DuplicatePathsInsideOnePackageAreNotOverlaps),
 			(nameof(overlaps.ExcludesUniquePathsAndCountsAffectedPackages), overlaps.ExcludesUniquePathsAndCountsAffectedPackages),
 			(nameof(overlaps.OrdersBroadestOverlapsBeforePathName), overlaps.OrdersBroadestOverlapsBeforePathName),
-			(nameof(overlaps.MalformedPackagePathsAreReportedWithoutAbortingTheScan), overlaps.MalformedPackagePathsAreReportedWithoutAbortingTheScan)
+			(nameof(overlaps.MalformedPackagePathsAreReportedWithoutAbortingTheScan), overlaps.MalformedPackagePathsAreReportedWithoutAbortingTheScan),
+			(nameof(preflight.ValidPackageHasNoBlockingFindings), preflight.ValidPackageHasNoBlockingFindings),
+			(nameof(preflight.MissingDependencyAndDevelopmentDebrisAreReported), preflight.MissingDependencyAndDevelopmentDebrisAreReported),
+			(nameof(preflight.InstalledUpdateUuidIsAReviewWarningInsteadOfADuplicateError), preflight.InstalledUpdateUuidIsAReviewWarningInsteadOfADuplicateError),
+			(nameof(preflight.MissingReleaseIdentityIsReportedConservatively), preflight.MissingReleaseIdentityIsReportedConservatively),
+			(nameof(archivePreflight.OrdinaryArchiveLayoutHasNoContainerFindings), archivePreflight.OrdinaryArchiveLayoutHasNoContainerFindings),
+			(nameof(archivePreflight.UnsafePathsDuplicatesAndDevelopmentDebrisAreReported), archivePreflight.UnsafePathsDuplicatesAndDevelopmentDebrisAreReported),
+			(nameof(archivePreflight.ArchiveWithoutPakIsReported), archivePreflight.ArchiveWithoutPakIsReported),
+			(nameof(archivePreflight.ZipPakIsStagedForInspectionWithoutChangingTheArchive), archivePreflight.ZipPakIsStagedForInspectionWithoutChangingTheArchive),
+			(nameof(interactionPerformance.ReorderingOneRowEmitsOneMoveInsteadOfACollectionReset), interactionPerformance.ReorderingOneRowEmitsOneMoveInsteadOfACollectionReset),
+			(nameof(interactionPerformance.RemovingOneRowDoesNotMoveOrResetTheRemainingRows), interactionPerformance.RemovingOneRowDoesNotMoveOrResetTheRemainingRows),
+			(nameof(interactionPerformance.ImportProgressIsSharedAcrossFilesAndNeverExceedsOne), interactionPerformance.ImportProgressIsSharedAcrossFilesAndNeverExceedsOne),
+			(nameof(interactionPerformance.EquivalentCategoryAndHealthDataCanReuseExistingRowBindings), interactionPerformance.EquivalentCategoryAndHealthDataCanReuseExistingRowBindings),
+			(nameof(interactionBehavior.DrawerRetainsASelectedModDuringCrossListTransferOnly), interactionBehavior.DrawerRetainsASelectedModDuringCrossListTransferOnly),
+			(nameof(interactionBehavior.SavingCurrentOrderCanNeverWriteTheGameExportFile), interactionBehavior.SavingCurrentOrderCanNeverWriteTheGameExportFile),
+			(nameof(automaticCategories.NexusCategoryIdsMatchTheBg3ProviderTaxonomy), automaticCategories.NexusCategoryIdsMatchTheBg3ProviderTaxonomy),
+			(nameof(automaticCategories.ExplicitNexusCategoryWinsOverContradictoryKeywords), automaticCategories.ExplicitNexusCategoryWinsOverContradictoryKeywords),
+			(nameof(automaticCategories.NexusCategoryStaysFirstWhileStrongSecondaryCategoriesFillThreeSlots), automaticCategories.NexusCategoryStaysFirstWhileStrongSecondaryCategoriesFillThreeSlots),
+			(nameof(automaticCategories.AutomaticCategoriesNeverExceedThree), automaticCategories.AutomaticCategoriesNeverExceedThree),
+			(nameof(automaticCategories.WeakDescriptionMentionsDoNotCreateSecondaryCategoryNoise), automaticCategories.WeakDescriptionMentionsDoNotCreateSecondaryCategoryNoise),
+			(nameof(automaticCategories.BundledNexusProjectPreservesItsAuthorCategoryOffline), automaticCategories.BundledNexusProjectPreservesItsAuthorCategoryOffline),
+			(nameof(automaticCategories.NativeModioCategoryWinsOverASecondaryNexusMatch), automaticCategories.NativeModioCategoryWinsOverASecondaryNexusMatch),
+			(nameof(automaticCategories.UnknownProviderTaxonomyFallsBackToPackageKeywords), automaticCategories.UnknownProviderTaxonomyFallsBackToPackageKeywords),
+			(nameof(automaticCategories.DisabledProviderCategoryFallsBackToAnEnabledCategory), automaticCategories.DisabledProviderCategoryFallsBackToAnEnabledCategory),
+			(nameof(visualDividerDrag.NormalModDragNeverIncludesASelectedDivider), visualDividerDrag.NormalModDragNeverIncludesASelectedDivider),
+			(nameof(visualDividerDrag.ExpandedDividerDragStillCarriesItsSection), visualDividerDrag.ExpandedDividerDragStillCarriesItsSection),
+			(nameof(visualDividerDrag.CollapsedDividerDragMovesItsWholeSectionToTheNextDivider), visualDividerDrag.CollapsedDividerDragMovesItsWholeSectionToTheNextDivider),
+			(nameof(visualDividerDrag.CollapsedFinalDividerDragIncludesEveryRemainingMod), visualDividerDrag.CollapsedFinalDividerDragIncludesEveryRemainingMod),
+			(nameof(visualDividerDrag.DropAfterCollapsedSeparatorLandsPastItsHiddenSection), visualDividerDrag.DropAfterCollapsedSeparatorLandsPastItsHiddenSection),
+			(nameof(visualDividerDrag.DroppingPastTheLastVisibleRowLandsAfterEveryHiddenRow), visualDividerDrag.DroppingPastTheLastVisibleRowLandsAfterEveryHiddenRow),
+			(nameof(visualDividerDrag.CollapsedSectionMovedBetweenCollapsedSectionsKeepsEveryBlockIntact), visualDividerDrag.CollapsedSectionMovedBetweenCollapsedSectionsKeepsEveryBlockIntact),
+			(nameof(visualDividerDrag.CollapsedSectionDroppedInsideAnotherSectionNeverAbsorbsItsMods), visualDividerDrag.CollapsedSectionDroppedInsideAnotherSectionNeverAbsorbsItsMods),
+			(nameof(visualDividerDrag.CollapsedSectionSnapsBackwardWhenTheNearestBoundaryIsAbove), visualDividerDrag.CollapsedSectionSnapsBackwardWhenTheNearestBoundaryIsAbove),
+			(nameof(visualDividerDrag.CollapsedSectionDroppedAboveUnsectionedModsLandsBelowThem), visualDividerDrag.CollapsedSectionDroppedAboveUnsectionedModsLandsBelowThem),
+			(nameof(visualDividerDrag.CollapseAllChangesOnlyTheRequestedPaneAndOnlyOnce), visualDividerDrag.CollapseAllChangesOnlyTheRequestedPaneAndOnlyOnce),
+			(nameof(settingsMaintenance.RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly), settingsMaintenance.RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly),
+			(nameof(settingsMaintenance.RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain), settingsMaintenance.RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain),
+			(nameof(startupNotifications.StartupNotificationsWaitForReadinessAndDrainInOrder), startupNotifications.StartupNotificationsWaitForReadinessAndDrainInOrder),
+			(nameof(startupNotifications.RepeatedStartupNotificationUsesLatestDataExactlyOnce), startupNotifications.RepeatedStartupNotificationUsesLatestDataExactlyOnce),
+			(nameof(startupNotifications.StaleStartupNotificationCanBeCancelledBeforeReadiness), startupNotifications.StaleStartupNotificationCanBeCancelledBeforeReadiness),
+			(nameof(startupNotifications.NotificationsQueuedDuringDrainRemainSequential), startupNotifications.NotificationsQueuedDuringDrainRemainSequential)
 		};
 
 		var failures = 0;

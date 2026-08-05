@@ -30,6 +30,11 @@
 				<Setter Property="dd:DragDrop.IsDragSource" Value="True" />
 				<Setter Property="dd:DragDrop.IsDropTarget" Value="True" />
 				<Setter Property="dd:DragDrop.DropTargetAdornerBrush" Value="{DynamicResource ReduxAccentBrush}" />
+				<!-- Pixel scroll keeps wheel/touch movement smooth while CanContentScroll=True
+				     retains recycling virtualization for large mod collections. -->
+				<Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+				<Setter Property="ScrollViewer.PanningMode" Value="VerticalOnly" />
+				<Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel" />
 				<Setter Property="dd:DragDrop.DropTargetAdornerPen">
 					<Setter.Value>
 						<Pen Brush="{DynamicResource ReduxAccentBrush}" Thickness="2" />
@@ -1816,6 +1821,7 @@
 					PreviewDragLeave="ModListView_PreviewDragLeave"
 					PreviewDrop="ModListView_PreviewDrop"
 					PreviewQueryContinueDrag="ModListView_PreviewQueryContinueDrag"
+					ScrollViewer.CanContentScroll="True"
 					ScrollViewer.VerticalScrollBarVisibility="Auto"
 					Style="{StaticResource ModOrderListViewWithDrag}"
 					View="{DynamicResource ModGridView}"
@@ -2048,6 +2054,7 @@
 				PreviewDragLeave="ModListView_PreviewDragLeave"
 				PreviewDrop="ModListView_PreviewDrop"
 				PreviewQueryContinueDrag="ModListView_PreviewQueryContinueDrag"
+				ScrollViewer.CanContentScroll="True"
 				ScrollViewer.VerticalScrollBarVisibility="Auto"
 				View="{DynamicResource InactiveModGridView}"
 				VirtualizingPanel.IsVirtualizing="True"
