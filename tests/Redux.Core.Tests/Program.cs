@@ -33,6 +33,7 @@ internal static class Program
 		var visualDividerDrag = new VisualDividerDragPolicyTests();
 		var visualModSelection = new VisualModSelectionPolicyTests();
 		var settingsMaintenance = new SettingsMaintenanceTests();
+		var smoothLogicalScroll = new SmoothLogicalScrollPolicyTests();
 		var startupNotifications = new StartupNotificationQueueTests();
 		var tests = new (string Name, Action Run)[]
 		{
@@ -175,8 +176,12 @@ internal static class Program
 			(nameof(visualDividerDrag.CollapsedVisibilityStopsAtTheNextSeparator), visualDividerDrag.CollapsedVisibilityStopsAtTheNextSeparator),
 			(nameof(visualModSelection.SelectAllIncludesOnlyVisibleModRows), visualModSelection.SelectAllIncludesOnlyVisibleModRows),
 			(nameof(visualModSelection.FilterProjectionOmitsCollapsedRowsFromTheItemsSource), visualModSelection.FilterProjectionOmitsCollapsedRowsFromTheItemsSource),
+			(nameof(settingsMaintenance.ExperimentalSmoothScrollingDefaultsOffAndRoundTrips), settingsMaintenance.ExperimentalSmoothScrollingDefaultsOffAndRoundTrips),
 			(nameof(settingsMaintenance.RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly), settingsMaintenance.RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly),
 			(nameof(settingsMaintenance.RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain), settingsMaintenance.RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain),
+			(nameof(smoothLogicalScroll.PartialWheelDeltasAccumulateWithoutPrematureScrolling), smoothLogicalScroll.PartialWheelDeltasAccumulateWithoutPrematureScrolling),
+			(nameof(smoothLogicalScroll.LargeWheelBurstsStayWithinTheAnimationSafetyCap), smoothLogicalScroll.LargeWheelBurstsStayWithinTheAnimationSafetyCap),
+			(nameof(smoothLogicalScroll.MotionAndInteractionPreferencesBypassAnimation), smoothLogicalScroll.MotionAndInteractionPreferencesBypassAnimation),
 			(nameof(startupNotifications.StartupNotificationsWaitForReadinessAndDrainInOrder), startupNotifications.StartupNotificationsWaitForReadinessAndDrainInOrder),
 			(nameof(startupNotifications.RepeatedStartupNotificationUsesLatestDataExactlyOnce), startupNotifications.RepeatedStartupNotificationUsesLatestDataExactlyOnce),
 			(nameof(startupNotifications.StaleStartupNotificationCanBeCancelledBeforeReadiness), startupNotifications.StaleStartupNotificationCanBeCancelledBeforeReadiness),

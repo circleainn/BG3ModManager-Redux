@@ -23,6 +23,9 @@ This page tracks what Redux inherits, what it reworks or extends, and what it ad
   collection synchronization with regression coverage for the reported failure paths.
 - Centralized recycling and item-scrolling behavior across Active, Inactive, Override, legacy, and
   category lists while retaining continuous pixel scrolling for documents and form content.
+- Added an experimental, disabled-by-default smooth-list preference that animates only the rendered
+  wheel transition. Logical item scrolling and recycling remain authoritative, and motion is
+  bypassed during dragging, structural list changes, reduced-motion mode, and keyboard navigation.
 
 ## 0.1.0-alpha.9 workflow and interface update
 

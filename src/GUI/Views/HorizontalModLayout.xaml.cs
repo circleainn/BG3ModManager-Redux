@@ -1286,7 +1286,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private void SetupListView(ListView listView)
 	{
 		listView.AddHandler(ButtonBase.ClickEvent, new RoutedEventHandler(ModListView_ButtonClick), true);
-		listView.PreviewMouseWheel += (_, _) => CompleteVisualDividerTransition(listView);
+		listView.AddHandler(
+			UIElement.PreviewMouseWheelEvent,
+			new MouseWheelEventHandler((_, _) => CompleteVisualDividerTransition(listView)),
+			true);
 		listView.InputBindings.Add(new KeyBinding(ApplicationCommands.SelectAll, new KeyGesture(Key.A, ModifierKeys.Control)));
 		listView.CommandBindings.Add(new CommandBinding(ApplicationCommands.SelectAll, (_sender, e) =>
 		{

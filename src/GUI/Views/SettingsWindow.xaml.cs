@@ -100,6 +100,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(DivinityModManagerSettings.HideToolbar)),
 		new("Visual comfort",
 			nameof(DivinityModManagerSettings.ReduceMotion),
+			nameof(DivinityModManagerSettings.EnableSmoothListScrolling),
 			nameof(DivinityModManagerSettings.DisableBackgroundEffects)),
 		new("Optional features",
 			nameof(DivinityModManagerSettings.LocalOnlyMode),

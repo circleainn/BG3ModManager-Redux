@@ -150,6 +150,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool ReduceMotion { get; set; }
 
 	[DefaultValue(false)]
+	[SettingsEntry("Smooth list scrolling (experimental)", "Animate mouse-wheel movement while retaining stable item-based virtualization. Motion is skipped during dragging and list changes.")]
+	[DataMember, Reactive] public bool EnableSmoothListScrolling { get; set; }
+
+	[DefaultValue(false)]
 	[SettingsEntry("Disable blur and dimming", "Keep the main window clear behind dialogs and secondary windows.")]
 	[DataMember, Reactive] public bool DisableBackgroundEffects { get; set; }
 
