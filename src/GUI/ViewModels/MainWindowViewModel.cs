@@ -4376,7 +4376,11 @@ Directory the zip will be extracted to:
 		}
 	}
 
-	private static readonly ArchiveEncoding _archiveEncoding = new(Encoding.UTF8, Encoding.UTF8);
+	private static readonly ArchiveEncoding _archiveEncoding = new()
+	{
+		Default = Encoding.UTF8,
+		Password = Encoding.UTF8
+	};
 	private static readonly ReaderOptions _importReaderOptions = new() { ArchiveEncoding = _archiveEncoding };
 	private static readonly WriterOptions _exportWriterOptions = new(CompressionType.Deflate) { ArchiveEncoding = _archiveEncoding };
 
@@ -4665,7 +4669,7 @@ Directory the zip will be extracted to:
 					switch (extension)
 					{
 						case ".bz2":
-							decompressionStream = new BZip2Stream(fileStream, SharpCompress.Compressors.CompressionMode.Decompress, true);
+							decompressionStream = BZip2Stream.Create(fileStream, SharpCompress.Compressors.CompressionMode.Decompress, true);
 							break;
 						case ".xz":
 							decompressionStream = new XZStream(fileStream);
@@ -4817,7 +4821,7 @@ Directory the zip will be extracted to:
 				var info = NexusModFileVersionData.FromFilePath(archivePath);
 
 				IncreaseMainProgressValue(taskStepAmount);
-				using (var archive = ArchiveFactory.Open(fileStream, _importReaderOptions))
+				using (var archive = ArchiveFactory.OpenArchive(fileStream, _importReaderOptions))
 				{
 					foreach (var file in archive.Entries)
 					{
@@ -4976,7 +4980,7 @@ Directory the zip will be extracted to:
 			try
 			{
 				using (var stream = File.OpenWrite(outputPath))
-				using (var zipWriter = WriterFactory.Open(stream, ArchiveType.Zip, _exportWriterOptions))
+				using (var zipWriter = WriterFactory.OpenWriter(stream, ArchiveType.Zip, _exportWriterOptions))
 				{
 					var orderFileName = DivinityModDataLoader.MakeSafeFilename(Path.Combine(SelectedModOrder.Name + ".json"), '_');
 					var contents = JsonConvert.SerializeObject(SelectedModOrder, Newtonsoft.Json.Formatting.Indented);

@@ -1,0 +1,71 @@
+name: Windows CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build and regression checks
+    runs-on: windows-2022
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build Debug x64
+        shell: pwsh
+        run: >-
+          msbuild .\BG3ModManager.sln
+          /restore
+          /t:Build
+          /p:Configuration=Debug
+          /p:Platform=x64
+          /p:ContinuousIntegrationBuild=true
+          /m
+          /v:minimal
+
+      - name: Verify native host output
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -LiteralPath '.\bin\Debug\Ijwhost.dll')) {
+            throw 'The required C++/CLI native host output is missing.'
+          }
+
+      - name: Audit NuGet dependencies
+        shell: pwsh
+        run: |
+          $audit = dotnet list '.\tests\Redux.Core.Tests\Redux.Core.Tests.csproj' package --vulnerable --include-transitive
+          $audit | Write-Host
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+          if ($audit -match 'has the following vulnerable packages') {
+            throw 'NuGet reported one or more vulnerable dependencies.'
+          }
+
+      - name: Run Redux regression checks
+        shell: pwsh
+        run: |
+          & '.\tests\Redux.Core.Tests\bin\x64\Debug\net8.0-windows10.0.22621.0\Redux.Core.Tests.exe'
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }

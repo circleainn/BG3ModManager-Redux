@@ -86,7 +86,7 @@ public static class ArchivePackagePreflightService
 				FileShare.Read,
 				4096,
 				FileOptions.Asynchronous | FileOptions.SequentialScan);
-			using var archive = ArchiveFactory.Open(fileStream, new ReaderOptions());
+			using var archive = ArchiveFactory.OpenArchive(fileStream, new ReaderOptions());
 			var entries = archive.Entries.Where(entry => !entry.IsDirectory).ToArray();
 			var findings = AnalyzeEntryNames(entries.Select(entry => entry.Key)).ToList();
 			var pakEntries = entries
