@@ -5,7 +5,7 @@ BG3 Mod Manager Redux is a Windows mod manager built on
 original manager's package and load-order foundation while adding a refreshed interface and more
 ways to organize, review, and share mod setups.
 
-**Current build:** `0.1.0-alpha.9` - private testing alpha
+**Current build:** `0.1.0-alpha.10` - private testing alpha
 
 [Nexus Mods](https://www.nexusmods.com/baldursgate3/mods/23799) | [Report an issue](https://github.com/circleainn/BG3ModManager-Redux/issues) | [Changes from upstream](docs/CHANGES_FROM_UPSTREAM.md) | [Build from source](docs/BUILDING.md)
 

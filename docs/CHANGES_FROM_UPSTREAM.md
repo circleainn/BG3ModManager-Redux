@@ -7,7 +7,22 @@ parsing through LSLib, game-path detection, and launch behavior. Confirmed inher
 received targeted correctness and safety fixes without redesigning those core formats or workflows.
 
 This page tracks what Redux inherits, what it reworks or extends, and what it adds through version
-`0.1.0-alpha.9`.
+`0.1.0-alpha.10`.
+
+## 0.1.0-alpha.10 mod-list stabilization update
+
+- Resolved the repeatable end-of-list freeze by replacing WPF pixel-anchor scrolling with logical
+  item scrolling for virtualized, mixed-height mod and separator rows.
+- Reduced scrolling and filtering work by bounding mod-list accessibility peers to realized rows,
+  coalescing selection-detail updates, and avoiding repeated full-collection selection walks.
+- Reworked separator collapse projection around durable section membership so hidden rows remain
+  predictable across filtering, saving, loading, and progressive expansion.
+- Restricted collapsed separators from dragging and made expanded separator drags move only their
+  marker, preventing unrelated mods from being absorbed or reordered.
+- Hardened category filtering, visible-row Ctrl+A selection, drop-slot mapping, and large-list
+  collection synchronization with regression coverage for the reported failure paths.
+- Centralized recycling and item-scrolling behavior across Active, Inactive, Override, legacy, and
+  category lists while retaining continuous pixel scrolling for documents and form content.
 
 ## 0.1.0-alpha.9 workflow and interface update
 

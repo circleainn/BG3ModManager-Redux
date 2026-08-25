@@ -10,7 +10,7 @@ PUBLISH_DIR = ROOT / "bin" / "Publish"
 
 version = sys.argv[1].strip() if len(sys.argv) > 1 else ""
 if not version:
-	raise SystemExit("A display version is required (for example: 0.1.0-alpha.9).")
+	raise SystemExit("A display version is required (for example: 0.1.0-alpha.10).")
 
 archive_path = ROOT / f"BG3ModManager-Redux_v{version}.zip"
 latest_path = ROOT / "BG3ModManager-Redux-Latest.zip"

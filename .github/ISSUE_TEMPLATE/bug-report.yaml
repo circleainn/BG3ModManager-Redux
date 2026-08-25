@@ -15,7 +15,7 @@ body:
     attributes:
       label: Redux version
       description: Copy the version shown in the Redux window title bar.
-      placeholder: 0.1.0-alpha.9
+      placeholder: 0.1.0-alpha.10
     validations:
       required: true
 
