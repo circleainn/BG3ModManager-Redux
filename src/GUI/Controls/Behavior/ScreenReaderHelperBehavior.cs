@@ -4,6 +4,14 @@ namespace DivinityModManager.Controls.Behavior;
 
 public static class ScreenReaderHelperBehavior
 {
+	private sealed class ScreenReaderPropertyMap
+	{
+		public System.Reflection.PropertyInfo Name { get; init; }
+		public System.Reflection.PropertyInfo HelpText { get; init; }
+	}
+
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, ScreenReaderPropertyMap[]> AutomaticPropertyMaps = new();
+
 	public static string GetName(DependencyObject element)
 	{
 		return (string)element.GetValue(NameProperty);
@@ -89,43 +97,40 @@ public static class ScreenReaderHelperBehavior
 
 	private static void Element_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
 	{
-		if (sender is null)
+		if (sender is not DependencyObject depObj || e.NewValue == null)
 		{
 			return;
 		}
-		DependencyObject depObj = sender as DependencyObject;
-		var t = e.NewValue.GetType();
-		var attributes = t.GetCustomAttributes(typeof(ScreenReaderHelperAttribute), true);
-		if (attributes.Length > 0)
+
+		var maps = AutomaticPropertyMaps.GetOrAdd(e.NewValue.GetType(), BuildAutomaticPropertyMaps);
+		foreach (var map in maps)
 		{
-			foreach (var attr in attributes)
+			if (map.Name?.GetValue(e.NewValue) is string name && !String.IsNullOrEmpty(name))
 			{
-				ScreenReaderHelperAttribute sr = (ScreenReaderHelperAttribute)attr;
-				if (!String.IsNullOrEmpty(sr.Name))
-				{
-					var prop = t.GetProperty(sr.Name);
-					if (prop != null)
-					{
-						var propValue = (string)prop.GetValue(e.NewValue);
-						if (!String.IsNullOrEmpty(propValue))
-						{
-							System.Windows.Automation.AutomationProperties.SetName(depObj, propValue);
-						}
-					}
-				}
-				if (!String.IsNullOrEmpty(sr.HelpText))
-				{
-					var prop = t.GetProperty(sr.HelpText);
-					if (prop != null)
-					{
-						var propValue = (string)prop.GetValue(e.NewValue);
-						if (!String.IsNullOrEmpty(propValue))
-						{
-							System.Windows.Automation.AutomationProperties.SetHelpText(depObj, propValue);
-						}
-					}
-				}
+				System.Windows.Automation.AutomationProperties.SetName(depObj, name);
+			}
+			if (map.HelpText?.GetValue(e.NewValue) is string helpText && !String.IsNullOrEmpty(helpText))
+			{
+				System.Windows.Automation.AutomationProperties.SetHelpText(depObj, helpText);
 			}
 		}
+	}
+
+	private static ScreenReaderPropertyMap[] BuildAutomaticPropertyMaps(Type type)
+	{
+		var maps = new System.Collections.Generic.List<ScreenReaderPropertyMap>();
+		foreach (ScreenReaderHelperAttribute attribute in type.GetCustomAttributes(typeof(ScreenReaderHelperAttribute), true))
+		{
+			var map = new ScreenReaderPropertyMap
+			{
+				Name = String.IsNullOrEmpty(attribute.Name) ? null : type.GetProperty(attribute.Name),
+				HelpText = String.IsNullOrEmpty(attribute.HelpText) ? null : type.GetProperty(attribute.HelpText)
+			};
+			if (map.Name != null || map.HelpText != null)
+			{
+				maps.Add(map);
+			}
+		}
+		return maps.ToArray();
 	}
 }

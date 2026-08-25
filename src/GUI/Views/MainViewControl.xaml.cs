@@ -1357,7 +1357,8 @@ public partial class MainViewControl : MainViewControlViewBase
 		this.BindCommand(ViewModel, vm => vm.Keys.ImportMod.Command, view => view.ImportModButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.Save.Command, view => view.SaveButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.SaveAs.Command, view => view.SaveAsButton);
-		this.BindCommand(ViewModel, vm => vm.Keys.NewOrder.Command, view => view.AddNewOrderButton);
+		this.BindCommand(ViewModel, vm => vm.Keys.ImportOrderFromFile.Command, view => view.AddNewOrderButton);
+		this.BindCommand(ViewModel, vm => vm.Keys.ImportReduxLoadOrder.Command, view => view.ImportReduxModlistButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.ExportOrderToGame.Command, view => view.ExportToModSettingsButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.ExportOrderToZip.Command, view => view.ExportOrderToArchiveButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.ExportOrderToArchiveAs.Command, view => view.ExportOrderToArchiveAsButton);

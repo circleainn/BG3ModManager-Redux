@@ -14,4 +14,7 @@ public class ModListVisualDividerData
 	[DataMember] public int Position { get; set; }
 	[DataMember] public bool IsCollapsed { get; set; }
 	[DataMember] public bool HideLine { get; set; }
+	// Null identifies settings written before separator membership was explicit.
+	// An empty list is a deliberate, persistable empty section.
+	[DataMember(EmitDefaultValue = false)] public List<string> MemberModUuids { get; set; }
 }

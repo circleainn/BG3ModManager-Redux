@@ -82,7 +82,7 @@ public class ModListDragHandler : DefaultDragHandler
 				var selected = VisualDividerDragPolicy.ResolveDragItems(
 					_viewModel.DisplayActiveMods,
 					sourceItem,
-					x => x.Visibility == Visibility.Visible);
+					x => x.Visibility == Visibility.Visible && x.CanDrag);
 				dragInfo.Data = selected.Count > 0 ? selected : null;
 			}
 			else if (dragInfo.SourceCollection == _viewModel.DisplayInactiveMods)
@@ -126,6 +126,15 @@ public class ModListDragHandler : DefaultDragHandler
 	{
 		if (!_viewModel.AllowDrop)
 		{
+			return false;
+		}
+		if ((ReferenceEquals(dragInfo.SourceCollection, _viewModel.DisplayActiveMods) ||
+			 ReferenceEquals(dragInfo.SourceCollection, _viewModel.DisplayInactiveMods)) &&
+			!String.Equals(_viewModel.SelectedModCategory, MainWindowViewModel.AllModsCategory,
+				StringComparison.OrdinalIgnoreCase))
+		{
+			// A filtered display omits separator markers, so its row indexes cannot
+			// safely express section ownership or load-order positions.
 			return false;
 		}
 		if (_viewModel.IsActiveListMetadataSorted &&

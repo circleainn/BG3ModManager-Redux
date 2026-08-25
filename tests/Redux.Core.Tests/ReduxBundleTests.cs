@@ -58,8 +58,64 @@ internal sealed class ReduxBundleTests
 			RegressionAssert.True(contents.Presentation.Dividers[0].IsCollapsed);
 			RegressionAssert.Equal(1, contents.Presentation.Dividers[0].FallbackPosition);
 			RegressionAssert.SequenceEqual(
+				new[] { SecondUuid },
+				contents.Presentation.Dividers[0].MemberModUuids);
+			RegressionAssert.SequenceEqual(
 				assets[CustomIconAsset],
 				contents.Assets[CustomIconAsset]);
+		});
+	}
+
+	public void LegacyBundleWithoutMembershipRemainsUnmigrated()
+	{
+		WithTemporaryBundle(path =>
+		{
+			var presentation = CreatePresentation();
+			presentation.Dividers[0].MemberModUuids = null!;
+
+			RegressionAssert.True(ReduxLoadOrderBundleService.TryExport(
+				path, CreateOrder(), presentation, CreateAssets(), out _));
+			using (var archive = ZipFile.OpenRead(path))
+			using (var reader = new StreamReader(archive.GetEntry("presentation.json")!.Open()))
+				RegressionAssert.False(reader.ReadToEnd().Contains("MemberModUuids", StringComparison.Ordinal));
+
+			RegressionAssert.True(ReduxLoadOrderBundleService.TryRead(path, out var contents, out _));
+			RegressionAssert.True(contents.Presentation.Dividers[0].MemberModUuids == null);
+		});
+	}
+
+	public void ExplicitlyEmptySeparatorMembershipRoundTripsAsEmpty()
+	{
+		WithTemporaryBundle(path =>
+		{
+			var presentation = CreatePresentation();
+			presentation.Dividers[0].MemberModUuids = new List<string>();
+
+			RegressionAssert.True(ReduxLoadOrderBundleService.TryExport(
+				path, CreateOrder(), presentation, CreateAssets(), out _));
+			RegressionAssert.True(ReduxLoadOrderBundleService.TryRead(path, out var contents, out _));
+			RegressionAssert.True(contents.Presentation.Dividers[0].MemberModUuids != null);
+			RegressionAssert.Equal(0, contents.Presentation.Dividers[0].MemberModUuids!.Count);
+		});
+	}
+
+	public void DuplicateSeparatorOwnershipIsRejected()
+	{
+		WithTemporaryBundle(path =>
+		{
+			var presentation = CreatePresentation();
+			presentation.Dividers.Add(new ReduxLoadOrderDivider
+			{
+				Title = "Duplicate owner",
+				Color = "#9676FF",
+				FallbackPosition = 2,
+				MemberModUuids = new List<string> { SecondUuid }
+			});
+
+			RegressionAssert.False(ReduxLoadOrderBundleService.TryExport(
+				path, CreateOrder(), presentation, CreateAssets(), out var error));
+			RegressionAssert.Contains(error, "multiple separators");
+			RegressionAssert.False(File.Exists(path));
 		});
 	}
 
@@ -291,7 +347,8 @@ internal sealed class ReduxBundleTests
 					IsCollapsed = true,
 					FallbackPosition = 1,
 					BeforeModUuid = FirstUuid,
-					AfterModUuid = SecondUuid
+					AfterModUuid = SecondUuid,
+					MemberModUuids = new List<string> { SecondUuid }
 				}
 			},
 			CustomIconAssets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

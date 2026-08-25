@@ -225,8 +225,12 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 			{
 				From = WindowResizeGlow.Opacity,
 				To = 0,
-				Duration = TimeSpan.FromMilliseconds(180),
-				FillBehavior = FillBehavior.HoldEnd
+				Duration = TimeSpan.FromMilliseconds(180)
+			};
+			fade.Completed += (_, _) =>
+			{
+				WindowResizeGlow.Opacity = 0;
+				WindowResizeGlow.BeginAnimation(OpacityProperty, null);
 			};
 			WindowResizeGlow.BeginAnimation(OpacityProperty, fade);
 		});

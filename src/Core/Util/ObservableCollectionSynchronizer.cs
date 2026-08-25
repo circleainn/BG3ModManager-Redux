@@ -19,6 +19,33 @@ public static class ObservableCollectionSynchronizer
 		ArgumentNullException.ThrowIfNull(desired);
 		ArgumentNullException.ThrowIfNull(itemsMatch);
 
+		// Most refreshes leave the projected list unchanged. Avoid the quadratic
+		// membership scan in that common path while preserving the minimal Remove
+		// notifications used when the sequence really changes.
+		var sequenceMatches = target.Count == desired.Count;
+		if (sequenceMatches)
+		{
+			for (var index = 0; index < desired.Count; index++)
+			{
+				if (itemsMatch(target[index], desired[index])) continue;
+				sequenceMatches = false;
+				break;
+			}
+		}
+
+		if (sequenceMatches)
+		{
+			if (updateMatchedItem != null)
+			{
+				for (var index = 0; index < desired.Count; index++)
+				{
+					updateMatchedItem(target[index], desired[index]);
+				}
+			}
+
+			return;
+		}
+
 		for (var targetIndex = target.Count - 1; targetIndex >= 0; targetIndex--)
 		{
 			if (desired.Any(desiredItem => itemsMatch(target[targetIndex], desiredItem))) continue;

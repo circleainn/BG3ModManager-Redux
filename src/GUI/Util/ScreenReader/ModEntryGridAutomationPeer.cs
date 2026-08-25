@@ -24,25 +24,10 @@ public class ModEntryGridAutomationPeer : CachedAutomationPeer
 		return AutomationControlType.ListItem;
 	}
 
-	private AutomationPeer _textPeer;
-
-	override public bool HasNullChildElement()
-	{
-		var text = ElementHelper.FindChild<TextBlock>(grid, "ModNameText");
-		if (text != null)
-		{
-			var peer = UIElementAutomationPeer.CreatePeerForElement(text);
-			if (peer != null)
-			{
-				_textPeer = peer;
-				return true;
-			}
-		}
-		return true;
-	}
-
 	override public List<AutomationPeer> GetPeersFromElements()
 	{
-		return new List<AutomationPeer>(1) { _textPeer };
+		var text = ElementHelper.FindChild<TextBlock>(grid, "ModNameText");
+		var peer = text == null ? null : UIElementAutomationPeer.CreatePeerForElement(text);
+		return peer == null ? null : new List<AutomationPeer>(1) { peer };
 	}
 }

@@ -30,11 +30,6 @@
 				<Setter Property="dd:DragDrop.IsDragSource" Value="True" />
 				<Setter Property="dd:DragDrop.IsDropTarget" Value="True" />
 				<Setter Property="dd:DragDrop.DropTargetAdornerBrush" Value="{DynamicResource ReduxAccentBrush}" />
-				<!-- Pixel scroll keeps wheel/touch movement smooth while CanContentScroll=True
-				     retains recycling virtualization for large mod collections. -->
-				<Setter Property="ScrollViewer.CanContentScroll" Value="True" />
-				<Setter Property="ScrollViewer.PanningMode" Value="VerticalOnly" />
-				<Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel" />
 				<Setter Property="dd:DragDrop.DropTargetAdornerPen">
 					<Setter.Value>
 						<Pen Brush="{DynamicResource ReduxAccentBrush}" Thickness="2" />
@@ -1525,10 +1520,13 @@
 					BorderThickness="0"
 					ItemsSource="{Binding ModCategoryFilters}"
 					ItemContainerStyle="{StaticResource ModCategoryListItemStyle}"
-					ScrollViewer.CanContentScroll="False"
+					ScrollViewer.CanContentScroll="True"
 					ScrollViewer.HorizontalScrollBarVisibility="Disabled"
 					ScrollViewer.PanningMode="VerticalOnly"
 					ScrollViewer.VerticalScrollBarVisibility="Auto"
+					VirtualizingPanel.IsVirtualizing="True"
+					VirtualizingPanel.ScrollUnit="Item"
+					VirtualizingPanel.VirtualizationMode="Recycling"
 					SelectedIndex="0"
 					PreviewMouseLeftButtonDown="CategoryListBox_PreviewMouseLeftButtonDown"
 					PreviewMouseMove="CategoryListBox_PreviewMouseMove"
@@ -1821,12 +1819,9 @@
 					PreviewDragLeave="ModListView_PreviewDragLeave"
 					PreviewDrop="ModListView_PreviewDrop"
 					PreviewQueryContinueDrag="ModListView_PreviewQueryContinueDrag"
-					ScrollViewer.CanContentScroll="True"
 					ScrollViewer.VerticalScrollBarVisibility="Auto"
 					Style="{StaticResource ModOrderListViewWithDrag}"
-					View="{DynamicResource ModGridView}"
-					VirtualizingPanel.IsVirtualizing="True"
-					VirtualizingPanel.VirtualizationMode="Recycling">
+					View="{DynamicResource ModGridView}">
 					<c:ModListView.ContextMenu><ContextMenu /></c:ModListView.ContextMenu>
 				</c:ModListView>
 				<Grid x:Name="AlwaysLoadedSectionGrid" Grid.Row="1">
@@ -2054,11 +2049,8 @@
 				PreviewDragLeave="ModListView_PreviewDragLeave"
 				PreviewDrop="ModListView_PreviewDrop"
 				PreviewQueryContinueDrag="ModListView_PreviewQueryContinueDrag"
-				ScrollViewer.CanContentScroll="True"
 				ScrollViewer.VerticalScrollBarVisibility="Auto"
-				View="{DynamicResource InactiveModGridView}"
-				VirtualizingPanel.IsVirtualizing="True"
-				VirtualizingPanel.VirtualizationMode="Recycling">
+				View="{DynamicResource InactiveModGridView}">
 				<c:ModListView.Style>
 					<Style BasedOn="{StaticResource ModOrderListViewWithDrag}" TargetType="{x:Type c:ModListView}">
 						<Style.Triggers>

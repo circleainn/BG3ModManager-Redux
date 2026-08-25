@@ -2,6 +2,8 @@ using DivinityModManager.Models;
 using DivinityModManager.Models.Health;
 using DivinityModManager.Util;
 
+using DynamicData.Binding;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -46,6 +48,64 @@ public sealed class InteractionPerformanceTests
 
 		RegressionAssert.SequenceEqual(new[] { first, last }, rows);
 		RegressionAssert.SequenceEqual(new[] { NotifyCollectionChangedAction.Remove }, changes);
+	}
+
+	public void UnchangedLargeCollectionUsesLinearComparisonWork()
+	{
+		const int itemCount = 2000;
+		var desired = Enumerable.Range(0, itemCount).Select(_ => new object()).ToList();
+		var rows = new ObservableCollection<object>(desired);
+		var comparisons = 0;
+
+		ObservableCollectionSynchronizer.Synchronize(
+			rows,
+			desired,
+			(first, second) =>
+			{
+				comparisons++;
+				return ReferenceEquals(first, second);
+			});
+
+		RegressionAssert.SequenceEqual(desired, rows);
+		RegressionAssert.True(comparisons <= itemCount);
+	}
+
+	public void LargeSeparatorProjectionUsesOneCollectionReset()
+	{
+		var rows = new ObservableCollectionExtended<int>();
+		rows.AddRange(new[] { 0, 1, 2, 3 });
+		var inserted = Enumerable.Range(10, 24).ToList();
+		var changes = new List<NotifyCollectionChangedAction>();
+		rows.CollectionChanged += (_, args) => changes.Add(args.Action);
+
+		VisualDividerProjectionMutation.InsertRange(rows, inserted, 2);
+
+		RegressionAssert.SequenceEqual(
+			new[] { 0, 1 }.Concat(inserted).Concat(new[] { 2, 3 }),
+			rows);
+		RegressionAssert.SequenceEqual(new[] { NotifyCollectionChangedAction.Reset }, changes);
+
+		changes.Clear();
+		VisualDividerProjectionMutation.RemoveRange(rows, 2, inserted.Count);
+
+		RegressionAssert.SequenceEqual(new[] { 0, 1, 2, 3 }, rows);
+		RegressionAssert.SequenceEqual(new[] { NotifyCollectionChangedAction.Reset }, changes);
+	}
+
+	public void SmallSeparatorProjectionKeepsIncrementalNotifications()
+	{
+		var rows = new ObservableCollectionExtended<int>();
+		rows.AddRange(new[] { 0, 3 });
+		var inserted = new[] { 1, 2 };
+		var changes = new List<NotifyCollectionChangedAction>();
+		rows.CollectionChanged += (_, args) => changes.Add(args.Action);
+
+		VisualDividerProjectionMutation.InsertRange(rows, inserted, 1);
+
+		RegressionAssert.SequenceEqual(new[] { 0, 1, 2, 3 }, rows);
+		RegressionAssert.SequenceEqual(
+			new[] { NotifyCollectionChangedAction.Add, NotifyCollectionChangedAction.Add },
+			changes);
 	}
 
 	public void ImportProgressIsSharedAcrossFilesAndNeverExceedsOne()

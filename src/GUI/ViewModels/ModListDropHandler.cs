@@ -239,9 +239,9 @@ public class ModListDropHandler : DefaultDropHandler
 
 		var selectedUUIDs = data.Select(x => x.UUID).ToHashSet();
 
-		foreach (var mod in _viewModel.ActiveMods)
+		for (var index = 0; index < _viewModel.ActiveMods.Count; index++)
 		{
-			mod.Index = _viewModel.ActiveMods.IndexOf(mod);
+			_viewModel.ActiveMods[index].Index = index;
 		}
 
 		foreach (var mod in _viewModel.Mods)

@@ -15,6 +15,8 @@ namespace DivinityModManager.ViewModels;
 
 public class AppKeys : ReactiveObject
 {
+	private string _lastSavedKeybindingsContents;
+
 	private static readonly IReadOnlyDictionary<string, string> ShortcutCategoryNames =
 		new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 		{
@@ -30,13 +32,13 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Import Mod...", true)]
 	public Hotkey ImportMod { get; private set; } = new Hotkey(Key.O, ModifierKeys.Control);
 
-	[MenuSettings("File", "Create Load Order", true)]
+	[MenuSettings("File", "Create Blank Load Order", true)]
 	public Hotkey NewOrder { get; private set; } = new Hotkey(Key.N, ModifierKeys.Control);
 
-	[MenuSettings("File", "Save Order")]
+	[MenuSettings("File", "Save Current Order")]
 	public Hotkey Save { get; private set; } = new Hotkey(Key.S, ModifierKeys.Control);
 
-	[MenuSettings("File", "Save Order As...", true)]
+	[MenuSettings("File", "Save Order As File...", true)]
 	public Hotkey SaveAs { get; private set; } = new Hotkey(Key.S, ModifierKeys.Control | ModifierKeys.Alt);
 
 	[MenuSettings(
@@ -59,7 +61,7 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Import Save as New Load Order...")]
 	public Hotkey ImportOrderFromSaveAsNew { get; private set; } = new Hotkey(Key.I, ModifierKeys.Control | ModifierKeys.Shift);
 
-	[MenuSettings("File", "Import Load Order from File...")]
+	[MenuSettings("File", "Add Load Order from File...")]
 	public Hotkey ImportOrderFromFile { get; private set; } = new Hotkey(Key.O, ModifierKeys.Control | ModifierKeys.Shift);
 
 	[MenuSettings(
@@ -233,14 +235,13 @@ public class AppKeys : ReactiveObject
 					keyMapDict.Add(key.ID, key);
 				}
 			}
-			if (keyMapDict.Count > 0)
+			var contents = keyMapDict.Count > 0
+				? JsonConvert.SerializeObject(keyMapDict, Newtonsoft.Json.Formatting.Indented)
+				: "{}";
+			if (!File.Exists(filePath) || !String.Equals(contents, _lastSavedKeybindingsContents, StringComparison.Ordinal))
 			{
-				string contents = JsonConvert.SerializeObject(keyMapDict, Newtonsoft.Json.Formatting.Indented);
 				File.WriteAllText(filePath, contents);
-			}
-			else
-			{
-				File.WriteAllText(filePath, "{}");
+				_lastSavedKeybindingsContents = contents;
 			}
 			result = $"Saved keybindings to '{filePath}'";
 			return true;

@@ -68,13 +68,19 @@ public class CachedAutomationPeer : FrameworkElementAutomationPeer
 
 	protected override List<AutomationPeer> GetChildrenCore()
 	{
-		if (HasNullChildElement())
+		// The semantic children of the window and main view are stable after they are
+		// first realized. Rebuilding this list for every UI Automation navigation request
+		// recursively walks the complete visual tree and can monopolize the UI thread while
+		// a screen reader or automation client is attached. Retry only while the initial
+		// visual tree has not produced any peers; otherwise reuse the stable peer instances.
+		if (_cachedAutomationPeers == null)
 		{
-			return _cachedAutomationPeers;
-		}
-		else
-		{
-			_cachedAutomationPeers = GetPeersFromElements();
+			var peers = GetPeersFromElements();
+			peers?.RemoveAll(peer => peer == null);
+			if (peers?.Count > 0)
+			{
+				_cachedAutomationPeers = peers;
+			}
 		}
 		return _cachedAutomationPeers;
 	}

@@ -477,22 +477,34 @@ public static class ReduxWindowBehavior
 		switch (transform)
 		{
 			case TranslateTransform translate when animateTranslation:
+				var currentY = translate.Y;
+				translate.Y = translateY;
 				translate.BeginAnimation(
 					TranslateTransform.YProperty,
-					new DoubleAnimation(translate.Y, translateY, duration)
+					new DoubleAnimation(currentY, translateY, duration)
 					{
 						EasingFunction = easing,
-						FillBehavior = FillBehavior.HoldEnd
+						// The base value already holds the destination, so the clock can
+						// stop instead of remaining attached in its fill period.
+						FillBehavior = FillBehavior.Stop
 					},
 					HandoffBehavior.SnapshotAndReplace);
 				break;
 			case ScaleTransform scaleTransform when animateScale:
-				var scaleXAnimation = new DoubleAnimation(scaleTransform.ScaleX, scale, duration)
+				var currentScaleX = scaleTransform.ScaleX;
+				var currentScaleY = scaleTransform.ScaleY;
+				scaleTransform.ScaleX = scale;
+				scaleTransform.ScaleY = scale;
+				var scaleXAnimation = new DoubleAnimation(currentScaleX, scale, duration)
 				{
 					EasingFunction = easing,
-					FillBehavior = FillBehavior.HoldEnd
+					FillBehavior = FillBehavior.Stop
 				};
-				var scaleYAnimation = scaleXAnimation.Clone();
+				var scaleYAnimation = new DoubleAnimation(currentScaleY, scale, duration)
+				{
+					EasingFunction = easing,
+					FillBehavior = FillBehavior.Stop
+				};
 				scaleTransform.BeginAnimation(ScaleTransform.ScaleXProperty, scaleXAnimation, HandoffBehavior.SnapshotAndReplace);
 				scaleTransform.BeginAnimation(ScaleTransform.ScaleYProperty, scaleYAnimation, HandoffBehavior.SnapshotAndReplace);
 				break;
@@ -1064,7 +1076,15 @@ public static class ReduxWindowBehavior
 		{
 			EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
 		};
-		animation.Completed += (_, _) => completion.TrySetResult();
+		animation.Completed += (_, _) =>
+		{
+			// Commit the final value and release the clock. Leaving a completed
+			// opacity animation attached to the main content root keeps WPF's timing
+			// and composition paths alive for the lifetime of the application.
+			target.Opacity = 1;
+			target.BeginAnimation(UIElement.OpacityProperty, null);
+			completion.TrySetResult();
+		};
 		target.BeginAnimation(UIElement.OpacityProperty, animation);
 		return completion.Task;
 	}
@@ -1079,10 +1099,16 @@ public static class ReduxWindowBehavior
 			return;
 		}
 
-		target.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(fromOpacity, 1, EntranceDuration)
+		var animation = new DoubleAnimation(fromOpacity, 1, EntranceDuration)
 		{
 			EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-		});
+		};
+		animation.Completed += (_, _) =>
+		{
+			target.Opacity = 1;
+			target.BeginAnimation(UIElement.OpacityProperty, null);
+		};
+		target.BeginAnimation(UIElement.OpacityProperty, animation);
 	}
 
 	public static void AnimateExit(Window window, Action completed)

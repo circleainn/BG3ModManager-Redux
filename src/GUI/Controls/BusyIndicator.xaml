@@ -66,18 +66,34 @@
 				<Setter Property="Fill" Value="{Binding ElementName=Root, Path=Foreground}" />
 			</Style>
 		</Grid.Resources>
-		<Grid.Triggers>
-			<EventTrigger RoutedEvent="FrameworkElement.Loaded">
-				<BeginStoryboard Storyboard="{StaticResource Animation0}" />
-				<BeginStoryboard Storyboard="{StaticResource Animation1}" />
-				<BeginStoryboard Storyboard="{StaticResource Animation2}" />
-				<BeginStoryboard Storyboard="{StaticResource Animation3}" />
-				<BeginStoryboard Storyboard="{StaticResource Animation4}" />
-				<BeginStoryboard Storyboard="{StaticResource Animation5}" />
-				<BeginStoryboard Storyboard="{StaticResource Animation6}" />
-				<BeginStoryboard Storyboard="{StaticResource Animation7}" />
-			</EventTrigger>
-		</Grid.Triggers>
+		<Grid.Style>
+			<Style TargetType="Grid">
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding IsVisible, RelativeSource={RelativeSource Self}}" Value="True">
+						<DataTrigger.EnterActions>
+							<BeginStoryboard Name="Animation0Controller" Storyboard="{StaticResource Animation0}" />
+							<BeginStoryboard Name="Animation1Controller" Storyboard="{StaticResource Animation1}" />
+							<BeginStoryboard Name="Animation2Controller" Storyboard="{StaticResource Animation2}" />
+							<BeginStoryboard Name="Animation3Controller" Storyboard="{StaticResource Animation3}" />
+							<BeginStoryboard Name="Animation4Controller" Storyboard="{StaticResource Animation4}" />
+							<BeginStoryboard Name="Animation5Controller" Storyboard="{StaticResource Animation5}" />
+							<BeginStoryboard Name="Animation6Controller" Storyboard="{StaticResource Animation6}" />
+							<BeginStoryboard Name="Animation7Controller" Storyboard="{StaticResource Animation7}" />
+						</DataTrigger.EnterActions>
+						<DataTrigger.ExitActions>
+							<RemoveStoryboard BeginStoryboardName="Animation0Controller" />
+							<RemoveStoryboard BeginStoryboardName="Animation1Controller" />
+							<RemoveStoryboard BeginStoryboardName="Animation2Controller" />
+							<RemoveStoryboard BeginStoryboardName="Animation3Controller" />
+							<RemoveStoryboard BeginStoryboardName="Animation4Controller" />
+							<RemoveStoryboard BeginStoryboardName="Animation5Controller" />
+							<RemoveStoryboard BeginStoryboardName="Animation6Controller" />
+							<RemoveStoryboard BeginStoryboardName="Animation7Controller" />
+						</DataTrigger.ExitActions>
+					</DataTrigger>
+				</Style.Triggers>
+			</Style>
+		</Grid.Style>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition />
 			<ColumnDefinition />

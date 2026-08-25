@@ -10,7 +10,32 @@ namespace DivinityModManager.Util;
 /// </summary>
 public static class VisualModListDropPolicy
 {
-	public static int ResolveInsertionIndex(IList visualItems, int targetIndex, bool insertAfter)
+	public static int MapVisibleInsertionIndex(
+		IReadOnlyList<DivinityModData> visibleItems,
+		IReadOnlyList<DivinityModData> fullItems,
+		int visibleInsertionIndex)
+	{
+		ArgumentNullException.ThrowIfNull(visibleItems);
+		ArgumentNullException.ThrowIfNull(fullItems);
+		if (visibleInsertionIndex <= 0) return 0;
+		if (visibleInsertionIndex >= visibleItems.Count) return fullItems.Count;
+
+		// Identify a visible slot by the item immediately after it. Finding that
+		// anchor in the canonical sequence places the slot after any collapsed
+		// members omitted between the prior visible row and the anchor.
+		var anchor = visibleItems[visibleInsertionIndex];
+		for (var index = 0; index < fullItems.Count; index++)
+		{
+			if (ItemsMatch(fullItems[index], anchor)) return index;
+		}
+		return fullItems.Count;
+	}
+
+	public static int ResolveInsertionIndex(
+		IList visualItems,
+		int targetIndex,
+		bool insertAfter,
+		IEnumerable<string> targetSectionMemberUuids = null)
 	{
 		ArgumentNullException.ThrowIfNull(visualItems);
 		if (targetIndex < 0 || targetIndex >= visualItems.Count)
@@ -24,10 +49,14 @@ public static class VisualModListDropPolicy
 		}
 
 		// The rows owned by a collapsed separator remain in the collection even
-		// though they have no visible containers. "After" the visible separator
-		// therefore means after its complete hidden block, at the next separator.
+		// though they have no visible containers. "After" means after that explicit
+		// block, not after every row that happens to follow the marker.
+		var memberIds = targetSectionMemberUuids?
+			.Where(uuid => !String.IsNullOrWhiteSpace(uuid))
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
 		while (insertIndex < visualItems.Count &&
-			visualItems[insertIndex] is DivinityModData { IsVisualDivider: false })
+			visualItems[insertIndex] is DivinityModData { IsVisualDivider: false } mod &&
+			(memberIds == null || (!String.IsNullOrWhiteSpace(mod.UUID) && memberIds.Contains(mod.UUID))))
 		{
 			insertIndex++;
 		}
@@ -49,11 +78,13 @@ public static class VisualModListDropPolicy
 		var inactive = inactiveItems.ToList();
 		var dragged = draggedItems.Where(item => item != null).Distinct().ToList();
 		var destination = destinationActive ? active : inactive;
+		var removedBeforeInsertion = dragged
+			.Select(item => destination.IndexOf(item))
+			.Count(oldIndex => oldIndex >= 0 && oldIndex < insertIndex);
+		insertIndex -= removedBeforeInsertion;
 
 		foreach (var item in dragged)
 		{
-			var oldIndex = destination.IndexOf(item);
-			if (oldIndex >= 0 && oldIndex < insertIndex) insertIndex--;
 			active.Remove(item);
 			inactive.Remove(item);
 		}
@@ -62,6 +93,12 @@ public static class VisualModListDropPolicy
 		destination.InsertRange(insertIndex, dragged);
 		return new VisualModListDropResult(active, inactive);
 	}
+
+	private static bool ItemsMatch(DivinityModData first, DivinityModData second) =>
+		ReferenceEquals(first, second)
+		|| (first?.IsVisualDivider == true && second?.IsVisualDivider == true &&
+			!String.IsNullOrWhiteSpace(first.VisualDividerId) &&
+			first.VisualDividerId.Equals(second.VisualDividerId, StringComparison.OrdinalIgnoreCase));
 }
 
 public sealed class VisualModListDropResult

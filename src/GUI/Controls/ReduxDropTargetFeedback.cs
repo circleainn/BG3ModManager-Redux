@@ -99,6 +99,11 @@ internal sealed class ReduxDropIndicatorAdorner : Adorner
 	private void FollowPointerOnRendering(object sender, EventArgs e)
 	{
 		if (e is not RenderingEventArgs renderingEvent) return;
+		if (!AdornedElement.IsVisible || PresentationSource.FromVisual(AdornedElement) == null)
+		{
+			StopFollowing();
+			return;
+		}
 		if (_lastRenderingTime is null)
 		{
 			_lastRenderingTime = renderingEvent.RenderingTime;
@@ -118,6 +123,10 @@ internal sealed class ReduxDropIndicatorAdorner : Adorner
 		if (Math.Abs(remaining) <= 0.05d)
 		{
 			IndicatorOffset = _followTarget;
+			// CompositionTarget.Rendering is application-wide. Leaving this handler
+			// subscribed after the rail has settled keeps WPF rendering indefinitely,
+			// consuming the UI thread long after the drag has ended.
+			StopFollowing();
 			return;
 		}
 

@@ -22,18 +22,12 @@ public static class VisualDividerDragPolicy
 
 		if (sourceItem.IsVisualDivider)
 		{
-			if (!sourceItem.IsVisualDividerCollapsed)
-			{
-				return new[] { sourceItem };
-			}
-
-			var collapsedSection = new List<DivinityModData> { sourceItem };
-			for (var index = sourceIndex + 1; index < items.Count; index++)
-			{
-				if (items[index].IsVisualDivider) break;
-				collapsedSection.Add(items[index]);
-			}
-			return collapsedSection;
+			// A collapsed separator represents hidden rows and cannot be moved safely.
+			// Expanded separators move only their own marker; their surrounding mods
+			// remain in the authoritative load order.
+			return sourceItem.IsVisualDividerCollapsed
+				? Array.Empty<DivinityModData>()
+				: new[] { sourceItem };
 		}
 
 		if (!canDragNormalItem(sourceItem)) return Array.Empty<DivinityModData>();

@@ -23,4 +23,5 @@ public interface IDivinityAppViewModel
 	void ClearMissingMods();
 	void AddActiveMod(DivinityModData mod);
 	void RemoveActiveMod(DivinityModData mod);
+	void MoveModsBetweenLists(IEnumerable<DivinityModData> mods, bool moveToActive);
 }

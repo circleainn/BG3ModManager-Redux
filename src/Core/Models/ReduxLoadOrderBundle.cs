@@ -46,6 +46,9 @@ public sealed class ReduxLoadOrderDivider
 	[DataMember(Order = 7)] public string AfterModUuid { get; set; } = String.Empty;
 	[DataMember(Order = 8)] public bool HideLine { get; set; }
 	[DataMember(Order = 9)] public string Description { get; set; } = String.Empty;
+	// Null means the bundle predates explicit separator membership. Empty means
+	// the exported separator was intentionally empty.
+	[DataMember(Order = 10, EmitDefaultValue = false)] public List<string> MemberModUuids { get; set; }
 }
 
 [DataContract]

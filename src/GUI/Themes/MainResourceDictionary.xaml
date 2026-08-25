@@ -13,6 +13,7 @@
     xmlns:dd="urn:gong-wpf-dragdrop"
     xmlns:divThemes="clr-namespace:DivinityModManager.Themes"
     xmlns:mm="clr-namespace:DivinityModManager"
+	xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"
     xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:templateSelectors="clr-namespace:DivinityModManager.Controls.TemplateSelectors"
@@ -556,7 +557,7 @@
 	</Style>
 	<Style BasedOn="{StaticResource ReduxPopupMenuItemStyle}" TargetType="{x:Type MenuItem}" />
 	<!-- Shared chrome for compact collapse/expand controls. Each caller supplies its directional chevron. -->
-	<Style x:Key="ReduxChromeToggleStyle" TargetType="{x:Type ToggleButton}">
+	<Style x:Key="ReduxChromeActionStyle" TargetType="{x:Type primitives:ButtonBase}">
 		<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
 		<Setter Property="BorderThickness" Value="0" />
 		<Setter Property="Cursor" Value="Hand" />
@@ -564,7 +565,7 @@
 		<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
 		<Setter Property="Template">
 			<Setter.Value>
-				<ControlTemplate TargetType="{x:Type ToggleButton}">
+				<ControlTemplate TargetType="{x:Type primitives:ButtonBase}">
 					<Border x:Name="ButtonChrome"
 						Background="Transparent"
 						CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
@@ -616,6 +617,12 @@
 			</Setter.Value>
 		</Setter>
 	</Style>
+	<Style x:Key="ReduxChromeButtonStyle"
+		BasedOn="{StaticResource ReduxChromeActionStyle}"
+		TargetType="{x:Type Button}" />
+	<Style x:Key="ReduxChromeToggleStyle"
+		BasedOn="{StaticResource ReduxChromeActionStyle}"
+		TargetType="{x:Type ToggleButton}" />
 	<!--  Shared source-pill palette. Keep list, drawer, and preview treatments visually identical.  -->
 	<LinearGradientBrush x:Key="Redux.Pill.Nexus.Background" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#3EF9A332" />
@@ -2184,7 +2191,10 @@
 	</DataTemplate>
 
 	<Style x:Key="DivinityModDataListItem" BasedOn="{StaticResource {x:Type ListViewItem}}" TargetType="{x:Type ListViewItem}">
-		<Setter Property="behavior:ScreenReaderHelperBehavior.Automatic" Value="True" />
+		<!-- Let WPF's item-selection model restore recycled containers directly. The
+			 former generator-status callback re-walked the complete mod collection every
+			 time scrolling realized another row. -->
+		<Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
 		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 		<Setter Property="MinHeight" Value="32" />
 		<Setter Property="Padding" Value="10,4" />
@@ -2346,14 +2356,9 @@
 							Margin="12,8,12,6"
 							Padding="0,4"
 							Background="Transparent"
-							util:ReduxWindowBehavior.HoverLift="1"
-							util:ReduxWindowBehavior.SuppressHoverMotion="{Binding DataContext.IsDragging, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
 							ToolTip="{Binding VisualDividerDescription}"
 							ToolTipService.IsEnabled="{Binding HasVisualDividerDescription}"
 							Visibility="{Binding ShowVisualDivider, Converter={StaticResource BoolToVisibilityConverter}}">
-							<Border.RenderTransform>
-								<TranslateTransform x:Name="VisualDividerTranslate" Y="0" />
-							</Border.RenderTransform>
 							<Grid>
 								<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 								<!-- Fill/rail split for the same reason as RowHoverSurface/RowHoverRail: the
@@ -2395,11 +2400,11 @@
 									</Border.Style>
 								</Border>
 								<!-- Offset left so the rail lands in the same column as the mod-row rails; height comes from Redux.Rail.Height. -->
-				<ToggleButton Width="22" Height="22" Margin="0,0,5,0" Padding="0"
+				<Button Width="22" Height="22" Margin="0,0,5,0" Padding="0"
 					dd:DragDrop.DragSourceIgnore="True"
-					Tag="ReduxDividerToggle" IsChecked="{Binding IsVisualDividerCollapsed, Mode=OneWay}">
-									<ToggleButton.Style>
-										<Style BasedOn="{StaticResource ReduxChromeToggleStyle}" TargetType="{x:Type ToggleButton}">
+					Tag="ReduxDividerToggle">
+									<Button.Style>
+										<Style BasedOn="{StaticResource ReduxChromeButtonStyle}" TargetType="{x:Type Button}">
 											<Style.Triggers>
 												<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
 													<Setter Property="Background"
@@ -2409,11 +2414,11 @@
 												</DataTrigger>
 											</Style.Triggers>
 										</Style>
-									</ToggleButton.Style>
+									</Button.Style>
 									<Path Width="10" Height="5"
 										Data="{StaticResource Redux.Icon.ChevronDownStroke}"
 										RenderTransformOrigin="0.5,0.5"
-										Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}"
+										Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 										StrokeEndLineCap="Round"
 										StrokeLineJoin="Round"
 										StrokeStartLineCap="Round"
@@ -2423,7 +2428,7 @@
 											<RotateTransform Angle="{Binding VisualDividerChevronAngle}" />
 										</Path.RenderTransform>
 									</Path>
-								</ToggleButton>
+								</Button>
 								<Grid Grid.Column="1" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center">
 									<!--  Stroke ring, not a filled dot: default markers follow the Lucide stroke icon language.  -->
 									<Ellipse Width="9.5"
@@ -2468,13 +2473,7 @@
 							Background="{TemplateBinding Background}"
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="{TemplateBinding BorderThickness}"
-							util:ReduxWindowBehavior.HoverLift="1"
-							util:ReduxWindowBehavior.SuppressHoverMotion="{Binding DataContext.IsDragging, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
-							RenderTransformOrigin="0.5,0.5"
 							SnapsToDevicePixels="True">
-							<Border.RenderTransform>
-								<TranslateTransform x:Name="RowSurfaceTranslate" Y="0" />
-							</Border.RenderTransform>
 							<Grid>
 								<!--
 									Fill and rail used to be one Border (fill Background + rail
@@ -2572,7 +2571,7 @@
 									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
 									IsHitTestVisible="False"
 									Opacity="0" />
-								<GridViewRowPresenter
+								<GridViewRowPresenter x:Name="ModRowPresenter"
 									Margin="{TemplateBinding Padding}"
 									Columns="{Binding Path=View.Columns, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
 									Content="{TemplateBinding Content}"
@@ -2667,16 +2666,9 @@
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
-		<!--
-			IsSelected is set via ActiveModListView_ItemContainerStatusChanged.UpdateViewSelection instead,
-			so focus and selection can be more finely controlled.
-		-->
 		<Setter Property="Visibility" Value="{Binding Visibility, FallbackValue='Visible'}" />
 		<Setter Property="FocusVisualStyle" Value="{x:Null}" />
 		<Style.Triggers>
-			<DataTrigger Binding="{Binding IsHiddenByVisualDivider}" Value="True">
-				<Setter Property="Visibility" Value="Collapsed" />
-			</DataTrigger>
 			<Trigger Property="IsSelected" Value="True">
 				<!-- The control template owns selection chrome so the legacy item background
 					and border cannot stack beneath the Redux category treatment. -->
@@ -2738,10 +2730,19 @@
 	<Style x:Key="DivinityModUpdateListItem" BasedOn="{StaticResource DivinityModUpdateNewListItem}" TargetType="{x:Type ListViewItem}">
 		<Setter Property="Tag" Value="{Binding UpdatedMod}" />
 	</Style>
-	<Style BasedOn="{StaticResource {x:Type ListView}}" TargetType="controls:ModListView">
+	<Style x:Key="VirtualizedModListView" BasedOn="{StaticResource {x:Type ListView}}" TargetType="ListView">
 		<Setter Property="Background" Value="{DynamicResource ReduxListInteriorBrush}" />
+		<!-- Item scrolling avoids WPF's pixel-anchor feedback path for mixed-height mod and
+			 separator rows while retaining recycling virtualization for large collections. -->
+		<Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+		<Setter Property="ScrollViewer.PanningMode" Value="VerticalOnly" />
+		<Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
+		<Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+		<Setter Property="VirtualizingPanel.ScrollUnit" Value="Item" />
 	</Style>
-	<Style x:Key="ModOrderListView" BasedOn="{StaticResource {x:Type ListView}}" TargetType="ListView">
+	<Style BasedOn="{StaticResource VirtualizedModListView}" TargetType="controls:ModListView">
+	</Style>
+	<Style x:Key="ModOrderListView" BasedOn="{StaticResource VirtualizedModListView}" TargetType="ListView">
 		<Setter Property="KeyboardNavigation.AcceptsReturn" Value="False" />
 		<Setter Property="KeyboardNavigation.TabNavigation" Value="Continue" />
 		<Setter Property="dd:DragDrop.IsDragSource" Value="True" />
@@ -3527,6 +3528,147 @@
 		</StackPanel>
 	</controls:AutomationTooltip>
 
+	<!-- Rich row-tooltip bodies are deferred until their tooltip opens. -->
+	<DataTemplate x:Key="ModOsirisStatusToolTipTemplate" DataType="{x:Type data:DivinityModData}">
+		<Border MaxWidth="390" Padding="12,10"
+			Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+			BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+			<Border.Style>
+				<Style TargetType="{x:Type Border}">
+					<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding OsirisModStatus}" Value="{x:Static dapp:DivinityOsirisModStatus.MODFIXER}">
+							<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</Border.Style>
+			<StackPanel>
+				<TextBlock FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold">
+					<TextBlock.Style>
+						<Style TargetType="{x:Type TextBlock}">
+							<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
+							<Setter Property="Text" Value="Osiris scripting detected" />
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding OsirisModStatus}" Value="{x:Static dapp:DivinityOsirisModStatus.MODFIXER}">
+									<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+									<Setter Property="Text" Value="Mod Fixer detected" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</TextBlock.Style>
+				</TextBlock>
+				<TextBlock Margin="0,5,0,0"
+					Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+					Text="{Binding OsirisStatusToolTipText}"
+					TextWrapping="Wrap" />
+			</StackPanel>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="ModPrivateNoteToolTipTemplate" DataType="{x:Type data:DivinityModData}">
+		<Border MaxWidth="390"
+			Padding="12,10"
+			Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+			BorderBrush="{DynamicResource ReduxAccentBrush}"
+			BorderThickness="1"
+			CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+			<StackPanel>
+				<TextBlock FontSize="{DynamicResource Redux.FontSize.13}"
+					FontWeight="SemiBold"
+					Foreground="{DynamicResource ReduxAccentHoverBrush}"
+					Text="Note:" />
+				<TextBlock Margin="0,5,0,0"
+					Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+					Text="{Binding PrivateNote}"
+					TextWrapping="Wrap" />
+			</StackPanel>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="ModHealthIconToolTipTemplate" DataType="{x:Type data:DivinityModData}">
+		<Border MaxWidth="390" Padding="12,10"
+			Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+			BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+			<Border.Style>
+				<Style TargetType="{x:Type Border}">
+					<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding HealthSnapshot.HasErrors}" Value="True">
+							<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</Border.Style>
+			<StackPanel>
+				<TextBlock FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold"
+					Text="{Binding HealthSnapshot.StatusTitle}" TextWrapping="Wrap">
+					<TextBlock.Style>
+						<Style TargetType="{x:Type TextBlock}">
+							<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding HealthSnapshot.HasErrors}" Value="True">
+									<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</TextBlock.Style>
+				</TextBlock>
+				<TextBlock Margin="0,5,0,0"
+					Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+					Text="{Binding HealthSnapshot.StatusDescription}"
+					TextWrapping="Wrap" />
+			</StackPanel>
+		</Border>
+	</DataTemplate>
+	<DataTemplate x:Key="ModScriptExtenderToolTipTemplate" DataType="{x:Type data:DivinityModData}">
+		<Border MaxWidth="390" Padding="12,10"
+			Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+			BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
+			<Border.Style>
+				<Style TargetType="{x:Type Border}">
+					<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.FulfilledRequired}">
+							<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
+						</DataTrigger>
+						<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Warning}">
+							<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
+						</DataTrigger>
+						<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Missing}">
+							<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</Border.Style>
+			<StackPanel>
+				<TextBlock FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold">
+					<TextBlock.Style>
+						<Style TargetType="{x:Type TextBlock}">
+							<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
+							<Setter Property="Text" Value="Script Extender status" />
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.FulfilledRequired}">
+									<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+									<Setter Property="Text" Value="Script Extender ready" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Warning}">
+									<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
+									<Setter Property="Text" Value="Script Extender warning" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Missing}">
+									<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+									<Setter Property="Text" Value="Script Extender missing" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</TextBlock.Style>
+				</TextBlock>
+				<TextBlock Margin="0,5,0,0"
+					Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+					Text="{Binding ScriptExtenderSupportToolTipText}"
+					TextWrapping="Wrap" />
+			</StackPanel>
+		</Border>
+	</DataTemplate>
 	<DataTemplate x:Key="ModNameTemplate" DataType="{x:Type data:DivinityModData}">
 		<controls:ModEntryGrid>
 			<controls:ModEntryGrid.ColumnDefinitions>
@@ -3559,21 +3701,27 @@
 						Opacity="0.85"
 						ShadowDepth="0" />
 				</Border.Effect>
-				<!--  Brief entrance emphasis only: a capped pulse, not a permanent decoration.  -->
-				<Border.Triggers>
-					<EventTrigger RoutedEvent="Loaded">
-						<BeginStoryboard>
-							<Storyboard AutoReverse="True" RepeatBehavior="3x">
-								<DoubleAnimation Storyboard.TargetProperty="Opacity"
-									From="1" To="0.5"
-									Duration="{StaticResource Redux.Motion.StatusPulseDuration}"
-									EasingFunction="{StaticResource Redux.Motion.EaseInOut}" />
-							</Storyboard>
-						</BeginStoryboard>
-					</EventTrigger>
-				</Border.Triggers>
+				<!-- Pulse only genuinely new mods; realizing an ordinary row must not start a storyboard. -->
+				<Border.Style>
+					<Style TargetType="{x:Type Border}">
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsNewlyDetected}" Value="True">
+								<DataTrigger.EnterActions>
+									<BeginStoryboard>
+										<Storyboard AutoReverse="True" RepeatBehavior="3x">
+											<DoubleAnimation Storyboard.TargetProperty="Opacity"
+												From="1" To="0.5"
+												Duration="{StaticResource Redux.Motion.StatusPulseDuration}"
+												EasingFunction="{StaticResource Redux.Motion.EaseInOut}" />
+										</Storyboard>
+									</BeginStoryboard>
+								</DataTrigger.EnterActions>
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Border.Style>
 			</Border>
-			<Border Grid.Column="2" Padding="0,0,4,0" BorderThickness="0">
+			<Border x:Name="DeferredModNameDetails" Grid.Column="2" Padding="0,0,4,0" BorderThickness="0">
 				<StackPanel Orientation="Horizontal">
 					<Border MinWidth="20"
 						Height="18"
@@ -3603,42 +3751,9 @@
 					    DataContext="{Binding}"
 					>
 						<controls:ReduxIcon.ToolTip>
-							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
-								<Border MaxWidth="390" Padding="12,10"
-									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-									BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-									<Border.Style>
-										<Style TargetType="{x:Type Border}">
-											<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
-											<Style.Triggers>
-												<DataTrigger Binding="{Binding OsirisModStatus}" Value="{x:Static dapp:DivinityOsirisModStatus.MODFIXER}">
-													<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
-												</DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</Border.Style>
-									<StackPanel>
-										<TextBlock FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold">
-											<TextBlock.Style>
-												<Style TargetType="{x:Type TextBlock}">
-													<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
-													<Setter Property="Text" Value="Osiris scripting detected" />
-													<Style.Triggers>
-														<DataTrigger Binding="{Binding OsirisModStatus}" Value="{x:Static dapp:DivinityOsirisModStatus.MODFIXER}">
-															<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
-															<Setter Property="Text" Value="Mod Fixer detected" />
-														</DataTrigger>
-													</Style.Triggers>
-												</Style>
-											</TextBlock.Style>
-										</TextBlock>
-										<TextBlock Margin="0,5,0,0"
-											Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-											Text="{Binding OsirisStatusToolTipText}"
-											TextWrapping="Wrap" />
-									</StackPanel>
-								</Border>
-							</ToolTip>
+							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}"
+								Content="{Binding}"
+								ContentTemplate="{StaticResource ModOsirisStatusToolTipTemplate}" />
 						</controls:ReduxIcon.ToolTip>
 						<controls:ReduxIcon.Style>
 							<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
@@ -3676,25 +3791,9 @@
 					    ToolTipService.ShowDuration="20000"
 					    Visibility="{Binding HasPrivateNote, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
 						<controls:ReduxIcon.ToolTip>
-							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
-								<Border MaxWidth="390"
-									Padding="12,10"
-									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-									BorderBrush="{DynamicResource ReduxAccentBrush}"
-									BorderThickness="1"
-									CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-									<StackPanel>
-										<TextBlock FontSize="{DynamicResource Redux.FontSize.13}"
-											FontWeight="SemiBold"
-											Foreground="{DynamicResource ReduxAccentHoverBrush}"
-											Text="Note:" />
-										<TextBlock Margin="0,5,0,0"
-											Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-											Text="{Binding PrivateNote}"
-											TextWrapping="Wrap" />
-									</StackPanel>
-								</Border>
-							</ToolTip>
+							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}"
+								Content="{Binding}"
+								ContentTemplate="{StaticResource ModPrivateNoteToolTipTemplate}" />
 						</controls:ReduxIcon.ToolTip>
 					</controls:ReduxIcon>
 					<controls:ReduxIcon Width="16"
@@ -3730,44 +3829,11 @@
 					    VerticalAlignment="Center"
 					    IsHitTestVisible="True"
 					    ToolTipService.ShowDuration="20000">
-					    	<controls:ReduxIcon.ToolTip>
-					    		<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
-					    			<!-- Same shape as the Osiris/Mod Fixer tooltips: severity-tinted outline, title, message. -->
-					    			<Border MaxWidth="390" Padding="12,10"
-					    				Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-					    				BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-					    				<Border.Style>
-					    					<Style TargetType="{x:Type Border}">
-					    						<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
-					    						<Style.Triggers>
-					    							<DataTrigger Binding="{Binding HealthSnapshot.HasErrors}" Value="True">
-					    								<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
-					    							</DataTrigger>
-					    						</Style.Triggers>
-					    					</Style>
-					    				</Border.Style>
-					    				<StackPanel>
-					    					<TextBlock FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold"
-					    						Text="{Binding HealthSnapshot.StatusTitle}" TextWrapping="Wrap">
-					    						<TextBlock.Style>
-					    							<Style TargetType="{x:Type TextBlock}">
-					    								<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
-					    								<Style.Triggers>
-					    									<DataTrigger Binding="{Binding HealthSnapshot.HasErrors}" Value="True">
-					    										<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
-					    									</DataTrigger>
-					    								</Style.Triggers>
-					    							</Style>
-					    						</TextBlock.Style>
-					    					</TextBlock>
-					    					<TextBlock Margin="0,5,0,0"
-					    						Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-					    						Text="{Binding HealthSnapshot.StatusDescription}"
-					    						TextWrapping="Wrap" />
-					    				</StackPanel>
-					    			</Border>
-					    		</ToolTip>
-					    	</controls:ReduxIcon.ToolTip>
+						<controls:ReduxIcon.ToolTip>
+							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}"
+								Content="{Binding}"
+								ContentTemplate="{StaticResource ModHealthIconToolTipTemplate}" />
+						</controls:ReduxIcon.ToolTip>
 						<controls:ReduxIcon.Style>
 							<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
 								<Setter Property="StrokeData" Value="{StaticResource Redux.Icon.SearchAlert}" />
@@ -3883,7 +3949,7 @@
 											<Setter Property="Opacity" Value="0.85" />
 											<DataTrigger.EnterActions>
 												<BeginStoryboard Name="ExtenderGlowMissingPulse">
-													<Storyboard AutoReverse="True" RepeatBehavior="Forever">
+											<Storyboard AutoReverse="True" RepeatBehavior="3x">
 														<DoubleAnimation Storyboard.TargetProperty="Opacity"
 															To="0.45"
 															Duration="{StaticResource Redux.Motion.StatusPulseDuration}"
@@ -3908,56 +3974,9 @@
 					    IsHitTestVisible="True"
 					    DataContext="{Binding}">
 						<controls:ReduxIcon.ToolTip>
-							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}">
-								<Border MaxWidth="390" Padding="12,10"
-									Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-									BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
-									<Border.Style>
-										<Style TargetType="{x:Type Border}">
-											<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoBrush}" />
-											<Style.Triggers>
-												<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.FulfilledRequired}">
-													<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
-												</DataTrigger>
-												<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Warning}">
-													<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
-												</DataTrigger>
-												<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Missing}">
-													<Setter Property="BorderBrush" Value="{DynamicResource ReduxErrorBrush}" />
-												</DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</Border.Style>
-									<StackPanel>
-										<TextBlock FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold">
-											<TextBlock.Style>
-												<Style TargetType="{x:Type TextBlock}">
-													<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
-													<Setter Property="Text" Value="Script Extender status" />
-													<Style.Triggers>
-														<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.FulfilledRequired}">
-															<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
-															<Setter Property="Text" Value="Script Extender ready" />
-														</DataTrigger>
-														<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Warning}">
-															<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
-															<Setter Property="Text" Value="Script Extender warning" />
-														</DataTrigger>
-														<DataTrigger Binding="{Binding ExtenderIcon}" Value="{x:Static dapp:ScriptExtenderIconType.Missing}">
-															<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
-															<Setter Property="Text" Value="Script Extender missing" />
-														</DataTrigger>
-													</Style.Triggers>
-												</Style>
-											</TextBlock.Style>
-										</TextBlock>
-										<TextBlock Margin="0,5,0,0"
-											Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-											Text="{Binding ScriptExtenderSupportToolTipText}"
-											TextWrapping="Wrap" />
-									</StackPanel>
-								</Border>
-							</ToolTip>
+							<ToolTip Style="{StaticResource ReduxRichToolTipStyle}"
+								Content="{Binding}"
+								ContentTemplate="{StaticResource ModScriptExtenderToolTipTemplate}" />
 						</controls:ReduxIcon.ToolTip>
 						<controls:ReduxIcon.Style>
 							<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
@@ -4114,7 +4133,7 @@
 			("where did this come from"), so it shouldn't out-shout status/category signals.
 			Provider brand color lives on the icon only; text stays a neutral secondary tone.
 		-->
-		<Grid HorizontalAlignment="Left">
+		<Grid x:Name="DeferredSourceDetails" HorizontalAlignment="Left">
 			<Grid.ToolTip>
 				<ToolTip Content="{Binding}"
 					ContentTemplate="{StaticResource ReduxSourceLabelToolTipTemplate}"
@@ -4259,7 +4278,7 @@
 	</DataTemplate>
 	<DataTemplate x:Key="ModCategoryTemplate" DataType="{x:Type data:DivinityModData}">
 		<!--  ClipToBounds off: see ModSourceTemplate - the per-item MaxWidth clamp handles overflow.  -->
-		<ItemsControl ClipToBounds="False"
+		<ItemsControl x:Name="DeferredCategoryDetails" ClipToBounds="False"
 			ItemTemplate="{StaticResource ModCategoryPillItemTemplate}"
 			ItemsSource="{Binding DisplayCategories}">
 			<ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>

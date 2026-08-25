@@ -20,79 +20,122 @@ namespace DivinityModManager.AppServices
 	{
 		private static readonly string[] _dlls = ["nvdaControllerClient64.dll", "SAAPI64.dll", "Tolk.dll"];
 		private static bool _loadedDlls = false;
+		private readonly object _initializationLock = new();
+		private bool _initializationUnavailable;
+		private bool _hasDetectionResult;
+		private bool _lastDetectionResult;
+		private long _lastDetectionTick;
+		private const long DetectionCacheMilliseconds = 15000;
 
 		public bool IsScreenReaderActive()
 		{
-			if (EnsureInit(false))
+			var now = Environment.TickCount64;
+			lock (_initializationLock)
 			{
-				return !String.IsNullOrWhiteSpace(CrossSpeakManager.Instance.DetectScreenReader());
+				if (_hasDetectionResult && now - _lastDetectionTick < DetectionCacheMilliseconds)
+					return _lastDetectionResult;
 			}
-			return false;
+			if (!EnsureInit(false))
+			{
+				CacheDetectionResult(false, now);
+				return false;
+			}
+			try
+			{
+				var detected = !String.IsNullOrWhiteSpace(CrossSpeakManager.Instance.DetectScreenReader());
+				CacheDetectionResult(detected, now);
+				return detected;
+			}
+			catch (Exception ex)
+			{
+				DisableAfterInteropFailure(ex);
+				return false;
+			}
 		}
 
 		public void Close()
 		{
-			if (CrossSpeakManager.Instance.IsLoaded())
+			try
 			{
-				CrossSpeakManager.Instance.Close();
+				if (CrossSpeakManager.Instance.IsLoaded()) CrossSpeakManager.Instance.Close();
 			}
+			catch (Exception ex) { DisableAfterInteropFailure(ex); }
 		}
 
 		public void Silence()
 		{
-			if (CrossSpeakManager.Instance.IsLoaded())
+			try
 			{
-				CrossSpeakManager.Instance.Silence();
+				if (CrossSpeakManager.Instance.IsLoaded()) CrossSpeakManager.Instance.Silence();
 			}
+			catch (Exception ex) { DisableAfterInteropFailure(ex); }
 		}
 
 		private bool EnsureInit(bool trySAPI = false)
 		{
-			if (!_loadedDlls)
+			if (_initializationUnavailable) return false;
+			lock (_initializationLock)
 			{
-				var libPath = Path.Combine(DivinityApp.GetAppDirectory(), "_Lib");
-				foreach (var dll in _dlls)
+				if (_initializationUnavailable) return false;
+				try
 				{
-					var filePath = Path.Combine(libPath, dll);
-					try
+					if (!_loadedDlls)
 					{
-						if (File.Exists(filePath))
+						var libPath = Path.Combine(DivinityApp.GetAppDirectory(), "_Lib");
+						foreach (var dll in _dlls)
 						{
-							NativeLibraryHelper.LoadLibrary(filePath);
+							var filePath = Path.Combine(libPath, dll);
+							if (File.Exists(filePath)) NativeLibraryHelper.LoadLibrary(filePath);
 						}
+						_loadedDlls = true;
 					}
-					catch (Exception ex)
+
+					if (!CrossSpeakManager.Instance.IsLoaded())
 					{
-						DivinityApp.Log($"Error loading '{dll}':\n{ex}");
+						CrossSpeakManager.Instance.Initialize();
+						if (trySAPI && !CrossSpeakManager.Instance.HasSpeech())
+							CrossSpeakManager.Instance.TrySAPI(true);
 					}
+					return CrossSpeakManager.Instance.IsLoaded();
 				}
-				_loadedDlls = true;
-			}
-			if (!CrossSpeakManager.Instance.IsLoaded())
-			{
-				CrossSpeakManager.Instance.Initialize();
-				if (trySAPI && !CrossSpeakManager.Instance.HasSpeech())
+				catch (Exception ex)
 				{
-					CrossSpeakManager.Instance.TrySAPI(true);
+					DisableAfterInteropFailure(ex);
+					return false;
 				}
 			}
-			return CrossSpeakManager.Instance.IsLoaded();
 		}
 
 		public void Output(string text, bool interrupt = true)
 		{
-			if (EnsureInit(true))
+			if (!EnsureInit(true)) return;
+			try
 			{
 				CrossSpeakManager.Instance.Output(text, interrupt);
+			}
+			catch (Exception ex) { DisableAfterInteropFailure(ex); }
+		}
+
+		public void Speak(string text, bool interrupt = true) => Output(text, interrupt);
+
+		private void CacheDetectionResult(bool detected, long tick)
+		{
+			lock (_initializationLock)
+			{
+				_hasDetectionResult = true;
+				_lastDetectionResult = detected;
+				_lastDetectionTick = tick;
 			}
 		}
 
-		public void Speak(string text, bool interrupt = true)
+		private void DisableAfterInteropFailure(Exception ex)
 		{
-			if (EnsureInit(true))
-			{
-				CrossSpeakManager.Instance.Output(text, interrupt);
-			}
+			if (_initializationUnavailable) return;
+			_initializationUnavailable = true;
+			_hasDetectionResult = true;
+			_lastDetectionResult = false;
+			_lastDetectionTick = Environment.TickCount64;
+			DivinityApp.Log($"Screen reader integration was disabled after an interop failure:\n{ex}");
 		}
 	}
 }

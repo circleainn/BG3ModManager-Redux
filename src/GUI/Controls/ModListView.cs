@@ -11,15 +11,19 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
 namespace DivinityModManager.Controls;
 
 public class ModListView : ListView
 {
-	private MethodInfo getInfoMethod;
-	private MethodInfo updateAnchorMethod;
-	private PropertyInfo getActualIndex;
+	private static readonly MethodInfo _itemInfoFromContainer = typeof(ItemsControl)
+		.GetMethod("ItemInfoFromContainer", BindingFlags.NonPublic | BindingFlags.Instance);
+	private static readonly MethodInfo _updateAnchorAndActionItem = typeof(ListBox)
+		.GetMethod("UpdateAnchorAndActionItem", BindingFlags.NonPublic | BindingFlags.Instance);
+	private static readonly PropertyInfo _actualColumnIndex = typeof(GridViewColumn)
+		.GetProperty("ActualIndex", BindingFlags.NonPublic | BindingFlags.Instance);
 
 	public bool Resizing { get; set; }
 	public bool UserResizedColumns { get; set; }
@@ -48,19 +52,19 @@ public class ModListView : ListView
 	{
 		if (d is ModListView view)
 		{
+			if (e.OldValue is ModListView lastView)
+				lastView.Loaded -= view.OnTargetGridLoaded;
 			if (e.NewValue is ModListView targetView)
 			{
 				view._copyHeaderView = targetView;
+				targetView.Loaded -= view.OnTargetGridLoaded;
 				targetView.Loaded += view.OnTargetGridLoaded;
 				if (targetView.IsLoaded)
 				{
 					view.OnTargetGridLoaded(targetView, new EventArgs());
 				}
 			}
-			else if (e.OldValue is ModListView lastView)
-			{
-				lastView.Loaded -= view.OnTargetGridLoaded;
-			}
+			else view._copyHeaderView = null;
 		}
 	}
 
@@ -70,10 +74,12 @@ public class ModListView : ListView
 		{
 			PropertyDescriptor pd = DependencyPropertyDescriptor.FromProperty(GridViewColumn.WidthProperty, typeof(GridViewColumn));
 
+			grid.Columns.CollectionChanged -= OnTargetGridCollectionChanged;
 			grid.Columns.CollectionChanged += OnTargetGridCollectionChanged;
 
 			foreach (var col in grid.Columns)
 			{
+				pd.RemoveValueChanged(col, OnColumnWidthChanged_Copy);
 				pd.AddValueChanged(col, OnColumnWidthChanged_Copy);
 			}
 		}
@@ -115,10 +121,6 @@ public class ModListView : ListView
 
 	public ModListView() : base()
 	{
-		getInfoMethod = typeof(ItemsControl).GetMethod("ItemInfoFromContainer", BindingFlags.NonPublic | BindingFlags.Instance);
-		updateAnchorMethod = typeof(ListBox).GetMethod("UpdateAnchorAndActionItem", BindingFlags.NonPublic | BindingFlags.Instance);
-		getActualIndex = typeof(GridViewColumn).GetProperty("ActualIndex", BindingFlags.NonPublic | BindingFlags.Instance);
-
 		if (!HideHeader)
 		{
 			Loaded += (o, e) =>
@@ -140,17 +142,14 @@ public class ModListView : ListView
 		AddHandler(ListViewItem.PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler(OnMouseLeftButtonUp), true);
 	}
 
-	private static readonly MethodInfo _ItemInfoFromContainer = typeof(ItemsControl).GetMethod("ItemInfoFromContainer", BindingFlags.NonPublic | BindingFlags.Instance);
-	private static readonly MethodInfo _UpdateAnchorAndActionItem = typeof(ListBox).GetMethod("UpdateAnchorAndActionItem", BindingFlags.NonPublic | BindingFlags.Instance);
-
 	private static void TryUpdateAnchor(ModListView listView, ListViewItem item)
 	{
 		try
 		{
-			var itemInfo = _ItemInfoFromContainer.Invoke(listView, [item]);
+			var itemInfo = _itemInfoFromContainer?.Invoke(listView, [item]);
 			if (itemInfo != null)
 			{
-				_UpdateAnchorAndActionItem.Invoke(listView, [itemInfo]);
+				_updateAnchorAndActionItem?.Invoke(listView, [itemInfo]);
 			}
 		}
 		catch (Exception ex)
@@ -164,6 +163,7 @@ public class ModListView : ListView
 	private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 	{
 		_isSingleSelect = false;
+		if (IsEmbeddedButtonInput(e.OriginalSource as DependencyObject)) return;
 		//Allow deselecting with just left click, if no modifiers are pressed and a single item is selected
 		if (Keyboard.Modifiers == ModifierKeys.None && e.LeftButton == MouseButtonState.Pressed && !MainWindow.Self.ViewModel.IsDragging)
 		{
@@ -179,6 +179,11 @@ public class ModListView : ListView
 
 	private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 	{
+		if (IsEmbeddedButtonInput(e.OriginalSource as DependencyObject))
+		{
+			_isSingleSelect = false;
+			return;
+		}
 		if (Keyboard.Modifiers == ModifierKeys.None && _isSingleSelect && !MainWindow.Self.ViewModel.IsDragging)
 		{
 			if (sender is ModListView listView && e.OriginalSource is UIElement element && element.FindVisualParent<ListViewItem>() is ListViewItem item && item.IsSelected)
@@ -193,6 +198,9 @@ public class ModListView : ListView
 		}
 		_isSingleSelect = false;
 	}
+
+	private static bool IsEmbeddedButtonInput(DependencyObject source) =>
+		source is ButtonBase || source?.FindVisualParent<ButtonBase>() != null;
 
 	private void NameColumnWidthChanged(object sender, EventArgs e)
 	{
@@ -211,9 +219,9 @@ public class ModListView : ListView
 		return new ModListViewAutomationPeer(this);
 	}
 
-	private int GetColumnActualIndex(GridViewColumn col)
+	private static int GetColumnActualIndex(GridViewColumn col)
 	{
-		return (int)getActualIndex.GetValue(col);
+		return _actualColumnIndex?.GetValue(col) is int index ? index : -1;
 	}
 
 	protected override void OnKeyDown(KeyEventArgs e)
@@ -304,8 +312,9 @@ public class ModListView : ListView
 				case Key.Down:
 					if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
 					{
-						var info = getInfoMethod.Invoke(this, [Keyboard.FocusedElement]);
-						updateAnchorMethod.Invoke(this, [info]);
+						var focused = Keyboard.FocusedElement as DependencyObject;
+						var focusedItem = focused as ListViewItem ?? focused?.FindVisualParent<ListViewItem>();
+						if (focusedItem != null) TryUpdateAnchor(this, focusedItem);
 					}
 					break;
 			}

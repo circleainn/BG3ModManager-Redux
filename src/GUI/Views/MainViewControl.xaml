@@ -457,7 +457,7 @@
 								<Storyboard AutoReverse="True"
 								    BeginTime="00:00:00"
 								    FillBehavior="Stop"
-								    RepeatBehavior="Forever"
+								    RepeatBehavior="3x"
 								    Duration="0:0:0.5">
 									<DoubleAnimation Storyboard.TargetProperty="Opacity" From="1.0" To="0.5" />
 								</Storyboard>
@@ -649,14 +649,20 @@
 									</MenuItem.ItemContainerStyle>
 								</MenuItem>
 								<Separator />
-								<MenuItem Command="{Binding Keys.Save.Command}" Header="Save Order" InputGestureText="{Binding Keys.Save.DisplayBindingText}">
+								<MenuItem Command="{Binding Keys.Save.Command}" Header="Save Current Order" InputGestureText="{Binding Keys.Save.DisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Save}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.SaveAs.Command}" Header="Save Order As..." InputGestureText="{Binding Keys.SaveAs.DisplayBindingText}">
+								<MenuItem Command="{Binding Keys.SaveAs.Command}" Header="Save Order As File..." InputGestureText="{Binding Keys.SaveAs.DisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Duplicate}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.NewOrder.Command}" Header="New Load Order" InputGestureText="{Binding Keys.NewOrder.DisplayBindingText}">
+								<MenuItem Command="{Binding Keys.NewOrder.Command}" Header="Create Blank Load Order" InputGestureText="{Binding Keys.NewOrder.DisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.AddCircle}" /></MenuItem.Icon>
+								</MenuItem>
+								<MenuItem Command="{Binding Keys.ImportOrderFromFile.Command}" Header="Add Load Order from File..." InputGestureText="{Binding Keys.ImportOrderFromFile.DisplayBindingText}">
+									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
+								</MenuItem>
+								<MenuItem Command="{Binding Keys.ImportReduxLoadOrder.Command}" Header="Import Redux Modlist..." InputGestureText="{Binding Keys.ImportReduxLoadOrder.DisplayBindingText}">
+									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Download}" /></MenuItem.Icon>
 								</MenuItem>
 							</MenuItem>
 							<MenuItem Header="Export">
@@ -1306,14 +1312,17 @@
 										</ComboBox.ContextMenu>
 									</ComboBox>
 									<Rectangle Width="1" Height="20" />
-									<Button x:Name="SaveButton" ToolTip="Save Load Order to File">
+									<Button x:Name="SaveButton" ToolTip="Save Current Order">
 										<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Save}" />
 									</Button>
-									<Button x:Name="SaveAsButton" ToolTip="Save Order As...">
+									<Button x:Name="SaveAsButton" ToolTip="Save Order As File...">
 										<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Duplicate}" />
 									</Button>
-									<Button x:Name="AddNewOrderButton" ToolTip="Add New Load Order">
+									<Button x:Name="AddNewOrderButton" ToolTip="Add Load Order from File...">
 										<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.AddCircle}" />
+									</Button>
+									<Button x:Name="ImportReduxModlistButton" ToolTip="Import Redux Modlist...">
+										<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Download}" />
 									</Button>
 									<Rectangle Width="1" Height="20" />
 									<Button x:Name="ExportToModSettingsButton"

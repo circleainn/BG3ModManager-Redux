@@ -223,10 +223,21 @@ public static class ReduxLoadOrderBundleService
 				!IsValidColor(divider.Color) || (divider.IconId?.Length ?? 0) > 160 ||
 				(divider.Description?.Length ?? 0) > 240 ||
 				divider.FallbackPosition < 0 || divider.FallbackPosition > orderUuids.Count ||
+				(divider.MemberModUuids != null &&
+					(divider.MemberModUuids.Count > orderUuids.Count ||
+					 divider.MemberModUuids.Any(uuid => String.IsNullOrWhiteSpace(uuid) || !orderedUuidSet.Contains(uuid)) ||
+					 divider.MemberModUuids.Distinct(StringComparer.OrdinalIgnoreCase).Count() != divider.MemberModUuids.Count)) ||
 				(divider.BeforeModUuid?.Length ?? 0) > 128 || (divider.AfterModUuid?.Length ?? 0) > 128 ||
 				(!String.IsNullOrWhiteSpace(divider.BeforeModUuid) && !orderedUuidSet.Contains(divider.BeforeModUuid)) ||
 				(!String.IsNullOrWhiteSpace(divider.AfterModUuid) && !orderedUuidSet.Contains(divider.AfterModUuid))))
 			throw new InvalidDataException("The Redux Modlist contains an invalid separator.");
+		var explicitlyAssignedDividerUuids = presentation.Dividers
+			.Where(divider => divider.MemberModUuids != null)
+			.SelectMany(divider => divider.MemberModUuids)
+			.ToList();
+		if (explicitlyAssignedDividerUuids.Distinct(StringComparer.OrdinalIgnoreCase).Count() !=
+			explicitlyAssignedDividerUuids.Count)
+			throw new InvalidDataException("The Redux Modlist assigns one mod to multiple separators.");
 		if (presentation.PrivateModNotes.Any(note =>
 				note == null || String.IsNullOrWhiteSpace(note.ModUuid) ||
 				!orderedUuidSet.Contains(note.ModUuid) ||

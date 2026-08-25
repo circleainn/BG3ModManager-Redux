@@ -11,11 +11,6 @@ namespace DivinityModManager.Controls;
 /// </summary>
 public sealed class ReduxIcon : Control
 {
-	public ReduxIcon()
-	{
-		Loaded += (_, _) => ApplyIconKey();
-	}
-
 	/// <summary>
 	/// Creates a consistently styled menu icon from an application geometry resource.
 	/// </summary>

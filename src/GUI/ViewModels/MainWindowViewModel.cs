@@ -82,6 +82,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	[Reactive] public bool IsInitialized { get; private set; }
 	private const string StartupLoadOrderWarningKey = "load-order-mod-warning";
+	private const string QuickSaveOrderName = "Current Order";
 	private readonly StartupNotificationQueue _startupNotifications = new();
 
 	protected readonly SourceCache<DivinityModData, string> mods = new(mod => mod.UUID);
@@ -1454,6 +1455,7 @@ Directory the zip will be extracted to:
 		},
 		Converters = [ new Newtonsoft.Json.Converters.StringEnumConverter() ]
 	};
+	private string _lastSavedSettingsContents;
 
 	public bool SaveSettings()
 	{
@@ -1462,31 +1464,35 @@ Directory the zip will be extracted to:
 
 		try
 		{
-#if DEBUG
-			DivinityApp.Log($"Saving settings to '{settingsFile}'");
-#endif
 			string contents = JsonConvert.SerializeObject(Settings, Formatting.Indented, _managerSerializerSettings);
-			var backupForReplace = backupFile;
-			if (File.Exists(settingsFile))
+			if (!File.Exists(settingsFile) || !String.Equals(contents, _lastSavedSettingsContents, StringComparison.Ordinal))
 			{
-				try
+				#if DEBUG
+				DivinityApp.Log($"Saving settings to '{settingsFile}'");
+				#endif
+				var backupForReplace = backupFile;
+				if (File.Exists(settingsFile))
 				{
-					var existingContents = File.ReadAllText(settingsFile);
-					if (JsonConvert.DeserializeObject<DivinityModManagerSettings>(existingContents, _managerSerializerSettings) == null)
+					try
+					{
+						var existingContents = File.ReadAllText(settingsFile);
+						if (JsonConvert.DeserializeObject<DivinityModManagerSettings>(existingContents, _managerSerializerSettings) == null)
+							backupForReplace = null;
+					}
+					catch (Exception ex)
+					{
+						// Do not replace a previous known-good .bak with an already-corrupt live file.
 						backupForReplace = null;
+						DivinityApp.Log($"Existing settings file is not valid and will not replace '{backupFile}': {ex}");
+					}
 				}
-				catch (Exception ex)
+				AtomicFileWriter.WriteAllText(settingsFile, contents, backupForReplace, temporaryPath =>
 				{
-					// Do not replace a previous known-good .bak with an already-corrupt live file.
-					backupForReplace = null;
-					DivinityApp.Log($"Existing settings file is not valid and will not replace '{backupFile}': {ex}");
-				}
+					var temporaryContents = File.ReadAllText(temporaryPath);
+					return JsonConvert.DeserializeObject<DivinityModManagerSettings>(temporaryContents, _managerSerializerSettings) != null;
+				});
+				_lastSavedSettingsContents = contents;
 			}
-			AtomicFileWriter.WriteAllText(settingsFile, contents, backupForReplace, temporaryPath =>
-			{
-				var temporaryContents = File.ReadAllText(temporaryPath);
-				return JsonConvert.DeserializeObject<DivinityModManagerSettings>(temporaryContents, _managerSerializerSettings) != null;
-			});
 			Settings.CanSaveSettings = false;
 			if (!Keys.SaveKeybindings(out var errorMsg))
 			{
@@ -3532,6 +3538,9 @@ Directory the zip will be extracted to:
 			IsRefreshing = false;
 			IsLoadingOrder = false;
 			IsInitialized = true;
+			// Membership migration must run after both mod collections have finished
+			// loading; collection-change refreshes may all occur before initialization.
+			RefreshVisualDividers();
 			// Resolve the strongest provider identity first. The bundled Nexus
 			// provenance database is only a fallback for mods not identified by mod.io.
 			LoadModioMetadataBackground(LoadNexusModsMetadataBackground);
@@ -3742,14 +3751,6 @@ Directory the zip will be extracted to:
 
 	private void SaveLoadOrder(bool skipSaveConfirmation = false)
 	{
-		// "Current" represents the game's modsettings.lsx. Saving it through the
-		// manager must create a separate JSON order; only Export to Game may write LSX.
-		if (LoadOrderPersistencePolicy.RequiresSaveAs(SelectedModOrder))
-		{
-			SaveLoadOrderAs();
-			return;
-		}
-
 		RxApp.MainThreadScheduler.ScheduleAsync(async (sch, cts) => await SaveLoadOrderAsync(skipSaveConfirmation));
 	}
 
@@ -3758,28 +3759,32 @@ Directory the zip will be extracted to:
 		bool result = false;
 		if (SelectedProfile != null && SelectedModOrder != null)
 		{
-			if (LoadOrderPersistencePolicy.RequiresSaveAs(SelectedModOrder))
-			{
-				if (!skipSaveConfirmation)
-				{
-					ShowAlert(
-						"The Current order is the game's exported order. Use Save Order As to create a separate manager file.",
-						AlertType.Info,
-						15);
-				}
-				return false;
-			}
-
 			UpdateOrderFromActiveMods();
 
 			string outputDirectory = GetOrdersDirectory();
 
 			if (!Directory.Exists(outputDirectory)) Directory.CreateDirectory(outputDirectory);
 
-			string outputPath = SelectedModOrder.FilePath;
-			string outputName = DivinityModDataLoader.MakeSafeFilename(Path.Join(SelectedModOrder.Name + ".json"), '_');
+			var savesCurrentSnapshot = LoadOrderPersistencePolicy.RequiresSaveAs(SelectedModOrder);
+			var orderToSave = SelectedModOrder;
+			string outputName = DivinityModDataLoader.MakeSafeFilename(
+				(savesCurrentSnapshot ? QuickSaveOrderName : SelectedModOrder.Name) + ".json",
+				'_');
+			string outputPath = savesCurrentSnapshot
+				? Path.Join(outputDirectory, outputName)
+				: SelectedModOrder.FilePath;
 
-			if (String.IsNullOrWhiteSpace(SelectedModOrder.FilePath))
+			if (savesCurrentSnapshot)
+			{
+				orderToSave = new DivinityLoadOrder
+				{
+					Name = QuickSaveOrderName,
+					FilePath = outputPath,
+					LastModifiedDate = DateTime.Now,
+					Order = SelectedModOrder.Order.Select(entry => entry.Clone()).ToList()
+				};
+			}
+			else if (String.IsNullOrWhiteSpace(SelectedModOrder.FilePath))
 			{
 				SelectedModOrder.FilePath = Path.Join(outputDirectory, outputName);
 				outputPath = SelectedModOrder.FilePath;
@@ -3787,7 +3792,7 @@ Directory the zip will be extracted to:
 
 			try
 			{
-				result = await DivinityModDataLoader.ExportLoadOrderToFileAsync(outputPath, SelectedModOrder);
+				result = await DivinityModDataLoader.ExportLoadOrderToFileAsync(outputPath, orderToSave);
 			}
 			catch (Exception ex)
 			{
@@ -3795,9 +3800,20 @@ Directory the zip will be extracted to:
 				result = false;
 			}
 
-			if (result && !skipSaveConfirmation)
+			if (result)
 			{
-				ShowAlert($"Saved mod load order to '{outputPath}'", AlertType.Success, 10);
+				orderToSave.LastModifiedDate = File.GetLastWriteTime(outputPath);
+				if (savesCurrentSnapshot)
+				{
+					TrackManagedLoadOrder(orderToSave);
+				}
+				if (!skipSaveConfirmation)
+				{
+					ShowAlert(
+						savesCurrentSnapshot ? "Saved the current load order." : $"Saved '{orderToSave.Name}'.",
+						AlertType.Success,
+						8);
+				}
 			}
 		}
 		else if (!skipSaveConfirmation)
@@ -3807,6 +3823,22 @@ Directory the zip will be extracted to:
 		}
 
 		return result;
+	}
+
+	private void TrackManagedLoadOrder(DivinityLoadOrder savedOrder)
+	{
+		var existing = SavedModOrderList.FirstOrDefault(order =>
+			String.Equals(order.FilePath, savedOrder.FilePath, StringComparison.OrdinalIgnoreCase));
+		if (existing != null)
+		{
+			existing.Name = savedOrder.Name;
+			existing.LastModifiedDate = savedOrder.LastModifiedDate;
+			existing.SetOrder(savedOrder);
+			return;
+		}
+
+		SavedModOrderList.Add(savedOrder);
+		ModOrderList.Add(savedOrder);
 	}
 
 	private void SaveLoadOrderAs()
@@ -3828,8 +3860,7 @@ Directory the zip will be extracted to:
 		string outputPath = Path.Combine(SelectedModOrder.Name + ".json");
 		if (SelectedModOrder.IsModSettings)
 		{
-			var sysFormat = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.Replace("/", "-") + "_HH-mm-ss";
-			outputPath = $"Current_{DateTime.Now.ToString(sysFormat)}.json";
+			outputPath = "New Load Order.json";
 		}
 
 		outputPath = DivinityModDataLoader.MakeSafeFilename(outputPath, '_');
@@ -3839,14 +3870,19 @@ Directory the zip will be extracted to:
 		dialog.CheckFileExists = false;
 		dialog.CheckPathExists = false;
 		dialog.OverwritePrompt = true;
-		dialog.Title = "Save Load Order As...";
+		dialog.Title = "Save Order As File...";
 
 		if (dialog.ShowDialog(Window) == true)
 		{
 			outputPath = dialog.FileName;
 			modOrderName = Path.GetFileNameWithoutExtension(outputPath);
 			// Save mods that aren't missing
-			var tempOrder = new DivinityLoadOrder { Name = modOrderName };
+			var tempOrder = new DivinityLoadOrder
+			{
+				Name = modOrderName,
+				FilePath = outputPath,
+				LastModifiedDate = DateTime.Now
+			};
 			tempOrder.Order.AddRange(SelectedModOrder.Order.Where(x => Mods.Any(y => y.UUID == x.UUID)));
 			if (DivinityModDataLoader.ExportLoadOrderToFile(outputPath, tempOrder))
 			{
@@ -3854,7 +3890,7 @@ Directory the zip will be extracted to:
 				var updatedOrder = false;
 				foreach (var order in ModOrderList)
 				{
-					if (order.FilePath == outputPath)
+					if (String.Equals(order.FilePath, outputPath, StringComparison.OrdinalIgnoreCase))
 					{
 						order.SetOrder(tempOrder);
 						updatedOrder = true;
@@ -5288,9 +5324,9 @@ Directory the zip will be extracted to:
 		{
 			CheckFileExists = true,
 			CheckPathExists = true,
-			DefaultExt = ".json",
-			Filter = "All formats (*.json;*.txt;*.tsv)|*.json;*.txt;*.tsv|JSON file (*.json)|*.json|Text file (*.txt)|*.txt|TSV file (*.tsv)|*.tsv",
-			Title = "Load Mod Order From File...",
+			DefaultExt = ".txt",
+			Filter = "Load-order files (*.txt;*.json;*.tsv)|*.txt;*.json;*.tsv|Text file (*.txt)|*.txt|JSON file (*.json)|*.json|TSV file (*.tsv)|*.tsv",
+			Title = "Add Load Order from File...",
 			InitialDirectory = GetInitialStartingDirectory(Settings.LastLoadedOrderFilePath)
 		};
 
@@ -5303,32 +5339,29 @@ Directory the zip will be extracted to:
 			if (newOrder != null)
 			{
 				DivinityApp.Log($"Imported mod order:\n{String.Join(Environment.NewLine + "\t", newOrder.Order.Select(x => x.Name))}");
-				if (newOrder.IsDecipheredOrder)
+				var ordersDirectory = GetOrdersDirectory();
+				Directory.CreateDirectory(ordersDirectory);
+				var baseName = DivinityModDataLoader.MakeSafeFilename(
+					Path.GetFileNameWithoutExtension(dialog.FileName),
+					'_');
+				if (String.IsNullOrWhiteSpace(baseName)) baseName = "Imported Order";
+				var managedPath = DivinityFileUtils.GetUniqueFilename(Path.Combine(ordersDirectory, baseName + ".json"));
+				newOrder.Name = Path.GetFileNameWithoutExtension(managedPath);
+				newOrder.FilePath = managedPath;
+				newOrder.IsModSettings = false;
+				newOrder.IsDecipheredOrder = false;
+				newOrder.LastModifiedDate = DateTime.Now;
+
+				if (DivinityModDataLoader.ExportLoadOrderToFile(managedPath, newOrder))
 				{
-					if (SelectedModOrder != null)
-					{
-						SelectedModOrder.SetOrder(newOrder);
-						if (LoadModOrder(SelectedModOrder))
-						{
-							ShowAlert($"Successfully overwrote order '{SelectedModOrder.Name}' with the imported order.", AlertType.Success, 20);
-						}
-						else
-						{
-							ShowAlert($"Failed to reset order to '{dialog.FileName}'", AlertType.Danger, 60);
-						}
-					}
-					else
-					{
-						AddNewModOrder(newOrder);
-						LoadModOrder(newOrder);
-						ShowAlert($"Successfully imported order '{newOrder.Name}'", AlertType.Success, 20);
-					}
+					newOrder.LastModifiedDate = File.GetLastWriteTime(managedPath);
+					AddNewModOrder(newOrder);
+					LoadModOrder(newOrder);
+					ShowAlert($"Added load order '{newOrder.Name}'.", AlertType.Success, 12);
 				}
 				else
 				{
-					AddNewModOrder(newOrder);
-					LoadModOrder(newOrder);
-					ShowAlert($"Successfully imported order '{newOrder.Name}'", AlertType.Success, 20);
+					ShowAlert($"Failed to copy the load order into Redux's Orders folder.", AlertType.Danger, 30);
 				}
 			}
 			else
@@ -5374,6 +5407,10 @@ Directory the zip will be extracted to:
 		}
 
 		var exported = new List<ReduxLoadOrderDivider>();
+		var activeUuids = ActiveMods
+			.Where(mod => mod != null && !String.IsNullOrWhiteSpace(mod.UUID))
+			.Select(mod => mod.UUID)
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
 		foreach (var divider in dividers)
 		{
 			var visualIndex = sequence.FindIndex(item => ReferenceEquals(item.Divider, divider));
@@ -5390,7 +5427,11 @@ Directory the zip will be extracted to:
 				HideLine = divider.HideLine,
 				FallbackPosition = sequence.Take(visualIndex).Count(item => item.Mod != null),
 				BeforeModUuid = before?.UUID ?? String.Empty,
-				AfterModUuid = after?.UUID ?? String.Empty
+				AfterModUuid = after?.UUID ?? String.Empty,
+				MemberModUuids = divider.MemberModUuids?
+					.Where(uuid => !String.IsNullOrWhiteSpace(uuid) && activeUuids.Contains(uuid))
+					.Distinct(StringComparer.OrdinalIgnoreCase)
+					.ToList()
 			});
 		}
 		return exported;
@@ -5398,6 +5439,7 @@ Directory the zip will be extracted to:
 
 	private void ExportReduxLoadOrder()
 	{
+		EnsureVisualDividerMemberships();
 		var orderEntries = ActiveMods
 			.Where(mod => mod != null && !mod.IsVisualDivider)
 			.Select(mod => mod.ToOrderEntry())
@@ -5648,7 +5690,8 @@ Directory the zip will be extracted to:
 				IsActiveList = item.IsActiveList,
 				Position = item.Position,
 				IsCollapsed = item.IsCollapsed,
-				HideLine = item.HideLine
+				HideLine = item.HideLine,
+				MemberModUuids = item.MemberModUuids?.ToList()
 			})
 			.ToList();
 
@@ -5744,7 +5787,8 @@ Directory the zip will be extracted to:
 				IsActiveList = true,
 				Position = position,
 				IsCollapsed = importedDivider.IsCollapsed,
-				HideLine = importedDivider.HideLine
+				HideLine = importedDivider.HideLine,
+				MemberModUuids = importedDivider.MemberModUuids?.ToList()
 			});
 		}
 
@@ -6336,7 +6380,6 @@ Directory the zip will be extracted to:
 					else
 					{
 						mod.Visibility = Visibility.Collapsed;
-						mod.IsSelected = false;
 						totalHidden += 1;
 					}
 				}
@@ -6352,7 +6395,6 @@ Directory the zip will be extracted to:
 					else
 					{
 						m.Visibility = Visibility.Collapsed;
-						m.IsSelected = false;
 						totalHidden += 1;
 					}
 				}
@@ -6366,7 +6408,6 @@ Directory the zip will be extracted to:
 			if (mod.Visibility == Visibility.Visible && !ModMatchesSelectedCategory(mod))
 			{
 				mod.Visibility = Visibility.Collapsed;
-				mod.IsSelected = false;
 			}
 		}
 
@@ -6375,10 +6416,21 @@ Directory the zip will be extracted to:
 		if (modDataList == ActiveMods)
 		{
 			TotalActiveModsHidden = totalHidden;
+			RefreshVisualDividers(true);
 		}
 		else if (modDataList == InactiveMods)
 		{
 			TotalInactiveModsHidden = totalHidden;
+			RefreshVisualDividers(false);
+		}
+
+		// Remove filtered rows from WPF's ItemsSource before clearing their model
+		// selection. With a bulk selection, changing IsSelected while the collapsed
+		// containers were still realized produced a selection/layout feedback loop.
+		foreach (var mod in modDataList.Where(mod =>
+			mod.Visibility != Visibility.Visible && mod.IsSelected).ToList())
+		{
+			mod.IsSelected = false;
 		}
 	}
 
@@ -6525,14 +6577,22 @@ Directory the zip will be extracted to:
 	public void AddVisualDivider(bool activeList, int position, string title, string color, string iconId, bool hideLine, string description = "")
 	{
 		Settings.VisualModListDividers ??= new List<ModListVisualDividerData>();
-		foreach (var existing in Settings.VisualModListDividers.Where(item => item.IsActiveList == activeList && item.Position >= position))
-			existing.Position++;
-		Settings.VisualModListDividers.Add(new ModListVisualDividerData
+		EnsureVisualDividerMemberships();
+		var sequence = BuildVisualDividerSequence(activeList).ToList();
+		var visibleItems = (activeList ? DisplayActiveMods : DisplayInactiveMods).ToList();
+		position = VisualModListDropPolicy.MapVisibleInsertionIndex(visibleItems, sequence, position);
+		var divider = new ModListVisualDividerData
 		{
 			Title = title?.Trim() ?? "", Color = color, IconId = ReduxIconCatalog.Normalize(iconId),
 			Description = description?.Trim() ?? "",
-			IsActiveList = activeList, Position = Math.Max(0, position), HideLine = hideLine
-		});
+			IsActiveList = activeList, Position = Math.Max(0, position), HideLine = hideLine,
+			MemberModUuids = new List<string>()
+		};
+		Settings.VisualModListDividers.Add(divider);
+		sequence.Insert(Math.Clamp(position, 0, sequence.Count), CreateVisualDividerItem(divider));
+		SaveVisualDividerPositions(sequence, activeList);
+		VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+			sequence, Settings.VisualModListDividers, activeList);
 		RefreshVisualDividers();
 		QueueSave();
 	}
@@ -6553,8 +6613,19 @@ Directory the zip will be extracted to:
 	public void RemoveVisualDivider(DivinityModData item)
 	{
 		var divider = GetVisualDivider(item);
-		if (divider == null) return;
+		// A collapsed separator owns rows that are intentionally absent from the
+		// display projection. Requiring expansion before removal keeps those rows
+		// visible and prevents them from remaining hidden until another projection.
+		if (divider == null || divider.IsCollapsed) return;
+		EnsureVisualDividerMemberships();
+		var sequence = BuildVisualDividerSequence(divider.IsActiveList)
+			.Where(entry => !entry.IsVisualDivider ||
+				!String.Equals(entry.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase))
+			.ToList();
 		Settings.VisualModListDividers.Remove(divider);
+		SaveVisualDividerPositions(sequence, divider.IsActiveList);
+		VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+			sequence, Settings.VisualModListDividers, divider.IsActiveList);
 		RefreshVisualDividers();
 		QueueSave();
 	}
@@ -6569,11 +6640,147 @@ Directory the zip will be extracted to:
 	public bool SetVisualDividerCollapsed(DivinityModData item, bool collapsed)
 	{
 		var divider = GetVisualDivider(item);
+		if (divider == null || divider.IsCollapsed == collapsed) return false;
+		if (collapsed)
+		{
+			EnsureVisualDividerMemberships();
+			VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+				BuildVisualDividerSequence(divider.IsActiveList),
+				Settings.VisualModListDividers,
+				divider.IsActiveList);
+		}
 		if (!VisualDividerStatePolicy.SetCollapsed(divider, collapsed)) return false;
-		RefreshVisualDividers();
+		if (!UpdateVisualDividerSectionProjection(divider, collapsed))
+			RefreshVisualDividers(divider.IsActiveList);
 		// Keep disk I/O outside the collapse/expand animation window and coalesce
 		// rapid section changes into one persisted settings snapshot.
 		QueueSave(750);
+		return true;
+	}
+
+	/// <summary>
+	/// Changes one separator to its expanded state without immediately projecting every
+	/// member into the ListView. The view can then add members progressively so a large
+	/// section does not construct an entire viewport of complex row templates in one UI
+	/// thread burst.
+	/// </summary>
+	public IReadOnlyList<DivinityModData> BeginVisualDividerExpansion(DivinityModData item)
+	{
+		var divider = GetVisualDivider(item);
+		if (divider == null || !divider.IsCollapsed || !String.IsNullOrWhiteSpace(SelectedModCategory) &&
+			!SelectedModCategory.Equals(AllModsCategory, StringComparison.OrdinalIgnoreCase))
+			return null;
+
+		var target = divider.IsActiveList ? DisplayActiveMods : DisplayInactiveMods;
+		var marker = target.FirstOrDefault(candidate => candidate.IsVisualDivider &&
+			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
+		if (marker == null) return null;
+
+		var fullSequence = BuildVisualDividerSequence(divider.IsActiveList);
+		var markerIndex = fullSequence.ToList().FindIndex(candidate => candidate.IsVisualDivider &&
+			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
+		if (markerIndex < 0) return null;
+
+		var displayedItems = target.ToHashSet();
+		var members = VisualDividerSectionPolicy.GetContiguousMembers(fullSequence, divider)
+			.Where(member => !displayedItems.Contains(member))
+			.ToList();
+
+		if (!VisualDividerStatePolicy.SetCollapsed(divider, false)) return null;
+		marker.IsVisualDividerCollapsed = false;
+		marker.CanDrag = true;
+		QueueSave(750);
+		return members;
+	}
+
+	/// <summary>
+	/// Projects the next contiguous batch of an expanding separator. Returning false
+	/// tells the caller that the marker/list changed and a normal refresh is safer.
+	/// </summary>
+	public bool InsertVisualDividerExpansionBatch(
+		DivinityModData item,
+		IReadOnlyList<DivinityModData> members,
+		int offset,
+		int count)
+	{
+		var divider = GetVisualDivider(item);
+		if (divider == null || divider.IsCollapsed || members == null ||
+			offset < 0 || offset > members.Count || count < 0)
+			return false;
+
+		var target = divider.IsActiveList ? DisplayActiveMods : DisplayInactiveMods;
+		var marker = target.FirstOrDefault(candidate => candidate.IsVisualDivider &&
+			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
+		if (marker == null) return false;
+
+		var displayedItems = target.ToHashSet();
+		var batch = members
+			.Skip(offset)
+			.Take(Math.Min(count, members.Count - offset))
+			.Where(member => !displayedItems.Contains(member))
+			.ToList();
+		if (batch.Count == 0) return true;
+
+		// Progressive batches belong immediately below their separator. Skip only
+		// members already inserted by earlier batches; an unowned destination row
+		// ends the block and must remain after every carried member.
+		var insertIndex = VisualDividerSectionPolicy.ResolveExpansionInsertionIndex(
+			target, marker, divider);
+		if (insertIndex < 0) return false;
+		VisualDividerProjectionMutation.InsertRange(target, batch, insertIndex);
+		return true;
+	}
+
+	/// <summary>
+	/// Applies one separator's visibility change without rebuilding the complete
+	/// ListView source. A collection Reset discards every realized row and makes a
+	/// small section toggle pay the cost of regenerating the whole viewport.
+	/// </summary>
+	private bool UpdateVisualDividerSectionProjection(
+		ModListVisualDividerData divider,
+		bool collapsed)
+	{
+		if (divider == null || !String.IsNullOrWhiteSpace(SelectedModCategory) &&
+			!SelectedModCategory.Equals(AllModsCategory, StringComparison.OrdinalIgnoreCase))
+			return false;
+
+		var target = divider.IsActiveList ? DisplayActiveMods : DisplayInactiveMods;
+		var marker = target.FirstOrDefault(candidate => candidate.IsVisualDivider &&
+			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
+		if (marker == null) return false;
+
+		marker.IsVisualDividerCollapsed = collapsed;
+		marker.CanDrag = !collapsed;
+		if (collapsed)
+		{
+			var memberIds = (divider.MemberModUuids ?? Enumerable.Empty<string>())
+				.Where(uuid => !String.IsNullOrWhiteSpace(uuid))
+				.ToHashSet(StringComparer.OrdinalIgnoreCase);
+			var removeIndex = target.IndexOf(marker) + 1;
+			var removeCount = 0;
+			while (removeIndex + removeCount < target.Count &&
+				target[removeIndex + removeCount] is { IsVisualDivider: false } member &&
+				!String.IsNullOrWhiteSpace(member.UUID) && memberIds.Contains(member.UUID))
+				removeCount++;
+			if (removeCount > 0)
+				VisualDividerProjectionMutation.RemoveRange(target, removeIndex, removeCount);
+			return true;
+		}
+
+		var fullSequence = BuildVisualDividerSequence(divider.IsActiveList);
+		var markerIndex = fullSequence.ToList().FindIndex(candidate => candidate.IsVisualDivider &&
+			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
+		if (markerIndex < 0) return false;
+
+		var displayedItems = target.ToHashSet();
+		var members = VisualDividerSectionPolicy.GetContiguousMembers(fullSequence, divider)
+			.Where(member => !displayedItems.Contains(member))
+			.ToList();
+		if (members.Count > 0)
+		{
+			var insertIndex = target.IndexOf(marker) + 1;
+			VisualDividerProjectionMutation.InsertRange(target, members, insertIndex);
+		}
 		return true;
 	}
 
@@ -6583,46 +6790,116 @@ Directory the zip will be extracted to:
 
 	public int SetAllVisualDividersCollapsed(bool activeList, bool collapsed)
 	{
+		if (collapsed)
+		{
+			EnsureVisualDividerMemberships();
+			VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+				BuildVisualDividerSequence(activeList),
+				Settings.VisualModListDividers,
+				activeList);
+		}
 		var changed = VisualDividerStatePolicy.SetAllCollapsed(
 			Settings.VisualModListDividers,
 			activeList,
 			collapsed);
 		if (changed <= 0) return 0;
-		RefreshVisualDividers();
+		RefreshVisualDividers(activeList);
 		QueueSave(750);
 		return changed;
 	}
 
 	public bool IsVisualModCollection(object collection) => ReferenceEquals(collection, DisplayActiveMods) || ReferenceEquals(collection, DisplayInactiveMods);
 
+	public int ResolveVisualModListInsertionIndex(System.Collections.IList visualItems, int targetIndex, bool insertAfter)
+	{
+		var memberUuids = targetIndex >= 0 && targetIndex < visualItems.Count &&
+			visualItems[targetIndex] is DivinityModData { IsVisualDivider: true } dividerItem
+			? GetVisualDivider(dividerItem)?.MemberModUuids
+			: null;
+		return VisualModListDropPolicy.ResolveInsertionIndex(
+			visualItems, targetIndex, insertAfter, memberUuids);
+	}
+
+	private bool EnsureVisualDividerMemberships()
+	{
+		Settings.VisualModListDividers ??= new List<ModListVisualDividerData>();
+		var migrated = VisualDividerSectionPolicy.MigrateLegacyMembership(
+			ActiveMods, Settings.VisualModListDividers, true, IsInitialized)
+			| VisualDividerSectionPolicy.MigrateLegacyMembership(
+				InactiveMods, Settings.VisualModListDividers, false, IsInitialized);
+		migrated |= VisualDividerSectionPolicy.NormalizeOwnership(Settings.VisualModListDividers, true)
+			| VisualDividerSectionPolicy.NormalizeOwnership(Settings.VisualModListDividers, false);
+		if (migrated) QueueSave();
+		return migrated;
+	}
+
+	private IReadOnlyList<DivinityModData> BuildVisualDividerSequence(bool activeList) =>
+		VisualDividerSectionPolicy.BuildVisualSequence(
+			activeList ? ActiveMods : InactiveMods,
+			Settings.VisualModListDividers ?? Enumerable.Empty<ModListVisualDividerData>(),
+			activeList,
+			CreateVisualDividerItem);
+
+	private void SaveVisualDividerPositions(IReadOnlyList<DivinityModData> sequence, bool activeList)
+	{
+		for (var index = 0; index < sequence.Count; index++)
+		{
+			if (!sequence[index].IsVisualDivider) continue;
+			var divider = GetVisualDivider(sequence[index]);
+			if (divider == null) continue;
+			divider.IsActiveList = activeList;
+			divider.Position = index;
+		}
+	}
+
 	public void ApplyVisualModListDrop(IEnumerable<DivinityModData> draggedItems, bool destinationActive, int insertIndex)
 	{
 		var dragged = draggedItems?.Distinct().ToList() ?? new List<DivinityModData>();
 		if (dragged.Count == 0) return;
+		EnsureVisualDividerMemberships();
+		var activeSequence = BuildVisualDividerSequence(true).ToList();
+		var inactiveSequence = BuildVisualDividerSequence(false).ToList();
+		var movingSeparator = dragged.Any(item => item.IsVisualDivider);
+		if (movingSeparator && dragged.Any(item => item.IsVisualDivider &&
+			(item.IsVisualDividerCollapsed || GetVisualDivider(item)?.IsCollapsed == true))) return;
+		var sourceActive = dragged.Any(item => item.IsVisualDivider
+			? GetVisualDivider(item)?.IsActiveList == true
+			: ActiveMods.Contains(item));
+		if (movingSeparator)
+		{
+			var sourceSequence = sourceActive ? activeSequence : inactiveSequence;
+			dragged = VisualDividerSectionPolicy.ResolveMarkerOnlyDragPayload(
+				sourceSequence,
+				dragged).ToList();
+			if (dragged.Count == 0) return;
+		}
+		var destinationVisibleItems = (destinationActive ? DisplayActiveMods : DisplayInactiveMods).ToList();
+		var destinationSequence = destinationActive ? activeSequence : inactiveSequence;
+		insertIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(
+			destinationVisibleItems,
+			destinationSequence,
+			insertIndex);
 		var result = VisualModListDropPolicy.Apply(
-			DisplayActiveMods,
-			DisplayInactiveMods,
+			activeSequence,
+			inactiveSequence,
 			dragged,
 			destinationActive,
 			insertIndex);
-		var activeSequence = result.ActiveItems;
-		var inactiveSequence = result.InactiveItems;
+		var resultingActiveSequence = result.ActiveItems;
+		var resultingInactiveSequence = result.InactiveItems;
 
-		void SaveDividerPositions(IReadOnlyList<DivinityModData> sequence, bool active)
-		{
-			for (var i = 0; i < sequence.Count; i++)
-			{
-				if (!sequence[i].IsVisualDivider) continue;
-				var divider = GetVisualDivider(sequence[i]);
-				if (divider == null) continue;
-				divider.IsActiveList = active;
-				divider.Position = i;
-			}
-		}
-		SaveDividerPositions(activeSequence, true);
-		SaveDividerPositions(inactiveSequence, false);
-		var desiredActiveMods = activeSequence.Where(item => !item.IsVisualDivider).ToList();
-		var desiredInactiveMods = inactiveSequence.Where(item => !item.IsVisualDivider).ToList();
+		SaveVisualDividerPositions(resultingActiveSequence, true);
+		SaveVisualDividerPositions(resultingInactiveSequence, false);
+		VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+			resultingActiveSequence,
+			Settings.VisualModListDividers,
+			true);
+		VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+			resultingInactiveSequence,
+			Settings.VisualModListDividers,
+			false);
+		var desiredActiveMods = resultingActiveSequence.Where(item => !item.IsVisualDivider).ToList();
+		var desiredInactiveMods = resultingInactiveSequence.Where(item => !item.IsVisualDivider).ToList();
 
 		_updatingVisualModLists = true;
 		try
@@ -6630,10 +6907,12 @@ Directory the zip will be extracted to:
 			// Remove cross-pane transfers from their old collection first, then reconcile
 			// the remaining order with Move/Insert notifications. Clear + AddRange emitted
 			// Reset twice for every drop and forced WPF to rebuild both panes completely.
+			var desiredActiveSet = desiredActiveMods.ToHashSet();
+			var desiredInactiveSet = desiredInactiveMods.ToHashSet();
 			for (var index = ActiveMods.Count - 1; index >= 0; index--)
-				if (!desiredActiveMods.Contains(ActiveMods[index])) ActiveMods.RemoveAt(index);
+				if (!desiredActiveSet.Contains(ActiveMods[index])) ActiveMods.RemoveAt(index);
 			for (var index = InactiveMods.Count - 1; index >= 0; index--)
-				if (!desiredInactiveMods.Contains(InactiveMods[index])) InactiveMods.RemoveAt(index);
+				if (!desiredInactiveSet.Contains(InactiveMods[index])) InactiveMods.RemoveAt(index);
 			ObservableCollectionSynchronizer.Synchronize(
 				ActiveMods,
 				desiredActiveMods,
@@ -6642,13 +6921,30 @@ Directory the zip will be extracted to:
 				InactiveMods,
 				desiredInactiveMods,
 				ReferenceEquals);
-			for (var i = 0; i < ActiveMods.Count; i++) { ActiveMods[i].Index = i; ActiveMods[i].IsActive = true; }
-			foreach (var mod in InactiveMods) mod.IsActive = false;
+			for (var i = 0; i < ActiveMods.Count; i++)
+			{
+				if (ActiveMods[i].Index != i) ActiveMods[i].Index = i;
+				if (!ActiveMods[i].IsActive) ActiveMods[i].IsActive = true;
+			}
+			foreach (var mod in InactiveMods)
+				if (mod.IsActive) mod.IsActive = false;
 		}
 		finally { _updatingVisualModLists = false; }
 		RefreshVisualDividers();
 		UpdateOrderFromActiveMods();
+		ScheduleModHealthRefresh();
 		QueueSave();
+	}
+
+	public void MoveModsBetweenLists(IEnumerable<DivinityModData> mods, bool moveToActive)
+	{
+		var items = mods?.Where(mod => mod != null && mod.CanAddToLoadOrder && mod.IsActive != moveToActive)
+			.Distinct()
+			.ToList();
+		if (items == null || items.Count == 0) return;
+
+		var destination = moveToActive ? DisplayActiveMods : DisplayInactiveMods;
+		ApplyVisualModListDrop(items, moveToActive, destination.Count);
 	}
 
 	private DivinityModData CreateVisualDividerItem(ModListVisualDividerData divider) => new()
@@ -6665,7 +6961,7 @@ Directory the zip will be extracted to:
 		VisualDividerChevronAngle = divider.IsCollapsed ? -90d : 0d,
 		IsVisualDivider = true,
 		ShowVisualDivider = true,
-		CanDrag = true
+		CanDrag = !divider.IsCollapsed
 	};
 
 	private static bool VisualModItemsMatch(DivinityModData current, DivinityModData desired) =>
@@ -6687,6 +6983,7 @@ Directory the zip will be extracted to:
 		current.IsVisualDividerCollapsed = desired.IsVisualDividerCollapsed;
 		current.VisualDividerChevronAngle = desired.VisualDividerChevronAngle;
 		current.ShowVisualDivider = desired.ShowVisualDivider;
+		current.CanDrag = desired.CanDrag;
 	}
 
 	private void ScheduleRefreshVisualDividers()
@@ -6697,10 +6994,15 @@ Directory the zip will be extracted to:
 			RefreshVisualDividers);
 	}
 
-	public void RefreshVisualDividers()
+	public void RefreshVisualDividers() => RefreshVisualDividers(null);
+
+	private void RefreshVisualDividers(bool? activeListOnly, bool preferBulkReset = false)
 	{
 		if (_updatingVisualModLists) return;
+		_refreshVisualDividersTask?.Dispose();
+		_refreshVisualDividersTask = null;
 		_updatingVisualModLists = true;
+		var membershipMigrated = false;
 		try
 		{
 			// One-time migration from the anchored prototype to independent visual slots.
@@ -6716,25 +7018,55 @@ Directory the zip will be extracted to:
 				}
 				Settings.ModListVisualDividers.Clear();
 			}
+			membershipMigrated = VisualDividerSectionPolicy.MigrateLegacyMembership(
+				ActiveMods, Settings.VisualModListDividers ?? Enumerable.Empty<ModListVisualDividerData>(), true, IsInitialized)
+				| VisualDividerSectionPolicy.MigrateLegacyMembership(
+					InactiveMods, Settings.VisualModListDividers ?? Enumerable.Empty<ModListVisualDividerData>(), false, IsInitialized);
+			if (IsInitialized)
+			{
+				// Membership is a cache of the visible boundaries, never an independent
+				// source of drag behavior. Rebuilding it also repairs older saved layouts.
+				membershipMigrated |= VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+					BuildVisualDividerSequence(true),
+					Settings.VisualModListDividers,
+					true);
+				membershipMigrated |= VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+					BuildVisualDividerSequence(false),
+					Settings.VisualModListDividers,
+					false);
+			}
 			var show = String.IsNullOrWhiteSpace(SelectedModCategory) || SelectedModCategory.Equals(AllModsCategory, StringComparison.OrdinalIgnoreCase);
 			void Build(ObservableCollectionExtended<DivinityModData> target, IEnumerable<DivinityModData> mods, bool active)
 			{
-				var result = mods.ToList();
-				foreach (var mod in result) mod.IsHiddenByVisualDivider = false;
-				if (show)
+				var sourceMods = mods.ToList();
+				var visibleMods = VisualModFilterProjectionPolicy.ResolveVisibleMods(sourceMods);
+				var result = show
+					? VisualDividerSectionPolicy.BuildVisualSequence(
+						visibleMods,
+						Settings.VisualModListDividers ?? Enumerable.Empty<ModListVisualDividerData>(),
+						active,
+						CreateVisualDividerItem).ToList()
+					: visibleMods.ToList();
+				var collapsedMemberIds = show
+					? VisualDividerSectionPolicy.GetCollapsedMemberIds(
+						result,
+						Settings.VisualModListDividers ?? Enumerable.Empty<ModListVisualDividerData>(),
+						active)
+					: new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+				// Collapsed membership is represented structurally by the display projection.
+				// Never collapse a realized ListViewItem before removing it: under pixel
+				// scrolling + recycling virtualization that creates zero-height containers
+				// and can trap WPF in repeated measurement. Clear only stale legacy state.
+				foreach (var mod in sourceMods)
+					if (mod.IsHiddenByVisualDivider) mod.IsHiddenByVisualDivider = false;
+				if (show && collapsedMemberIds.Count > 0)
 				{
-					foreach (var divider in (Settings.VisualModListDividers ?? new()).Where(x => x.IsActiveList == active).OrderBy(x => x.Position))
-						result.Insert(Math.Clamp(divider.Position, 0, result.Count), CreateVisualDividerItem(divider));
-					var collapseFollowingRows = false;
-					foreach (var item in result)
-					{
-						if (item.IsVisualDivider)
-						{
-							collapseFollowingRows = GetVisualDivider(item)?.IsCollapsed == true;
-							continue;
-						}
-						item.IsHiddenByVisualDivider = collapseFollowingRows;
-					}
+					// Keep collapsed members in ActiveMods/InactiveMods, but omit them from
+					// the virtualized display projection. Retaining zero-height collapsed
+					// containers made WPF's recycling panel repeatedly remeasure every row.
+					result = result.Where(item => item.IsVisualDivider ||
+						String.IsNullOrWhiteSpace(item.UUID) ||
+						!collapsedMemberIds.Contains(item.UUID)).ToList();
 				}
 				if (target.Count == 0)
 				{
@@ -6763,12 +7095,34 @@ Directory the zip will be extracted to:
 					}
 				}
 
-				var sharedItemCount = result.Count(desired =>
-					target.Any(current => VisualModItemsMatch(current, desired)));
-				if (sharedItemCount * 2 < Math.Min(target.Count, result.Count))
+				var structuralDelta = Math.Abs(target.Count - result.Count);
+				if (preferBulkReset || structuralDelta >= 8)
 				{
-					target.Clear();
-					target.AddRange(result);
+					// Expanding or collapsing a large section must be one collection-view
+					// transaction. Per-row notifications force WPF to regenerate and measure the
+					// viewport after every insertion/removal, blocking the UI before motion starts.
+					// Reuse the existing divider view-model instances so click/animation state
+					// remains attached across the single Reset notification.
+					var existingDividers = target
+						.Where(item => item.IsVisualDivider && !String.IsNullOrWhiteSpace(item.VisualDividerId))
+						.GroupBy(item => item.VisualDividerId, StringComparer.OrdinalIgnoreCase)
+						.ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+					var reloaded = result.Select(desired =>
+					{
+						if (desired.IsVisualDivider &&
+							!String.IsNullOrWhiteSpace(desired.VisualDividerId) &&
+							existingDividers.TryGetValue(desired.VisualDividerId, out var existing))
+						{
+							UpdateMatchedVisualModItem(existing, desired);
+							return existing;
+						}
+						return desired;
+					}).ToList();
+					using (target.SuspendNotifications())
+					{
+						target.Clear();
+						target.AddRange(reloaded);
+					}
 					return;
 				}
 
@@ -6778,10 +7132,11 @@ Directory the zip will be extracted to:
 					VisualModItemsMatch,
 					UpdateMatchedVisualModItem);
 			}
-			Build(DisplayActiveMods, ActiveMods, true);
-			Build(DisplayInactiveMods, InactiveMods, false);
+			if (activeListOnly != false) Build(DisplayActiveMods, ActiveMods, true);
+			if (activeListOnly != true) Build(DisplayInactiveMods, InactiveMods, false);
 		}
 		finally { _updatingVisualModLists = false; }
+		if (membershipMigrated) QueueSave();
 	}
 	public bool IsModCategoryEnabled(string category) => Settings.DisabledModCategories?.Contains(category, StringComparer.OrdinalIgnoreCase) != true;
 
@@ -8546,7 +8901,6 @@ Directory the zip will be extracted to:
 				this.RaisePropertyChanged(nameof(SelectedModCategoryHasIcon));
 				OnFilterTextChanged(ActiveModFilterText, ActiveMods);
 				OnFilterTextChanged(InactiveModFilterText, InactiveMods);
-				RefreshVisualDividers();
 				if (Settings.SaveModCategoryFilterBetweenSessions && IsInitialized &&
 					!String.Equals(Settings.SavedModCategoryFilter, category, StringComparison.OrdinalIgnoreCase))
 				{
@@ -8711,18 +9065,20 @@ Directory the zip will be extracted to:
 
 		ActiveMods.CollectionChanged += (o, e) =>
 		{
-			ScheduleModHealthRefresh();
-			ScheduleRefreshVisualDividers();
 			if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Reset)
 			{
 				HasExported = false;
 			}
+			if (_updatingVisualModLists) return;
+			ScheduleModHealthRefresh();
+			ScheduleRefreshVisualDividers();
 			_updateOrderTask?.Dispose();
 			_updateOrderTask = RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(250), UpdateOrderFromActiveMods);
 		};
 
 		InactiveMods.CollectionChanged += (o, e) =>
 		{
+			if (_updatingVisualModLists) return;
 			ScheduleModHealthRefresh();
 			ScheduleRefreshVisualDividers();
 		};

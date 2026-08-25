@@ -180,17 +180,7 @@ public class DivinityGlobalCommands : ReactiveObject
 			return;
 		}
 
-		foreach (var mod in modsToMove)
-		{
-			if (moveToActive)
-			{
-				_viewModel.AddActiveMod(mod);
-			}
-			else
-			{
-				_viewModel.RemoveActiveMod(mod);
-			}
-		}
+		_viewModel.MoveModsBetweenLists(modsToMove, moveToActive);
 
 		var targetName = moveToActive ? "active" : "inactive";
 		var modLabel = modsToMove.Count == 1 ? "mod" : "mods";

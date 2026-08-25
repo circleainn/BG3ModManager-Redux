@@ -31,6 +31,7 @@ internal static class Program
 		var interactionBehavior = new InteractionBehaviorTests();
 		var automaticCategories = new AutomaticModCategoryTests();
 		var visualDividerDrag = new VisualDividerDragPolicyTests();
+		var visualModSelection = new VisualModSelectionPolicyTests();
 		var settingsMaintenance = new SettingsMaintenanceTests();
 		var startupNotifications = new StartupNotificationQueueTests();
 		var tests = new (string Name, Action Run)[]
@@ -95,6 +96,9 @@ internal static class Program
 			(nameof(modules.DisposedModuleStateStopsTrackingSettings), modules.DisposedModuleStateStopsTrackingSettings),
 			(nameof(modules.DisabledNexusProviderCannotInitializeItsClient), modules.DisabledNexusProviderCannotInitializeItsClient),
 			(nameof(bundle.BundleRoundTripPreservesOrderAndReduxPresentation), bundle.BundleRoundTripPreservesOrderAndReduxPresentation),
+			(nameof(bundle.LegacyBundleWithoutMembershipRemainsUnmigrated), bundle.LegacyBundleWithoutMembershipRemainsUnmigrated),
+			(nameof(bundle.ExplicitlyEmptySeparatorMembershipRoundTripsAsEmpty), bundle.ExplicitlyEmptySeparatorMembershipRoundTripsAsEmpty),
+			(nameof(bundle.DuplicateSeparatorOwnershipIsRejected), bundle.DuplicateSeparatorOwnershipIsRejected),
 			(nameof(bundle.BundleNeverContainsModsettingsLsx), bundle.BundleNeverContainsModsettingsLsx),
 			(nameof(bundle.MismatchedOrderAndPresentationAreRejected), bundle.MismatchedOrderAndPresentationAreRejected),
 			(nameof(bundle.UnexpectedFilesAreRejectedDuringImport), bundle.UnexpectedFilesAreRejectedDuringImport),
@@ -137,6 +141,9 @@ internal static class Program
 			(nameof(archivePreflight.ZipPakIsStagedForInspectionWithoutChangingTheArchive), archivePreflight.ZipPakIsStagedForInspectionWithoutChangingTheArchive),
 			(nameof(interactionPerformance.ReorderingOneRowEmitsOneMoveInsteadOfACollectionReset), interactionPerformance.ReorderingOneRowEmitsOneMoveInsteadOfACollectionReset),
 			(nameof(interactionPerformance.RemovingOneRowDoesNotMoveOrResetTheRemainingRows), interactionPerformance.RemovingOneRowDoesNotMoveOrResetTheRemainingRows),
+			(nameof(interactionPerformance.UnchangedLargeCollectionUsesLinearComparisonWork), interactionPerformance.UnchangedLargeCollectionUsesLinearComparisonWork),
+			(nameof(interactionPerformance.LargeSeparatorProjectionUsesOneCollectionReset), interactionPerformance.LargeSeparatorProjectionUsesOneCollectionReset),
+			(nameof(interactionPerformance.SmallSeparatorProjectionKeepsIncrementalNotifications), interactionPerformance.SmallSeparatorProjectionKeepsIncrementalNotifications),
 			(nameof(interactionPerformance.ImportProgressIsSharedAcrossFilesAndNeverExceedsOne), interactionPerformance.ImportProgressIsSharedAcrossFilesAndNeverExceedsOne),
 			(nameof(interactionPerformance.EquivalentCategoryAndHealthDataCanReuseExistingRowBindings), interactionPerformance.EquivalentCategoryAndHealthDataCanReuseExistingRowBindings),
 			(nameof(interactionBehavior.DrawerRetainsASelectedModDuringCrossListTransferOnly), interactionBehavior.DrawerRetainsASelectedModDuringCrossListTransferOnly),
@@ -151,12 +158,23 @@ internal static class Program
 			(nameof(automaticCategories.UnknownProviderTaxonomyFallsBackToPackageKeywords), automaticCategories.UnknownProviderTaxonomyFallsBackToPackageKeywords),
 			(nameof(automaticCategories.DisabledProviderCategoryFallsBackToAnEnabledCategory), automaticCategories.DisabledProviderCategoryFallsBackToAnEnabledCategory),
 			(nameof(visualDividerDrag.NormalModDragNeverIncludesASelectedDivider), visualDividerDrag.NormalModDragNeverIncludesASelectedDivider),
-			(nameof(visualDividerDrag.ExpandedDividerDragMovesOnlyTheDivider), visualDividerDrag.ExpandedDividerDragMovesOnlyTheDivider),
-			(nameof(visualDividerDrag.CollapsedDividerDragMovesItsWholeSectionToTheNextDivider), visualDividerDrag.CollapsedDividerDragMovesItsWholeSectionToTheNextDivider),
-			(nameof(visualDividerDrag.CollapsedFinalDividerDragIncludesEveryRemainingMod), visualDividerDrag.CollapsedFinalDividerDragIncludesEveryRemainingMod),
+			(nameof(visualDividerDrag.ExpandedDividerDragContainsOnlyItsMarker), visualDividerDrag.ExpandedDividerDragContainsOnlyItsMarker),
+			(nameof(visualDividerDrag.CollapsedDividerCannotStartDrag), visualDividerDrag.CollapsedDividerCannotStartDrag),
+			(nameof(visualDividerDrag.ExpandedSeparatorMoveLeavesEveryModInPlace), visualDividerDrag.ExpandedSeparatorMoveLeavesEveryModInPlace),
+			(nameof(visualDividerDrag.RecreatedExpandedSeparatorResolvesToCanonicalMarkerOnly), visualDividerDrag.RecreatedExpandedSeparatorResolvesToCanonicalMarkerOnly),
 			(nameof(visualDividerDrag.DropAfterCollapsedSeparatorSkipsItsHiddenSection), visualDividerDrag.DropAfterCollapsedSeparatorSkipsItsHiddenSection),
-			(nameof(visualDividerDrag.CollapsedSectionMovedBetweenCollapsedSectionsKeepsEveryBlockIntact), visualDividerDrag.CollapsedSectionMovedBetweenCollapsedSectionsKeepsEveryBlockIntact),
+			(nameof(visualDividerDrag.VisibleDropSlotMapsPastOmittedCollapsedMembers), visualDividerDrag.VisibleDropSlotMapsPastOmittedCollapsedMembers),
+			(nameof(visualDividerDrag.VisibleDropSlotMatchesRecreatedDividerByIdentity), visualDividerDrag.VisibleDropSlotMatchesRecreatedDividerByIdentity),
+			(nameof(visualDividerDrag.ProgressiveExpansionInsertsBeforeUnownedDestinationSuffix), visualDividerDrag.ProgressiveExpansionInsertsBeforeUnownedDestinationSuffix),
 			(nameof(visualDividerDrag.CollapseAllChangesOnlyTheRequestedPaneAndOnlyOnce), visualDividerDrag.CollapseAllChangesOnlyTheRequestedPaneAndOnlyOnce),
+			(nameof(visualDividerDrag.LegacyPositionsMigrateToDurableSectionMembership), visualDividerDrag.LegacyPositionsMigrateToDurableSectionMembership),
+			(nameof(visualDividerDrag.LegacyMembershipWaitsForCompletedListLoading), visualDividerDrag.LegacyMembershipWaitsForCompletedListLoading),
+			(nameof(visualDividerDrag.VisualSequencePreservesAuthoritativeModOrder), visualDividerDrag.VisualSequencePreservesAuthoritativeModOrder),
+			(nameof(visualDividerDrag.DuplicateOwnershipKeepsFirstDividerAndMissingIds), visualDividerDrag.DuplicateOwnershipKeepsFirstDividerAndMissingIds),
+			(nameof(visualDividerDrag.CollapsedVisibilityUsesExplicitMembershipOnly), visualDividerDrag.CollapsedVisibilityUsesExplicitMembershipOnly),
+			(nameof(visualDividerDrag.CollapsedVisibilityStopsAtTheNextSeparator), visualDividerDrag.CollapsedVisibilityStopsAtTheNextSeparator),
+			(nameof(visualModSelection.SelectAllIncludesOnlyVisibleModRows), visualModSelection.SelectAllIncludesOnlyVisibleModRows),
+			(nameof(visualModSelection.FilterProjectionOmitsCollapsedRowsFromTheItemsSource), visualModSelection.FilterProjectionOmitsCollapsedRowsFromTheItemsSource),
 			(nameof(settingsMaintenance.RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly), settingsMaintenance.RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly),
 			(nameof(settingsMaintenance.RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain), settingsMaintenance.RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain),
 			(nameof(startupNotifications.StartupNotificationsWaitForReadinessAndDrainInOrder), startupNotifications.StartupNotificationsWaitForReadinessAndDrainInOrder),
