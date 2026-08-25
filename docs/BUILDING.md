@@ -27,7 +27,8 @@ Studio with **Debug | x64** selected is equivalent.
 
 On a clean clone, the helper also downloads LSLib's GPPG 1.5.2 parser tools from the location named
 by upstream LSLib and verifies the archive against a pinned SHA-256 checksum. The tools generate
-ignored parser source files during the build and are not included in Redux packages.
+the ignored parser source files before MSBuild evaluates the projects and are not included in Redux
+packages.
 
 Do not use `dotnet build` as the normal Redux build path. It does not build the native project graph
 the same way and can clean the C++/CLI loader shim from the final debug directory.
