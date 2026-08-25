@@ -57,11 +57,14 @@ if (!(Test-Path -LiteralPath $msbuild))
 }
 
 $repositoryRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$prepareLSLib = Join-Path $repositoryRoot "Prepare-LSLib.ps1"
+& $prepareLSLib
+
 $solution = Join-Path $repositoryRoot "BG3ModManager.sln"
 $target = if ($Rebuild) { "Rebuild" } else { "Build" }
 
 Write-Host "Building Redux $Configuration x64 with $msbuild"
-& $msbuild $solution "/t:$target" "/p:Configuration=$Configuration" "/p:Platform=x64" "/m" "/v:minimal"
+& $msbuild $solution "/restore" "/t:$target" "/p:Configuration=$Configuration" "/p:Platform=x64" "/m" "/v:minimal"
 if ($LASTEXITCODE -ne 0)
 {
 	exit $LASTEXITCODE

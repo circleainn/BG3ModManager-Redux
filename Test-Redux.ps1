@@ -3,6 +3,9 @@ param()
 
 $ErrorActionPreference = "Stop"
 $repositoryRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$prepareLSLib = Join-Path $repositoryRoot "Prepare-LSLib.ps1"
+& $prepareLSLib
+
 $project = Join-Path $repositoryRoot "tests\Redux.Core.Tests\Redux.Core.Tests.csproj"
 $solutionDirectory = "$repositoryRoot\"
 $offlinePackages = Join-Path $env:USERPROFILE ".nuget\packages"

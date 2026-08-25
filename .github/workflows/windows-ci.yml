@@ -19,29 +19,18 @@ jobs:
 
     steps:
       - name: Check out source and submodules
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
 
       - name: Set up .NET 8
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 8.0.x
 
-      - name: Add MSBuild to PATH
-        uses: microsoft/setup-msbuild@v2
-
       - name: Build Debug x64
         shell: pwsh
-        run: >-
-          msbuild .\BG3ModManager.sln
-          /restore
-          /t:Build
-          /p:Configuration=Debug
-          /p:Platform=x64
-          /p:ContinuousIntegrationBuild=true
-          /m
-          /v:minimal
+        run: .\Build-Redux.ps1 -Configuration Debug
 
       - name: Verify native host output
         shell: pwsh
