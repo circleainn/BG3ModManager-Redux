@@ -170,6 +170,7 @@ public static class ReduxWindowBehavior
 	public static void ConfigureAccessibility(bool reduceMotion, bool disableBackgroundEffects)
 	{
 		ReduceMotion = reduceMotion;
+		SmoothLogicalScrollBehavior.ConfigureReducedMotion(reduceMotion);
 		if (BackgroundEffectsDisabled != disableBackgroundEffects)
 		{
 			BackgroundEffectsDisabled = disableBackgroundEffects;

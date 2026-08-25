@@ -25,12 +25,11 @@ public sealed class SmoothLogicalScrollPolicyTests
 		RegressionAssert.Equal(3, SmoothLogicalScrollPolicy.ConsumeRows(ref remainder, 120, -1));
 	}
 
-	public void MotionAndInteractionPreferencesBypassAnimation()
+	public void SmoothScrollingIsStandardUnlessMotionOrInteractionSuppressesIt()
 	{
-		RegressionAssert.True(SmoothLogicalScrollPolicy.CanAnimate(true, false, false, true));
-		RegressionAssert.False(SmoothLogicalScrollPolicy.CanAnimate(false, false, false, true));
-		RegressionAssert.False(SmoothLogicalScrollPolicy.CanAnimate(true, true, false, true));
-		RegressionAssert.False(SmoothLogicalScrollPolicy.CanAnimate(true, false, true, true));
-		RegressionAssert.False(SmoothLogicalScrollPolicy.CanAnimate(true, false, false, false));
+		RegressionAssert.True(SmoothLogicalScrollPolicy.CanAnimate(false, false, true));
+		RegressionAssert.False(SmoothLogicalScrollPolicy.CanAnimate(true, false, true));
+		RegressionAssert.False(SmoothLogicalScrollPolicy.CanAnimate(false, true, true));
+		RegressionAssert.False(SmoothLogicalScrollPolicy.CanAnimate(false, false, false));
 	}
 }

@@ -82,6 +82,7 @@ internal class Program
 		_libDirectory = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "_Lib");
 		AppDomain.CurrentDomain.AssemblyResolve += ResolveAssembly;
 
+		Util.SmoothLogicalScrollBehavior.Initialize();
 		var app = new App();
 		app.DispatcherUnhandledException += OnEarlyDispatcherException;
 		app.Exit += OnAppExit;

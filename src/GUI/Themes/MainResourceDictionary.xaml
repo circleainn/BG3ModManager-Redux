@@ -2739,8 +2739,6 @@
 		<Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
 		<Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
 		<Setter Property="VirtualizingPanel.ScrollUnit" Value="Item" />
-		<Setter Property="util:SmoothLogicalScrollBehavior.IsEnabled" Value="{Binding Settings.EnableSmoothListScrolling}" />
-		<Setter Property="util:SmoothLogicalScrollBehavior.IsMotionReduced" Value="{Binding Settings.ReduceMotion}" />
 		<Setter Property="util:SmoothLogicalScrollBehavior.IsInteractionSuppressed" Value="{Binding IsDragging}" />
 	</Style>
 	<Style BasedOn="{StaticResource VirtualizedModListView}" TargetType="controls:ModListView">

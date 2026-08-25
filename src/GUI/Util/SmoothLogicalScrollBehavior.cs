@@ -19,36 +19,14 @@ namespace DivinityModManager.Util;
 public static class SmoothLogicalScrollBehavior
 {
 	private static readonly ConditionalWeakTable<ItemsControl, SmoothScrollState> States = new();
-
-	public static readonly DependencyProperty IsEnabledProperty = DependencyProperty.RegisterAttached(
-		"IsEnabled",
-		typeof(bool),
-		typeof(SmoothLogicalScrollBehavior),
-		new PropertyMetadata(false, PreferenceChanged));
-
-	public static readonly DependencyProperty IsMotionReducedProperty = DependencyProperty.RegisterAttached(
-		"IsMotionReduced",
-		typeof(bool),
-		typeof(SmoothLogicalScrollBehavior),
-		new PropertyMetadata(false, PreferenceChanged));
+	private static readonly List<WeakReference<SmoothScrollState>> ActiveStates = new();
+	private static bool _initialized;
 
 	public static readonly DependencyProperty IsInteractionSuppressedProperty = DependencyProperty.RegisterAttached(
 		"IsInteractionSuppressed",
 		typeof(bool),
 		typeof(SmoothLogicalScrollBehavior),
-		new PropertyMetadata(false, PreferenceChanged));
-
-	public static bool GetIsEnabled(DependencyObject element) =>
-		(bool)element.GetValue(IsEnabledProperty);
-
-	public static void SetIsEnabled(DependencyObject element, bool value) =>
-		element.SetValue(IsEnabledProperty, value);
-
-	public static bool GetIsMotionReduced(DependencyObject element) =>
-		(bool)element.GetValue(IsMotionReducedProperty);
-
-	public static void SetIsMotionReduced(DependencyObject element, bool value) =>
-		element.SetValue(IsMotionReducedProperty, value);
+		new PropertyMetadata(false, InteractionSuppressionChanged));
 
 	public static bool GetIsInteractionSuppressed(DependencyObject element) =>
 		(bool)element.GetValue(IsInteractionSuppressedProperty);
@@ -56,17 +34,59 @@ public static class SmoothLogicalScrollBehavior
 	public static void SetIsInteractionSuppressed(DependencyObject element, bool value) =>
 		element.SetValue(IsInteractionSuppressedProperty, value);
 
-	private static void PreferenceChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs _)
+	internal static void ConfigureReducedMotion(bool reduceMotion)
 	{
-		if (dependencyObject is not ItemsControl owner) return;
-		if (!States.TryGetValue(owner, out var state))
+		Initialize();
+		if (!reduceMotion) return;
+
+		for (var index = ActiveStates.Count - 1; index >= 0; index--)
 		{
-			// Bindings for drag and reduced-motion state also exist while the
-			// experiment is off. Do not attach any input handlers until it is enabled.
-			if (!GetIsEnabled(owner)) return;
-			state = States.GetValue(owner, static control => new SmoothScrollState(control));
+			if (ActiveStates[index].TryGetTarget(out var state)) state.RefreshMotionPreference();
+			else ActiveStates.RemoveAt(index);
 		}
-		state.RefreshPreference();
+	}
+
+	internal static void Initialize()
+	{
+		if (_initialized) return;
+		_initialized = true;
+		EventManager.RegisterClassHandler(
+			typeof(ListBox),
+			UIElement.PreviewMouseWheelEvent,
+			new MouseWheelEventHandler(ListBox_PreviewMouseWheel),
+			true);
+	}
+
+	private static void ListBox_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+	{
+		if (sender is not ListBox owner ||
+			!SmoothLogicalScrollPolicy.CanAnimate(
+				ReduxWindowBehavior.ReduceMotion,
+				GetIsInteractionSuppressed(owner),
+				SystemParameters.ClientAreaAnimation)) return;
+
+		// A routed wheel event can pass through nested list controls. Only the
+		// list nearest the original source should consume and animate it.
+		if (e.OriginalSource is DependencyObject source && !ReferenceEquals(source, owner))
+		{
+			var nearestList = source.FindVisualParent<ListBox>();
+			if (nearestList != null && !ReferenceEquals(nearestList, owner)) return;
+		}
+
+		States.GetValue(owner, CreateState).OnPreviewMouseWheel(e);
+	}
+
+	private static SmoothScrollState CreateState(ItemsControl owner)
+	{
+		var state = new SmoothScrollState(owner);
+		ActiveStates.Add(new WeakReference<SmoothScrollState>(state));
+		return state;
+	}
+
+	private static void InteractionSuppressionChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs _)
+	{
+		if (dependencyObject is ItemsControl owner && States.TryGetValue(owner, out var state))
+			state.RefreshMotionPreference();
 	}
 
 	private sealed class SmoothScrollState
@@ -90,7 +110,6 @@ public static class SmoothLogicalScrollBehavior
 		public SmoothScrollState(ItemsControl owner)
 		{
 			_owner = owner;
-			_owner.PreviewMouseWheel += Owner_PreviewMouseWheel;
 			_owner.PreviewMouseDown += Owner_PreviewMouseDown;
 			_owner.PreviewTouchDown += Owner_PreviewTouchDown;
 			_owner.PreviewKeyDown += Owner_PreviewKeyDown;
@@ -99,7 +118,7 @@ public static class SmoothLogicalScrollBehavior
 			_owner.ItemContainerGenerator.ItemsChanged += ItemContainerGenerator_ItemsChanged;
 		}
 
-		public void RefreshPreference()
+		public void RefreshMotionPreference()
 		{
 			if (!CanAnimate())
 			{
@@ -109,15 +128,14 @@ public static class SmoothLogicalScrollBehavior
 		}
 
 		private bool CanAnimate() => SmoothLogicalScrollPolicy.CanAnimate(
-			GetIsEnabled(_owner),
-			GetIsMotionReduced(_owner) || ReduxWindowBehavior.ReduceMotion,
+			ReduxWindowBehavior.ReduceMotion,
 			GetIsInteractionSuppressed(_owner),
 			SystemParameters.ClientAreaAnimation);
 
 		private void Owner_Loaded(object sender, RoutedEventArgs e)
 		{
-			// The visual host is deliberately acquired lazily on the first wheel
-			// input so the default-off feature adds no transforms or layout work.
+			// The visual host is acquired lazily on wheel input so untouched lists
+			// add no transforms or layout work.
 			_wheelDeltaRemainder = 0;
 		}
 
@@ -141,7 +159,7 @@ public static class SmoothLogicalScrollBehavior
 			CancelMotion();
 		}
 
-		private void Owner_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+		public void OnPreviewMouseWheel(MouseWheelEventArgs e)
 		{
 			try
 			{
@@ -149,7 +167,7 @@ public static class SmoothLogicalScrollBehavior
 			}
 			catch (Exception exception)
 			{
-				// This feature is cosmetic and experimental. A changing visual tree
+				// This behavior is cosmetic. A changing visual tree
 				// must never turn a failed transition into an application failure.
 				_wheelDeltaRemainder = 0;
 				CancelMotion();

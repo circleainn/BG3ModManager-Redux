@@ -1,8 +1,6 @@
 using DivinityModManager.Models;
 using DivinityModManager.Util;
 
-using Newtonsoft.Json;
-
 using System;
 using System.Collections.Generic;
 
@@ -10,17 +8,6 @@ namespace Redux.Core.Tests;
 
 public sealed class SettingsMaintenanceTests
 {
-	public void ExperimentalSmoothScrollingDefaultsOffAndRoundTrips()
-	{
-		var settings = new DivinityModManagerSettings();
-
-		RegressionAssert.False(settings.EnableSmoothListScrolling);
-		settings.EnableSmoothListScrolling = true;
-		var restored = JsonConvert.DeserializeObject<DivinityModManagerSettings>(
-			JsonConvert.SerializeObject(settings));
-		RegressionAssert.True(restored?.EnableSmoothListScrolling == true);
-	}
-
 	public void RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly()
 	{
 		var settings = new DivinityModManagerSettings

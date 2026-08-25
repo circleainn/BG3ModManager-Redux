@@ -1,7 +1,7 @@
 namespace DivinityModManager.Util;
 
 /// <summary>
-/// Keeps the experimental smooth-scroll input bounded while WPF continues to
+/// Keeps smooth-scroll input bounded while WPF continues to
 /// own the authoritative, item-based scroll position.
 /// </summary>
 public static class SmoothLogicalScrollPolicy
@@ -10,11 +10,10 @@ public static class SmoothLogicalScrollPolicy
 	public const int MaximumRowsPerEvent = 3;
 
 	public static bool CanAnimate(
-		bool isEnabled,
 		bool reduceMotion,
 		bool interactionSuppressed,
 		bool systemAnimationsEnabled) =>
-		isEnabled && !reduceMotion && !interactionSuppressed && systemAnimationsEnabled;
+		!reduceMotion && !interactionSuppressed && systemAnimationsEnabled;
 
 	/// <summary>
 	/// Converts wheel input into a small, signed row count. Positive rows scroll
