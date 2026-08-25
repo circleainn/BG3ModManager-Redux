@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/raincloudsfollow/BG3ModManager-Redux/blob/main/docs/schemas/redux.mod.schema.json",
+  "$id": "https://github.com/circleainn/BG3ModManager-Redux/blob/main/docs/schemas/redux.mod.schema.json",
   "title": "BG3 Mod Manager Redux creator manifest",
   "type": "object",
   "additionalProperties": false,

@@ -21,8 +21,8 @@
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
 		<Product>Baldur's Gate 3 Mod Manager Redux</Product>
-		<Company>raincloudsfollow</Company>
-		<Copyright>© 2026 raincloudsfollow — BG3 Mod Manager Redux</Copyright>
+		<Company>circleainn</Company>
+		<Copyright>© 2026 circleainn — BG3 Mod Manager Redux</Copyright>
 		<Description>A modernized, community-driven fork of Baldur's Gate 3 Mod Manager.</Description>
 
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -148,7 +148,7 @@
 
 	<Target Name="CrossSpeakLibraryFiles" AfterTargets="AfterBuild">
 		<ItemGroup>
-			<LibFiles Include="$(SolutionDir)\External\CrossSpeak\CrossSpeak\lib\windows\*.dll" />
+			<LibFiles Include="$(MSBuildProjectDirectory)\..\..\External\CrossSpeak\CrossSpeak\lib\windows\*.dll" />
 		</ItemGroup>
 		<Copy SourceFiles="@(LibFiles)" DestinationFolder="$(OutputPath)_Lib" OverwriteReadOnlyFiles="true" ContinueOnError="true" />
 	</Target>

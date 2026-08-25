@@ -386,7 +386,7 @@ foundation and reworks or extends its presentation through:
 ## Inherited issues corrected in Redux
 
 The following upstream issues were confirmed in the inherited code and fixed in Redux. The tracking
-discussion is [issue #11](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues/11).
+discussion is [issue #11](https://github.com/circleainn/BG3ModManager-Redux/issues/11).
 
 - **Large archive imports failing** (#383): removed an unnecessary whole-file allocation whose
   length cast overflowed for archives larger than roughly 2.1 GB.

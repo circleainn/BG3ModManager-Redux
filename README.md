@@ -7,7 +7,7 @@ ways to organize, review, and share mod setups.
 
 **Current build:** `0.1.0-alpha.9` - private testing alpha
 
-[Nexus Mods](https://www.nexusmods.com/baldursgate3/mods/23799) | [Report an issue](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues) | [Changes from upstream](docs/CHANGES_FROM_UPSTREAM.md) | [Build from source](docs/BUILDING.md)
+[Nexus Mods](https://www.nexusmods.com/baldursgate3/mods/23799) | [Report an issue](https://github.com/circleainn/BG3ModManager-Redux/issues) | [Changes from upstream](docs/CHANGES_FROM_UPSTREAM.md) | [Build from source](docs/BUILDING.md)
 
 > [!IMPORTANT]
 > Redux is still in early development. Keep backups of important profiles, saves, downloaded
@@ -157,7 +157,7 @@ are local data and are not included in application packages.
 
 ## Reporting problems
 
-Use the [issue tracker](https://github.com/raincloudsfollow/BG3ModManager-Redux/issues) for
+Use the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) for
 reproducible bugs. Include the Redux version, reproduction steps, relevant logs, screenshots, and
 affected mod names or UUIDs. Never post API keys or private filesystem information.
 

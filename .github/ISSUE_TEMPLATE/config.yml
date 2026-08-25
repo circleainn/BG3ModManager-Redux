@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
   - name: Ask a Question
-    url: https://github.com/raincloudsfollow/BG3ModManager-Redux/issues/new/choose
+    url: https://github.com/circleainn/BG3ModManager-Redux/issues/new/choose
     about: Ask a question about BG3 Mod Manager Redux.
   - name: Request a Feature
-    url: https://github.com/raincloudsfollow/BG3ModManager-Redux/issues/new/choose
+    url: https://github.com/circleainn/BG3ModManager-Redux/issues/new/choose
     about: Suggest a feature for BG3 Mod Manager Redux.

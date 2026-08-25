@@ -112,7 +112,7 @@
 						<TextBlock Style="{StaticResource Redux.Text.SectionTitle}" Text="Current Project" />
 						<TextBlock Margin="0,5,0,14"
 							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Maintained by raincloudsfollow."
+							Text="Maintained by circleainn."
 							TextWrapping="Wrap" />
 						<Grid>
 							<Grid.ColumnDefinitions>

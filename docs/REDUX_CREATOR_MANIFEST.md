@@ -50,7 +50,7 @@ For most Nexus Mods releases, this compact form is all that is needed:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/raincloudsfollow/BG3ModManager-Redux/main/docs/schemas/redux.mod.schema.json",
+  "$schema": "https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/schemas/redux.mod.schema.json",
   "schemaVersion": 1,
   "manifestType": "bg3-redux-mod",
   "moduleUuid": "11111111-2222-3333-4444-555555555555",
@@ -85,7 +85,7 @@ want to include offline fallback metadata or informational dependency claims:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/raincloudsfollow/BG3ModManager-Redux/main/docs/schemas/redux.mod.schema.json",
+  "$schema": "https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/schemas/redux.mod.schema.json",
   "schemaVersion": 1,
   "manifestType": "bg3-redux-mod",
   "mod": {
