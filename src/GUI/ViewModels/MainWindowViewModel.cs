@@ -6663,6 +6663,70 @@ Directory the zip will be extracted to:
 	}
 
 	/// <summary>
+	/// Temporarily removes the off-screen suffix of an expanded separator while keeping
+	/// its realized members in the display projection. This brings the next separator
+	/// into the viewport so the view can animate the visible rows and boundary together.
+	/// The divider remains logically expanded until the animation completes.
+	/// </summary>
+	public bool PrepareVisualDividerCollapse(
+		DivinityModData item,
+		IReadOnlyCollection<DivinityModData> retainedMembers)
+	{
+		var divider = GetVisualDivider(item);
+		if (divider == null || divider.IsCollapsed || retainedMembers == null ||
+			!String.IsNullOrWhiteSpace(SelectedModCategory) &&
+			!SelectedModCategory.Equals(AllModsCategory, StringComparison.OrdinalIgnoreCase))
+			return false;
+
+		EnsureVisualDividerMemberships();
+		VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+			BuildVisualDividerSequence(divider.IsActiveList),
+			Settings.VisualModListDividers,
+			divider.IsActiveList);
+
+		var target = divider.IsActiveList ? DisplayActiveMods : DisplayInactiveMods;
+		var marker = target.FirstOrDefault(candidate => candidate.IsVisualDivider &&
+			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
+		if (marker == null) return false;
+
+		var memberIds = (divider.MemberModUuids ?? Enumerable.Empty<string>())
+			.Where(uuid => !String.IsNullOrWhiteSpace(uuid))
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var retained = retainedMembers.ToHashSet(ReferenceEqualityComparer.Instance);
+		var firstMemberIndex = target.IndexOf(marker) + 1;
+		var memberCount = 0;
+		while (firstMemberIndex + memberCount < target.Count &&
+			target[firstMemberIndex + memberCount] is { IsVisualDivider: false } member &&
+			!String.IsNullOrWhiteSpace(member.UUID) && memberIds.Contains(member.UUID))
+			memberCount++;
+
+		var retainedPrefixCount = 0;
+		while (retainedPrefixCount < memberCount &&
+			retained.Contains(target[firstMemberIndex + retainedPrefixCount]))
+			retainedPrefixCount++;
+		for (var index = retainedPrefixCount; index < memberCount; index++)
+			if (retained.Contains(target[firstMemberIndex + index])) return false;
+
+		var removeCount = memberCount - retainedPrefixCount;
+		if (removeCount > 0)
+			VisualDividerProjectionMutation.RemoveRange(
+				target,
+				firstMemberIndex + retainedPrefixCount,
+				removeCount);
+		return true;
+	}
+
+	/// <summary>
+	/// Restores a separator that was only partially projected for a cancelled collapse
+	/// animation. Its logical expanded/collapsed state is left unchanged.
+	/// </summary>
+	public void RestoreVisualDividerProjection(DivinityModData item)
+	{
+		var divider = GetVisualDivider(item);
+		if (divider != null) RefreshVisualDividers(divider.IsActiveList);
+	}
+
+	/// <summary>
 	/// Changes one separator to its expanded state without immediately projecting every
 	/// member into the ListView. The view can then add members progressively so a large
 	/// section does not construct an entire viewport of complex row templates in one UI

@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace DivinityModManager;
@@ -24,6 +25,24 @@ public static class DependencyObjectExtensions
 			}
 		}
 	}
+	/// <summary>
+	/// Returns only the item containers currently owned by an ItemsControl's realized
+	/// panel. Virtualized mod lists contain complex row templates, so recursively walking
+	/// every descendant to rediscover their top-level containers is unnecessarily costly.
+	/// </summary>
+	public static IReadOnlyList<T> GetRealizedItemContainers<T>(this ItemsControl owner)
+		where T : DependencyObject
+	{
+		if (owner == null) return Array.Empty<T>();
+		var itemsHost = owner.FindVisualChildren<Panel>()
+			.FirstOrDefault(panel => ReferenceEquals(ItemsControl.GetItemsOwner(panel), owner));
+		if (itemsHost != null) return itemsHost.Children.OfType<T>().ToList();
+
+		return owner.FindVisualChildren<T>()
+			.Where(container => ItemsControl.ItemsControlFromItemContainer(container) == owner)
+			.ToList();
+	}
+
 	public static T FindVisualParent<T>(this DependencyObject depObj) where T : DependencyObject
 	{
 		if (depObj != null)

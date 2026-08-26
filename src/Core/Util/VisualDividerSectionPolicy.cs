@@ -128,6 +128,10 @@ public static class VisualDividerSectionPolicy
 			divider => divider.Id,
 			_ => new List<string>(),
 			StringComparer.OrdinalIgnoreCase);
+		var memberIdsById = paneDividers.ToDictionary(
+			divider => divider.Id,
+			_ => new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+			StringComparer.OrdinalIgnoreCase);
 		ModListVisualDividerData currentDivider = null;
 		foreach (var item in visualItems.Where(item => item != null))
 		{
@@ -138,9 +142,8 @@ public static class VisualDividerSectionPolicy
 			}
 
 			if (currentDivider == null || String.IsNullOrWhiteSpace(item.UUID)) continue;
-			var members = membersById[currentDivider.Id];
-			if (!members.Contains(item.UUID, StringComparer.OrdinalIgnoreCase))
-				members.Add(item.UUID);
+			if (memberIdsById[currentDivider.Id].Add(item.UUID))
+				membersById[currentDivider.Id].Add(item.UUID);
 		}
 
 		var changed = false;

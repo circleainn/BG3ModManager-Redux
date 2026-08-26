@@ -101,6 +101,40 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		}
 	}
 
+	private sealed class VisualDividerVirtualizationCache : IDisposable
+	{
+		private readonly ListView _listView;
+		private readonly object _originalCacheLength;
+		private readonly object _originalCacheUnit;
+		private bool _disposed;
+
+		public VisualDividerVirtualizationCache(ListView listView)
+		{
+			_listView = listView;
+			_originalCacheLength = listView.ReadLocalValue(VirtualizingPanel.CacheLengthProperty);
+			_originalCacheUnit = listView.ReadLocalValue(VirtualizingPanel.CacheLengthUnitProperty);
+			// After the off-screen member suffix is removed, the next separator is at most
+			// a few item slots beyond the viewport. Keep those lightweight containers alive
+			// so they can move via RenderTransform without animating list layout.
+			VirtualizingPanel.SetCacheLength(listView, new VirtualizationCacheLength(0, 4));
+			VirtualizingPanel.SetCacheLengthUnit(listView, VirtualizationCacheLengthUnit.Item);
+		}
+
+		public void Dispose()
+		{
+			if (_disposed) return;
+			_disposed = true;
+			RestoreLocalValue(_listView, VirtualizingPanel.CacheLengthProperty, _originalCacheLength);
+			RestoreLocalValue(_listView, VirtualizingPanel.CacheLengthUnitProperty, _originalCacheUnit);
+		}
+
+		private static void RestoreLocalValue(DependencyObject target, DependencyProperty property, object value)
+		{
+			if (ReferenceEquals(value, DependencyProperty.UnsetValue)) target.ClearValue(property);
+			else target.SetValue(property, value);
+		}
+	}
+
 	private sealed class VisualDividerAnimation
 	{
 		private readonly System.Diagnostics.Stopwatch _stopwatch = new();
@@ -519,7 +553,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		// A pointer can briefly sit in row padding rather than over a container. Only
 		// that uncommon path inspects the realized viewport; the normal drag path is O(1).
-		var realizedRows = listView.FindVisualChildren<ListViewItem>()
+		var realizedRows = listView.GetRealizedItemContainers<ListViewItem>()
 			.Where(row => row.IsVisible && ItemsControl.ItemsControlFromItemContainer(row) == listView)
 			.Select(row =>
 			{
@@ -1377,7 +1411,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		// exist. Restrict the work to realized rows so scrolling remains proportional
 		// to what is actually visible.
 		IInputElement focusedItem = FocusManager.GetFocusedElement(listView);
-		foreach (var listItem in listView.FindVisualChildren<ListViewItem>())
+		foreach (var listItem in listView.GetRealizedItemContainers<ListViewItem>())
 		{
 			if (listItem.DataContext is not ISelectable mod)
 			{
@@ -1569,7 +1603,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				.FirstOrDefault(candidate => candidate.IsVisualDivider &&
 					String.Equals(candidate.VisualDividerId, dividerId, StringComparison.OrdinalIgnoreCase));
 
-		(List<ListViewItem> Section, List<ListViewItem> Following) GetRealizedRows()
+		(List<ListViewItem> Section, List<ListViewItem> Following) GetRealizedRows(bool includeCachedRows = false)
 		{
 			var sectionRows = new List<ListViewItem>();
 			var followingRows = new List<ListViewItem>();
@@ -1583,12 +1617,29 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				if (item?.IsVisualDivider == true) insideSection = false;
 				var row = realized.Row;
 				var rowTop = row.TranslatePoint(new Point(), listView).Y;
-				if (rowTop + row.ActualHeight < 0 || rowTop > listView.ActualHeight) continue;
+				if (!includeCachedRows &&
+					(rowTop + row.ActualHeight < 0 || rowTop > listView.ActualHeight)) continue;
 				if (insideSection)
 					sectionRows.Add(row);
 				else followingRows.Add(row);
 			}
 			return (sectionRows, followingRows);
+		}
+
+		double MeasureSectionTravel(
+			IReadOnlyList<ListViewItem> sectionRows,
+			IReadOnlyList<ListViewItem> followingRows)
+		{
+			if (sectionRows.Count == 0) return 0;
+			if (listView.ItemContainerGenerator.ContainerFromItem(GetCurrentDividerItem()) is ListViewItem markerRow &&
+				followingRows.Count > 0)
+			{
+				var markerBottom = markerRow.TranslatePoint(new Point(0, markerRow.ActualHeight), listView).Y;
+				var followingTop = followingRows[0].TranslatePoint(new Point(), listView).Y;
+				return Math.Max(0, followingTop - markerBottom);
+			}
+
+			return sectionRows.Sum(row => Math.Max(1, row.ActualHeight) + row.Margin.Top + row.Margin.Bottom);
 		}
 
 		var currentDividerItem = GetCurrentDividerItem();
@@ -1598,6 +1649,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (ReduxWindowBehavior.ReduceMotion)
 		{
 			ViewModel.SetVisualDividerCollapsed(dividerItem, collapseSection);
+			dividerItem.VisualDividerChevronAngle = collapseSection ? -90 : 0;
 			return;
 		}
 
@@ -1605,10 +1657,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			var expandingDividerItem = dividerItem;
 			expandingDividerItem.VisualDividerChevronAngle = -90;
+			var expansionCache = new VisualDividerVirtualizationCache(listView);
 			VisualDividerAnimation expansion = null;
 			var members = ViewModel.BeginVisualDividerExpansion(dividerItem);
 			if (members == null)
 			{
+				expansionCache.Dispose();
 				ViewModel.SetVisualDividerCollapsed(dividerItem, false);
 				return;
 			}
@@ -1661,6 +1715,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				}
 				finally
 				{
+					expansionCache.Dispose();
 					if (activeList && ReferenceEquals(_activeVisualDividerTransition, expansion))
 						_activeVisualDividerTransition = null;
 					else if (!activeList && ReferenceEquals(_inactiveVisualDividerTransition, expansion))
@@ -1695,17 +1750,16 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				if (!ReferenceEquals(paneTransition, expansion)) return;
 
 				listView.UpdateLayout();
-				var realized = GetRealizedRows();
+				var realized = GetRealizedRows(true);
 				if (members.Count > 0 && realized.Section.Count == 0 && prepareAttempts++ < 3)
 				{
 					Dispatcher.BeginInvoke(new Action(PrepareExpansion), DispatcherPriority.DataBind);
 					return;
 				}
 
-				// Recycled containers must enter from a known baseline. A stale local
-				// opacity from a previous collapse is what made one-member sections reopen
-				// as an invisible row.
-				foreach (var row in realized.Section)
+				// Recycled containers must enter from a known baseline. A stale local value
+				// from a previous transition can otherwise reopen a row invisible or short.
+				foreach (var row in realized.Section.Concat(realized.Following))
 				{
 					row.ClearValue(UIElement.OpacityProperty);
 					row.ClearValue(UIElement.RenderTransformProperty);
@@ -1714,12 +1768,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 				expandingSectionRows = realized.Section.Select(row => new VisualDividerAnimatedRow(row)).ToList();
 				expandingFollowingRows = realized.Following.Select(row => new VisualDividerAnimatedRow(row)).ToList();
-				expandingSectionTravel = 0;
-				for (var index = 0; index < expandingSectionRows.Count; index++)
-				{
-					var row = expandingSectionRows[index].Row;
-					expandingSectionTravel += Math.Max(1, row.ActualHeight) + row.Margin.Top + row.Margin.Bottom;
-				}
+				expandingSectionTravel = MeasureSectionTravel(realized.Section, realized.Following);
+				// The projection is already in its final layout. Hold following rows at their
+				// former visual position and release only compositor transforms during motion.
 				expansion.Start();
 			}
 
@@ -1729,68 +1780,116 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			return;
 		}
 
+		void StartCollapse(
+			(List<ListViewItem> Section, List<ListViewItem> Following) realizedRows,
+			bool restorePreparedProjectionOnCancel,
+			VisualDividerVirtualizationCache virtualizationCache = null)
+		{
+			var sectionRows = realizedRows.Section.Select(row => new VisualDividerAnimatedRow(row)).ToList();
+			var followingRows = realizedRows.Following.Select(row => new VisualDividerAnimatedRow(row)).ToList();
+			var sectionTravel = MeasureSectionTravel(realizedRows.Section, realizedRows.Following);
+			var startingChevronAngle = dividerItem.VisualDividerChevronAngle;
+
+			void Update(double progress)
+			{
+				var visibleProgress = 1 - progress;
+				dividerItem.VisualDividerChevronAngle =
+					startingChevronAngle + ((-90d - startingChevronAngle) * progress);
+				for (var index = 0; index < sectionRows.Count; index++)
+				{
+					if (!sectionRows[index].IsCurrent) continue;
+					sectionRows[index].Translation.Y = -4 * progress;
+					sectionRows[index].SetOpacity(sectionRows[index].BaseOpacity * visibleProgress);
+				}
+				foreach (var row in followingRows.Where(row => row.IsCurrent))
+					row.Translation.Y = -sectionTravel * progress;
+			}
+
+			VisualDividerAnimation transition = null;
+			void Finish(bool completed)
+			{
+				try
+				{
+					// Release borrowed transforms before the collection change can recycle
+					// these containers for unrelated rows.
+					foreach (var row in sectionRows) row.Restore();
+					foreach (var row in followingRows) row.Restore();
+					if (completed)
+						ViewModel.SetVisualDividerCollapsed(dividerItem, true);
+					else if (restorePreparedProjectionOnCancel)
+						ViewModel.RestoreVisualDividerProjection(dividerItem);
+				}
+				finally
+				{
+					virtualizationCache?.Dispose();
+					var finalDividerItem = GetCurrentDividerItem();
+					if (finalDividerItem != null)
+						finalDividerItem.VisualDividerChevronAngle = finalDividerItem.IsVisualDividerCollapsed ? -90 : 0;
+					if (activeList && ReferenceEquals(_activeVisualDividerTransition, transition))
+						_activeVisualDividerTransition = null;
+					else if (!activeList && ReferenceEquals(_inactiveVisualDividerTransition, transition))
+						_inactiveVisualDividerTransition = null;
+				}
+			}
+
+			transition = new VisualDividerAnimation(GetPanelMotionMilliseconds(), Update, Finish);
+			if (activeList) _activeVisualDividerTransition = transition;
+			else _inactiveVisualDividerTransition = transition;
+			transition.Start();
+		}
+
 		var realizedRows = GetRealizedRows();
-		var sectionRows = realizedRows.Section.Select(row => new VisualDividerAnimatedRow(row)).ToList();
-		var followingRows = realizedRows.Following.Select(row => new VisualDividerAnimatedRow(row)).ToList();
-		var sectionTravel = 0d;
-		for (var index = 0; index < sectionRows.Count; index++)
+		var dividerIndex = listView.Items.IndexOf(dividerItem);
+		var hasFollowingDivider = dividerIndex >= 0 && listView.Items
+			.Cast<object>()
+			.Skip(dividerIndex + 1)
+			.OfType<DivinityModData>()
+			.Any(item => item.IsVisualDivider);
+		if (hasFollowingDivider && realizedRows.Following.Count == 0)
 		{
-			var row = sectionRows[index].Row;
-			sectionTravel += Math.Max(1, row.ActualHeight) + row.Margin.Top + row.Margin.Bottom;
-		}
-		var startingChevronAngle = dividerItem.VisualDividerChevronAngle;
+			var retainedMembers = realizedRows.Section
+				.Select(row => row.DataContext)
+				.OfType<DivinityModData>()
+				.ToList();
+			if (!ViewModel.PrepareVisualDividerCollapse(dividerItem, retainedMembers))
+			{
+				ViewModel.SetVisualDividerCollapsed(dividerItem, true);
+				dividerItem.VisualDividerChevronAngle = -90;
+				return;
+			}
 
-		void Update(double progress)
-		{
-			var visibleProgress = 1 - progress;
-			dividerItem.VisualDividerChevronAngle =
-				startingChevronAngle + ((-90d - startingChevronAngle) * progress);
-			for (var index = 0; index < sectionRows.Count; index++)
+			var virtualizationCache = new VisualDividerVirtualizationCache(listView);
+			var prepareAttempts = 0;
+			void PrepareCollapse()
 			{
-				if (!sectionRows[index].IsCurrent) continue;
-				sectionRows[index].Translation.Y = -4 * progress;
-				sectionRows[index].SetOpacity(sectionRows[index].BaseOpacity * visibleProgress);
+				listView.UpdateLayout();
+				var preparedRows = GetRealizedRows(true);
+				if (preparedRows.Following.Count == 0 && prepareAttempts++ < 3)
+				{
+					Dispatcher.BeginInvoke(new Action(PrepareCollapse), DispatcherPriority.Loaded);
+					return;
+				}
+				StartCollapse(preparedRows, true, virtualizationCache);
 			}
-			foreach (var row in followingRows.Where(row => row.IsCurrent))
-				row.Translation.Y = -sectionTravel * progress;
-		}
 
-		VisualDividerAnimation transition = null;
-		void Finish(bool completed)
-		{
-			try
-			{
-				// Release borrowed transforms before the collection change can recycle
-				// these containers for unrelated rows.
-				foreach (var row in sectionRows) row.Restore();
-				foreach (var row in followingRows) row.Restore();
-				if (completed)
-					ViewModel.SetVisualDividerCollapsed(dividerItem, true);
-			}
-			finally
-			{
-				var finalDividerItem = GetCurrentDividerItem();
-				if (finalDividerItem != null)
-					finalDividerItem.VisualDividerChevronAngle = finalDividerItem.IsVisualDividerCollapsed ? -90 : 0;
-				if (activeList && ReferenceEquals(_activeVisualDividerTransition, transition))
-					_activeVisualDividerTransition = null;
-				else if (!activeList && ReferenceEquals(_inactiveVisualDividerTransition, transition))
-					_inactiveVisualDividerTransition = null;
-			}
+			// Remove only the off-screen suffix before rendering. The retained containers
+			// remain in place while the cached next separator moves by the exact section
+			// distance using compositor transforms. The final projection lands identically.
+			Dispatcher.BeginInvoke(new Action(PrepareCollapse), DispatcherPriority.DataBind);
+			return;
 		}
 
-		transition = new VisualDividerAnimation(GetPanelMotionMilliseconds(), Update, Finish);
-		if (activeList) _activeVisualDividerTransition = transition;
-		else _inactiveVisualDividerTransition = transition;
-		transition.Start();
+		StartCollapse(realizedRows, false);
 	}
 
-	private static IReadOnlyList<(ListViewItem Row, int Index)> GetRealizedListRows(ListView listView) =>
-		listView.FindVisualChildren<ListViewItem>()
+	private static IReadOnlyList<(ListViewItem Row, int Index)> GetRealizedListRows(ListView listView)
+	{
+		return listView.GetRealizedItemContainers<ListViewItem>()
 			.Select(row => (Row: row, Index: listView.ItemContainerGenerator.IndexFromContainer(row)))
 			.Where(entry => entry.Index >= 0)
 			.OrderBy(entry => entry.Index)
 			.ToList();
+	}
 
 	private static int GetVisibleExpansionBatchSize(
 		ListView listView,
@@ -1978,33 +2077,32 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		var duration = GetPanelMotionMilliseconds();
 		var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 		var completion = new System.Threading.Tasks.TaskCompletionSource<bool>();
-		var timer = new DispatcherTimer(DispatcherPriority.Render)
+		EventHandler renderingHandler = null;
+		void Finish(bool completed)
 		{
-			Interval = TimeSpan.FromMilliseconds(16)
-		};
-		EventHandler tickHandler = null;
-		tickHandler = (_, _) =>
+			CompositionTarget.Rendering -= renderingHandler;
+			stopwatch.Stop();
+			completion.TrySetResult(completed);
+		}
+
+		renderingHandler = (_, _) =>
 		{
 			if (token.IsCancellationRequested)
 			{
-				timer.Stop();
-				timer.Tick -= tickHandler;
-				completion.TrySetResult(false);
+				Finish(false);
 				return;
 			}
 
 			var progress = Math.Clamp(stopwatch.Elapsed.TotalMilliseconds / duration, 0, 1);
-			// Sine ease-in/out avoids the sharper acceleration change of the former cubic loop.
+			// Rendering supplies the display's actual cadence rather than imposing a 60 Hz
+			// timer ceiling on otherwise responsive Redux panel transitions.
 			var eased = 0.5 - (Math.Cos(Math.PI * progress) / 2);
 			update(from + ((to - from) * eased));
 			if (progress < 1) return;
 
-			timer.Stop();
-			timer.Tick -= tickHandler;
-			completion.TrySetResult(true);
+			Finish(true);
 		};
-		timer.Tick += tickHandler;
-		timer.Start();
+		CompositionTarget.Rendering += renderingHandler;
 		return completion.Task;
 	}
 
@@ -3123,7 +3221,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			.OfType<DivinityModData>()
 			.Where(mod => !mod.IsVisualDivider)
 			.SelectMany(mod => mod.DisplayCategories ?? Enumerable.Empty<ModCategoryDisplayData>())
-			.Select(category => MeasureColumnText(listView, category.Name, pillFontSize, FontWeights.SemiBold) + 44 + iconAllowance)
+			.Select(category => category.Name)
+			.Where(name => !String.IsNullOrWhiteSpace(name))
+			.Distinct(StringComparer.CurrentCultureIgnoreCase)
+			.Select(name => MeasureColumnText(listView, name, pillFontSize, FontWeights.SemiBold) + 44 + iconAllowance)
 			.DefaultIfEmpty(GetDefaultColumnWidth("Category"))
 			.Max();
 

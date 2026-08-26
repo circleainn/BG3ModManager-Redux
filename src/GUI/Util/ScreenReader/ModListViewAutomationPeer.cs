@@ -124,11 +124,7 @@ public sealed class ModListViewAutomationPeer : FrameworkElementAutomationPeer, 
 
 	private List<ListViewItem> GetRealizedRows()
 	{
-		var itemsHost = _listView.FindVisualChildren<VirtualizingStackPanel>().FirstOrDefault();
-		IEnumerable<ListViewItem> rows = itemsHost != null
-			? itemsHost.Children.OfType<ListViewItem>()
-			: _listView.FindVisualChildren<ListViewItem>();
-		return rows
+		return _listView.GetRealizedItemContainers<ListViewItem>()
 			.Where(row => row.IsVisible &&
 				ItemsControl.ItemsControlFromItemContainer(row) == _listView)
 			.ToList();
