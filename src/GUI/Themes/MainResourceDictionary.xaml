@@ -2739,6 +2739,10 @@
 		<Setter Property="VirtualizingPanel.IsVirtualizing" Value="True" />
 		<Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
 		<Setter Property="VirtualizingPanel.ScrollUnit" Value="Item" />
+		<!-- Keep only the rows needed by the largest animated wheel step on each side.
+			 This prevents blank bands without sacrificing large-list virtualization. -->
+		<Setter Property="VirtualizingPanel.CacheLength" Value="4,4" />
+		<Setter Property="VirtualizingPanel.CacheLengthUnit" Value="Item" />
 		<Setter Property="util:SmoothLogicalScrollBehavior.IsInteractionSuppressed" Value="{Binding IsDragging}" />
 	</Style>
 	<Style BasedOn="{StaticResource VirtualizedModListView}" TargetType="controls:ModListView">

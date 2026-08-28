@@ -105,8 +105,6 @@ public static class SmoothLogicalScrollBehavior
 		private int _wheelDeltaRemainder;
 		private int _animationGeneration;
 
-		private readonly record struct RowAnchor(int Index, double Top, double Height, double DistanceFromCenter);
-
 		public SmoothScrollState(ItemsControl owner)
 		{
 			_owner = owner;
@@ -206,27 +204,36 @@ public static class SmoothLogicalScrollBehavior
 
 			EnsureTransform();
 			var currentTranslation = FreezeCurrentTranslation();
-			var anchors = CaptureVisibleRows();
 			var previousOffset = _scrollViewer.VerticalOffset;
-
-			if (rows > 0)
-			{
-				for (var index = 0; index < rows; index++) _scrollViewer.LineUp();
-			}
-			else
-			{
-				for (var index = 0; index > rows; index--) _scrollViewer.LineDown();
-			}
-			_owner.UpdateLayout();
-
-			var offsetChange = _scrollViewer.VerticalOffset - previousOffset;
-			if (Math.Abs(offsetChange) < double.Epsilon)
+			var previousFirstIndex = Math.Clamp(
+				(int)Math.Floor(previousOffset),
+				0,
+				Math.Max(0, _owner.Items.Count - 1));
+			var actualRows = SmoothLogicalScrollPolicy.ConstrainRowsToScrollableRange(
+				rows,
+				previousOffset,
+				_scrollViewer.ScrollableHeight);
+			if (actualRows == 0)
 			{
 				AnimateToRest(currentTranslation);
 				return;
 			}
+			var compensation = MeasureLogicalTravel(previousFirstIndex, actualRows);
 
-			var compensation = ResolveVisualCompensation(anchors, offsetChange);
+			if (actualRows > 0)
+			{
+				for (var index = 0; index < actualRows; index++) _scrollViewer.LineUp();
+			}
+			else
+			{
+				for (var index = 0; index > actualRows; index--) _scrollViewer.LineDown();
+			}
+
+			// Measure the small set of rows crossed by the requested logical change
+			// from already-realized containers. This avoids waiting for WPF's deferred
+			// offset update or forcing a synchronous layout of the entire ListView on
+			// every wheel event. The mod-list style keeps one extra row beyond the maximum
+			// three-row wheel step cached on both sides of the viewport.
 			var maximumTranslation = Math.Max(48d, _scrollViewer.ActualHeight);
 			var start = Math.Clamp(currentTranslation + compensation, -maximumTranslation, maximumTranslation);
 			AnimateToRest(start);
@@ -271,42 +278,48 @@ public static class SmoothLogicalScrollBehavior
 			return current;
 		}
 
-		private List<RowAnchor> CaptureVisibleRows()
+		private double MeasureLogicalTravel(int previousFirstIndex, int rows)
 		{
-			var anchors = new List<RowAnchor>();
-			if (_itemsHost == null || _scrollViewer == null) return anchors;
+			if (_itemsHost == null || rows == 0) return 0;
 
-			var viewportCenter = _scrollViewer.ActualHeight / 2d;
-			foreach (UIElement child in _itemsHost.Children)
+			var count = Math.Abs(rows);
+			var firstCrossedIndex = rows > 0
+				? previousFirstIndex - count
+				: previousFirstIndex;
+			var realizedHeights = new List<double>(count);
+			var missingCount = 0;
+			for (var offset = 0; offset < count; offset++)
 			{
-				if (child is not FrameworkElement row || row.ActualHeight <= 0) continue;
-				var index = _owner.ItemContainerGenerator.IndexFromContainer(row);
-				if (index < 0) continue;
-
-				var top = row.TranslatePoint(new Point(), _scrollViewer).Y;
-				var bottom = top + row.ActualHeight;
-				if (bottom < MinimumVisiblePixels || top > _scrollViewer.ActualHeight - MinimumVisiblePixels) continue;
-				anchors.Add(new RowAnchor(
-					index,
-					top,
-					row.ActualHeight,
-					Math.Abs((top + (row.ActualHeight / 2d)) - viewportCenter)));
+				var itemIndex = firstCrossedIndex + offset;
+				if (itemIndex >= 0 && itemIndex < _owner.Items.Count &&
+					_owner.ItemContainerGenerator.ContainerFromIndex(itemIndex) is FrameworkElement row &&
+					row.ActualHeight > 0)
+				{
+					realizedHeights.Add(GetLayoutHeight(row));
+				}
+				else missingCount++;
 			}
-			anchors.Sort((left, right) => left.DistanceFromCenter.CompareTo(right.DistanceFromCenter));
-			return anchors;
+
+			var fallbackHeight = realizedHeights.Count > 0
+				? realizedHeights.Average()
+				: _itemsHost.Children
+					.OfType<FrameworkElement>()
+					.Where(row => row.ActualHeight > 0)
+					.Select(GetLayoutHeight)
+					.DefaultIfEmpty(36d)
+					.Average();
+			return SmoothLogicalScrollPolicy.CalculateVisualCompensation(
+				rows,
+				realizedHeights,
+				missingCount,
+				fallbackHeight);
 		}
 
-		private double ResolveVisualCompensation(IReadOnlyList<RowAnchor> anchors, double offsetChange)
+		private static double GetLayoutHeight(FrameworkElement row)
 		{
-			foreach (var anchor in anchors)
-			{
-				if (_owner.ItemContainerGenerator.ContainerFromIndex(anchor.Index) is not FrameworkElement row) continue;
-				var newTop = row.TranslatePoint(new Point(), _scrollViewer).Y;
-				if (double.IsFinite(newTop)) return anchor.Top - newTop;
-			}
-
-			var averageHeight = anchors.Count > 0 ? anchors.Average(anchor => anchor.Height) : 36d;
-			return offsetChange * averageHeight;
+			var height = row.ActualHeight + row.Margin.Top + row.Margin.Bottom;
+			if (double.IsFinite(height) && height > 0) return height;
+			return 36d;
 		}
 
 		private void AnimateToRest(double start)
