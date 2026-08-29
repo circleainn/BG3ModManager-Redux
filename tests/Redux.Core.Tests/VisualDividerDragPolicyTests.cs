@@ -174,6 +174,25 @@ public sealed class VisualDividerDragPolicyTests
 			VisualModListDropPolicy.ResolveCollapsedOwner(items, 4));
 	}
 
+	public void CollapsedDropPreviewUsesOnlyTheAdjacentVisibleRow()
+	{
+		var collapsed = CreateDivider("collapsed", collapsed: true);
+		var next = CreateDivider("next", collapsed: false);
+		var nextMember = CreateMod("next-member");
+		var visibleItems = new VisibleRowProbe(collapsed, next, nextMember);
+
+		RegressionAssert.Equal(
+			collapsed,
+			VisualModListDropPolicy.ResolveVisibleCollapsedOwner(visibleItems, 1));
+		RegressionAssert.Equal(1, visibleItems.IndexerReads);
+		RegressionAssert.Equal(
+			null,
+			VisualModListDropPolicy.ResolveVisibleCollapsedOwner(new[] { collapsed, next, nextMember }, 2));
+		RegressionAssert.Equal(
+			null,
+			VisualModListDropPolicy.ResolveVisibleCollapsedOwner(new[] { collapsed, next, nextMember }, 3));
+	}
+
 	public void VisibleDropSlotMapsPastOmittedCollapsedMembers()
 	{
 		var divider = CreateDivider("collapsed", collapsed: true);
@@ -387,4 +406,27 @@ public sealed class VisualDividerDragPolicyTests
 		IsSelected = selected,
 		CanDrag = true
 	};
+
+	private sealed class VisibleRowProbe : IReadOnlyList<DivinityModData>
+	{
+		private readonly DivinityModData[] _items;
+
+		public int Count => _items.Length;
+		public int IndexerReads { get; private set; }
+		public DivinityModData this[int index]
+		{
+			get
+			{
+				IndexerReads++;
+				return _items[index];
+			}
+		}
+
+		public VisibleRowProbe(params DivinityModData[] items) => _items = items;
+
+		public IEnumerator<DivinityModData> GetEnumerator() =>
+			throw new InvalidOperationException("The drag preview must not enumerate the mod list.");
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+	}
 }

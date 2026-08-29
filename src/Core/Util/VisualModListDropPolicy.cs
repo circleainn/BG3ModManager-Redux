@@ -11,6 +11,24 @@ namespace DivinityModManager.Util;
 public static class VisualModListDropPolicy
 {
 	/// <summary>
+	/// Resolves a blocked drop from the displayed projection without rebuilding the
+	/// canonical sequence. Collapsed members are absent from that projection, so a
+	/// locked insertion slot is always immediately after its collapsed marker.
+	/// </summary>
+	public static DivinityModData ResolveVisibleCollapsedOwner(
+		IReadOnlyList<DivinityModData> visibleItems,
+		int insertionIndex)
+	{
+		ArgumentNullException.ThrowIfNull(visibleItems);
+		var previousIndex = Math.Clamp(insertionIndex, 0, visibleItems.Count) - 1;
+		if (previousIndex < 0) return null;
+		var previous = visibleItems[previousIndex];
+		return previous.IsVisualDivider && previous.IsVisualDividerCollapsed
+			? previous
+			: null;
+	}
+
+	/// <summary>
 	/// Finds the collapsed separator whose section would own a new item at the
 	/// requested canonical insertion boundary. A section extends from its marker
 	/// up to the next marker, including the slot immediately before that marker.

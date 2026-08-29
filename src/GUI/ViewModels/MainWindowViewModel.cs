@@ -6900,15 +6900,13 @@ Directory the zip will be extracted to:
 		int visibleInsertIndex,
 		out string dividerTitle)
 	{
-		var visibleItems = (destinationActive ? DisplayActiveMods : DisplayInactiveMods).ToList();
-		var sequence = BuildVisualDividerSequence(destinationActive).ToList();
-		var insertionIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(
-			visibleItems, sequence, visibleInsertIndex);
-		var marker = VisualModListDropPolicy.ResolveCollapsedOwner(sequence, insertionIndex);
-		var divider = GetVisualDivider(marker);
-		dividerTitle = divider?.Title?.Trim();
+		var visibleItems = destinationActive ? DisplayActiveMods : DisplayInactiveMods;
+		var marker = VisualModListDropPolicy.ResolveVisibleCollapsedOwner(
+			visibleItems,
+			visibleInsertIndex);
+		dividerTitle = marker?.VisualDividerTitle?.Trim();
 		if (String.IsNullOrWhiteSpace(dividerTitle)) dividerTitle = "this separator";
-		return divider != null;
+		return marker != null;
 	}
 
 	public int ResolveVisualModListInsertionIndex(System.Collections.IList visualItems, int targetIndex, bool insertAfter)
