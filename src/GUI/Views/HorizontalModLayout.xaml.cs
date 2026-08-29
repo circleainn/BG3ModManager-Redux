@@ -244,6 +244,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private ReduxDropIndicatorAdorner _modListDropIndicator;
 	private ListView _modListDropIndicatorOwner;
 	private ReduxDropTargetMotionState _modListDropMotion;
+	private ListView _blockedCollapsedDividerDropOwner;
+	private string _blockedCollapsedDividerDropTitle;
 	private const string VisualDividerMenuTag = "ReduxVisualDivider";
 	private const double DefaultModDetailsRowHeight = 295;
 	private const double MinimumExpandedModDetailsRowHeight = 295;
@@ -499,6 +501,20 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			ClearModListDropIndicator();
 			return;
 		}
+		var destinationActive = ReferenceEquals(listView, ActiveModsView);
+		if (ViewModel.TryResolveCollapsedVisualDividerDropTarget(
+			destinationActive,
+			insertIndex,
+			out var collapsedDividerTitle))
+		{
+			ClearModListDropIndicator();
+			_blockedCollapsedDividerDropOwner = listView;
+			_blockedCollapsedDividerDropTitle = collapsedDividerTitle;
+			e.Effects = DragDropEffects.None;
+			e.Handled = true;
+			return;
+		}
+		ClearBlockedCollapsedDividerDrop();
 
 		ShowModListDropIndicator(listView, indicatorOffset, insertIndex, targetItem, insertAfter);
 	}
@@ -511,8 +527,19 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ClearModListDropIndicator();
 	}
 
-	private void ModListView_PreviewDrop(object sender, DragEventArgs e) =>
+	private void ModListView_PreviewDrop(object sender, DragEventArgs e)
+	{
+		if (sender is ListView listView && ReferenceEquals(_blockedCollapsedDividerDropOwner, listView))
+		{
+			var title = _blockedCollapsedDividerDropTitle;
+			ClearModListDropIndicator();
+			ViewModel.ShowAlert($"Expand '{title}' before moving items into its section.", AlertType.Info, 8);
+			e.Effects = DragDropEffects.None;
+			e.Handled = true;
+			return;
+		}
 		ScheduleClearModListDropIndicator(sender as ListView);
+	}
 
 	private void ModListView_PreviewQueryContinueDrag(object sender, QueryContinueDragEventArgs e)
 	{
@@ -641,6 +668,13 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		_modListDropIndicator = null;
 		_modListDropIndicatorOwner = null;
 		ReduxDropFeedback.Clear(ref _modListDropMotion);
+		ClearBlockedCollapsedDividerDrop();
+	}
+
+	private void ClearBlockedCollapsedDividerDrop()
+	{
+		_blockedCollapsedDividerDropOwner = null;
+		_blockedCollapsedDividerDropTitle = null;
 	}
 
 	private void SaveCategoryFilterMenuItem_Click(object sender, RoutedEventArgs e)

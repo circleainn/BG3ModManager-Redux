@@ -3,7 +3,9 @@ param(
 	[ValidateSet("Debug", "Publish")]
 	[string]$Configuration = "Debug",
 
-	[switch]$Rebuild
+	[switch]$Rebuild,
+
+	[string]$PythonExecutable
 )
 
 $ErrorActionPreference = "Stop"
@@ -62,9 +64,55 @@ $prepareLSLib = Join-Path $repositoryRoot "Prepare-LSLib.ps1"
 
 $solution = Join-Path $repositoryRoot "BG3ModManager.sln"
 $target = if ($Rebuild) { "Rebuild" } else { "Build" }
+$msbuildArguments = @(
+	$solution,
+	"/restore",
+	"/t:$target",
+	"/p:Configuration=$Configuration",
+	"/p:Platform=x64",
+	"/m",
+	"/v:minimal"
+)
+
+if ($Configuration -eq "Publish")
+{
+	# LSLibNative exposes Debug/Release configurations only. Restore evaluates the
+	# project before solution mappings are applied, so use Release for restore while
+	# retaining Publish for the actual solution build.
+	$msbuildArguments += "/restoreProperty:Configuration=Release"
+
+	if ([String]::IsNullOrWhiteSpace($PythonExecutable))
+	{
+		$PythonExecutable = $env:REDUX_PYTHON
+	}
+	if ([String]::IsNullOrWhiteSpace($PythonExecutable))
+	{
+		foreach ($commandName in @("python", "python3"))
+		{
+			$command = Get-Command $commandName -ErrorAction SilentlyContinue
+			if (!$command) { continue }
+			& $command.Source --version *> $null
+			if ($LASTEXITCODE -eq 0)
+			{
+				$PythonExecutable = $command.Source
+				break
+			}
+		}
+	}
+	if ([String]::IsNullOrWhiteSpace($PythonExecutable))
+	{
+		throw "Python 3 is required for Publish packaging. Pass -PythonExecutable or set REDUX_PYTHON."
+	}
+	& $PythonExecutable --version *> $null
+	if ($LASTEXITCODE -ne 0)
+	{
+		throw "The configured Python executable could not be started: $PythonExecutable"
+	}
+	$msbuildArguments += "/p:PythonExecutable=$PythonExecutable"
+}
 
 Write-Host "Building Redux $Configuration x64 with $msbuild"
-& $msbuild $solution "/restore" "/t:$target" "/p:Configuration=$Configuration" "/p:Platform=x64" "/m" "/v:minimal"
+& $msbuild @msbuildArguments
 if ($LASTEXITCODE -ne 0)
 {
 	exit $LASTEXITCODE

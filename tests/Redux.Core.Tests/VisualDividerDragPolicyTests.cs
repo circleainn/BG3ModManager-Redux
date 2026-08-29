@@ -151,6 +151,29 @@ public sealed class VisualDividerDragPolicyTests
 		RegressionAssert.Equal(items.IndexOf(looseMod), insertIndex);
 	}
 
+	public void CollapsedSeparatorOwnsEveryInsertionSlotUntilTheNextSeparator()
+	{
+		var looseBefore = CreateMod("loose-before");
+		var collapsed = CreateDivider("collapsed", collapsed: true);
+		var hidden = CreateMod("hidden");
+		var next = CreateDivider("next", collapsed: false);
+		var nextMember = CreateMod("next-member");
+		var items = new[] { looseBefore, collapsed, hidden, next, nextMember };
+
+		RegressionAssert.Equal(
+			collapsed,
+			VisualModListDropPolicy.ResolveCollapsedOwner(items, 2));
+		RegressionAssert.Equal(
+			collapsed,
+			VisualModListDropPolicy.ResolveCollapsedOwner(items, 3));
+		RegressionAssert.Equal(
+			null,
+			VisualModListDropPolicy.ResolveCollapsedOwner(items, 0));
+		RegressionAssert.Equal(
+			null,
+			VisualModListDropPolicy.ResolveCollapsedOwner(items, 4));
+	}
+
 	public void VisibleDropSlotMapsPastOmittedCollapsedMembers()
 	{
 		var divider = CreateDivider("collapsed", collapsed: true);

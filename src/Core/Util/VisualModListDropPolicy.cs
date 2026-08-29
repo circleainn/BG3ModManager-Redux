@@ -10,6 +10,27 @@ namespace DivinityModManager.Util;
 /// </summary>
 public static class VisualModListDropPolicy
 {
+	/// <summary>
+	/// Finds the collapsed separator whose section would own a new item at the
+	/// requested canonical insertion boundary. A section extends from its marker
+	/// up to the next marker, including the slot immediately before that marker.
+	/// </summary>
+	public static DivinityModData ResolveCollapsedOwner(
+		IReadOnlyList<DivinityModData> fullItems,
+		int insertionIndex)
+	{
+		ArgumentNullException.ThrowIfNull(fullItems);
+		for (var index = Math.Clamp(insertionIndex, 0, fullItems.Count) - 1;
+			index >= 0;
+			index--)
+		{
+			var item = fullItems[index];
+			if (!item.IsVisualDivider) continue;
+			return item.IsVisualDividerCollapsed ? item : null;
+		}
+		return null;
+	}
+
 	public static int MapVisibleInsertionIndex(
 		IReadOnlyList<DivinityModData> visibleItems,
 		IReadOnlyList<DivinityModData> fullItems,

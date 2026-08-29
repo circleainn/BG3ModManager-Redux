@@ -6895,6 +6895,22 @@ Directory the zip will be extracted to:
 
 	public bool IsVisualModCollection(object collection) => ReferenceEquals(collection, DisplayActiveMods) || ReferenceEquals(collection, DisplayInactiveMods);
 
+	public bool TryResolveCollapsedVisualDividerDropTarget(
+		bool destinationActive,
+		int visibleInsertIndex,
+		out string dividerTitle)
+	{
+		var visibleItems = (destinationActive ? DisplayActiveMods : DisplayInactiveMods).ToList();
+		var sequence = BuildVisualDividerSequence(destinationActive).ToList();
+		var insertionIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(
+			visibleItems, sequence, visibleInsertIndex);
+		var marker = VisualModListDropPolicy.ResolveCollapsedOwner(sequence, insertionIndex);
+		var divider = GetVisualDivider(marker);
+		dividerTitle = divider?.Title?.Trim();
+		if (String.IsNullOrWhiteSpace(dividerTitle)) dividerTitle = "this separator";
+		return divider != null;
+	}
+
 	public int ResolveVisualModListInsertionIndex(System.Collections.IList visualItems, int targetIndex, bool insertAfter)
 	{
 		var memberUuids = targetIndex >= 0 && targetIndex < visualItems.Count &&
@@ -6964,6 +6980,16 @@ Directory the zip will be extracted to:
 			destinationVisibleItems,
 			destinationSequence,
 			insertIndex);
+		var collapsedOwner = VisualModListDropPolicy.ResolveCollapsedOwner(
+			destinationSequence,
+			insertIndex);
+		if (collapsedOwner != null)
+		{
+			var title = GetVisualDivider(collapsedOwner)?.Title?.Trim();
+			if (String.IsNullOrWhiteSpace(title)) title = "this separator";
+			ShowAlert($"Expand '{title}' before moving items into its section.", AlertType.Info, 8);
+			return;
+		}
 		var result = VisualModListDropPolicy.Apply(
 			activeSequence,
 			inactiveSequence,

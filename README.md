@@ -38,6 +38,7 @@ ways to organize, review, and share mod setups.
   Quick Access menu (`F2`).
 - Assign categories to one mod or a selection, then click category pills to filter both lists.
 - Add separators that remember their placement and collapsed state.
+- Expand a collapsed separator before moving mods or other separators into its hidden section.
 - Add notes to mods and optionally include them in a Redux Modlist.
 - Compare saved orders or load a recent restore point without changing game files until export.
 - Inspect shared internal PAK paths with **Tools > Active File Overlaps**. Overlaps are reported as

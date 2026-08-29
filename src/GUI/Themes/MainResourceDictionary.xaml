@@ -2353,7 +2353,8 @@
 				<ControlTemplate TargetType="{x:Type ListViewItem}">
 					<StackPanel>
 						<!-- Separator visuals are expensive and irrelevant to ordinary mod rows. -->
-						<ContentControl Content="{Binding}"
+						<ContentControl x:Name="VisualDivider"
+							Content="{Binding}"
 							Focusable="False"
 							Visibility="{Binding ShowVisualDivider, Converter={StaticResource BoolToVisibilityConverter}}">
 							<ContentControl.ContentTemplate>

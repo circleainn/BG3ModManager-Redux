@@ -106,6 +106,17 @@ after the Publish binaries finish compiling:
 python '.\BuildRelease.py' '0.1.0-alpha.10'
 ```
 
+You can also give the build helper an explicit Python 3 executable. This is useful when Windows'
+`python.exe` application alias is enabled but Python is installed elsewhere:
+
+```powershell
+& '.\Build-Redux.ps1' -Configuration Publish -PythonExecutable 'C:\Path\To\python.exe'
+```
+
+Alternatively, set the `REDUX_PYTHON` environment variable to that executable before running the
+helper. The Publish restore intentionally evaluates the vendored native project as `Release`, then
+uses the solution's normal `Publish` mappings for the build.
+
 Use the actual display version from the project when producing a later build.
 
 The release packager:

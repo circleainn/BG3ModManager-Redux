@@ -144,6 +144,7 @@
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)' == 'Publish' or '$(Configuration)' == 'PublishTest'">
+		<PythonExecutable Condition="'$(PythonExecutable)' == ''">python</PythonExecutable>
 		<PreBuildEvent>rd /s /q $(TargetDir)_Lib</PreBuildEvent>
 	</PropertyGroup>
 
@@ -174,6 +175,6 @@
 	</Target>
 	
 	<Target Name="RunBuildRelease" AfterTargets="SetupLibFolder" Condition="'$(Configuration)' == 'Publish'">
-		<Exec Command="python &quot;BuildRelease.py&quot; &quot;$(InformationalVersion)&quot;" WorkingDirectory="$(SolutionDir)" />
+		<Exec Command="&quot;$(PythonExecutable)&quot; &quot;BuildRelease.py&quot; &quot;$(InformationalVersion)&quot;" WorkingDirectory="$(SolutionDir)" />
 	</Target>
 </Project>

@@ -28,6 +28,11 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Set up Python 3
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+
       - name: Build Debug x64
         shell: pwsh
         run: .\Build-Redux.ps1 -Configuration Debug
@@ -57,4 +62,40 @@ jobs:
           & '.\tests\Redux.Core.Tests\bin\x64\Debug\net8.0-windows10.0.22621.0\Redux.Core.Tests.exe'
           if ($LASTEXITCODE -ne 0) {
             exit $LASTEXITCODE
+          }
+
+      - name: Build and validate Publish package
+        shell: pwsh
+        run: |
+          .\Build-Redux.ps1 -Configuration Publish
+          $versionedArchive = Get-ChildItem -LiteralPath '.' -Filter 'BG3ModManager-Redux_v*.zip' |
+            Sort-Object LastWriteTimeUtc -Descending |
+            Select-Object -First 1
+          if (-not $versionedArchive) {
+            throw 'The versioned Publish archive was not created.'
+          }
+          if (-not (Test-Path -LiteralPath '.\BG3ModManager-Redux-Latest.zip')) {
+            throw 'The latest Publish archive was not created.'
+          }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive = [System.IO.Compression.ZipFile]::OpenRead($versionedArchive.FullName)
+          try {
+            $entries = $archive.Entries.FullName
+            foreach ($required in @(
+              'BG3ModManager.exe',
+              'BG3ModManager.dll',
+              '_Lib/LSLib.dll',
+              '_Lib/LSLibNative.dll',
+              '_Lib/Ijwhost.dll',
+              'LICENSE',
+              'README.md',
+              'THIRD-PARTY-NOTICES.md'
+            )) {
+              if ($required -notin $entries) {
+                throw "Required package entry is missing: $required"
+              }
+            }
+          }
+          finally {
+            $archive.Dispose()
           }
