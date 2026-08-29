@@ -2352,14 +2352,50 @@
 			<Setter.Value>
 				<ControlTemplate TargetType="{x:Type ListViewItem}">
 					<StackPanel>
-						<Border x:Name="VisualDivider"
-							Margin="12,8,12,6"
-							Padding="0,4"
-							Background="Transparent"
-							ToolTip="{Binding VisualDividerDescription}"
-							ToolTipService.IsEnabled="{Binding HasVisualDividerDescription}"
+						<!-- Separator visuals are expensive and irrelevant to ordinary mod rows. -->
+						<ContentControl Content="{Binding}"
+							Focusable="False"
 							Visibility="{Binding ShowVisualDivider, Converter={StaticResource BoolToVisibilityConverter}}">
-							<Grid>
+							<ContentControl.ContentTemplate>
+								<DataTemplate DataType="{x:Type data:DivinityModData}">
+									<Border Margin="12,8,12,6"
+										Padding="0,4"
+										Background="Transparent"
+										ToolTip="{Binding VisualDividerDescription}"
+										ToolTipService.IsEnabled="{Binding HasVisualDividerDescription}">
+										<Border.Triggers>
+											<EventTrigger RoutedEvent="MouseEnter">
+												<BeginStoryboard>
+													<Storyboard>
+														<DoubleAnimation Storyboard.TargetName="VisualDividerHoverSurface"
+															Storyboard.TargetProperty="Opacity"
+															To="0.62"
+															Duration="{StaticResource Redux.Motion.Fast}"
+															EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+														<DoubleAnimation Storyboard.TargetName="VisualDividerHoverRail"
+															Storyboard.TargetProperty="Opacity"
+															To="1"
+															Duration="{StaticResource Redux.Motion.Fast}"
+															EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
+													</Storyboard>
+												</BeginStoryboard>
+											</EventTrigger>
+											<EventTrigger RoutedEvent="MouseLeave">
+												<BeginStoryboard>
+													<Storyboard>
+														<DoubleAnimation Storyboard.TargetName="VisualDividerHoverSurface"
+															Storyboard.TargetProperty="Opacity"
+															To="0"
+															Duration="{StaticResource Redux.Motion.Standard}" />
+														<DoubleAnimation Storyboard.TargetName="VisualDividerHoverRail"
+															Storyboard.TargetProperty="Opacity"
+															To="0"
+															Duration="{StaticResource Redux.Motion.Standard}" />
+													</Storyboard>
+												</BeginStoryboard>
+											</EventTrigger>
+										</Border.Triggers>
+										<Grid>
 								<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 								<!-- Fill/rail split for the same reason as RowHoverSurface/RowHoverRail: the
 									0.62 hover cap is meant for the fill's tint, not the rail's edge. -->
@@ -2465,8 +2501,11 @@
 									CornerRadius="1"
 									Background="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
 									Visibility="{Binding ShowVisualDividerLine, Converter={StaticResource BoolToVisibilityConverter}}" />
-							</Grid>
-						</Border>
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ContentControl.ContentTemplate>
+						</ContentControl>
 						<Border x:Name="RowBorder"
 							MinHeight="{TemplateBinding MinHeight}"
 							Padding="0"
@@ -2599,16 +2638,6 @@
 											To="1"
 											Duration="{StaticResource Redux.Motion.Fast}"
 											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-										<DoubleAnimation Storyboard.TargetName="VisualDividerHoverSurface"
-											Storyboard.TargetProperty="Opacity"
-											To="0.62"
-											Duration="{StaticResource Redux.Motion.Fast}"
-											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-										<DoubleAnimation Storyboard.TargetName="VisualDividerHoverRail"
-											Storyboard.TargetProperty="Opacity"
-											To="1"
-											Duration="{StaticResource Redux.Motion.Fast}"
-											EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
 									</Storyboard>
 								</BeginStoryboard>
 							</Trigger.EnterActions>
@@ -2620,14 +2649,6 @@
 											To="0"
 											Duration="{StaticResource Redux.Motion.Standard}" />
 										<DoubleAnimation Storyboard.TargetName="RowHoverRail"
-											Storyboard.TargetProperty="Opacity"
-											To="0"
-											Duration="{StaticResource Redux.Motion.Standard}" />
-										<DoubleAnimation Storyboard.TargetName="VisualDividerHoverSurface"
-											Storyboard.TargetProperty="Opacity"
-											To="0"
-											Duration="{StaticResource Redux.Motion.Standard}" />
-										<DoubleAnimation Storyboard.TargetName="VisualDividerHoverRail"
 											Storyboard.TargetProperty="Opacity"
 											To="0"
 											Duration="{StaticResource Redux.Motion.Standard}" />
@@ -3726,8 +3747,56 @@
 					</Style>
 				</Border.Style>
 			</Border>
-			<Border x:Name="DeferredModNameDetails" Grid.Column="2" Padding="0,0,4,0" BorderThickness="0">
-				<StackPanel Orientation="Horizontal">
+			<!-- Materialize the status subtree only when at least one indicator can render. -->
+			<ContentControl x:Name="DeferredModNameDetails"
+				Grid.Column="2"
+				Padding="0,0,4,0"
+				HorizontalContentAlignment="Left"
+				VerticalContentAlignment="Center"
+				Content="{Binding}"
+				Focusable="False">
+				<ContentControl.Style>
+					<Style TargetType="{x:Type ContentControl}">
+						<Setter Property="Visibility" Value="Collapsed" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding SourceComponentVisibility}" Value="Visible">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding OsirisStatusVisibility}" Value="Visible">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding HasPrivateNote}" Value="True">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding MissingDependencyIconVisibility}" Value="Visible">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding HasInvalidUUIDVisibility}" Value="Visible">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding HealthSnapshot.NeedsAttention}" Value="True">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding ToolkitIconVisibility}" Value="Visible">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+							<DataTrigger Binding="{Binding ExtenderStatusVisibility}" Value="Visible">
+								<Setter Property="Visibility" Value="Visible" />
+							</DataTrigger>
+							<MultiDataTrigger>
+								<MultiDataTrigger.Conditions>
+									<Condition Binding="{Binding IsActive}" Value="True" />
+									<Condition Binding="{Binding DataContext.Settings.DebugModeEnabled, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True" />
+									<Condition Binding="{Binding DataContext.Modules.LoadOrderGuidanceEnabled, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True" />
+								</MultiDataTrigger.Conditions>
+								<Setter Property="Visibility" Value="Visible" />
+							</MultiDataTrigger>
+						</Style.Triggers>
+					</Style>
+				</ContentControl.Style>
+				<ContentControl.ContentTemplate>
+					<DataTemplate DataType="{x:Type data:DivinityModData}">
+						<StackPanel Orientation="Horizontal">
 					<Border MinWidth="20"
 						Height="18"
 						Margin="2,0"
@@ -4012,8 +4081,10 @@
 						</controls:ReduxIcon.Style>
 					</controls:ReduxIcon>
 					</Grid>
-				</StackPanel>
-			</Border>
+						</StackPanel>
+					</DataTemplate>
+				</ContentControl.ContentTemplate>
+			</ContentControl>
 		</controls:ModEntryGrid>
 	</DataTemplate>
 	<DataTemplate x:Key="ModAuthorTemplate" DataType="{x:Type data:DivinityModData}">

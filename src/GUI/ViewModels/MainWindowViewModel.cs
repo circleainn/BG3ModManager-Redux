@@ -6641,7 +6641,10 @@ Directory the zip will be extracted to:
 		SetVisualDividerCollapsed(item, !divider.IsCollapsed);
 	}
 
-	public bool SetVisualDividerCollapsed(DivinityModData item, bool collapsed)
+	public bool SetVisualDividerCollapsed(
+		DivinityModData item,
+		bool collapsed,
+		bool preserveRealizedContainers = false)
 	{
 		var divider = GetVisualDivider(item);
 		if (divider == null || divider.IsCollapsed == collapsed) return false;
@@ -6654,7 +6657,10 @@ Directory the zip will be extracted to:
 				divider.IsActiveList);
 		}
 		if (!VisualDividerStatePolicy.SetCollapsed(divider, collapsed)) return false;
-		if (!UpdateVisualDividerSectionProjection(divider, collapsed))
+		if (!UpdateVisualDividerSectionProjection(
+			divider,
+			collapsed,
+			preserveRealizedContainers))
 			RefreshVisualDividers(divider.IsActiveList);
 		// Keep disk I/O outside the collapse/expand animation window and coalesce
 		// rapid section changes into one persisted settings snapshot.
@@ -6709,7 +6715,7 @@ Directory the zip will be extracted to:
 
 		var removeCount = memberCount - retainedPrefixCount;
 		if (removeCount > 0)
-			VisualDividerProjectionMutation.RemoveRange(
+			VisualDividerProjectionMutation.RemoveRangePreservingContainers(
 				target,
 				firstMemberIndex + retainedPrefixCount,
 				removeCount);
@@ -6795,7 +6801,11 @@ Directory the zip will be extracted to:
 		var insertIndex = VisualDividerSectionPolicy.ResolveExpansionInsertionIndex(
 			target, marker, divider);
 		if (insertIndex < 0) return false;
-		VisualDividerProjectionMutation.InsertRange(target, batch, insertIndex);
+		if (offset == 0)
+			VisualDividerProjectionMutation.InsertRangePreservingContainers(
+				target, batch, insertIndex);
+		else
+			VisualDividerProjectionMutation.InsertRange(target, batch, insertIndex);
 		return true;
 	}
 
@@ -6806,7 +6816,8 @@ Directory the zip will be extracted to:
 	/// </summary>
 	private bool UpdateVisualDividerSectionProjection(
 		ModListVisualDividerData divider,
-		bool collapsed)
+		bool collapsed,
+		bool preserveRealizedContainers)
 	{
 		if (divider == null || !String.IsNullOrWhiteSpace(SelectedModCategory) &&
 			!SelectedModCategory.Equals(AllModsCategory, StringComparison.OrdinalIgnoreCase))
@@ -6831,7 +6842,13 @@ Directory the zip will be extracted to:
 				!String.IsNullOrWhiteSpace(member.UUID) && memberIds.Contains(member.UUID))
 				removeCount++;
 			if (removeCount > 0)
-				VisualDividerProjectionMutation.RemoveRange(target, removeIndex, removeCount);
+			{
+				if (preserveRealizedContainers)
+					VisualDividerProjectionMutation.RemoveRangePreservingContainers(
+						target, removeIndex, removeCount);
+				else
+					VisualDividerProjectionMutation.RemoveRange(target, removeIndex, removeCount);
+			}
 			return true;
 		}
 

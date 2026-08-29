@@ -1707,7 +1707,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					}
 					else if (!completed)
 					{
-						ViewModel.SetVisualDividerCollapsed(expandingDividerItem, true);
+						ViewModel.SetVisualDividerCollapsed(
+							expandingDividerItem,
+							true,
+							preserveRealizedContainers: true);
 					}
 					var finalDividerItem = GetCurrentDividerItem();
 					if (finalDividerItem != null)
@@ -1815,7 +1818,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					foreach (var row in sectionRows) row.Restore();
 					foreach (var row in followingRows) row.Restore();
 					if (completed)
-						ViewModel.SetVisualDividerCollapsed(dividerItem, true);
+						ViewModel.SetVisualDividerCollapsed(
+							dividerItem,
+							true,
+							preserveRealizedContainers: true);
 					else if (restorePreparedProjectionOnCancel)
 						ViewModel.RestoreVisualDividerProjection(dividerItem);
 				}

@@ -108,6 +108,25 @@ public sealed class InteractionPerformanceTests
 			changes);
 	}
 
+	public void AnimatedSeparatorProjectionPreservesRecyclableContainers()
+	{
+		var rows = new ObservableCollectionExtended<int>();
+		rows.AddRange(new[] { 0, 100 });
+		var members = Enumerable.Range(1, 24).ToList();
+		var changes = new List<NotifyCollectionChangedAction>();
+		rows.CollectionChanged += (_, args) => changes.Add(args.Action);
+
+		VisualDividerProjectionMutation.InsertRangePreservingContainers(rows, members, 1);
+		RegressionAssert.Equal(members.Count, changes.Count);
+		RegressionAssert.True(changes.All(change => change == NotifyCollectionChangedAction.Add));
+
+		changes.Clear();
+		VisualDividerProjectionMutation.RemoveRangePreservingContainers(rows, 1, members.Count);
+		RegressionAssert.SequenceEqual(new[] { 0, 100 }, rows);
+		RegressionAssert.Equal(members.Count, changes.Count);
+		RegressionAssert.True(changes.All(change => change == NotifyCollectionChangedAction.Remove));
+	}
+
 	public void ImportProgressIsSharedAcrossFilesAndNeverExceedsOne()
 	{
 		const int fileCount = 37;
