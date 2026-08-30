@@ -82,7 +82,7 @@ public static class VisualDividerSectionPolicy
 
 	/// <summary>
 	/// Resolves recreated display markers back to the canonical marker in the full
-	/// visual sequence. Separator drags deliberately contain no mod rows.
+	/// visual sequence. The live drag payload deliberately contains no mod rows.
 	/// </summary>
 	public static IReadOnlyList<DivinityModData> ResolveMarkerOnlyDragPayload(
 		IEnumerable<DivinityModData> visualItems,
@@ -105,6 +105,43 @@ public static class VisualDividerSectionPolicy
 				!String.IsNullOrWhiteSpace(item.VisualDividerId) &&
 				markerIds.Contains(item.VisualDividerId))
 			.ToList();
+	}
+
+	/// <summary>
+	/// Resolves a collapsed separator marker to one canonical, contiguous block made
+	/// from its sealed members. Unowned rows after the block are never carried along.
+	/// The live drag preview remains marker-only, keeping pointer movement independent
+	/// of the number of hidden mods.
+	/// </summary>
+	public static IReadOnlyList<DivinityModData> ResolveCollapsedBlockDragPayload(
+		IEnumerable<DivinityModData> visualItems,
+		DivinityModData draggedMarker,
+		ModListVisualDividerData divider)
+	{
+		ArgumentNullException.ThrowIfNull(visualItems);
+		ArgumentNullException.ThrowIfNull(draggedMarker);
+		ArgumentNullException.ThrowIfNull(divider);
+		if (!draggedMarker.IsVisualDivider || !divider.IsCollapsed ||
+			String.IsNullOrWhiteSpace(divider.Id))
+			return Array.Empty<DivinityModData>();
+
+		var sequence = visualItems.Where(item => item != null).ToList();
+		var markerIndex = sequence.FindIndex(item => item.IsVisualDivider &&
+			String.Equals(item.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
+		if (markerIndex < 0) return Array.Empty<DivinityModData>();
+
+		var memberIds = (divider.MemberModUuids ?? Enumerable.Empty<string>())
+			.Where(uuid => !String.IsNullOrWhiteSpace(uuid))
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var result = new List<DivinityModData> { sequence[markerIndex] };
+		for (var index = markerIndex + 1; index < sequence.Count; index++)
+		{
+			var item = sequence[index];
+			if (item.IsVisualDivider || String.IsNullOrWhiteSpace(item.UUID) ||
+				!memberIds.Contains(item.UUID)) break;
+			result.Add(item);
+		}
+		return result;
 	}
 
 	/// <summary>
@@ -245,11 +282,11 @@ public static class VisualDividerSectionPolicy
 	public static int ResolveExpansionInsertionIndex(
 		IReadOnlyList<DivinityModData> visibleItems,
 		DivinityModData marker,
-		ModListVisualDividerData divider)
+		IEnumerable<DivinityModData> expandingMembers)
 	{
 		ArgumentNullException.ThrowIfNull(visibleItems);
 		ArgumentNullException.ThrowIfNull(marker);
-		ArgumentNullException.ThrowIfNull(divider);
+		ArgumentNullException.ThrowIfNull(expandingMembers);
 
 		var insertIndex = -1;
 		for (var index = 0; index < visibleItems.Count; index++)
@@ -260,8 +297,9 @@ public static class VisualDividerSectionPolicy
 		}
 		if (insertIndex < 0) return -1;
 		insertIndex++;
-		var memberIds = (divider.MemberModUuids ?? Enumerable.Empty<string>())
-			.Where(uuid => !String.IsNullOrWhiteSpace(uuid))
+		var memberIds = expandingMembers
+			.Where(member => member != null && !String.IsNullOrWhiteSpace(member.UUID))
+			.Select(member => member.UUID)
 			.ToHashSet(StringComparer.OrdinalIgnoreCase);
 		while (insertIndex < visibleItems.Count &&
 			visibleItems[insertIndex] is { IsVisualDivider: false } insertedMember &&

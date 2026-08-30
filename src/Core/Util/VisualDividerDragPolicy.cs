@@ -22,12 +22,10 @@ public static class VisualDividerDragPolicy
 
 		if (sourceItem.IsVisualDivider)
 		{
-			// A collapsed separator represents hidden rows and cannot be moved safely.
-			// Expanded separators move only their own marker; their surrounding mods
-			// remain in the authoritative load order.
-			return sourceItem.IsVisualDividerCollapsed
-				? Array.Empty<DivinityModData>()
-				: new[] { sourceItem };
+			// Keep the live drag payload lightweight. The drop policy resolves a closed
+			// separator's hidden members from its sealed membership snapshot only after
+			// the user commits the move. Expanded separators remain marker-only moves.
+			return new[] { sourceItem };
 		}
 
 		if (!canDragNormalItem(sourceItem)) return Array.Empty<DivinityModData>();

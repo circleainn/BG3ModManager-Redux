@@ -1682,8 +1682,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					expandingSectionRows[index].Translation.Y = -4 * remaining;
 					expandingSectionRows[index].SetOpacity(expandingSectionRows[index].BaseOpacity * progress);
 				}
-				foreach (var row in expandingFollowingRows.Where(row => row.IsCurrent))
-					row.Translation.Y = -expandingSectionTravel * remaining;
+				for (var index = 0; index < expandingFollowingRows.Count; index++)
+				{
+					if (expandingFollowingRows[index].IsCurrent)
+						expandingFollowingRows[index].Translation.Y = -expandingSectionTravel * remaining;
+				}
 			}
 
 			void FinishExpansion(bool completed)
@@ -1694,15 +1697,37 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					foreach (var row in expandingFollowingRows) row.Restore();
 					if (completed && initialMemberCount < members.Count)
 					{
-						// Rows beyond the viewport do not participate in the transition. Project
-						// them only after the visible batch has finished so their templates cannot
-						// delay the first animated frame of a large separator.
-						if (!ViewModel.InsertVisualDividerExpansionBatch(
-							expandingDividerItem,
-							members,
-							initialMemberCount,
-							members.Count - initialMemberCount))
-							ViewModel.RefreshVisualDividers();
+						// The rendering callback must finish before the off-screen suffix changes
+						// the collection. Performing a large Reset here stalls the final animation
+						// frame in direct proportion to the section size. The visible batch is
+						// already complete, so let WPF present it before projecting the remainder.
+						expandingDividerItem.CanDrag = false;
+						var deferredOffset = initialMemberCount;
+						Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+						{
+							try
+							{
+								var current = GetCurrentDividerItem();
+								if (current == null || current.IsVisualDividerCollapsed) return;
+								if (!ViewModel.InsertVisualDividerExpansionBatch(
+									current,
+									members,
+									deferredOffset,
+									members.Count - deferredOffset))
+									ViewModel.RefreshVisualDividers();
+							}
+							catch (Exception ex)
+							{
+								DivinityApp.Log($"Deferred separator expansion could not complete: {ex}");
+								ViewModel.RefreshVisualDividers();
+							}
+							finally
+							{
+								var current = GetCurrentDividerItem();
+								if (current != null && !current.IsVisualDividerCollapsed)
+									current.CanDrag = true;
+							}
+						}));
 					}
 					else if (!completed)
 					{
@@ -1803,8 +1828,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					sectionRows[index].Translation.Y = -4 * progress;
 					sectionRows[index].SetOpacity(sectionRows[index].BaseOpacity * visibleProgress);
 				}
-				foreach (var row in followingRows.Where(row => row.IsCurrent))
-					row.Translation.Y = -sectionTravel * progress;
+				for (var index = 0; index < followingRows.Count; index++)
+				{
+					if (followingRows[index].IsCurrent)
+						followingRows[index].Translation.Y = -sectionTravel * progress;
+				}
 			}
 
 			VisualDividerAnimation transition = null;

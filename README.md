@@ -7,7 +7,7 @@ ways to organize, review, and share mod setups.
 
 **Current build:** `0.1.0-alpha.10`
 
-[Nexus Mods](https://www.nexusmods.com/baldursgate3/mods/23799) | [Report an issue](https://github.com/circleainn/BG3ModManager-Redux/issues) | [Changes from upstream](docs/CHANGES_FROM_UPSTREAM.md) | [Build from source](docs/BUILDING.md)
+[Nexus Mods](https://www.nexusmods.com/baldursgate3/mods/23799) | [Report an issue](https://github.com/circleainn/BG3ModManager-Redux/issues) | [Changes from upstream](docs/CHANGES_FROM_UPSTREAM.md)
 
 > [!IMPORTANT]
 > Redux is still in early development. Keep backups of important profiles, saves, downloaded
@@ -38,7 +38,8 @@ ways to organize, review, and share mod setups.
   Quick Access menu (`F2`).
 - Assign categories to one mod or a selection, then click category pills to filter both lists.
 - Add separators that remember their placement and collapsed state. Closed separators keep their
-  existing contents sealed; newly positioned mods remain visible until the section is expanded.
+  existing contents sealed and move with those mods as one group; newly positioned mods remain
+  visible until the section is expanded.
 - Add notes to mods and optionally include them in a Redux Modlist.
 - Compare saved orders or load a recent restore point without changing game files until export.
 - Inspect shared internal PAK paths with **Tools > Active File Overlaps**. Overlaps are reported as
@@ -149,7 +150,6 @@ are local data and are not included in application packages.
 ## Documentation
 
 - [Changes from upstream BG3 Mod Manager](docs/CHANGES_FROM_UPSTREAM.md)
-- [Building from source](docs/BUILDING.md)
 - [Optional features](docs/REDUX_OPTIONAL_MODULES.md)
 - [Redux mod database](docs/REDUX_MOD_DATABASE.md)
 - [Mod developer tools](docs/MOD_DEVELOPER_TOOLS.md)

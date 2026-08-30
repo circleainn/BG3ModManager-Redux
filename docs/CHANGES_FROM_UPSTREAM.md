@@ -55,9 +55,11 @@ Redux adds a persistent organization layer that upstream does not provide:
 
 Redux also adds named visual separators to the active load order. Separators support colors,
 descriptions, icons, persistent collapse state, and durable section membership. They are strictly
-presentation data: they are never written to `modsettings.lsx` or treated as mods. Collapsed
-separators cannot be dragged; expanded separator drags move only the marker and do not implicitly
-move or absorb mod rows.
+presentation data: they are never written to `modsettings.lsx` or treated as mods. Expanded
+separator drags move only the marker. Collapsed separators move with their sealed contents as one
+group, remain closed after the move, and do not absorb unrelated rows at their destination. Rows
+placed next to a closed separator remain visible until the separator is expanded and its section
+boundaries are recalculated.
 
 ## Load-order workflow and portable data
 

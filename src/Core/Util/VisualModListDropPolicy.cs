@@ -77,17 +77,15 @@ public static class VisualModListDropPolicy
 		var active = activeItems.ToList();
 		var inactive = inactiveItems.ToList();
 		var dragged = draggedItems.Where(item => item != null).Distinct().ToList();
+		var draggedSet = dragged.ToHashSet();
 		var destination = destinationActive ? active : inactive;
-		var removedBeforeInsertion = dragged
-			.Select(item => destination.IndexOf(item))
-			.Count(oldIndex => oldIndex >= 0 && oldIndex < insertIndex);
+		var removedBeforeInsertion = destination
+			.Take(Math.Clamp(insertIndex, 0, destination.Count))
+			.Count(draggedSet.Contains);
 		insertIndex -= removedBeforeInsertion;
 
-		foreach (var item in dragged)
-		{
-			active.Remove(item);
-			inactive.Remove(item);
-		}
+		active.RemoveAll(draggedSet.Contains);
+		inactive.RemoveAll(draggedSet.Contains);
 
 		insertIndex = Math.Clamp(insertIndex, 0, destination.Count);
 		destination.InsertRange(insertIndex, dragged);

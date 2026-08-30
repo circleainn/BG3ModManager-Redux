@@ -40,7 +40,7 @@ public sealed class VisualDividerDragPolicyTests
 		RegressionAssert.SequenceEqual(new[] { divider }, payload);
 	}
 
-	public void CollapsedDividerCannotStartDrag()
+	public void CollapsedDividerDragStartsWithLightweightMarker()
 	{
 		var divider = CreateDivider("collapsed", collapsed: true);
 		var firstMod = CreateMod("first");
@@ -53,7 +53,123 @@ public sealed class VisualDividerDragPolicyTests
 			divider,
 			_ => false);
 
-		RegressionAssert.Equal(0, payload.Count);
+		RegressionAssert.SequenceEqual(new[] { divider }, payload);
+	}
+
+	public void CollapsedSeparatorPayloadCarriesOnlyItsSealedMembers()
+	{
+		var visibleMarker = CreateDivider("closed", collapsed: true);
+		var canonicalMarker = CreateDivider("closed", collapsed: true);
+		var firstMember = CreateMod("first-member");
+		var secondMember = CreateMod("second-member");
+		var looseMod = CreateMod("loose");
+		var nextMarker = CreateDivider("next", collapsed: false);
+		var divider = new ModListVisualDividerData
+		{
+			Id = "closed", IsActiveList = true, IsCollapsed = true,
+			MemberModUuids = new List<string> { firstMember.UUID, secondMember.UUID }
+		};
+
+		var payload = VisualDividerSectionPolicy.ResolveCollapsedBlockDragPayload(
+			new[] { canonicalMarker, firstMember, secondMember, looseMod, nextMarker },
+			visibleMarker,
+			divider);
+
+		RegressionAssert.SequenceEqual(
+			new[] { canonicalMarker, firstMember, secondMember },
+			payload);
+		RegressionAssert.False(payload.Contains(looseMod));
+	}
+
+	public void CollapsedSeparatorMovesAroundAnotherClosedBlockWithoutAbsorption()
+	{
+		var movedMarker = CreateDivider("moved", collapsed: true);
+		var movedFirst = CreateMod("moved-first");
+		var movedSecond = CreateMod("moved-second");
+		var looseBefore = CreateMod("loose-before");
+		var targetMarker = CreateDivider("target", collapsed: true);
+		var targetFirst = CreateMod("target-first");
+		var targetSecond = CreateMod("target-second");
+		var looseAfter = CreateMod("loose-after");
+		var sequence = new[]
+		{
+			movedMarker, movedFirst, movedSecond, looseBefore,
+			targetMarker, targetFirst, targetSecond, looseAfter
+		};
+		var movedDivider = new ModListVisualDividerData
+		{
+			Id = "moved", IsActiveList = true, IsCollapsed = true,
+			MemberModUuids = new List<string> { movedFirst.UUID, movedSecond.UUID }
+		};
+		var targetDivider = new ModListVisualDividerData
+		{
+			Id = "target", IsActiveList = true, IsCollapsed = true,
+			MemberModUuids = new List<string> { targetFirst.UUID, targetSecond.UUID }
+		};
+		var payload = VisualDividerSectionPolicy.ResolveCollapsedBlockDragPayload(
+			sequence, movedMarker, movedDivider);
+		var visible = new[] { movedMarker, looseBefore, targetMarker, looseAfter };
+		var insertIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(
+			visible,
+			sequence,
+			visibleInsertionIndex: 3);
+
+		var result = VisualModListDropPolicy.Apply(
+			sequence,
+			Array.Empty<DivinityModData>(),
+			payload,
+			true,
+			insertIndex);
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+			result.ActiveItems, new[] { movedDivider, targetDivider }, true);
+
+		RegressionAssert.SequenceEqual(
+			new[]
+			{
+				looseBefore, targetMarker, targetFirst, targetSecond,
+				movedMarker, movedFirst, movedSecond, looseAfter
+			},
+			result.ActiveItems);
+		RegressionAssert.SequenceEqual(
+			new[] { movedFirst.UUID, movedSecond.UUID },
+			movedDivider.MemberModUuids);
+		RegressionAssert.SequenceEqual(
+			new[] { targetFirst.UUID, targetSecond.UUID },
+			targetDivider.MemberModUuids);
+		var hidden = VisualDividerSectionPolicy.GetCollapsedMemberIds(
+			result.ActiveItems, new[] { movedDivider, targetDivider }, true);
+		RegressionAssert.False(hidden.Contains(looseBefore.UUID));
+		RegressionAssert.False(hidden.Contains(looseAfter.UUID));
+
+		var movedAgainPayload = VisualDividerSectionPolicy.ResolveCollapsedBlockDragPayload(
+			result.ActiveItems, movedMarker, movedDivider);
+		var movedAgainVisible = new[] { looseBefore, targetMarker, movedMarker, looseAfter };
+		var movedAgainInsertIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(
+			movedAgainVisible,
+			result.ActiveItems,
+			visibleInsertionIndex: 1);
+		var movedAgain = VisualModListDropPolicy.Apply(
+			result.ActiveItems,
+			Array.Empty<DivinityModData>(),
+			movedAgainPayload,
+			true,
+			movedAgainInsertIndex);
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+			movedAgain.ActiveItems, new[] { movedDivider, targetDivider }, true);
+
+		RegressionAssert.SequenceEqual(
+			new[]
+			{
+				looseBefore, movedMarker, movedFirst, movedSecond,
+				targetMarker, targetFirst, targetSecond, looseAfter
+			},
+			movedAgain.ActiveItems);
+		RegressionAssert.SequenceEqual(
+			new[] { movedFirst.UUID, movedSecond.UUID },
+			movedDivider.MemberModUuids);
+		RegressionAssert.SequenceEqual(
+			new[] { targetFirst.UUID, targetSecond.UUID },
+			targetDivider.MemberModUuids);
 	}
 
 	public void ExpandedSeparatorMoveLeavesEveryModInPlace()
@@ -302,18 +418,29 @@ public sealed class VisualDividerDragPolicyTests
 		var firstMember = CreateMod("first-member");
 		var secondMember = CreateMod("second-member");
 		var destinationSuffix = CreateMod("destination-suffix");
-		var divider = new ModListVisualDividerData
-		{
-			Id = "moved", IsActiveList = true,
-			MemberModUuids = new List<string> { firstMember.UUID, secondMember.UUID }
-		};
 
 		RegressionAssert.Equal(1,
 			VisualDividerSectionPolicy.ResolveExpansionInsertionIndex(
-				new[] { marker, destinationSuffix }, marker, divider));
+				new[] { marker, destinationSuffix }, marker, new[] { firstMember, secondMember }));
 		RegressionAssert.Equal(2,
 			VisualDividerSectionPolicy.ResolveExpansionInsertionIndex(
-				new[] { marker, firstMember, destinationSuffix }, marker, divider));
+				new[] { marker, firstMember, destinationSuffix }, marker, new[] { firstMember, secondMember }));
+	}
+
+	public void ExpansionRestoresClosedMembersBeforeNewlyAdoptedRows()
+	{
+		var marker = CreateDivider("moved", collapsed: false);
+		var carriedFirst = CreateMod("carried-first");
+		var carriedSecond = CreateMod("carried-second");
+		var newlyAdoptedFirst = CreateMod("new-first");
+		var newlyAdoptedSecond = CreateMod("new-second");
+
+		var insertIndex = VisualDividerSectionPolicy.ResolveExpansionInsertionIndex(
+			new[] { marker, newlyAdoptedFirst, newlyAdoptedSecond },
+			marker,
+			new[] { carriedFirst, carriedSecond });
+
+		RegressionAssert.Equal(1, insertIndex);
 	}
 
 	public void CollapseAllChangesOnlyTheRequestedPaneAndOnlyOnce()

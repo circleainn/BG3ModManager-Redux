@@ -6810,10 +6810,10 @@ Directory the zip will be extracted to:
 		if (batch.Count == 0) return true;
 
 		// Progressive batches belong immediately below their separator. Skip only
-		// members already inserted by earlier batches; an unowned destination row
-		// ends the block and must remain after every carried member.
+		// hidden members inserted by earlier batches; an already-visible destination
+		// row ends the restored block and remains after every carried member.
 		var insertIndex = VisualDividerSectionPolicy.ResolveExpansionInsertionIndex(
-			target, marker, divider);
+			target, marker, members);
 		if (insertIndex < 0) return false;
 		if (offset == 0)
 			VisualDividerProjectionMutation.InsertRangePreservingContainers(
@@ -6843,7 +6843,7 @@ Directory the zip will be extracted to:
 		if (marker == null) return false;
 
 		marker.IsVisualDividerCollapsed = collapsed;
-		marker.CanDrag = !collapsed;
+		marker.CanDrag = true;
 		if (collapsed)
 		{
 			var memberIds = (divider.MemberModUuids ?? Enumerable.Empty<string>())
@@ -6969,17 +6969,31 @@ Directory the zip will be extracted to:
 		var activeSequence = BuildVisualDividerSequence(true).ToList();
 		var inactiveSequence = BuildVisualDividerSequence(false).ToList();
 		var movingSeparator = dragged.Any(item => item.IsVisualDivider);
-		if (movingSeparator && dragged.Any(item => item.IsVisualDivider &&
-			(item.IsVisualDividerCollapsed || GetVisualDivider(item)?.IsCollapsed == true))) return;
+		var movingDividerItem = movingSeparator
+			? dragged.FirstOrDefault(item => item.IsVisualDivider)
+			: null;
+		var movingDivider = GetVisualDivider(movingDividerItem);
+		var movingCollapsedSeparator = movingDivider?.IsCollapsed == true;
 		var sourceActive = dragged.Any(item => item.IsVisualDivider
 			? GetVisualDivider(item)?.IsActiveList == true
 			: ActiveMods.Contains(item));
 		if (movingSeparator)
 		{
+			if (movingDivider == null) return;
+			if (movingCollapsedSeparator && sourceActive != destinationActive)
+			{
+				ShowAlert("Closed separators can currently be moved only within the same mod list.", AlertType.Info, 8);
+				return;
+			}
 			var sourceSequence = sourceActive ? activeSequence : inactiveSequence;
-			dragged = VisualDividerSectionPolicy.ResolveMarkerOnlyDragPayload(
-				sourceSequence,
-				dragged).ToList();
+			dragged = movingCollapsedSeparator
+				? VisualDividerSectionPolicy.ResolveCollapsedBlockDragPayload(
+					sourceSequence,
+					movingDividerItem,
+					movingDivider).ToList()
+				: VisualDividerSectionPolicy.ResolveMarkerOnlyDragPayload(
+					sourceSequence,
+					dragged).ToList();
 			if (dragged.Count == 0) return;
 		}
 		var destinationVisibleItems = (destinationActive ? DisplayActiveMods : DisplayInactiveMods).ToList();
@@ -7022,14 +7036,31 @@ Directory the zip will be extracted to:
 				if (!desiredActiveSet.Contains(ActiveMods[index])) ActiveMods.RemoveAt(index);
 			for (var index = InactiveMods.Count - 1; index >= 0; index--)
 				if (!desiredInactiveSet.Contains(InactiveMods[index])) InactiveMods.RemoveAt(index);
-			ObservableCollectionSynchronizer.Synchronize(
-				ActiveMods,
-				desiredActiveMods,
-				ReferenceEquals);
-			ObservableCollectionSynchronizer.Synchronize(
-				InactiveMods,
-				desiredInactiveMods,
-				ReferenceEquals);
+			if (movingCollapsedSeparator && dragged.Count >= VisualDividerProjectionMutation.BulkChangeThreshold)
+			{
+				// Hidden members have no ListView containers to preserve. Replace the
+				// authoritative order under one notification suspension instead of issuing
+				// one Move event per member in a large closed block; the visible projection
+				// below still reconciles only the separator marker.
+				var target = sourceActive ? ActiveMods : InactiveMods;
+				var desired = sourceActive ? desiredActiveMods : desiredInactiveMods;
+				using (target.SuspendNotifications())
+				{
+					target.Clear();
+					target.AddRange(desired);
+				}
+			}
+			else
+			{
+				ObservableCollectionSynchronizer.Synchronize(
+					ActiveMods,
+					desiredActiveMods,
+					ReferenceEquals);
+				ObservableCollectionSynchronizer.Synchronize(
+					InactiveMods,
+					desiredInactiveMods,
+					ReferenceEquals);
+			}
 			for (var i = 0; i < ActiveMods.Count; i++)
 			{
 				if (ActiveMods[i].Index != i) ActiveMods[i].Index = i;
@@ -7070,7 +7101,7 @@ Directory the zip will be extracted to:
 		VisualDividerChevronAngle = divider.IsCollapsed ? -90d : 0d,
 		IsVisualDivider = true,
 		ShowVisualDivider = true,
-		CanDrag = !divider.IsCollapsed
+		CanDrag = true
 	};
 
 	private static bool VisualModItemsMatch(DivinityModData current, DivinityModData desired) =>
