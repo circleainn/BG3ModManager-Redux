@@ -6595,7 +6595,7 @@ Directory the zip will be extracted to:
 		Settings.VisualModListDividers.Add(divider);
 		sequence.Insert(Math.Clamp(position, 0, sequence.Count), CreateVisualDividerItem(divider));
 		SaveVisualDividerPositions(sequence, activeList);
-		VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
 			sequence, Settings.VisualModListDividers, activeList);
 		RefreshVisualDividers();
 		QueueSave();
@@ -6628,7 +6628,7 @@ Directory the zip will be extracted to:
 			.ToList();
 		Settings.VisualModListDividers.Remove(divider);
 		SaveVisualDividerPositions(sequence, divider.IsActiveList);
-		VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
 			sequence, Settings.VisualModListDividers, divider.IsActiveList);
 		RefreshVisualDividers();
 		QueueSave();
@@ -6651,10 +6651,19 @@ Directory the zip will be extracted to:
 		if (collapsed)
 		{
 			EnsureVisualDividerMemberships();
-			VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+			VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
 				BuildVisualDividerSequence(divider.IsActiveList),
 				Settings.VisualModListDividers,
 				divider.IsActiveList);
+		}
+		else
+		{
+			EnsureVisualDividerMemberships();
+			VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+				BuildVisualDividerSequence(divider.IsActiveList),
+				Settings.VisualModListDividers,
+				divider.IsActiveList,
+				expandingDividerId: divider.Id);
 		}
 		if (!VisualDividerStatePolicy.SetCollapsed(divider, collapsed)) return false;
 		if (!UpdateVisualDividerSectionProjection(
@@ -6685,7 +6694,7 @@ Directory the zip will be extracted to:
 			return false;
 
 		EnsureVisualDividerMemberships();
-		VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
 			BuildVisualDividerSequence(divider.IsActiveList),
 			Settings.VisualModListDividers,
 			divider.IsActiveList);
@@ -6751,6 +6760,11 @@ Directory the zip will be extracted to:
 		if (marker == null) return null;
 
 		var fullSequence = BuildVisualDividerSequence(divider.IsActiveList);
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+			fullSequence,
+			Settings.VisualModListDividers,
+			divider.IsActiveList,
+			expandingDividerId: divider.Id);
 		var markerIndex = fullSequence.ToList().FindIndex(candidate => candidate.IsVisualDivider &&
 			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
 		if (markerIndex < 0) return null;
@@ -6875,9 +6889,19 @@ Directory the zip will be extracted to:
 
 	public int SetAllVisualDividersCollapsed(bool activeList, bool collapsed)
 	{
+		if (Settings.VisualModListDividers?.Any(divider =>
+			divider.IsActiveList == activeList && divider.IsCollapsed != collapsed) != true)
+			return 0;
+		EnsureVisualDividerMemberships();
 		if (collapsed)
 		{
-			EnsureVisualDividerMemberships();
+			VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+				BuildVisualDividerSequence(activeList),
+				Settings.VisualModListDividers,
+				activeList);
+		}
+		else
+		{
 			VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
 				BuildVisualDividerSequence(activeList),
 				Settings.VisualModListDividers,
@@ -6894,20 +6918,6 @@ Directory the zip will be extracted to:
 	}
 
 	public bool IsVisualModCollection(object collection) => ReferenceEquals(collection, DisplayActiveMods) || ReferenceEquals(collection, DisplayInactiveMods);
-
-	public bool TryResolveCollapsedVisualDividerDropTarget(
-		bool destinationActive,
-		int visibleInsertIndex,
-		out string dividerTitle)
-	{
-		var visibleItems = destinationActive ? DisplayActiveMods : DisplayInactiveMods;
-		var marker = VisualModListDropPolicy.ResolveVisibleCollapsedOwner(
-			visibleItems,
-			visibleInsertIndex);
-		dividerTitle = marker?.VisualDividerTitle?.Trim();
-		if (String.IsNullOrWhiteSpace(dividerTitle)) dividerTitle = "this separator";
-		return marker != null;
-	}
 
 	public int ResolveVisualModListInsertionIndex(System.Collections.IList visualItems, int targetIndex, bool insertAfter)
 	{
@@ -6978,16 +6988,6 @@ Directory the zip will be extracted to:
 			destinationVisibleItems,
 			destinationSequence,
 			insertIndex);
-		var collapsedOwner = VisualModListDropPolicy.ResolveCollapsedOwner(
-			destinationSequence,
-			insertIndex);
-		if (collapsedOwner != null)
-		{
-			var title = GetVisualDivider(collapsedOwner)?.Title?.Trim();
-			if (String.IsNullOrWhiteSpace(title)) title = "this separator";
-			ShowAlert($"Expand '{title}' before moving items into its section.", AlertType.Info, 8);
-			return;
-		}
 		var result = VisualModListDropPolicy.Apply(
 			activeSequence,
 			inactiveSequence,
@@ -6999,11 +6999,11 @@ Directory the zip will be extracted to:
 
 		SaveVisualDividerPositions(resultingActiveSequence, true);
 		SaveVisualDividerPositions(resultingInactiveSequence, false);
-		VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
 			resultingActiveSequence,
 			Settings.VisualModListDividers,
 			true);
-		VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
 			resultingInactiveSequence,
 			Settings.VisualModListDividers,
 			false);
@@ -7133,13 +7133,14 @@ Directory the zip will be extracted to:
 					InactiveMods, Settings.VisualModListDividers ?? Enumerable.Empty<ModListVisualDividerData>(), false, IsInitialized);
 			if (IsInitialized)
 			{
-				// Membership is a cache of the visible boundaries, never an independent
-				// source of drag behavior. Rebuilding it also repairs older saved layouts.
-				membershipMigrated |= VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+				// Expanded sections follow their current boundaries. Collapsed sections
+				// retain the membership snapshot captured when they were closed, so an
+				// unrelated refresh cannot absorb newly positioned rows.
+				membershipMigrated |= VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
 					BuildVisualDividerSequence(true),
 					Settings.VisualModListDividers,
 					true);
-				membershipMigrated |= VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+				membershipMigrated |= VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
 					BuildVisualDividerSequence(false),
 					Settings.VisualModListDividers,
 					false);

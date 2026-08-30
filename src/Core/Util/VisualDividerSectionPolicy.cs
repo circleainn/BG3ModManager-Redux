@@ -3,9 +3,9 @@ using DivinityModManager.Models;
 namespace DivinityModManager.Util;
 
 /// <summary>
-/// Projects separator rows over the authoritative mod collections. Membership is
-/// a persisted cache of current visual boundaries and never controls drag payloads
-/// or the underlying ActiveMods and InactiveMods order.
+/// Projects separator rows over the authoritative mod collections. Expanded
+/// membership follows visual boundaries; collapsed membership is a persisted,
+/// sealed snapshot. Neither controls drag payloads or the underlying mod order.
 /// </summary>
 public static class VisualDividerSectionPolicy
 {
@@ -115,11 +115,41 @@ public static class VisualDividerSectionPolicy
 	public static bool AssignMembersByCurrentBoundaries(
 		IEnumerable<DivinityModData> visualItems,
 		IEnumerable<ModListVisualDividerData> dividers,
-		bool activeList)
+		bool activeList) => AssignMembers(
+			visualItems,
+			dividers,
+			activeList,
+			preserveCollapsedMembership: false,
+			expandingDividerId: null);
+
+	/// <summary>
+	/// Rebuilds expanded sections while treating every collapsed separator as a
+	/// sealed entry. Existing collapsed members remain owned even when ordinary rows
+	/// or expanded separator markers move around the closed entry. Pass the separator
+	/// being expanded to deliberately resume boundary ownership for that one section.
+	/// </summary>
+	public static bool AssignMembersPreservingCollapsedSections(
+		IEnumerable<DivinityModData> visualItems,
+		IEnumerable<ModListVisualDividerData> dividers,
+		bool activeList,
+		string expandingDividerId = null) => AssignMembers(
+			visualItems,
+			dividers,
+			activeList,
+			preserveCollapsedMembership: true,
+			expandingDividerId);
+
+	private static bool AssignMembers(
+		IEnumerable<DivinityModData> visualItems,
+		IEnumerable<ModListVisualDividerData> dividers,
+		bool activeList,
+		bool preserveCollapsedMembership,
+		string expandingDividerId)
 	{
 		ArgumentNullException.ThrowIfNull(visualItems);
 		ArgumentNullException.ThrowIfNull(dividers);
 
+		var sequence = visualItems.Where(item => item != null).ToList();
 		var paneDividers = GetPaneDividers(dividers, activeList);
 		var dividerById = paneDividers.ToDictionary(
 			divider => divider.Id,
@@ -132,8 +162,31 @@ public static class VisualDividerSectionPolicy
 			divider => divider.Id,
 			_ => new HashSet<string>(StringComparer.OrdinalIgnoreCase),
 			StringComparer.OrdinalIgnoreCase);
+		var preservedDividerIds = preserveCollapsedMembership
+			? paneDividers
+				.Where(divider => divider.IsCollapsed && divider.MemberModUuids != null &&
+					!String.Equals(divider.Id, expandingDividerId, StringComparison.OrdinalIgnoreCase))
+				.Select(divider => divider.Id)
+				.ToHashSet(StringComparer.OrdinalIgnoreCase)
+			: new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		var availableModIds = sequence
+			.Where(item => !item.IsVisualDivider && !String.IsNullOrWhiteSpace(item.UUID))
+			.Select(item => item.UUID)
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var claimedMemberIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		foreach (var divider in paneDividers.Where(divider => preservedDividerIds.Contains(divider.Id)))
+		{
+			foreach (var uuid in divider.MemberModUuids ?? Enumerable.Empty<string>())
+			{
+				if (String.IsNullOrWhiteSpace(uuid) || !availableModIds.Contains(uuid) ||
+					!claimedMemberIds.Add(uuid)) continue;
+				memberIdsById[divider.Id].Add(uuid);
+				membersById[divider.Id].Add(uuid);
+			}
+		}
+
 		ModListVisualDividerData currentDivider = null;
-		foreach (var item in visualItems.Where(item => item != null))
+		foreach (var item in sequence)
 		{
 			if (item.IsVisualDivider)
 			{
@@ -141,7 +194,8 @@ public static class VisualDividerSectionPolicy
 				continue;
 			}
 
-			if (currentDivider == null || String.IsNullOrWhiteSpace(item.UUID)) continue;
+			if (currentDivider == null || preservedDividerIds.Contains(currentDivider.Id) ||
+				String.IsNullOrWhiteSpace(item.UUID) || !claimedMemberIds.Add(item.UUID)) continue;
 			if (memberIdsById[currentDivider.Id].Add(item.UUID))
 				membersById[currentDivider.Id].Add(item.UUID);
 		}

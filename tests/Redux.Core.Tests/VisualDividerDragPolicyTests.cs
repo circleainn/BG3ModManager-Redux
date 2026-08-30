@@ -151,46 +151,111 @@ public sealed class VisualDividerDragPolicyTests
 		RegressionAssert.Equal(items.IndexOf(looseMod), insertIndex);
 	}
 
-	public void CollapsedSeparatorOwnsEveryInsertionSlotUntilTheNextSeparator()
+	public void CollapsedSeparatorDoesNotAdoptAModDroppedBelowItsClosedBlock()
 	{
-		var looseBefore = CreateMod("loose-before");
-		var collapsed = CreateDivider("collapsed", collapsed: true);
-		var hidden = CreateMod("hidden");
-		var next = CreateDivider("next", collapsed: false);
-		var nextMember = CreateMod("next-member");
-		var items = new[] { looseBefore, collapsed, hidden, next, nextMember };
+		var collapsedMarker = CreateDivider("closed", collapsed: true);
+		var firstMember = CreateMod("closed-first");
+		var secondMember = CreateMod("closed-second");
+		var sourceMarker = CreateDivider("source", collapsed: false);
+		var movedMod = CreateMod("moved");
+		var sequence = new[]
+		{
+			collapsedMarker, firstMember, secondMember, sourceMarker, movedMod
+		};
+		var descriptors = new[]
+		{
+			new ModListVisualDividerData
+			{
+				Id = "closed", IsActiveList = true, IsCollapsed = true,
+				MemberModUuids = new List<string> { firstMember.UUID, secondMember.UUID }
+			},
+			new ModListVisualDividerData
+			{
+				Id = "source", IsActiveList = true,
+				MemberModUuids = new List<string> { movedMod.UUID }
+			}
+		};
 
-		RegressionAssert.Equal(
-			collapsed,
-			VisualModListDropPolicy.ResolveCollapsedOwner(items, 2));
-		RegressionAssert.Equal(
-			collapsed,
-			VisualModListDropPolicy.ResolveCollapsedOwner(items, 3));
-		RegressionAssert.Equal(
-			null,
-			VisualModListDropPolicy.ResolveCollapsedOwner(items, 0));
-		RegressionAssert.Equal(
-			null,
-			VisualModListDropPolicy.ResolveCollapsedOwner(items, 4));
+		var result = VisualModListDropPolicy.Apply(
+			sequence,
+			Array.Empty<DivinityModData>(),
+			new[] { movedMod },
+			true,
+			Array.IndexOf(sequence, sourceMarker));
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+			result.ActiveItems, descriptors, true);
+
+		RegressionAssert.SequenceEqual(
+			new[] { collapsedMarker, firstMember, secondMember, movedMod, sourceMarker },
+			result.ActiveItems);
+		RegressionAssert.SequenceEqual(
+			new[] { firstMember.UUID, secondMember.UUID },
+			descriptors[0].MemberModUuids);
+		RegressionAssert.Equal(0, descriptors[1].MemberModUuids.Count);
+		var hidden = VisualDividerSectionPolicy.GetCollapsedMemberIds(
+			result.ActiveItems, descriptors, true);
+		RegressionAssert.True(hidden.Contains(firstMember.UUID));
+		RegressionAssert.True(hidden.Contains(secondMember.UUID));
+		RegressionAssert.False(hidden.Contains(movedMod.UUID));
 	}
 
-	public void CollapsedDropPreviewUsesOnlyTheAdjacentVisibleRow()
+	public void MovingASeparatorAboveAClosedSectionCannotChangeItsContents()
 	{
-		var collapsed = CreateDivider("collapsed", collapsed: true);
-		var next = CreateDivider("next", collapsed: false);
-		var nextMember = CreateMod("next-member");
-		var visibleItems = new VisibleRowProbe(collapsed, next, nextMember);
+		var collapsedMarker = CreateDivider("closed", collapsed: true);
+		var firstMember = CreateMod("closed-first");
+		var secondMember = CreateMod("closed-second");
+		var movedMarker = CreateDivider("moved", collapsed: false);
+		var leftBehindMod = CreateMod("left-behind");
+		var nextMarker = CreateDivider("next", collapsed: false);
+		var sequence = new[]
+		{
+			collapsedMarker, firstMember, secondMember, movedMarker, leftBehindMod, nextMarker
+		};
+		var descriptors = new[]
+		{
+			new ModListVisualDividerData
+			{
+				Id = "closed", IsActiveList = true, IsCollapsed = true,
+				MemberModUuids = new List<string> { firstMember.UUID, secondMember.UUID }
+			},
+			new ModListVisualDividerData
+			{
+				Id = "moved", IsActiveList = true,
+				MemberModUuids = new List<string> { leftBehindMod.UUID }
+			},
+			new ModListVisualDividerData
+			{
+				Id = "next", IsActiveList = true, MemberModUuids = new List<string>()
+			}
+		};
 
-		RegressionAssert.Equal(
-			collapsed,
-			VisualModListDropPolicy.ResolveVisibleCollapsedOwner(visibleItems, 1));
-		RegressionAssert.Equal(1, visibleItems.IndexerReads);
-		RegressionAssert.Equal(
-			null,
-			VisualModListDropPolicy.ResolveVisibleCollapsedOwner(new[] { collapsed, next, nextMember }, 2));
-		RegressionAssert.Equal(
-			null,
-			VisualModListDropPolicy.ResolveVisibleCollapsedOwner(new[] { collapsed, next, nextMember }, 3));
+		var result = VisualModListDropPolicy.Apply(
+			sequence,
+			Array.Empty<DivinityModData>(),
+			new[] { movedMarker },
+			true,
+			0);
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+			result.ActiveItems, descriptors, true);
+
+		RegressionAssert.SequenceEqual(
+			new[] { movedMarker, collapsedMarker, firstMember, secondMember, leftBehindMod, nextMarker },
+			result.ActiveItems);
+		RegressionAssert.Equal(0, descriptors[1].MemberModUuids.Count);
+		RegressionAssert.SequenceEqual(
+			new[] { firstMember.UUID, secondMember.UUID },
+			descriptors[0].MemberModUuids);
+		RegressionAssert.False(VisualDividerSectionPolicy.GetCollapsedMemberIds(
+			result.ActiveItems, descriptors, true).Contains(leftBehindMod.UUID));
+
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+			result.ActiveItems,
+			descriptors,
+			true,
+			expandingDividerId: descriptors[0].Id);
+		RegressionAssert.SequenceEqual(
+			new[] { firstMember.UUID, secondMember.UUID, leftBehindMod.UUID },
+			descriptors[0].MemberModUuids);
 	}
 
 	public void VisibleDropSlotMapsPastOmittedCollapsedMembers()
@@ -406,27 +471,4 @@ public sealed class VisualDividerDragPolicyTests
 		IsSelected = selected,
 		CanDrag = true
 	};
-
-	private sealed class VisibleRowProbe : IReadOnlyList<DivinityModData>
-	{
-		private readonly DivinityModData[] _items;
-
-		public int Count => _items.Length;
-		public int IndexerReads { get; private set; }
-		public DivinityModData this[int index]
-		{
-			get
-			{
-				IndexerReads++;
-				return _items[index];
-			}
-		}
-
-		public VisibleRowProbe(params DivinityModData[] items) => _items = items;
-
-		public IEnumerator<DivinityModData> GetEnumerator() =>
-			throw new InvalidOperationException("The drag preview must not enumerate the mod list.");
-
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
-	}
 }
