@@ -1332,19 +1332,19 @@
 								<Grid Margin="0,8,0,0">
 									<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
 									<StackPanel>
-									<TextBlock FontWeight="SemiBold" Text="Mod-page link history" />
-										<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Forget all remembered Nexus Mods and mod.io associations for clean retesting." TextWrapping="Wrap" />
+									<TextBlock FontWeight="SemiBold" Text="Remembered source links" />
+									<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Remove remembered Nexus Mods and mod.io associations. Installed mods, load orders, and API keys are unchanged." TextWrapping="Wrap" />
 									</StackPanel>
 									<Button x:Name="ClearSourceHistoryButton" Grid.Column="1"
 										Margin="16,0,0,0"
 										VerticalAlignment="Center"
 										Style="{StaticResource SettingsWarningButtonStyle}"
-										ToolTip="Forget all cached Nexus Mods and mod.io associations without deleting installed mods, load orders, API keys, or preferences">
+										ToolTip="Remove remembered Nexus Mods and mod.io associations without changing installed mods, load orders, API keys, or preferences">
 										<StackPanel Orientation="Horizontal">
 											<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0"
 												Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 												StrokeData="{StaticResource Redux.Icon.UnlinkStroke}" />
-										<TextBlock Text="Clear Link History" />
+										<TextBlock Text="Clear Source Links" />
 										</StackPanel>
 									</Button>
 								</Grid>

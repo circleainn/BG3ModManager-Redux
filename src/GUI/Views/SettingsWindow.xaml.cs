@@ -56,7 +56,7 @@ internal class SortSettings : IComparer<SettingsAttributeProperty>
 	}
 }
 
-internal sealed record SettingsGroup(string Title, params string[] PropertyNames);
+internal sealed record SettingsGroup(string Title, string Description, params string[] PropertyNames);
 
 /// <summary>
 /// Interaction logic for SettingsWindow.xaml
@@ -78,11 +78,13 @@ public partial class SettingsWindow : SettingsWindowBase
 	private static readonly SettingsGroup[] GeneralSettingsGroups =
 	[
 		new("Paths and storage",
+			"Choose where Redux finds the game, profiles, and saved load orders.",
 			nameof(DivinityModManagerSettings.GameExecutablePath),
 			nameof(DivinityModManagerSettings.GameDataPath),
 			nameof(DivinityModManagerSettings.DocumentsFolderPathOverride),
 			nameof(DivinityModManagerSettings.LoadOrderPath)),
 		new("Game launch",
+			"Control how Redux starts Baldur's Gate 3 and what happens after launch.",
 			nameof(DivinityModManagerSettings.LaunchType),
 			nameof(DivinityModManagerSettings.CustomLaunchAction),
 			nameof(DivinityModManagerSettings.CustomLaunchArgs),
@@ -92,6 +94,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(DivinityModManagerSettings.DisableLauncherModWarnings),
 			nameof(DivinityModManagerSettings.GameStoryLogEnabled)),
 		new("Mod-list workflow",
+			"Adjust load-order editing, dependency handling, categories, and workspace behavior.",
 			nameof(DivinityModManagerSettings.AutoAddDependenciesWhenExporting),
 			nameof(DivinityModManagerSettings.HideEmptyModCategories),
 			nameof(DivinityModManagerSettings.ShiftListFocusOnSwap),
@@ -99,17 +102,21 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(DivinityModManagerSettings.EnableColorblindSupport),
 			nameof(DivinityModManagerSettings.HideToolbar)),
 		new("Visual comfort",
+			"Reduce motion or background effects for a quieter interface.",
 			nameof(DivinityModManagerSettings.ReduceMotion),
 			nameof(DivinityModManagerSettings.DisableBackgroundEffects)),
 		new("Optional features",
+			"Control source linking, read-only diagnostics, and experimental load-order guidance.",
 			nameof(DivinityModManagerSettings.LocalOnlyMode),
 			nameof(DivinityModManagerSettings.EnableModHealth),
 			nameof(DivinityModManagerSettings.DisableModioWarnings),
 			nameof(DivinityModManagerSettings.EnableLoadOrderAdvisor)),
 		new("Metadata services",
+			"Add optional provider keys for source details and update information.",
 			nameof(DivinityModManagerSettings.NexusModsAPIKey),
 			nameof(DivinityModManagerSettings.ModioAPIKey)),
 		new("Warnings and maintenance",
+			"Choose which update and safety notices Redux keeps active.",
 			nameof(DivinityModManagerSettings.CheckForUpdates),
 			nameof(DivinityModManagerSettings.DeleteModCrashSanityCheck),
 			nameof(DivinityModManagerSettings.DisableMissingModWarnings))
@@ -118,6 +125,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	private static readonly SettingsGroup[] ExtenderSettingsGroups =
 	[
 		new("Core behavior",
+			"Configure Script Extender validation, achievements, crash reporting, and saved settings.",
 			nameof(ScriptExtenderSettings.CustomProfile),
 			nameof(ScriptExtenderSettings.DisableModValidation),
 			nameof(ScriptExtenderSettings.InsanityCheck),
@@ -125,6 +133,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(ScriptExtenderSettings.SendCrashReports),
 			nameof(ScriptExtenderSettings.ExportDefaultExtenderSettings)),
 		new("Logging",
+			"Choose what Script Extender records and where its logs are stored.",
 			nameof(ScriptExtenderSettings.LogDirectory),
 			nameof(ScriptExtenderSettings.CreateConsole),
 			nameof(ScriptExtenderSettings.EnableLogging),
@@ -132,6 +141,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(ScriptExtenderSettings.LogCompile),
 			nameof(ScriptExtenderSettings.LogFailedCompile)),
 		new("Developer and diagnostics",
+			"Advanced Script Extender debugging, patching, console, and performance options.",
 			nameof(ScriptExtenderSettings.DeveloperMode),
 			nameof(ScriptExtenderSettings.DebuggerFlags),
 			nameof(ScriptExtenderSettings.DisableLauncher),
@@ -147,13 +157,6 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(ScriptExtenderSettings.DefaultToClientConsole),
 			nameof(ScriptExtenderSettings.ShowPerfWarnings))
 	];
-
-	private static readonly IReadOnlyDictionary<string, string> SettingsGroupDescriptions =
-		new Dictionary<string, string>
-		{
-			["Optional features"] =
-				"Control source linking, read-only health checks, and experimental guidance independently. These features never change mods or reorder the load order."
-		};
 
 	private static bool IsSourceIntegrationSetting(string propertyName)
 	{
@@ -569,25 +572,23 @@ public partial class SettingsWindow : SettingsWindowBase
 				var heading = new StackPanel
 				{
 					Orientation = Orientation.Vertical,
-					HorizontalAlignment = HorizontalAlignment.Stretch
+					HorizontalAlignment = HorizontalAlignment.Stretch,
+					Margin = new Thickness(0)
 				};
 				heading.Children.Add(new TextBlock
 				{
 					Text = currentGroupTitle,
 					Style = FindResource("SettingsSubsectionTitleStyle") as Style
 				});
-				if (SettingsGroupDescriptions.TryGetValue(currentGroupTitle, out var groupDescription))
+				heading.Children.Add(new TextBlock
 				{
-					heading.Children.Add(new TextBlock
-					{
-						Text = groupDescription,
-						Margin = new Thickness(0, 3, 0, 0),
-						Foreground = FindResource("ReduxTextMutedBrush") as System.Windows.Media.Brush,
-						FontSize = (double)FindResource("Redux.FontSize.11"),
-						TextWrapping = TextWrapping.Wrap,
-						HorizontalAlignment = HorizontalAlignment.Stretch
-					});
-				}
+					Text = group.Description,
+					Margin = new Thickness(0, 2, 0, 4),
+					Foreground = FindResource("ReduxTextMutedBrush") as System.Windows.Media.Brush,
+					FontSize = (double)FindResource("Redux.FontSize.10"),
+					TextWrapping = TextWrapping.Wrap,
+					HorizontalAlignment = HorizontalAlignment.Stretch
+				});
 				targetGrid.Children.Add(heading);
 				Grid.SetRow(heading, row++);
 				Grid.SetColumnSpan(heading, 2);

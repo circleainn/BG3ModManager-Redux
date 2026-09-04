@@ -1341,6 +1341,9 @@
 												<MenuItem Command="{Binding Keys.ImportReduxLoadOrder.Command}" Header="Import Redux Modlist...">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Download}" /></MenuItem.Icon>
 												</MenuItem>
+												<MenuItem Command="{Binding Keys.ExportReduxLoadOrder.Command}" Header="Export Redux Modlist...">
+													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.CloudUpload}" /></MenuItem.Icon>
+												</MenuItem>
 												<Separator />
 												<MenuItem Command="{Binding OpenLoadOrderFolderCommand}" Header="Open Load Order Folder">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>

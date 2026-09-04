@@ -588,13 +588,13 @@ public class SettingsWindowViewModel : ReactiveObject
 		ClearSourceHistoryCommand = ReactiveCommand.Create(() =>
 		{
 			const string message =
-				"Forget all mod-page link history?\n\n"
-				+ "Cached Nexus Mods and mod.io links will be removed. Installed PAKs, load orders, API keys, categories, notes, and settings will not change.\n\n"
-				+ "Future imports can find links again from archive names, package data, creator manifests, the built-in database, or online services.";
+				"Remove all remembered source links?\n\n"
+				+ "Cached Nexus Mods and mod.io associations will be removed. Installed mods, load orders, API keys, categories, notes, and preferences will not change.\n\n"
+				+ "Redux can identify sources again through future archive imports, package metadata, creator manifests, its built-in database, or online services.";
 			var result = ReduxMessageBox.Show(
 				View,
 				message,
-				"Clear Link History?",
+				"Clear Source Links?",
 				MessageBoxButton.YesNo,
 				MessageBoxImage.Warning,
 				MessageBoxResult.No);
