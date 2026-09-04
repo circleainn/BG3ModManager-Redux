@@ -657,7 +657,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ViewModel.SaveSettings();
 	}
 
-	private void AddCustomCategoryMenuItem_Click(object sender, RoutedEventArgs e)
+	private void AddCustomCategoryMenuItem_Click(object sender, RoutedEventArgs e) =>
+		ShowCreateCustomCategoryDialog();
+
+	public void ShowCreateCustomCategoryDialog()
 	{
 		var dialog = new CategoryNameDialog(color: ViewModel.GetSuggestedCustomCategoryColor(),
 			savedColors: ViewModel.Settings.SavedCategoryColors,
@@ -682,7 +685,15 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ViewModel.SaveSettings();
 	}
 
-	private void EditCategoryMenuItem_Click(object sender, RoutedEventArgs e)
+	private void EditCategoryMenuItem_Click(object sender, RoutedEventArgs e) =>
+		ShowEditSelectedCategoryDialog();
+
+	public bool CanEditSelectedCategory =>
+		!ViewModel.IsLocked
+		&& !String.IsNullOrWhiteSpace(ViewModel.SelectedModCategory)
+		&& !ViewModel.SelectedModCategory.Equals(MainWindowViewModel.AllModsCategory, StringComparison.OrdinalIgnoreCase);
+
+	public void ShowEditSelectedCategoryDialog()
 	{
 		var category = ViewModel.SelectedModCategory;
 		if (String.IsNullOrWhiteSpace(category) || category.Equals(MainWindowViewModel.AllModsCategory, StringComparison.OrdinalIgnoreCase)) return;
@@ -1239,13 +1250,19 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			dialog.CategoryIconId, dialog.HideSeparatorLine, dialog.CategoryDescription);
 	}
 
-	private void AddActiveSeparatorButton_Click(object sender, RoutedEventArgs e)
+	private void AddActiveSeparatorButton_Click(object sender, RoutedEventArgs e) =>
+		ShowAddActiveSeparatorDialog();
+
+	public void ShowAddActiveSeparatorDialog()
 	{
 		var position = ActiveModsListView.SelectedIndex >= 0
 			? ActiveModsListView.SelectedIndex + 1
 			: ActiveModsListView.Items.Count;
 		ShowAddVisualDividerDialog(true, position);
 	}
+
+	public void SetAllActiveSeparatorsCollapsed(bool collapsed) =>
+		ViewModel.SetAllVisualDividersCollapsed(activeList: true, collapsed: collapsed);
 
 	private void ShowEditVisualDividerDialog(DivinityModData item)
 	{

@@ -36,7 +36,7 @@ ways to organize, review, and share mod setups.
 
 - Manage active and inactive mods with the original BG3MM drag-and-drop workflow.
 - Use profiles, campaigns, saved orders, filters, configurable columns, and a compact optional
-  Quick Access menu (`F2`).
+  Quick Access menu (`Ctrl+Q`) with searchable actions and familiar alternate terms.
 - Assign categories to one mod or a selection, then click category pills to filter both lists.
 - Add separators that remember their placement and collapsed state. Closed separators keep their
   existing contents sealed and move with those mods as one group; newly positioned mods remain
@@ -84,6 +84,9 @@ When explicitly enabled, imported links replace the local source association for
 Private testers can also use **Generate Redux Database Contribution** to create a reviewable
 `.bg3redux-report`. Reports exclude profiles, load-order positions, settings, credentials, and
 private filesystem paths.
+
+**Back Up Active Mods to ZIP** always asks where to save the archive and reminds users to keep it
+private unless every included mod author permits redistribution.
 
 ## Themes and accessibility
 

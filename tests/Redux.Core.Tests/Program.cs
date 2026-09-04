@@ -35,6 +35,7 @@ internal static class Program
 		var settingsMaintenance = new SettingsMaintenanceTests();
 		var smoothLogicalScroll = new SmoothLogicalScrollPolicyTests();
 		var startupNotifications = new StartupNotificationQueueTests();
+		var commandPaletteSearch = new CommandPaletteSearchTests();
 		var tests = new (string Name, Action Run)[]
 		{
 			(nameof(source.ReviewedModuleUuidResolvesItsProject), source.ReviewedModuleUuidResolvesItsProject),
@@ -204,7 +205,9 @@ internal static class Program
 			(nameof(startupNotifications.StartupNotificationsWaitForReadinessAndDrainInOrder), startupNotifications.StartupNotificationsWaitForReadinessAndDrainInOrder),
 			(nameof(startupNotifications.RepeatedStartupNotificationUsesLatestDataExactlyOnce), startupNotifications.RepeatedStartupNotificationUsesLatestDataExactlyOnce),
 			(nameof(startupNotifications.StaleStartupNotificationCanBeCancelledBeforeReadiness), startupNotifications.StaleStartupNotificationCanBeCancelledBeforeReadiness),
-			(nameof(startupNotifications.NotificationsQueuedDuringDrainRemainSequential), startupNotifications.NotificationsQueuedDuringDrainRemainSequential)
+			(nameof(startupNotifications.NotificationsQueuedDuringDrainRemainSequential), startupNotifications.NotificationsQueuedDuringDrainRemainSequential),
+			(nameof(commandPaletteSearch.AliasesAndWordOrderMakeActionsDiscoverable), commandPaletteSearch.AliasesAndWordOrderMakeActionsDiscoverable),
+			(nameof(commandPaletteSearch.MinimumQueryLengthStillProtectsLargeDynamicLists), commandPaletteSearch.MinimumQueryLengthStillProtectsLargeDynamicLists)
 		};
 
 		var failures = 0;

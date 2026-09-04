@@ -245,9 +245,13 @@ public static class ReduxMenuItemExtension
 	private static bool IsPositiveCommitAction(string header)
 	{
 		if (String.IsNullOrWhiteSpace(header)) return false;
-		return header.StartsWith("Export", StringComparison.OrdinalIgnoreCase)
-			|| (header.StartsWith("Save ", StringComparison.OrdinalIgnoreCase)
-				&& !header.Contains("Folder", StringComparison.OrdinalIgnoreCase))
+
+		// Reserve green for the small number of actions that commit the user's current
+		// work to its primary destination. Treating every Save/Export variant as positive
+		// made file-management menus visually noisy and weakened the meaning of the colour.
+		return header.Equals("Save Current Order", StringComparison.OrdinalIgnoreCase)
+			|| header.Equals("Export Load Order to Game", StringComparison.OrdinalIgnoreCase)
+			|| header.Equals("Export to Game", StringComparison.OrdinalIgnoreCase)
 			|| header.StartsWith("Generate Redux Database Contribution", StringComparison.OrdinalIgnoreCase);
 	}
 }

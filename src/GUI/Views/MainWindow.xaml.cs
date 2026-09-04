@@ -564,13 +564,118 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 	private void OpenCommandPalette()
 	{
-		var palette = new ReduxCommandPaletteWindow(this, ViewModel, MainView.FocusModEntry);
+		var palette = new ReduxCommandPaletteWindow(
+			this,
+			ViewModel,
+			MainView.FocusModEntry,
+			BuildMainViewQuickAccessCommands());
 		ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(palette, this);
 		if (palette.Accepted)
 		{
 			palette.SelectedItem?.Execute();
 		}
 	}
+
+	private IReadOnlyList<ReduxCommandPaletteItem> BuildMainViewQuickAccessCommands() =>
+	[
+		new(
+			"Create Custom Category...",
+			"Categories",
+			"Create a category with its own name, color, icon, and description.",
+			String.Empty,
+			"palette",
+			MainView.ShowCreateCustomCategoryDialog,
+			() => !ViewModel.IsLocked,
+			searchTerms: "add new custom category tag"),
+		new(
+			"Edit Selected Category...",
+			"Categories",
+			"Edit the category currently selected in the category pane.",
+			String.Empty,
+			"tag",
+			MainView.ShowEditSelectedCategoryDialog,
+			() => MainView.CanEditSelectedCategory,
+			searchTerms: "change rename style color icon category"),
+		new(
+			"Create Separator...",
+			"Separators",
+			"Add a new separator or divider after the selected active mod, or at the end of the active list.",
+			String.Empty,
+			"marker-diamond",
+			MainView.ShowAddActiveSeparatorDialog,
+			() => ViewModel.IsInitialized && !ViewModel.IsLocked,
+			searchTerms: "add insert new divider section marker"),
+		new(
+			"Collapse All Separators",
+			"Separators",
+			"Collapse every separator in the active load order.",
+			String.Empty,
+			"list",
+			() => MainView.SetAllActiveSeparatorsCollapsed(true),
+			() => ViewModel.CanSetAllVisualDividersCollapsed(activeList: true, collapsed: true),
+			searchTerms: "close hide fold divider sections"),
+		new(
+			"Expand All Separators",
+			"Separators",
+			"Expand every separator in the active load order.",
+			String.Empty,
+			"list",
+			() => MainView.SetAllActiveSeparatorsCollapsed(false),
+			() => ViewModel.CanSetAllVisualDividersCollapsed(activeList: true, collapsed: false),
+			searchTerms: "open show unfold divider sections"),
+		new(
+			"Open Load Order Folder",
+			"Load orders and files",
+			"Open the folder containing saved load orders.",
+			String.Empty,
+			"folder",
+			() => ViewModel.OpenLoadOrderFolderCommand.Execute(null),
+			() => ViewModel.OpenLoadOrderFolderCommand?.CanExecute(null) == true,
+			searchTerms: "browse directory saved orders"),
+		new(
+			"Open Save Games Folder",
+			"Folders",
+			"Open the selected profile's story save folder.",
+			String.Empty,
+			"folder",
+			MainView.OpenSaveGamesFolder,
+			() => ViewModel.SelectedProfile != null,
+			searchTerms: "browse directory saves profile"),
+		new(
+			"Inspect Mod Package...",
+			"Tools",
+			"Inspect a PAK or release archive without installing it.",
+			String.Empty,
+			"package",
+			MainView.ShowInspectModPackageDialog,
+			() => !ViewModel.IsLocked,
+			searchTerms: "scan preflight validate pak zip archive"),
+		new(
+			"Generate Redux Database Contribution...",
+			"Tools",
+			"Create a privacy-limited contribution report from installed mods.",
+			String.Empty,
+			"database",
+			MainView.ShowGenerateReduxDatabaseContributionDialog,
+			() => !ViewModel.IsLocked && ViewModel.UserMods.Any(mod => mod != null && !mod.IsVisualDivider),
+			searchTerms: "create export report metadata contribute"),
+		new(
+			"Welcome Setup...",
+			"Help",
+			"Reopen Redux's guided setup.",
+			String.Empty,
+			"sparkles",
+			() => ViewModel.ShowReduxWelcome(),
+			searchTerms: "onboarding first run configure"),
+		new(
+			"Report a Bug...",
+			"Help",
+			"Open the Redux issue report page in your browser.",
+			String.Empty,
+			"bug",
+			() => ProcessHelper.TryOpenUrl(DivinityApp.URL_REDUX_BUG_REPORT),
+			searchTerms: "issue problem github feedback")
+	];
 
 	public void PreviewCustomThemeColors(ReduxCustomTheme customTheme)
 	{

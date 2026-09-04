@@ -5013,25 +5013,6 @@ Directory the zip will be extracted to:
 		return success;
 	}
 
-	private void ExportLoadOrderToArchive_Start()
-	{
-		if (ConfirmActiveModBackup())
-		{
-			MainProgressTitle = "Backing up active mods...";
-			MainProgressWorkText = "";
-			MainProgressValue = 0d;
-			MainProgressIsActive = true;
-			RxApp.TaskpoolScheduler.ScheduleAsync(async (ctrl, t) =>
-			{
-				MainProgressToken = new CancellationTokenSource();
-				await ExportLoadOrderToArchiveAsync("", MainProgressToken.Token);
-				await ctrl.Yield();
-				RxApp.MainThreadScheduler.Schedule(_ => OnMainProgressComplete());
-				return Disposable.Empty;
-			});
-		}
-	}
-
 	private async Task<bool> ExportLoadOrderToArchiveAsync(string outputPath, CancellationToken t)
 	{
 		var success = false;
@@ -5042,18 +5023,6 @@ Directory the zip will be extracted to:
 			var appDir = DivinityApp.GetAppDirectory();
 			var tempDir = Path.Combine(appDir, "_Temp_" + DateTime.Now.ToString(sysFormat + "_HH-mm-ss"));
 			Directory.CreateDirectory(tempDir);
-
-			if (String.IsNullOrEmpty(outputPath))
-			{
-				var baseOrderName = SelectedModOrder.Name;
-				if (SelectedModOrder.IsModSettings)
-				{
-					baseOrderName = $"{SelectedProfile.Name}_{SelectedModOrder.Name}";
-				}
-				var outputDir = Path.Combine(appDir, "Export");
-				outputPath = Path.Combine(outputDir, $"{baseOrderName}-{DateTime.Now.ToString(sysFormat + "_HH-mm-ss")}.zip");
-				if (!Directory.Exists(outputDir)) Directory.CreateDirectory(outputDir);
-			}
 
 			var modPaks = new List<DivinityModData>(Mods.Where(x => SelectedModOrder.Order.Any(o => o.UUID == x.UUID)));
 			modPaks.AddRange(ForceLoadedMods.Where(x => !x.IsForceLoadedMergedMod));
@@ -5238,14 +5207,14 @@ Directory the zip will be extracted to:
 	{
 		const string message =
 			"Create a ZIP backup containing the active mod files?\n\n"
-			+ "This archive contains third-party .pak files. Keep it for your own backup or transfer unless every mod author explicitly permits redistribution.\n\n"
+			+ "Mod authors control whether their files may be redistributed. Keep this backup private unless every included author has given permission to share it.\n\n"
 			+ "Creating a large backup may take some time.";
 		return ReduxMessageBox.Show(
 			Window,
 			message,
 			"Back Up Active Mods?",
 			MessageBoxButton.OKCancel,
-			MessageBoxImage.Information,
+			MessageBoxImage.Warning,
 			MessageBoxResult.Cancel) == MessageBoxResult.OK;
 	}
 
@@ -8966,8 +8935,7 @@ Directory the zip will be extracted to:
 		Keys.RefreshModUpdates.AddAction(() => RefreshModUpdatesCommand.Execute(Unit.Default).Subscribe(), canRefreshModUpdates);
 
 		IObservable<bool> canStartExport = this.WhenAny(x => x.MainProgressToken, (t) => t != null).StartWith(false);
-		Keys.ExportOrderToZip.AddAction(ExportLoadOrderToArchive_Start, canStartExport);
-		Keys.ExportOrderToArchiveAs.AddAction(ExportLoadOrderToArchiveAs, canStartExport);
+		Keys.ExportOrderToZip.AddAction(ExportLoadOrderToArchiveAs, canStartExport);
 
 		var anyActiveObservable = this.WhenAnyValue(x => x.ActiveMods.Count, (c) => c > 0);
 		Keys.ExportOrderToList.AddAction(ExportLoadOrderToTextFileAs, anyActiveObservable);

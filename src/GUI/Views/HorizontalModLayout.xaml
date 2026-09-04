@@ -1384,7 +1384,7 @@
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Information}" /></MenuItem.Icon>
 					</MenuItem>
 					<Separator />
-					<MenuItem Header="Add New Custom Category..." Click="AddCustomCategoryMenuItem_Click">
+					<MenuItem Header="Create Custom Category..." Click="AddCustomCategoryMenuItem_Click">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.AddCircle}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem x:Name="EditCategoryMenuItem" Header="Edit Selected Category..." Click="EditCategoryMenuItem_Click">

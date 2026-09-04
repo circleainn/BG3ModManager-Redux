@@ -32,7 +32,7 @@ the underlying mod-management model. Major differences include:
   notifications, scrollbars, and window chrome;
 - Dark, Light, and Parchment themes plus persistent custom themes;
 - bundled and imported fonts, Compact/Default/Large text sizes, and reusable custom PNG icons;
-- a reorganized toolbar, compact Toolbar menu, Shortcuts menu, and optional Quick Access menu;
+- a reorganized toolbar, compact Toolbar menu, Shortcuts menu, and searchable Quick Access command menu;
 - a selected-mod details drawer and richer, source-aware hover information; and
 - a unified Lucide-based vector icon system with retained official provider branding where
   appropriate.
@@ -72,7 +72,8 @@ Redux extends the inherited load-order workflow with:
 - export review showing meaningful activations, deactivations, placement changes, automatically
   included dependencies, and relevant diagnostics;
 - bounded per-profile restore points created before confirmed game exports or on demand;
-- read-only comparison between saved orders and restore points; and
+- read-only comparison between saved orders and restore points;
+- user-directed ZIP backups with a redistribution-permission reminder; and
 - optional private notes that remain outside game files and contribution reports.
 
 Portable Redux data does not include `modsettings.lsx`, installed packages, profiles, saves, API

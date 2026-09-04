@@ -70,7 +70,6 @@ public partial class MainViewControl : MainViewControlViewBase
 			[nameof(AppKeys.ExportOrderToList)] = ("Redux.Icon.DocumentText", true, null),
 			[nameof(AppKeys.ExportReduxLoadOrder)] = ("Redux.Icon.CloudUpload", true, null),
 			[nameof(AppKeys.ExportOrderToZip)] = ("Redux.Icon.Archive", true, null),
-			[nameof(AppKeys.ExportOrderToArchiveAs)] = ("Redux.Icon.Duplicate", true, null),
 			[nameof(AppKeys.Refresh)] = ("Redux.Icon.RefreshStroke", true, null),
 			[nameof(AppKeys.Confirm)] = ("Redux.Icon.SwapHorizontalStroke", true, null),
 			[nameof(AppKeys.MoveFocusLeft)] = ("Redux.Icon.ArrowBackStroke", true, null),
@@ -168,7 +167,10 @@ public partial class MainViewControl : MainViewControlViewBase
 		}
 	}
 
-	private void OpenSaveGamesFolder_Click(object sender, RoutedEventArgs e)
+	private void OpenSaveGamesFolder_Click(object sender, RoutedEventArgs e) =>
+		OpenSaveGamesFolder();
+
+	public void OpenSaveGamesFolder()
 	{
 		var saveGamesPath = ViewModel.SelectedProfile?.Folder == null
 			? null
@@ -432,7 +434,10 @@ public partial class MainViewControl : MainViewControlViewBase
 		}
 	}
 
-	private void InspectModPackage_Click(object sender, RoutedEventArgs e)
+	private void InspectModPackage_Click(object sender, RoutedEventArgs e) =>
+		ShowInspectModPackageDialog();
+
+	public void ShowInspectModPackageDialog()
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
@@ -453,7 +458,10 @@ public partial class MainViewControl : MainViewControlViewBase
 		preflight.ShowDialog();
 	}
 
-	private async void GenerateReduxDatabaseContribution_Click(object sender, RoutedEventArgs e)
+	private void GenerateReduxDatabaseContribution_Click(object sender, RoutedEventArgs e) =>
+		ShowGenerateReduxDatabaseContributionDialog();
+
+	public async void ShowGenerateReduxDatabaseContributionDialog()
 	{
 		var installedMods = ViewModel.UserMods?.Where(mod => mod != null && !mod.IsVisualDivider).ToList()
 			?? new List<DivinityModData>();
@@ -1309,6 +1317,12 @@ public partial class MainViewControl : MainViewControlViewBase
 	}
 
 	public void FocusModEntry(DivinityModData mod) => ModLayout.FocusModEntry(mod);
+	public void ShowCreateCustomCategoryDialog() => ModLayout.ShowCreateCustomCategoryDialog();
+	public bool CanEditSelectedCategory => ModLayout.CanEditSelectedCategory;
+	public void ShowEditSelectedCategoryDialog() => ModLayout.ShowEditSelectedCategoryDialog();
+	public void ShowAddActiveSeparatorDialog() => ModLayout.ShowAddActiveSeparatorDialog();
+	public void SetAllActiveSeparatorsCollapsed(bool collapsed) =>
+		ModLayout.SetAllActiveSeparatorsCollapsed(collapsed);
 
 	public void OnActivated()
 	{
