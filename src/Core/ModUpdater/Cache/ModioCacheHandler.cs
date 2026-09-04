@@ -28,8 +28,7 @@ public class ModioCacheHandler : IExternalModCacheHandler<ModioCachedData>
 
 		var candidates = mods
 			.Where(mod => !mod.ModioData.HasMetadata
-				&& mod.NexusModsData.MetadataOrigin != NexusMetadataOrigin.Manual
-				&& mod.NexusModsData.MetadataOrigin != NexusMetadataOrigin.ReduxBundleImport
+				&& !HasAuthoritativeNexusAssociation(mod)
 				&& (mod.PublishHandle > 0
 					|| mod.NexusModsData.MetadataOrigin != NexusMetadataOrigin.ManualUnlinked
 					&& mod.CreatorManifest?.IsValid == true
@@ -86,12 +85,12 @@ public class ModioCacheHandler : IExternalModCacheHandler<ModioCachedData>
 
 	public static bool IsCachedAssociationCompatible(DivinityModData mod, ModioModData data)
 	{
-		if (mod?.NexusModsData?.MetadataOrigin == NexusMetadataOrigin.ReduxBundleImport)
+		if (mod == null || data == null || HasAuthoritativeNexusAssociation(mod))
 		{
 			return false;
 		}
 
-		if (mod == null || data == null || data.MetadataOrigin != ModioMetadataOrigin.CreatorManifest)
+		if (data.MetadataOrigin != ModioMetadataOrigin.CreatorManifest)
 		{
 			return true;
 		}
@@ -108,4 +107,9 @@ public class ModioCacheHandler : IExternalModCacheHandler<ModioCachedData>
 			: null;
 		return source != null && source.ProjectId == data.ModId;
 	}
+
+	private static bool HasAuthoritativeNexusAssociation(DivinityModData mod) =>
+		mod?.NexusModsData?.MetadataOrigin is NexusMetadataOrigin.Manual
+			or NexusMetadataOrigin.NexusArchiveImport
+			or NexusMetadataOrigin.ReduxBundleImport;
 }

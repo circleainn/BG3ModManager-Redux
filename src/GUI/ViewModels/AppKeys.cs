@@ -87,10 +87,10 @@ public class AppKeys : ReactiveObject
 		"Save the active load order and optional categories, separators, icons, and notes to a .bg3redux file.")]
 	public Hotkey ExportReduxLoadOrder { get; private set; } = new Hotkey(Key.None);
 
-	[MenuSettings("File", "Export Active Mods to ZIP...")]
+	[MenuSettings("File", "Back Up Active Mods to ZIP...")]
 	public Hotkey ExportOrderToZip { get; private set; } = new Hotkey(Key.R, ModifierKeys.Control);
 
-	[MenuSettings("File", "Export Active Mods to ZIP As...", true)]
+	[MenuSettings("File", "Back Up Active Mods to ZIP As...", true)]
 	public Hotkey ExportOrderToArchiveAs { get; private set; } = new Hotkey(Key.R, ModifierKeys.Control | ModifierKeys.Shift);
 
 	[MenuSettings("File", "Refresh Mods")]

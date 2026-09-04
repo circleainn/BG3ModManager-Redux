@@ -48,10 +48,11 @@ dotnet run --project tools/ReduxModDatabaseTool -- accept-report `
   --mod-ids 123,456,789
 ```
 
-This is also preview-only by default. It requires exact fingerprints and Nexus file IDs, rejects
-fingerprint conflicts, and does not promote module UUIDs into reviewed identities. A selected batch
-is validated and written as one atomic update. Repeat it with `--write` only after reviewing the
-proposed records.
+This is also preview-only by default. It requires exact fingerprints and verified Nexus project IDs,
+rejects fingerprint conflicts, and does not promote module UUIDs into reviewed identities. Nexus file
+IDs are preserved when the report contains them; exact PAK records use `-1` when modern archive names
+do not expose a file ID. A selected batch is validated and written as one atomic update. Repeat it
+with `--write` only after reviewing the proposed records.
 
 ## Private desktop reviewer
 

@@ -107,6 +107,29 @@ public sealed class ContributionReportPrivacyTests
 		RegressionAssert.False(json.Contains("\"isActive\"", StringComparison.OrdinalIgnoreCase));
 	}
 
+	public void ContributionReportsPreserveKnownNexusIdentifiers()
+	{
+		var mod = new RegressionModData
+		{
+			UUID = Guid.NewGuid().ToString(),
+			Name = "Known Nexus source",
+			FilePath = "KnownNexusSource.pak",
+			IsUserMod = true
+		};
+		mod.NexusModsData.ModId = 12345;
+		mod.NexusModsData.LastFileId = 67890;
+		mod.NexusModsData.MetadataOrigin = NexusMetadataOrigin.NexusArchiveImport;
+
+		var record = ReduxDatabaseContributionService.CreateAsync(new[] { mod })
+			.GetAwaiter()
+			.GetResult()
+			.Report.Mods[0];
+
+		RegressionAssert.Equal(12345L, record.Nexus?.ModId);
+		RegressionAssert.Equal(67890L, record.Nexus?.FileId);
+		RegressionAssert.Equal(nameof(NexusMetadataOrigin.NexusArchiveImport), record.Nexus?.MetadataOrigin);
+	}
+
 	public void ContributionReportsRejectCredentialBearingProviderUrls()
 	{
 		var mod = new RegressionModData

@@ -57,9 +57,11 @@ dotnet run --project tools/ReduxModDatabaseTool -- review-report `
 
 Contribution reports are evidence for review, not an automatic trust source. Conflicts must be
 resolved manually. Confirmed Nexus projects can be previewed with `accept-report --mod-id <id>` or
-as one selected batch with `accept-report --mod-ids <id,id,...>`. The batch is written atomically
-only with an additional `--write`; individual local artifacts still use the preview-first `add`
-workflow. The private desktop reviewer in `tools/ReduxModDatabaseTool.Desktop` exposes the same
+as one selected batch with `accept-report --mod-ids <id,id,...>`. Exact PAK evidence requires a
+verified Nexus project ID; the Nexus file ID is preserved when available and recorded as `-1` when
+modern archive names do not expose it. The batch is written atomically only with an additional
+`--write`; individual local artifacts still use the preview-first `add` workflow. The private desktop
+reviewer in `tools/ReduxModDatabaseTool.Desktop` exposes the same
 guarded sequence without requiring command-line entry and is not included in Redux tester packages.
 It finds the repository database automatically when run from a checkout. Portable maintainer copies
 can keep `ReduxModDatabase.json` beside the reviewer executable or in a `Resources` subfolder, and

@@ -190,6 +190,36 @@ public sealed class SourceAssociationTests
 		RegressionAssert.True(mod.ModioData.HasMetadata);
 	}
 
+	public void NexusArchiveCacheBlocksNativeModioDiscoveryAfterRestart()
+	{
+		var mod = CreateMod();
+		var nexusCache = new NexusModsCachedData();
+		nexusCache.Mods[mod.UUID] = new NexusModsModData
+		{
+			UUID = mod.UUID,
+			ModId = 23751,
+			Name = "Persisted Nexus archive project",
+			IsUpdated = true,
+			MetadataOrigin = NexusMetadataOrigin.NexusArchiveImport
+		};
+		var modioCache = new ModioCachedData();
+		modioCache.Mods[mod.UUID] = new ModioModData
+		{
+			UUID = mod.UUID,
+			ModId = 6197684,
+			Name = "Weaker native mod.io match",
+			MetadataOrigin = ModioMetadataOrigin.NativePackage
+		};
+
+		var reloadedNexus = RoundTrip(nexusCache).Mods[mod.UUID];
+		var reloadedModio = RoundTrip(modioCache).Mods[mod.UUID];
+		mod.NexusModsData.Update(reloadedNexus);
+
+		RegressionAssert.Equal(NexusMetadataOrigin.NexusArchiveImport, mod.NexusModsData.MetadataOrigin);
+		RegressionAssert.False(ModioCacheHandler.IsCachedAssociationCompatible(mod, reloadedModio));
+		RegressionAssert.Equal(ModSourceType.NEXUSMODS, mod.Metadata.SourceType);
+	}
+
 	public void ReduxBundleNexusLinkOverridesOnlyWhenExplicitlyApplied()
 	{
 		var mod = CreateMod();

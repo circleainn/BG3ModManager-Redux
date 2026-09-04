@@ -434,7 +434,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled;
 			UpdateHandler.Modio.IsEnabled = true;
 			RxApp.MainThreadScheduler.Schedule(() =>
-				LoadModioMetadataBackground(LoadNexusModsMetadataBackground));
+				LoadNexusModsMetadataBackground(() => LoadModioMetadataBackground()));
 		}
 
 		return changed;
@@ -1262,7 +1262,7 @@ Directory the zip will be extracted to:
 					SaveSettings();
 					if (sourceIntegrationsEnabled)
 					{
-						LoadModioMetadataBackground(LoadNexusModsMetadataBackground);
+						LoadNexusModsMetadataBackground(() => LoadModioMetadataBackground());
 					}
 				}
 			})
@@ -2805,9 +2805,19 @@ Directory the zip will be extracted to:
 		});
 	}
 
-	private void LoadNexusModsMetadataBackground()
+	private void LoadNexusModsMetadataBackground(Action onCompleted = null)
 	{
-		if (!Modules.SourceIntegrationsEnabled || !UpdateHandler.Nexus.IsEnabled || IsRefreshingModUpdates)
+		if (!Modules.SourceIntegrationsEnabled)
+		{
+			onCompleted?.Invoke();
+			return;
+		}
+		if (!UpdateHandler.Nexus.IsEnabled)
+		{
+			onCompleted?.Invoke();
+			return;
+		}
+		if (IsRefreshingModUpdates)
 		{
 			return;
 		}
@@ -2988,6 +2998,7 @@ Directory the zip will be extracted to:
 						return;
 					}
 					ScheduleRefreshModCategories();
+					onCompleted?.Invoke();
 				});
 			}
 		});
@@ -3573,9 +3584,10 @@ Directory the zip will be extracted to:
 			// Membership migration must run after both mod collections have finished
 			// loading; collection-change refreshes may all occur before initialization.
 			RefreshVisualDividers();
-			// Resolve the strongest provider identity first. The bundled Nexus
-			// provenance database is only a fallback for mods not identified by mod.io.
-			LoadModioMetadataBackground(LoadNexusModsMetadataBackground);
+			// Restore durable Nexus archive/manual provenance before attempting any
+			// automatic mod.io discovery. Known sources should never pass through a
+			// weaker provider state while startup metadata is loading.
+			LoadNexusModsMetadataBackground(() => LoadModioMetadataBackground());
 
 			if (AppSettings.FeatureEnabled("ScriptExtender"))
 			{
@@ -5003,11 +5015,9 @@ Directory the zip will be extracted to:
 
 	private void ExportLoadOrderToArchive_Start()
 	{
-		MessageBoxResult result = ReduxMessageBox.Show(Window, $"Save active mods to a zip file?{Environment.NewLine}Depending on the number of mods, this may take some time.", "Confirm Archive Creation",
-			MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel);
-		if (result == MessageBoxResult.OK)
+		if (ConfirmActiveModBackup())
 		{
-			MainProgressTitle = "Adding active mods to zip...";
+			MainProgressTitle = "Backing up active mods...";
 			MainProgressWorkText = "";
 			MainProgressValue = 0d;
 			MainProgressIsActive = true;
@@ -5108,7 +5118,7 @@ Directory the zip will be extracted to:
 
 				RxApp.MainThreadScheduler.Schedule(() =>
 				{
-					ShowAlert($"Exported load order to '{outputPath}'", AlertType.Success, 15);
+					ShowAlert($"Saved active mod backup to '{outputPath}'", AlertType.Success, 15);
 					ProcessHelper.TryOpenPath(Path.GetDirectoryName(outputPath));
 				});
 
@@ -5118,7 +5128,7 @@ Directory the zip will be extracted to:
 			{
 				RxApp.MainThreadScheduler.Schedule(() =>
 				{
-					string msg = $"Error writing load order archive '{outputPath}': {ex}";
+					string msg = $"Error writing active mod backup '{outputPath}': {ex}";
 					DivinityApp.Log(msg);
 					ShowAlert(msg, AlertType.Danger);
 				});
@@ -5174,6 +5184,8 @@ Directory the zip will be extracted to:
 	{
 		if (SelectedProfile != null && SelectedModOrder != null)
 		{
+			if (!ConfirmActiveModBackup()) return;
+
 			UpdateOrderFromActiveMods();
 
 			var dialog = new SaveFileDialog
@@ -5196,11 +5208,11 @@ Directory the zip will be extracted to:
 			dialog.CheckFileExists = false;
 			dialog.CheckPathExists = false;
 			dialog.OverwritePrompt = true;
-			dialog.Title = "Export Load Order As...";
+			dialog.Title = "Save Active Mod Backup";
 
 			if (dialog.ShowDialog(Window) == true)
 			{
-				MainProgressTitle = "Adding active mods to zip...";
+				MainProgressTitle = "Backing up active mods...";
 				MainProgressWorkText = "";
 				MainProgressValue = 0d;
 				MainProgressIsActive = true;
@@ -5220,6 +5232,21 @@ Directory the zip will be extracted to:
 			ShowAlert("Select a profile and load order before exporting.", AlertType.Danger);
 		}
 
+	}
+
+	private bool ConfirmActiveModBackup()
+	{
+		const string message =
+			"Create a ZIP backup containing the active mod files?\n\n"
+			+ "This archive contains third-party .pak files. Keep it for your own backup or transfer unless every mod author explicitly permits redistribution.\n\n"
+			+ "Creating a large backup may take some time.";
+		return ReduxMessageBox.Show(
+			Window,
+			message,
+			"Back Up Active Mods?",
+			MessageBoxButton.OKCancel,
+			MessageBoxImage.Information,
+			MessageBoxResult.Cancel) == MessageBoxResult.OK;
 	}
 
 	private string ModToTSVLine(DivinityModData mod)

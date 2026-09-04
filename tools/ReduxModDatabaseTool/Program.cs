@@ -188,12 +188,6 @@ public static class Program
 		if (records.Count == 0)
 			throw new InvalidDataException($"The report has no exact PAK fingerprints for Nexus project {modId}.");
 
-		var incomplete = records.Where(mod => GetNestedLong(mod, "nexus", "fileId") <= 0).ToList();
-		if (incomplete.Count > 0)
-			throw new InvalidDataException(
-				$"{incomplete.Count} selected record(s) for Nexus project {modId} have no Nexus file ID. "
-				+ "Review and add those artifacts manually.");
-
 		var first = records[0];
 		var projectName = GetNestedString(first, "nexus", "name")
 			?? GetString(first, "displayName")
@@ -247,7 +241,10 @@ public static class Program
 			var hash = GetString(record, "pakHash")!;
 			var fileId = GetNestedLong(record, "nexus", "fileId");
 			EnsureFingerprintIsAvailable(fingerprints, "hash", hash, size, modId);
-			MergeLong(project, "fileIds", fileId);
+			if (fileId > 0)
+			{
+				MergeLong(project, "fileIds", fileId);
+			}
 			if (ContainsFingerprint(fingerprints, "hash", hash, size, modId))
 			{
 				changes.Add($"fingerprint {hash} ({size} bytes) already exists; left unchanged");
@@ -259,13 +256,15 @@ public static class Program
 				["hash"] = hash,
 				["size"] = size,
 				["modId"] = modId,
-				["fileId"] = fileId,
+				["fileId"] = fileId > 0 ? fileId : -1,
 				["name"] = GetNestedString(record, "nexus", "name") ?? GetString(record, "displayName") ?? projectName,
 				["author"] = GetNestedString(record, "nexus", "author") ?? GetString(record, "author") ?? author,
 				["version"] = GetNestedString(record, "nexus", "version") ?? GetString(record, "version") ?? String.Empty,
 				["pictureUrl"] = GetNestedString(record, "nexus", "pictureUrl") ?? GetString(project, "pictureUrl") ?? String.Empty
 			});
-			changes.Add($"added exact PAK fingerprint {hash} ({size} bytes)");
+			changes.Add(fileId > 0
+				? $"added exact PAK fingerprint {hash} ({size} bytes) for Nexus file {fileId}"
+				: $"added exact PAK fingerprint {hash} ({size} bytes) with an unknown Nexus file ID");
 		}
 	}
 
