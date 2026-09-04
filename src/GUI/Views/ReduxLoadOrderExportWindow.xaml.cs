@@ -17,6 +17,7 @@ public partial class ReduxLoadOrderExportWindow : AdonisUI.Controls.AdonisWindow
 		int categoryCount,
 		int separatorCount,
 		int iconCount,
+		int sourceLinkCount,
 		int privateNoteCount,
 		int unavailableIconCount)
 	{
@@ -33,6 +34,7 @@ public partial class ReduxLoadOrderExportWindow : AdonisUI.Controls.AdonisWindow
 		CategoryCountText.Text = FormatCount(categoryCount, "category", "categories");
 		SeparatorCountText.Text = FormatCount(separatorCount, "separator");
 		IconCountText.Text = FormatCount(iconCount, "icon");
+		SourceLinkCountText.Text = $"{FormatCount(sourceLinkCount, "source link")} • recipient chooses whether to apply";
 		PrivateNotesTitleText.Text =
 			$"Include notes ({Math.Max(0, privateNoteCount)})";
 		IncludePrivateNotesCheckBox.IsEnabled = privateNoteCount > 0;

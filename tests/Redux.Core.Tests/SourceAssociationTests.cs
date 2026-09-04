@@ -190,6 +190,60 @@ public sealed class SourceAssociationTests
 		RegressionAssert.True(mod.ModioData.HasMetadata);
 	}
 
+	public void ReduxBundleNexusLinkOverridesOnlyWhenExplicitlyApplied()
+	{
+		var mod = CreateMod();
+		mod.NexusModsEnabled = true;
+		mod.ModioData.Update(new ModioModData
+		{
+			UUID = mod.UUID,
+			ModId = 6197684,
+			Name = "Native mod.io project",
+			MetadataOrigin = ModioMetadataOrigin.NativePackage
+		});
+		var link = new ReduxLoadOrderSourceLink
+		{
+			ModUuid = mod.UUID,
+			Provider = ReduxLoadOrderSourceLink.NexusProvider,
+			ProjectId = 23751,
+			FileId = 555,
+			Name = "Portable Nexus project"
+		};
+
+		RegressionAssert.Equal(ModSourceType.MODIO, mod.Metadata.SourceType);
+		ReduxLoadOrderSourceService.ApplyToInstalledMod(mod, link);
+
+		RegressionAssert.Equal(ModSourceType.NEXUSMODS, mod.Metadata.SourceType);
+		RegressionAssert.Equal(NexusMetadataOrigin.ReduxBundleImport, mod.NexusModsData.MetadataOrigin);
+		RegressionAssert.Equal(23751L, mod.NexusModsData.ModId);
+		RegressionAssert.False(mod.ModioData.HasMetadata);
+	}
+
+	public void PortableSourceLinkUsesTheDisplayedProviderWithoutPrivateUrlData()
+	{
+		var mod = CreateMod();
+		mod.NexusModsData.Update(new NexusModsModData
+		{
+			UUID = mod.UUID,
+			ModId = 23751,
+			MetadataOrigin = NexusMetadataOrigin.BundledProvenance
+		});
+		mod.ModioData.Update(new ModioModData
+		{
+			UUID = mod.UUID,
+			ModId = 6197684,
+			Name = "Native mod.io project",
+			ProfileUrl = "https://mod.io/g/baldursgate3/m/example?token=private#account",
+			MetadataOrigin = ModioMetadataOrigin.NativePackage
+		});
+
+		var link = ReduxLoadOrderSourceService.CreatePortableLink(mod);
+
+		RegressionAssert.Equal(ReduxLoadOrderSourceLink.ModioProvider, link.Provider);
+		RegressionAssert.Equal(6197684L, link.ProjectId);
+		RegressionAssert.Equal("https://mod.io/g/baldursgate3/m/example", link.PageUrl);
+	}
+
 	public void DeletingAnInstalledModRetiresItsRememberedSourceAssociations()
 	{
 		var handler = new ModUpdateHandler();

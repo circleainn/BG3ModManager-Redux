@@ -124,7 +124,8 @@ public sealed class ModHealthSnapshot
 				ModHealthFindingCode.SelfDependency or
 				ModHealthFindingCode.DependencyVersionTooOld or
 				ModHealthFindingCode.DeclaredConflict or
-				ModHealthFindingCode.InvalidCreatorManifest)
+				ModHealthFindingCode.InvalidCreatorManifest or
+				ModHealthFindingCode.McmNotActive)
 			.ToArray();
 		PackageBehaviorFindings = Findings
 			.Where(finding => finding.Code is

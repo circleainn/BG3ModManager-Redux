@@ -10,7 +10,8 @@ public enum ModioMetadataOrigin
 {
 	Unknown = 0,
 	NativePackage = 1,
-	CreatorManifest = 2
+	CreatorManifest = 2,
+	ReduxBundleImport = 3
 }
 
 /// <summary>

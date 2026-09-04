@@ -3,6 +3,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 
+using DivinityModManager.AppServices;
 using DivinityModManager.Models;
 using DivinityModManager.Models.App;
 using DivinityModManager.ModUpdater.Cache;
@@ -20,6 +21,40 @@ internal sealed class ReduxModuleStateTests
 		RegressionAssert.True(modules.SourceIntegrationsEnabled);
 		RegressionAssert.True(modules.ModDiagnosticsEnabled);
 		RegressionAssert.False(modules.LoadOrderGuidanceEnabled);
+	}
+
+	public void FirstRunOnboardingStartsWithEveryOptionalFeatureOff()
+	{
+		var settings = new DivinityModManagerSettings
+		{
+			LocalOnlyMode = false,
+			EnableModHealth = true,
+			EnableLoadOrderAdvisor = true,
+			HasSeenReduxWelcome = false
+		};
+
+		ReduxOnboardingPolicy.ApplyFirstRunDefaults(settings);
+
+		RegressionAssert.True(settings.LocalOnlyMode);
+		RegressionAssert.False(settings.EnableModHealth);
+		RegressionAssert.False(settings.EnableLoadOrderAdvisor);
+	}
+
+	public void ReturningUsersKeepTheirOptionalFeatureChoices()
+	{
+		var settings = new DivinityModManagerSettings
+		{
+			LocalOnlyMode = false,
+			EnableModHealth = true,
+			EnableLoadOrderAdvisor = true,
+			HasSeenReduxWelcome = true
+		};
+
+		ReduxOnboardingPolicy.ApplyFirstRunDefaults(settings);
+
+		RegressionAssert.False(settings.LocalOnlyMode);
+		RegressionAssert.True(settings.EnableModHealth);
+		RegressionAssert.True(settings.EnableLoadOrderAdvisor);
 	}
 
 	public void LocalOnlyModeChangesOnlySourceIntegrations()

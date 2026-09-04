@@ -65,8 +65,9 @@ boundaries are recalculated.
 
 Redux extends the inherited load-order workflow with:
 
-- portable Redux Modlists containing a saved order and optional Redux presentation data;
-- independent import choices for order data and presentation data;
+- portable Redux Modlists containing a saved order, optional Redux presentation data, and public
+  source references;
+- independent import choices for order data, presentation data, source links, and private notes;
 - validation against malformed, mismatched, or unexpected bundle contents;
 - export review showing meaningful activations, deactivations, placement changes, automatically
   included dependencies, and relevant diagnostics;
@@ -76,6 +77,10 @@ Redux extends the inherited load-order workflow with:
 
 Portable Redux data does not include `modsettings.lsx`, installed packages, profiles, saves, API
 keys, logs, caches, or other machine-private data.
+
+Source-link import is disabled by default. Enabling it explicitly replaces Nexus Mods or mod.io
+associations for matching module UUIDs; leaving it disabled preserves the recipient's installed
+package provenance.
 
 ## Diagnostics and dependency assistance
 

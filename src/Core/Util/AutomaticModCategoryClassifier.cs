@@ -263,7 +263,8 @@ public static class AutomaticModCategoryClassifier
 		Predicate<string> isCategoryEnabled)
 	{
 		var nexusIsExplicit = mod.NexusModsData?.MetadataOrigin is
-			NexusMetadataOrigin.Manual or NexusMetadataOrigin.NexusArchiveImport;
+			NexusMetadataOrigin.Manual or NexusMetadataOrigin.NexusArchiveImport
+			or NexusMetadataOrigin.ReduxBundleImport;
 
 		if (nexusIsExplicit && TryGetEnabledNexusCategory(mod, isCategoryEnabled, out var nexusCategory))
 		{

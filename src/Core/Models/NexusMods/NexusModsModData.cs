@@ -20,7 +20,8 @@ public enum NexusMetadataOrigin
 	Manual = 3,
 	ManualUnlinked = 4,
 	CreatorManifest = 5,
-	NexusArchiveImport = 6
+	NexusArchiveImport = 6,
+	ReduxBundleImport = 7
 }
 
 public class NexusModsModData : INotifyPropertyChanged, IExternalModMetadata

@@ -198,7 +198,7 @@
 									Width="19" Height="19" Margin="0,1,10,0"
 									VerticalAlignment="Top">
 									<controls:ReduxIcon.Style>
-										<Style TargetType="controls:ReduxIcon">
+										<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="controls:ReduxIcon">
 											<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
 											<Setter Property="StrokeData" Value="{StaticResource Redux.Icon.ShieldCheck}" />
 											<Style.Triggers>

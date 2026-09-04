@@ -159,6 +159,9 @@ public static class ReduxLoadOrderBundleService
 		if (!String.Equals(presentation.Format, ReduxLoadOrderPresentation.CurrentFormat, StringComparison.Ordinal) ||
 			presentation.SchemaVersion != ReduxLoadOrderPresentation.CurrentSchemaVersion)
 			throw new InvalidDataException("This Redux Modlist uses an unsupported format version.");
+		// SourceLinks was added without changing the schema so older Redux bundles
+		// remain importable. A missing collection means that bundle has no links.
+		presentation.SourceLinks ??= new List<ReduxLoadOrderSourceLink>();
 		if (presentation.OrderedModUuids == null ||
 			presentation.CustomCategories == null ||
 			presentation.CustomCategoryDisplayOrder == null ||
@@ -184,6 +187,7 @@ public static class ReduxLoadOrderBundleService
 		loadOrder.Name = presentation.LoadOrderName;
 
 		var orderUuids = loadOrder.Order.Select(entry => entry.UUID).ToList();
+		var orderedUuidSet = orderUuids.ToHashSet(StringComparer.OrdinalIgnoreCase);
 		if (orderUuids.Distinct(StringComparer.OrdinalIgnoreCase).Count() != orderUuids.Count ||
 			!orderUuids.SequenceEqual(presentation.OrderedModUuids, StringComparer.OrdinalIgnoreCase))
 			throw new InvalidDataException("The Redux Modlist contains inconsistent load-order data.");
@@ -191,8 +195,20 @@ public static class ReduxLoadOrderBundleService
 			presentation.Dividers.Count > 256 ||
 			presentation.CategoryAssignments.Count > 10000 ||
 			presentation.CustomIconAssets.Count > 128 ||
-			presentation.PrivateModNotes.Count > orderUuids.Count)
+			presentation.PrivateModNotes.Count > orderUuids.Count ||
+			presentation.SourceLinks.Count > orderUuids.Count)
 			throw new InvalidDataException("The Redux Modlist layout exceeds the supported limits.");
+
+		if (presentation.SourceLinks.Any(link =>
+				link == null || String.IsNullOrWhiteSpace(link.ModUuid) || !orderedUuidSet.Contains(link.ModUuid) ||
+				link.Provider is not (ReduxLoadOrderSourceLink.NexusProvider or ReduxLoadOrderSourceLink.ModioProvider) ||
+				link.ProjectId <= 0 || link.FileId < -1 || link.CategoryId < 0 ||
+				(link.Name?.Length ?? 0) > 256 || (link.Author?.Length ?? 0) > 160 ||
+				(link.Uploader?.Length ?? 0) > 160 || (link.Version?.Length ?? 0) > 128 ||
+				(link.PageUrl?.Length ?? 0) > 512 || !IsSafeSourceUrl(link.Provider, link.PageUrl)) ||
+			presentation.SourceLinks.Select(link => link.ModUuid)
+				.Distinct(StringComparer.OrdinalIgnoreCase).Count() != presentation.SourceLinks.Count)
+			throw new InvalidDataException("The Redux Modlist contains an invalid source link.");
 
 		if (presentation.CustomCategories.Any(category =>
 				category == null || String.IsNullOrWhiteSpace(category.Name) || category.Name.Length > 80 ||
@@ -211,7 +227,6 @@ public static class ReduxLoadOrderBundleService
 				presentation.CustomCategoryDisplayOrder.Count)
 			throw new InvalidDataException("The Redux Modlist contains an invalid category order.");
 
-		var orderedUuidSet = orderUuids.ToHashSet(StringComparer.OrdinalIgnoreCase);
 		if (presentation.CategoryAssignments.Any(assignment =>
 				String.IsNullOrWhiteSpace(assignment.Key) || !orderedUuidSet.Contains(assignment.Key) ||
 				assignment.Value == null || assignment.Value.Count > 32 ||
@@ -262,6 +277,27 @@ public static class ReduxLoadOrderBundleService
 	private static bool IsValidColor(string color) =>
 		!String.IsNullOrWhiteSpace(color) &&
 		Regex.IsMatch(color, "^#[0-9A-Fa-f]{6}$", RegexOptions.CultureInvariant);
+
+	private static bool IsSafeSourceUrl(string provider, string url)
+	{
+		if (String.IsNullOrWhiteSpace(url)) return true;
+		if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+			!String.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+			!uri.IsDefaultPort || !String.IsNullOrWhiteSpace(uri.UserInfo) ||
+			!String.IsNullOrWhiteSpace(uri.Query) || !String.IsNullOrWhiteSpace(uri.Fragment))
+			return false;
+
+		return provider switch
+		{
+			ReduxLoadOrderSourceLink.NexusProvider =>
+				uri.Host.Equals("nexusmods.com", StringComparison.OrdinalIgnoreCase) ||
+				uri.Host.EndsWith(".nexusmods.com", StringComparison.OrdinalIgnoreCase),
+			ReduxLoadOrderSourceLink.ModioProvider =>
+				uri.Host.Equals("mod.io", StringComparison.OrdinalIgnoreCase) ||
+				uri.Host.EndsWith(".mod.io", StringComparison.OrdinalIgnoreCase),
+			_ => false
+		};
+	}
 
 	private static void WriteTextEntry(ZipArchive archive, string name, string contents)
 	{

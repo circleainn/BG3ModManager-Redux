@@ -63,6 +63,24 @@ internal sealed class ReduxBundleTests
 			RegressionAssert.SequenceEqual(
 				assets[CustomIconAsset],
 				contents.Assets[CustomIconAsset]);
+			RegressionAssert.Equal(1, contents.Presentation.SourceLinks.Count);
+			RegressionAssert.Equal(SecondUuid, contents.Presentation.SourceLinks[0].ModUuid);
+			RegressionAssert.Equal(ReduxLoadOrderSourceLink.NexusProvider, contents.Presentation.SourceLinks[0].Provider);
+			RegressionAssert.Equal(12345L, contents.Presentation.SourceLinks[0].ProjectId);
+		});
+	}
+
+	public void SourceLinksCannotReferenceModsOutsideTheOrder()
+	{
+		WithTemporaryBundle(path =>
+		{
+			var presentation = CreatePresentation();
+			presentation.SourceLinks[0].ModUuid = "33333333-3333-3333-3333-333333333333";
+
+			RegressionAssert.False(ReduxLoadOrderBundleService.TryExport(
+				path, CreateOrder(), presentation, CreateAssets(), out var error));
+			RegressionAssert.Contains(error, "invalid source link");
+			RegressionAssert.False(File.Exists(path));
 		});
 	}
 
@@ -318,8 +336,8 @@ internal sealed class ReduxBundleTests
 		return new ReduxLoadOrderPresentation
 		{
 			LoadOrderName = "Portable Test Order",
-			CreatorVersion = "0.1.0-alpha.10",
-			CreatorInternalVersion = "0.1.0.10",
+			CreatorVersion = "0.1.0-alpha.11",
+			CreatorInternalVersion = "0.1.0.11",
 			OrderedModUuids = new List<string> { FirstUuid, SecondUuid },
 			CustomCategories = new List<ReduxLoadOrderCategory>
 			{
@@ -354,6 +372,19 @@ internal sealed class ReduxBundleTests
 			CustomIconAssets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
 			{
 				[CustomIconReference] = CustomIconAsset
+			},
+			SourceLinks = new List<ReduxLoadOrderSourceLink>
+			{
+				new()
+				{
+					ModUuid = SecondUuid,
+					Provider = ReduxLoadOrderSourceLink.NexusProvider,
+					ProjectId = 12345,
+					FileId = 67890,
+					Name = "Quest Mod",
+					Author = "Test Author",
+					PageUrl = "https://www.nexusmods.com/baldursgate3/mods/12345"
+				}
 			}
 		};
 	}

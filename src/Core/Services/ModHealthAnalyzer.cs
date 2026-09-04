@@ -16,6 +16,7 @@ public sealed class ModHealthAnalyzer : IModHealthAnalyzer
 		new CreatorManifestHealthRule(),
 		new ScriptExtenderHealthRule(),
 		new LegacyAndOverrideHealthRule(),
+		new McmActivationHealthRule(),
 		new ModSourceHealthRule()
 	};
 	private static readonly IReadOnlyList<IModHealthRule> DefaultAdvisorRules = new IModHealthRule[]
@@ -83,7 +84,13 @@ public sealed class ModHealthAnalyzer : IModHealthAnalyzer
 			rule.Evaluate(context, findings);
 		}
 
-		if (enableLoadOrderAdvisor)
+		// Load-order advice is meaningful only for ordinary entries in the active
+		// order. Inactive packages have no position, and force-loaded/override
+		// packages load outside the normal modsettings.lsx ordering model.
+		if (enableLoadOrderAdvisor
+			&& !context.Mod.IsForceLoaded
+			&& !String.IsNullOrWhiteSpace(context.Mod.UUID)
+			&& context.ActiveUuids.Contains(context.Mod.UUID))
 		{
 			foreach (var rule in _advisorRules)
 			{

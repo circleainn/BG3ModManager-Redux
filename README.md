@@ -5,7 +5,7 @@ BG3 Mod Manager Redux is a Windows mod manager built on
 original manager's package and load-order foundation while adding a refreshed interface and more
 ways to organize, review, and share mod setups.
 
-**Current build:** `0.1.0-alpha.10`
+**Current build:** `0.1.0-alpha.11`
 
 [Nexus Mods](https://www.nexusmods.com/baldursgate3/mods/23799) | [Report an issue](https://github.com/circleainn/BG3ModManager-Redux/issues) | [Changes from upstream](docs/CHANGES_FROM_UPSTREAM.md)
 
@@ -28,8 +28,9 @@ ways to organize, review, and share mod setups.
   guidance based only on declared dependencies.
 - **Safer order changes** with an export review, pre-export restore points, order comparison, staged
   imports, backups, and validated writes.
-- **Redux Modlists** (`.bg3redux`) for moving an order, categories, separators, and optional notes
-  between Redux installations without changing `modsettings.lsx` or including mod files.
+- **Redux Modlists** (`.bg3redux`) for moving an order, categories, separators, optional source
+  links, and optional notes between Redux installations without changing `modsettings.lsx` or
+  including mod files.
 
 ## Organize and review mods
 
@@ -71,11 +72,14 @@ A `.bg3redux` Modlist can contain:
 - a saved load order;
 - custom categories, descriptions, assignments, and display order;
 - separators, descriptions, positions, and collapsed states;
-- reusable custom PNG icons; and
+- reusable custom PNG icons;
+- public Nexus Mods or mod.io source references; and
 - mod notes when explicitly selected during export.
 
 Import and export previews show what will change. A Redux Modlist does not contain `.pak` files or
-`modsettings.lsx`, and importing one does not install missing mods.
+`modsettings.lsx`, and importing one does not install missing mods. Source-link import is off by
+default because the recipient may have installed the same mod UUID from a different provider.
+When explicitly enabled, imported links replace the local source association for matching UUIDs.
 
 Private testers can also use **Generate Redux Database Contribution** to create a reviewable
 `.bg3redux-report`. Reports exclude profiles, load-order positions, settings, credentials, and
@@ -91,8 +95,9 @@ private filesystem paths.
 - Use selectable dialog text, configurable shortcuts, keyboard-accessible dialogs, and the
   inherited speech commands.
 
-The first launch opens one optional setup window for choosing a theme, online mod information,
-diagnostics, API keys, and accessibility options. It can be reopened from Help.
+The first launch opens one setup window for choosing a theme, optional source linking and
+diagnostics, API keys, and accessibility options. Optional features begin disabled and can be
+enabled there or later in Preferences. The setup can be reopened from Help.
 
 ## Built on BG3 Mod Manager
 

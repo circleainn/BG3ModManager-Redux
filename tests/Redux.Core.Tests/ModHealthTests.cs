@@ -96,6 +96,31 @@ internal sealed class ModHealthTests
 			activeOrder.Select(mod => mod.Name));
 	}
 
+	public void LoadOrderGuidanceAppliesOnlyToNormalActiveEntries()
+	{
+		var activeDependent = CreateMod("active-dependent", "Active Dependent", isActive: true);
+		var inactiveDependent = CreateMod("inactive-dependent", "Inactive Dependent", isActive: true);
+		var overrideDependent = CreateMod("override-dependent", "Override Dependent", isActive: true);
+		var dependency = CreateMod("dependency", "Dependency", isActive: true);
+		activeDependent.Dependencies.AddOrUpdate(ToDependency(dependency));
+		inactiveDependent.Dependencies.AddOrUpdate(ToDependency(dependency));
+		overrideDependent.Dependencies.AddOrUpdate(ToDependency(dependency));
+		overrideDependent.IsForceLoaded = true;
+		var installed = new[] { activeDependent, inactiveDependent, overrideDependent, dependency };
+		var activeOrder = new[] { activeDependent, overrideDependent, dependency };
+
+		var snapshots = new ModHealthAnalyzer().AnalyzeAll(
+			installed,
+			activeOrder,
+			enableLoadOrderAdvisor: true);
+
+		RegressionAssert.True(HasFinding(
+			FindSnapshot(snapshots, activeDependent.UUID),
+			ModHealthFindingCode.DependencyLoadsLater));
+		RegressionAssert.Equal(0, FindSnapshot(snapshots, inactiveDependent.UUID).LoadOrderAdviceCount);
+		RegressionAssert.Equal(0, FindSnapshot(snapshots, overrideDependent.UUID).LoadOrderAdviceCount);
+	}
+
 	public void InvalidUuidIsReportedAsAReadOnlyHealthError()
 	{
 		var mod = CreateMod("invalid", "Invalid UUID", isActive: true);
@@ -308,6 +333,38 @@ internal sealed class ModHealthTests
 			localSnapshot,
 			ModHealthFindingCode.ModioManagedSource));
 		RegressionAssert.True(mod.ModioData.HasMetadata);
+	}
+
+	public void InactiveMcmExplainsItsInGameLoadOrderWarning()
+	{
+		var mcm = CreateMod("mcm", "Mod Configuration Menu", isActive: false);
+		mcm.UUID = "755a8a72-407f-4f0d-9a33-274ac0f0b53d";
+		var analyzer = new ModHealthAnalyzer();
+
+		var inactive = FindSnapshot(analyzer.AnalyzeAll(new[] { mcm }, Array.Empty<DivinityModData>()), mcm.UUID);
+		var finding = inactive.Findings.Single(item => item.Code == ModHealthFindingCode.McmNotActive);
+		RegressionAssert.Equal(ModHealthSeverity.Warning, finding.Severity);
+		RegressionAssert.Contains(finding.Message, "Export to Game");
+		RegressionAssert.Contains(finding.Message, "Redux");
+
+		var active = FindSnapshot(analyzer.AnalyzeAll(new[] { mcm }, new[] { mcm }), mcm.UUID);
+		RegressionAssert.False(HasFinding(active, ModHealthFindingCode.McmNotActive));
+	}
+
+	public void ModioWarningExplainsSteamCloudPersistence()
+	{
+		var mod = CreateMod("modio-cache", "mod.io Mod", isActive: true);
+		mod.ModioData = new ModioModData
+		{
+			ModId = 67890,
+			Name = "Linked mod.io project",
+			MetadataOrigin = ModioMetadataOrigin.NativePackage
+		};
+
+		var snapshot = FindSnapshot(new ModHealthAnalyzer().AnalyzeAll(new[] { mod }, new[] { mod }), mod.UUID);
+		var finding = snapshot.Findings.Single(item => item.Code == ModHealthFindingCode.ModioManagedSource);
+		RegressionAssert.Contains(finding.Message, "Steam Cloud");
+		RegressionAssert.Contains(finding.Message, "unsubscribe");
 	}
 
 	public void DisablingModioWarningsHidesOnlyThatFinding()

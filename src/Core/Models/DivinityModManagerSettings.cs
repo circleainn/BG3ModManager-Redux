@@ -316,7 +316,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool EnableModHealth { get; set; } = true;
 
 	[DefaultValue(false)]
-	[SettingsEntry("Disable mod.io warnings", "Hide the warning that BG3 may restore subscribed mod.io files. Online mod information is unaffected.")]
+	[SettingsEntry("Disable mod.io warnings", "Hide the warning that BG3 or Steam Cloud may restore mod.io files, including cached files after unsubscribing. Online mod information is unaffected.")]
 	[DataMember, Reactive] public bool DisableModioWarnings { get; set; }
 
 	[DefaultValue(false)]

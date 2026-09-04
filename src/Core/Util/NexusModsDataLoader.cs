@@ -202,6 +202,7 @@ public static class NexusModsDataLoader
 					{
 						NexusMetadataOrigin.Manual => NexusMetadataOrigin.Manual,
 						NexusMetadataOrigin.NexusArchiveImport => NexusMetadataOrigin.NexusArchiveImport,
+						NexusMetadataOrigin.ReduxBundleImport => NexusMetadataOrigin.ReduxBundleImport,
 						NexusMetadataOrigin.BundledProvenance => NexusMetadataOrigin.BundledProvenance,
 						NexusMetadataOrigin.CreatorManifest => NexusMetadataOrigin.CreatorManifest,
 						_ => NexusMetadataOrigin.LiveApi

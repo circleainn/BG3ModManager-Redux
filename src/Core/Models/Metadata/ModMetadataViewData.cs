@@ -1,6 +1,7 @@
 using DivinityModManager.Util;
 using DivinityModManager.Extensions;
 using DivinityModManager.Models.NexusMods;
+using DivinityModManager.Models.Modio;
 using DivinityModManager.AppServices;
 
 using System.ComponentModel;
@@ -29,6 +30,7 @@ public sealed class ModMetadataViewData : ReactiveObject
 			// even when the PAK also carries a native mod.io PublishHandle.
 			if (_mod.NexusModsData?.MetadataOrigin is NexusMetadataOrigin.Manual
 					or NexusMetadataOrigin.NexusArchiveImport
+					or NexusMetadataOrigin.ReduxBundleImport
 				&& _mod.NexusModsData.HasMetadata)
 			{
 				return _mod.NexusModsData;
@@ -111,10 +113,13 @@ public sealed class ModMetadataViewData : ReactiveObject
 			{
 				NexusMetadataOrigin.Manual => "Manually linked from Nexus Mods",
 				NexusMetadataOrigin.NexusArchiveImport => "Linked from the imported Nexus Mods archive",
+				NexusMetadataOrigin.ReduxBundleImport => "Linked from an imported Redux modlist",
 				NexusMetadataOrigin.BundledProvenance => "Automatically linked from the Redux mod database",
 				_ => "Automatically linked from Nexus Mods"
 			}
-			: $"Automatically linked from {SourceLabel}"
+			: _mod.ModioData?.MetadataOrigin == ModioMetadataOrigin.ReduxBundleImport
+				? "Linked from an imported Redux modlist"
+				: $"Automatically linked from {SourceLabel}"
 		: "Local package metadata";
 
 	public bool UsesBundledNexusMetadata => SourceType == ModSourceType.NEXUSMODS

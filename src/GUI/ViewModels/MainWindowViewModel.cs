@@ -82,6 +82,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	[Reactive] public bool IsInitialized { get; private set; }
 	private const string StartupLoadOrderWarningKey = "load-order-mod-warning";
+	private const string StartupRestoreLoadOrderPromptKey = "restore-reset-load-order";
 	private const string QuickSaveOrderName = "Current Order";
 	private readonly StartupNotificationQueue _startupNotifications = new();
 
@@ -398,6 +399,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public ICommand SaveSettingsSilentlyCommand { get; private set; }
 	public ICommand SelectModCategoryCommand { get; private set; }
 	public ICommand ClearModCategoryFilterCommand { get; private set; }
+	public ICommand OpenLoadOrderFolderCommand { get; private set; }
 	public ReactiveCommand<DivinityLoadOrder, Unit> DeleteOrderCommand { get; private set; }
 	public ReactiveCommand<object, Unit> ToggleOrderRenamingCommand { get; set; }
 	public RxCommandUnit RefreshCommand { get; private set; }
@@ -409,16 +411,22 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	{
 		var changed = false;
 		foreach (var mod in UserMods.Where(mod =>
-			mod.NexusModsData?.MetadataOrigin is NexusMetadataOrigin.Manual or NexusMetadataOrigin.ManualUnlinked))
+			mod.NexusModsData?.MetadataOrigin is NexusMetadataOrigin.Manual
+				or NexusMetadataOrigin.ManualUnlinked
+				or NexusMetadataOrigin.ReduxBundleImport ||
+			mod.ModioData?.MetadataOrigin == ModioMetadataOrigin.ReduxBundleImport))
 		{
 			mod.NexusModsData.ResetSourceAssociation();
+			mod.ModioData = new ModioModData { UUID = mod.UUID };
 			UpdateHandler.Nexus.CacheData.Mods.Remove(mod.UUID);
+			UpdateHandler.Modio.CacheData.Mods.Remove(mod.UUID);
 			changed = true;
 		}
 
 		if (changed)
 		{
 			await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), CancellationToken.None);
+			await UpdateHandler.Modio.SaveCacheAsync(false, Version.ToString(), CancellationToken.None);
 		}
 
 		if (Modules.SourceIntegrationsEnabled)
@@ -1342,6 +1350,8 @@ Directory the zip will be extracted to:
 		{
 			ShowAlert($"Error loading settings at '{settingsFile}': {ex}", AlertType.Danger);
 		}
+
+		ReduxOnboardingPolicy.ApplyFirstRunDefaults(Settings);
 
 		LoadAppConfig();
 
@@ -2531,15 +2541,12 @@ Directory the zip will be extracted to:
 	private void AddNewModOrder(DivinityLoadOrder newOrder = null)
 	{
 		var lastIndex = SelectedModOrderIndex;
-		var lastOrders = ModOrderList.ToList();
-
-		var nextOrders = new List<DivinityLoadOrder>();
-		nextOrders.AddRange(SavedModOrderList);
+		var lastSavedOrders = SavedModOrderList.ToList();
 
 		void undo()
 		{
 			SavedModOrderList.Clear();
-			SavedModOrderList.AddRange(lastOrders);
+			SavedModOrderList.AddRange(lastSavedOrders);
 			BuildModOrderList(lastIndex);
 		};
 
@@ -2547,12 +2554,22 @@ Directory the zip will be extracted to:
 		{
 			if (newOrder == null)
 			{
-				newOrder = new DivinityLoadOrder()
+				const string baseName = "New Load Order";
+				var existingNames = ModOrderList
+					.Select(order => order.Name)
+					.Where(name => !String.IsNullOrWhiteSpace(name))
+					.ToHashSet(StringComparer.OrdinalIgnoreCase);
+				var name = baseName;
+				var suffix = 2;
+				while (existingNames.Contains(name))
 				{
-					Name = $"New{nextOrders.Count}",
-					Order = ActiveMods.Select(m => m.ToOrderEntry()).ToList()
-				};
-				newOrder.FilePath = Path.Combine(GetOrdersDirectory(), DivinityModDataLoader.MakeSafeFilename(Path.Combine(newOrder.Name + ".json"), '_'));
+					name = $"{baseName} {suffix++}";
+				}
+
+				var fileName = DivinityModDataLoader.MakeSafeFilename(name + ".json", '_');
+				newOrder = LoadOrderPersistencePolicy.CreateBlankOrder(
+					name,
+					Path.Combine(GetOrdersDirectory(), fileName));
 			}
 			SavedModOrderList.Add(newOrder);
 			BuildModOrderList(ModOrderList.Count);
@@ -3018,7 +3035,9 @@ Directory the zip will be extracted to:
 
 			if (mod.CreatorManifest?.IsValid != true
 				|| mod.ModioData?.HasMetadata == true
-				|| mod.NexusModsData.MetadataOrigin is NexusMetadataOrigin.Manual or NexusMetadataOrigin.ManualUnlinked)
+				|| mod.NexusModsData.MetadataOrigin is NexusMetadataOrigin.Manual
+					or NexusMetadataOrigin.ManualUnlinked
+					or NexusMetadataOrigin.ReduxBundleImport)
 			{
 				continue;
 			}
@@ -3295,20 +3314,33 @@ Directory the zip will be extracted to:
 			var lastExported = SavedModOrderList.FirstOrDefault(x => x.Name == DivinityApp.PATH_LAST_EXPORTED_NAME);
 			if (modSettingsOrder != null && lastExported != null && lastExported.Order.Count > 0)
 			{
-				var doReset = await Observable.Start(() =>
+				var resetDecision = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+				await Observable.Start(() =>
 				{
-					MessageBoxResult result = ReduxMessageBox.Show(Window,
-					"It looks like the load order was reset externally. Use the last exported mod order?",
-					"Restore Load Order",
-					MessageBoxButton.YesNo,
-					MessageBoxImage.Warning,
-					MessageBoxResult.Yes);
-					if (result == MessageBoxResult.Yes)
+					ShowWhenMainWindowReady(StartupRestoreLoadOrderPromptKey, () =>
 					{
-						return true;
-					}
-					return false;
+						var result = ReduxMessageBox.Show(Window,
+							"It looks like the load order was reset externally. Use the last exported mod order?",
+							"Restore Load Order",
+							MessageBoxButton.YesNo,
+							MessageBoxImage.Warning,
+							MessageBoxResult.Yes);
+						resetDecision.TrySetResult(result == MessageBoxResult.Yes);
+					});
 				}, RxApp.MainThreadScheduler);
+
+				bool doReset;
+				try
+				{
+					doReset = await resetDecision.Task.WaitAsync(token);
+				}
+				catch (OperationCanceledException)
+				{
+					await Observable.Start(
+						() => _startupNotifications.Cancel(StartupRestoreLoadOrderPromptKey),
+						RxApp.MainThreadScheduler);
+					return;
+				}
 
 				if (doReset)
 				{
@@ -3584,6 +3616,27 @@ Directory the zip will be extracted to:
 			loadOrderDirectory = Path.GetFullPath(loadOrderDirectory);
 		}
 		return loadOrderDirectory;
+	}
+
+	private void OpenLoadOrderFolder()
+	{
+		string ordersDirectory;
+		try
+		{
+			ordersDirectory = GetOrdersDirectory();
+			Directory.CreateDirectory(ordersDirectory);
+		}
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Error preparing the load order directory:\n{ex}");
+			ShowAlert("Redux could not open the load order folder. Check the configured load order path in Settings.", AlertType.Danger, 20);
+			return;
+		}
+
+		if (!ProcessHelper.TryOpenPath(ordersDirectory, Directory.Exists))
+		{
+			ShowAlert("Redux could not open the load order folder.", AlertType.Danger, 15);
+		}
 	}
 
 	private static string GetRestorePointsDirectory() =>
@@ -4046,7 +4099,19 @@ Directory the zip will be extracted to:
 	{
 		RxApp.TaskpoolScheduler.ScheduleAsync(async (ctrl, t) =>
 		{
-			await ExportLoadOrderAsync();
+			try
+			{
+				await ExportLoadOrderAsync();
+			}
+			catch (Exception ex)
+			{
+				DivinityApp.Log($"Unexpected error while exporting the load order:\n{ex}");
+				await Observable.Start(() =>
+				{
+					ShowAlert("Redux could not finish exporting the load order. No successful export was reported; check the log for details.", AlertType.Danger, 30);
+					return Unit.Default;
+				}, RxApp.MainThreadScheduler);
+			}
 			return Disposable.Empty;
 		});
 	}
@@ -4189,13 +4254,22 @@ Directory the zip will be extracted to:
 	{
 		if (SelectedProfile != null && SelectedModOrder != null)
 		{
+			var outputPath = Path.Combine(SelectedProfile.Folder, "modsettings.lsx");
+			var hasPreviousExport = File.Exists(outputPath);
+			IReadOnlyList<DivinityLoadOrderEntry> previouslyExportedOrder = Array.Empty<DivinityLoadOrderEntry>();
+			if (hasPreviousExport)
+			{
+				var diskExport = await DivinityModDataLoader.LoadModSettingsFileAsync(outputPath);
+				previouslyExportedOrder = diskExport.ActiveMods
+					.Where(entry => entry != null && !String.IsNullOrWhiteSpace(entry.UUID))
+					.Select(entry => new DivinityLoadOrderEntry
+					{
+						UUID = entry.UUID,
+						Name = String.IsNullOrWhiteSpace(entry.Name) ? entry.UUID : entry.Name
+					})
+					.ToArray();
+			}
 			var currentExport = ModOrderList.FirstOrDefault(order => order.IsModSettings);
-			var previouslyExportedOrder = currentExport?.Order
-				.Select(entry => entry?.Clone())
-				.Where(entry => entry != null)
-				.ToArray() ?? Array.Empty<DivinityLoadOrderEntry>();
-			var hasPreviousExport = File.Exists(
-				currentExport?.FilePath ?? Path.Combine(SelectedProfile.Folder, "modsettings.lsx"));
 			UpdateOrderFromActiveMods();
 
 			var outputAdventureMod = SelectedAdventureMod;
@@ -4224,7 +4298,6 @@ Directory the zip will be extracted to:
 					}
 				}
 			}
-			string outputPath = Path.Combine(SelectedProfile.Folder, "modsettings.lsx");
 			var finalOrder = DivinityModDataLoader.BuildOutputList(SelectedModOrder.Order, mods.Items, Settings.AutoAddDependenciesWhenExporting, outputAdventureMod);
 			if (!await ShowExportReviewAsync(previouslyExportedOrder, hasPreviousExport, finalOrder, outputAdventureMod))
 			{
@@ -5498,6 +5571,11 @@ Directory the zip will be extracted to:
 					.ToList();
 			}
 		}
+		presentation.SourceLinks = ActiveMods
+			.Where(mod => mod != null && !mod.IsVisualDivider)
+			.Select(ReduxLoadOrderSourceService.CreatePortableLink)
+			.Where(link => link != null)
+			.ToList();
 		presentation.Dividers = BuildReduxBundleDividers(presentation, assets);
 		var unavailableCustomIconCount = (Settings.CustomModCategories ?? Enumerable.Empty<string>())
 			.Select(GetCategoryIcon)
@@ -5522,6 +5600,7 @@ Directory the zip will be extracted to:
 			presentation.CustomCategories.Count,
 			presentation.Dividers.Count,
 			presentation.CustomIconAssets.Count,
+			presentation.SourceLinks.Count,
 			privateNoteCount,
 			unavailableCustomIconCount);
 		reviewWindow.ShowDialog();
@@ -5557,6 +5636,7 @@ Directory the zip will be extracted to:
 				$"[ReduxBundle] Exported '{dialog.FileName}': {loadOrder.Order.Count} mod(s), " +
 				$"{presentation.CustomCategories.Count} custom categories, {presentation.Dividers.Count} separator(s), " +
 				$"{presentation.CustomIconAssets.Count} custom icon(s), " +
+				$"{presentation.SourceLinks.Count} source link(s), " +
 				$"{presentation.PrivateModNotes.Count} note(s), creator {presentation.CreatorVersion} " +
 				$"({presentation.CreatorInternalVersion}).");
 			ShowAlert($"Exported Redux modlist '{Path.GetFileName(dialog.FileName)}'.", AlertType.Success, 15);
@@ -5927,6 +6007,71 @@ Directory the zip will be extracted to:
 		return true;
 	}
 
+	private bool ImportReduxBundleSourceLinks(
+		ReduxLoadOrderBundleContents contents,
+		out int importedCount,
+		out int appliedToInstalledCount)
+	{
+		importedCount = 0;
+		appliedToInstalledCount = 0;
+		try
+		{
+			CancelSourceMetadataRefreshes();
+			var installedMods = mods.Items
+				.Where(mod => mod != null && !mod.IsVisualDivider && !String.IsNullOrWhiteSpace(mod.UUID))
+				.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
+				.ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+			foreach (var link in contents.Presentation.SourceLinks)
+			{
+				if (String.Equals(link.Provider, ReduxLoadOrderSourceLink.NexusProvider, StringComparison.Ordinal))
+				{
+					UpdateHandler.Modio.CacheData.Mods.Remove(link.ModUuid);
+					UpdateHandler.Nexus.CacheData.Mods[link.ModUuid] =
+						ReduxLoadOrderSourceService.CreateNexusMetadata(link);
+				}
+				else
+				{
+					UpdateHandler.Nexus.CacheData.Mods.Remove(link.ModUuid);
+					UpdateHandler.Modio.CacheData.Mods[link.ModUuid] =
+						ReduxLoadOrderSourceService.CreateModioMetadata(link);
+				}
+
+				if (installedMods.TryGetValue(link.ModUuid, out var installedMod))
+				{
+					ReduxLoadOrderSourceService.ApplyToInstalledMod(installedMod, link);
+					appliedToInstalledCount++;
+				}
+				importedCount++;
+			}
+
+			_ = PersistImportedSourceLinksAsync();
+			ScheduleRefreshModCategories();
+			ScheduleModHealthRefresh();
+			return true;
+		}
+		catch (Exception exception)
+		{
+			DivinityApp.Log($"Failed to import Redux source links: {exception}");
+			return false;
+		}
+	}
+
+	private async Task PersistImportedSourceLinksAsync()
+	{
+		try
+		{
+			var nexusSaved = await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), CancellationToken.None);
+			var modioSaved = await UpdateHandler.Modio.SaveCacheAsync(false, Version.ToString(), CancellationToken.None);
+			if (!nexusSaved || !modioSaved)
+				DivinityApp.Log("One or more imported Redux source-link caches could not be saved.");
+		}
+		catch (Exception exception)
+		{
+			DivinityApp.Log($"Failed to save imported Redux source links: {exception}");
+		}
+	}
+
 	private void ImportReduxLoadOrder()
 	{
 		var dialog = new OpenFileDialog
@@ -5948,6 +6093,7 @@ Directory the zip will be extracted to:
 			$"[ReduxBundle] Validated '{dialog.FileName}': schema {contents.Presentation.SchemaVersion}, " +
 			$"{contents.LoadOrder.Order.Count} mod(s), {contents.Presentation.CustomCategories.Count} custom categories, " +
 			$"{contents.Presentation.Dividers.Count} separator(s), {contents.Presentation.CustomIconAssets.Count} custom icon(s), " +
+			$"{contents.Presentation.SourceLinks.Count} source link(s), " +
 			$"{contents.Presentation.PrivateModNotes.Count} note(s), " +
 			$"creator {contents.Presentation.CreatorVersion} ({contents.Presentation.CreatorInternalVersion}), " +
 			$"exported {contents.Presentation.ExportedAtUtc:O}.");
@@ -5992,8 +6138,11 @@ Directory the zip will be extracted to:
 		var orderImported = !importWindow.ImportLoadOrder;
 		var presentationImported = !importWindow.ImportPresentation;
 		var privateNotesImported = !importWindow.ImportPrivateNotes;
+		var sourceLinksImported = !importWindow.ImportSourceLinks;
 		var importedPrivateNoteCount = 0;
 		var preservedLocalNoteCount = 0;
+		var importedSourceLinkCount = 0;
+		var installedSourceLinkCount = 0;
 		DivinityLoadOrder importedOrder = null;
 		if (importWindow.ImportLoadOrder)
 			orderImported = ImportReduxBundleOrder(contents.LoadOrder, out importedOrder);
@@ -6006,6 +6155,11 @@ Directory the zip will be extracted to:
 				contents,
 				out importedPrivateNoteCount,
 				out preservedLocalNoteCount);
+		if (importWindow.ImportSourceLinks)
+			sourceLinksImported = ImportReduxBundleSourceLinks(
+				contents,
+				out importedSourceLinkCount,
+				out installedSourceLinkCount);
 		foreach (var warning in warnings)
 			DivinityApp.Log($"[ReduxBundle][Warning] {warning}");
 		if (preservedLocalNoteCount > 0)
@@ -6035,6 +6189,13 @@ Directory the zip will be extracted to:
 			else
 				failedParts.Add("notes");
 		}
+		if (importWindow.ImportSourceLinks)
+		{
+			if (sourceLinksImported)
+				importedParts.Add($"{importedSourceLinkCount} source link{(importedSourceLinkCount == 1 ? String.Empty : "s")}");
+			else
+				failedParts.Add("source links");
+		}
 
 		if (failedParts.Count == 0)
 		{
@@ -6044,6 +6205,12 @@ Directory the zip will be extracted to:
 			if (preservedLocalNoteCount > 0)
 				warningSuffix +=
 					$" {preservedLocalNoteCount} existing local note{(preservedLocalNoteCount == 1 ? " was" : "s were")} preserved.";
+			if (importWindow.ImportSourceLinks && sourceLinksImported && importedSourceLinkCount > installedSourceLinkCount)
+			{
+				var missingSourceCount = importedSourceLinkCount - installedSourceLinkCount;
+				warningSuffix +=
+					$" {missingSourceCount} source link{(missingSourceCount == 1 ? " was" : "s were")} saved for missing mods.";
+			}
 			ShowAlert(
 				$"Imported {String.Join(" and ", importedParts)}.{warningSuffix}",
 				warnings.Count > 0 ? AlertType.Warning : AlertType.Success,
@@ -7758,16 +7925,29 @@ Directory the zip will be extracted to:
 
 	private void DeleteOrder(DivinityLoadOrder order)
 	{
-		MessageBoxResult result = ReduxMessageBox.Show(Window, $"Delete load order '{order.Name}'? This cannot be undone.", "Confirm Order Deletion",
+		if (order == null || order.IsModSettings || ModOrderList.IndexOf(order) <= 0)
+		{
+			return;
+		}
+
+		bool hasSavedFile = !String.IsNullOrEmpty(order.FilePath) && File.Exists(order.FilePath);
+		string confirmation = hasSavedFile
+			? $"Delete load order '{order.Name}'? Its saved file will be moved to the Recycle Bin."
+			: $"Remove load order '{order.Name}' from Redux?";
+		MessageBoxResult result = ReduxMessageBox.Show(Window, confirmation, "Confirm Order Deletion",
 			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 		if (result == MessageBoxResult.Yes)
 		{
 			SelectedModOrderIndex = 0;
 			ModOrderList.Remove(order);
-			if (!String.IsNullOrEmpty(order.FilePath) && File.Exists(order.FilePath))
+			if (hasSavedFile)
 			{
 				RecycleBinHelper.DeleteFile(order.FilePath, false, false);
-				ShowAlert($"Sent load order '{order.FilePath}' to the recycle bin", AlertType.Warning, 25);
+				ShowAlert($"Sent load order '{order.Name}' to the Recycle Bin", AlertType.Warning, 25);
+			}
+			else
+			{
+				ShowAlert($"Removed load order '{order.Name}'", AlertType.Warning, 15);
 			}
 		}
 	}
@@ -8713,8 +8893,8 @@ Directory the zip will be extracted to:
 
 		var canExecuteSaveAsCommand = this.WhenAnyValue(x => x.CanSaveOrder, x => x.MainProgressIsActive, (canSave, p) => canSave && !p);
 		Keys.SaveAs.AddAction(SaveLoadOrderAs, canExecuteSaveAsCommand);
-		Keys.ImportMod.AddAction(OpenModImportDialog);
 		Keys.NewOrder.AddAction(() => AddNewModOrder());
+		Keys.ImportMod.AddAction(OpenModImportDialog);
 
 		var canRefreshObservable = this.WhenAnyValue(x => x.IsRefreshing, b => !b).StartWith(true);
 		RefreshCommand = ReactiveCommand.Create(() =>
@@ -8910,7 +9090,12 @@ Directory the zip will be extracted to:
 		var hasNonNullProfile = this.WhenAnyValue(x => x.SelectedProfile).Select(x => x != null);
 		_hasProfile = hasNonNullProfile.ToProperty(this, nameof(HasProfile)).DisposeWith(Disposables);
 
-		Keys.ExportOrderToGame.AddAction(ExportLoadOrder, hasNonNullProfile);
+		var canExportToGame = hasNonNullProfile
+			.CombineLatest(canOpenDialogWindow, (hasProfile, canOpen) => hasProfile && canOpen)
+			.CombineLatest(
+				this.WhenAnyValue(x => x.IsLoadingOrder, x => x.IsRefreshing, (loading, refreshing) => !loading && !refreshing),
+				(canOpen, isIdle) => canOpen && isIdle);
+		Keys.ExportOrderToGame.AddAction(ExportLoadOrder, canExportToGame);
 		Keys.RestorePoints.AddAction(
 			OpenRestorePoints,
 			hasNonNullProfile.CombineLatest(canOpenDialogWindow, (hasProfile, canOpen) => hasProfile && canOpen));
@@ -9155,6 +9340,7 @@ Directory the zip will be extracted to:
 		ToggleOrderRenamingCommand = ReactiveCommand.CreateFromTask<object, Unit>(ToggleRenamingLoadOrder, canRenameOrder, RxApp.MainThreadScheduler);
 
 		var canDeleteOrder = this.WhenAnyValue(x => x.MainProgressIsActive, x => x.SelectedModOrderIndex).Select(x => !x.Item1 && x.Item2 > 0);
+		OpenLoadOrderFolderCommand = ReactiveCommand.Create(OpenLoadOrderFolder);
 		DeleteOrderCommand = ReactiveCommand.Create<DivinityLoadOrder>(DeleteOrder, canDeleteOrder, RxApp.MainThreadScheduler);
 
 		modsConnection.AutoRefresh(x => x.IsSelected).Filter(x => x.IsSelected && !x.IsEditorMod && File.Exists(x.FilePath)).Bind(out selectedPakMods).Subscribe();

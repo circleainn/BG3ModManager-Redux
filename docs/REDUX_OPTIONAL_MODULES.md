@@ -10,12 +10,13 @@ Provider services and source-related UI consume `SourceIntegrationsEnabled`; dia
 `ModDiagnosticsEnabled` and `LoadOrderGuidanceEnabled`. Feature code should not reinterpret the
 underlying preference values independently.
 
-The first-run setup is also available from Help. Online mod information and Mod Diagnostics are
-enabled by default; experimental load-order guidance is not. Theme, motion, and background effects
-preview live and return to their previous values if the window is dismissed. API keys and settings
-are stored only after **Save & Continue**. The setup does not change packages or load orders.
+The first-run setup is also available from Help. Source linking, Mod Diagnostics, and experimental
+load-order guidance begin disabled so each optional feature is explicitly enabled by the user.
+Returning users keep their saved choices. Theme, motion, and background effects preview live and
+return to their previous values if the window is dismissed. API keys and settings are stored only
+after **Save & Continue**. The setup does not change packages or load orders.
 
-## Online mod information
+## Source linking and online mod information
 
 This feature retains BG3MM's Nexus Mods metadata, links, images, and update foundation, then adds
 mod.io, manual page linking, and the reviewed Redux database fallback. It can be disabled with
@@ -41,11 +42,16 @@ Disabling online information does not disable Mod Diagnostics. Its checks use lo
 package information and remain useful offline. Source-specific warnings, such as the mod.io restore
 notice, disappear while online identities are hidden.
 
+The mod.io restore notice warns that deleting a local PAK is not the same as unsubscribing. BG3 can
+download subscribed mods again, and Steam Cloud can preserve an app-specific cached copy even after
+the user unsubscribes. Redux therefore recommends keeping one manager authoritative rather than
+mixing its exported order with the in-game/mod.io manager.
+
 ## Mod Diagnostics
 
 Mod Diagnostics is the single user-facing diagnostic and guidance system. It evaluates facts
 Redux has already detected and never repairs, installs, removes, reorders, or rewrites anything.
-**Enable mod diagnostics** is on by default and can be turned off independently.
+**Enable mod diagnostics** can be enabled independently from source linking.
 
 When disabled, Redux cancels pending analysis, clears computed snapshots, and removes diagnostic
 toolbar, row, drawer, hover-card, compact-menu, and debug indicators. Mod loading and core behavior
@@ -59,6 +65,11 @@ The default checks cover invalid or duplicate UUIDs, missing or inactive depende
 self-dependency metadata, installed dependencies below a declared minimum version, declared
 conflicts, Script Extender availability, legacy Mod Fixer and override behavior, provider-specific
 safety notes, and invalid embedded Redux creator manifests.
+
+When Mod Configuration Menu is installed but absent from the active order, diagnostics explain that
+its override files can make part of MCM appear in game even though its normal module entry was not
+exported. MCM's in-game reference to BG3MM includes compatible managers such as Redux; the corrective
+action is to activate MCM and use **Export to Game**.
 
 Dependency findings provide conservative follow-up actions without installing anything. Redux can
 show or activate an installed inactive dependency, open a known source page, or copy the declared
@@ -75,8 +86,10 @@ Mod Diagnostics is enabled.
 These rules report when an active package's explicitly declared dependency is positioned later in
 the numbered order and when active declared dependency metadata forms a cycle that no linear order
 can satisfy. They do not infer category, author, framework, patch, or compatibility ordering and do
-not move mods. The rules remain registered separately from the default checks so the experimental
-family can be omitted without changing the rest of Mod Diagnostics.
+not move mods. Inactive packages and always-loaded override packages are excluded because neither
+has a meaningful position in the normal `modsettings.lsx` order. The rules remain registered
+separately from the default checks so the experimental family can be omitted without changing the
+rest of Mod Diagnostics.
 
 All enabled findings share one toolbar status, compact top-menu indicator, grouped finding popup,
 selected-mod presentation, and severity language. The unified interface does not remove the

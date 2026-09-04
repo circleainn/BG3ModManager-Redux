@@ -23,6 +23,7 @@ public sealed class ReduxLoadOrderPresentation
 	[DataMember(Order = 11)] public string CreatorVersion { get; set; } = String.Empty;
 	[DataMember(Order = 12)] public string CreatorInternalVersion { get; set; } = String.Empty;
 	[DataMember(Order = 13)] public List<ReduxLoadOrderPrivateNote> PrivateModNotes { get; set; } = new();
+	[DataMember(Order = 14)] public List<ReduxLoadOrderSourceLink> SourceLinks { get; set; } = new();
 }
 
 [DataContract]
@@ -56,4 +57,22 @@ public sealed class ReduxLoadOrderPrivateNote
 {
 	[DataMember(Order = 1)] public string ModUuid { get; set; } = String.Empty;
 	[DataMember(Order = 2)] public string Note { get; set; } = String.Empty;
+}
+
+[DataContract]
+public sealed class ReduxLoadOrderSourceLink
+{
+	public const string NexusProvider = "nexus";
+	public const string ModioProvider = "modio";
+
+	[DataMember(Order = 1)] public string ModUuid { get; set; } = String.Empty;
+	[DataMember(Order = 2)] public string Provider { get; set; } = String.Empty;
+	[DataMember(Order = 3)] public long ProjectId { get; set; }
+	[DataMember(Order = 4)] public long FileId { get; set; } = -1;
+	[DataMember(Order = 5)] public string Name { get; set; } = String.Empty;
+	[DataMember(Order = 6)] public string Author { get; set; } = String.Empty;
+	[DataMember(Order = 7)] public string Uploader { get; set; } = String.Empty;
+	[DataMember(Order = 8)] public string Version { get; set; } = String.Empty;
+	[DataMember(Order = 9)] public string PageUrl { get; set; } = String.Empty;
+	[DataMember(Order = 10)] public long CategoryId { get; set; }
 }

@@ -330,6 +330,31 @@ public sealed class LegacyAndOverrideHealthRule : IModHealthRule
 }
 
 /// <summary>
+/// Explains MCM's otherwise confusing in-game load-order warning when its
+/// normal module entry has not been activated and exported.
+/// </summary>
+public sealed class McmActivationHealthRule : IModHealthRule
+{
+	private const string McmUuid = "755a8a72-407f-4f0d-9a33-274ac0f0b53d";
+
+	public void Evaluate(ModHealthAnalysisContext context, ICollection<ModHealthFinding> findings)
+	{
+		var mod = context.Mod;
+		if (!String.Equals(mod.UUID, McmUuid, StringComparison.OrdinalIgnoreCase)
+			|| context.ActiveUuids.Contains(McmUuid))
+		{
+			return;
+		}
+
+		findings.Add(new ModHealthFinding(
+			ModHealthFindingCode.McmNotActive,
+			ModHealthSeverity.Warning,
+			"Mod Configuration Menu is not active",
+			"MCM includes files that can load before its normal module entry is active. That can make MCM appear in game while it warns that the load order was reset. Move MCM into the active pane and use Export to Game. Its reference to BG3MM also applies to compatible managers such as Redux."));
+	}
+}
+
+/// <summary>
 /// Provider-specific safety notes. In Local-only mode the provider is masked,
 /// so this rule naturally produces no findings.
 /// </summary>
@@ -342,8 +367,8 @@ public sealed class ModSourceHealthRule : IModHealthRule
 			findings.Add(new ModHealthFinding(
 				ModHealthFindingCode.ModioManagedSource,
 				ModHealthSeverity.Warning,
-				"mod.io may restore this mod",
-				"Removing the local file does not unsubscribe from it. BG3 may download it again."));
+				"BG3 or Steam may restore this mod",
+				"Removing the local file does not unsubscribe from it. BG3 can reinstall subscribed mod.io mods, and Steam Cloud may retain a cached copy even after you unsubscribe. For predictable load-order control, avoid mixing the in-game/mod.io manager with Redux."));
 		}
 	}
 }

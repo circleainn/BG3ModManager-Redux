@@ -222,8 +222,8 @@
 											<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 											<controls:ReduxIcon Width="17" Height="17" Margin="0,1,9,0" Foreground="{DynamicResource ReduxInfoBrush}" StrokeData="{DynamicResource Redux.Icon.LinkStroke}" />
 											<StackPanel Grid.Column="1">
-											<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Online mod information" />
-											<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Link installed mods to Nexus Mods or mod.io to show descriptions, authors, versions, images, and update dates." />
+												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Source linking" />
+												<TextBlock Style="{StaticResource WelcomeChoiceDescriptionStyle}" Text="Link installed mods to Nexus Mods or mod.io for authors, versions, images, and update information." />
 											</StackPanel>
 										</Grid>
 									</CheckBox>
@@ -278,18 +278,29 @@
 											<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 											<StackPanel>
 												<StackPanel Margin="1,0,0,4" Orientation="Horizontal">
-													<ContentControl Width="15" Height="15" Margin="0,0,6,0" ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" />
-													<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Nexus Mods API key" />
-												</StackPanel>
+												<ContentControl Width="15" Height="15" Margin="0,0,6,0" ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" />
+												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Nexus Mods API key" />
+											</StackPanel>
 											<TextBox x:Name="NexusApiKeyTextBox" Height="30" ToolTip="Personal Nexus Mods API key used for mod information and update checks" />
 											</StackPanel>
 											<StackPanel Grid.Column="2">
 												<StackPanel Margin="1,0,0,4" Orientation="Horizontal">
-													<ContentControl Width="15" Height="15" Margin="0,0,6,0" ContentTemplate="{DynamicResource ModioPlatformIconTemplate}" />
-													<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="mod.io API key" />
-												</StackPanel>
+												<ContentControl Width="15" Height="15" Margin="0,0,6,0" ContentTemplate="{DynamicResource ModioPlatformIconTemplate}" />
+												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="mod.io API key" />
+											</StackPanel>
 											<TextBox x:Name="ModioApiKeyTextBox" Height="30" ToolTip="Read-only mod.io API key used for mod information" />
 											</StackPanel>
+										</Grid>
+										<Grid Margin="24,10,0,0">
+											<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+											<controls:ReduxIcon Width="15" Height="15" Margin="0,1,7,0"
+												Foreground="{DynamicResource ReduxWarningBrush}"
+												StrokeData="{DynamicResource Redux.Icon.Information}" />
+											<TextBlock Grid.Column="1"
+												FontSize="{DynamicResource Redux.FontSize.11}"
+												Foreground="{DynamicResource ReduxTextMutedBrush}"
+												Text="Source linking has limitations. Links are most reliable when mods primarily come from one provider, are installed into Redux from their original archives, or are linked manually. Mixing Nexus Mods and mod.io entries is supported, but some links may need to be corrected manually."
+												TextWrapping="Wrap" />
 										</Grid>
 									</StackPanel>
 								</Border>

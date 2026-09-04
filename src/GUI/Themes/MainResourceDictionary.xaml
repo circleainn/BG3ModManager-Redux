@@ -1023,6 +1023,11 @@
 		<EllipseGeometry Center="15,5" RadiusX="1" RadiusY="1" />
 		<EllipseGeometry Center="15,19" RadiusX="1" RadiusY="1" />
 	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.MoreHorizontal">
+		<EllipseGeometry Center="5,12" RadiusX="1.5" RadiusY="1.5" />
+		<EllipseGeometry Center="12,12" RadiusX="1.5" RadiusY="1.5" />
+		<EllipseGeometry Center="19,12" RadiusX="1.5" RadiusY="1.5" />
+	</GeometryGroup>
 	<GeometryGroup x:Key="Redux.Icon.ArrowForwardStroke">
 		<PathGeometry Figures="M5 12h14" />
 		<PathGeometry Figures="m12 5 7 7-7 7" />

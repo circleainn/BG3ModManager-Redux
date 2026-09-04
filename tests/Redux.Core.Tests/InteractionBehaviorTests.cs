@@ -53,4 +53,16 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.True(LoadOrderPersistencePolicy.RequiresSaveAs(defensiveLsxCase));
 		RegressionAssert.False(LoadOrderPersistencePolicy.RequiresSaveAs(saved));
 	}
+
+	public void NewBlankOrderContainsNoActivatedMods()
+	{
+		var order = LoadOrderPersistencePolicy.CreateBlankOrder(
+			"New Load Order",
+			@"C:\Orders\New Load Order.json");
+
+		RegressionAssert.Equal("New Load Order", order.Name);
+		RegressionAssert.Equal(@"C:\Orders\New Load Order.json", order.FilePath);
+		RegressionAssert.Equal(0, order.Order.Count);
+		RegressionAssert.False(order.IsModSettings);
+	}
 }

@@ -124,6 +124,7 @@ public partial class ReduxExportReviewWindow : AdonisUI.Controls.AdonisWindow
 		{
 			Owner = owner;
 		}
+		ContentRendered += (_, _) => Activate();
 
 		var settings = MainWindow.Self?.ViewModel?.Settings;
 		if (settings != null)

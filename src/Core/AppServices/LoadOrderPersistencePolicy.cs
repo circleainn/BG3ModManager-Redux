@@ -7,6 +7,16 @@ namespace DivinityModManager.AppServices;
 /// </summary>
 public static class LoadOrderPersistencePolicy
 {
+	public static DivinityLoadOrder CreateBlankOrder(string name, string filePath)
+	{
+		return new DivinityLoadOrder
+		{
+			Name = name,
+			FilePath = filePath,
+			Order = []
+		};
+	}
+
 	public static bool RequiresSaveAs(DivinityLoadOrder order)
 	{
 		return order?.IsModSettings == true

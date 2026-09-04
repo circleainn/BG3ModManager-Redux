@@ -32,14 +32,14 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Import Mod...", true)]
 	public Hotkey ImportMod { get; private set; } = new Hotkey(Key.O, ModifierKeys.Control);
 
-	[MenuSettings("File", "Create Blank Load Order", true)]
-	public Hotkey NewOrder { get; private set; } = new Hotkey(Key.N, ModifierKeys.Control);
-
 	[MenuSettings("File", "Save Current Order")]
 	public Hotkey Save { get; private set; } = new Hotkey(Key.S, ModifierKeys.Control);
 
 	[MenuSettings("File", "Save Order As File...", true)]
 	public Hotkey SaveAs { get; private set; } = new Hotkey(Key.S, ModifierKeys.Control | ModifierKeys.Alt);
+
+	[MenuSettings("File", "Create Blank Load Order", true)]
+	public Hotkey NewOrder { get; private set; } = new Hotkey(Key.N, ModifierKeys.Control);
 
 	[MenuSettings(
 		"File",
