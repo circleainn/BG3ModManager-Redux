@@ -26,7 +26,8 @@
 		<Description>A modernized, community-driven fork of Baldur's Gate 3 Mod Manager.</Description>
 
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-		<OutputPath>$(SolutionDir)\bin\$(Configuration)\</OutputPath>
+		<!-- Project and test builds may omit SolutionDir; always use the repository's bin folder. -->
+		<OutputPath>$(MSBuildProjectDirectory)\..\..\bin\$(Configuration)\</OutputPath>
 
 		<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>

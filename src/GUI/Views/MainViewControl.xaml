@@ -1324,7 +1324,8 @@
 									<Button x:Name="SaveButton"
 										AutomationProperties.Name="Save current load order"
 										ToolTip="Save changes to the selected load order">
-										<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Save}" />
+										<controls:ReduxIcon x:Name="SaveButtonIcon"
+											StrokeData="{StaticResource Redux.Icon.Save}" />
 									</Button>
 									<Button x:Name="SaveAsOrderButton"
 										AutomationProperties.Name="Save as a new load order"

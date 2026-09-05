@@ -1188,9 +1188,9 @@ public static partial class DivinityModDataLoader
 					var fileText = await reader.ReadToEndAsync();
 
 					var order = DivinityJsonUtils.SafeDeserialize<DivinityLoadOrder>(fileText);
-					order.Name = Path.GetFileNameWithoutExtension(loadOrderFile);
 					if (order != null)
 					{
+						order.Name = Path.GetFileNameWithoutExtension(loadOrderFile);
 						order.FilePath = loadOrderFile;
 						order.LastModifiedDate = File.GetLastWriteTime(loadOrderFile);
 

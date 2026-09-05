@@ -7,6 +7,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Redux.Core.Tests;
@@ -86,6 +87,31 @@ public sealed class FileSafetyTests
 
 			RegressionAssert.True(expectedContents.Contains(File.ReadAllText(destination), StringComparer.Ordinal));
 			RegressionAssert.False(Directory.EnumerateFiles(directory, "*.tmp").Any());
+		});
+	}
+
+	public void CancelledAsyncCopyPreservesTheExistingDestination()
+	{
+		WithTemporaryDirectory(directory =>
+		{
+			var source = Path.Combine(directory, "source.pak");
+			var destination = Path.Combine(directory, "installed.pak");
+			File.WriteAllText(source, "replacement");
+			File.WriteAllText(destination, "installed");
+			using var cancellation = new CancellationTokenSource();
+			cancellation.Cancel();
+
+			try
+			{
+				AtomicFileWriter.CopyFileAsync(source, destination, cancellationToken: cancellation.Token)
+					.GetAwaiter().GetResult();
+				throw new InvalidOperationException("Expected the copy to be cancelled.");
+			}
+			catch (OperationCanceledException)
+			{
+				RegressionAssert.Equal("installed", File.ReadAllText(destination));
+				RegressionAssert.False(Directory.EnumerateFiles(directory, "*.tmp").Any());
+			}
 		});
 	}
 

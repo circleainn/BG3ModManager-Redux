@@ -1,6 +1,7 @@
 using DivinityModManager.Models;
 using DivinityModManager.Models.Metadata;
 using DivinityModManager.Models.NexusMods;
+using DivinityModManager.Util;
 
 using Newtonsoft.Json;
 
@@ -93,20 +94,14 @@ public static class ReduxDatabaseContributionService
 		if (String.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
 			throw new DirectoryNotFoundException("The selected report folder does not exist.");
 
-		var temporaryPath = fullPath + $".{Guid.NewGuid():N}.tmp";
-		try
+		var json = JsonConvert.SerializeObject(report, Formatting.Indented) + Environment.NewLine;
+		AtomicFileWriter.WriteAllText(fullPath, json, validateTemporaryFile: temporaryPath =>
 		{
-			var json = JsonConvert.SerializeObject(report, Formatting.Indented);
-			File.WriteAllText(temporaryPath, json + Environment.NewLine);
 			var validated = JsonConvert.DeserializeObject<ReduxDatabaseContributionReport>(File.ReadAllText(temporaryPath))
 				?? throw new InvalidDataException("The generated contribution report could not be validated.");
 			ValidatePrivacyContract(validated);
-			File.Move(temporaryPath, fullPath, true);
-		}
-		finally
-		{
-			if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
-		}
+			return true;
+		});
 	}
 
 	private static ReduxDatabaseContributionMod CreateRecord(DivinityModData mod)

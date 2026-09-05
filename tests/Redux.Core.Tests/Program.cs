@@ -37,6 +37,7 @@ internal static class Program
 		var startupNotifications = new StartupNotificationQueueTests();
 		var commandPaletteSearch = new CommandPaletteSearchTests();
 		var fileSafety = new FileSafetyTests();
+		var loadOrderWorkflow = new LoadOrderWorkflowTests();
 		var tests = new (string Name, Action Run)[]
 		{
 			(nameof(source.ReviewedModuleUuidResolvesItsProject), source.ReviewedModuleUuidResolvesItsProject),
@@ -216,7 +217,10 @@ internal static class Program
 			(nameof(fileSafety.AtomicCopyReplacesTheDestinationAndKeepsItsBackup), fileSafety.AtomicCopyReplacesTheDestinationAndKeepsItsBackup),
 			(nameof(fileSafety.AsyncCopyReplacesTheDestinationAndKeepsItsBackup), fileSafety.AsyncCopyReplacesTheDestinationAndKeepsItsBackup),
 			(nameof(fileSafety.ConcurrentWritesNeverExposePartialContent), fileSafety.ConcurrentWritesNeverExposePartialContent),
-			(nameof(fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson), fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson)
+			(nameof(fileSafety.CancelledAsyncCopyPreservesTheExistingDestination), fileSafety.CancelledAsyncCopyPreservesTheExistingDestination),
+			(nameof(fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson), fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson),
+			(nameof(loadOrderWorkflow.SaveSwitchRenameAndRestartPreservesEachOrder), loadOrderWorkflow.SaveSwitchRenameAndRestartPreservesEachOrder),
+			(nameof(loadOrderWorkflow.RenameRequiresConfirmationBeforeReplacingAnotherSavedOrder), loadOrderWorkflow.RenameRequiresConfirmationBeforeReplacingAnotherSavedOrder)
 		};
 
 		var failures = 0;

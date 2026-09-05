@@ -45,6 +45,7 @@ public partial class MainViewControl : MainViewControlViewBase
 	private readonly MainWindow main;
 	private IDisposable _toolbarVisibilitySubscription;
 	private IDisposable _modDiagnosticsStatusSubscription;
+	private IDisposable _saveIconStateSubscription;
 	private double _toolbarExpandedHeight;
 	private int _toolbarAnimationVersion;
 	private int _diagnosticStatusHoverVersion;
@@ -516,7 +517,9 @@ public partial class MainViewControl : MainViewControlViewBase
 				{
 					if (!String.IsNullOrWhiteSpace(outputDirectory))
 						ProcessHelper.TryOpenPath(outputDirectory, Directory.Exists);
-				}));
+				}),
+				("Open Issue Tracker", "Redux.Icon.Open", () =>
+					ProcessHelper.TryOpenUrl(DivinityApp.URL_REDUX_ISSUES)));
 			ViewModel.ShowAlert("Saved Redux database contribution report.", AlertType.Success, 20);
 		}
 		catch (Exception ex)
@@ -598,28 +601,30 @@ public partial class MainViewControl : MainViewControlViewBase
 			return;
 		}
 
-		var directory = Path.GetDirectoryName(lastFilePath);
-		var extension = Path.GetExtension(lastFilePath);
-		if (String.IsNullOrWhiteSpace(extension)) extension = ".json";
-		var nextFileName = DivinityModDataLoader.MakeSafeFilename(nextName + extension, '_');
-		nextName = Path.GetFileNameWithoutExtension(nextFileName);
-		var nextFilePath = Path.Combine(directory, nextFileName);
-		var samePath = String.Equals(
-			Path.GetFullPath(lastFilePath),
-			Path.GetFullPath(nextFilePath),
-			StringComparison.OrdinalIgnoreCase);
-		var sourceExists = File.Exists(lastFilePath);
-
-		if (!samePath && File.Exists(nextFilePath))
+		LoadOrderRenamePlan renamePlan;
+		try
 		{
-			if (!sourceExists)
+			renamePlan = LoadOrderFileWorkflow.PlanRename(order, nextName);
+			nextName = renamePlan.Name;
+		}
+		catch (Exception ex)
+		{
+			ViewModel.StopRenaming(true);
+			AlertBar.SetWarningAlert(ex.Message, 15);
+			return;
+		}
+
+		var replaceExisting = false;
+		if (renamePlan.DestinationExists)
+		{
+			if (!renamePlan.SourceExists)
 			{
 				ViewModel.StopRenaming(true);
 				AlertBar.SetWarningAlert($"A load order named '{nextName}' already exists.", 15);
 				return;
 			}
 			var result = ReduxMessageBox.Show(main,
-				$"Replace the existing load order '{Path.GetFileNameWithoutExtension(nextFilePath)}'?",
+				$"Replace the existing load order '{Path.GetFileNameWithoutExtension(renamePlan.DestinationPath)}'?",
 				"Replace Load Order?",
 				MessageBoxButton.YesNo,
 				MessageBoxImage.Warning,
@@ -629,29 +634,22 @@ public partial class MainViewControl : MainViewControlViewBase
 				ViewModel.StopRenaming(true);
 				return;
 			}
+			replaceExisting = true;
 		}
 
 		try
 		{
-			if (!samePath && sourceExists)
-			{
-				File.Move(lastFilePath, nextFilePath, true);
-			}
+			LoadOrderFileWorkflow.ApplyRename(order, renamePlan, replaceExisting);
 
 			var existingOrder = ViewModel.ModOrderList.FirstOrDefault(candidate =>
 				!ReferenceEquals(candidate, order)
-				&& String.Equals(candidate.FilePath, nextFilePath, StringComparison.OrdinalIgnoreCase));
+				&& String.Equals(candidate.FilePath, renamePlan.DestinationPath, StringComparison.OrdinalIgnoreCase));
 			if (existingOrder != null)
 			{
 				ViewModel.ModOrderList.Remove(existingOrder);
 				ViewModel.SavedModOrderList.Remove(existingOrder);
 			}
 
-			order.Name = nextName;
-			order.FilePath = nextFilePath;
-			order.LastModifiedDate = File.Exists(nextFilePath)
-				? File.GetLastWriteTime(nextFilePath)
-				: DateTime.Now;
 			ViewModel.StopRenaming(false);
 			if (String.Equals(ViewModel.Settings.LastOrder, lastName, StringComparison.OrdinalIgnoreCase))
 			{
@@ -664,7 +662,7 @@ public partial class MainViewControl : MainViewControlViewBase
 		{
 			ViewModel.StopRenaming(true);
 			AlertBar.SetDangerAlert($"Could not rename the load order to '{nextName}'.", 20);
-			var message = $"Could not rename the load order from '{lastFilePath}' to '{nextFilePath}':\n{ex}";
+			var message = $"Could not rename the load order from '{lastFilePath}' to '{renamePlan.DestinationPath}':\n{ex}";
 			ReduxMessageBox.ShowWithActions(main, message, "Could Not Rename Load Order",
 				MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
 				("Copy to Clipboard", "Redux.Icon.Copy", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(message)));
@@ -1431,6 +1429,20 @@ public partial class MainViewControl : MainViewControlViewBase
 
 		this.BindCommand(ViewModel, vm => vm.Keys.ImportMod.Command, view => view.ImportModButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.Save.Command, view => view.SaveButton);
+		_saveIconStateSubscription?.Dispose();
+		_saveIconStateSubscription = ViewModel
+			.WhenAnyValue(vm => vm.HasUnsavedLoadOrderChanges)
+			.DistinctUntilChanged()
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(hasUnsavedChanges =>
+			{
+				SaveButtonIcon.SetResourceReference(
+					Control.ForegroundProperty,
+					hasUnsavedChanges ? "ReduxWarningBrush" : "ReduxIconBrush");
+				SaveButton.ToolTip = hasUnsavedChanges
+					? "Save unsaved changes to the selected load order"
+					: "Save changes to the selected load order";
+			});
 		this.BindCommand(ViewModel, vm => vm.Keys.SaveNewOrder.Command, view => view.SaveAsOrderButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.ExportOrderToGame.Command, view => view.ExportToModSettingsButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.Refresh.Command, view => view.RefreshButton);
