@@ -1376,12 +1376,31 @@
 										</ContextMenu>
 										</Button.ContextMenu>
 									</Button>
+									<Button x:Name="UndoLoadOrderButton"
+										AutomationProperties.Name="Undo load order change"
+										ToolTip="Undo Load Order Change (Ctrl+Z)">
+										<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Undo}" />
+									</Button>
+									<Button x:Name="RedoLoadOrderButton"
+										AutomationProperties.Name="Redo load order change"
+										ToolTip="Redo Load Order Change (Ctrl+Y)">
+										<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Redo}" />
+									</Button>
 									<Button x:Name="ExportToModSettingsButton"
 										Style="{StaticResource ToolbarWorkflowButtonStyle}"
-										ToolTip="Export Order to Game">
+										ToolTip="{Binding ExportToGameStatusText}">
 										<StackPanel Orientation="Horizontal">
 											<controls:ReduxIcon Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.CloudUpload}" Style="{StaticResource ToolbarWorkflowIconStyle}" />
 											<TextBlock Text="Export to Game" />
+											<Border Width="10"
+												Height="10"
+												Margin="7,0,0,0"
+												VerticalAlignment="Center"
+												Background="{DynamicResource ReduxSurfaceBrush}"
+												CornerRadius="5"
+												Visibility="{Binding IsCurrentOrderExportedToGame, Converter={StaticResource BoolToVisibilityConverterReversed}}">
+												<Ellipse Width="5" Height="5" Fill="{DynamicResource ReduxWarningBrush}" />
+											</Border>
 										</StackPanel>
 										<Button.ContextMenu>
 											<ContextMenu>

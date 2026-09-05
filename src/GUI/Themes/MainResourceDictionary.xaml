@@ -886,6 +886,14 @@
 		<PathGeometry Figures="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
 		<PathGeometry Figures="M7 3v4a1 1 0 0 0 1 1h7" />
 	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Undo">
+		<PathGeometry Figures="M9,7 L4,12 L9,17" />
+		<PathGeometry Figures="M4,12 L14,12 C17.314,12 20,14.686 20,18" />
+	</GeometryGroup>
+	<GeometryGroup x:Key="Redux.Icon.Redo">
+		<PathGeometry Figures="M15,7 L20,12 L15,17" />
+		<PathGeometry Figures="M20,12 L10,12 C6.686,12 4,14.686 4,18" />
+	</GeometryGroup>
 	<GeometryGroup x:Key="Redux.Icon.Duplicate">
 		<PathGeometry Figures="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
 		<LineGeometry StartPoint="15,12" EndPoint="15,18" />
@@ -3630,25 +3638,8 @@
 					</Style.Triggers>
 				</Style>
 			</Border.Style>
-			<StackPanel>
-				<TextBlock FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold"
-					Text="{Binding HealthSnapshot.StatusTitle}" TextWrapping="Wrap">
-					<TextBlock.Style>
-						<Style TargetType="{x:Type TextBlock}">
-							<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
-							<Style.Triggers>
-								<DataTrigger Binding="{Binding HealthSnapshot.HasErrors}" Value="True">
-									<Setter Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
-								</DataTrigger>
-							</Style.Triggers>
-						</Style>
-					</TextBlock.Style>
-				</TextBlock>
-				<TextBlock Margin="0,5,0,0"
-					Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-					Text="{Binding HealthSnapshot.StatusDescription}"
-					TextWrapping="Wrap" />
-			</StackPanel>
+			<ItemsControl ItemsSource="{Binding HealthSnapshot.AttentionFindings}"
+				ItemTemplate="{StaticResource ReduxStatusFindingTemplate}" />
 		</Border>
 	</DataTemplate>
 	<DataTemplate x:Key="ModScriptExtenderToolTipTemplate" DataType="{x:Type data:DivinityModData}">

@@ -125,13 +125,14 @@ public sealed class ModMetadataViewData : ReactiveObject
 	public bool UsesBundledNexusMetadata => SourceType == ModSourceType.NEXUSMODS
 		&& _mod.NexusModsData?.UsesBundledProvenance == true;
 	public Visibility OfflineDatabaseNoticeVisibility => UsesBundledNexusMetadata ? Visibility.Visible : Visibility.Collapsed;
-	public string OfflineDatabaseNotice => _mod.NexusModsData?.OfflineMatchKind is ReduxOfflineMatchKind.ModuleIdentity or ReduxOfflineMatchKind.NameAndAuthor
+	public string OfflineDatabaseNotice => _mod.NexusModsData?.OfflineMatchKind is ReduxOfflineMatchKind.ModuleIdentity or ReduxOfflineMatchKind.NameAndAuthor or ReduxOfflineMatchKind.CommunityIdentity
 		? "Probable Nexus match"
 		: "Verified offline match";
 	public string LinkStatusTooltip => !UsesBundledNexusMetadata ? null : _mod.NexusModsData?.OfflineMatchKind switch
 	{
 		ReduxOfflineMatchKind.ExactArchive => "Redux associated this package with a Nexus project using an exact recorded package fingerprint. Live API data is used when available.",
 		ReduxOfflineMatchKind.ModuleIdentity => "Redux associated this package with a Nexus project using a reviewed module identity. Local package details and load order remain unchanged.",
+		ReduxOfflineMatchKind.CommunityIdentity => "Redux associated this package with a Nexus project using an exact community identity match corroborated by the installed package name. Local package details and load order remain unchanged.",
 		ReduxOfflineMatchKind.NameAndAuthor => "Redux associated this package with a Nexus project because its normalized name and author matched one reviewed project. Local package details and load order remain unchanged.",
 		_ => "Redux associated this package with a Nexus project using an exact installed .pak match. Live API data is used when available."
 	};

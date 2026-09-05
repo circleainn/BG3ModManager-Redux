@@ -1,4 +1,5 @@
 using DivinityModManager.Models;
+using DivinityModManager.AppServices;
 
 namespace DivinityModManager.Models.Health;
 
@@ -21,18 +22,21 @@ public sealed class ModHealthAnalysisContext
 	public IReadOnlySet<string> ActiveUuids { get; }
 	public IReadOnlyDictionary<string, int> ActivePositions { get; }
 	public IReadOnlySet<string> DuplicateUuids { get; }
+	public ReduxLoadOrderAdvisorKnowledge LoadOrderAdvisorKnowledge { get; }
 
 	public ModHealthAnalysisContext(
 		DivinityModData mod,
 		IReadOnlyDictionary<string, DivinityModData> installedByUuid,
 		IReadOnlySet<string> activeUuids,
 		IReadOnlyDictionary<string, int> activePositions,
-		IReadOnlySet<string> duplicateUuids)
+		IReadOnlySet<string> duplicateUuids,
+		ReduxLoadOrderAdvisorKnowledge loadOrderAdvisorKnowledge = null)
 	{
 		Mod = mod;
 		InstalledByUuid = installedByUuid;
 		ActiveUuids = activeUuids;
 		ActivePositions = activePositions;
 		DuplicateUuids = duplicateUuids;
+		LoadOrderAdvisorKnowledge = loadOrderAdvisorKnowledge ?? ReduxLoadOrderAdvisorKnowledge.Empty;
 	}
 }

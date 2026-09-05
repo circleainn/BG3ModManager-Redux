@@ -25,7 +25,7 @@ ways to organize, review, and share mod setups.
   local database for some existing Nexus installs. It can be disabled without removing saved links.
 - **Mod Diagnostics** for detectable package, dependency, Script Extender, Mod Fixer, override,
   creator-manifest, conflict, and mod.io conditions. Optional Load Order Advisor checks add cautious
-  guidance based only on declared dependencies.
+  guidance from package declarations and Redux's offline ordering knowledge.
 - **Safer order changes** with an export review, pre-export restore points, order comparison, staged
   imports, backups, and validated writes.
 - **Redux Modlists** (`.bg3redux`) for moving an order, categories, separators, optional source
@@ -64,8 +64,11 @@ For a missing dependency, Redux can open a known Nexus page when its reviewed da
 exact module-UUID match. Unknown dependencies retain the copy-UUID fallback; Redux does not install
 them automatically.
 
-The optional Load Order Advisor is experimental and disabled by default. It checks declared
-dependency placement and cycles; it does not attempt to infer a complete load order.
+The optional Load Order Advisor is experimental and disabled by default. It checks dependency
+placement and cycles using installed package metadata plus exact offline records. It also recognizes
+reviewed dependency aliases, substitutes, intentional late-loading dependencies, and explicit
+mod-author load-after guidance. Category patterns remain advisory data; Redux does not silently
+reorder the load order or treat statistical placement as a hard requirement.
 
 ## Redux Modlists
 

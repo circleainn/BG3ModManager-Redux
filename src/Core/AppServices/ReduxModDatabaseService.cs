@@ -20,19 +20,21 @@ public static class ReduxModDatabaseService
 {
 	private const string DATABASE_FILE_NAME = "ReduxModDatabase.json";
 	private static readonly Lazy<ReduxModDatabaseIndex> _index = new(LoadIndex, true);
+	private static readonly Lazy<ReduxLoadOrderAdvisorKnowledge> _loadOrderAdvisorKnowledge = new(LoadLoadOrderAdvisorKnowledge, true);
 
 	public static int ExactPakCount => _index.Value.ExactPakCount;
 	public static int ExactArchiveCount => _index.Value.ExactArchiveCount;
+	public static ReduxLoadOrderAdvisorKnowledge LoadOrderAdvisorKnowledge => _loadOrderAdvisorKnowledge.Value;
 	public static ReduxModDatabaseMatch TryResolveProject(long modId) => CreateMatch(modId, -1, ReduxOfflineMatchKind.Unknown);
 	public static ReduxModDatabaseMatch TryResolveModuleUuid(string uuid)
 	{
-		if (String.IsNullOrWhiteSpace(uuid)
-			|| !_index.Value.ModulesByUuid.TryGetValue(uuid.Trim(), out var module))
-		{
-			return null;
-		}
-
-		return CreateMatch(module.ModId, -1, ReduxOfflineMatchKind.ModuleIdentity);
+		if (String.IsNullOrWhiteSpace(uuid)) return null;
+		var key = uuid.Trim();
+		if (_index.Value.ModulesByUuid.TryGetValue(key, out var reviewed))
+			return CreateMatch(reviewed.ModId, -1, ReduxOfflineMatchKind.ModuleIdentity);
+		return _index.Value.CommunityModulesByUuid.TryGetValue(key, out var community)
+			? CreateMatch(community.ModId, -1, ReduxOfflineMatchKind.CommunityIdentity)
+			: null;
 	}
 
 	public static bool CouldMatchPak(string filePath) => CouldMatchBySize(filePath, ".pak", _index.Value.PaksBySize);
@@ -73,15 +75,20 @@ public static class ReduxModDatabaseService
 	}
 
 	/// <summary>
-	/// Returns a conservative project-level association. A UUID must have a reviewed
-	/// identity record, or normalized name and author must converge on one project.
-	/// Name-only candidates are intentionally ignored.
+	/// Returns a conservative project-level association. Reviewed UUID identities are
+	/// authoritative. Community identities also require an installed package name match;
+	/// otherwise normalized name and author must converge on one reviewed project.
 	/// </summary>
 	public static ReduxModDatabaseMatch TryResolveIdentity(DivinityModData mod)
 	{
 		if (mod == null) return null;
-		var moduleMatch = TryResolveModuleUuid(mod.UUID);
-		if (moduleMatch != null) return moduleMatch;
+		if (!String.IsNullOrWhiteSpace(mod.UUID)
+			&& _index.Value.ModulesByUuid.TryGetValue(mod.UUID.Trim(), out var reviewed))
+			return CreateMatch(reviewed.ModId, -1, ReduxOfflineMatchKind.ModuleIdentity);
+		if (!String.IsNullOrWhiteSpace(mod.UUID)
+			&& _index.Value.CommunityModulesByUuid.TryGetValue(mod.UUID.Trim(), out var community)
+			&& CommunityIdentityMatches(mod, community))
+			return CreateMatch(community.ModId, -1, ReduxOfflineMatchKind.CommunityIdentity);
 
 		var author = Normalize(mod.Author);
 		if (String.IsNullOrWhiteSpace(author)) return null;
@@ -104,6 +111,26 @@ public static class ReduxModDatabaseService
 		return agreed.Count == 1
 			? CreateMatch(agreed[0], -1, ReduxOfflineMatchKind.NameAndAuthor)
 			: null;
+	}
+
+	private static bool CommunityIdentityMatches(DivinityModData mod, ReduxModuleIdentity identity)
+	{
+		var knownNames = new[] { identity.Name, identity.Folder }
+			.Concat(identity.Aliases ?? new List<string>())
+			.Select(Normalize)
+			.Where(value => value.Length >= 4)
+			.ToHashSet(StringComparer.Ordinal);
+		var localNames = new[] { mod.Name, mod.DisplayName, mod.Folder, Path.GetFileNameWithoutExtension(mod.FileName) }
+			.Select(Normalize)
+			.Where(value => value.Length >= 4);
+		if (!localNames.Any(knownNames.Contains)) return false;
+
+		var knownAuthors = (identity.Authors ?? new List<string>())
+			.Select(Normalize)
+			.Where(value => value.Length > 0)
+			.ToHashSet(StringComparer.Ordinal);
+		var localAuthor = Normalize(mod.Author);
+		return localAuthor.Length == 0 || knownAuthors.Count == 0 || knownAuthors.Contains(localAuthor);
 	}
 
 	internal static async Task<string> ComputeExactPakHashAsync(string filePath, CancellationToken cancellationToken)
@@ -175,6 +202,37 @@ public static class ReduxModDatabaseService
 		}
 	}
 
+	private static ReduxLoadOrderAdvisorKnowledge LoadLoadOrderAdvisorKnowledge()
+	{
+		try
+		{
+			var path = Path.Combine(AppContext.BaseDirectory, "Resources", DATABASE_FILE_NAME);
+			if (!File.Exists(path))
+			{
+				DivinityApp.Log($"Bundled Redux mod database was not found at '{path}'. Load Order Advisor database guidance is unavailable.");
+				return ReduxLoadOrderAdvisorKnowledge.Empty;
+			}
+
+			var database = JsonConvert.DeserializeObject<ReduxLoadOrderAdvisorDatabase>(File.ReadAllText(path));
+			if (database?.SchemaVersion != 1) return ReduxLoadOrderAdvisorKnowledge.Empty;
+			var knowledge = ReduxLoadOrderAdvisorKnowledge.Create(
+				database.OrderingGroups,
+				database.DependencyNameAliases,
+				database.DependencySubstitutes,
+				database.LoadOrderEntries);
+			DivinityApp.Log(
+				$"Loaded Redux Load Order Advisor knowledge: {knowledge.EntryCount} mod entries, " +
+				$"{knowledge.GroupCount} ordering groups, {knowledge.DependencyAliasCount} dependency aliases, " +
+				$"and {knowledge.DependencySubstituteCount} dependency substitutions.");
+			return knowledge;
+		}
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Failed to load Redux Load Order Advisor knowledge:\n{ex}");
+			return ReduxLoadOrderAdvisorKnowledge.Empty;
+		}
+	}
+
 	private sealed class ReduxModDatabaseIndex
 	{
 		public static ReduxModDatabaseIndex Empty { get; } = new(new ReduxModDatabase());
@@ -182,6 +240,7 @@ public static class ReduxModDatabaseService
 		public Dictionary<long, Dictionary<string, ReduxPakFingerprint>> PaksBySize { get; }
 		public Dictionary<long, Dictionary<string, ReduxArchiveFingerprint>> ArchivesBySize { get; }
 		public Dictionary<string, ReduxModuleIdentity> ModulesByUuid { get; }
+		public Dictionary<string, ReduxModuleIdentity> CommunityModulesByUuid { get; }
 		public Dictionary<string, HashSet<long>> ProjectIdsByAlias { get; } = new(StringComparer.Ordinal);
 		public Dictionary<long, HashSet<string>> ProjectAuthors { get; } = new();
 		public int ExactPakCount => PaksBySize.Values.Sum(group => group.Count);
@@ -193,7 +252,16 @@ public static class ReduxModDatabaseService
 			PaksBySize = UniqueFingerprintIndex(database.ExactPakFingerprints, item => item.Size, item => item.Hash);
 			ArchivesBySize = UniqueFingerprintIndex(database.ExactArchiveFingerprints, item => item.Size, item => item.Md5?.ToLowerInvariant());
 			ModulesByUuid = (database.ModuleIdentities ?? new()).Where(m => !String.IsNullOrWhiteSpace(m.Uuid)).GroupBy(m => m.Uuid, StringComparer.OrdinalIgnoreCase).Where(g => g.Select(m => m.ModId).Distinct().Count() == 1).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-			foreach (var project in ProjectsById.Values)
+			CommunityModulesByUuid = (database.CommunityModuleIdentities ?? new())
+				.Where(m => !String.IsNullOrWhiteSpace(m.Uuid) && String.Equals(m.MatchBasis, "community-exact-name", StringComparison.Ordinal))
+				.GroupBy(m => m.Uuid, StringComparer.OrdinalIgnoreCase)
+				.Where(group => group.Select(m => m.ModId).Distinct().Count() == 1 && !ModulesByUuid.ContainsKey(group.Key))
+				.ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+			var reviewedProjectIds = (database.ExactPakFingerprints ?? new()).Select(item => item.ModId)
+				.Concat((database.ExactArchiveFingerprints ?? new()).Select(item => item.ModId))
+				.Concat((database.ModuleIdentities ?? new()).Select(item => item.ModId))
+				.ToHashSet();
+			foreach (var project in ProjectsById.Values.Where(project => reviewedProjectIds.Contains(project.ModId)))
 			{
 				foreach (var alias in new[] { project.Name }.Concat(project.Aliases ?? new()))
 				{
@@ -215,7 +283,7 @@ public static class ReduxModDatabaseService
 	}
 }
 
-public enum ReduxOfflineMatchKind { Unknown = 0, ExactPak = 1, ExactArchive = 2, ModuleIdentity = 3, NameAndAuthor = 4 }
+public enum ReduxOfflineMatchKind { Unknown = 0, ExactPak = 1, ExactArchive = 2, ModuleIdentity = 3, NameAndAuthor = 4, CommunityIdentity = 5 }
 
 public sealed class ReduxModDatabaseMatch
 {
@@ -249,8 +317,8 @@ public sealed class ReduxModDatabaseMatch
 }
 
 internal interface IReduxFingerprint { string Name { get; } string Author { get; } string Version { get; } string PictureUrl { get; } }
-internal sealed class ReduxModDatabase { [JsonProperty("schemaVersion")] public int SchemaVersion { get; set; } [JsonProperty("projects")] public List<ReduxProjectRecord> Projects { get; set; } = new(); [JsonProperty("exactPakFingerprints")] public List<ReduxPakFingerprint> ExactPakFingerprints { get; set; } = new(); [JsonProperty("exactArchiveFingerprints")] public List<ReduxArchiveFingerprint> ExactArchiveFingerprints { get; set; } = new(); [JsonProperty("moduleIdentities")] public List<ReduxModuleIdentity> ModuleIdentities { get; set; } = new(); }
+internal sealed class ReduxModDatabase { [JsonProperty("schemaVersion")] public int SchemaVersion { get; set; } [JsonProperty("projects")] public List<ReduxProjectRecord> Projects { get; set; } = new(); [JsonProperty("exactPakFingerprints")] public List<ReduxPakFingerprint> ExactPakFingerprints { get; set; } = new(); [JsonProperty("exactArchiveFingerprints")] public List<ReduxArchiveFingerprint> ExactArchiveFingerprints { get; set; } = new(); [JsonProperty("moduleIdentities")] public List<ReduxModuleIdentity> ModuleIdentities { get; set; } = new(); [JsonProperty("communityModuleIdentities")] public List<ReduxModuleIdentity> CommunityModuleIdentities { get; set; } = new(); }
 public sealed class ReduxProjectRecord { [JsonProperty("modId")] public long ModId { get; set; } [JsonProperty("name")] public string Name { get; set; } [JsonProperty("authors")] public List<string> Authors { get; set; } = new(); [JsonProperty("uploadedBy")] public string UploadedBy { get; set; } [JsonProperty("aliases")] public List<string> Aliases { get; set; } = new(); [JsonProperty("categories")] public List<string> Categories { get; set; } = new(); [JsonProperty("pictureUrl")] public string PictureUrl { get; set; } }
 internal sealed class ReduxPakFingerprint : IReduxFingerprint { [JsonProperty("hash")] public string Hash { get; set; } [JsonProperty("size")] public long Size { get; set; } [JsonProperty("modId")] public long ModId { get; set; } [JsonProperty("fileId")] public long FileId { get; set; } [JsonProperty("name")] public string Name { get; set; } [JsonProperty("author")] public string Author { get; set; } [JsonProperty("version")] public string Version { get; set; } [JsonProperty("pictureUrl")] public string PictureUrl { get; set; } }
 internal sealed class ReduxArchiveFingerprint : IReduxFingerprint { [JsonProperty("md5")] public string Md5 { get; set; } [JsonProperty("size")] public long Size { get; set; } [JsonProperty("modId")] public long ModId { get; set; } [JsonProperty("fileId")] public long FileId { get; set; } [JsonProperty("name")] public string Name { get; set; } [JsonProperty("author")] public string Author { get; set; } [JsonProperty("version")] public string Version { get; set; } public string PictureUrl => null; }
-internal sealed class ReduxModuleIdentity { [JsonProperty("uuid")] public string Uuid { get; set; } [JsonProperty("modId")] public long ModId { get; set; } }
+internal sealed class ReduxModuleIdentity { [JsonProperty("uuid")] public string Uuid { get; set; } [JsonProperty("modId")] public long ModId { get; set; } [JsonProperty("name")] public string Name { get; set; } [JsonProperty("folder")] public string Folder { get; set; } [JsonProperty("aliases")] public List<string> Aliases { get; set; } = new(); [JsonProperty("authors")] public List<string> Authors { get; set; } = new(); [JsonProperty("matchBasis")] public string MatchBasis { get; set; } }

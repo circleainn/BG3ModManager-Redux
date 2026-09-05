@@ -95,6 +95,30 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.False(ReferenceEquals(saved, working));
 	}
 
+	public void SavedCurrentStateRestoresIntoTheSingleCurrentEntry()
+	{
+		var current = new DivinityLoadOrder
+		{
+			Name = "Current",
+			FilePath = @"C:\Profiles\Public\modsettings.lsx",
+			IsModSettings = true,
+			Order = [new DivinityLoadOrderEntry { UUID = "game-order" }]
+		};
+		var savedState = new DivinityLoadOrder
+		{
+			Name = "Current",
+			FilePath = @"C:\Redux\Data\CurrentOrders\profile.json",
+			Order = [new DivinityLoadOrderEntry { UUID = "saved-working-order" }]
+		};
+
+		RegressionAssert.True(LoadOrderPersistencePolicy.RestoreSavedCurrentState(current, savedState));
+		RegressionAssert.Equal("Current", current.Name);
+		RegressionAssert.Equal(@"C:\Profiles\Public\modsettings.lsx", current.FilePath);
+		RegressionAssert.True(current.IsModSettings);
+		RegressionAssert.Equal(1, current.Order.Count);
+		RegressionAssert.Equal("saved-working-order", current.Order[0].UUID);
+	}
+
 	public void DuplicateWandChoiceNormalizesToTheSingleVisibleIcon()
 	{
 		RegressionAssert.Equal("wand", ReduxIconCatalog.Normalize("wand-sparkles"));

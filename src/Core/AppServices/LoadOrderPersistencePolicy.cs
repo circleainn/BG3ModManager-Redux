@@ -40,4 +40,16 @@ public static class LoadOrderPersistencePolicy
 		return order?.IsModSettings == true
 			|| String.Equals(Path.GetExtension(order?.FilePath), ".lsx", StringComparison.OrdinalIgnoreCase);
 	}
+
+	/// <summary>
+	/// Restores Redux's saved Current workspace without replacing the logical Current
+	/// entry or redirecting it to a second selectable load order.
+	/// </summary>
+	public static bool RestoreSavedCurrentState(DivinityLoadOrder currentOrder, DivinityLoadOrder savedCurrentState)
+	{
+		if (currentOrder == null || savedCurrentState == null) return false;
+		currentOrder.SetOrder(savedCurrentState.Order.Select(entry => entry.Clone()));
+		currentOrder.LastModifiedDate = savedCurrentState.LastModifiedDate;
+		return true;
+	}
 }

@@ -167,5 +167,8 @@ public sealed class ModHealthSnapshot
 	}
 
 	private static bool IsLoadOrderAdvice(ModHealthFinding finding) =>
-		finding.Code is ModHealthFindingCode.DependencyLoadsLater or ModHealthFindingCode.DependencyCycle;
+		finding.Code is
+			ModHealthFindingCode.DependencyLoadsLater or
+			ModHealthFindingCode.RecommendedPredecessorLoadsLater or
+			ModHealthFindingCode.DependencyCycle;
 }

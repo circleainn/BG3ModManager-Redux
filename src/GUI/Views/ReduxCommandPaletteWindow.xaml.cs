@@ -263,6 +263,8 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 		nameof(AppKeys.ExportOrderToZip) => "save file archive package backup",
 		nameof(AppKeys.Refresh) => "reload rescan mods",
 		nameof(AppKeys.RefreshModUpdates) => "reload rescan check versions",
+		nameof(AppKeys.UndoLoadOrderChange) => "undo revert back mod order separator activation",
+		nameof(AppKeys.RedoLoadOrderChange) => "redo repeat forward mod order separator activation",
 		nameof(AppKeys.Confirm) => "activate deactivate transfer opposite",
 		nameof(AppKeys.MoveFocusLeft) => "active pane list",
 		nameof(AppKeys.MoveFocusRight) => "inactive pane list",

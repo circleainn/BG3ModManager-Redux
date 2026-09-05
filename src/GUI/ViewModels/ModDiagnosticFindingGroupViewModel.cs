@@ -73,7 +73,8 @@ public sealed class ModDiagnosticFindingGroupViewModel
 		CanRevealRelatedDependency = PrimaryRelatedMod != null && Code is
 			ModHealthFindingCode.InactiveDependency or
 			ModHealthFindingCode.DependencyVersionTooOld or
-			ModHealthFindingCode.DependencyLoadsLater;
+			ModHealthFindingCode.DependencyLoadsLater or
+			ModHealthFindingCode.RecommendedPredecessorLoadsLater;
 		CanActivateRelatedDependency = PrimaryRelatedMod != null
 			&& !PrimaryRelatedMod.IsActive
 			&& Code == ModHealthFindingCode.InactiveDependency;
@@ -81,12 +82,14 @@ public sealed class ModDiagnosticFindingGroupViewModel
 			&& Code is ModHealthFindingCode.InactiveDependency
 				or ModHealthFindingCode.DependencyVersionTooOld
 				or ModHealthFindingCode.DependencyLoadsLater
+				or ModHealthFindingCode.RecommendedPredecessorLoadsLater
 				or ModHealthFindingCode.MissingDependency;
 		CanCopyRelatedDependencyUuid = !String.IsNullOrWhiteSpace(PrimaryRelatedModUuid)
 			&& Code is ModHealthFindingCode.MissingDependency
 				or ModHealthFindingCode.InactiveDependency
 				or ModHealthFindingCode.DependencyVersionTooOld
-				or ModHealthFindingCode.DependencyLoadsLater;
+				or ModHealthFindingCode.DependencyLoadsLater
+				or ModHealthFindingCode.RecommendedPredecessorLoadsLater;
 		CanOpenAffectedModSource = sourceIntegrationsEnabled
 			&& Code == ModHealthFindingCode.MissingDependency
 			&& AffectedMods.Count == 1

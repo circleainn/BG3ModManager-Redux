@@ -1,4 +1,5 @@
 using DivinityModManager.Models;
+using DivinityModManager.AppServices;
 
 namespace DivinityModManager.Models.Health;
 
@@ -59,6 +60,9 @@ public sealed class ModHealthAnalyzer : IModHealthAnalyzer
 			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
 			.ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
 		var duplicateUuids = FindDuplicateUuids(installed, duplicateMods);
+		var loadOrderAdvisorKnowledge = enableLoadOrderAdvisor
+			? ReduxModDatabaseService.LoadOrderAdvisorKnowledge
+			: ReduxLoadOrderAdvisorKnowledge.Empty;
 
 		return installed
 			.Select(mod => Analyze(
@@ -67,7 +71,8 @@ public sealed class ModHealthAnalyzer : IModHealthAnalyzer
 					installedByUuid,
 					activeUuids,
 					activePositions,
-					duplicateUuids),
+					duplicateUuids,
+					loadOrderAdvisorKnowledge),
 				enableLoadOrderAdvisor,
 				disableModioWarnings))
 			.ToArray();

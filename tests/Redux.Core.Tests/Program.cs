@@ -18,6 +18,7 @@ internal static class Program
 		var source = new SourceAssociationTests();
 		var manifest = new CreatorManifestValidationTests();
 		var health = new ModHealthTests();
+		var advisorKnowledge = new LoadOrderAdvisorKnowledgeTests();
 		var modules = new ReduxModuleStateTests();
 		var bundle = new ReduxBundleTests();
 		var contribution = new ContributionReportPrivacyTests();
@@ -38,9 +39,14 @@ internal static class Program
 		var commandPaletteSearch = new CommandPaletteSearchTests();
 		var fileSafety = new FileSafetyTests();
 		var loadOrderWorkflow = new LoadOrderWorkflowTests();
+		var undoRedoHistory = new UndoRedoHistoryTests();
 		var tests = new (string Name, Action Run)[]
 		{
 			(nameof(source.ReviewedModuleUuidResolvesItsProject), source.ReviewedModuleUuidResolvesItsProject),
+			(nameof(source.CommunityModuleUuidResolvesItsDependencySource), source.CommunityModuleUuidResolvesItsDependencySource),
+			(nameof(source.CommunityIdentityRequiresTheInstalledPackageNameToAgree), source.CommunityIdentityRequiresTheInstalledPackageNameToAgree),
+			(nameof(source.CommunityUuidDoesNotRelabelAnUnrelatedLocalPackage), source.CommunityUuidDoesNotRelabelAnUnrelatedLocalPackage),
+			(nameof(source.CommunityProjectNameAndAuthorDoNotBypassUuidCorroboration), source.CommunityProjectNameAndAuthorDoNotBypassUuidCorroboration),
 			(nameof(source.MissingDependencyOffersReviewedSourceOnlyWhenIntegrationsAreEnabled), source.MissingDependencyOffersReviewedSourceOnlyWhenIntegrationsAreEnabled),
 			(nameof(source.CurrentNexusArchiveNamesResolveTheirProject), source.CurrentNexusArchiveNamesResolveTheirProject),
 			(nameof(source.TransitionalNexusArchiveNamesResolveTheirProject), source.TransitionalNexusArchiveNamesResolveTheirProject),
@@ -95,6 +101,11 @@ internal static class Program
 			(nameof(health.InactiveMcmExplainsItsInGameLoadOrderWarning), health.InactiveMcmExplainsItsInGameLoadOrderWarning),
 			(nameof(health.ModioWarningExplainsSteamCloudPersistence), health.ModioWarningExplainsSteamCloudPersistence),
 			(nameof(health.DisablingModioWarningsHidesOnlyThatFinding), health.DisablingModioWarningsHidesOnlyThatFinding),
+			(nameof(advisorKnowledge.BundledKnowledgeIncludesGroupsAliasesAndSubstitutes), advisorKnowledge.BundledKnowledgeIncludesGroupsAliasesAndSubstitutes),
+			(nameof(advisorKnowledge.ExactDependencyAliasesAndSubstitutesResolveInstalledMods), advisorKnowledge.ExactDependencyAliasesAndSubstitutesResolveInstalledMods),
+			(nameof(advisorKnowledge.OfflineDependencyFactsExtendTheExistingAdvisor), advisorKnowledge.OfflineDependencyFactsExtendTheExistingAdvisor),
+			(nameof(advisorKnowledge.AuthorProvidedPlacementExtendsTheExistingAdvisor), advisorKnowledge.AuthorProvidedPlacementExtendsTheExistingAdvisor),
+			(nameof(advisorKnowledge.ExceptionalLateLoadingDependenciesDoNotCreateFalseAdvice), advisorKnowledge.ExceptionalLateLoadingDependenciesDoNotCreateFalseAdvice),
 			(nameof(modules.DefaultsKeepModDiagnosticsOnAndGuidanceOptIn), modules.DefaultsKeepModDiagnosticsOnAndGuidanceOptIn),
 			(nameof(modules.FirstRunOnboardingStartsWithEveryOptionalFeatureOff), modules.FirstRunOnboardingStartsWithEveryOptionalFeatureOff),
 			(nameof(modules.ReturningUsersKeepTheirOptionalFeatureChoices), modules.ReturningUsersKeepTheirOptionalFeatureChoices),
@@ -165,6 +176,7 @@ internal static class Program
 			(nameof(interactionBehavior.SavingCurrentOrderCanNeverWriteTheGameExportFile), interactionBehavior.SavingCurrentOrderCanNeverWriteTheGameExportFile),
 			(nameof(interactionBehavior.NewBlankOrderContainsNoActivatedMods), interactionBehavior.NewBlankOrderContainsNoActivatedMods),
 			(nameof(interactionBehavior.WorkingChangesStayDetachedUntilExplicitlySaved), interactionBehavior.WorkingChangesStayDetachedUntilExplicitlySaved),
+			(nameof(interactionBehavior.SavedCurrentStateRestoresIntoTheSingleCurrentEntry), interactionBehavior.SavedCurrentStateRestoresIntoTheSingleCurrentEntry),
 			(nameof(interactionBehavior.DuplicateWandChoiceNormalizesToTheSingleVisibleIcon), interactionBehavior.DuplicateWandChoiceNormalizesToTheSingleVisibleIcon),
 			(nameof(interactionBehavior.AsyncProviderMetadataSignalsAutomaticCategoryRefresh), interactionBehavior.AsyncProviderMetadataSignalsAutomaticCategoryRefresh),
 			(nameof(automaticCategories.NexusCategoryIdsMatchTheBg3ProviderTaxonomy), automaticCategories.NexusCategoryIdsMatchTheBg3ProviderTaxonomy),
@@ -220,7 +232,10 @@ internal static class Program
 			(nameof(fileSafety.CancelledAsyncCopyPreservesTheExistingDestination), fileSafety.CancelledAsyncCopyPreservesTheExistingDestination),
 			(nameof(fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson), fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson),
 			(nameof(loadOrderWorkflow.SaveSwitchRenameAndRestartPreservesEachOrder), loadOrderWorkflow.SaveSwitchRenameAndRestartPreservesEachOrder),
-			(nameof(loadOrderWorkflow.RenameRequiresConfirmationBeforeReplacingAnotherSavedOrder), loadOrderWorkflow.RenameRequiresConfirmationBeforeReplacingAnotherSavedOrder)
+			(nameof(loadOrderWorkflow.RenameRequiresConfirmationBeforeReplacingAnotherSavedOrder), loadOrderWorkflow.RenameRequiresConfirmationBeforeReplacingAnotherSavedOrder),
+			(nameof(undoRedoHistory.UndoAndRedoRestoreTheExpectedState), undoRedoHistory.UndoAndRedoRestoreTheExpectedState),
+			(nameof(undoRedoHistory.ANewEditClearsTheRedoBranch), undoRedoHistory.ANewEditClearsTheRedoBranch),
+			(nameof(undoRedoHistory.HistoryDropsItsOldestEntryAtCapacity), undoRedoHistory.HistoryDropsItsOldestEntryAtCapacity)
 		};
 
 		var failures = 0;

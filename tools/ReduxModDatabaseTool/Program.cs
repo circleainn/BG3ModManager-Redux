@@ -453,6 +453,102 @@ public static class Program
 			else if (!String.IsNullOrWhiteSpace(uuid)) moduleProjects[uuid] = modId;
 		}
 
+		var communityModules = database["communityModuleIdentities"] as JsonArray ?? new JsonArray();
+		foreach (var module in communityModules.OfType<JsonObject>())
+		{
+			var uuid = GetString(module, "uuid")?.Trim();
+			var modId = GetLong(module, "modId");
+			if (!Guid.TryParse(uuid, out _)) result.Errors.Add($"Invalid community module UUID '{uuid}'.");
+			if (!projectIds.Contains(modId)) result.Errors.Add($"Community module UUID {uuid} references missing project {modId}.");
+			if (!String.Equals(GetString(module, "matchBasis"), "community-exact-name", StringComparison.Ordinal))
+				result.Errors.Add($"Community module UUID {uuid} has an unsupported match basis.");
+			if (!String.IsNullOrWhiteSpace(uuid) && moduleProjects.TryGetValue(uuid, out var other) && other != modId)
+				result.Errors.Add($"Module UUID {uuid} points to both {other} and {modId}.");
+			else if (!String.IsNullOrWhiteSpace(uuid)) moduleProjects[uuid] = modId;
+		}
+
+		var loadOrderEntries = database["loadOrderEntries"] as JsonArray ?? new JsonArray();
+		var loadOrderUuids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		foreach (var entry in loadOrderEntries.OfType<JsonObject>())
+		{
+			var uuid = GetString(entry, "uuid")?.Trim();
+			if (!Guid.TryParse(uuid, out _)) result.Errors.Add($"Invalid load-order entry UUID '{uuid}'.");
+			else if (!loadOrderUuids.Add(uuid!)) result.Errors.Add($"Duplicate load-order entry UUID '{uuid}'.");
+			if (String.IsNullOrWhiteSpace(GetString(entry, "name"))) result.Errors.Add($"Load-order entry {uuid} has no name.");
+		}
+
+		var orderingGroups = database["orderingGroups"] as JsonArray ?? new JsonArray();
+		var groupNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		foreach (var group in orderingGroups.OfType<JsonObject>())
+		{
+			var name = GetString(group, "name")?.Trim();
+			if (String.IsNullOrWhiteSpace(name)) result.Errors.Add("An ordering group has no name.");
+			else if (!groupNames.Add(name)) result.Errors.Add($"Duplicate ordering group '{name}'.");
+		}
+		foreach (var group in orderingGroups.OfType<JsonObject>())
+		{
+			var name = GetString(group, "name")?.Trim();
+			foreach (var predecessor in (group["after"] as JsonArray ?? new JsonArray()).Select(value => value?.GetValue<string>()))
+			{
+				if (String.IsNullOrWhiteSpace(predecessor) || !groupNames.Contains(predecessor))
+					result.Errors.Add($"Ordering group '{name}' references unknown predecessor '{predecessor}'.");
+				if (String.Equals(name, predecessor, StringComparison.OrdinalIgnoreCase))
+					result.Errors.Add($"Ordering group '{name}' cannot load after itself.");
+			}
+		}
+		var unresolvedGroups = orderingGroups.OfType<JsonObject>()
+			.Select(group => (Name: GetString(group, "name")?.Trim(), After: group["after"] as JsonArray ?? new JsonArray()))
+			.Where(group => !String.IsNullOrWhiteSpace(group.Name))
+			.GroupBy(group => group.Name!, StringComparer.OrdinalIgnoreCase)
+			.ToDictionary(
+				group => group.Key,
+				group => group.First().After
+					.Select(value => value?.GetValue<string>())
+					.Where(value => !String.IsNullOrWhiteSpace(value))
+					.ToHashSet(StringComparer.OrdinalIgnoreCase),
+				StringComparer.OrdinalIgnoreCase);
+		var resolvedGroups = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		while (resolvedGroups.Count < unresolvedGroups.Count)
+		{
+			var ready = unresolvedGroups
+				.Where(group => !resolvedGroups.Contains(group.Key)
+					&& group.Value.All(predecessor => predecessor != null && resolvedGroups.Contains(predecessor)))
+				.Select(group => group.Key)
+				.ToArray();
+			if (ready.Length == 0) break;
+			resolvedGroups.UnionWith(ready);
+		}
+		if (resolvedGroups.Count != unresolvedGroups.Count)
+			result.Errors.Add("orderingGroups contains a cycle.");
+
+		var dependencyNameAliases = database["dependencyNameAliases"] as JsonObject ?? new JsonObject();
+		foreach (var alias in dependencyNameAliases)
+		{
+			var uuid = alias.Value?.GetValue<string>();
+			if (String.IsNullOrWhiteSpace(alias.Key) || alias.Key.Any(character => !Char.IsLetterOrDigit(character)))
+				result.Errors.Add($"Dependency alias '{alias.Key}' must contain only normalized letters and digits.");
+			if (!Guid.TryParse(uuid, out _) || !loadOrderUuids.Contains(uuid!))
+				result.Errors.Add($"Dependency alias '{alias.Key}' references unknown UUID '{uuid}'.");
+		}
+
+		var dependencySubstitutes = database["dependencySubstitutes"] as JsonObject ?? new JsonObject();
+		foreach (var substitution in dependencySubstitutes)
+		{
+			if (!Guid.TryParse(substitution.Key, out _))
+				result.Errors.Add($"Dependency substitution key '{substitution.Key}' is not a UUID.");
+			var alternatives = substitution.Value as JsonArray;
+			if (alternatives == null || alternatives.Count == 0)
+			{
+				result.Errors.Add($"Dependency substitution '{substitution.Key}' has no alternatives.");
+				continue;
+			}
+			foreach (var alternative in alternatives.Select(value => value?.GetValue<string>()))
+			{
+				if (!Guid.TryParse(alternative, out _) || !loadOrderUuids.Contains(alternative!))
+					result.Errors.Add($"Dependency substitution '{substitution.Key}' references unknown alternative '{alternative}'.");
+			}
+		}
+
 		var counts = database["counts"] as JsonObject;
 		if (counts is null) result.Errors.Add("counts object is missing.");
 		else
@@ -461,6 +557,16 @@ public static class Program
 			CheckCount(counts, "exactPakFingerprints", RequiredArray(database, "exactPakFingerprints").Count, result);
 			CheckCount(counts, "exactArchiveFingerprints", RequiredArray(database, "exactArchiveFingerprints").Count, result);
 			CheckCount(counts, "reviewedModuleIdentities", RequiredArray(database, "moduleIdentities").Count, result);
+			if (database.ContainsKey("communityModuleIdentities") || counts.ContainsKey("communityModuleIdentities"))
+				CheckCount(counts, "communityModuleIdentities", communityModules.Count, result);
+			if (database.ContainsKey("loadOrderEntries") || counts.ContainsKey("loadOrderEntries"))
+				CheckCount(counts, "loadOrderEntries", loadOrderEntries.Count, result);
+			if (database.ContainsKey("orderingGroups") || counts.ContainsKey("orderingGroups"))
+				CheckCount(counts, "orderingGroups", orderingGroups.Count, result);
+			if (database.ContainsKey("dependencyNameAliases") || counts.ContainsKey("dependencyNameAliases"))
+				CheckCount(counts, "dependencyNameAliases", dependencyNameAliases.Count, result);
+			if (database.ContainsKey("dependencySubstitutes") || counts.ContainsKey("dependencySubstitutes"))
+				CheckCount(counts, "dependencySubstitutes", dependencySubstitutes.Count, result);
 		}
 		return result;
 	}
@@ -492,7 +598,7 @@ public static class Program
 	private static void CheckCount(JsonObject counts, string name, int actual, ValidationResult result)
 	{
 		var recorded = GetInt(counts, name);
-		if (recorded != actual) result.Errors.Add($"counts.{name} is {recorded}, but the array contains {actual} records.");
+		if (recorded != actual) result.Errors.Add($"counts.{name} is {recorded}, but the database contains {actual} records.");
 	}
 
 	private static void UpdateCounts(JsonObject database)
@@ -507,6 +613,11 @@ public static class Program
 		counts["exactPakFingerprints"] = RequiredArray(database, "exactPakFingerprints").Count;
 		counts["exactArchiveFingerprints"] = RequiredArray(database, "exactArchiveFingerprints").Count;
 		counts["reviewedModuleIdentities"] = RequiredArray(database, "moduleIdentities").Count;
+		counts["communityModuleIdentities"] = (database["communityModuleIdentities"] as JsonArray)?.Count ?? 0;
+		counts["loadOrderEntries"] = (database["loadOrderEntries"] as JsonArray)?.Count ?? 0;
+		counts["orderingGroups"] = (database["orderingGroups"] as JsonArray)?.Count ?? 0;
+		counts["dependencyNameAliases"] = (database["dependencyNameAliases"] as JsonObject)?.Count ?? 0;
+		counts["dependencySubstitutes"] = (database["dependencySubstitutes"] as JsonObject)?.Count ?? 0;
 	}
 
 	private static async Task<ArtifactFingerprint> FingerprintAsync(string filePath)

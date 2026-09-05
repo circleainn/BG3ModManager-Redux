@@ -28,6 +28,9 @@ dotnet run --project tools/ReduxModDatabaseTool -- add `
 
 The `add` command is preview-only by default. Review its proposed records, then repeat it with
 `--write` to atomically update the database. Run `validate` again before committing the result.
+Validation also checks the bundled community identity and load-order sections when present,
+including UUID validity, uniqueness, project references, ordering-group references and cycles,
+dependency aliases and substitutes, supported match policy, and recorded counts.
 
 The `review-report` command validates the report's schema and privacy declaration, rejects absolute
 or embedded path data, non-public provider URLs, invalid UUID fallbacks, and inconsistent

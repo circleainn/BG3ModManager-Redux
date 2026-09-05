@@ -3,9 +3,13 @@
 `src/GUI/Resources/ReduxModDatabase.json` is a bundled offline database that lets Redux identify
 some pre-existing Nexus Mods installs without an API request. It's not an importer, and it never
 matches a package from a filename alone, title alone, arbitrary UUID, or approximate version. It uses
-exact fingerprints first, followed only by reviewed identity records with unambiguous evidence.
+exact fingerprints first, followed by identities with enough corroborating evidence to avoid silently
+relabeling unrelated local packages.
 
-Loaded and queried through `ReduxModDatabaseService` (`src/Core/AppServices/ReduxModDatabaseService.cs`).
+Source-association records are loaded and queried through `ReduxModDatabaseService`
+(`src/Core/AppServices/ReduxModDatabaseService.cs`). The optional Load Order Advisor lazily loads
+the separate ordering section during its existing background analysis pass. It remains read-only
+and never moves a package.
 
 ## Structure
 
@@ -20,13 +24,35 @@ Loaded and queried through `ReduxModDatabaseService` (`src/Core/AppServices/Redu
   archive.
 - `moduleIdentities` — reviewed UUID → `modId` links for mods whose module UUID reliably identifies
   a single Nexus project, used when no exact fingerprint is available.
+- `communityModuleIdentities` — exact UUID → Nexus project candidates from the expanded offline
+  dataset. At runtime these are accepted only when the installed package name, folder, or filename
+  also agrees with the recorded identity. Conflicting authors reject the match, and community-only
+  projects are excluded from the broader name-and-author fallback.
+- `loadOrderEntries` — UUID-keyed ordering knowledge kept independently of source linking: names,
+  groups, dividers, dependencies, explicit load-after rules, Script Extender requirements, and
+  evidence counts. The advisor uses exact installed UUIDs and names from these records to supplement
+  package metadata that may be incomplete.
+- `orderingGroups` — the named ordering groups and their `after` relationships. These are retained
+  as placement guidance; they are not treated as dependency requirements.
+- `dependencyNameAliases` — exact normalized requirement names that identify a differently named
+  module UUID. Approximate matching is deliberately excluded.
+- `dependencySubstitutes` — explicitly reviewed module UUIDs that can satisfy a differently keyed
+  requirement.
+
+When enabled, the Load Order Advisor combines installed package declarations with the bundled
+records. It reports reversed dependency placement, exact dependency cycles, and explicit
+mod-author load-after relationships. Known patch-style dependencies that intentionally load after
+their dependants do not produce a false placement warning. Category evidence does not currently
+reorder the list or generate blanket warnings.
 
 ## Match order
 
 1. Exact `.pak` fingerprint (size + hash) — strongest.
 2. Exact archive fingerprint (size + md5).
 3. Reviewed module UUID identity.
-4. Normalized name + author agreement across every alias a project has, only when exactly one
+4. Community UUID identity corroborated by an exact normalized installed name, folder, or filename;
+   author metadata must also agree when both sides provide it.
+5. Normalized name + author agreement across every alias a project has, only when exactly one
    project matches. Name-only candidates are ignored.
 
 Anything that doesn't clear one of these stays **Local**.
@@ -85,5 +111,6 @@ shared.
 6. Confirm the JSON parses and that no identical size+hash pair points at more than one project.
 7. Test against a clean Redux debug settings file, with and without a Nexus API key.
 
-Don't add filename-only, title-only, UUID-only, or approximate-version matches — those can
-misattribute a local or repackaged mod to the wrong Nexus project.
+Don't add filename-only, title-only, uncorroborated UUID, or approximate-version matches — those can
+misattribute a local or repackaged mod to the wrong Nexus project. Community identity candidates must
+remain separate from reviewed identities so the runtime corroboration requirement cannot be bypassed.

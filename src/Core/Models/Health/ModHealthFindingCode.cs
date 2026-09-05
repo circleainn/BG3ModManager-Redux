@@ -10,6 +10,7 @@ public enum ModHealthFindingCode
 	SelfDependency,
 	DependencyVersionTooOld,
 	DependencyLoadsLater,
+	RecommendedPredecessorLoadsLater,
 	DependencyCycle,
 	InvalidUuid,
 	DuplicateUuid,

@@ -153,6 +153,8 @@ public class ModListDropHandler : DefaultDropHandler
 			var visualData = ExtractData(dropInfo.Data).OfType<DivinityModData>().ToList();
 			if (!destinationActive && visualData.Any(item => item.IsVisualDivider)) return;
 			_viewModel.ApplyVisualModListDrop(visualData, destinationActive, insertIndex);
+			RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(20), () =>
+				_viewModel.Layout.SelectMods(visualData));
 			return;
 		}
 

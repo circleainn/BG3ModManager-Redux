@@ -102,6 +102,12 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Refresh Mod Updates")]
 	public Hotkey RefreshModUpdates { get; private set; } = new Hotkey(Key.None);
 
+	[MenuSettings("Edit", "Undo Load Order Change")]
+	public Hotkey UndoLoadOrderChange { get; private set; } = new Hotkey(Key.Z, ModifierKeys.Control);
+
+	[MenuSettings("Edit", "Redo Load Order Change", true)]
+	public Hotkey RedoLoadOrderChange { get; private set; } = new Hotkey(Key.Y, ModifierKeys.Control);
+
 	[MenuSettings("Edit", "Move Selected Mods to Other List", true)]
 	public Hotkey Confirm { get; private set; } = new Hotkey(Key.Enter);
 

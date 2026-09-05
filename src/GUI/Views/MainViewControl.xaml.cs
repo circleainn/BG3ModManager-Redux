@@ -73,6 +73,8 @@ public partial class MainViewControl : MainViewControlViewBase
 			[nameof(AppKeys.ExportReduxLoadOrder)] = ("Redux.Icon.CloudUpload", true, null),
 			[nameof(AppKeys.ExportOrderToZip)] = ("Redux.Icon.Archive", true, null),
 			[nameof(AppKeys.Refresh)] = ("Redux.Icon.RefreshStroke", true, null),
+			[nameof(AppKeys.UndoLoadOrderChange)] = ("Redux.Icon.Undo", true, null),
+			[nameof(AppKeys.RedoLoadOrderChange)] = ("Redux.Icon.Redo", true, null),
 			[nameof(AppKeys.Confirm)] = ("Redux.Icon.SwapHorizontalStroke", true, null),
 			[nameof(AppKeys.MoveFocusLeft)] = ("Redux.Icon.ArrowBackStroke", true, null),
 			[nameof(AppKeys.MoveFocusRight)] = ("Redux.Icon.ArrowForwardStroke", true, null),
@@ -1320,7 +1322,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			MessageBoxResult.No);
 		if (result == MessageBoxResult.Yes)
 		{
-			ViewModel.AddActiveMod(dependency);
+			ViewModel.AddActiveMod(dependency, recordHistory: true);
 			ViewModel.ShowAlert(
 				$"Activated {dependency.DisplayName}. Review its load-order position before exporting.",
 				AlertType.Success,
@@ -1444,6 +1446,8 @@ public partial class MainViewControl : MainViewControlViewBase
 					: "Save changes to the selected load order";
 			});
 		this.BindCommand(ViewModel, vm => vm.Keys.SaveNewOrder.Command, view => view.SaveAsOrderButton);
+		this.BindCommand(ViewModel, vm => vm.Keys.UndoLoadOrderChange.Command, view => view.UndoLoadOrderButton);
+		this.BindCommand(ViewModel, vm => vm.Keys.RedoLoadOrderChange.Command, view => view.RedoLoadOrderButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.ExportOrderToGame.Command, view => view.ExportToModSettingsButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.Refresh.Command, view => view.RefreshButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.OpenModsFolder.Command, view => view.OpenModsFolderButton);

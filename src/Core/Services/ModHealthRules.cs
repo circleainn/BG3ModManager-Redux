@@ -1,3 +1,4 @@
+using DivinityModManager.AppServices;
 using DivinityModManager.Models;
 using DivinityModManager.Models.Metadata;
 
@@ -151,25 +152,53 @@ public sealed class LoadOrderAdvisorRule : IModHealthRule
 			return;
 		}
 
-		foreach (var dependency in mod.Dependencies.Items)
+		var reportedUuids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		foreach (var dependency in LoadOrderAdvisorRelationships.GetResolvedDependencies(context, mod))
 		{
-			if (String.IsNullOrWhiteSpace(dependency.UUID)
-				|| String.Equals(dependency.UUID, mod.UUID, StringComparison.OrdinalIgnoreCase)
-				|| !context.InstalledByUuid.TryGetValue(dependency.UUID, out var installedDependency)
+			if (String.Equals(dependency.Uuid, mod.UUID, StringComparison.OrdinalIgnoreCase)
+				|| context.LoadOrderAdvisorKnowledge.SuppressesDependencyOrdering(dependency.Uuid)
+				|| !context.InstalledByUuid.TryGetValue(dependency.Uuid, out var installedDependency)
 				|| installedDependency.IsForceLoaded
 				|| installedDependency.IsLarianMod
-				|| !context.ActivePositions.TryGetValue(dependency.UUID, out var dependencyPosition)
+				|| !context.ActivePositions.TryGetValue(dependency.Uuid, out var dependencyPosition)
 				|| dependencyPosition < modPosition)
 			{
 				continue;
 			}
 
+			reportedUuids.Add(dependency.Uuid);
 			findings.Add(new ModHealthFinding(
 				ModHealthFindingCode.DependencyLoadsLater,
 				ModHealthSeverity.Warning,
 				"Dependency loads later",
-				$"{dependency.Name} is positioned after {mod.DisplayName}. Declared dependencies should normally load earlier; review the mod author's instructions before moving it.",
-				new[] { dependency.UUID }));
+				$"{dependency.DisplayName} is positioned after {mod.DisplayName}. This dependency should normally load earlier; review the mod author's instructions before moving it.",
+				new[] { dependency.Uuid }));
+		}
+
+		if (!context.LoadOrderAdvisorKnowledge.TryGetEntry(mod.UUID, out var knowledgeEntry)) return;
+		foreach (var predecessor in knowledgeEntry.LoadAfter ?? new List<ReduxLoadAfterKnowledge>())
+		{
+			if (!context.LoadOrderAdvisorKnowledge.TryResolveInstalledDependency(
+					predecessor.Uuid,
+					predecessor.Name,
+					context.InstalledByUuid,
+					out var predecessorUuid)
+				|| reportedUuids.Contains(predecessorUuid)
+				|| !context.InstalledByUuid.TryGetValue(predecessorUuid, out var installedPredecessor)
+				|| installedPredecessor.IsForceLoaded
+				|| installedPredecessor.IsLarianMod
+				|| !context.ActivePositions.TryGetValue(predecessorUuid, out var predecessorPosition)
+				|| predecessorPosition < modPosition)
+			{
+				continue;
+			}
+
+			findings.Add(new ModHealthFinding(
+				ModHealthFindingCode.RecommendedPredecessorLoadsLater,
+				ModHealthSeverity.Warning,
+				"Recommended predecessor loads later",
+				$"{installedPredecessor.DisplayName} is positioned after {mod.DisplayName}, but documented mod-author guidance places {mod.DisplayName} after it.",
+				new[] { predecessorUuid }));
 		}
 	}
 }
@@ -190,12 +219,12 @@ public sealed class LoadOrderDependencyCycleRule : IModHealthRule
 			return;
 		}
 
-		foreach (var dependency in mod.Dependencies.Items)
+		foreach (var dependency in LoadOrderAdvisorRelationships.GetResolvedDependencies(context, mod))
 		{
-			if (String.IsNullOrWhiteSpace(dependency.UUID)
-				|| !context.ActiveUuids.Contains(dependency.UUID)
+			if (!context.ActiveUuids.Contains(dependency.Uuid)
+				|| context.LoadOrderAdvisorKnowledge.SuppressesDependencyOrdering(dependency.Uuid)
 				|| !HasDependencyPathTo(
-					dependency.UUID,
+					dependency.Uuid,
 					mod.UUID,
 					context,
 					new HashSet<string>(StringComparer.OrdinalIgnoreCase)))
@@ -208,7 +237,7 @@ public sealed class LoadOrderDependencyCycleRule : IModHealthRule
 				ModHealthSeverity.Warning,
 				"Declared dependency cycle",
 				$"{mod.DisplayName} and its active dependency chain refer back to one another. No linear load order can satisfy every declaration; review the mod authors' instructions.",
-				new[] { dependency.UUID }));
+				new[] { dependency.Uuid }));
 			return;
 		}
 	}
@@ -230,11 +259,52 @@ public sealed class LoadOrderDependencyCycleRule : IModHealthRule
 			return false;
 		}
 
-		return current.Dependencies.Items.Any(dependency =>
-			!String.IsNullOrWhiteSpace(dependency.UUID)
-			&& HasDependencyPathTo(dependency.UUID, targetUuid, context, visited));
+		return LoadOrderAdvisorRelationships.GetResolvedDependencies(context, current).Any(dependency =>
+			!context.LoadOrderAdvisorKnowledge.SuppressesDependencyOrdering(dependency.Uuid)
+			&& HasDependencyPathTo(dependency.Uuid, targetUuid, context, visited));
 	}
 }
+
+internal static class LoadOrderAdvisorRelationships
+{
+	public static IEnumerable<ResolvedAdvisorDependency> GetResolvedDependencies(
+		ModHealthAnalysisContext context,
+		DivinityModData mod)
+	{
+		var declared = mod.Dependencies.Items
+			.Select(dependency => new ReduxLoadOrderDependencyKnowledge
+			{
+				Uuid = dependency.UUID,
+				Name = dependency.Name
+			})
+			.ToList();
+		if (context.LoadOrderAdvisorKnowledge.TryGetEntry(mod.UUID, out var knowledgeEntry))
+		{
+			declared.AddRange(knowledgeEntry.Dependencies ?? new List<ReduxLoadOrderDependencyKnowledge>());
+		}
+
+		var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		foreach (var dependency in declared)
+		{
+			if (!context.LoadOrderAdvisorKnowledge.TryResolveInstalledDependency(
+					dependency.Uuid,
+					dependency.Name,
+					context.InstalledByUuid,
+					out var installedUuid)
+				|| !seen.Add(installedUuid))
+			{
+				continue;
+			}
+
+			var displayName = context.InstalledByUuid.TryGetValue(installedUuid, out var installed)
+				? installed.DisplayName
+				: dependency.Name;
+			yield return new ResolvedAdvisorDependency(installedUuid, displayName);
+		}
+	}
+}
+
+internal readonly record struct ResolvedAdvisorDependency(string Uuid, string DisplayName);
 
 public sealed class CreatorManifestHealthRule : IModHealthRule
 {

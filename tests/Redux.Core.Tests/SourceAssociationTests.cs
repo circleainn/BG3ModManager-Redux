@@ -21,6 +21,7 @@ namespace Redux.Core.Tests;
 public sealed class SourceAssociationTests
 {
 	private const string ReviewedModuleUuid = "069e5871-efe8-44bb-b02a-fe957df5ae0e";
+	private const string CommunityModuleUuid = "26922ba9-6018-5252-075d-7ff2ba6ed879";
 
 	public void ReviewedModuleUuidResolvesItsProject()
 	{
@@ -30,6 +31,50 @@ public sealed class SourceAssociationTests
 		RegressionAssert.Equal(3902L, match!.ModId);
 		RegressionAssert.True(ReduxModDatabaseService.TryResolveModuleUuid(String.Empty) == null);
 		RegressionAssert.True(ReduxModDatabaseService.TryResolveModuleUuid("11111111-1111-1111-1111-111111111111") == null);
+	}
+
+	public void CommunityModuleUuidResolvesItsDependencySource()
+	{
+		var match = ReduxModDatabaseService.TryResolveModuleUuid(CommunityModuleUuid);
+
+		RegressionAssert.True(match != null);
+		RegressionAssert.Equal(366L, match!.ModId);
+		RegressionAssert.Equal(ReduxOfflineMatchKind.CommunityIdentity, match.Kind);
+	}
+
+	public void CommunityIdentityRequiresTheInstalledPackageNameToAgree()
+	{
+		var mod = CreateMod();
+		mod.UUID = CommunityModuleUuid;
+		mod.Name = "ImpUI (ImprovedUI)";
+		mod.Folder = "ImpUI_P8_Fork_26922ba9-6018-5252-075d-7ff2ba6ed879";
+
+		var match = ReduxModDatabaseService.TryResolveIdentity(mod);
+
+		RegressionAssert.True(match != null);
+		RegressionAssert.Equal(366L, match!.ModId);
+		RegressionAssert.Equal(ReduxOfflineMatchKind.CommunityIdentity, match.Kind);
+	}
+
+	public void CommunityUuidDoesNotRelabelAnUnrelatedLocalPackage()
+	{
+		var mod = CreateMod();
+		mod.UUID = CommunityModuleUuid;
+		mod.Name = "Unrelated Local Package";
+		mod.Folder = "UnrelatedLocalPackage";
+
+		RegressionAssert.True(ReduxModDatabaseService.TryResolveIdentity(mod) == null);
+	}
+
+	public void CommunityProjectNameAndAuthorDoNotBypassUuidCorroboration()
+	{
+		var mod = CreateMod();
+		mod.UUID = "11111111-1111-1111-1111-111111111111";
+		mod.Name = "HairUnlocked";
+		mod.Author = "ShaneH";
+		mod.Folder = "HairUnlocked";
+
+		RegressionAssert.True(ReduxModDatabaseService.TryResolveIdentity(mod) == null);
 	}
 
 	public void MissingDependencyOffersReviewedSourceOnlyWhenIntegrationsAreEnabled()

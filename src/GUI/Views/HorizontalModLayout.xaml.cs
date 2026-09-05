@@ -265,6 +265,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private VisualDividerAnimation _activeVisualDividerTransition;
 	private VisualDividerAnimation _inactiveVisualDividerTransition;
 	private DispatcherOperation _modDetailsSelectionUpdate;
+	private DispatcherOperation _paneSelectionSync;
+	private ModListView _pendingSelectionOwner;
+	private bool _synchronizingPaneSelection;
 	private readonly Dictionary<GridViewColumn, double> _visibleModListColumnWidths = new();
 	private readonly Dictionary<GridView, Dictionary<string, (GridViewColumn Column, int Index)>> _modListColumnRegistry = new();
 	private static readonly string[] OptionalModListColumns =
@@ -1349,9 +1352,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		listView.InputBindings.Add(new KeyBinding(ReactiveCommand.Create(() =>
 		{
-			listView.SelectedItems.Clear();
-
+			DeselectAll();
 		}), new KeyGesture(Key.D, ModifierKeys.Control)));
+		listView.PreviewMouseLeftButtonDown += ModListView_PreviewMouseLeftButtonDown;
 
 		listView.ItemContainerStyle = this.FindResource("ListViewItemMouseEvents") as Style;
 		listView.GotFocus += (object sender, RoutedEventArgs e) =>
@@ -1367,8 +1370,13 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		};
 	}
 
-	private static void SelectAllVisibleMods(ListView listView)
+	private void SelectAllVisibleMods(ListView listView)
 	{
+		if (listView is ModListView modListView)
+		{
+			ClearSelectionsOutside(modListView);
+		}
+
 		var selectableItems = VisualModSelectionPolicy.ResolveSelectAllItems(
 			listView.Items.OfType<DivinityModData>())
 			.ToHashSet(ReferenceEqualityComparer.Instance);
@@ -1445,17 +1453,24 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	public void DeselectAll()
 	{
-		if (ViewModel != null)
+		_pendingSelectionOwner = null;
+		if (_paneSelectionSync?.Status == DispatcherOperationStatus.Pending)
 		{
-			foreach (var mod in ViewModel.Mods)
-			{
-				mod.IsSelected = false;
-			}
+			_paneSelectionSync.Abort();
 		}
+		_paneSelectionSync = null;
 
-		this.ActiveModsListView.ClearSelectedItems();
-		this.InactiveModsListView.ClearSelectedItems();
-		this.ForceLoadedModsListView.ClearSelectedItems();
+		_synchronizingPaneSelection = true;
+		try
+		{
+			foreach (var mod in EnumerateSelectionItems())
+				if (mod.IsSelected) mod.IsSelected = false;
+
+			ActiveModsListView.UnselectAll();
+			InactiveModsListView.UnselectAll();
+			ForceLoadedModsListView.UnselectAll();
+		}
+		finally { _synchronizingPaneSelection = false; }
 	}
 
 	protected override void OnPreviewKeyDown(KeyEventArgs e)
@@ -1517,40 +1532,130 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	public void SelectMods(IEnumerable<DivinityModData> mods)
 	{
-		if (mods != null)
+		var requested = mods?
+			.Where(mod => mod != null && mod.Visibility == Visibility.Visible)
+			.Distinct<DivinityModData>(ReferenceEqualityComparer.Instance)
+			.ToList();
+		if (requested == null || requested.Count == 0)
 		{
-			foreach (var mod in mods)
+			DeselectAll();
+			return;
+		}
+
+		// A selection belongs to exactly one pane. Programmatic selections (imports
+		// and completed drops) follow the first requested item and ignore items that
+		// belong to another pane rather than leaving hidden cross-pane state behind.
+		var targetList = ResolvePane(requested[0]);
+		var selected = requested
+			.Where(mod => ReferenceEquals(ResolvePane(mod), targetList) && targetList.Items.Contains(mod))
+			.ToList();
+
+		DeselectAll();
+		_synchronizingPaneSelection = true;
+		try
+		{
+			foreach (var mod in selected)
 			{
-				ModListView listView = null;
-				if (mod.IsForceLoaded && !mod.IsForceLoadedMergedMod && !mod.ForceAllowInLoadOrder)
-				{
-					listView = ForceLoadedModsListView;
-				}
-				else if (mod.IsActive)
-				{
-					listView = ActiveModsListView;
-				}
-				else
-				{
-					listView = InactiveModsListView;
-				}
-				if (listView.ItemContainerGenerator.ContainerFromItem(mod) is ListViewItem listItem)
-				{
-					listItem.IsSelected = mod.Visibility == Visibility.Visible;
-				}
+				mod.IsSelected = true;
+				targetList.SelectedItems.Add(mod);
 			}
 		}
+		finally { _synchronizingPaneSelection = false; }
+		QueueModDetailsSelectionUpdate();
 	}
 
 	private void KeepSelectionInSingleList(ModListView selectedList, SelectionChangedEventArgs e)
 	{
-		// Ctrl/Shift multi-selection remains available inside the active list. Once a
-		// user starts selecting in another panel, clear the old panel so Redux has one
-		// visually unambiguous selection context.
-		if (e?.AddedItems == null || e.AddedItems.Count == 0) return;
-		if (!ReferenceEquals(selectedList, ActiveModsListView)) ActiveModsListView.ClearSelectedItems();
-		if (!ReferenceEquals(selectedList, InactiveModsListView)) InactiveModsListView.ClearSelectedItems();
-		if (!ReferenceEquals(selectedList, ForceLoadedModsListView)) ForceLoadedModsListView.ClearSelectedItems();
+		if (_synchronizingPaneSelection || e?.AddedItems == null || e.AddedItems.Count == 0) return;
+
+		// Clear the other two panes immediately, then reconcile the model once after
+		// WPF finishes a Ctrl/Shift/SelectAll batch. The deferred pass is important:
+		// virtualized rows can retain IsSelected even when no ListViewItem exists.
+		ClearSelectionsOutside(selectedList);
+		_pendingSelectionOwner = selectedList;
+		if (_paneSelectionSync?.Status == DispatcherOperationStatus.Pending) return;
+		_paneSelectionSync = Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(SynchronizePaneSelection));
+	}
+
+	private void SynchronizePaneSelection()
+	{
+		_paneSelectionSync = null;
+		var selectedList = _pendingSelectionOwner;
+		_pendingSelectionOwner = null;
+		if (selectedList == null || ViewModel == null) return;
+
+		var selectedItems = selectedList.SelectedItems
+			.OfType<DivinityModData>()
+			.ToHashSet(ReferenceEqualityComparer.Instance);
+		_synchronizingPaneSelection = true;
+		try
+		{
+			ClearSelectionsOutside(selectedList);
+			foreach (var mod in EnumerateSelectionItems())
+			{
+				var shouldSelect = selectedItems.Contains(mod);
+				if (mod.IsSelected != shouldSelect) mod.IsSelected = shouldSelect;
+			}
+		}
+		finally { _synchronizingPaneSelection = false; }
+	}
+
+	private void ClearSelectionsOutside(ModListView selectedList)
+	{
+		var wasSynchronizing = _synchronizingPaneSelection;
+		_synchronizingPaneSelection = true;
+		try
+		{
+			if (!ReferenceEquals(selectedList, ActiveModsListView)) ActiveModsListView.UnselectAll();
+			if (!ReferenceEquals(selectedList, InactiveModsListView)) InactiveModsListView.UnselectAll();
+			if (!ReferenceEquals(selectedList, ForceLoadedModsListView)) ForceLoadedModsListView.UnselectAll();
+		}
+		finally { _synchronizingPaneSelection = wasSynchronizing; }
+	}
+
+	private ModListView ResolvePane(DivinityModData mod)
+	{
+		// Visual separators do not use the normal IsActive flag, so prefer their
+		// actual displayed collection before falling back to mod metadata.
+		if (ActiveModsListView.Items.Contains(mod)) return ActiveModsListView;
+		if (InactiveModsListView.Items.Contains(mod)) return InactiveModsListView;
+		if (ForceLoadedModsListView.Items.Contains(mod)) return ForceLoadedModsListView;
+		if (mod.IsForceLoaded && !mod.IsForceLoadedMergedMod && !mod.ForceAllowInLoadOrder)
+			return ForceLoadedModsListView;
+		return mod.IsActive ? ActiveModsListView : InactiveModsListView;
+	}
+
+	private IEnumerable<DivinityModData> EnumerateSelectionItems()
+	{
+		if (ViewModel == null) yield break;
+
+		var seen = new HashSet<DivinityModData>(ReferenceEqualityComparer.Instance);
+		foreach (var collection in new IEnumerable<DivinityModData>[]
+		{
+			ViewModel.Mods,
+			ViewModel.ActiveMods,
+			ViewModel.InactiveMods,
+			ViewModel.ForceLoadedMods,
+			ViewModel.DisplayActiveMods,
+			ViewModel.DisplayInactiveMods
+		})
+		{
+			foreach (var mod in collection)
+				if (mod != null && seen.Add(mod)) yield return mod;
+		}
+	}
+
+	private void ModListView_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+	{
+		if (Keyboard.Modifiers != ModifierKeys.None || e.LeftButton != MouseButtonState.Pressed) return;
+		var source = e.OriginalSource as DependencyObject;
+		if (source?.FindVisualParent<ListViewItem>() != null
+			|| source?.FindVisualParent<ButtonBase>() != null
+			|| source?.FindVisualParent<ScrollBar>() != null
+			|| source?.FindVisualParent<GridViewColumnHeader>() != null)
+			return;
+
+		DeselectAll();
 	}
 
 	private void ModListView_ButtonClick(object sender, RoutedEventArgs e)
@@ -3716,27 +3821,15 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private void ListViewItem_ModifySelection(object sender, MouseButtonEventArgs e)
 	{
-		//Fix for when virtualization is enabled, and selected entries outside the view don't get deselected
+		// Keep the model in step with WPF even when previously selected rows are
+		// virtualized or live in another pane.
 		if ((Keyboard.Modifiers & ModifierKeys.Control) != ModifierKeys.Control && (Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.Shift)
 		{
-			if (sender is ListViewItem listViewitem)
+			if (sender is ListViewItem { DataContext: DivinityModData modData })
 			{
-				if (listViewitem.DataContext is DivinityModData modData)
+				foreach (var mod in EnumerateSelectionItems())
 				{
-					if (modData.IsActive)
-					{
-						foreach (var x in ViewModel.ActiveMods)
-						{
-							if (x != modData && x.IsSelected) x.IsSelected = false;
-						}
-					}
-					else
-					{
-						foreach (var x in ViewModel.InactiveMods)
-						{
-							if (x != modData && x.IsSelected) x.IsSelected = false;
-						}
-					}
+					if (!ReferenceEquals(mod, modData) && mod.IsSelected) mod.IsSelected = false;
 				}
 			}
 		}
