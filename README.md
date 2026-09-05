@@ -83,12 +83,29 @@ Import and export previews show what will change. A Redux Modlist does not conta
 default because the recipient may have installed the same mod UUID from a different provider.
 When explicitly enabled, imported links replace the local source association for matching UUIDs.
 
-Private testers can also use **Generate Redux Database Contribution** to create a reviewable
-`.bg3redux-report`. Reports exclude profiles, load-order positions, settings, credentials, and
-private filesystem paths.
-
 **Back Up Active Mods to ZIP** always asks where to save the archive and reminds users to keep it
 private unless every included mod author permits redistribution.
+
+## Help improve offline mod recognition
+
+Redux includes a curated offline mod database that connects exact package fingerprints and
+reviewed module identities to their Nexus Mods projects. It helps Redux recognize existing
+installations without relying entirely on a live provider request. Matching is deliberately
+conservative: when the evidence is unclear, a mod remains **Local** instead of being assigned a
+potentially incorrect source.
+
+Use **Tools > Generate Redux Database Contribution...** to create a `.bg3redux-report` from your
+installed user mods. The report contains sanitized mod identity, known provider IDs, and exact PAK
+fingerprints that maintainers can review. It does **not** include mod packages, profiles, load-order
+positions, settings, API keys, or private filesystem paths, and generating it does not change your
+installation.
+
+Contributed reports make it possible to recognize more versions and releases accurately in future
+Redux builds, reducing the number of mods that need to be linked manually. If you are comfortable
+helping, send the generated report to the project maintainers through the
+[issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues). Reports are reviewed
+before anything is added to the bundled database; they are never imported automatically. Please
+share only the `.bg3redux-report`, not the original mod archives or `.pak` files.
 
 ## Themes and accessibility
 

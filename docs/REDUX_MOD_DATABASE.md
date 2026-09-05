@@ -45,7 +45,7 @@ dotnet run --project tools/ReduxModDatabaseTool -- fingerprint --file "C:\Mods\E
 See `tools/ReduxModDatabaseTool/README.md` for the guarded `add` workflow.
 
 Private tester builds can generate a privacy-limited `.bg3redux-report` from
-**Tools > Export Redux Database Contribution**. Reports omit absolute paths, load-order positions,
+**Tools > Generate Redux Database Contribution...**. Reports omit absolute paths, load-order positions,
 profile names, application settings, and credentials. Maintainers can audit and classify a report
 without changing the database:
 
