@@ -14,7 +14,9 @@ The first-run setup is also available from Help. Source linking, Mod Diagnostics
 load-order guidance begin disabled so each optional feature is explicitly enabled by the user.
 Returning users keep their saved choices. Theme, motion, and background effects preview live and
 return to their previous values if the window is dismissed. API keys and settings are stored only
-after **Save & Continue**. The setup does not change packages or load orders.
+after **Save & Continue**. Provider keys are masked and encrypted for the current Windows account;
+they are excluded from normal settings and diagnostic exports. The setup does not change packages
+or load orders.
 
 ## Source linking and online mod information
 

@@ -281,14 +281,14 @@
 												<ContentControl Width="15" Height="15" Margin="0,0,6,0" ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" />
 												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="Nexus Mods API key" />
 											</StackPanel>
-											<TextBox x:Name="NexusApiKeyTextBox" Height="30" ToolTip="Personal Nexus Mods API key used for mod information and update checks" />
+											<PasswordBox x:Name="NexusApiKeyTextBox" Height="30" ToolTip="Personal Nexus Mods API key used for mod information and update checks" />
 											</StackPanel>
 											<StackPanel Grid.Column="2">
 												<StackPanel Margin="1,0,0,4" Orientation="Horizontal">
 												<ContentControl Width="15" Height="15" Margin="0,0,6,0" ContentTemplate="{DynamicResource ModioPlatformIconTemplate}" />
 												<TextBlock Style="{StaticResource WelcomeChoiceTitleStyle}" Text="mod.io API key" />
 											</StackPanel>
-											<TextBox x:Name="ModioApiKeyTextBox" Height="30" ToolTip="Read-only mod.io API key used for mod information" />
+											<PasswordBox x:Name="ModioApiKeyTextBox" Height="30" ToolTip="Read-only mod.io API key used for mod information" />
 											</StackPanel>
 										</Grid>
 										<Grid Margin="24,10,0,0">

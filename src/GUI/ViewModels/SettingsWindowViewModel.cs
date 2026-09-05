@@ -279,7 +279,8 @@ public class SettingsWindowViewModel : ReactiveObject
 		{
 			_jsonConfigExportSettings.DefaultValueHandling = ExtenderSettings.ExportDefaultExtenderSettings ? DefaultValueHandling.Include : DefaultValueHandling.Ignore;
 			var contents = JsonConvert.SerializeObject(Settings.ExtenderSettings, _jsonConfigExportSettings);
-			File.WriteAllText(outputFile, contents);
+			AtomicFileWriter.WriteAllText(outputFile, contents, validateTemporaryFile: temporaryPath =>
+				JsonConvert.DeserializeObject<ScriptExtenderSettings>(File.ReadAllText(temporaryPath), _jsonConfigExportSettings) != null);
 			DivinityApp.Log($"ExtenderUpdaterSettings differs? {ExtenderUpdaterSettings == Settings.ExtenderUpdaterSettings}");
 			ShowAlert($"Saved Script Extender settings to '{outputFile}'", AlertType.Success, 20);
 			return true;
@@ -299,7 +300,8 @@ public class SettingsWindowViewModel : ReactiveObject
 		{
 			_jsonConfigExportSettings.DefaultValueHandling = ExtenderSettings.ExportDefaultExtenderSettings ? DefaultValueHandling.Include : DefaultValueHandling.Ignore;
 			var contents = JsonConvert.SerializeObject(ExtenderUpdaterSettings, _jsonConfigExportSettings);
-			File.WriteAllText(outputFile, contents);
+			AtomicFileWriter.WriteAllText(outputFile, contents, validateTemporaryFile: temporaryPath =>
+				JsonConvert.DeserializeObject<ScriptExtenderUpdateConfig>(File.ReadAllText(temporaryPath), _jsonConfigExportSettings) != null);
 
 			Main.UpdateExtender(true);
 

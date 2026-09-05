@@ -1111,10 +1111,8 @@ public static partial class DivinityModDataLoader
 		string contents = JsonConvert.SerializeObject(order, Newtonsoft.Json.Formatting.Indented);
 
 		var buffer = Encoding.UTF8.GetBytes(contents);
-		using (var fs = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None, buffer.Length, false))
-		{
-			fs.Write(buffer, 0, buffer.Length);
-		}
+		AtomicFileWriter.WriteAllBytes(outputFilePath, buffer, validateTemporaryFile: temporaryPath =>
+			DivinityJsonUtils.SafeDeserializeFromPath<DivinityLoadOrder>(temporaryPath) != null);
 
 		order.FilePath = outputFilePath;
 
@@ -1129,10 +1127,9 @@ public static partial class DivinityModDataLoader
 		string contents = JsonConvert.SerializeObject(order, Newtonsoft.Json.Formatting.Indented);
 
 		var buffer = Encoding.UTF8.GetBytes(contents);
-		using (var fs = new FileStream(outputFilePath, FileMode.Create, FileAccess.Write, FileShare.None, buffer.Length, true))
-		{
-			await fs.WriteAsync(buffer);
-		}
+		await AtomicFileWriter.WriteAllBytesAsync(outputFilePath, buffer,
+			validateTemporaryFile: temporaryPath =>
+				DivinityJsonUtils.SafeDeserializeFromPath<DivinityLoadOrder>(temporaryPath) != null);
 
 		order.FilePath = outputFilePath;
 
@@ -1423,9 +1420,9 @@ public static partial class DivinityModDataLoader
 		string contents = JsonConvert.SerializeObject(settings, Newtonsoft.Json.Formatting.Indented);
 
 		var buffer = Encoding.UTF8.GetBytes(contents);
-		using var fs = new System.IO.FileStream(settingsFilePath, System.IO.FileMode.Create,
-			System.IO.FileAccess.Write, System.IO.FileShare.None, buffer.Length, true);
-		await fs.WriteAsync(buffer, 0, buffer.Length);
+		await AtomicFileWriter.WriteAllBytesAsync(settingsFilePath, buffer,
+			validateTemporaryFile: temporaryPath =>
+				DivinityJsonUtils.SafeDeserializeFromPath<Dictionary<string, object>>(temporaryPath) != null);
 		DivinityApp.Log($"Updated {settingsFilePath}");
 		return true;
 	}

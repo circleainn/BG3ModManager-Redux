@@ -209,33 +209,6 @@ public static class DivinityFileUtils
 		}
 	}
 
-	private static Task WritePackageAsync(PackageWriter writer, string outputPath, CancellationToken token)
-	{
-		var task = Task.Run(async () =>
-		{
-			// execute actual operation in child task
-			var childTask = Task.Factory.StartNew(() =>
-			{
-				try
-				{
-					writer.Write();
-				}
-				catch (Exception)
-				{
-					// ignored because an exception on a cancellation request 
-					// cannot be avoided if the stream gets disposed afterwards 
-				}
-			}, TaskCreationOptions.AttachedToParent);
-
-			var awaiter = childTask.GetAwaiter();
-			while (!awaiter.IsCompleted)
-			{
-				await Task.Delay(0, token);
-			}
-		}, token);
-
-		return task;
-	}
 	#endregion
 
 	public static bool ExtractPackages(IEnumerable<string> pakPaths, string outputDirectory)
@@ -283,38 +256,30 @@ public static class DivinityFileUtils
 
 	public static async Task<bool> ExtractPackageAsync(string pakPath, string outputDirectory, CancellationToken token)
 	{
-		var task = await Task.Run(async () =>
+		try
 		{
-			// execute actual operation in child task
-			var childTask = Task.Factory.StartNew(() =>
+			return await Task.Run(() =>
 			{
-				try
-				{
-					var packager = new Packager();
-					packager.UncompressPackage(pakPath, outputDirectory, null);
-					return true;
-				}
-				catch (Exception) { return false; }
-			}, TaskCreationOptions.AttachedToParent);
-
-			var awaiter = childTask.GetAwaiter();
-			while (!awaiter.IsCompleted)
-			{
-				await Task.Delay(0, token);
-			}
-			return childTask.Result;
-		}, token);
-
-		return task;
+				token.ThrowIfCancellationRequested();
+				var packager = new Packager();
+				packager.UncompressPackage(pakPath, outputDirectory, null);
+				token.ThrowIfCancellationRequested();
+				return true;
+			}, token);
+		}
+		catch (OperationCanceledException) { throw; }
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Error extracting package '{pakPath}': {ex}");
+			return false;
+		}
 	}
 
 	public static bool WriteTextFile(string path, string contents)
 	{
 		try
 		{
-			var buffer = Encoding.UTF8.GetBytes(contents);
-			using var fs = new System.IO.FileStream(path, System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None, buffer.Length, false);
-			fs.Write(buffer, 0, buffer.Length);
+			AtomicFileWriter.WriteAllText(path, contents);
 			return true;
 		}
 		catch (Exception ex)
@@ -328,9 +293,7 @@ public static class DivinityFileUtils
 	{
 		try
 		{
-			var buffer = Encoding.UTF8.GetBytes(contents);
-			using var fs = new System.IO.FileStream(path, System.IO.FileMode.Create, System.IO.FileAccess.Write, System.IO.FileShare.None, buffer.Length, true);
-			await fs.WriteAsync(buffer, 0, buffer.Length);
+			await AtomicFileWriter.WriteAllBytesAsync(path, Encoding.UTF8.GetBytes(contents));
 			return true;
 		}
 		catch (Exception ex)
@@ -360,9 +323,7 @@ public static class DivinityFileUtils
 	{
 		try
 		{
-			using var sourceFile = new FileStream(copyFromPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
-			using var outputFile = File.Create(copyToPath, 128000, FileOptions.Asynchronous);
-			await sourceFile.CopyToAsync(outputFile, 128000, token); // 81920 default
+			await AtomicFileWriter.CopyFileAsync(copyFromPath, copyToPath, cancellationToken: token);
 			return true;
 		}
 		catch (Exception ex)

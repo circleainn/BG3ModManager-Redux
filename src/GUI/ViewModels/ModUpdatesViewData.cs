@@ -21,6 +21,9 @@ public struct CopyModUpdatesTask
 	public string DocumentsFolder;
 	public string ModPakFolder;
 	public int TotalMoved;
+	public int TotalFailed;
+	public bool WasCancelled;
+	public List<string> Errors;
 }
 
 public class ModUpdatesViewData : ReactiveObject
@@ -157,21 +160,36 @@ public class ModUpdatesViewData : ReactiveObject
 	private void CopyFilesProgress_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 	{
 		Unlocked = true;
-		DivinityApp.Log("Mod updating complete.");
+		var refresh = false;
 		try
 		{
+			if (e.Error != null) throw e.Error;
 			if (e.Result is CopyModUpdatesTask args)
 			{
 				JustUpdated = args.TotalMoved > 0;
+				refresh = JustUpdated;
+				var status = args.WasCancelled ? "cancelled" : "complete";
+				DivinityApp.Log($"Mod updating {status}: {args.TotalMoved} succeeded, {args.TotalFailed} failed.");
+				if (args.TotalFailed > 0)
+				{
+					var names = args.Errors?.Where(message => !String.IsNullOrWhiteSpace(message)).Take(3).ToArray()
+						?? Array.Empty<string>();
+					var details = names.Length > 0 ? $"\n{String.Join("\n", names)}" : String.Empty;
+					_mainWindowViewModel.ShowAlert(
+						$"{args.TotalFailed} mod file{(args.TotalFailed == 1 ? "" : "s")} could not be updated. " +
+						$"{args.TotalMoved} completed successfully.{details}",
+						AlertType.Danger,
+						30);
+				}
 			}
 		}
 		catch (Exception ex)
 		{
 			string message = $"Error copying mods: {ex}";
 			DivinityApp.Log(message);
-			MainWindow.Self.AlertBar.SetDangerAlert(message);
+			_mainWindowViewModel.ShowAlert(message, AlertType.Danger, 30);
 		}
-		CloseView?.Invoke(true);
+		CloseView?.Invoke(refresh);
 	}
 
 	private void CopyFilesProgress_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
@@ -179,70 +197,60 @@ public class ModUpdatesViewData : ReactiveObject
 		ProgressDialog dialog = (ProgressDialog)sender;
 		if (e.Argument is CopyModUpdatesTask args)
 		{
-			var totalWork = args.NewFilesToMove.Count + args.UpdatesToMove.Count;
+			var workItems = args.NewFilesToMove
+				.Select(file => (File: file, IsUpdate: false))
+				.Concat(args.UpdatesToMove.Select(file => (File: file, IsUpdate: true)))
+				.ToList();
+			var totalWork = workItems.Count;
+			var processed = 0;
 			string backupFolder = Path.Combine(_mainWindowViewModel.PathwayData.AppDataGameFolder, "Mods_Old_ModManager");
 			Directory.CreateDirectory(backupFolder);
-			if (args.NewFilesToMove.Count > 0)
-			{
-				DivinityApp.Log($"Copying '{args.NewFilesToMove.Count}' new mod(s) to the local mods folder.");
+			DivinityApp.Log($"Installing {args.NewFilesToMove.Count} new mod file(s) and {args.UpdatesToMove.Count} update file(s).");
 
-				foreach (string file in args.NewFilesToMove)
+			foreach (var workItem in workItems)
+			{
+				if (dialog.CancellationPending)
 				{
-					if (e.Cancel) return;
-					var fileName = Path.GetFileName(file);
-					dialog.ReportProgress(args.TotalMoved / totalWork, $"Copying '{fileName}'...", null);
-					try
+					args.WasCancelled = true;
+					break;
+				}
+
+				var fileName = Path.GetFileName(workItem.File);
+				dialog.ReportProgress(
+					totalWork == 0 ? 0 : (int)Math.Round(processed * 100d / totalWork),
+					$"{(workItem.IsUpdate ? "Updating" : "Installing")} '{fileName}'...",
+					null);
+				try
+				{
+					var destinationPath = Path.Combine(args.ModPakFolder, fileName);
+					string backupPath = null;
+					if (File.Exists(destinationPath))
 					{
-						var destinationPath = Path.Combine(args.ModPakFolder, fileName);
-						if (File.Exists(destinationPath))
-						{
-							var backupPath = GetUniqueBackupPath(backupFolder, destinationPath);
-							File.Copy(destinationPath, backupPath, false);
-							DivinityApp.Log($"Backed up installed mod '{destinationPath}' to '{backupPath}'.");
-						}
-						File.Copy(file, destinationPath, true);
+						backupPath = GetUniqueBackupPath(backupFolder, destinationPath);
 					}
-					catch (Exception ex)
+					AtomicFileWriter.CopyFile(workItem.File, destinationPath, backupPath);
+					if (backupPath != null)
 					{
-						string message = $"Error copying '{fileName}':\n{ex}";
-						DivinityApp.Log(message);
-						MainWindow.Self.AlertBar.SetDangerAlert(message);
-						dialog.ReportProgress(args.TotalMoved / totalWork, message, null);
+						DivinityApp.Log($"Replaced '{destinationPath}' and saved the previous file to '{backupPath}'.");
 					}
 					args.TotalMoved++;
 				}
+				catch (Exception ex)
+				{
+					args.TotalFailed++;
+					args.Errors ??= new List<string>();
+					args.Errors.Add($"{fileName}: {ex.Message}");
+					DivinityApp.Log($"Could not safely {(workItem.IsUpdate ? "update" : "install")} '{fileName}':\n{ex}");
+				}
+
+				processed++;
+				dialog.ReportProgress(
+					totalWork == 0 ? 100 : (int)Math.Round(processed * 100d / totalWork),
+					$"Processed '{fileName}'.",
+					null);
 			}
 
-			if (args.UpdatesToMove.Count > 0)
-			{
-				DivinityApp.Log($"Copying '{args.UpdatesToMove.Count}' mod update(s) to the local mods folder.");
-				foreach (string file in args.UpdatesToMove)
-				{
-					if (e.Cancel) return;
-					string baseName = Path.GetFileName(file);
-					try
-					{
-						var destinationPath = Path.Combine(args.ModPakFolder, baseName);
-						if (File.Exists(destinationPath))
-						{
-							var backupPath = GetUniqueBackupPath(backupFolder, destinationPath);
-							File.Copy(destinationPath, backupPath, false);
-							DivinityApp.Log($"Backed up installed mod '{destinationPath}' to '{backupPath}'.");
-						}
-						DivinityApp.Log($"Moving mod into mods folder: '{file}'.");
-						File.Copy(file, destinationPath, true);
-					}
-					catch (Exception ex)
-					{
-						var message = $"Could not back up and update '{baseName}'. The installed mod was left unchanged.\n{ex}";
-						DivinityApp.Log(message);
-						MainWindow.Self.AlertBar.SetDangerAlert(message);
-						dialog.ReportProgress(args.TotalMoved / totalWork, message, null);
-					}
-					dialog.ReportProgress(args.TotalMoved / totalWork, $"Copying '{baseName}'...", null);
-					args.TotalMoved++;
-				}
-			}
+			e.Result = args;
 		}
 
 	}

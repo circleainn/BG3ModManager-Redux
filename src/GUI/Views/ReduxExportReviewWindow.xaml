@@ -6,12 +6,12 @@
 	xmlns:models="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
 	Title="Review Export"
-	Width="680" MinWidth="600" MaxWidth="760" MaxHeight="760"
+	Width="680" Height="620" MinWidth="600" MinHeight="420" MaxWidth="760"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="{DynamicResource Redux.FontWeight.Body}"
 	ResizeMode="CanResize"
-	SizeToContent="Height"
+	SizeToContent="Manual"
 	ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner"
 	WindowStyle="SingleBorderWindow"
@@ -108,7 +108,7 @@
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 
-				<ScrollViewer MaxHeight="610" VerticalScrollBarVisibility="Auto">
+				<ScrollViewer VerticalScrollBarVisibility="Auto">
 					<StackPanel Margin="0,0,6,0">
 						<Grid>
 							<Grid.ColumnDefinitions>

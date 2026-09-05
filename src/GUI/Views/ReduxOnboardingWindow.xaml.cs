@@ -39,8 +39,8 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 	public bool SelectedGuidanceEnabled => SelectedDiagnosticsEnabled && GuidanceCheckBox.IsChecked == true;
 	public bool SelectedReduceMotion => ReduceMotionCheckBox.IsChecked == true;
 	public bool SelectedDisableBackgroundEffects => DisableBackgroundEffectsCheckBox.IsChecked == true;
-	public string SelectedNexusApiKey => NexusApiKeyTextBox.Text?.Trim() ?? String.Empty;
-	public string SelectedModioApiKey => ModioApiKeyTextBox.Text?.Trim() ?? String.Empty;
+	public string SelectedNexusApiKey => NexusApiKeyTextBox.Password?.Trim() ?? String.Empty;
+	public string SelectedModioApiKey => ModioApiKeyTextBox.Password?.Trim() ?? String.Empty;
 
 	public ReduxOnboardingWindow(Window owner, DivinityModManagerSettings settings)
 	{
@@ -72,8 +72,8 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 			SourceIntegrationsCheckBox.IsChecked = !settings.LocalOnlyMode;
 			DiagnosticsCheckBox.IsChecked = settings.EnableModHealth;
 			GuidanceCheckBox.IsChecked = settings.EnableModHealth && settings.EnableLoadOrderAdvisor;
-			NexusApiKeyTextBox.Text = settings.NexusModsAPIKey ?? String.Empty;
-			ModioApiKeyTextBox.Text = settings.ModioAPIKey ?? String.Empty;
+			NexusApiKeyTextBox.Password = settings.NexusModsAPIKey ?? String.Empty;
+			ModioApiKeyTextBox.Password = settings.ModioAPIKey ?? String.Empty;
 			ReduceMotionCheckBox.IsChecked = settings.ReduceMotion;
 			DisableBackgroundEffectsCheckBox.IsChecked = settings.DisableBackgroundEffects;
 		}

@@ -37,6 +37,8 @@ ways to organize, review, and share mod setups.
 - Manage active and inactive mods with the original BG3MM drag-and-drop workflow.
 - Use profiles, campaigns, saved orders, filters, configurable columns, and a compact optional
   Quick Access menu (`Ctrl+Q`) with searchable actions and familiar alternate terms.
+- Working changes remain separate from the selected saved order until **Save** is pressed. Redux
+  warns before closing with unsaved load-order changes.
 - Assign categories to one mod or a selection, then click category pills to filter both lists.
 - Add separators that remember their placement and collapsed state. Closed separators keep their
   existing contents sealed and move with those mods as one group; newly positioned mods remain
@@ -101,6 +103,8 @@ private unless every included mod author permits redistribution.
 The first launch opens one setup window for choosing a theme, optional source linking and
 diagnostics, API keys, and accessibility options. Optional features begin disabled and can be
 enabled there or later in Preferences. The setup can be reopened from Help.
+Provider API keys are masked in the interface, protected for the current Windows account, and kept
+out of ordinary settings files and diagnostic exports.
 
 ## Built on BG3 Mod Manager
 

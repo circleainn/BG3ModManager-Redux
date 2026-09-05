@@ -94,7 +94,7 @@
 	</adonisUi:AdonisWindow.Resources>
 	<Grid>
 		<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-		<controls:ReduxWindowTitleBar IconData="{DynamicResource Redux.Icon.ColorPalette}" />
+		<controls:ReduxWindowTitleBar x:Name="DialogTitleBar" IconData="{DynamicResource Redux.Icon.ColorPalette}" />
 	<Border Grid.Row="1" Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="0,1,0,0">
 	<Grid>
 		<Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
@@ -322,7 +322,7 @@
 		</Border>
 		<TextBlock x:Name="ColorFieldLabel" Grid.Row="5" Margin="0,8,0,5" FontWeight="SemiBold"
 			Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Color" />
-		<Border Grid.Row="6" Padding="12" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+		<Border x:Name="ColorEditorCard" Grid.Row="6" Padding="12" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 			BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 			<Grid>
 				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="14" /><RowDefinition Height="Auto" /><RowDefinition Height="14" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>

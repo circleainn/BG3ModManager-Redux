@@ -710,6 +710,25 @@ public partial class SettingsWindow : SettingsWindowBase
 					break;
 
 				case TypeCode.String:
+					if (IsSourceIntegrationSetting(prop.Property.Name))
+					{
+						var passwordBox = new PasswordBox
+						{
+							ToolTip = !isBlankTooltip ? prop.Attribute.Tooltip : null,
+							HorizontalAlignment = HorizontalAlignment.Stretch,
+							VerticalAlignment = VerticalAlignment.Center,
+							VerticalContentAlignment = VerticalAlignment.Center,
+							Password = prop.Property.GetValue(source) as string ?? String.Empty
+						};
+						passwordBox.PasswordChanged += (_, _) =>
+							prop.Property.SetValue(source, passwordBox.Password?.Trim() ?? String.Empty);
+						targetGrid.Children.Add(passwordBox);
+						Grid.SetRow(passwordBox, targetRow);
+						Grid.SetColumn(passwordBox, 1);
+						createdObject = passwordBox;
+						break;
+					}
+
 					var utb = new UnfocusableTextBox
 					{
 						ToolTip = !isBlankTooltip ? prop.Attribute.Tooltip : null,

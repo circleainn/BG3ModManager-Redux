@@ -64,14 +64,15 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool LaunchDX11 { get; set; }
 
 	[DefaultValue("")]
-	// REDUX RELEASE BLOCKER: Before public release, register with Nexus Mods, obtain an SSO application slug,
-	// replace the personal API key testing flow with browser SSO, and re-review API usage/rate limits.
-	[SettingsEntry("Nexus Mods API key", "Personal key used for mod information and update checks. It is stored in Data/settings.json and can be revoked from your Nexus Mods account.")]
+	// Prefer browser SSO once Redux has a registered Nexus Mods application slug.
+	[SettingsEntry("Nexus Mods API key", "Personal key used for mod information and update checks. It is protected for your current Windows account.")]
 	[DataMember, Reactive] public string NexusModsAPIKey { get; set; }
+	public bool ShouldSerializeNexusModsAPIKey() => false;
 
 	[DefaultValue("")]
-	[SettingsEntry("mod.io API key", "Read-only key used for mod information. It is stored in Data/settings.json.")]
+	[SettingsEntry("mod.io API key", "Read-only key used for mod information. It is protected for your current Windows account.")]
 	[DataMember, Reactive] public string ModioAPIKey { get; set; }
+	public bool ShouldSerializeModioAPIKey() => false;
 
 	[DefaultValue(false)]
 	[SettingsEntry("Disable online mod information", "Do not contact Nexus Mods or mod.io. Existing links and API keys are kept for later.")]

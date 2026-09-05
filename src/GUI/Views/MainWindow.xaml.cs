@@ -425,7 +425,32 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		UpdateColorTheme(theme, customTheme);
 	}
 
-	private void OnClosing()
+	private bool _closeConfirmed;
+
+	private bool ConfirmDiscardUnsavedLoadOrder()
+	{
+		if (_closeConfirmed || ViewModel?.HasUnsavedLoadOrderChanges != true) return true;
+
+		var result = ReduxMessageBox.Show(
+			this,
+			"You have unsaved load-order changes. Close Redux and discard them?",
+			"Discard Unsaved Changes?",
+			System.Windows.MessageBoxButton.YesNo,
+			System.Windows.MessageBoxImage.Warning,
+			System.Windows.MessageBoxResult.No);
+		if (result != System.Windows.MessageBoxResult.Yes) return false;
+
+		ViewModel.DiscardUnsavedLoadOrderPresentationChanges();
+		_closeConfirmed = true;
+		return true;
+	}
+
+	private void MainWindow_Closing(object sender, CancelEventArgs e)
+	{
+		if (!ConfirmDiscardUnsavedLoadOrder()) e.Cancel = true;
+	}
+
+	private void OnClosed()
 	{
 		if (ViewModel.Settings.SaveWindowLocation) UpdateWindowSettings();
 		ViewModel.SaveSettings();
@@ -435,7 +460,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 	private void AutoUpdater_OnClosing()
 	{
 		ViewModel.Settings.LastUpdateCheck = DateTimeOffset.Now.ToUnixTimeSeconds();
-		OnClosing();
+		if (ConfirmDiscardUnsavedLoadOrder()) Close();
 	}
 
 	private WindowInteropHelper _wih;
@@ -514,7 +539,8 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 		this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
 
-		Closed += (o, e) => OnClosing();
+		Closing += MainWindow_Closing;
+		Closed += (o, e) => OnClosed();
 		AutoUpdater.ApplicationExitEvent += AutoUpdater_OnClosing;
 
 		DataContext = ViewModel;

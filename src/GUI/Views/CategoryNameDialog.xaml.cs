@@ -92,6 +92,29 @@ public partial class CategoryNameDialog : AdonisWindow
 		Height = Math.Min(620, MaxHeight);
 	}
 
+	public void ConfigureNameOnly(string title, string heading, string helperText, string confirmText)
+	{
+		Title = title;
+		DialogHeading.Text = heading;
+		DialogHelperText.Text = helperText;
+		DescriptionEditorPanel.Visibility = Visibility.Collapsed;
+		CategoryPreviewPanel.Visibility = Visibility.Collapsed;
+		SeparatorPreviewPanel.Visibility = Visibility.Collapsed;
+		ColorFieldLabel.Visibility = Visibility.Collapsed;
+		ColorEditorCard.Visibility = Visibility.Collapsed;
+		ResetToDefaultButton.Visibility = Visibility.Collapsed;
+		ConfirmButtonText.Text = confirmText;
+		ConfirmButtonIcon.StrokeData = FindResource("Redux.Icon.Save") as Geometry;
+		DialogTitleBar.IconData = FindResource("Redux.Icon.Duplicate") as Geometry;
+		Width = 520;
+		MinWidth = 440;
+		MinHeight = 220;
+		MaxHeight = 320;
+		Height = Double.NaN;
+		SizeToContent = SizeToContent.Height;
+		ResizeMode = ResizeMode.NoResize;
+	}
+
 	public CategoryNameDialog(string categoryName = "", string color = "#8A6AF1", bool canEditName = true,
 		IEnumerable<string> savedColors = null, bool visualDividerMode = false, string iconId = "",
 		bool canResetToDefault = false, bool useCategoryColorsForHover = false, string description = "",

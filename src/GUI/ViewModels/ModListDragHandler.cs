@@ -61,7 +61,30 @@ public class ModListDragHandler : DefaultDragHandler
 
 	private IDragInfo _lastDragInfo;
 
-	private static IDisposable _stopDraggingFallbackTask = null;
+	private IDisposable _stopDraggingFallbackTask;
+
+	private void StopDragTracking()
+	{
+		_viewModel.IsDragging = false;
+		_stopDraggingFallbackTask?.Dispose();
+		_stopDraggingFallbackTask = null;
+	}
+
+	private void ScheduleStopDraggingFallback()
+	{
+		_stopDraggingFallbackTask?.Dispose();
+		_stopDraggingFallbackTask = RxApp.MainThreadScheduler.Schedule(TimeSpan.FromSeconds(1), () =>
+		{
+			if (Mouse.LeftButton == MouseButtonState.Released)
+			{
+				StopDragTracking();
+			}
+			else
+			{
+				ScheduleStopDraggingFallback();
+			}
+		});
+	}
 
 	public override void StartDrag(IDragInfo dragInfo)
 	{
@@ -106,11 +129,7 @@ public class ModListDragHandler : DefaultDragHandler
 			if (dragInfo.Data != null)
 			{
 				_viewModel.IsDragging = true;
-				_stopDraggingFallbackTask?.Dispose();
-				_stopDraggingFallbackTask = RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMinutes(1), () =>
-				{
-					_viewModel.IsDragging = false;
-				});
+				ScheduleStopDraggingFallback();
 			}
 			dragInfo.Effects = dragInfo.Data != null ? DragDropEffects.Copy | DragDropEffects.Move : DragDropEffects.None;
 		}
@@ -118,8 +137,7 @@ public class ModListDragHandler : DefaultDragHandler
 
 	public override void DragDropOperationFinished(DragDropEffects operationResult, IDragInfo dragInfo)
 	{
-		_viewModel.IsDragging = false;
-		_stopDraggingFallbackTask?.Dispose();
+		StopDragTracking();
 	}
 
 	public override bool CanStartDrag(IDragInfo dragInfo)
@@ -161,19 +179,18 @@ public class ModListDragHandler : DefaultDragHandler
 
 	public override void DragCancelled()
 	{
-		_viewModel.IsDragging = false;
+		StopDragTracking();
 		if (_lastDragInfo != null)
 		{
 			_lastDragInfo.Effects = DragDropEffects.None;
 		}
-		_stopDraggingFallbackTask?.Dispose();
 	}
 
 	public override bool TryCatchOccurredException(Exception exception)
 	{
+		StopDragTracking();
 		if (exception is COMException)
 		{
-			DragCancelled();
 			return true;
 		}
 		return false;

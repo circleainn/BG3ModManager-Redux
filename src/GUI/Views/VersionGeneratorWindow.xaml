@@ -10,9 +10,9 @@
 	xmlns:xc="http://schemas.xceed.com/wpf/xaml/toolkit"
 	Title="Version Generator"
 	Width="620"
-	Height="430"
+	Height="480"
 	MinWidth="560"
-	MinHeight="400"
+	MinHeight="450"
 	ResizeMode="CanResize"
 	WindowStyle="SingleBorderWindow"
 	Template="{DynamicResource ReduxWindowTemplate}"
@@ -114,6 +114,8 @@
 						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="Major" />
 						<xc:ULongUpDown x:Name="MajorUpDown"
 							HorizontalAlignment="Stretch"
+							MinHeight="{DynamicResource Redux.ControlHeight.Standard}"
+							VerticalContentAlignment="Center"
 							Maximum="127"
 							Minimum="0" />
 					</StackPanel>
@@ -121,6 +123,8 @@
 						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="Minor" />
 						<xc:ULongUpDown x:Name="MinorUpDown"
 							HorizontalAlignment="Stretch"
+							MinHeight="{DynamicResource Redux.ControlHeight.Standard}"
+							VerticalContentAlignment="Center"
 							Maximum="127"
 							Minimum="0" />
 					</StackPanel>
@@ -128,6 +132,8 @@
 						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="Revision" />
 						<xc:ULongUpDown x:Name="RevisionUpDown"
 							HorizontalAlignment="Stretch"
+							MinHeight="{DynamicResource Redux.ControlHeight.Standard}"
+							VerticalContentAlignment="Center"
 							Maximum="65536"
 							Minimum="0" />
 					</StackPanel>
@@ -135,6 +141,8 @@
 						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="Build" />
 						<xc:ULongUpDown x:Name="BuildUpDown"
 							HorizontalAlignment="Stretch"
+							MinHeight="{DynamicResource Redux.ControlHeight.Standard}"
+							VerticalContentAlignment="Center"
 							Maximum="2147483647"
 							Minimum="0" />
 					</StackPanel>

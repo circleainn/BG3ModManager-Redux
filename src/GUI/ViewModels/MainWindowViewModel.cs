@@ -84,6 +84,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private const string StartupLoadOrderWarningKey = "load-order-mod-warning";
 	private const string StartupRestoreLoadOrderPromptKey = "restore-reset-load-order";
 	private const string QuickSaveOrderName = "Current Order";
+	private const string ProviderCredentialFileName = "provider-credentials.dat";
 	private readonly StartupNotificationQueue _startupNotifications = new();
 
 	protected readonly SourceCache<DivinityModData, string> mods = new(mod => mod.UUID);
@@ -178,6 +179,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private readonly ObservableCollectionExtended<ModDiagnosticFindingGroupViewModel> _activeDiagnosticFindingGroupItems = new();
 	private IReadOnlyList<DivinityModData> _lastDetectedDuplicateMods = Array.Empty<DivinityModData>();
 	private IDisposable _modHealthRefreshTask;
+	private readonly SemaphoreSlim _modHealthAnalysisLock = new(1, 1);
+	private int _modHealthRefreshVersion;
 	private string _lastModHealthDiagnosticSignature = String.Empty;
 	private string _lastLoadOrderAdvisorDiagnosticSignature;
 	private string _lastOptionalModuleDiagnosticSignature;
@@ -191,6 +194,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public ObservableCollectionExtended<DivinityModData> DisplayInactiveMods { get; } = new();
 	private bool _updatingVisualModLists;
 	private IDisposable _refreshVisualDividersTask;
+	private List<ModListVisualDividerData> _savedVisualDividerBaseline;
 
 	private readonly ReadOnlyObservableCollection<DivinityModData> _forceLoadedMods;
 	public ReadOnlyObservableCollection<DivinityModData> ForceLoadedMods => _forceLoadedMods;
@@ -298,6 +302,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public List<DivinityLoadOrder> SavedModOrderList { get; set; } = new List<DivinityLoadOrder>();
 
 	private bool HasExported { get; set; }
+	[Reactive] public bool HasUnsavedLoadOrderChanges { get; private set; }
 
 	[Reactive] public int LayoutMode { get; set; }
 	[Reactive] public bool CanSaveOrder { get; set; }
@@ -508,7 +513,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			int successes = 0;
 			Stream webStream = null;
-			Stream unzippedEntryStream = null;
 			try
 			{
 				await SetMainProgressTextAsync($"Downloading {PathwayData.ScriptExtenderLatestReleaseUrl}...");
@@ -517,21 +521,33 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				{
 					successes += 1;
 					await IncreaseMainProgressValueAsync(taskStepAmount, $"Extracting zip to {exeDir}...");
-					ZipArchive archive = new ZipArchive(webStream);
+					using ZipArchive archive = new ZipArchive(webStream, ZipArchiveMode.Read, true);
 					foreach (ZipArchiveEntry entry in archive.Entries)
 					{
 						if (MainProgressToken.IsCancellationRequested) break;
 						if (entry.Name.Equals(DivinityApp.EXTENDER_UPDATER_FILE, StringComparison.OrdinalIgnoreCase))
 						{
-							unzippedEntryStream = entry.Open(); // .Open will return a stream
-							using var fs = File.Create(dllDestination, 4096, System.IO.FileOptions.Asynchronous);
-							await unzippedEntryStream.CopyToAsync(fs, 4096, MainProgressToken.Token);
+							await AtomicFileWriter.WriteFileAsync(dllDestination, async (temporaryPath, cancellationToken) =>
+							{
+								await using var entryStream = entry.Open();
+								await using var output = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write,
+									FileShare.None, 4096, FileOptions.Asynchronous | FileOptions.WriteThrough);
+								await entryStream.CopyToAsync(output, 4096, cancellationToken);
+								await output.FlushAsync(cancellationToken);
+								output.Flush(true);
+							}, validateTemporaryFile: temporaryPath =>
+								new FileInfo(temporaryPath).Length == entry.Length,
+								cancellationToken: MainProgressToken.Token);
 							successes += 1;
 							break;
 						}
 					}
 					await IncreaseMainProgressValueAsync(taskStepAmount);
 				}
+			}
+			catch (OperationCanceledException)
+			{
+				DivinityApp.Log("Script Extender installation was cancelled.");
 			}
 			catch (Exception ex)
 			{
@@ -541,7 +557,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			{
 				await SetMainProgressTextAsync("Cleaning up...");
 				webStream?.Close();
-				unzippedEntryStream?.Close();
 				successes += 1;
 				await IncreaseMainProgressValueAsync(taskStepAmount);
 			}
@@ -962,7 +977,7 @@ Directory the zip will be extracted to:
 		var steamAppidPath = Path.Join(binFolder, "steam_appid.txt");
 		if (!File.Exists(steamAppidPath) && File.Exists(steamAppiDll))
 		{
-			File.WriteAllText(steamAppidPath, "1086940");
+			AtomicFileWriter.WriteAllText(steamAppidPath, "1086940");
 
 			if(Settings.SettingsWindowIsOpen && Services.Get<SettingsWindowViewModel>() is SettingsWindowViewModel settingsWindowViewModel)
 			{
@@ -1017,7 +1032,8 @@ Directory the zip will be extracted to:
 				Formatting = Formatting.Indented
 			};
 			var contents = JsonConvert.SerializeObject(Settings.ExtenderSettings, exportSettings);
-			File.WriteAllText(outputFile, contents);
+			AtomicFileWriter.WriteAllText(outputFile, contents, validateTemporaryFile: temporaryPath =>
+				JsonConvert.DeserializeObject<ScriptExtenderSettings>(File.ReadAllText(temporaryPath), exportSettings) != null);
 		}
 		catch (Exception ex)
 		{
@@ -1328,7 +1344,9 @@ Directory the zip will be extracted to:
 	private bool LoadSettings()
 	{
 		var loaded = false;
+		var migrateLegacyCredentials = false;
 		var settingsFile = DivinityApp.GetAppDirectory("Data", "settings.json");
+		var credentialFile = DivinityApp.GetAppDirectory("Data", ProviderCredentialFileName);
 		try
 		{
 			if (File.Exists(settingsFile))
@@ -1340,6 +1358,8 @@ Directory the zip will be extracted to:
 				if (settings != null)
 				{
 					loaded = true;
+					migrateLegacyCredentials = !String.IsNullOrWhiteSpace(settings.NexusModsAPIKey)
+						|| !String.IsNullOrWhiteSpace(settings.ModioAPIKey);
 					Settings.SetFrom<DivinityModManagerSettings, ReactiveAttribute>(settings);
 					Settings.ExtenderSettings.SetFrom(settings.ExtenderSettings);
 					Settings.ExtenderUpdaterSettings.SetFrom(settings.ExtenderUpdaterSettings);
@@ -1349,6 +1369,26 @@ Directory the zip will be extracted to:
 		catch (Exception ex)
 		{
 			ShowAlert($"Error loading settings at '{settingsFile}': {ex}", AlertType.Danger);
+		}
+
+		if (ProtectedCredentialStore.TryLoad(credentialFile, out var nexusModsApiKey, out var modioApiKey))
+		{
+			Settings.NexusModsAPIKey = nexusModsApiKey;
+			Settings.ModioAPIKey = modioApiKey;
+		}
+		else if (migrateLegacyCredentials)
+		{
+			try
+			{
+				ProtectedCredentialStore.Save(credentialFile, Settings.NexusModsAPIKey, Settings.ModioAPIKey);
+				_settingsContainLegacyCredentials = true;
+			}
+			catch (Exception ex)
+			{
+				migrateLegacyCredentials = false;
+				DivinityApp.Log($"Could not migrate provider credentials to protected storage: {ex}");
+				ShowAlert("Redux could not protect the saved provider API keys. The existing settings file was left unchanged.", AlertType.Danger, 30);
+			}
 		}
 
 		ReduxOnboardingPolicy.ApplyFirstRunDefaults(Settings);
@@ -1430,6 +1470,16 @@ Directory the zip will be extracted to:
 			SaveSettings();
 		}
 
+		if (migrateLegacyCredentials && SaveSettings())
+		{
+			// Ensure an older backup cannot retain the plaintext fields after migration.
+			var sanitizedContents = JsonConvert.SerializeObject(Settings, Formatting.Indented, _managerSerializerSettings);
+			AtomicFileWriter.WriteAllText(settingsFile + ".bak", sanitizedContents,
+				validateTemporaryFile: temporaryPath =>
+					JsonConvert.DeserializeObject<DivinityModManagerSettings>(
+						File.ReadAllText(temporaryPath), _managerSerializerSettings) != null);
+		}
+
 		if (!string.IsNullOrEmpty(Settings.GameExecutablePath) && Settings.LaunchType == LaunchGameType.Exe)
 		{
 			CreateSteamApiTextFile(Settings.GameExecutablePath.ToRealPath());
@@ -1466,6 +1516,7 @@ Directory the zip will be extracted to:
 		Converters = [ new Newtonsoft.Json.Converters.StringEnumConverter() ]
 	};
 	private string _lastSavedSettingsContents;
+	private bool _settingsContainLegacyCredentials;
 
 	public bool SaveSettings()
 	{
@@ -1474,13 +1525,17 @@ Directory the zip will be extracted to:
 
 		try
 		{
+			ProtectedCredentialStore.Save(
+				DivinityApp.GetAppDirectory("Data", ProviderCredentialFileName),
+				Settings.NexusModsAPIKey,
+				Settings.ModioAPIKey);
 			string contents = JsonConvert.SerializeObject(Settings, Formatting.Indented, _managerSerializerSettings);
 			if (!File.Exists(settingsFile) || !String.Equals(contents, _lastSavedSettingsContents, StringComparison.Ordinal))
 			{
 				#if DEBUG
 				DivinityApp.Log($"Saving settings to '{settingsFile}'");
 				#endif
-				var backupForReplace = backupFile;
+				var backupForReplace = _settingsContainLegacyCredentials ? null : backupFile;
 				if (File.Exists(settingsFile))
 				{
 					try
@@ -1501,6 +1556,7 @@ Directory the zip will be extracted to:
 					var temporaryContents = File.ReadAllText(temporaryPath);
 					return JsonConvert.DeserializeObject<DivinityModManagerSettings>(temporaryContents, _managerSerializerSettings) != null;
 				});
+				_settingsContainLegacyCredentials = false;
 				_lastSavedSettingsContents = contents;
 			}
 			Settings.CanSaveSettings = false;
@@ -2578,6 +2634,10 @@ Directory the zip will be extracted to:
 		this.CreateSnapshot(undo, redo);
 
 		redo();
+		if (newOrder != null && !File.Exists(newOrder.FilePath))
+		{
+			HasUnsavedLoadOrderChanges = true;
+		}
 	}
 
 	public void DeselectAllMods()
@@ -2664,6 +2724,7 @@ Directory the zip will be extracted to:
 			}
 
 			OrderJustLoaded = true;
+			HasUnsavedLoadOrderChanges = false;
 			return true;
 		}
 		finally
@@ -3584,6 +3645,7 @@ Directory the zip will be extracted to:
 			// Membership migration must run after both mod collections have finished
 			// loading; collection-change refreshes may all occur before initialization.
 			RefreshVisualDividers();
+			CaptureVisualDividerBaseline();
 			// Restore durable Nexus archive/manual provenance before attempting any
 			// automatic mod.io discovery. Known sources should never pass through a
 			// weaker provider state while startup metadata is loading.
@@ -3824,14 +3886,12 @@ Directory the zip will be extracted to:
 		bool result = false;
 		if (SelectedProfile != null && SelectedModOrder != null)
 		{
-			UpdateOrderFromActiveMods();
-
 			string outputDirectory = GetOrdersDirectory();
 
 			if (!Directory.Exists(outputDirectory)) Directory.CreateDirectory(outputDirectory);
 
 			var savesCurrentSnapshot = LoadOrderPersistencePolicy.RequiresSaveAs(SelectedModOrder);
-			var orderToSave = SelectedModOrder;
+			var orderToSave = CreateWorkingLoadOrderSnapshot();
 			string outputName = DivinityModDataLoader.MakeSafeFilename(
 				(savesCurrentSnapshot ? QuickSaveOrderName : SelectedModOrder.Name) + ".json",
 				'_');
@@ -3841,18 +3901,14 @@ Directory the zip will be extracted to:
 
 			if (savesCurrentSnapshot)
 			{
-				orderToSave = new DivinityLoadOrder
-				{
-					Name = QuickSaveOrderName,
-					FilePath = outputPath,
-					LastModifiedDate = DateTime.Now,
-					Order = SelectedModOrder.Order.Select(entry => entry.Clone()).ToList()
-				};
+				orderToSave.Name = QuickSaveOrderName;
+				orderToSave.FilePath = outputPath;
 			}
 			else if (String.IsNullOrWhiteSpace(SelectedModOrder.FilePath))
 			{
 				SelectedModOrder.FilePath = Path.Join(outputDirectory, outputName);
 				outputPath = SelectedModOrder.FilePath;
+				orderToSave.FilePath = outputPath;
 			}
 
 			try
@@ -3872,6 +3928,13 @@ Directory the zip will be extracted to:
 				{
 					TrackManagedLoadOrder(orderToSave);
 				}
+				else
+				{
+					SelectedModOrder.SetOrder(orderToSave);
+					SelectedModOrder.LastModifiedDate = orderToSave.LastModifiedDate;
+				}
+				HasUnsavedLoadOrderChanges = false;
+				CaptureVisualDividerBaseline();
 				if (!skipSaveConfirmation)
 				{
 					ShowAlert(
@@ -3908,7 +3971,6 @@ Directory the zip will be extracted to:
 
 	private void SaveLoadOrderAs()
 	{
-		UpdateOrderFromActiveMods();
 		var ordersDir = GetOrdersDirectory();
 		if (!Directory.Exists(ordersDir)) Directory.CreateDirectory(ordersDir);
 
@@ -3948,7 +4010,7 @@ Directory the zip will be extracted to:
 				FilePath = outputPath,
 				LastModifiedDate = DateTime.Now
 			};
-			tempOrder.Order.AddRange(SelectedModOrder.Order.Where(x => Mods.Any(y => y.UUID == x.UUID)));
+			tempOrder.Order.AddRange(CreateWorkingLoadOrderEntries());
 			if (DivinityModDataLoader.ExportLoadOrderToFile(outputPath, tempOrder))
 			{
 				ShowAlert($"Saved mod load order to '{outputPath}'", AlertType.Success, 10);
@@ -3969,6 +4031,78 @@ Directory the zip will be extracted to:
 			{
 				ShowAlert($"Failed to save mod load order to '{outputPath}'", AlertType.Danger);
 			}
+		}
+	}
+
+	private void SaveAsNewManagedLoadOrder()
+	{
+		if (SelectedProfile == null || SelectedModOrder == null)
+		{
+			ShowAlert("Select a profile and load order before saving.", AlertType.Warning, 12);
+			return;
+		}
+
+		var ordersDirectory = GetOrdersDirectory();
+		Directory.CreateDirectory(ordersDirectory);
+		const string baseName = "New Load Order";
+		var existingNames = ModOrderList
+			.Select(order => order.Name)
+			.Where(name => !String.IsNullOrWhiteSpace(name))
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var name = baseName;
+		var suffix = 2;
+		while (existingNames.Contains(name) || File.Exists(Path.Combine(ordersDirectory, name + ".json")))
+		{
+			name = $"{baseName} {suffix++}";
+		}
+
+		var nameDialog = new CategoryNameDialog(name) { Owner = Window };
+		nameDialog.ConfigureNameOnly(
+			"Save New Load Order",
+			"Name this load order",
+			"Save the current active mods as a new load order in Redux.",
+			"Save");
+		ReduxThemeService.Apply(nameDialog.Resources, Settings.ColorTheme, ReduxThemeService.GetActiveTheme(Settings));
+		if (ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(nameDialog, Window) != true) return;
+
+		var fileName = DivinityModDataLoader.MakeSafeFilename(nameDialog.CategoryName + ".json", '_');
+		name = Path.GetFileNameWithoutExtension(fileName);
+		var outputPath = Path.Combine(ordersDirectory, fileName);
+		if (existingNames.Contains(name) || File.Exists(outputPath))
+		{
+			ReduxMessageBox.Show(
+				Window,
+				$"A load order named '{name}' already exists. Choose a different name.",
+				"Load Order Already Exists",
+				MessageBoxButton.OK,
+				MessageBoxImage.Information,
+				MessageBoxResult.OK);
+			return;
+		}
+
+		var newOrder = CreateWorkingLoadOrderSnapshot();
+		newOrder.Name = name;
+		newOrder.FilePath = outputPath;
+		newOrder.LastModifiedDate = DateTime.Now;
+
+		try
+		{
+			if (!DivinityModDataLoader.ExportLoadOrderToFile(outputPath, newOrder))
+			{
+				ShowAlert("Redux could not save the new load order.", AlertType.Danger, 20);
+				return;
+			}
+
+			newOrder.LastModifiedDate = File.GetLastWriteTime(outputPath);
+			AddNewModOrder(newOrder);
+			HasUnsavedLoadOrderChanges = false;
+			CaptureVisualDividerBaseline();
+			ShowAlert($"Saved and selected '{name}'.", AlertType.Success, 12);
+		}
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Could not save a new managed load order to '{outputPath}':\n{ex}");
+			ShowAlert("Redux could not save the new load order.", AlertType.Danger, 20);
 		}
 	}
 
@@ -4128,13 +4262,13 @@ Directory the zip will be extracted to:
 		});
 	}
 
-	private async Task BackupCurrentLoadOrderAsync()
+	private async Task BackupCurrentLoadOrderAsync(IReadOnlyList<DivinityLoadOrderEntry> workingOrder)
 	{
 		var backupOrderPath = Path.Combine(GetOrdersDirectory(), DivinityApp.PATH_LAST_EXPORTED_NAME + ".json");
 		try
 		{
 			var backupOrder = new DivinityLoadOrder { Name = DivinityApp.PATH_LAST_EXPORTED_NAME, FilePath = backupOrderPath };
-			backupOrder.SetOrder(SelectedModOrder);
+			backupOrder.SetOrder(workingOrder.Select(entry => entry.Clone()));
 
 			await DivinityModDataLoader.ExportLoadOrderToFileAsync(backupOrderPath, backupOrder);
 			var updatedOrder = false;
@@ -4227,10 +4361,10 @@ Directory the zip will be extracted to:
 					Name = mod.GetDisplayName()
 				})
 				.ToArray();
-			var explicitlySelectedUuids = SelectedModOrder?.Order
-				.Where(entry => entry != null && !entry.Missing)
-				.Select(entry => entry.UUID)
-				.ToArray() ?? Array.Empty<string>();
+			var explicitlySelectedUuids = ActiveMods
+				.Where(mod => mod != null)
+				.Select(mod => mod.UUID)
+				.ToArray();
 			var comparison = LoadOrderComparisonService.Compare(
 				previousEntries,
 				proposedEntries,
@@ -4282,7 +4416,7 @@ Directory the zip will be extracted to:
 					.ToArray();
 			}
 			var currentExport = ModOrderList.FirstOrDefault(order => order.IsModSettings);
-			UpdateOrderFromActiveMods();
+			var workingOrder = CreateWorkingLoadOrderEntries();
 
 			var outputAdventureMod = SelectedAdventureMod;
 			if (outputAdventureMod == null)
@@ -4310,7 +4444,7 @@ Directory the zip will be extracted to:
 					}
 				}
 			}
-			var finalOrder = DivinityModDataLoader.BuildOutputList(SelectedModOrder.Order, mods.Items, Settings.AutoAddDependenciesWhenExporting, outputAdventureMod);
+			var finalOrder = DivinityModDataLoader.BuildOutputList(workingOrder, mods.Items, Settings.AutoAddDependenciesWhenExporting, outputAdventureMod);
 			if (!await ShowExportReviewAsync(previouslyExportedOrder, hasPreviousExport, finalOrder, outputAdventureMod))
 			{
 				DivinityApp.Log("Canceled Export to Game from Review Export.");
@@ -4357,11 +4491,11 @@ Directory the zip will be extracted to:
 
 			if (result)
 			{
-				await BackupCurrentLoadOrderAsync();
+				await BackupCurrentLoadOrderAsync(workingOrder);
 			}
 
 			var dir = GetLarianStudiosAppDataFolder();
-			if (SelectedModOrder.Order.Count > 0)
+			if (workingOrder.Count > 0)
 			{
 				await DivinityModDataLoader.UpdateLauncherPreferencesAsync(dir, false, false, true);
 			}
@@ -4388,19 +4522,22 @@ Directory the zip will be extracted to:
 						DivinityApp.Log($"Could not set active profile to '{SelectedProfile.Name}'");
 					}
 
-					//Update "Current" order
-					if (!SelectedModOrder.IsModSettings)
+					// Export is the one non-Save action that intentionally updates Current:
+					// it has just written this working order to the game's modsettings file.
+					currentExport?.SetOrder(workingOrder);
+					if (SelectedModOrder.IsModSettings)
 					{
-						this.ModOrderList.First(x => x.IsModSettings)?.SetOrder(SelectedModOrder.Order);
+						HasUnsavedLoadOrderChanges = false;
+						CaptureVisualDividerBaseline();
 					}
 
 					List<string> orderList = [];
 					if (SelectedAdventureMod != null) orderList.Add(SelectedAdventureMod.UUID);
-					orderList.AddRange(SelectedModOrder.Order.Select(x => x.UUID));
+					orderList.AddRange(workingOrder.Select(x => x.UUID));
 
 					SelectedProfile.ActiveMods.Clear();
 					SelectedProfile.ActiveMods.AddRange(orderList.Select(x => ProfileActiveModDataFromUUID(x)));
-					DisplayMissingMods(SelectedModOrder);
+					DisplayMissingMods(CreateWorkingLoadOrderSnapshot());
 
 					HasExported = true;
 
@@ -5018,24 +5155,26 @@ Directory the zip will be extracted to:
 		var success = false;
 		if (SelectedProfile != null && SelectedModOrder != null)
 		{
-			var sysFormat = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern.Replace("/", "-");
 			var gameDataFolder = Path.GetFullPath(Settings.GameDataPath);
 			var appDir = DivinityApp.GetAppDirectory();
-			var tempDir = Path.Combine(appDir, "_Temp_" + DateTime.Now.ToString(sysFormat + "_HH-mm-ss"));
+			var tempDir = Path.Combine(appDir, "_Temp_ActiveModBackup_" + Guid.NewGuid().ToString("N"));
 			Directory.CreateDirectory(tempDir);
 
-			var modPaks = new List<DivinityModData>(Mods.Where(x => SelectedModOrder.Order.Any(o => o.UUID == x.UUID)));
+			var workingOrder = CreateWorkingLoadOrderSnapshot();
+			var modPaks = new List<DivinityModData>(ActiveMods);
 			modPaks.AddRange(ForceLoadedMods.Where(x => !x.IsForceLoadedMergedMod));
 
 			var incrementProgress = 1d / modPaks.Count;
 
 			try
 			{
-				using (var stream = File.OpenWrite(outputPath))
+				await AtomicFileWriter.WriteFileAsync(outputPath, async (temporaryPath, cancellationToken) =>
+				{
+				using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
 				using (var zipWriter = WriterFactory.OpenWriter(stream, ArchiveType.Zip, _exportWriterOptions))
 				{
 					var orderFileName = DivinityModDataLoader.MakeSafeFilename(Path.Combine(SelectedModOrder.Name + ".json"), '_');
-					var contents = JsonConvert.SerializeObject(SelectedModOrder, Newtonsoft.Json.Formatting.Indented);
+					var contents = JsonConvert.SerializeObject(workingOrder, Newtonsoft.Json.Formatting.Indented);
 					using (var ms = new System.IO.MemoryStream())
 					{
 						using var swriter = new System.IO.StreamWriter(ms);
@@ -5047,11 +5186,11 @@ Directory the zip will be extracted to:
 
 					foreach (var mod in modPaks)
 					{
-						if (t.IsCancellationRequested) return false;
+						cancellationToken.ThrowIfCancellationRequested();
 						if (!mod.IsEditorMod)
 						{
 							var fileName = Path.GetFileName(mod.FilePath);
-							await WriteZipAsync(zipWriter, fileName, mod.FilePath, t);
+							await WriteZipAsync(zipWriter, fileName, mod.FilePath, cancellationToken);
 						}
 						else
 						{
@@ -5072,10 +5211,10 @@ Directory the zip will be extracted to:
 
 							DivinityApp.Log($"Creating package for editor mod '{mod.Name}' - '{outputPackage}'.");
 
-							if (await DivinityFileUtils.CreatePackageAsync(gameDataFolder, sourceFolders, outputPackage, t, DivinityFileUtils.IgnoredPackageFiles))
+							if (await DivinityFileUtils.CreatePackageAsync(gameDataFolder, sourceFolders, outputPackage, cancellationToken, DivinityFileUtils.IgnoredPackageFiles))
 							{
 								var fileName = Path.GetFileName(outputPackage);
-								await WriteZipAsync(zipWriter, fileName, outputPackage, t);
+								await WriteZipAsync(zipWriter, fileName, outputPackage, cancellationToken);
 								File.Delete(outputPackage);
 							}
 						}
@@ -5084,6 +5223,11 @@ Directory the zip will be extracted to:
 							MainProgressValue = ProgressMath.AddClamped(MainProgressValue, incrementProgress));
 					}
 				}
+				}, validateTemporaryFile: temporaryPath =>
+				{
+					using var archive = ZipFile.OpenRead(temporaryPath);
+					return archive.Entries.Count > 0;
+				}, cancellationToken: t);
 
 				RxApp.MainThreadScheduler.Schedule(() =>
 				{
@@ -5092,6 +5236,10 @@ Directory the zip will be extracted to:
 				});
 
 				success = true;
+			}
+			catch (OperationCanceledException)
+			{
+				DivinityApp.Log($"Active mod backup to '{outputPath}' was cancelled.");
 			}
 			catch (Exception ex)
 			{
@@ -5103,7 +5251,14 @@ Directory the zip will be extracted to:
 				});
 			}
 
-			Directory.Delete(tempDir);
+			try
+			{
+				if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
+			}
+			catch (Exception ex)
+			{
+				DivinityApp.Log($"Could not clean active-mod backup staging folder '{tempDir}': {ex}");
+			}
 		}
 		else
 		{
@@ -5118,35 +5273,12 @@ Directory the zip will be extracted to:
 
 	private static Task WriteZipAsync(IWriter writer, string entryName, string source, CancellationToken token)
 	{
-		if (token.IsCancellationRequested)
-		{
-			return Task.FromCanceled(token);
-		}
-
-		var task = Task.Run(async () =>
-		{
-			// execute actual operation in child task
-			var childTask = Task.Factory.StartNew(() =>
-			{
-				try
-				{
-					writer.Write(entryName, source);
-				}
-				catch (Exception)
-				{
-					// ignored because an exception on a cancellation request 
-					// cannot be avoided if the stream gets disposed afterwards 
-				}
-			}, TaskCreationOptions.AttachedToParent);
-
-			var awaiter = childTask.GetAwaiter();
-			while (!awaiter.IsCompleted)
-			{
-				await Task.Delay(0, token);
-			}
-		}, token);
-
-		return task;
+		// The complete archive operation already runs on Redux's worker scheduler.
+		// Avoid dispatching every individual entry through another thread-pool task.
+		token.ThrowIfCancellationRequested();
+		writer.Write(entryName, source);
+		token.ThrowIfCancellationRequested();
+		return Task.CompletedTask;
 	}
 
 	private void ExportLoadOrderToArchiveAs()
@@ -5154,8 +5286,6 @@ Directory the zip will be extracted to:
 		if (SelectedProfile != null && SelectedModOrder != null)
 		{
 			if (!ConfirmActiveModBackup()) return;
-
-			UpdateOrderFromActiveMods();
 
 			var dialog = new SaveFileDialog
 			{
@@ -5244,8 +5374,6 @@ Directory the zip will be extracted to:
 	{
 		if (SelectedProfile != null && SelectedModOrder != null)
 		{
-			UpdateOrderFromActiveMods();
-
 			var dialog = new SaveFileDialog
 			{
 				AddExtension = true,
@@ -5294,7 +5422,7 @@ Directory the zip will be extracted to:
 				}
 				try
 				{
-					File.WriteAllText(dialog.FileName, outputText);
+					AtomicFileWriter.WriteAllText(dialog.FileName, outputText);
 					ShowAlert($"Exported order to '{dialog.FileName}'", AlertType.Success, 20);
 				}
 				catch (Exception ex)
@@ -5373,9 +5501,9 @@ Directory the zip will be extracted to:
 		{
 			if (SelectedModOrder != null)
 			{
-				SelectedModOrder.SetOrder(order);
-				if (LoadModOrder(SelectedModOrder))
+				if (LoadModOrder(order))
 				{
+					HasUnsavedLoadOrderChanges = true;
 					DivinityApp.Log($"Successfully re-loaded order {SelectedModOrder.Name} with save order.");
 				}
 				else
@@ -6743,6 +6871,7 @@ Directory the zip will be extracted to:
 
 	public void AddVisualDivider(bool activeList, int position, string title, string color, string iconId, bool hideLine, string description = "")
 	{
+		EnsureVisualDividerBaseline();
 		Settings.VisualModListDividers ??= new List<ModListVisualDividerData>();
 		EnsureVisualDividerMemberships();
 		var sequence = BuildVisualDividerSequence(activeList).ToList();
@@ -6761,6 +6890,7 @@ Directory the zip will be extracted to:
 		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
 			sequence, Settings.VisualModListDividers, activeList);
 		RefreshVisualDividers();
+		HasUnsavedLoadOrderChanges = true;
 		QueueSave();
 	}
 
@@ -6768,12 +6898,14 @@ Directory the zip will be extracted to:
 	{
 		var divider = GetVisualDivider(item);
 		if (divider == null) return;
+		EnsureVisualDividerBaseline();
 		divider.Title = title?.Trim() ?? "";
 		divider.Color = color;
 		divider.IconId = ReduxIconCatalog.Normalize(iconId);
 		divider.HideLine = hideLine;
 		divider.Description = description?.Trim() ?? "";
 		RefreshVisualDividers();
+		HasUnsavedLoadOrderChanges = true;
 		QueueSave();
 	}
 
@@ -6784,6 +6916,7 @@ Directory the zip will be extracted to:
 		// display projection. Requiring expansion before removal keeps those rows
 		// visible and prevents them from remaining hidden until another projection.
 		if (divider == null || divider.IsCollapsed) return;
+		EnsureVisualDividerBaseline();
 		EnsureVisualDividerMemberships();
 		var sequence = BuildVisualDividerSequence(divider.IsActiveList)
 			.Where(entry => !entry.IsVisualDivider ||
@@ -6794,6 +6927,7 @@ Directory the zip will be extracted to:
 		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
 			sequence, Settings.VisualModListDividers, divider.IsActiveList);
 		RefreshVisualDividers();
+		HasUnsavedLoadOrderChanges = true;
 		QueueSave();
 	}
 
@@ -7124,10 +7258,45 @@ Directory the zip will be extracted to:
 		}
 	}
 
+	private static List<ModListVisualDividerData> CloneVisualDividers(
+		IEnumerable<ModListVisualDividerData> dividers) =>
+		(dividers ?? Enumerable.Empty<ModListVisualDividerData>()).Select(divider => new ModListVisualDividerData
+		{
+			Id = divider.Id,
+			Title = divider.Title,
+			Color = divider.Color,
+			IconId = divider.IconId,
+			Description = divider.Description,
+			IsActiveList = divider.IsActiveList,
+			Position = divider.Position,
+			IsCollapsed = divider.IsCollapsed,
+			HideLine = divider.HideLine,
+			MemberModUuids = divider.MemberModUuids?.ToList()
+		}).ToList();
+
+	private void CaptureVisualDividerBaseline() =>
+		_savedVisualDividerBaseline = CloneVisualDividers(Settings.VisualModListDividers);
+
+	private void EnsureVisualDividerBaseline() =>
+		_savedVisualDividerBaseline ??= CloneVisualDividers(Settings.VisualModListDividers);
+
+	public void DiscardUnsavedLoadOrderPresentationChanges()
+	{
+		_deferSave?.Dispose();
+		_deferSave = null;
+		if (_savedVisualDividerBaseline != null)
+		{
+			Settings.VisualModListDividers = CloneVisualDividers(_savedVisualDividerBaseline);
+			RefreshVisualDividers();
+		}
+		HasUnsavedLoadOrderChanges = false;
+	}
+
 	public void ApplyVisualModListDrop(IEnumerable<DivinityModData> draggedItems, bool destinationActive, int insertIndex)
 	{
 		var dragged = draggedItems?.Distinct().ToList() ?? new List<DivinityModData>();
 		if (dragged.Count == 0) return;
+		EnsureVisualDividerBaseline();
 		EnsureVisualDividerMemberships();
 		var activeSequence = BuildVisualDividerSequence(true).ToList();
 		var inactiveSequence = BuildVisualDividerSequence(false).ToList();
@@ -7234,8 +7403,8 @@ Directory the zip will be extracted to:
 		}
 		finally { _updatingVisualModLists = false; }
 		RefreshVisualDividers();
-		UpdateOrderFromActiveMods();
 		ScheduleModHealthRefresh();
+		HasUnsavedLoadOrderChanges = true;
 		QueueSave();
 	}
 
@@ -7994,9 +8163,7 @@ Directory the zip will be extracted to:
 
 			if (removeFromLoadOrder)
 			{
-				SelectedModOrder.Order.RemoveAll(x => deletedMods.Contains(x.UUID));
 				SelectedProfile.ActiveMods.RemoveAll(x => deletedMods.Contains(x.UUID));
-				//SaveLoadOrder(true);
 			}
 
 			InactiveMods.RemoveMany(InactiveMods.Where(x => deletedMods.Contains(x.UUID)));
@@ -8310,6 +8477,7 @@ Directory the zip will be extracted to:
 
 			if (totalRemoved > 0)
 			{
+				HasUnsavedLoadOrderChanges = true;
 				ShowAlert($"Removed {totalRemoved} missing mods from the current order. Save to confirm", AlertType.Warning);
 			}
 		});
@@ -8473,14 +8641,12 @@ Directory the zip will be extracted to:
 			ActiveMods.Add(mod);
 			mod.IsActive = true;
 			mod.Index = ActiveMods.Count - 1;
-			SelectedModOrder.Add(mod);
 		}
 		InactiveMods.Remove(mod);
 	}
 
 	public void RemoveActiveMod(DivinityModData mod)
 	{
-		SelectedModOrder.Remove(mod);
 		ActiveMods.Remove(mod);
 		mod.IsActive = false;
 		if (mod.IsForceLoadedMergedMod || !mod.IsForceLoaded)
@@ -8503,22 +8669,20 @@ Directory the zip will be extracted to:
 		StatusBarRightText = $"NexusMods Limits [Hourly ({e.Limits.HourlyRemaining}/{e.Limits.HourlyLimit}) Daily ({e.Limits.DailyRemaining}/{e.Limits.DailyLimit})]";
 	}
 
-	IDisposable _updateOrderTask = null;
-
-	public void UpdateOrderFromActiveMods()
+	private List<DivinityLoadOrderEntry> CreateWorkingLoadOrderEntries()
 	{
-		_updateOrderTask?.Dispose();
+		return CreateWorkingLoadOrderSnapshot().Order;
+	}
 
-		if (SelectedModOrder != null)
-		{
-			SelectedModOrder.Order.Clear();
-			SelectedModOrder.AddRange(ActiveMods, true);
-		}
+	private DivinityLoadOrder CreateWorkingLoadOrderSnapshot()
+	{
+		return LoadOrderPersistencePolicy.CreateWorkingCopy(SelectedModOrder, ActiveMods);
 	}
 
 	private void ScheduleModHealthRefresh()
 	{
 		_modHealthRefreshTask?.Dispose();
+		var refreshVersion = ++_modHealthRefreshVersion;
 		if (!Modules.ModDiagnosticsEnabled)
 		{
 			ClearModHealthState();
@@ -8527,10 +8691,10 @@ Directory the zip will be extracted to:
 
 		_modHealthRefreshTask = RxApp.MainThreadScheduler.Schedule(
 			TimeSpan.FromMilliseconds(300),
-			RecomputeModHealthSnapshots);
+			() => RecomputeModHealthSnapshots(refreshVersion));
 	}
 
-	private void RecomputeModHealthSnapshots()
+	private async void RecomputeModHealthSnapshots(int refreshVersion)
 	{
 		if (!Modules.ModDiagnosticsEnabled)
 		{
@@ -8538,12 +8702,33 @@ Directory the zip will be extracted to:
 			return;
 		}
 
-		var computedSnapshots = _modHealthAnalyzer.AnalyzeAll(
-			mods.Items,
-			ActiveMods,
-			_lastDetectedDuplicateMods,
-			Modules.LoadOrderGuidanceEnabled,
-			Settings.DisableModioWarnings);
+		var installedMods = mods.Items.ToArray();
+		var activeMods = ActiveMods.ToArray();
+		var duplicateMods = _lastDetectedDuplicateMods?.ToArray();
+		var loadOrderGuidanceEnabled = Modules.LoadOrderGuidanceEnabled;
+		var disableModioWarnings = Settings.DisableModioWarnings;
+		IReadOnlyList<ModHealthSnapshot> computedSnapshots;
+		await _modHealthAnalysisLock.WaitAsync();
+		try
+		{
+			if (refreshVersion != _modHealthRefreshVersion || !Modules.ModDiagnosticsEnabled) return;
+			computedSnapshots = await Task.Run(() => _modHealthAnalyzer.AnalyzeAll(
+				installedMods,
+				activeMods,
+				duplicateMods,
+				loadOrderGuidanceEnabled,
+				disableModioWarnings));
+		}
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Could not refresh mod diagnostics: {ex}");
+			return;
+		}
+		finally
+		{
+			_modHealthAnalysisLock.Release();
+		}
+		if (refreshVersion != _modHealthRefreshVersion || !Modules.ModDiagnosticsEnabled) return;
 		var snapshots = computedSnapshots.Select(snapshot =>
 		{
 			var current = snapshot.Mod.HealthSnapshot;
@@ -8556,7 +8741,7 @@ Directory the zip will be extracted to:
 			snapshots,
 			ReferenceEquals);
 
-		var activeModUuids = ActiveMods
+		var activeModUuids = activeMods
 			.Select(mod => mod.UUID)
 			.Where(uuid => !String.IsNullOrWhiteSpace(uuid))
 			.ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -8581,7 +8766,7 @@ Directory the zip will be extracted to:
 			.Select(group => new ModDiagnosticFindingGroupViewModel(
 				group.First().Finding,
 				group.Select(entry => entry.Snapshot),
-				mods.Items,
+				installedMods,
 				Modules.SourceIntegrationsEnabled))
 			.OrderByDescending(group => group.Severity)
 			.ThenBy(group => group.Code)
@@ -8613,13 +8798,13 @@ Directory the zip will be extracted to:
 			}
 
 			var advisorDiagnosticSignature = BuildLoadOrderAdvisorDiagnosticSignature(
-				ActiveMods,
+				activeMods,
 				snapshots,
-				Modules.LoadOrderGuidanceEnabled);
+				loadOrderGuidanceEnabled);
 			if (!String.Equals(_lastLoadOrderAdvisorDiagnosticSignature, advisorDiagnosticSignature, StringComparison.Ordinal))
 			{
 				_lastLoadOrderAdvisorDiagnosticSignature = advisorDiagnosticSignature;
-				LogLoadOrderAdvisorDiagnostics(ActiveMods, snapshots, Modules.LoadOrderGuidanceEnabled);
+				LogLoadOrderAdvisorDiagnostics(activeMods, snapshots, loadOrderGuidanceEnabled);
 			}
 		}
 		else
@@ -8889,7 +9074,13 @@ Directory the zip will be extracted to:
 
 		var canExecuteSaveAsCommand = this.WhenAnyValue(x => x.CanSaveOrder, x => x.MainProgressIsActive, (canSave, p) => canSave && !p);
 		Keys.SaveAs.AddAction(SaveLoadOrderAs, canExecuteSaveAsCommand);
+		Keys.SaveNewOrder.AddAction(SaveAsNewManagedLoadOrder, canExecuteSaveAsCommand);
 		Keys.NewOrder.AddAction(() => AddNewModOrder());
+		var canRenameOrder = this.WhenAnyValue(x => x.SelectedModOrderIndex, i => i > 0);
+		ToggleOrderRenamingCommand = ReactiveCommand.CreateFromTask<object, Unit>(ToggleRenamingLoadOrder, canRenameOrder, RxApp.MainThreadScheduler);
+		Keys.RenameOrder.AddAction(
+			() => ToggleOrderRenamingCommand.Execute(View?.OrdersComboBox).Subscribe(),
+			canRenameOrder);
 		Keys.ImportMod.AddAction(OpenModImportDialog);
 
 		var canRefreshObservable = this.WhenAnyValue(x => x.IsRefreshing, b => !b).StartWith(true);
@@ -8898,10 +9089,10 @@ Directory the zip will be extracted to:
 			// Refreshing rebuilds Active/Inactive purely from what's saved on disk (modsettings.lsx),
 			// so any drag-and-drop changes the user hasn't saved/exported yet would otherwise be
 			// silently discarded with no warning.
-			if (!HasExported && ActiveMods.Count > 0)
+			if (HasUnsavedLoadOrderChanges)
 			{
 				var result = ReduxMessageBox.Show(Window,
-					"You have unsaved changes to your active mod order that haven't been saved or exported yet. Refreshing will discard them and reload from disk.\n\nContinue anyway?",
+					"You have unsaved changes to your active mod order. Refreshing will discard them and reload the saved order.\n\nContinue anyway?",
 					"Discard Unsaved Changes?",
 					MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 				if (result != MessageBoxResult.Yes) return;
@@ -9123,7 +9314,12 @@ Directory the zip will be extracted to:
 
 		_selectedModOrder = this.WhenAnyValue(x => x.SelectedModOrderIndex, x => x.ModOrderList.Count).
 			Select(x => ModOrderList.ElementAtOrDefault(x.Item1)).ToProperty(this, nameof(SelectedModOrder));
-		_selectedModOrderName = this.WhenAnyValue(x => x.SelectedModOrder).WhereNotNull().Select(x => x.Name).ToProperty(this, nameof(SelectedModOrderName), true, RxApp.MainThreadScheduler);
+		_selectedModOrderName = this.WhenAnyValue(x => x.SelectedModOrder)
+			.Select(order => order == null
+				? Observable.Return(String.Empty)
+				: order.WhenAnyValue(x => x.Name))
+			.Switch()
+			.ToProperty(this, nameof(SelectedModOrderName), true, RxApp.MainThreadScheduler);
 		_isBaseLoadOrder = this.WhenAnyValue(x => x.SelectedModOrder).Select(x => x != null && x.IsModSettings).ToProperty(this, nameof(IsBaseLoadOrder), true, RxApp.MainThreadScheduler);
 
 		//Throttle in case the index changes quickly in a short timespan
@@ -9258,10 +9454,13 @@ Directory the zip will be extracted to:
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ScheduleRefreshModCategories());
 
-		ActiveMods.WhenAnyPropertyChanged(nameof(DivinityModData.Index)).Throttle(TimeSpan.FromMilliseconds(25)).Subscribe(_ =>
-		{
-			SelectedModOrder?.Sort(SortModOrder);
-		});
+		// Provider metadata arrives after the rows are created. Observe that nested
+		// metadata explicitly so automatic pills and category counts update without
+		// requiring a manual category assignment to trigger another refresh.
+		modsConnection.AutoRefresh(x => x.CategoryMetadataRevision)
+			.Throttle(TimeSpan.FromMilliseconds(100))
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(_ => ScheduleRefreshModCategories());
 
 		var selectedModsConnection = modsConnection.AutoRefresh(x => x.IsSelected, TimeSpan.FromMilliseconds(25)).AutoRefresh(x => x.IsActive, TimeSpan.FromMilliseconds(25)).Filter(x => x.IsSelected);
 
@@ -9331,9 +9530,6 @@ Directory the zip will be extracted to:
 		CheckForAppUpdatesCommand = ReactiveCommand.Create(checkForUpdatesAction, canCheckForUpdates);
 		Keys.CheckForUpdates.AddAction(checkForUpdatesAction, canCheckForUpdates);
 
-		var canRenameOrder = this.WhenAnyValue(x => x.SelectedModOrderIndex, (i) => i > 0);
-		ToggleOrderRenamingCommand = ReactiveCommand.CreateFromTask<object, Unit>(ToggleRenamingLoadOrder, canRenameOrder, RxApp.MainThreadScheduler);
-
 		var canDeleteOrder = this.WhenAnyValue(x => x.MainProgressIsActive, x => x.SelectedModOrderIndex).Select(x => !x.Item1 && x.Item2 > 0);
 		OpenLoadOrderFolderCommand = ReactiveCommand.Create(OpenLoadOrderFolder);
 		DeleteOrderCommand = ReactiveCommand.Create<DivinityLoadOrder>(DeleteOrder, canDeleteOrder, RxApp.MainThreadScheduler);
@@ -9387,15 +9583,20 @@ Directory the zip will be extracted to:
 
 		ActiveMods.CollectionChanged += (o, e) =>
 		{
-			if (e.Action == NotifyCollectionChangedAction.Add || e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Reset)
+			if (e.Action == NotifyCollectionChangedAction.Add
+				|| e.Action == NotifyCollectionChangedAction.Remove
+				|| e.Action == NotifyCollectionChangedAction.Move
+				|| e.Action == NotifyCollectionChangedAction.Reset)
 			{
 				HasExported = false;
+				if (!IsLoadingOrder && !IsRefreshing)
+				{
+					HasUnsavedLoadOrderChanges = true;
+				}
 			}
 			if (_updatingVisualModLists) return;
 			ScheduleModHealthRefresh();
 			ScheduleRefreshVisualDividers();
-			_updateOrderTask?.Dispose();
-			_updateOrderTask = RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(250), UpdateOrderFromActiveMods);
 		};
 
 		InactiveMods.CollectionChanged += (o, e) =>

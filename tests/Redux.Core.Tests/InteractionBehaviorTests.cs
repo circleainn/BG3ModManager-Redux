@@ -1,6 +1,11 @@
 using DivinityModManager.AppServices;
+using DivinityModManager.Controls;
 using DivinityModManager.Models;
+using DivinityModManager.Models.Modio;
 using DivinityModManager.Util;
+
+using System;
+using System.Linq;
 
 namespace Redux.Core.Tests;
 
@@ -64,5 +69,51 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.Equal(@"C:\Orders\New Load Order.json", order.FilePath);
 		RegressionAssert.Equal(0, order.Order.Count);
 		RegressionAssert.False(order.IsModSettings);
+	}
+
+	public void WorkingChangesStayDetachedUntilExplicitlySaved()
+	{
+		var saved = new DivinityLoadOrder
+		{
+			Name = "My Order",
+			FilePath = @"C:\Orders\My Order.json",
+			Order = [new DivinityLoadOrderEntry { UUID = "saved-mod" }]
+		};
+		var activeMods = new[]
+		{
+			new DivinityModData { UUID = "working-mod", Name = "Working Mod" }
+		};
+
+		var working = LoadOrderPersistencePolicy.CreateWorkingCopy(saved, activeMods);
+
+		RegressionAssert.Equal(1, saved.Order.Count);
+		RegressionAssert.Equal(1, working.Order.Count);
+		RegressionAssert.Equal("saved-mod", saved.Order[0].UUID);
+		RegressionAssert.Equal("working-mod", working.Order[0].UUID);
+		RegressionAssert.Equal(saved.Name, working.Name);
+		RegressionAssert.Equal(saved.FilePath, working.FilePath);
+		RegressionAssert.False(ReferenceEquals(saved, working));
+	}
+
+	public void DuplicateWandChoiceNormalizesToTheSingleVisibleIcon()
+	{
+		RegressionAssert.Equal("wand", ReduxIconCatalog.Normalize("wand-sparkles"));
+		RegressionAssert.Equal(1, ReduxIconCatalog.Choices.Where(choice =>
+			choice.Id.Contains("wand", StringComparison.OrdinalIgnoreCase)).Count());
+	}
+
+	public void AsyncProviderMetadataSignalsAutomaticCategoryRefresh()
+	{
+		var mod = new DivinityModData { UUID = "metadata-refresh" };
+		var initialRevision = mod.CategoryMetadataRevision;
+
+		mod.ModioData.Update(new ModioModData
+		{
+			UUID = mod.UUID,
+			ModId = 42,
+			Name = "Interface Improvements"
+		});
+
+		RegressionAssert.True(mod.CategoryMetadataRevision > initialRevision);
 	}
 }

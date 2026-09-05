@@ -219,7 +219,6 @@ public static class ReduxIconCatalog
 		new("sparkles", "Magic / sparkles", "Redux.Icon.Sparkles"),
 		new("moon-star", "Spells / arcane", "Redux.Icon.MoonStar", true),
 		new("wand", "Magic wand", "Redux.Icon.ColorWand"),
-		new("wand-sparkles", "Enchanted wand", "Redux.Icon.WandSparkles", true),
 		new("flask", "Alchemy / flask", "Redux.Icon.Flask"),
 		new("book", "Lore / spellbook", "Redux.Icon.Book"),
 		new("book-open", "Open spellbook", "Redux.Icon.BookOpen", true),
@@ -288,6 +287,9 @@ public static class ReduxIconCatalog
 
 	public static string Normalize(string id)
 	{
+		// The original picker exposed two IDs backed by the same wand artwork.
+		// Keep existing saved selections valid while presenting one clear choice.
+		if (String.Equals(id, "wand-sparkles", StringComparison.OrdinalIgnoreCase)) return "wand";
 		if (TryGet(id, out var choice)) return choice.Id;
 		return ReduxCustomIconService.NormalizeReference(id);
 	}

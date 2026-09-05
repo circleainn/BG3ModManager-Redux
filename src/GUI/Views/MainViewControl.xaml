@@ -658,6 +658,9 @@
 								<MenuItem Command="{Binding Keys.NewOrder.Command}" Header="Create Blank Load Order" InputGestureText="{Binding Keys.NewOrder.DisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
 								</MenuItem>
+								<MenuItem Command="{Binding Keys.RenameOrder.Command}" Header="Rename Load Order..." InputGestureText="{Binding Keys.RenameOrder.DisplayBindingText}">
+									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Create}" /></MenuItem.Icon>
+								</MenuItem>
 								<Separator />
 								<MenuItem Command="{Binding Keys.ImportOrderFromFile.Command}" Header="Import Load Order from File..." InputGestureText="{Binding Keys.ImportOrderFromFile.DisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
@@ -1301,7 +1304,7 @@
 										</ComboBox.ItemContainerStyle>
 										<ComboBox.ContextMenu>
 											<ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
-												<MenuItem Command="{Binding ToggleOrderRenamingCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ContextMenu}, Path=PlacementTarget}" Header="Rename">
+											<MenuItem Command="{Binding Keys.RenameOrder.Command}" Header="Rename Load Order...">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Create}" /></MenuItem.Icon>
 												</MenuItem>
 												<Separator />
@@ -1319,8 +1322,20 @@
 									</ComboBox.ContextMenu>
 								</ComboBox>
 									<Button x:Name="SaveButton"
+										AutomationProperties.Name="Save current load order"
 										ToolTip="Save changes to the selected load order">
 										<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Save}" />
+									</Button>
+									<Button x:Name="SaveAsOrderButton"
+										AutomationProperties.Name="Save as a new load order"
+										ToolTip="Save as a new named load order">
+										<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Duplicate}" />
+									</Button>
+									<Button Command="{Binding DeleteOrderCommand}"
+										CommandParameter="{Binding SelectedModOrder}"
+										AutomationProperties.Name="Delete selected load order"
+										ToolTip="Delete the selected load order">
+										<controls:ReduxIcon Foreground="{DynamicResource ReduxErrorBrush}" StrokeData="{StaticResource Redux.Icon.Trash}" />
 									</Button>
 									<Button x:Name="OrderActionsButton"
 										AutomationProperties.Name="More load order actions"
@@ -1330,11 +1345,14 @@
 										<controls:ReduxIcon Data="{StaticResource Redux.Icon.MoreHorizontal}" />
 									<Button.ContextMenu>
 										<ContextMenu Placement="Bottom">
-											<MenuItem Command="{Binding Keys.SaveAs.Command}" Header="Save a Copy As...">
+											<MenuItem Command="{Binding Keys.SaveAs.Command}" Header="Save Load Order to File...">
 												<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Duplicate}" /></MenuItem.Icon>
 											</MenuItem>
 											<MenuItem Command="{Binding Keys.NewOrder.Command}" Header="Create Blank Load Order">
 												<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Command="{Binding Keys.RenameOrder.Command}" Header="Rename Load Order...">
+												<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Create}" /></MenuItem.Icon>
 											</MenuItem>
 											<Separator />
 											<MenuItem Command="{Binding Keys.ImportOrderFromFile.Command}" Header="Import Load Order from File...">
@@ -1353,10 +1371,6 @@
 											<Separator />
 											<MenuItem Command="{Binding OpenLoadOrderFolderCommand}" Header="Open Load Order Folder">
 												<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
-											</MenuItem>
-											<Separator />
-											<MenuItem Command="{Binding DeleteOrderCommand}" CommandParameter="{Binding SelectedModOrder}" Header="Delete Selected Order">
-												<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
 											</MenuItem>
 										</ContextMenu>
 										</Button.ContextMenu>

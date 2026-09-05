@@ -38,8 +38,14 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Save Load Order to File...")]
 	public Hotkey SaveAs { get; private set; } = new Hotkey(Key.S, ModifierKeys.Control | ModifierKeys.Alt);
 
+	[MenuSettings("File", "Save as New Load Order...")]
+	public Hotkey SaveNewOrder { get; private set; } = new Hotkey(Key.None);
+
 	[MenuSettings("File", "Create Blank Load Order")]
 	public Hotkey NewOrder { get; private set; } = new Hotkey(Key.N, ModifierKeys.Control);
+
+	[MenuSettings("File", "Rename Load Order...")]
+	public Hotkey RenameOrder { get; private set; } = new Hotkey(Key.None);
 
 	[MenuSettings(
 		"File",
@@ -209,7 +215,8 @@ public class AppKeys : ReactiveObject
 				keyMapDict.Add(key.ID, key);
 			}
 			string contents = JsonConvert.SerializeObject(keyMapDict, Newtonsoft.Json.Formatting.Indented);
-			File.WriteAllText(filePath, contents);
+			AtomicFileWriter.WriteAllText(filePath, contents, validateTemporaryFile: temporaryPath =>
+				JsonConvert.DeserializeObject<Dictionary<string, Hotkey>>(File.ReadAllText(temporaryPath)) != null);
 		}
 		catch (Exception ex)
 		{
@@ -237,7 +244,8 @@ public class AppKeys : ReactiveObject
 				: "{}";
 			if (!File.Exists(filePath) || !String.Equals(contents, _lastSavedKeybindingsContents, StringComparison.Ordinal))
 			{
-				File.WriteAllText(filePath, contents);
+				AtomicFileWriter.WriteAllText(filePath, contents, filePath + ".bak", temporaryPath =>
+					JsonConvert.DeserializeObject<Dictionary<string, Hotkey>>(File.ReadAllText(temporaryPath)) != null);
 				_lastSavedKeybindingsContents = contents;
 			}
 			result = $"Saved keybindings to '{filePath}'";

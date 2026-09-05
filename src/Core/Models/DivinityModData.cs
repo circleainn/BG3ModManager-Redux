@@ -45,6 +45,8 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 	[Reactive] public ReduxCreatorManifestData CreatorManifest { get; set; } = ReduxCreatorManifestData.NotPresent;
 	[Reactive] public string DisplayCategory { get; set; }
 	[Reactive] public List<ModCategoryDisplayData> DisplayCategories { get; set; } = new();
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public int CategoryMetadataRevision { get; private set; }
 	[Reactive] public bool ShowInterfaceIcons { get; set; } = true;
 	[Reactive] public bool UseIconsOnly { get; set; }
 	[Reactive] public bool UseCategoryColorsForText { get; set; }
@@ -435,6 +437,24 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 		WorkshopData = new DivinityModWorkshopData();
 		NexusModsData = new NexusModsModData();
 		ModioData = new ModioModData();
+		this.WhenAnyValue(x => x.NexusModsData)
+			.Do(_ => CategoryMetadataRevision++)
+			.Select(metadata => metadata == null
+				? Observable.Never<System.Reactive.EventPattern<System.ComponentModel.PropertyChangedEventArgs>>()
+				: Observable.FromEventPattern<System.ComponentModel.PropertyChangedEventHandler, System.ComponentModel.PropertyChangedEventArgs>(
+					handler => metadata.PropertyChanged += handler,
+					handler => metadata.PropertyChanged -= handler))
+			.Switch()
+			.Subscribe(_ => CategoryMetadataRevision++);
+		this.WhenAnyValue(x => x.ModioData)
+			.Do(_ => CategoryMetadataRevision++)
+			.Select(metadata => metadata == null
+				? Observable.Never<System.Reactive.EventPattern<System.ComponentModel.PropertyChangedEventArgs>>()
+				: Observable.FromEventPattern<System.ComponentModel.PropertyChangedEventHandler, System.ComponentModel.PropertyChangedEventArgs>(
+					handler => metadata.PropertyChanged += handler,
+					handler => metadata.PropertyChanged -= handler))
+			.Switch()
+			.Subscribe(_ => CategoryMetadataRevision++);
 		Metadata = new ModMetadataViewData(this);
 		//GithubData = new GithubModData();
 

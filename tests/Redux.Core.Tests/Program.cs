@@ -36,6 +36,7 @@ internal static class Program
 		var smoothLogicalScroll = new SmoothLogicalScrollPolicyTests();
 		var startupNotifications = new StartupNotificationQueueTests();
 		var commandPaletteSearch = new CommandPaletteSearchTests();
+		var fileSafety = new FileSafetyTests();
 		var tests = new (string Name, Action Run)[]
 		{
 			(nameof(source.ReviewedModuleUuidResolvesItsProject), source.ReviewedModuleUuidResolvesItsProject),
@@ -162,6 +163,9 @@ internal static class Program
 			(nameof(interactionBehavior.DrawerRetainsASelectedModDuringCrossListTransferOnly), interactionBehavior.DrawerRetainsASelectedModDuringCrossListTransferOnly),
 			(nameof(interactionBehavior.SavingCurrentOrderCanNeverWriteTheGameExportFile), interactionBehavior.SavingCurrentOrderCanNeverWriteTheGameExportFile),
 			(nameof(interactionBehavior.NewBlankOrderContainsNoActivatedMods), interactionBehavior.NewBlankOrderContainsNoActivatedMods),
+			(nameof(interactionBehavior.WorkingChangesStayDetachedUntilExplicitlySaved), interactionBehavior.WorkingChangesStayDetachedUntilExplicitlySaved),
+			(nameof(interactionBehavior.DuplicateWandChoiceNormalizesToTheSingleVisibleIcon), interactionBehavior.DuplicateWandChoiceNormalizesToTheSingleVisibleIcon),
+			(nameof(interactionBehavior.AsyncProviderMetadataSignalsAutomaticCategoryRefresh), interactionBehavior.AsyncProviderMetadataSignalsAutomaticCategoryRefresh),
 			(nameof(automaticCategories.NexusCategoryIdsMatchTheBg3ProviderTaxonomy), automaticCategories.NexusCategoryIdsMatchTheBg3ProviderTaxonomy),
 			(nameof(automaticCategories.ExplicitNexusCategoryWinsOverContradictoryKeywords), automaticCategories.ExplicitNexusCategoryWinsOverContradictoryKeywords),
 			(nameof(automaticCategories.NexusCategoryStaysFirstWhileStrongSecondaryCategoriesFillThreeSlots), automaticCategories.NexusCategoryStaysFirstWhileStrongSecondaryCategoriesFillThreeSlots),
@@ -207,7 +211,12 @@ internal static class Program
 			(nameof(startupNotifications.StaleStartupNotificationCanBeCancelledBeforeReadiness), startupNotifications.StaleStartupNotificationCanBeCancelledBeforeReadiness),
 			(nameof(startupNotifications.NotificationsQueuedDuringDrainRemainSequential), startupNotifications.NotificationsQueuedDuringDrainRemainSequential),
 			(nameof(commandPaletteSearch.AliasesAndWordOrderMakeActionsDiscoverable), commandPaletteSearch.AliasesAndWordOrderMakeActionsDiscoverable),
-			(nameof(commandPaletteSearch.MinimumQueryLengthStillProtectsLargeDynamicLists), commandPaletteSearch.MinimumQueryLengthStillProtectsLargeDynamicLists)
+			(nameof(commandPaletteSearch.MinimumQueryLengthStillProtectsLargeDynamicLists), commandPaletteSearch.MinimumQueryLengthStillProtectsLargeDynamicLists),
+			(nameof(fileSafety.FailedStagedWritePreservesTheExistingDestination), fileSafety.FailedStagedWritePreservesTheExistingDestination),
+			(nameof(fileSafety.AtomicCopyReplacesTheDestinationAndKeepsItsBackup), fileSafety.AtomicCopyReplacesTheDestinationAndKeepsItsBackup),
+			(nameof(fileSafety.AsyncCopyReplacesTheDestinationAndKeepsItsBackup), fileSafety.AsyncCopyReplacesTheDestinationAndKeepsItsBackup),
+			(nameof(fileSafety.ConcurrentWritesNeverExposePartialContent), fileSafety.ConcurrentWritesNeverExposePartialContent),
+			(nameof(fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson), fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson)
 		};
 
 		var failures = 0;

@@ -58,6 +58,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			[nameof(AppKeys.ImportMod)] = ("Redux.Icon.AddCircle", true, null),
 			[nameof(AppKeys.Save)] = ("Redux.Icon.Save", true, null),
 			[nameof(AppKeys.SaveAs)] = ("Redux.Icon.Duplicate", true, null),
+			[nameof(AppKeys.SaveNewOrder)] = ("Redux.Icon.Duplicate", true, null),
 			[nameof(AppKeys.NewOrder)] = ("Redux.Icon.DocumentText", true, null),
 			[nameof(AppKeys.CompareLoadOrders)] = ("Redux.Icon.SwapHorizontalStroke", true, null),
 			[nameof(AppKeys.RestorePoints)] = ("Redux.Icon.ScrollText", true, null),
@@ -555,25 +556,118 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private void ComboBox_KeyDown_LoseFocus(object sender, KeyEventArgs e)
 	{
-		bool loseFocus = false;
-		if ((e.Key == Key.Enter || e.Key == Key.Return))
+		if (e.Key == Key.Enter || e.Key == Key.Return)
 		{
-			UIElement elementWithFocus = Keyboard.FocusedElement as UIElement;
-			elementWithFocus.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-			ViewModel.StopRenaming(false);
-			loseFocus = true;
+			if (sender is ComboBox comboBox && ViewModel.IsRenamingOrder)
+			{
+				CommitOrderRename(comboBox);
+			}
+			(Keyboard.FocusedElement as UIElement)?.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 			e.Handled = true;
 		}
 		else if (e.Key == Key.Escape)
 		{
 			ViewModel.StopRenaming(true);
-			loseFocus = true;
+			if (sender is ComboBox comboBox)
+			{
+				comboBox.FindVisualChildren<TextBox>().FirstOrDefault()?.Select(0, 0);
+			}
+			e.Handled = true;
+		}
+	}
+
+	private void CommitOrderRename(ComboBox comboBox)
+	{
+		if (!ViewModel.IsRenamingOrder) return;
+		var textBox = comboBox.FindVisualChildren<TextBox>().FirstOrDefault();
+		var nextName = textBox?.Text?.Trim();
+		if (String.IsNullOrWhiteSpace(nextName))
+		{
+			ViewModel.StopRenaming(true);
+			AlertBar.SetWarningAlert("Enter a name for the load order.", 10);
+			return;
 		}
 
-		if (loseFocus && sender is ComboBox comboBox)
+		var order = ViewModel.SelectedModOrder;
+		var lastName = order?.Name;
+		var lastFilePath = order?.FilePath;
+		if (order == null || String.IsNullOrWhiteSpace(lastFilePath))
 		{
-			var tb = comboBox.FindVisualChildren<TextBox>().FirstOrDefault();
-			tb?.Select(0, 0);
+			ViewModel.StopRenaming(true);
+			AlertBar.SetDangerAlert("This load order does not have a valid file to rename.", 15);
+			return;
+		}
+
+		var directory = Path.GetDirectoryName(lastFilePath);
+		var extension = Path.GetExtension(lastFilePath);
+		if (String.IsNullOrWhiteSpace(extension)) extension = ".json";
+		var nextFileName = DivinityModDataLoader.MakeSafeFilename(nextName + extension, '_');
+		nextName = Path.GetFileNameWithoutExtension(nextFileName);
+		var nextFilePath = Path.Combine(directory, nextFileName);
+		var samePath = String.Equals(
+			Path.GetFullPath(lastFilePath),
+			Path.GetFullPath(nextFilePath),
+			StringComparison.OrdinalIgnoreCase);
+		var sourceExists = File.Exists(lastFilePath);
+
+		if (!samePath && File.Exists(nextFilePath))
+		{
+			if (!sourceExists)
+			{
+				ViewModel.StopRenaming(true);
+				AlertBar.SetWarningAlert($"A load order named '{nextName}' already exists.", 15);
+				return;
+			}
+			var result = ReduxMessageBox.Show(main,
+				$"Replace the existing load order '{Path.GetFileNameWithoutExtension(nextFilePath)}'?",
+				"Replace Load Order?",
+				MessageBoxButton.YesNo,
+				MessageBoxImage.Warning,
+				MessageBoxResult.No);
+			if (result != MessageBoxResult.Yes)
+			{
+				ViewModel.StopRenaming(true);
+				return;
+			}
+		}
+
+		try
+		{
+			if (!samePath && sourceExists)
+			{
+				File.Move(lastFilePath, nextFilePath, true);
+			}
+
+			var existingOrder = ViewModel.ModOrderList.FirstOrDefault(candidate =>
+				!ReferenceEquals(candidate, order)
+				&& String.Equals(candidate.FilePath, nextFilePath, StringComparison.OrdinalIgnoreCase));
+			if (existingOrder != null)
+			{
+				ViewModel.ModOrderList.Remove(existingOrder);
+				ViewModel.SavedModOrderList.Remove(existingOrder);
+			}
+
+			order.Name = nextName;
+			order.FilePath = nextFilePath;
+			order.LastModifiedDate = File.Exists(nextFilePath)
+				? File.GetLastWriteTime(nextFilePath)
+				: DateTime.Now;
+			ViewModel.StopRenaming(false);
+			if (String.Equals(ViewModel.Settings.LastOrder, lastName, StringComparison.OrdinalIgnoreCase))
+			{
+				ViewModel.Settings.LastOrder = nextName;
+				ViewModel.SaveSettings();
+			}
+			AlertBar.SetSuccessAlert($"Renamed load order to '{nextName}'.", 12);
+		}
+		catch (Exception ex)
+		{
+			ViewModel.StopRenaming(true);
+			AlertBar.SetDangerAlert($"Could not rename the load order to '{nextName}'.", 20);
+			var message = $"Could not rename the load order from '{lastFilePath}' to '{nextFilePath}':\n{ex}";
+			ReduxMessageBox.ShowWithActions(main, message, "Could Not Rename Load Order",
+				MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
+				("Copy to Clipboard", "Redux.Icon.Copy", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(message)));
 		}
 	}
 
@@ -586,49 +680,7 @@ public partial class MainViewControl : MainViewControlViewBase
 				var tb = comboBox.FindVisualChildren<TextBox>().FirstOrDefault();
 				if (tb != null && !tb.IsFocused)
 				{
-					var cancel = string.IsNullOrEmpty(tb.Text);
-					ViewModel.StopRenaming(cancel);
-					if (!cancel)
-					{
-						var nextName = tb.Text;
-						var order = ViewModel.SelectedModOrder;
-						var lastFilePath = order.FilePath;
-						var directory = Path.GetDirectoryName(lastFilePath);
-						var ext = Path.GetExtension(lastFilePath);
-						var nextFilePath = Path.Combine(directory, DivinityModDataLoader.MakeSafeFilename(Path.Combine(nextName + ext), '_'));
-						try
-						{
-							if (File.Exists(nextFilePath))
-							{
-								var result = ReduxMessageBox.Show(main,
-									$"Overwrite '{nextFilePath}'?",
-									"Confirm Order Renaming (Overwriting File)",
-									MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.OK);
-								if (result == MessageBoxResult.No)
-								{
-									AlertBar.SetInformationAlert($"Cancelled order renaming", 10);
-									return;
-								}
-							}
-							File.Move(lastFilePath, nextFilePath, true);
-							var existingOrder = ViewModel.ModOrderList.FirstOrDefault(x => x.FilePath == nextFilePath);
-							if (existingOrder != null)
-							{
-								ViewModel.ModOrderList.Remove(existingOrder);
-							}
-							order.Name = nextName;
-							order.FilePath = nextFilePath;
-							AlertBar.SetSuccessAlert($"Renamed load order name/path to '{nextFilePath}'", 20);
-						}
-						catch (Exception ex)
-						{
-							AlertBar.SetDangerAlert($"Failed to rename file '{lastFilePath}' to '{nextFilePath}'", 20);
-							var message = $"Failed to rename file '{lastFilePath}' to '{nextFilePath}':\n{ex}";
-							ReduxMessageBox.ShowWithActions(main, message, "Failed to Rename Order",
-								MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK,
-								("Copy to Clipboard", "Redux.Icon.Copy", () => ((System.Windows.Input.ICommand)DivinityApp.Commands.CopyToClipboardCommand).Execute(message)));
-						}
-					}
+					CommitOrderRename(comboBox);
 				}
 			});
 		}
@@ -1379,6 +1431,7 @@ public partial class MainViewControl : MainViewControlViewBase
 
 		this.BindCommand(ViewModel, vm => vm.Keys.ImportMod.Command, view => view.ImportModButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.Save.Command, view => view.SaveButton);
+		this.BindCommand(ViewModel, vm => vm.Keys.SaveNewOrder.Command, view => view.SaveAsOrderButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.ExportOrderToGame.Command, view => view.ExportToModSettingsButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.Refresh.Command, view => view.RefreshButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.OpenModsFolder.Command, view => view.OpenModsFolderButton);
