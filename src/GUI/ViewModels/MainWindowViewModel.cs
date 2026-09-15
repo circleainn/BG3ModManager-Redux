@@ -9156,10 +9156,14 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				return;
 			}
 			var sourceSequence = sourceActive ? activeSequence : inactiveSequence;
-			dragged = VisualDividerSectionPolicy.ResolveSectionBlockDragPayload(
-				sourceSequence,
-				movingDividerItem,
-				movingDivider).ToList();
+			dragged = movingCollapsedSeparator
+				? VisualDividerSectionPolicy.ResolveCollapsedBlockDragPayload(
+					sourceSequence,
+					movingDividerItem,
+					movingDivider).ToList()
+				: VisualDividerSectionPolicy.ResolveMarkerOnlyDragPayload(
+					sourceSequence,
+					dragged).ToList();
 			if (dragged.Count == 0) return;
 		}
 		var destinationVisibleItems = (destinationActive ? DisplayActiveMods : DisplayInactiveMods).ToList();

@@ -150,12 +150,12 @@ public static class VisualDividerSectionPolicy
 	}
 
 	/// <summary>
-	/// Resolves a separator marker to one canonical, contiguous block made from its
-	/// recorded members. Unowned rows after the block are never carried along.
+	/// Resolves a collapsed separator marker to one canonical, contiguous block made
+	/// from its sealed members. Unowned rows after the block are never carried along.
 	/// The live drag preview remains marker-only, keeping pointer movement independent
-	/// of the number of section members.
+	/// of the number of hidden mods.
 	/// </summary>
-	public static IReadOnlyList<DivinityModData> ResolveSectionBlockDragPayload(
+	public static IReadOnlyList<DivinityModData> ResolveCollapsedBlockDragPayload(
 		IEnumerable<DivinityModData> visualItems,
 		DivinityModData draggedMarker,
 		ModListVisualDividerData divider)
@@ -163,7 +163,8 @@ public static class VisualDividerSectionPolicy
 		ArgumentNullException.ThrowIfNull(visualItems);
 		ArgumentNullException.ThrowIfNull(draggedMarker);
 		ArgumentNullException.ThrowIfNull(divider);
-		if (!draggedMarker.IsVisualDivider || String.IsNullOrWhiteSpace(divider.Id))
+		if (!draggedMarker.IsVisualDivider || !divider.IsCollapsed ||
+			String.IsNullOrWhiteSpace(divider.Id))
 			return Array.Empty<DivinityModData>();
 
 		var sequence = visualItems.Where(item => item != null).ToList();

@@ -8,7 +8,6 @@ source for individual implementation details.
 ### Fixed
 
 - Restore **Copy Order to Clipboard** and **Export Order As List** to the visible load-order actions menu instead of hiding them on the sync-status control.
-- Move expanded separators together with their recorded mods, matching collapsed separators and preventing the moved header from adopting unrelated rows at its destination.
 - Keep manual Nexus and mod.io linking bound to the exact right-clicked mod after it moves between Active and Inactive Mods, including while mod.io verification is in progress.
 - Stop treating UUID-like mod.io archive filenames as legacy Nexus downloads and assigning unrelated Nexus project metadata.
 
