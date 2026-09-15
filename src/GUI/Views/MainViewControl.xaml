@@ -1453,6 +1453,13 @@
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Create}" /></MenuItem.Icon>
 											</MenuItem>
 											<Separator />
+											<MenuItem Command="{Binding CopyOrderToClipboardCommand}" Header="Copy Order to Clipboard">
+												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Clipboard}" /></MenuItem.Icon>
+											</MenuItem>
+											<MenuItem Command="{Binding ExportOrderAsListCommand}" Header="Export Order As List...">
+												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
+											</MenuItem>
+											<Separator />
 											<MenuItem Command="{Binding Keys.ImportOrderFromFile.Command}" Header="Import Load Order from File...">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 											</MenuItem>
@@ -1527,13 +1534,6 @@
 												</MenuItem>
 												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="Copy Path to Clipboard">
 													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
-												</MenuItem>
-												<Separator />
-												<MenuItem Command="{Binding CopyOrderToClipboardCommand}" Header="Copy Order to Clipboard">
-													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Clipboard}" /></MenuItem.Icon>
-												</MenuItem>
-												<MenuItem Command="{Binding ExportOrderAsListCommand}" Header="Export Order As List...">
-													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
 												</MenuItem>
 											</ContextMenu>
 										</Button.ContextMenu>

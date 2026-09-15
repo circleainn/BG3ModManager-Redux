@@ -5,7 +5,9 @@ source for individual implementation details.
 
 ## Unreleased
 
-No changes recorded yet.
+### Fixed
+
+- Restore **Copy Order to Clipboard** and **Export Order As List** to the visible load-order actions menu instead of hiding them on the sync-status control.
 
 ## 0.1.0-alpha.16.4.2 — 2026-09-14
 
