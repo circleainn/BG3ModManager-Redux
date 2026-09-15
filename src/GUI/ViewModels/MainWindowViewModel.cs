@@ -4972,6 +4972,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				LoadSettings();
 			}, RxApp.MainThreadScheduler);
 		}
+		lastOrderName = LoadOrderPersistencePolicy.ResolveOrderNameForRefresh(
+			lastOrderName,
+			Settings.LastOrder);
 
 		if (Directory.Exists(PathwayData.AppDataGameFolder))
 		{

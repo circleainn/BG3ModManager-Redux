@@ -743,8 +743,39 @@ public partial class SettingsWindow : SettingsWindowBase
 							VerticalContentAlignment = VerticalAlignment.Center,
 							Password = prop.Property.GetValue(source) as string ?? String.Empty
 						};
+						var updatingFromSettings = false;
+						void RefreshPasswordFromSettings()
+						{
+							if (!passwordBox.Dispatcher.CheckAccess())
+							{
+								passwordBox.Dispatcher.BeginInvoke(RefreshPasswordFromSettings);
+								return;
+							}
+							var value = prop.Property.GetValue(source) as string ?? String.Empty;
+							if (String.Equals(passwordBox.Password, value, StringComparison.Ordinal)) return;
+							updatingFromSettings = true;
+							try
+							{
+								passwordBox.Password = value;
+							}
+							finally
+							{
+								updatingFromSettings = false;
+							}
+						}
+
 						passwordBox.PasswordChanged += (_, _) =>
-							prop.Property.SetValue(source, passwordBox.Password?.Trim() ?? String.Empty);
+						{
+							if (!updatingFromSettings)
+								prop.Property.SetValue(source, passwordBox.Password?.Trim() ?? String.Empty);
+						};
+						if (source is INotifyPropertyChanged notifyingSource)
+						{
+							PropertyChangedEventManager.AddHandler(
+								notifyingSource,
+								(_, _) => RefreshPasswordFromSettings(),
+								prop.Property.Name);
+						}
 						targetGrid.Children.Add(passwordBox);
 						Grid.SetRow(passwordBox, targetRow);
 						Grid.SetColumn(passwordBox, 1);

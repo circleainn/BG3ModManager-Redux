@@ -8,6 +8,15 @@ namespace DivinityModManager.AppServices;
 public static class LoadOrderPersistencePolicy
 {
 	/// <summary>
+	/// Keeps the currently selected order during an in-app refresh and restores the
+	/// remembered order during initial startup, before a selection exists.
+	/// </summary>
+	public static string ResolveOrderNameForRefresh(string currentOrderName, string rememberedOrderName) =>
+		!String.IsNullOrWhiteSpace(currentOrderName)
+			? currentOrderName
+			: rememberedOrderName ?? String.Empty;
+
+	/// <summary>
 	/// Creates a detached working-order snapshot. Editing the active list must not
 	/// mutate the selected saved order until the user explicitly saves it.
 	/// </summary>

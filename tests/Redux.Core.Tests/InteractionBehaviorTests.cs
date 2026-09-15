@@ -21,6 +21,30 @@ namespace Redux.Core.Tests;
 
 public sealed class InteractionBehaviorTests
 {
+	public void ProviderPasswordFieldsFollowLoadedSettingsAndUserEdits()
+	{
+		var source = new DivinityModManagerSettings
+		{
+			NexusModsAPIKey = "initial-nexus-key",
+			ModioAPIKey = "initial-modio-key"
+		};
+		var window = new SettingsWindow();
+		var grid = (AutoGrid)window.FindName("SettingsAutoGrid");
+		typeof(SettingsWindow).GetMethod(
+			"CreateSettingsElements",
+			BindingFlags.NonPublic | BindingFlags.Instance)!
+			.Invoke(window, [source, typeof(DivinityModManagerSettings), grid]);
+
+		var nexusField = grid.Children.OfType<PasswordBox>()
+			.Single(field => field.Password == "initial-nexus-key");
+		source.NexusModsAPIKey = "restored-nexus-key";
+		RegressionAssert.Equal("restored-nexus-key", nexusField.Password);
+
+		nexusField.Password = "replacement-nexus-key";
+		RegressionAssert.Equal("replacement-nexus-key", source.NexusModsAPIKey);
+		window.Close();
+	}
+
 	public void ReduceMotionKeepsPrimaryListStoryboardsFreezeSafeAndInstant()
 	{
 		ReduxWindowBehavior.ConfigureAccessibility(false, ReduxWindowBehavior.BackgroundEffectsDisabled);

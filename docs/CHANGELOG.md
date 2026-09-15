@@ -10,6 +10,8 @@ source for individual implementation details.
 - Restore **Copy Order to Clipboard** and **Export Order As List** to the visible load-order actions menu instead of hiding them on the sync-status control.
 - Keep manual Nexus and mod.io linking bound to the exact right-clicked mod after it moves between Active and Inactive Mods, including while mod.io verification is in progress.
 - Stop treating UUID-like mod.io archive filenames as legacy Nexus downloads and assigning unrelated Nexus project metadata.
+- Restore the remembered named load order on startup instead of always selecting Current, preserving that order's active mods and separators.
+- Keep provider-key fields synchronized with credentials loaded from encrypted storage after the Preferences controls are created.
 
 ## 0.1.0-alpha.16.4.2 — 2026-09-14
 

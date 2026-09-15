@@ -10,6 +10,19 @@ namespace Redux.Core.Tests;
 
 internal sealed class LoadOrderWorkflowTests
 {
+	public void StartupRestoresRememberedOrderWhileRefreshKeepsCurrentSelection()
+	{
+		RegressionAssert.Equal(
+			"Remembered Order",
+			LoadOrderPersistencePolicy.ResolveOrderNameForRefresh(String.Empty, "Remembered Order"));
+		RegressionAssert.Equal(
+			"Open Order",
+			LoadOrderPersistencePolicy.ResolveOrderNameForRefresh("Open Order", "Remembered Order"));
+		RegressionAssert.Equal(
+			String.Empty,
+			LoadOrderPersistencePolicy.ResolveOrderNameForRefresh(null, null));
+	}
+
 	public void SaveSwitchRenameAndRestartPreservesEachOrder()
 	{
 		WithTemporaryDirectory(directory =>
