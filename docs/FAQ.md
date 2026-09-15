@@ -14,9 +14,9 @@ No. Redux is not affiliated with or endorsed by Larian Studios, Nexus Mods, or m
 3 is developed and published by Larian Studios. Redux retains and credits substantial work from the
 upstream BG3 Mod Manager project.
 
-## Is alpha.16.4.3 stable?
+## Is alpha.16.4.4 stable?
 
-`0.1.0-alpha.16.4.3` is a public alpha, not a final stable release. Its core workflows have
+`0.1.0-alpha.16.4.4` is a public alpha, not a final stable release. Its core workflows have
 automated and private testing, but public use will expose more combinations of Windows versions,
 display scaling, game paths, tools, and mod sets. Keep independent backups and report reproducible
 problems.

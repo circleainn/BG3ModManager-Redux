@@ -5158,11 +5158,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				LoadExtenderSettingsBackground();
 			}
 
-			//Always check for updates on the first run
+			// Check once per app launch when enabled. This remains a quiet background
+			// check; only a newer verified public-alpha release raises the update UI.
 			if (Settings.CheckForUpdates && _firstRun)
 			{
 				_firstRun = false;
-				CheckForUpdates();
+				CheckForUpdates(ignoreSchedule: true);
 			}
 
 			//RefreshAllModUpdatesBackground();
@@ -8050,7 +8051,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 	}
 
-	public void CheckForUpdates(bool force = false)
+	public void CheckForUpdates(bool force = false, bool ignoreSchedule = false)
 	{
 		if (!DivinityApp.REDUX_UPDATE_CHECKS_ENABLED)
 		{
@@ -8066,7 +8067,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			if (!force)
 			{
-				if (ReduxUpdateChannelService.IsAutomaticCheckDue(
+				if (ignoreSchedule || ReduxUpdateChannelService.IsAutomaticCheckDue(
 					Settings.LastUpdateCheck,
 					Settings.LastUpdateCheckAttempt,
 					DateTimeOffset.Now))
@@ -8477,7 +8478,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		RefreshModCategories();
 	}
 
-	public IReadOnlyList<string> GetAssignableModCategories() => GetAllModCategories().Where(IsModCategoryEnabled).ToList();
+	// Hiding a category removes its sidebar filter; it does not make the category
+	// invalid. Automatic classification can still use it, so manual assignment must
+	// offer the same complete category set.
+	public IReadOnlyList<string> GetAssignableModCategories() => GetAllModCategories();
 	public bool IsCustomModCategory(string category) => Settings.CustomModCategories?.Contains(category, StringComparer.OrdinalIgnoreCase) == true;
 
 	public ModListVisualDividerData GetVisualDivider(DivinityModData item) => item?.IsVisualDivider == true

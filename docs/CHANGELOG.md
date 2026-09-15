@@ -7,6 +7,26 @@ source for individual implementation details.
 
 No changes recorded yet.
 
+## 0.1.0-alpha.16.4.4 — 2026-09-15
+
+A cumulative silent maintenance hotfix containing the complete alpha.16.4.3 correction set plus load-order export, category assignment, and startup update-check fixes.
+
+### Fixed
+
+- Restore **Copy Order to Clipboard** to the visible load-order actions menu.
+- Wire **Export Detailed Mod List** to its actual export command and explain that it saves filenames, authors, dependencies, source links, and Override mods as TSV, text, or JSON.
+- Keep manual Nexus and mod.io linking bound to the exact right-clicked mod after it moves between Active and Inactive Mods, including while mod.io verification is in progress.
+- Stop treating UUID-like mod.io archive filenames as legacy Nexus downloads and assigning unrelated Nexus project metadata.
+- Restore the remembered named load order on startup instead of always selecting Current, preserving that order's active mods and separators.
+- Keep provider-key fields synchronized with credentials loaded from encrypted storage after the Preferences controls are created.
+- Retry remote mod thumbnails after download or decode failures instead of retaining a broken image in the session cache.
+- Keep built-in categories such as **Libraries** available for manual assignment even when their sidebar filter is hidden.
+- Check the verified public-alpha update channel once per app launch when automatic update checks are enabled, instead of suppressing launches within the previous 12-hour window.
+
+### Confirmed behavior
+
+- Expanded separators continue to move only their own header. Collapsed separators continue to move their sealed section as a block.
+
 ## 0.1.0-alpha.16.4.3 — 2026-09-15
 
 A silent maintenance hotfix for load-order actions, startup state, source linking, credentials, and remote thumbnails.

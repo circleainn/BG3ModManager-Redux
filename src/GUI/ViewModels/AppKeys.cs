@@ -90,7 +90,11 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Sync Load Order to Game")]
 	public Hotkey ExportOrderToGame { get; private set; } = new Hotkey(Key.E, ModifierKeys.Control);
 
-	[MenuSettings("File", "Export Load Order to Text File...")]
+	[MenuSettings(
+		"File",
+		"Export Detailed Mod List...",
+		false,
+		"Save filenames, authors, dependencies, source links, and Override mods as TSV, text, or JSON.")]
 	public Hotkey ExportOrderToList { get; private set; } = new Hotkey(Key.E, ModifierKeys.Control | ModifierKeys.Shift);
 
 	[MenuSettings(

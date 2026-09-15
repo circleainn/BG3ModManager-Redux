@@ -5,7 +5,7 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: September 15, 2026. Published baseline: `v0.1.0-alpha.16.4.3` at `ad41ced`.
+Last reviewed: September 15, 2026. Release candidate: `v0.1.0-alpha.16.4.4`.
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -35,7 +35,7 @@ Collection previews compare exact Nexus mod/file IDs against existing PAKs in bo
 
 The accumulated work shipped in the alpha.16.4 update. Dev runs build and regression
 checks but publishes no downloadable portable build or release; main owns public releases.
-The Unreleased changelog is reserved for work after the 16.4.3 maintenance release.
+The Unreleased changelog is reserved for work after the 16.4.4 maintenance release.
 
 Alpha.16.4.1 fixes separator regressions reported in #121 and #123: filtered views hide separators,
 bulk collapse/expand no longer fades the whole recycled list, established sections re-anchor to their
@@ -48,6 +48,10 @@ collapse/expand control to Inactive Mods, and removes the cursor dead zone betwe
 Alpha.16.4.3 restores the visible load-order copy/export commands, remembered startup order,
 right-click source targeting, asynchronously loaded credential fields, and retryable remote thumbnails.
 It also prevents UUID-like mod.io archive names from being interpreted as legacy Nexus download IDs.
+
+Alpha.16.4.4 is cumulative. It retains every alpha.16.4.3 correction, repairs the detailed-list
+export binding, keeps hidden built-in categories manually assignable, and checks for updates once
+per app launch when the automatic preference is enabled.
 
 Inactive ordering and separators (#111), Script Extender export preference persistence (#119),
 and NXM reassociation recovery (#120) shipped in 16.4 and their issues are closed. Shared window
@@ -72,7 +76,7 @@ mods, and never saves or syncs automatically.
 |:--|:--|
 | Product | Baldur's Gate 3 Mod Manager Redux |
 | Short name | Redux |
-| Latest version | `0.1.0-alpha.16.4.3` |
+| Latest version | `0.1.0-alpha.16.4.4` |
 | Lifecycle | Public alpha |
 | Supported platform | Windows 10/11 x64 |
 | Required runtime | .NET 8 Desktop Runtime |
@@ -82,7 +86,7 @@ mods, and never saves or syncs automatically.
 | Update channel | `public-alpha` |
 | Active milestone | `v0.1.0 – Public Alpha` |
 
-The maintenance release tag is `v0.1.0-alpha.16.4.3`. Always verify the live branches and releases before
+The maintenance release tag is `v0.1.0-alpha.16.4.4`. Always verify the live branches and releases before
 preparing another publication.
 
 ## What Redux is

@@ -1456,7 +1456,8 @@
 											<MenuItem Command="{Binding CopyOrderToClipboardCommand}" Header="Copy Order to Clipboard">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Clipboard}" /></MenuItem.Icon>
 											</MenuItem>
-											<MenuItem Command="{Binding ExportOrderAsListCommand}" Header="Export Order As List...">
+											<MenuItem Command="{Binding Keys.ExportOrderToList.Command}" Header="Export Detailed Mod List..."
+												ToolTip="Save filenames, authors, dependencies, source links, and Override mods as TSV, text, or JSON.">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
 											</MenuItem>
 											<Separator />
