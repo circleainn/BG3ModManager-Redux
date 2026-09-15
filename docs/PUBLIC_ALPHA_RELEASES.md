@@ -6,7 +6,7 @@ the exact files published on GitHub and Nexus Mods.
 
 ## Release artifacts
 
-`0.1.0-alpha.15` was the first Redux public-alpha version; `0.1.0-alpha.16.4.2` is the current
+`0.1.0-alpha.15` was the first Redux public-alpha version; `0.1.0-alpha.16.4.3` is the current
 maintenance release for the alpha.16.4 update.
 Each public alpha has an immutable version and a matching Git tag such as
 `v0.1.0-alpha.16.2`. A correction to an already-published alpha uses a hotfix suffix such as
@@ -39,7 +39,8 @@ The updater compares a four-part numeric internal version. Alpha.15 and alpha.16
 published legacy values (`0.1.0.15` and `0.1.0.16`), and alpha.16.1 through alpha.16.3 retain their
 original flat revisions. Maintenance-aware releases encode `.H.M` as revision `H × 100 + M`, so
 `.16.3.1` uses `0.1.16.301`, `.16.3.2` uses `0.1.16.302`, `.16.3.3` uses `0.1.16.303`,
-`.16.3.4` uses `0.1.16.304`, `.16.4` uses `0.1.16.400`, `.16.4.1` uses `0.1.16.401`, and `.16.4.2` uses `0.1.16.402`. This keeps
+`.16.3.4` uses `0.1.16.304`, `.16.4` uses `0.1.16.400`, `.16.4.1` uses `0.1.16.401`,
+`.16.4.2` uses `0.1.16.402`, and `.16.4.3` uses `0.1.16.403`. This keeps
 maintenance releases ordered before the next announced hotfix without changing an already-published version.
 
 Compatibility matters during the transition: the already-published alpha.15 and alpha.16 clients
@@ -55,7 +56,7 @@ install of `.16.3.1`. Once a maintenance-aware build is installed, later three-c
 are ordered and updated normally.
 
 Two-component releases (`.16.4`, `.16.5`, `.16.6`) are announced releases. Three-component releases
-(`.16.3.1`, `.16.3.2`, `.16.3.3`, `.16.3.4`, `.16.4.1`, `.16.4.2`) are silent maintenance releases and must
+(`.16.3.1`, `.16.3.2`, `.16.3.3`, `.16.3.4`, `.16.4.1`, `.16.4.2`, `.16.4.3`) are silent maintenance releases and must
 include `<!-- redux:no-announce -->` in their GitHub notes. The helper bot still records a silent
 release but does not post or ping. The release remains a normal published GitHub release, is marked
 Latest, uploads to Nexus Mods, and moves the public-alpha channel like any other release.

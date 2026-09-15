@@ -5,6 +5,12 @@ source for individual implementation details.
 
 ## Unreleased
 
+No changes recorded yet.
+
+## 0.1.0-alpha.16.4.3 — 2026-09-15
+
+A silent maintenance hotfix for load-order actions, startup state, source linking, credentials, and remote thumbnails.
+
 ### Fixed
 
 - Restore **Copy Order to Clipboard** and **Export Order As List** to the visible load-order actions menu instead of hiding them on the sync-status control.
@@ -13,6 +19,10 @@ source for individual implementation details.
 - Restore the remembered named load order on startup instead of always selecting Current, preserving that order's active mods and separators.
 - Keep provider-key fields synchronized with credentials loaded from encrypted storage after the Preferences controls are created.
 - Retry remote mod thumbnails after download or decode failures instead of retaining a broken image in the session cache.
+
+### Confirmed behavior
+
+- Expanded separators continue to move only their own header. Collapsed separators continue to move their sealed section as a block.
 
 ## 0.1.0-alpha.16.4.2 — 2026-09-14
 

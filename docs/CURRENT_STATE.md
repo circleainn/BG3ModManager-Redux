@@ -1,13 +1,11 @@
-﻿# Current project state
+# Current project state
 
 This page records the decisions and boundaries that define Redux today. It is the first reference
 to check before changing established behavior. The [changelog](CHANGELOG.md) records what shipped,
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: September 15, 2026. Published baseline: `v0.1.0-alpha.16.4.2` at `b09a2f4`.
-The September 15 follow-up is documentation and issue triage, not a new application release or
-runtime-validation result. Reported problems below remain unverified unless explicitly stated otherwise.
+Last reviewed: September 15, 2026. Release candidate: `v0.1.0-alpha.16.4.3`.
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -37,7 +35,7 @@ Collection previews compare exact Nexus mod/file IDs against existing PAKs in bo
 
 The accumulated work shipped in the alpha.16.4 update. Dev runs build and regression
 checks but publishes no downloadable portable build or release; main owns public releases.
-The Unreleased changelog is reserved for work after the 16.4.2 maintenance release.
+The Unreleased changelog is reserved for work after the 16.4.3 maintenance release.
 
 Alpha.16.4.1 fixes separator regressions reported in #121 and #123: filtered views hide separators,
 bulk collapse/expand no longer fades the whole recycled list, established sections re-anchor to their
@@ -47,6 +45,10 @@ incoming updater against short-lived Windows locks and read-only application fil
 Alpha.16.4.2 restores safe bulk separator motion using realized rows, adds the matching bulk
 collapse/expand control to Inactive Mods, and removes the cursor dead zone between nested menu levels.
 
+Alpha.16.4.3 restores the visible load-order copy/export commands, remembered startup order,
+right-click source targeting, asynchronously loaded credential fields, and retryable remote thumbnails.
+It also prevents UUID-like mod.io archive names from being interpreted as legacy Nexus download IDs.
+
 Inactive ordering and separators (#111), Script Extender export preference persistence (#119),
 and NXM reassociation recovery (#120) shipped in 16.4 and their issues are closed. Shared window
 refinement (#113) and collection importing (#108) are also closed for the accepted 16.4 scope.
@@ -55,10 +57,10 @@ The broader UI pass still benefits from live checks with custom themes and enlar
 #95 is closed as resolved for now at the maintainer’s request; reopen if a current-build report recurs. Native ownership and protected backups remain
 local to each Redux installation; changing to another folder does not migrate those records.
 
-The September 15 reports add separate investigations for sync/startup order state, wrong-mod source
-linking, credential-field state, and missing thumbnails. Do not infer a common cause or mark those
-reports resolved from the earlier separator/submenu fixes. See the report table below and
-[the next-update audit](NEXT_UPDATE_AUDIT.md) for issue status and remaining release checks.
+The September 15 reports cover separate causes rather than one common regression. Alpha.16.4.3
+addresses the reproducible load-order action, startup selection, source-link targeting, credential,
+and thumbnail retry paths. Remaining sync-specific and missing-source-image reports still require
+their own evidence. See [the next-update audit](NEXT_UPDATE_AUDIT.md) for current issue status.
 
 ## Current release
 
@@ -70,7 +72,7 @@ mods, and never saves or syncs automatically.
 |:--|:--|
 | Product | Baldur's Gate 3 Mod Manager Redux |
 | Short name | Redux |
-| Latest version | `0.1.0-alpha.16.4.2` |
+| Latest version | `0.1.0-alpha.16.4.3` |
 | Lifecycle | Public alpha |
 | Supported platform | Windows 10/11 x64 |
 | Required runtime | .NET 8 Desktop Runtime |
@@ -80,7 +82,7 @@ mods, and never saves or syncs automatically.
 | Update channel | `public-alpha` |
 | Active milestone | `v0.1.0 – Public Alpha` |
 
-The maintenance release tag is `v0.1.0-alpha.16.4.2`. Always verify the live branches and releases before
+The maintenance release tag is `v0.1.0-alpha.16.4.3`. Always verify the live branches and releases before
 preparing another publication.
 
 ## What Redux is
@@ -243,16 +245,12 @@ fixes; a matching current-build recurrence is needed before reopening those comp
 
 | Issue | Current evidence and scope |
 |:--|:--|
-| [#127](https://github.com/circleainn/BG3ModManager-Redux/issues/127) Sync/restart order and separators | High-priority Nexus reports; versions unspecified. Separate working/saved/game state and startup selection. Not yet reproduced. |
-| [#128](https://github.com/circleainn/BG3ModManager-Redux/issues/128) Manual link targets the wrong mod | High-priority Nexus report after deactivation; version unspecified. Separate from the fixed submenu gap and from automatic identity matching. |
-| [#125](https://github.com/circleainn/BG3ModManager-Redux/issues/125) mod.io/Nexus misidentification | Report explicitly names 16.4.2. Investigate identity/metadata precedence; root cause not established. |
-| [#129](https://github.com/circleainn/BG3ModManager-Redux/issues/129) Blank provider fields after restart | Separate encrypted persistence from stale Preferences display; a blank field does not prove credential loss. |
-| [#130](https://github.com/circleainn/BG3ModManager-Redux/issues/130) Missing mod thumbnails | Reported even after fresh key entry with working downloads. Check source, metadata, image retrieval and display independently. |
-| [#124](https://github.com/circleainn/BG3ModManager-Redux/issues/124) Existing copy shortcut | Remains a bug: the maintainer's later reply says implementation is incorrect, despite an earlier Ctrl+C acknowledgement. |
-| [#126](https://github.com/circleainn/BG3ModManager-Redux/issues/126) Expanded separator drag/membership | Older 16.2 report. Expanded marker-only versus collapsed-block behavior must be distinguished from unexpected membership absorption. Retest before disposition. |
+| [#127](https://github.com/circleainn/BG3ModManager-Redux/issues/127) Sync/restart order and separators | Alpha.16.4.3 restores the remembered named startup order. The separate Sync-specific report remains open for exact reproduction details. |
+| [#130](https://github.com/circleainn/BG3ModManager-Redux/issues/130) Missing mod thumbnails | Alpha.16.4.3 retries temporary image download/decode failures. The issue remains open to identify mods whose metadata supplies no usable image URL. |
 
-These are reported investigations, not newly verified fixes. Reporter versions must not be inferred
-from comment dates. The [troubleshooting guide](TROUBLESHOOTING.md) provides non-destructive checks.
+Issues #124, #125, #128, and #129 have focused alpha.16.4.3 fixes. Issue #126 is closed as the
+documented expanded-header/collapsed-section behavior. The [troubleshooting guide](TROUBLESHOOTING.md)
+provides non-destructive checks for remaining reports.
 
 ### Scoped requests awaiting evaluation
 
