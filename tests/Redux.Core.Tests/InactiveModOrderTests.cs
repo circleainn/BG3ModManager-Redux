@@ -34,7 +34,7 @@ internal sealed class InactiveModOrderTests
 		var second = new DivinityModData { UUID = "second" };
 		var outside = new DivinityModData { UUID = "outside" };
 		var section = new ModListVisualDividerData { Id = "section", IsActiveList = false, IsCollapsed = true, MemberModUuids = [first.UUID, second.UUID] };
-		var payload = VisualDividerSectionPolicy.ResolveCollapsedBlockDragPayload([divider, first, second, outside], divider, section);
+		var payload = VisualDividerSectionPolicy.ResolveSectionBlockDragPayload([divider, first, second, outside], divider, section);
 		var moved = VisualModListDropPolicy.Apply([active], [divider, first, second, outside], payload, false, 4);
 		RegressionAssert.SequenceEqual([active], moved.ActiveItems);
 		RegressionAssert.SequenceEqual([outside, divider, first, second], moved.InactiveItems);

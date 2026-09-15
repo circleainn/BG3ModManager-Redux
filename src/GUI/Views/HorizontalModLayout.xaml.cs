@@ -801,7 +801,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		if (sender is not ModListView listView || e.OriginalSource is not DependencyObject source) return;
 		var item = source.FindVisualParent<ListViewItem>();
-		var mod = item?.DataContext as DivinityModData;
+		// A recycled WPF row can briefly retain its previous DataContext after a mod
+		// moves between panes. Resolve through this list's container generator so every
+		// generated action targets the row that was actually right-clicked.
+		var mod = item == null
+			? null
+			: listView.ItemContainerGenerator.ItemFromContainer(item) as DivinityModData;
 		var menu = item?.ContextMenu ?? listView.ContextMenu;
 		if (menu == null) return;
 		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, BulkActionsMenuTag)).ToList())

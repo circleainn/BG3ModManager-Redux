@@ -256,6 +256,23 @@ public sealed class SourceAssociationTests
 		RegressionAssert.Equal(-1L, result.ModId);
 	}
 
+	public void ModioArchiveNamesNeverImplyNexusProjects()
+	{
+		var uuidStyle = NexusModFileVersionData.FromFilePath(
+			"sem_weaponsbygranny_c68ad5dd-4-afq9.zip");
+		var longerUuidStyle = NexusModFileVersionData.FromFilePath(
+			"void100_e7d3fda6-11e0-d195-4e9-d15w.zip");
+		var projectStyle = NexusModFileVersionData.FromFilePath(
+			"startingarmorselection_4782996-as36.zip");
+
+		RegressionAssert.False(uuidStyle.Success);
+		RegressionAssert.Equal(-1L, uuidStyle.ModId);
+		RegressionAssert.False(longerUuidStyle.Success);
+		RegressionAssert.Equal(-1L, longerUuidStyle.ModId);
+		RegressionAssert.False(projectStyle.Success);
+		RegressionAssert.Equal(-1L, projectStyle.ModId);
+	}
+
 	public void MatchingNexusCreatorAndUploaderUseOneLinkedCreatorLabel()
 	{
 		var mod = CreateMod();

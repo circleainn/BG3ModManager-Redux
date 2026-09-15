@@ -4498,6 +4498,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			error = "No mod was selected.";
 			return false;
 		}
+		mod = ResolveCurrentInstalledMod(mod);
+		if (mod == null)
+		{
+			error = "That mod is no longer installed. Select it again and retry.";
+			return false;
+		}
 		if (mod.Metadata.SourceType == ModSourceType.MODIO && !replaceModio)
 		{
 			error = "Confirm that you want to replace the current mod.io source before linking a Nexus Mods page.";
@@ -4559,6 +4565,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			return (false, "No mod was selected.");
 		}
+		mod = ResolveCurrentInstalledMod(mod);
+		if (mod == null)
+		{
+			return (false, "That mod is no longer installed. Select it again and retry.");
+		}
+		var targetUuid = mod.UUID;
 		var hasAuthoritativeNexus = mod.NexusModsData?.MetadataOrigin is NexusMetadataOrigin.Manual
 			or NexusMetadataOrigin.NexusArchiveImport
 			or NexusMetadataOrigin.ReduxBundleImport;
@@ -4584,6 +4596,14 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				return (false, "Redux could not verify that mod.io page as a Baldur's Gate 3 mod. The existing source link was not changed.");
 			}
 
+			// Verification is asynchronous. Resolve the UUID again in case the row moved
+			// between active and inactive panes while the request was in flight.
+			mod = ResolveCurrentInstalledMod(targetUuid);
+			if (mod == null)
+			{
+				return (false, "That mod is no longer installed. Select it again and retry.");
+			}
+
 			linkedMetadata.MetadataOrigin = ModioMetadataOrigin.Manual;
 			if (hasAuthoritativeNexus)
 			{
@@ -4604,6 +4624,17 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			DivinityApp.Log($"Failed to verify the manual mod.io association for '{mod.FileName}':\n{ex}");
 			return (false, "Redux could not reach mod.io to verify that page. The existing source link was not changed.");
 		}
+	}
+
+	private DivinityModData ResolveCurrentInstalledMod(DivinityModData requested) =>
+		ResolveCurrentInstalledMod(requested?.UUID);
+
+	private DivinityModData ResolveCurrentInstalledMod(string uuid)
+	{
+		if (String.IsNullOrWhiteSpace(uuid)) return null;
+		return UserMods.Concat(Mods).Concat(ForceLoadedMods)
+			.FirstOrDefault(candidate =>
+				String.Equals(candidate.UUID, uuid, StringComparison.OrdinalIgnoreCase));
 	}
 
 	public async Task UnlinkModioModAsync(DivinityModData mod)
@@ -9125,14 +9156,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				return;
 			}
 			var sourceSequence = sourceActive ? activeSequence : inactiveSequence;
-			dragged = movingCollapsedSeparator
-				? VisualDividerSectionPolicy.ResolveCollapsedBlockDragPayload(
-					sourceSequence,
-					movingDividerItem,
-					movingDivider).ToList()
-				: VisualDividerSectionPolicy.ResolveMarkerOnlyDragPayload(
-					sourceSequence,
-					dragged).ToList();
+			dragged = VisualDividerSectionPolicy.ResolveSectionBlockDragPayload(
+				sourceSequence,
+				movingDividerItem,
+				movingDivider).ToList();
 			if (dragged.Count == 0) return;
 		}
 		var destinationVisibleItems = (destinationActive ? DisplayActiveMods : DisplayInactiveMods).ToList();

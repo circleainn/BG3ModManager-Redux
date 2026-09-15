@@ -18,7 +18,7 @@ public struct NexusModFileVersionData
 		@"(?:^|\s)(?<modId>[1-9]\d*)\s+\S+(?:\s+\d{4}-\d{2}-\d{2}T\d{2}-\d{2}(?:-\d{2})?Z)?\s+[A-Za-z0-9]{6,32}$",
 		RegexOptions.Compiled | RegexOptions.CultureInvariant);
 	private static readonly Regex _legacyFilePattern = new(
-		@"^.*?-(?<modId>[1-9]\d*)-\S+",
+		@"^.+?-(?<modId>[1-9]\d*)-\S+-(?<timestamp>\d{9,13})$",
 		RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
 	public static NexusModFileVersionData FromFilePath(string path)
