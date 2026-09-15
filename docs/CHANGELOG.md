@@ -12,6 +12,7 @@ source for individual implementation details.
 - Stop treating UUID-like mod.io archive filenames as legacy Nexus downloads and assigning unrelated Nexus project metadata.
 - Restore the remembered named load order on startup instead of always selecting Current, preserving that order's active mods and separators.
 - Keep provider-key fields synchronized with credentials loaded from encrypted storage after the Preferences controls are created.
+- Retry remote mod thumbnails after download or decode failures instead of retaining a broken image in the session cache.
 
 ## 0.1.0-alpha.16.4.2 — 2026-09-14
 

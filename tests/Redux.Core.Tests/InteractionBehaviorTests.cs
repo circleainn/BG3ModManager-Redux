@@ -45,6 +45,19 @@ public sealed class InteractionBehaviorTests
 		window.Close();
 	}
 
+	public void RemoteImageDiagnosticsStripCredentialsAndSignedQueries()
+	{
+		var converterType = typeof(SettingsWindow).Assembly.GetType(
+			"DivinityModManager.Converters.UriToBitmapImageConverter")!;
+		var redact = converterType.GetMethod(
+			"RedactRemoteImageUri",
+			BindingFlags.NonPublic | BindingFlags.Static)!;
+		var result = (string)redact.Invoke(null,
+			[new Uri("https://user:password@images.example.test/mod.png?token=secret#account")])!;
+
+		RegressionAssert.Equal("https://images.example.test/mod.png", result);
+	}
+
 	public void ReduceMotionKeepsPrimaryListStoryboardsFreezeSafeAndInstant()
 	{
 		ReduxWindowBehavior.ConfigureAccessibility(false, ReduxWindowBehavior.BackgroundEffectsDisabled);
