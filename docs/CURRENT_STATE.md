@@ -5,7 +5,9 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: September 14, 2026. Public baseline: `v0.1.0-alpha.16.4.1`; maintenance candidate: `v0.1.0-alpha.16.4.2`.
+Last reviewed: September 15, 2026. Published baseline: `v0.1.0-alpha.16.4.2` at `b09a2f4`.
+The September 15 follow-up is documentation and issue triage, not a new application release or
+runtime-validation result. Reported problems below remain unverified unless explicitly stated otherwise.
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -33,7 +35,7 @@ Collection imports now guide queued files awaiting Nexus authorization one page 
 
 Collection previews compare exact Nexus mod/file IDs against existing PAKs in both active and inactive panes and mark uncertain same-project matches separately. Game-directory detections have no exact file ID and remain unverified. No newer-version claim is inferred from file ID ordering. Installed history can be reacquired through the existing download pipeline if the installed file is no longer detected.
 
-The accumulated work is assigned to the alpha.16.4 update. Dev runs build and regression
+The accumulated work shipped in the alpha.16.4 update. Dev runs build and regression
 checks but publishes no downloadable portable build or release; main owns public releases.
 The Unreleased changelog is reserved for work after the 16.4.2 maintenance release.
 
@@ -53,14 +55,16 @@ The broader UI pass still benefits from live checks with custom themes and enlar
 #95 is closed as resolved for now at the maintainer’s request; reopen if a current-build report recurs. Native ownership and protected backups remain
 local to each Redux installation; changing to another folder does not migrate those records.
 
-See [the next-update audit](NEXT_UPDATE_AUDIT.md) for issue status and remaining release checks.
+The September 15 reports add separate investigations for sync/startup order state, wrong-mod source
+linking, credential-field state, and missing thumbnails. Do not infer a common cause or mark those
+reports resolved from the earlier separator/submenu fixes. See the report table below and
+[the next-update audit](NEXT_UPDATE_AUDIT.md) for issue status and remaining release checks.
 
 ## Current release
 
 Save Mod Review reads save metadata and offers reviewed activation of installed inactive mods
 using existing ordering and Undo behavior. It does not verify versions, dependencies, or native
 mods, and never saves or syncs automatically.
-
 
 | Item | Current value |
 |:--|:--|
@@ -93,6 +97,7 @@ The current public alpha includes:
   and bounded Undo/Redo;
 - built-in Mod Diagnostics and a separately enabled, preview-first Load Order Advisor;
 - a shared Download Manager for local packages and optional NXM downloads;
+- a Nexus Collection Importer with selective downloads and supported BG3 saved-order review;
 - Save Game Manager and a guarded Game-Directory Mod Manager;
 - dark, light, parchment, and custom themes with accessibility and motion controls;
 - conservative offline mod recognition and privacy-limited contribution reports; and
@@ -181,6 +186,9 @@ The full publishing and recovery contract is in
 - Separators can organize Active and Inactive Mods. Inactive ordering is saved in Redux settings,
   shared across saved active orders, and never exported to the game. Column sorting is view-only.
   Closed separator blocks move within their current pane; invalid drops leave no drag marker.
+- Active separators are stored per saved load order. Loading a game-derived order is not the same
+  as reopening a named Redux order containing that presentation data. Reports of unexpected startup
+  selection or separator loss are tracked in #127, not treated as permission to merge Save and Sync.
 
 ### Saving, syncing, diagnostics, and advice
 
@@ -228,8 +236,37 @@ The full publishing and recovery contract is in
 The issue tracker is the live source. The 16.4 audit closed #108, #111, #113, #119, and #120 for the
 shipped scope. #95 is resolved for now based on the maintainer’s assessment, and #118 is not planned.
 Earlier fixes for window placement and save archive/discovery defects (#112, #114–116) remain closed.
+The separator and updater scopes in #121–123 also remain closed for their documented maintenance
+fixes; a matching current-build recurrence is needed before reopening those completed scopes.
 
-Open planned work:
+### Open bug investigations
+
+| Issue | Current evidence and scope |
+|:--|:--|
+| [#127](https://github.com/circleainn/BG3ModManager-Redux/issues/127) Sync/restart order and separators | High-priority Nexus reports; versions unspecified. Separate working/saved/game state and startup selection. Not yet reproduced. |
+| [#128](https://github.com/circleainn/BG3ModManager-Redux/issues/128) Manual link targets the wrong mod | High-priority Nexus report after deactivation; version unspecified. Separate from the fixed submenu gap and from automatic identity matching. |
+| [#125](https://github.com/circleainn/BG3ModManager-Redux/issues/125) mod.io/Nexus misidentification | Report explicitly names 16.4.2. Investigate identity/metadata precedence; root cause not established. |
+| [#129](https://github.com/circleainn/BG3ModManager-Redux/issues/129) Blank provider fields after restart | Separate encrypted persistence from stale Preferences display; a blank field does not prove credential loss. |
+| [#130](https://github.com/circleainn/BG3ModManager-Redux/issues/130) Missing mod thumbnails | Reported even after fresh key entry with working downloads. Check source, metadata, image retrieval and display independently. |
+| [#124](https://github.com/circleainn/BG3ModManager-Redux/issues/124) Existing copy shortcut | Remains a bug: the maintainer's later reply says implementation is incorrect, despite an earlier Ctrl+C acknowledgement. |
+| [#126](https://github.com/circleainn/BG3ModManager-Redux/issues/126) Expanded separator drag/membership | Older 16.2 report. Expanded marker-only versus collapsed-block behavior must be distinguished from unexpected membership absorption. Retest before disposition. |
+
+These are reported investigations, not newly verified fixes. Reporter versions must not be inferred
+from comment dates. The [troubleshooting guide](TROUBLESHOOTING.md) provides non-destructive checks.
+
+### Scoped requests awaiting evaluation
+
+- [#131 — Assignable filename-display shortcut](https://github.com/circleainn/BG3ModManager-Redux/issues/131)
+- [#132 — Optional hover-card descriptions](https://github.com/circleainn/BG3ModManager-Redux/issues/132)
+- [#133 — Controls for automatic categories](https://github.com/circleainn/BG3ModManager-Redux/issues/133)
+- [#134 — Compact category-tag rows](https://github.com/circleainn/BG3ModManager-Redux/issues/134)
+
+These requests have no release commitment. #134 does not reopen the broader compact-interface
+redesign in #118. PT-BR interest and a Chinese-version offer are recorded under #56; neither
+establishes an integrated upstream translation. Interest in VOLO cooperation is not a partnership
+or an accepted integration task.
+
+### Open planned work
 
 - [#110 — Improve compatibility with Wine and Linux desktops](https://github.com/circleainn/BG3ModManager-Redux/issues/110)
 - [#109 — Manage Override mods when switching saved load orders](https://github.com/circleainn/BG3ModManager-Redux/issues/109)
@@ -248,8 +285,11 @@ acceptance state before implementing it.
 - Provider, category, dependency, and advisor knowledge is intentionally incomplete rather than
   filled with guesses.
 - Redux does not promise automatic compatibility repair or a universally correct load order.
-- Nexus Collections, automatic management of inactive Override mods between orders, and a new
-  Managers workspace are not current shipped features.
+- The limited Nexus Collection Importer shipped in 16.4. Direct collection NXM activation,
+  historical-revision browsing, and automatic application of collection installer rules are not
+  shipped features. Follow collection-author instructions.
+- Automatic management of inactive Override mods between orders and a new Managers workspace
+  remain planned, not shipped.
 - The retired Setup project and its dedicated tests are no longer retained in the repository.
   Installer work should not be reintroduced without a new decision about distribution and signing.
 
