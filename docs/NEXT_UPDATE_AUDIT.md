@@ -1,8 +1,8 @@
-# Post-16.4.3 issue audit
+# Post-16.4.4 issue audit
 
-Updated September 15, 2026 against the published `v0.1.0-alpha.16.4.3` baseline at `ad41ced`,
+Updated September 15, 2026 against the published `v0.1.0-alpha.16.4.4` baseline at `e663ef9`,
 current issue bodies/discussions, and the September 14–15 [Nexus reports](https://www.nexusmods.com/baldursgate3/mods/23799?tab=posts).
-Alpha.16.4.3 is a silent cumulative maintenance release. Its GitHub and Nexus artifacts and the
+Alpha.16.4.4 is a silent cumulative maintenance release. Its GitHub and Nexus artifacts and the
 public-alpha update channel are published; the historical 16.4 verification record remains below.
 
 ## Current bug investigations
@@ -36,11 +36,13 @@ Nexus report that staff removed a reupload do not require application issues.
 
 | Issue | Assessment | Next action |
 |:--|:--|:--|
-| [#124](https://github.com/circleainn/BG3ModManager-Redux/issues/124) Copy/export order actions | Closed: alpha.16.4.3 restores both actions to the visible load-order menu. | Reopen only for a current-version recurrence. |
+| [#124](https://github.com/circleainn/BG3ModManager-Redux/issues/124) Copy/export order actions | Closed: alpha.16.4.4 restores clipboard copy and correctly binds the renamed detailed-list export. | Reopen only for a current-version recurrence. |
 | [#125](https://github.com/circleainn/BG3ModManager-Redux/issues/125) mod.io/Nexus misidentification | Closed: alpha.16.4.3 requires the complete legacy Nexus filename shape and rejects UUID-like mod.io names. | Use an exact current-version archive for any new identity report. |
 | [#126](https://github.com/circleainn/BG3ModManager-Redux/issues/126) Expanded separator movement | Closed by design: expanded separators move only their header; collapsed separators move their sealed section. | Treat unexpected behavior outside that contract as a focused new report. |
 | [#128](https://github.com/circleainn/BG3ModManager-Redux/issues/128) Wrong manual-link target | Closed: alpha.16.4.3 retains the right-clicked UUID through cross-pane moves and asynchronous verification. | Reopen only for a current-version recurrence. |
 | [#129](https://github.com/circleainn/BG3ModManager-Redux/issues/129) Blank provider fields | Closed: alpha.16.4.3 synchronizes fields when encrypted credentials finish loading. | Reopen with a current-version restart result if it recurs. |
+| [#135](https://github.com/circleainn/BG3ModManager-Redux/issues/135) Hidden category assignment | Closed: alpha.16.4.4 keeps hidden sidebar categories such as Libraries manually assignable. | Reopen only for a current-version recurrence. |
+| [#136](https://github.com/circleainn/BG3ModManager-Redux/issues/136) Per-launch update checks | Closed: alpha.16.4.4 performs one quiet startup check when automatic checks are enabled. | Reopen only for a current-version recurrence. |
 | [#121](https://github.com/circleainn/BG3ModManager-Redux/issues/121) Separator visibility/position | Remains closed for the documented 16.4.1/16.4.2 fixes. | Use a matching current-build recurrence before reopening; #127 tracks the separate sync/startup report. |
 | [#122](https://github.com/circleainn/BG3ModManager-Redux/issues/122) Update replacement | Remains closed for the maintenance fix addressing temporary locks/read-only app files. | Record the exact blocked application file if failure recurs; do not delete user state. |
 | [#123](https://github.com/circleainn/BG3ModManager-Redux/issues/123) Per-order separators | Remains closed for the documented per-saved-order storage fix. | Separate named-order selection from game-derived orders and investigate #127. |
@@ -57,9 +59,9 @@ Nexus report that staff removed a reupload do not require application issues.
 | [#63](https://github.com/circleainn/BG3ModManager-Redux/issues/63) Docking | Planned, substantial workspace change. | Separate design/implementation; reuse manager state. |
 | [#56](https://github.com/circleainn/BG3ModManager-Redux/issues/56) Localization/accessibility | Planned foundation; current layout work is only partial coverage. | Separate resource/localization work and assistive-technology testing. |
 
-Existing completed scopes remain closed. Issues #124, #125, #128, and #129 are closed for their
-focused alpha.16.4.3 fixes; #127 and #130 retain their unresolved portions. Issue #97 signing
-remains explicitly deferred, not completed.
+Existing completed scopes remain closed. Issues #124, #135, and #136 are closed for their
+alpha.16.4.4 fixes; #127 and #130 retain their unresolved portions. Issue #97 signing remains
+explicitly deferred, not completed.
 
 ## Live verification follow-ups
 
@@ -139,3 +141,13 @@ These results belong to the published 16.4 release and were not rerun during thi
 - The fixed public-alpha URL was independently fetched after publication and returned display version `0.1.0-alpha.16.4.3`, internal version `0.1.16.403`, and the matching ZIP size and digest.
 
 See the [16.4.3 release notes](releases/0.1.0-alpha.16.4.3.md) for the shipped fixes.
+
+## Published alpha.16.4.4 record
+
+- Release commit and tag: `e663ef9e107d342b71adb53828975a57d4ee9187`, `v0.1.0-alpha.16.4.4`.
+- Dev CI [run 35028992524](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/35028992524) and main CI [run 35029763076](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/35029763076) passed.
+- GitHub ZIP: 17,845,610 bytes; SHA-256 `da2a00fa44ef555a5c6e3b9f8db2b71a045cfdd8c130ad5d94e926b48926847f`.
+- Nexus publication [run 35030155299](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/35030155299) succeeded with file-version ID `14920716516913`.
+- The fixed public-alpha URL was independently fetched after publication and returned display version `0.1.0-alpha.16.4.4`, internal version `0.1.16.404`, and the matching ZIP size and digest.
+
+See the [16.4.4 release notes](releases/0.1.0-alpha.16.4.4.md) for the cumulative fixes.
