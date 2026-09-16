@@ -176,8 +176,14 @@ public partial class CategoryNameDialog : AdonisWindow
 			SeparatorPreviewPanel.Tag = useCategoryColorsForHover;
 			HideSeparatorLineCheckBox.IsChecked = hideSeparatorLine;
 			HideSeparatorLineCheckBox.Visibility = Visibility.Visible;
-			GlobalSeparatorCheckBox.IsChecked = allowGlobalSeparator && isGlobalSeparator;
-			GlobalSeparatorCheckBox.Visibility = allowGlobalSeparator ? Visibility.Visible : Visibility.Collapsed;
+			GlobalSeparatorCheckBox.Visibility = Visibility.Visible;
+			GlobalSeparatorCheckBox.IsChecked = allowGlobalSeparator ? isGlobalSeparator : true;
+			GlobalSeparatorCheckBox.IsEnabled = allowGlobalSeparator;
+			if (!allowGlobalSeparator)
+			{
+				GlobalSeparatorCheckBoxText.Text = "Used in every load order";
+				GlobalSeparatorCheckBox.ToolTip = "Inactive Mods organization is shared across every load order automatically.";
+			}
 			ColorFieldLabel.Text = "Separator color";
 			IconFieldLabel.Text = "Icon";
 			TintCustomIconText.Text = "Tint with separator color";

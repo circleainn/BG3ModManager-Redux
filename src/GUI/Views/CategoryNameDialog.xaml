@@ -480,7 +480,7 @@
 							<CheckBox x:Name="GlobalSeparatorCheckBox" Margin="0,6,0,0"
 								Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed"
 								ToolTip="Keep this separator available when you switch saved load orders.">
-								<TextBlock Text="Use in every load order" TextWrapping="Wrap" />
+								<TextBlock x:Name="GlobalSeparatorCheckBoxText" Text="Use in every load order" TextWrapping="Wrap" />
 							</CheckBox>
 						</StackPanel>
 					</Grid>

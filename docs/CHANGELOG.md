@@ -15,7 +15,7 @@ source for individual implementation details.
 
 ### Added
 
-- Add a **Use in every load order** option when creating or editing an Active Mods separator. Global separators carry their styling, description, position, and section membership between saved orders; existing separators remain scoped to their saved order by default.
+- Add a visible separator-scope control to both panes. Active Mods separators can opt into **Use in every load order**; Inactive Mods explains that its organization is already shared automatically. Global separators carry their styling, description, position, and section membership between saved orders, while existing Active Mods separators remain scoped to their saved order by default.
 - Add an assignable **Show or Hide Mod File Names** shortcut that toggles the File Name column in both mod panes. It has no default binding and can be set in **Keyboard Shortcuts**.
 
 ## 0.1.0-alpha.16.4.4 — 2026-09-15
