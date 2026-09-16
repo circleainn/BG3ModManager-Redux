@@ -147,6 +147,13 @@ public class AppKeys : ReactiveObject
 
 	[MenuSettings(
 		"Edit",
+		"Show or Hide Mod File Names",
+		true,
+		"Toggle the File Name column in both the active and inactive mod lists.")]
+	public Hotkey ToggleModFileNames { get; private set; } = new Hotkey(Key.None);
+
+	[MenuSettings(
+		"Edit",
 		"Expand or Collapse All Active Separators",
 		false,
 		"Toggle every separator in the active load order between expanded and collapsed.")]

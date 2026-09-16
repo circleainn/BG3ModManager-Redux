@@ -105,6 +105,7 @@ project files and resolved dependency graph.
 | ReactiveProperty and ReactiveProperty.Core | MIT | [ReactiveProperty](https://github.com/runceel/ReactiveProperty) |
 | ReactiveUI, ReactiveUI.Fody, and ReactiveUI.Wpf | MIT | [ReactiveUI](https://github.com/reactiveui/ReactiveUI) |
 | SharpCompress | MIT | [SharpCompress](https://github.com/adamhathcock/sharpcompress) |
+| SixLabors.ImageSharp | Apache-2.0 under the Six Labors qualifying open-source grant | [ImageSharp](https://github.com/SixLabors/ImageSharp) |
 | SharpGLTF Core, Runtime, and Toolkit | MIT | [SharpGLTF](https://github.com/vpenades/SharpGLTF) |
 | Splat | MIT | [Splat](https://github.com/reactiveui/splat) |
 | System.Drawing.Common, System.IO.Hashing, System.Reactive, and related .NET runtime assemblies | MIT | [.NET runtime](https://github.com/dotnet/runtime) |

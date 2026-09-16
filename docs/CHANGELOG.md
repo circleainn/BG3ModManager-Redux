@@ -5,7 +5,15 @@ source for individual implementation details.
 
 ## Unreleased
 
-No changes recorded yet.
+### Fixed
+
+- Let long nested context menus scroll, including **Assign Category**, so every category remains reachable with the mouse wheel.
+- Allow mods in a filtered or column-sorted Inactive Mods view to be dragged directly into the intended position in Active Mods while keeping projected-list reordering guarded.
+- Decode the WebP artwork now returned by the Nexus CDN even when its saved URL ends in `.png` or `.jpeg`, restoring linked mod thumbnails.
+
+### Added
+
+- Add an assignable **Show or Hide Mod File Names** shortcut that toggles the File Name column in both mod panes. It has no default binding and can be set in **Keyboard Shortcuts**.
 
 ## 0.1.0-alpha.16.4.4 — 2026-09-15
 

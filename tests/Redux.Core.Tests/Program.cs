@@ -302,6 +302,7 @@ internal static class Program
 			(nameof(interactionBehavior.DrawerRetainsASelectedModDuringCrossListTransferOnly), interactionBehavior.DrawerRetainsASelectedModDuringCrossListTransferOnly),
 			(nameof(interactionBehavior.ProviderPasswordFieldsFollowLoadedSettingsAndUserEdits), interactionBehavior.ProviderPasswordFieldsFollowLoadedSettingsAndUserEdits),
 			(nameof(interactionBehavior.RemoteImageDiagnosticsStripCredentialsAndSignedQueries), interactionBehavior.RemoteImageDiagnosticsStripCredentialsAndSignedQueries),
+			(nameof(interactionBehavior.RemoteImageLoaderDecodesWebpReturnedForNexusArtwork), interactionBehavior.RemoteImageLoaderDecodesWebpReturnedForNexusArtwork),
 			(nameof(interactionBehavior.SavingCurrentOrderCanNeverWriteTheGameExportFile), interactionBehavior.SavingCurrentOrderCanNeverWriteTheGameExportFile),
 			(nameof(interactionBehavior.NewBlankOrderContainsNoActivatedMods), interactionBehavior.NewBlankOrderContainsNoActivatedMods),
 			(nameof(interactionBehavior.WorkingChangesStayDetachedUntilExplicitlySaved), interactionBehavior.WorkingChangesStayDetachedUntilExplicitlySaved),

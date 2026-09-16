@@ -852,15 +852,15 @@
 								VerticalAlignment="Stretch"
 								IsHitTestVisible="False"
 								RenderOptions.BitmapScalingMode="HighQuality"
-								Source="{Binding Metadata.PreviewImageUri, Converter={StaticResource UriToBitmapImageConverter}}"
+								util:RemoteImageBehavior.SourceUri="{Binding Metadata.PreviewImageUri}"
 								Stretch="Uniform"
-								Visibility="{Binding Metadata.PreviewImageVisibility}" />
+								Visibility="Collapsed" />
 							<Grid x:Name="ModDetailsLocalPreviewPlaceholder">
 								<Grid.Style>
 									<Style TargetType="{x:Type Grid}">
 										<Setter Property="Visibility" Value="Visible" />
 										<Style.Triggers>
-											<DataTrigger Binding="{Binding Metadata.PreviewImageVisibility}" Value="Visible">
+							<DataTrigger Binding="{Binding Visibility, ElementName=ModDetailsPreviewImage}" Value="Visible">
 												<Setter Property="Visibility" Value="Collapsed" />
 											</DataTrigger>
 										</Style.Triggers>

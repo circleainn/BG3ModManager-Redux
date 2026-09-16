@@ -3888,6 +3888,14 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		}
 	}
 
+	public void ToggleModFileNameColumn()
+	{
+		if (ViewModel?.Settings == null) return;
+		ViewModel.Settings.ShowModListFileNameColumn = !ViewModel.Settings.ShowModListFileNameColumn;
+		ApplyModListColumnVisibility();
+		ViewModel.QueueSave();
+	}
+
 	private void ResetModListColumnsToDefaults()
 	{
 		ViewModel.Settings.ShowActiveModIndex = true;

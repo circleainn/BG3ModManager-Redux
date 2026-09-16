@@ -58,6 +58,26 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.Equal("https://images.example.test/mod.png", result);
 	}
 
+	public void RemoteImageLoaderDecodesWebpReturnedForNexusArtwork()
+	{
+		using var encoded = new System.IO.MemoryStream();
+		using (var image = new SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(2, 2))
+		{
+			SixLabors.ImageSharp.ImageExtensions.SaveAsWebp(image, encoded);
+		}
+		encoded.Position = 0;
+
+		var behavior = typeof(SettingsWindow).Assembly.GetType(
+			"DivinityModManager.Util.RemoteImageBehavior")!;
+		var decode = behavior.GetMethod("DecodeAsync", BindingFlags.NonPublic | BindingFlags.Static)!;
+		var task = (System.Threading.Tasks.Task<System.Windows.Media.Imaging.BitmapSource>)decode.Invoke(null, [encoded])!;
+		var bitmap = task.GetAwaiter().GetResult();
+
+		RegressionAssert.Equal(2, bitmap.PixelWidth);
+		RegressionAssert.Equal(2, bitmap.PixelHeight);
+		RegressionAssert.True(bitmap.IsFrozen);
+	}
+
 	public void ReduceMotionKeepsPrimaryListStoryboardsFreezeSafeAndInstant()
 	{
 		ReduxWindowBehavior.ConfigureAccessibility(false, ReduxWindowBehavior.BackgroundEffectsDisabled);

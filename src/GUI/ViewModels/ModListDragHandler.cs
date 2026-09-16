@@ -162,8 +162,7 @@ public class ModListDragHandler : DefaultDragHandler
 		{
 			return false;
 		}
-		if ((ReferenceEquals(dragInfo.SourceCollection, _viewModel.DisplayActiveMods) ||
-			 ReferenceEquals(dragInfo.SourceCollection, _viewModel.DisplayInactiveMods)) &&
+		if (ReferenceEquals(dragInfo.SourceCollection, _viewModel.DisplayActiveMods) &&
 			!String.Equals(_viewModel.SelectedModCategory, MainWindowViewModel.AllModsCategory,
 				StringComparison.OrdinalIgnoreCase))
 		{
@@ -179,9 +178,10 @@ public class ModListDragHandler : DefaultDragHandler
 			// Keep sorting view-only by allowing reordering only in the # view.
 			return false;
 		}
-		if (_viewModel.IsInactiveListMetadataSorted &&
-			(ReferenceEquals(dragInfo.SourceCollection, _viewModel.DisplayInactiveMods) ||
-			 ReferenceEquals(dragInfo.SourceCollection, _viewModel.InactiveMods))) return false;
+		// A sorted or filtered inactive projection is still a safe source when the
+		// destination is Active Mods: the payload is resolved by mod identity, not by
+		// its display index. ModListDropHandler continues to reject reordering inside
+		// that projected inactive view.
 		if (dragInfo.Data is ISelectable d && !d.CanDrag)
 		{
 			return false;
