@@ -100,7 +100,7 @@
 	<Grid>
 		<Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 	<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-	<Grid Margin="16,14">
+	<Grid Margin="18,16">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
@@ -111,11 +111,15 @@
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
 		<TextBlock x:Name="DialogHeading" FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="Create a category" />
-		<TextBlock x:Name="DialogHelperText" Grid.Row="1" Margin="0,3,0,8" Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap"
+		<TextBlock x:Name="DialogHelperText" Grid.Row="1" Margin="0,3,0,12" Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap"
 			Text="Assign mods to this category from their right-click menu." />
-		<TextBox x:Name="CategoryNameTextBox" Grid.Row="2" MinHeight="32" VerticalAlignment="Top"
-			MaxLength="40" Padding="8,4" />
-		<StackPanel x:Name="DescriptionEditorPanel" Grid.Row="3" Margin="0,8,0,0">
+		<StackPanel x:Name="NameEditorPanel" Grid.Row="2">
+			<TextBlock x:Name="CategoryNameFieldLabel" Margin="0,0,0,5" FontWeight="SemiBold"
+				Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Name" />
+			<TextBox x:Name="CategoryNameTextBox" MinHeight="34" VerticalAlignment="Top"
+				MaxLength="40" Padding="9,5" />
+		</StackPanel>
+		<StackPanel x:Name="DescriptionEditorPanel" Grid.Row="3" Margin="0,10,0,0">
 			<TextBlock Margin="0,0,0,5" FontWeight="SemiBold"
 				Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Description (optional)" />
 			<TextBox x:Name="CategoryDescriptionTextBox" MinHeight="48" MaxLength="240"
@@ -123,7 +127,7 @@
 				TextChanged="CategoryDescriptionTextBox_TextChanged"
 				ToolTip="Shown when the category is hovered in the Categories pane" />
 		</StackPanel>
-		<Border x:Name="CategoryPreviewPanel" Grid.Row="4" Margin="0,8,0,0" Padding="10,8"
+		<Border x:Name="CategoryPreviewPanel" Grid.Row="4" Margin="0,10,0,0" Padding="12,10"
 			Background="{DynamicResource ReduxSurfaceElevatedBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}"
 			BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 			<Grid>
@@ -225,7 +229,7 @@
 				</Border>
 			</Grid>
 		</Border>
-		<Border x:Name="SeparatorPreviewPanel" Grid.Row="4" Margin="0,8,0,0" Padding="10,8"
+		<Border x:Name="SeparatorPreviewPanel" Grid.Row="4" Margin="0,10,0,0" Padding="12,10"
 			Background="{DynamicResource ReduxSurfaceElevatedBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}"
 			BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}" Visibility="Collapsed">
 			<Grid>
@@ -321,9 +325,9 @@
 				</Grid>
 			</Grid>
 		</Border>
-		<TextBlock x:Name="ColorFieldLabel" Grid.Row="5" Margin="0,8,0,5" FontWeight="SemiBold"
+		<TextBlock x:Name="ColorFieldLabel" Grid.Row="5" Margin="0,12,0,5" FontWeight="SemiBold"
 			Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Color" />
-		<Border x:Name="ColorEditorCard" Grid.Row="6" Padding="12" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+		<Border x:Name="ColorEditorCard" Grid.Row="6" Padding="14" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 			BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 			<Grid>
 				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="14" /><RowDefinition Height="Auto" /><RowDefinition Height="14" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
@@ -431,17 +435,22 @@
 							Text="{Binding Value, ElementName=BlueSlider, StringFormat={}{0:0}}" />
 					</Grid>
 				</StackPanel>
-				<Border x:Name="IconChooserCard" Grid.Row="2" Grid.ColumnSpan="3" Padding="11,9" Background="{DynamicResource ReduxSurfaceBrush}"
+				<Border x:Name="IconChooserCard" Grid.Row="2" Grid.ColumnSpan="3" Padding="12,11" Background="{DynamicResource ReduxSurfaceBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}">
 					<Grid x:Name="IconChooserPanel">
-						<Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-						<StackPanel VerticalAlignment="Center">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
+						<Grid>
+							<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 							<TextBlock x:Name="IconFieldLabel" FontWeight="SemiBold" Text="Icon" />
-							<TextBlock Margin="0,3,12,0" FontSize="{DynamicResource Redux.FontSize.10}" Foreground="{DynamicResource ReduxTextMutedBrush}"
+							<TextBlock Grid.Column="1" Margin="10,1,0,0" FontSize="{DynamicResource Redux.FontSize.10}"
+								Foreground="{DynamicResource ReduxTextMutedBrush}"
 								Text="Choose a built-in symbol or import a square transparent PNG." TextWrapping="Wrap" />
-						</StackPanel>
-						<StackPanel Grid.Column="1" VerticalAlignment="Center">
-							<WrapPanel>
+						</Grid>
+						<WrapPanel Grid.Row="1" Margin="0,8,0,0" VerticalAlignment="Center">
 								<ComboBox x:Name="CategoryIconComboBox" Width="62" SelectedValuePath="Id" MaxDropDownHeight="420"
 									ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
 									SelectionChanged="CategoryIconComboBox_SelectionChanged">
@@ -467,22 +476,23 @@
 								<Button x:Name="DeleteCustomIconButton" Margin="7,0,0,0" MinWidth="32" Padding="7,4" Style="{StaticResource ReduxMinorDestructiveActionButtonStyle}" Visibility="Collapsed" Click="DeleteCustomIcon_Click" ToolTip="Remove the selected custom icon">
 									<controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" />
 								</Button>
-							</WrapPanel>
-							<CheckBox x:Name="TintCustomIconCheckBox" Margin="0,6,0,0" Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed"
+						</WrapPanel>
+						<WrapPanel Grid.Row="2" Margin="0,8,0,0">
+							<CheckBox x:Name="TintCustomIconCheckBox" Margin="0,0,18,0" Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed"
 								Checked="TintCustomIconCheckBox_Changed" Unchecked="TintCustomIconCheckBox_Changed"
 								ToolTip="Use the PNG transparency as a mask and apply this category or separator color.">
 								<TextBlock x:Name="TintCustomIconText" Text="Tint with category color" TextWrapping="Wrap" />
 							</CheckBox>
-							<CheckBox x:Name="HideSeparatorLineCheckBox" Margin="0,6,0,0"
+							<CheckBox x:Name="HideSeparatorLineCheckBox" Margin="0,0,18,0"
 								Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed">
 								<TextBlock Text="Hide separator line" TextWrapping="Wrap" />
 							</CheckBox>
-							<CheckBox x:Name="GlobalSeparatorCheckBox" Margin="0,6,0,0"
+							<CheckBox x:Name="GlobalSeparatorCheckBox" Margin="0"
 								Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed"
 								ToolTip="Keep this separator available when you switch saved load orders.">
 								<TextBlock x:Name="GlobalSeparatorCheckBoxText" Text="Use in every load order" TextWrapping="Wrap" />
 							</CheckBox>
-						</StackPanel>
+						</WrapPanel>
 					</Grid>
 				</Border>
 				<Grid Grid.Row="4" Grid.ColumnSpan="3">

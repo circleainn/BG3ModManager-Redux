@@ -18,6 +18,10 @@ source for individual implementation details.
 - Add a visible separator-scope control to both panes. Active Mods separators can opt into **Use in every load order**; Inactive Mods explains that its organization is already shared automatically. Global separators carry their styling, description, position, and section membership between saved orders, while existing Active Mods separators remain scoped to their saved order by default.
 - Add an assignable **Show or Hide Mod File Names** shortcut that toggles the File Name column in both mod panes. It has no default binding and can be set in **Keyboard Shortcuts**.
 
+### Changed
+
+- Refresh the shared category and separator editor with aligned field labels, steadier card spacing, a cleaner icon row, and compact inline separator options.
+
 ## 0.1.0-alpha.16.4.4 — 2026-09-15
 
 A cumulative silent maintenance hotfix containing the complete alpha.16.4.3 correction set plus load-order export, category assignment, and startup update-check fixes.

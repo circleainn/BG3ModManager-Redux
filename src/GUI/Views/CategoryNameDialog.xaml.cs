@@ -83,7 +83,7 @@ public partial class CategoryNameDialog : AdonisWindow
 		DialogHeading.Text = heading;
 		DialogHelperText.Text = helperText;
 		ColorFieldLabel.Text = fieldLabel;
-		CategoryNameTextBox.Visibility = Visibility.Collapsed;
+		NameEditorPanel.Visibility = Visibility.Collapsed;
 		IconChooserCard.Visibility = Visibility.Collapsed;
 		DescriptionEditorPanel.Visibility = Visibility.Collapsed;
 		CategoryPreviewPanel.Visibility = Visibility.Collapsed;
@@ -170,6 +170,7 @@ public partial class CategoryNameDialog : AdonisWindow
 			CategoryNameTextBox.ToolTip = "Create a custom category to use a different name.";
 		if (visualDividerMode)
 		{
+			CategoryNameFieldLabel.Text = "Label (optional)";
 			DescriptionEditorPanel.Visibility = Visibility.Visible;
 			CategoryPreviewPanel.Visibility = Visibility.Collapsed;
 			SeparatorPreviewPanel.Visibility = Visibility.Visible;
