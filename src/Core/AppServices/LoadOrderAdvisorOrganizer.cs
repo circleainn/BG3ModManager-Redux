@@ -401,6 +401,7 @@ public static class LoadOrderAdvisorOrganizer
 		Position = divider.Position,
 		IsCollapsed = divider.IsCollapsed,
 		HideLine = divider.HideLine,
+		IsGlobal = divider.IsGlobal,
 		MemberModUuids = divider.MemberModUuids?.ToList()
 	};
 }

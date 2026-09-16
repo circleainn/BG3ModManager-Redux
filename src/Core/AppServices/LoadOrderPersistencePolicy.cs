@@ -51,7 +51,7 @@ public static class LoadOrderPersistencePolicy
 	public static List<ModListVisualDividerData> CloneActiveVisualDividers(
 		IEnumerable<ModListVisualDividerData> dividers) =>
 		(dividers ?? Enumerable.Empty<ModListVisualDividerData>())
-		.Where(divider => divider != null && divider.IsActiveList)
+		.Where(divider => divider != null && divider.IsActiveList && !divider.IsGlobal)
 		.Select(divider => new ModListVisualDividerData
 		{
 			Id = divider.Id,
@@ -63,6 +63,7 @@ public static class LoadOrderPersistencePolicy
 			Position = divider.Position,
 			IsCollapsed = divider.IsCollapsed,
 			HideLine = divider.HideLine,
+			IsGlobal = divider.IsGlobal,
 			MemberModUuids = divider.MemberModUuids?.ToList()
 		}).ToList();
 

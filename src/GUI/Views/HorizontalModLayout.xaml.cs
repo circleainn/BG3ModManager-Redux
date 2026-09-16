@@ -1366,14 +1366,16 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		}
 		var dialog = new CategoryNameDialog(color: ViewModel.GetSuggestedCustomCategoryColor(),
 			savedColors: ViewModel.Settings.SavedCategoryColors, visualDividerMode: true,
-			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForInteractions)
+			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForInteractions,
+			allowGlobalSeparator: activeList)
 			{ Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme,
 			ReduxThemeService.GetActiveTheme(ViewModel.Settings), ViewModel.Settings.UsesGeneratedGradients);
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
 		SaveCategoryDialogColors(dialog);
 		ViewModel.AddVisualDivider(activeList, position, dialog.CategoryName, dialog.CategoryColor,
-			dialog.CategoryIconId, dialog.HideSeparatorLine, dialog.CategoryDescription);
+			dialog.CategoryIconId, dialog.HideSeparatorLine, dialog.CategoryDescription,
+			dialog.UseSeparatorInEveryLoadOrder);
 		UpdateSeparatorBulkToggleButtons();
 	}
 
@@ -1588,14 +1590,17 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			ViewModel.Settings.SavedCategoryColors, true, divider.IconId,
 			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForInteractions,
 			description: divider.Description,
-			hideSeparatorLine: divider.HideLine)
+			hideSeparatorLine: divider.HideLine,
+			allowGlobalSeparator: divider.IsActiveList,
+			isGlobalSeparator: divider.IsGlobal)
 			{ Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme,
 			ReduxThemeService.GetActiveTheme(ViewModel.Settings), ViewModel.Settings.UsesGeneratedGradients);
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
 		SaveCategoryDialogColors(dialog);
 		ViewModel.UpdateVisualDivider(item, dialog.CategoryName, dialog.CategoryColor,
-			dialog.CategoryIconId, dialog.HideSeparatorLine, dialog.CategoryDescription);
+			dialog.CategoryIconId, dialog.HideSeparatorLine, dialog.CategoryDescription,
+			dialog.UseSeparatorInEveryLoadOrder);
 	}
 
 	public ModListView ActiveModsView => ActiveModsListView;

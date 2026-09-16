@@ -7,12 +7,15 @@ source for individual implementation details.
 
 ### Fixed
 
+- Allow Active Mods to be reordered while a name or category filter is visible. Redux now uses the surrounding visible rows as anchors in the complete load order, so hidden rows retain their relative positions.
+- Clear completed drag state before and after syncing the load order, preventing an interrupted cross-pane drag from leaving the main menus and controls dimmed.
 - Let long nested context menus scroll, including **Assign Category**, so every category remains reachable with the mouse wheel.
 - Allow mods in a filtered or column-sorted Inactive Mods view to be dragged directly into the intended position in Active Mods while keeping projected-list reordering guarded.
 - Decode the WebP artwork now returned by the Nexus CDN even when its saved URL ends in `.png` or `.jpeg`, restoring linked mod thumbnails.
 
 ### Added
 
+- Add a **Use in every load order** option when creating or editing an Active Mods separator. Global separators carry their styling, description, position, and section membership between saved orders; existing separators remain scoped to their saved order by default.
 - Add an assignable **Show or Hide Mod File Names** shortcut that toggles the File Name column in both mod panes. It has no default binding and can be set in **Keyboard Shortcuts**.
 
 ## 0.1.0-alpha.16.4.4 — 2026-09-15

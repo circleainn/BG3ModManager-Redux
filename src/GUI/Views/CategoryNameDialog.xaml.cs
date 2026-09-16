@@ -31,6 +31,7 @@ public partial class CategoryNameDialog : AdonisWindow
 	public string CategoryName => CategoryNameTextBox.Text?.Trim();
 	public string CategoryDescription => CategoryDescriptionTextBox.Text?.Trim() ?? String.Empty;
 	public bool HideSeparatorLine => HideSeparatorLineCheckBox?.IsChecked == true;
+	public bool UseSeparatorInEveryLoadOrder => GlobalSeparatorCheckBox?.IsChecked == true;
 	public string CategoryColor => CategoryColorPicker.SelectedColor is Color color
 		? $"#{color.R:X2}{color.G:X2}{color.B:X2}" : "#8A6AF1";
 	public string CategoryIconId
@@ -119,7 +120,8 @@ public partial class CategoryNameDialog : AdonisWindow
 		IEnumerable<string> savedColors = null, bool visualDividerMode = false, string iconId = "",
 		bool canResetToDefault = false, bool useCategoryColorsForHover = false, string description = "",
 		bool useCategoryColorsForSidebarSelection = false, bool useCategoryColorsForSidebarText = false,
-		bool showInterfaceIcons = true, bool hideSeparatorLine = false)
+		bool showInterfaceIcons = true, bool hideSeparatorLine = false,
+		bool allowGlobalSeparator = false, bool isGlobalSeparator = false)
 	{
 		InitializeComponent();
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
@@ -174,6 +176,8 @@ public partial class CategoryNameDialog : AdonisWindow
 			SeparatorPreviewPanel.Tag = useCategoryColorsForHover;
 			HideSeparatorLineCheckBox.IsChecked = hideSeparatorLine;
 			HideSeparatorLineCheckBox.Visibility = Visibility.Visible;
+			GlobalSeparatorCheckBox.IsChecked = allowGlobalSeparator && isGlobalSeparator;
+			GlobalSeparatorCheckBox.Visibility = allowGlobalSeparator ? Visibility.Visible : Visibility.Collapsed;
 			ColorFieldLabel.Text = "Separator color";
 			IconFieldLabel.Text = "Icon";
 			TintCustomIconText.Text = "Tint with separator color";

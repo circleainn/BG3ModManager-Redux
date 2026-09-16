@@ -162,14 +162,6 @@ public class ModListDragHandler : DefaultDragHandler
 		{
 			return false;
 		}
-		if (ReferenceEquals(dragInfo.SourceCollection, _viewModel.DisplayActiveMods) &&
-			!String.Equals(_viewModel.SelectedModCategory, MainWindowViewModel.AllModsCategory,
-				StringComparison.OrdinalIgnoreCase))
-		{
-			// A filtered display omits separator markers, so its row indexes cannot
-			// safely express section ownership or load-order positions.
-			return false;
-		}
 		if (_viewModel.IsActiveListMetadataSorted &&
 			(ReferenceEquals(dragInfo.SourceCollection, _viewModel.DisplayActiveMods) ||
 			 ReferenceEquals(dragInfo.SourceCollection, _viewModel.ActiveMods)))

@@ -438,6 +438,30 @@ public sealed class VisualDividerDragPolicyTests
 		RegressionAssert.Equal(3, mapped);
 	}
 
+	public void FilteredReorderUsesVisibleRowsAsCanonicalAnchors()
+	{
+		var full = Enumerable.Range(1, 15)
+			.Select(index => CreateMod(index.ToString()))
+			.ToArray();
+		var visible = new[] { full[0], full[2], full[4], full[9], full[14] };
+		var moved = full[9];
+		var insertIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(
+			visible,
+			full,
+			visibleInsertionIndex: 2);
+
+		var result = VisualModListDropPolicy.Apply(
+			full,
+			Array.Empty<DivinityModData>(),
+			new[] { moved },
+			true,
+			insertIndex);
+
+		RegressionAssert.SequenceEqual(
+			new[] { "1", "2", "3", "4", "10", "5", "6", "7", "8", "9", "11", "12", "13", "14", "15" },
+			result.ActiveItems.Select(item => item.UUID));
+	}
+
 	public void VisibleDropSlotMatchesRecreatedDividerByIdentity()
 	{
 		var fullDivider = CreateDivider("section", collapsed: true);

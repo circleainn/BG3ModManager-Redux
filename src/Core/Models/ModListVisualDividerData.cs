@@ -14,6 +14,9 @@ public class ModListVisualDividerData
 	[DataMember] public int Position { get; set; }
 	[DataMember] public bool IsCollapsed { get; set; }
 	[DataMember] public bool HideLine { get; set; }
+	// Global active-list separators remain available when switching saved load orders.
+	// Per-order separators remain the default so existing workflows keep their scope.
+	[DataMember(EmitDefaultValue = false)] public bool IsGlobal { get; set; }
 	// Null identifies settings written before separator membership was explicit.
 	// An empty list is a deliberate, persistable empty section.
 	[DataMember(EmitDefaultValue = false)] public List<string> MemberModUuids { get; set; }

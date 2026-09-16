@@ -3383,11 +3383,17 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private void ApplyActiveVisualDividers(DivinityLoadOrder order)
 	{
 		Settings.VisualModListDividers ??= [];
+		var globalActiveDividers = CloneVisualDividers(
+			Settings.VisualModListDividers.Where(divider => divider.IsActiveList && divider.IsGlobal));
 		var inactiveDividers = CloneVisualDividers(
 			Settings.VisualModListDividers.Where(divider => !divider.IsActiveList));
 		var activeDividers = LoadOrderPersistencePolicy.CloneActiveVisualDividers(
 			order?.VisualDividers);
-		Settings.VisualModListDividers = activeDividers.Concat(inactiveDividers).ToList();
+		Settings.VisualModListDividers = globalActiveDividers
+			.Concat(activeDividers.Where(local => !globalActiveDividers.Any(global =>
+				global.Id.Equals(local.Id, StringComparison.OrdinalIgnoreCase))))
+			.Concat(inactiveDividers)
+			.ToList();
 		CaptureVisualDividerBaseline();
 	}
 
@@ -5811,6 +5817,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private void ExportLoadOrder()
 	{
+		// Sync is a new interaction boundary. A completed cross-pane drag must never
+		// leave the shell locked while the export review or file work is running.
+		DragHandler?.CompleteDragTracking();
 		RxApp.TaskpoolScheduler.ScheduleAsync(async (ctrl, t) =>
 		{
 			try
@@ -5823,6 +5832,14 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				await Observable.Start(() =>
 				{
 					ShowAlert("Redux could not apply the game load-order changes. No successful change was reported; check the log for details.", AlertType.Danger, 30);
+					return Unit.Default;
+				}, RxApp.MainThreadScheduler);
+			}
+			finally
+			{
+				await Observable.Start(() =>
+				{
+					DragHandler?.CompleteDragTracking();
 					return Unit.Default;
 				}, RxApp.MainThreadScheduler);
 			}
@@ -7468,6 +7485,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				Position = item.Position,
 				IsCollapsed = item.IsCollapsed,
 				HideLine = item.HideLine,
+				IsGlobal = item.IsGlobal,
 				MemberModUuids = item.MemberModUuids?.ToList()
 			})
 			.ToList();
@@ -8488,7 +8506,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		? Settings.VisualModListDividers?.FirstOrDefault(entry => entry.Id.Equals(item.VisualDividerId, StringComparison.OrdinalIgnoreCase))
 		: null;
 
-	public void AddVisualDivider(bool activeList, int position, string title, string color, string iconId, bool hideLine, string description = "")
+	public void AddVisualDivider(bool activeList, int position, string title, string color, string iconId, bool hideLine, string description = "", bool isGlobal = false)
 	{
 		EnsureVisualDividerBaseline();
 		Settings.VisualModListDividers ??= new List<ModListVisualDividerData>();
@@ -8502,6 +8520,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Title = title?.Trim() ?? "", Color = color, IconId = ReduxIconCatalog.Normalize(iconId),
 			Description = description?.Trim() ?? "",
 			IsActiveList = activeList, Position = Math.Max(0, position), HideLine = hideLine,
+			IsGlobal = activeList && isGlobal,
 			MemberModUuids = new List<string>()
 		};
 		Settings.VisualModListDividers.Add(divider);
@@ -8515,7 +8534,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		RecordLoadOrderEdit(historyBefore);
 	}
 
-	public void UpdateVisualDivider(DivinityModData item, string title, string color, string iconId, bool hideLine, string description = "")
+	public void UpdateVisualDivider(DivinityModData item, string title, string color, string iconId, bool hideLine, string description = "", bool isGlobal = false)
 	{
 		var divider = GetVisualDivider(item);
 		if (divider == null) return;
@@ -8526,6 +8545,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		divider.IconId = ReduxIconCatalog.Normalize(iconId);
 		divider.HideLine = hideLine;
 		divider.Description = description?.Trim() ?? "";
+		divider.IsGlobal = divider.IsActiveList && isGlobal;
 		RefreshVisualDividers();
 		if (divider.IsActiveList) HasUnsavedLoadOrderChanges = true;
 		QueueSave();
@@ -8905,6 +8925,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Position = divider.Position,
 			IsCollapsed = divider.IsCollapsed,
 			HideLine = divider.HideLine,
+			IsGlobal = divider.IsGlobal,
 			MemberModUuids = divider.MemberModUuids?.ToList()
 		}).ToList();
 
@@ -8933,6 +8954,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				|| a.Position != b.Position
 				|| a.IsCollapsed != b.IsCollapsed
 				|| a.HideLine != b.HideLine
+				|| a.IsGlobal != b.IsGlobal
 				|| !(a.MemberModUuids ?? []).SequenceEqual(
 					b.MemberModUuids ?? [], StringComparer.OrdinalIgnoreCase))
 				return false;

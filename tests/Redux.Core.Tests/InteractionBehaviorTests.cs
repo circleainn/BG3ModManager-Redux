@@ -277,6 +277,26 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.False(ReferenceEquals(saved.VisualDividers, working.VisualDividers));
 	}
 
+	public void GlobalSeparatorsStayOutOfPerOrderSnapshots()
+	{
+		var dividers = new[]
+		{
+			new ModListVisualDividerData
+			{
+				Id = "global", Title = "Everywhere", IsActiveList = true, IsGlobal = true
+			},
+			new ModListVisualDividerData
+			{
+				Id = "local", Title = "This order", IsActiveList = true
+			}
+		};
+
+		var snapshot = LoadOrderPersistencePolicy.CloneActiveVisualDividers(dividers);
+
+		RegressionAssert.Equal(1, snapshot.Count);
+		RegressionAssert.Equal("local", snapshot.Single().Id);
+	}
+
 	public void SavedCurrentStateRestoresIntoTheSingleCurrentEntry()
 	{
 		var current = new DivinityLoadOrder
