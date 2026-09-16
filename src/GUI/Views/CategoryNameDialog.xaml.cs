@@ -126,7 +126,7 @@ public partial class CategoryNameDialog : AdonisWindow
 		InitializeComponent();
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
 		MaxHeight = Math.Max(MinHeight, SystemParameters.WorkArea.Height - 32);
-		Height = Math.Min(860, MaxHeight);
+		Height = Math.Min(720, MaxHeight);
 		_allowEmptyName = visualDividerMode;
 		_savedColors = (savedColors ?? Enumerable.Empty<string>())
 			.Where(IsValidHexColor).Select(value => value.ToUpperInvariant())

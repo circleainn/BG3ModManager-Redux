@@ -307,7 +307,7 @@ internal static class Program
 			(nameof(interactionBehavior.NewBlankOrderContainsNoActivatedMods), interactionBehavior.NewBlankOrderContainsNoActivatedMods),
 			(nameof(interactionBehavior.WorkingChangesStayDetachedUntilExplicitlySaved), interactionBehavior.WorkingChangesStayDetachedUntilExplicitlySaved),
 			(nameof(interactionBehavior.SavedOrdersKeepIndependentActiveSeparators), interactionBehavior.SavedOrdersKeepIndependentActiveSeparators),
-			(nameof(interactionBehavior.GlobalSeparatorsStayOutOfPerOrderSnapshots), interactionBehavior.GlobalSeparatorsStayOutOfPerOrderSnapshots),
+			(nameof(interactionBehavior.GlobalSeparatorsKeepIndependentPerOrderPlacements), interactionBehavior.GlobalSeparatorsKeepIndependentPerOrderPlacements),
 			(nameof(interactionBehavior.SavedCurrentStateRestoresIntoTheSingleCurrentEntry), interactionBehavior.SavedCurrentStateRestoresIntoTheSingleCurrentEntry),
 			(nameof(interactionBehavior.DuplicateWandChoiceNormalizesToTheSingleVisibleIcon), interactionBehavior.DuplicateWandChoiceNormalizesToTheSingleVisibleIcon),
 			(nameof(interactionBehavior.BuiltInIconPickerHasAUniqueExpandedCatalog), interactionBehavior.BuiltInIconPickerHasAUniqueExpandedCatalog),

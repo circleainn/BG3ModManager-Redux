@@ -8,6 +8,7 @@ source for individual implementation details.
 ### Fixed
 
 - Allow Active Mods to be reordered while a name or category filter is visible. Redux now uses the surrounding visible rows as anchors in the complete load order, so hidden rows retain their relative positions.
+- Keep each global separator's position, collapsed state, and section membership independent in every saved load order while sharing its name, color, icon, and description across orders.
 - Clear completed drag state before and after syncing the load order, preventing an interrupted cross-pane drag from leaving the main menus and controls dimmed.
 - Let long nested context menus scroll, including **Assign Category**, so every category remains reachable with the mouse wheel.
 - Allow mods in a filtered or column-sorted Inactive Mods view to be dragged directly into the intended position in Active Mods while keeping projected-list reordering guarded.
@@ -15,12 +16,12 @@ source for individual implementation details.
 
 ### Added
 
-- Add a visible separator-scope control to both panes. Active Mods separators can opt into **Use in every load order**; Inactive Mods explains that its organization is already shared automatically. Global separators carry their styling, description, position, and section membership between saved orders, while existing Active Mods separators remain scoped to their saved order by default.
+- Add a visible separator-scope control to both panes. Active Mods separators can opt into **Use in every load order**; Inactive Mods explains that its organization is already shared automatically. Global separators share their styling and description while keeping an independent placement in each saved order, and existing Active Mods separators remain scoped to their saved order by default.
 - Add an assignable **Show or Hide Mod File Names** shortcut that toggles the File Name column in both mod panes. It has no default binding and can be set in **Keyboard Shortcuts**.
 
 ### Changed
 
-- Refresh the shared category and separator editor with aligned field labels, steadier card spacing, a cleaner icon row, and compact inline separator options.
+- Refresh the shared category and separator editor as a wider, shorter workspace with side-by-side identity fields, preview and icon controls, aligned labels, and compact inline options so the complete editor fits at its default size.
 
 ## 0.1.0-alpha.16.4.4 — 2026-09-15
 

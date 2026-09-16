@@ -277,7 +277,7 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.False(ReferenceEquals(saved.VisualDividers, working.VisualDividers));
 	}
 
-	public void GlobalSeparatorsStayOutOfPerOrderSnapshots()
+	public void GlobalSeparatorsKeepIndependentPerOrderPlacements()
 	{
 		var dividers = new[]
 		{
@@ -292,9 +292,19 @@ public sealed class InteractionBehaviorTests
 		};
 
 		var snapshot = LoadOrderPersistencePolicy.CloneActiveVisualDividers(dividers);
+		var savedPlacement = new ModListVisualDividerData
+		{
+			Id = "global", Title = "Old copied title", IsActiveList = true, IsGlobal = true,
+			Position = 7, IsCollapsed = true, MemberModUuids = ["order-specific-mod"]
+		};
+		var restored = LoadOrderPersistencePolicy.MergeGlobalDividerPlacement(dividers[0], savedPlacement);
 
-		RegressionAssert.Equal(1, snapshot.Count);
-		RegressionAssert.Equal("local", snapshot.Single().Id);
+		RegressionAssert.Equal(2, snapshot.Count);
+		RegressionAssert.True(snapshot.Single(divider => divider.Id == "global").IsGlobal);
+		RegressionAssert.Equal("Everywhere", restored.Title);
+		RegressionAssert.Equal(7, restored.Position);
+		RegressionAssert.True(restored.IsCollapsed);
+		RegressionAssert.SequenceEqual(new[] { "order-specific-mod" }, restored.MemberModUuids);
 	}
 
 	public void SavedCurrentStateRestoresIntoTheSingleCurrentEntry()

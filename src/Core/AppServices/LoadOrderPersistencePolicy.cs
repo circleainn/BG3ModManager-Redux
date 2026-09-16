@@ -51,7 +51,7 @@ public static class LoadOrderPersistencePolicy
 	public static List<ModListVisualDividerData> CloneActiveVisualDividers(
 		IEnumerable<ModListVisualDividerData> dividers) =>
 		(dividers ?? Enumerable.Empty<ModListVisualDividerData>())
-		.Where(divider => divider != null && divider.IsActiveList && !divider.IsGlobal)
+		.Where(divider => divider != null && divider.IsActiveList)
 		.Select(divider => new ModListVisualDividerData
 		{
 			Id = divider.Id,
@@ -66,6 +66,35 @@ public static class LoadOrderPersistencePolicy
 			IsGlobal = divider.IsGlobal,
 			MemberModUuids = divider.MemberModUuids?.ToList()
 		}).ToList();
+
+	/// <summary>
+	/// Keeps a global separator's shared appearance while restoring the position and
+	/// section membership recorded by the selected load order.
+	/// </summary>
+	public static ModListVisualDividerData MergeGlobalDividerPlacement(
+		ModListVisualDividerData definition,
+		ModListVisualDividerData savedPlacement)
+	{
+		if (definition == null) return null;
+		var placement = savedPlacement != null &&
+			String.Equals(definition.Id, savedPlacement.Id, StringComparison.OrdinalIgnoreCase)
+			? savedPlacement
+			: definition;
+		return new ModListVisualDividerData
+		{
+			Id = definition.Id,
+			Title = definition.Title,
+			Color = definition.Color,
+			IconId = definition.IconId,
+			Description = definition.Description,
+			IsActiveList = true,
+			IsGlobal = true,
+			HideLine = definition.HideLine,
+			Position = placement.Position,
+			IsCollapsed = placement.IsCollapsed,
+			MemberModUuids = placement.MemberModUuids?.ToList()
+		};
+	}
 
 	public static bool RequiresSaveAs(DivinityLoadOrder order)
 	{
