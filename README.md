@@ -92,16 +92,21 @@ uninstall guidance.
 <img src="docs/assets/nexus-description/03-organization.png#gh-dark-mode-only" alt="Categories, separators, and mod details" width="100%">
 <img src="docs/assets/nexus-description/03-organization-light.png#gh-light-mode-only" alt="Categories, separators, and mod details" width="100%">
 
-- Automatic and custom categories with names, descriptions, colors, icons, ordering, and filtering.
+- Automatic and custom categories with names, descriptions, colors, icons, ordering, filtering,
+  and optional icon-only presentation for user-created categories.
 - Up to three visible category assignments per mod.
-- Separators with persistent membership and collapse state. Closed separators move with their
-  contained mods and do not absorb nearby rows unexpectedly.
+- Separators with persistent membership and collapse state. Active separators can stay local to
+  one saved order or share their presentation across every order while retaining an independent
+  placement in each. Closed separators move with their contained mods and do not absorb nearby
+  rows unexpectedly.
 - Compact Active Mods controls can collapse or expand every separator at once. The same action can
   be assigned a shortcut, while individual and context-menu controls remain available.
 - A resizable details drawer and hover cards for descriptions, requirements, files, changelogs,
   source pages, diagnostics, and private notes.
 - Configurable list columns and unified selection between Active and Inactive Mods. The # column
   starts visible in Active and hidden in Inactive; either can be changed in the column menu.
+- Override Mods has its own filterable, sortable pane outside the numbered order, with matching
+  headers, scrollbars, collapse motion, and a configurable collapse/expand shortcut.
 - Inactive ordering and separators save automatically, independently of active-order Save/Discard.
 - Category filtering applies to both panes. Click a filtered/sorted-view notice to clear that view;
   column-menu order follows your column arrangement.

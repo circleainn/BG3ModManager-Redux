@@ -18,13 +18,22 @@ source for individual implementation details.
 ### Added
 
 - Add a visible separator-scope control to both panes. Active Mods separators can opt into **Use in every load order**; Inactive Mods explains that its organization is already shared automatically. Global separators share their styling and description while keeping an independent placement in each saved order, and existing Active Mods separators remain scoped to their saved order by default.
+- Offer existing users a one-time separator upgrade choice when Redux finds separators created before persistent scope was available: make every separator in the current load order persistent, or leave them unchanged for manual review. Fresh installs and users without existing separators do not see the prompt. The bulk conversion remains an unsaved load-order edit and can be undone with Ctrl+Z before saving.
 - Add an assignable **Show or Hide Mod File Names** shortcut that toggles the File Name column in both mod panes. It has no default binding and can be set in **Keyboard Shortcuts**.
 - Let custom category and separator icons use opaque or non-square PNGs. Redux stretches and resizes imported images into a square icon automatically, while color tinting remains optional.
 - Add filtering and column sorting to Override Mods while preserving their always-loaded, outside-the-numbered-order behavior.
+- Add an editable **Collapse or Expand Override Mods** shortcut, defaulting to **Ctrl+Alt+O**, which uses the pane's full animated transition.
+- Let user-created categories opt into an icon-only presentation. Their names remain available in tooltips and menus, and Redux falls back to the label whenever interface icons are hidden. Built-in Redux categories do not expose this per-category option.
 
 ### Changed
 
-- Refresh the shared category and separator editor as a wider, shorter workspace with side-by-side identity fields, preview and icon controls, aligned labels, compact inline options, and presets tucked beneath the sliders so the complete editor fits above its fixed action bar at the default size.
+- Refresh the shared category and separator editor as a wider, shorter workspace with side-by-side identity fields, compact full-width preview and icon rows, aligned options, and presets tucked beneath the sliders so the complete editor fits above its fixed action bar at the default size.
+- Restyle the expanded **Override Mods** section as a proper nested mod pane, with the same header height, filter treatment, attached column-header strip, and edge alignment as Active and Inactive Mods while preserving its existing collapse and always-loaded behavior.
+- Give the nested **Override Mods** pane the same rounded shell and subtle outline used by the surrounding mod panes.
+- Fade the **Override Mods** filter out with the pane's collapse transition and restore it smoothly when the pane expands, leaving the compact collapsed header text-only.
+- Remove the unused number placeholder from **Override Mods** and align its column-header gutter, scrollbar start, clipping, and widths with the Active and Inactive mod panes while keeping Override's dedicated column order independent.
+- Give vertical scrollbars a consistent inset from pane headers and lower edges so their rails and thumbs no longer touch or visually clip into surrounding chrome.
+- Unify the Categories, Inactive Mods, Override Mods, and Mod Drawer collapse controls around the same compact chevron sizing, hover pill, motion, and interaction treatment.
 
 ## 0.1.0-alpha.16.4.4 — 2026-09-15
 

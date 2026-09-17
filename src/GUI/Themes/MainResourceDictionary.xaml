@@ -2417,11 +2417,13 @@
 		<Grid Width="12" Background="Transparent">
 			<Border x:Name="TrackRail"
 				Width="3"
+				Margin="0,4,0,4"
 				HorizontalAlignment="Center"
 				Background="{DynamicResource ReduxSurfaceMutedBrush}"
 				CornerRadius="2"
 				Opacity="0.45" />
 			<Track x:Name="PART_Track"
+				Margin="0,4,0,4"
 				IsDirectionReversed="True"
 				Orientation="Vertical">
 				<Track.DecreaseRepeatButton>
@@ -2462,12 +2464,14 @@
 			<Border x:Name="TrackRail"
 				Grid.Row="1"
 				Width="3"
+				Margin="0,4,0,4"
 				HorizontalAlignment="Center"
 				Background="{DynamicResource ReduxSurfaceMutedBrush}"
 				CornerRadius="2"
 				Opacity="0.45" />
 			<Track x:Name="PART_Track"
 				Grid.Row="1"
+				Margin="0,4,0,4"
 				IsDirectionReversed="True"
 				Orientation="Vertical">
 				<Track.DecreaseRepeatButton>
@@ -5007,24 +5011,11 @@
 		<Setter Property="Margin" Value="4,0,0,0" />
 		<Setter Property="Visibility" Value="Collapsed" />
 	</Style>
-	<GridView x:Key="HeaderlessModGridView"
+	<GridView x:Key="OverrideModGridView"
 	    x:Shared="False"
 	    AllowsColumnReorder="False"
 	    ColumnHeaderContainerStyle="{StaticResource GridViewLeftContainerStyle}">
 		<GridView.Columns>
-			<GridViewColumn Width="45"
-				behavior:ScreenReaderHelperBehavior.HelpText="This override package is outside the numbered load order"
-				behavior:ScreenReaderHelperBehavior.Name="Not in load order">
-				<GridViewColumn.CellTemplate>
-					<DataTemplate>
-						<TextBlock Margin="2,0,2,0"
-							HorizontalAlignment="Center"
-							Foreground="{DynamicResource ReduxTextMutedBrush}"
-							Text="~"
-							ToolTip="Not part of the numbered load order" />
-					</DataTemplate>
-				</GridViewColumn.CellTemplate>
-			</GridViewColumn>
 			<GridViewColumn Width="240" CellTemplate="{StaticResource ModNameTemplate}">
 				<GridViewColumn.Header>
 					<TextBlock Text="Name" />

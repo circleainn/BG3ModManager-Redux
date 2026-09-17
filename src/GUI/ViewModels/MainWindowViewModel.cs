@@ -106,10 +106,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private const string StartupLoadOrderWarningKey = "load-order-mod-warning";
 	private const string StartupRestoreLoadOrderPromptKey = "restore-reset-load-order";
 	private const string StartupElevationWarningKey = "process-elevation-warning";
+	private const string StartupPersistentSeparatorUpgradeKey = "persistent-separator-upgrade";
 	private const string QuickSaveOrderName = "Current Order";
 	private const string ProviderCredentialFileName = "provider-credentials.dat";
 	private readonly StartupNotificationQueue _startupNotifications = new();
 	private int _elevationWarningScheduled;
+	private bool _persistentSeparatorUpgradeScheduled;
 	private readonly SemaphoreSlim _nxmActivationGate = new(1, 1);
 	private readonly HashSet<string> _acquiredPackageInspections = new(StringComparer.Ordinal);
 	private NxmDownloadManager _nxmDownloadManager;
@@ -300,8 +302,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public string SelectedModCategoryIcon => GetCategoryIcon(SelectedModCategory);
 	public bool SelectedModCategoryHasIcon => !String.IsNullOrWhiteSpace(SelectedModCategoryIcon);
 	public string OverrideModsCategoryColor => GetCategoryColor("Overrides");
-	public string OverrideModsCategoryIcon => GetCategoryIcon("Overrides");
-	public bool OverrideModsCategoryHasIcon => !String.IsNullOrWhiteSpace(OverrideModsCategoryIcon);
 	[Reactive] public bool IsCategoriesExpanded { get; set; } = true;
 	[Reactive] public bool IsAlwaysLoadedExpanded { get; set; } = true;
 	[Reactive] public bool IsInactiveModsExpanded { get; set; } = true;
@@ -3343,6 +3343,87 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				DivinityApp.Log($"Error setting next load order:\n{ex}");
 			}
 		}
+
+	}
+
+	private void SchedulePersistentSeparatorUpgrade()
+	{
+		if (Settings.HasResolvedPersistentSeparatorUpgrade ||
+			_persistentSeparatorUpgradeScheduled || SelectedModOrder == null) return;
+
+		var dividers = Settings.VisualModListDividers ?? [];
+		if (!PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(false, dividers))
+		{
+			// Another saved order may contain the user's pre-upgrade separators. Defer
+			// the choice until that order is selected instead of silently consuming it.
+			var anotherOrderNeedsUpgrade = ModOrderList.Any(order =>
+				PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(false, order?.VisualDividers));
+			if (anotherOrderNeedsUpgrade) return;
+			Settings.HasResolvedPersistentSeparatorUpgrade = true;
+			SaveSettings();
+			return;
+		}
+
+		_persistentSeparatorUpgradeScheduled = true;
+		ShowWhenMainWindowReady(StartupPersistentSeparatorUpgradeKey,
+			ShowPersistentSeparatorUpgrade);
+	}
+
+	private void ShowPersistentSeparatorUpgrade()
+	{
+		_persistentSeparatorUpgradeScheduled = false;
+		if (Settings.HasResolvedPersistentSeparatorUpgrade || SelectedModOrder == null) return;
+
+		var dividers = Settings.VisualModListDividers ?? [];
+		if (!PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(false, dividers))
+		{
+			Settings.HasResolvedPersistentSeparatorUpgrade = true;
+			SaveSettings();
+			return;
+		}
+
+		var separatorCount = dividers.Count(divider => divider?.IsActiveList == true && !divider.IsGlobal);
+		var orderName = String.IsNullOrWhiteSpace(SelectedModOrder.Name) ? "this load order" : $"'{SelectedModOrder.Name}'";
+		var message =
+			$"Redux found {separatorCount} existing separator{(separatorCount == 1 ? String.Empty : "s")} in {orderName}.\n\n" +
+			"Separators can now stay available when you switch saved load orders. Each load order still remembers where a persistent separator belongs and whether it is collapsed.\n\n" +
+			"Would you like to make every existing separator in this load order persistent? " +
+			"You can leave them unchanged and enable 'Use in every load order' manually while editing a separator. " +
+			"If you convert them now, the change remains unsaved and Ctrl+Z can undo it.";
+		var result = ReduxMessageBox.ShowWithLabels(
+			Window,
+			message,
+			"Keep Separators Across Load Orders",
+			MessageBoxButton.YesNo,
+			MessageBoxImage.Question,
+			MessageBoxResult.No,
+			(MessageBoxResult.Yes, "Make all persistent"),
+			(MessageBoxResult.No, "Leave unchanged"));
+		if (result is not (MessageBoxResult.Yes or MessageBoxResult.No)) return;
+
+		Settings.HasResolvedPersistentSeparatorUpgrade = true;
+		if (result == MessageBoxResult.No)
+		{
+			SaveSettings();
+			return;
+		}
+
+		var historyBefore = CaptureLoadOrderEditState();
+		var changed = PersistentSeparatorUpgradePolicy.MakeAllActiveSeparatorsPersistent(dividers);
+		if (changed == 0)
+		{
+			SaveSettings();
+			return;
+		}
+
+		RefreshVisualDividers();
+		HasUnsavedLoadOrderChanges = true;
+		QueueSave();
+		RecordLoadOrderEdit(historyBefore);
+		ShowAlert(
+			$"Made {changed} separator{(changed == 1 ? String.Empty : "s")} available in every load order. Press Ctrl+Z to undo before saving.",
+			AlertType.Success,
+			12);
 	}
 
 	private void MigrateLegacyActiveVisualDividers(
@@ -3978,6 +4059,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		if (order == null) return false;
 
 		IsLoadingOrder = true;
+		var loaded = false;
 		try
 		{
 			var loadFrom = order.Order;
@@ -4042,11 +4124,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			HasUnsavedLoadOrderChanges = false;
 			ClearLoadOrderEditHistory();
 			ScheduleExportStatusRefresh();
+			loaded = true;
 			return true;
 		}
 		finally
 		{
 			IsLoadingOrder = false;
+			if (loaded) SchedulePersistentSeparatorUpgrade();
 		}
 	}
 
@@ -7269,7 +7353,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				Name = category.Trim(),
 				Color = GetCategoryColor(category),
 				IconId = PrepareReduxBundleIconForExport(GetCategoryIcon(category), presentation, assets),
-				Description = GetCategoryDescription(category)
+				Description = GetCategoryDescription(category),
+				IconOnly = IsIconOnlyModCategory(category)
 			});
 		}
 		presentation.CustomCategoryDisplayOrder = (Settings.ModCategoryDisplayOrder ?? new List<string>())
@@ -7477,6 +7562,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Settings.ModCategoryIcons ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
 		var descriptions = new Dictionary<string, string>(
 			Settings.ModCategoryDescriptions ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
+		var iconOnlyCategories = (Settings.IconOnlyModCategories ?? new List<string>()).ToList();
 		var assignments = (Settings.ModCategoryAssignments ?? new Dictionary<string, List<string>>())
 			.ToDictionary(entry => entry.Key, entry => entry.Value?.ToList() ?? new List<string>(),
 				StringComparer.OrdinalIgnoreCase);
@@ -7513,7 +7599,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			if (matchingCustom != null &&
 				String.Equals(GetCategoryColor(matchingCustom), importedColor, StringComparison.OrdinalIgnoreCase) &&
 				String.Equals(GetCategoryIcon(matchingCustom), importedIcon, StringComparison.OrdinalIgnoreCase) &&
-				String.Equals(GetCategoryDescription(matchingCustom), importedDescription, StringComparison.Ordinal))
+				String.Equals(GetCategoryDescription(matchingCustom), importedDescription, StringComparison.Ordinal) &&
+				IsIconOnlyModCategory(matchingCustom) == importedCategory.IconOnly)
 			{
 				effectiveName = matchingCustom;
 			}
@@ -7535,6 +7622,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			icons[effectiveName] = importedIcon;
 			if (String.IsNullOrWhiteSpace(importedDescription)) descriptions.Remove(effectiveName);
 			else descriptions[effectiveName] = importedDescription;
+			iconOnlyCategories.RemoveAll(category => category.Equals(effectiveName, StringComparison.OrdinalIgnoreCase));
+			if (importedCategory.IconOnly && !String.IsNullOrWhiteSpace(importedIcon))
+				iconOnlyCategories.Add(effectiveName);
 			categoryMap[requestedName] = effectiveName;
 		}
 
@@ -7599,6 +7689,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		var previousColors = Settings.ModCategoryColors;
 		var previousIcons = Settings.ModCategoryIcons;
 		var previousDescriptions = Settings.ModCategoryDescriptions;
+		var previousIconOnlyCategories = Settings.IconOnlyModCategories;
 		var previousAssignments = Settings.ModCategoryAssignments;
 		var previousDividers = Settings.VisualModListDividers;
 		try
@@ -7611,6 +7702,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Settings.ModCategoryColors = colors;
 			Settings.ModCategoryIcons = icons;
 			Settings.ModCategoryDescriptions = descriptions;
+			Settings.IconOnlyModCategories = iconOnlyCategories.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 			Settings.ModCategoryAssignments = assignments;
 			Settings.VisualModListDividers = dividers;
 			if (!SaveSettings()) throw new IOException("The imported categories and separators could not be saved.");
@@ -7625,6 +7717,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Settings.ModCategoryColors = previousColors;
 			Settings.ModCategoryIcons = previousIcons;
 			Settings.ModCategoryDescriptions = previousDescriptions;
+			Settings.IconOnlyModCategories = previousIconOnlyCategories;
 			Settings.ModCategoryAssignments = previousAssignments;
 			Settings.VisualModListDividers = previousDividers;
 			DivinityApp.Log($"Failed to import Redux presentation: {exception}");
@@ -8508,6 +8601,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	// offer the same complete category set.
 	public IReadOnlyList<string> GetAssignableModCategories() => GetAllModCategories();
 	public bool IsCustomModCategory(string category) => Settings.CustomModCategories?.Contains(category, StringComparer.OrdinalIgnoreCase) == true;
+	public bool IsIconOnlyModCategory(string category) => IsCustomModCategory(category) &&
+		Settings.IconOnlyModCategories?.Contains(category, StringComparer.OrdinalIgnoreCase) == true;
 
 	public ModListVisualDividerData GetVisualDivider(DivinityModData item) => item?.IsVisualDivider == true
 		? Settings.VisualModListDividers?.FirstOrDefault(entry => entry.Id.Equals(item.VisualDividerId, StringComparison.OrdinalIgnoreCase))
@@ -9546,6 +9641,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		Settings.ModCategoryColors.Remove(existing);
 		Settings.ModCategoryIcons.Remove(existing);
 		Settings.ModCategoryDescriptions.Remove(existing);
+		Settings.IconOnlyModCategories?.RemoveAll(item => item.Equals(existing, StringComparison.OrdinalIgnoreCase));
 		Settings.DisabledModCategories.RemoveAll(item => item.Equals(existing, StringComparison.OrdinalIgnoreCase));
 		Settings.UnseenCategoryModIds.Remove(existing);
 		foreach (var assignment in Settings.ModCategoryAssignments.Values)
@@ -9606,7 +9702,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			? Settings.UnseenCategoryModIds.Values.Any(ids => ids.Count > 0)
 			: Settings.UnseenCategoryModIds.TryGetValue(category, out var ids) && ids.Count > 0);
 
-	public bool TryAddCustomModCategory(string categoryName, string color, string iconId, string description, out string error)
+	public bool TryAddCustomModCategory(string categoryName, string color, string iconId, string description,
+		bool iconOnly, out string error)
 	{
 		categoryName = categoryName?.Trim();
 		error = String.Empty;
@@ -9628,7 +9725,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			.OrderBy(category => category, StringComparer.CurrentCultureIgnoreCase)
 			.ToList();
 		Settings.ModCategoryColors[categoryName] = color;
-		Settings.ModCategoryIcons[categoryName] = ReduxIconCatalog.Normalize(iconId);
+		var normalizedIcon = ReduxIconCatalog.Normalize(iconId);
+		Settings.ModCategoryIcons[categoryName] = normalizedIcon;
+		Settings.IconOnlyModCategories ??= new List<string>();
+		if (iconOnly && !String.IsNullOrWhiteSpace(normalizedIcon)) Settings.IconOnlyModCategories.Add(categoryName);
 		description = NormalizeCategoryDescription(description);
 		if (!String.IsNullOrWhiteSpace(description)) Settings.ModCategoryDescriptions[categoryName] = description;
 		SaveSettings();
@@ -9638,7 +9738,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	public string GetSuggestedCustomCategoryColor() => GetNextCustomCategoryColor();
 
-	public bool TrySetCategoryStyle(string category, string color, string iconId, string description, out string error)
+	public bool TrySetCategoryStyle(string category, string color, string iconId, string description,
+		bool iconOnly, out string error)
 	{
 		error = String.Empty;
 		if (String.IsNullOrWhiteSpace(category) || !Regex.IsMatch(color ?? String.Empty, "^#[0-9A-Fa-f]{6}$"))
@@ -9648,7 +9749,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 		Settings.ModCategoryColors[category] = color.ToUpperInvariant();
 		// An explicit empty value overrides built-in defaults with the original dot.
-		Settings.ModCategoryIcons[category] = ReduxIconCatalog.Normalize(iconId);
+		var normalizedIcon = ReduxIconCatalog.Normalize(iconId);
+		Settings.ModCategoryIcons[category] = normalizedIcon;
+		Settings.IconOnlyModCategories ??= new List<string>();
+		Settings.IconOnlyModCategories?.RemoveAll(item => item.Equals(category, StringComparison.OrdinalIgnoreCase));
+		if (IsCustomModCategory(category) && iconOnly && !String.IsNullOrWhiteSpace(normalizedIcon))
+			Settings.IconOnlyModCategories.Add(category);
 		description = NormalizeCategoryDescription(description);
 		if (String.IsNullOrWhiteSpace(description)) Settings.ModCategoryDescriptions.Remove(category);
 		else Settings.ModCategoryDescriptions[category] = description;
@@ -9670,6 +9776,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		Settings.ModCategoryColors.Remove(category);
 		Settings.ModCategoryIcons.Remove(category);
 		Settings.ModCategoryDescriptions.Remove(category);
+		Settings.IconOnlyModCategories?.RemoveAll(item => item.Equals(category, StringComparison.OrdinalIgnoreCase));
 		SaveSettings();
 		RefreshModCategories();
 	}
@@ -9836,7 +9943,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					GetCategoryIcon(category),
 					GetCategoryDescription(category),
 					showIcons,
-					useIconsOnly,
+					useIconsOnly || IsIconOnlyModCategory(category),
 					useColoredText))
 				.ToList();
 		}
@@ -9845,8 +9952,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private void RefreshModCategories()
 	{
 		this.RaisePropertyChanged(nameof(OverrideModsCategoryColor));
-		this.RaisePropertyChanged(nameof(OverrideModsCategoryIcon));
-		this.RaisePropertyChanged(nameof(OverrideModsCategoryHasIcon));
 		var allMods = ActiveMods.Concat(InactiveMods).Concat(ForceLoadedMods)
 			.Where(mod => !mod.IsVisualDivider)
 			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
@@ -9867,7 +9972,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					GetCategoryIcon(category),
 					GetCategoryDescription(category),
 					Settings.ShowCategoryIconsInPills,
-					Settings.UseIconsOnly,
+					Settings.UseIconsOnly || IsIconOnlyModCategory(category),
 					Settings.UseCategoryColorsForSidebarText))
 				.ToList();
 			if (mod.DisplayCategories == null || !mod.DisplayCategories.SequenceEqual(displayCategories))
@@ -9935,7 +10040,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			mod.DisplayCategories.Any(item => item.Name.Equals(UncategorizedModsCategory, StringComparison.OrdinalIgnoreCase)));
 		categoryFilters.Add(new ModCategoryFilterItem(AllModsCategory, allMods.Count,
 			GetCategoryColor(AllModsCategory), GetCategoryIcon(AllModsCategory),
-			CategoryHasNewMods(AllModsCategory), GetCategoryDescription(AllModsCategory)));
+			CategoryHasNewMods(AllModsCategory), GetCategoryDescription(AllModsCategory), false));
 		foreach (var category in GetSidebarCategoryOrder())
 		{
 			if (!IsModCategoryEnabled(category)) continue;
@@ -9944,7 +10049,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				: allMods.Count(mod => mod.DisplayCategories.Any(item => item.Name.Equals(category, StringComparison.OrdinalIgnoreCase)));
 			if (!Settings.HideEmptyModCategories || count > 0)
 				categoryFilters.Add(new ModCategoryFilterItem(category, count, GetCategoryColor(category),
-					GetCategoryIcon(category), CategoryHasNewMods(category), GetCategoryDescription(category)));
+					GetCategoryIcon(category), CategoryHasNewMods(category), GetCategoryDescription(category),
+					IsIconOnlyModCategory(category)));
 		}
 		ObservableCollectionSynchronizer.Synchronize(
 			ModCategoryFilters,
@@ -9975,6 +10081,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		&& String.Equals(current.Color, desired.Color, StringComparison.OrdinalIgnoreCase)
 		&& String.Equals(current.IconId, desired.IconId, StringComparison.OrdinalIgnoreCase)
 		&& String.Equals(current.Description, desired.Description, StringComparison.Ordinal)
+		&& current.IsIconOnly == desired.IsIconOnly
 		&& current.HasNewMods == desired.HasNewMods;
 
 	/// <summary>

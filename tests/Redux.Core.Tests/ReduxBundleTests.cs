@@ -53,6 +53,7 @@ internal sealed class ReduxBundleTests
 				new[] { "Quest Mods" },
 				contents.Presentation.CategoryAssignments[SecondUuid]);
 			RegressionAssert.Equal("Quest-related additions.", contents.Presentation.CustomCategories[0].Description);
+			RegressionAssert.True(contents.Presentation.CustomCategories[0].IconOnly);
 			RegressionAssert.Equal("Chapter One", contents.Presentation.Dividers[0].Title);
 			RegressionAssert.Equal("Main quest sequence.", contents.Presentation.Dividers[0].Description);
 			RegressionAssert.True(contents.Presentation.Dividers[0].IsCollapsed);
@@ -346,7 +347,8 @@ internal sealed class ReduxBundleTests
 					Name = "Quest Mods",
 					Color = "#D7A24B",
 					IconId = CustomIconReference,
-					Description = "Quest-related additions."
+					Description = "Quest-related additions.",
+					IconOnly = true
 				}
 			},
 			CustomCategoryDisplayOrder = new List<string> { "Quest Mods" },

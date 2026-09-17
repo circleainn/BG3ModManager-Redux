@@ -36,6 +36,11 @@
 					</Setter.Value>
 				</Setter>
 			</Style>
+			<Style x:Key="OverrideModListViewStyle" BasedOn="{StaticResource ModOrderListViewWithDrag}" TargetType="{x:Type c:ModListView}">
+				<!-- Override Mods shares the exact pane chrome and scrollbar template, but remains read-only for ordering. -->
+				<Setter Property="dd:DragDrop.IsDragSource" Value="False" />
+				<Setter Property="dd:DragDrop.IsDropTarget" Value="False" />
+			</Style>
 			<Style x:Key="ModSectionCard" TargetType="{x:Type Border}">
 				<!--
 					Panel chrome and list content use separate semantic layers: the full-bleed
@@ -370,11 +375,22 @@
 				<Setter Property="Template">
 					<Setter.Value>
 						<ControlTemplate TargetType="{x:Type ToggleButton}">
-							<Border x:Name="ToggleChrome" Background="Transparent" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+							<Border x:Name="ToggleChrome"
+								Background="Transparent"
+								CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+								RenderTransformOrigin="0.5,0.5"
+								util:ReduxWindowBehavior.HoverLift="1">
+								<Border.RenderTransform>
+									<TranslateTransform Y="0" />
+								</Border.RenderTransform>
 								<Grid>
 									<Border x:Name="HoverSurface"
+										Width="24"
+										Height="24"
+										HorizontalAlignment="Center"
+										VerticalAlignment="Center"
 										Background="{DynamicResource ReduxAccentSoftBrush}"
-										CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+										CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
 										IsHitTestVisible="False"
 										Opacity="0" />
 									<Path x:Name="ToggleGlyph"
@@ -1605,7 +1621,8 @@
 								<Grid Grid.Column="0" Width="14"
 									Height="14"
 									Margin="0,0,7,0"
-									VerticalAlignment="Center">
+									VerticalAlignment="Center"
+									ToolTip="{Binding Name}">
 									<Grid.Style>
 										<Style TargetType="{x:Type Grid}">
 											<Setter Property="Visibility" Value="Visible" />
@@ -1634,9 +1651,16 @@
 											<Style TargetType="{x:Type TextBlock}">
 												<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 												<Style.Triggers>
-													<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarText, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
-														<Setter Property="Foreground" Value="{Binding Color}" />
-													</DataTrigger>
+											<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarText, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
+												<Setter Property="Foreground" Value="{Binding Color}" />
+											</DataTrigger>
+											<MultiDataTrigger>
+												<MultiDataTrigger.Conditions>
+													<Condition Binding="{Binding IsIconOnly}" Value="True" />
+													<Condition Binding="{Binding DataContext.Settings.ShowCategoryIconsInPills, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True" />
+												</MultiDataTrigger.Conditions>
+												<Setter Property="Visibility" Value="Collapsed" />
+											</MultiDataTrigger>
 												</Style.Triggers>
 											</Style>
 										</TextBlock.Style>
@@ -1896,57 +1920,46 @@
 					ShowsPreview="False"
 					Style="{StaticResource ReduxHorizontalSplitterStyle}"
 					Visibility="Collapsed" />
-				<Grid x:Name="AlwaysLoadedSectionGrid" Grid.Row="2">
+				<Border x:Name="AlwaysLoadedSectionShell" Grid.Row="2" Margin="6,4,6,6"
+					Background="{DynamicResource ReduxSurfaceBrush}"
+					BorderBrush="{DynamicResource ReduxBorderBrush}"
+					BorderThickness="1"
+					ClipToBounds="True"
+					CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+					SnapsToDevicePixels="True">
+				<Grid x:Name="AlwaysLoadedSectionGrid">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="Auto" />
+						<RowDefinition Height="1" />
 						<RowDefinition Height="*" />
 					</Grid.RowDefinitions>
-					<Border x:Name="AlwaysLoadedHeaderGrid" Margin="6,3,6,7" Padding="6,1"
-						Background="{DynamicResource ReduxSurfaceMutedBrush}"
-						BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
-						CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
+					<Border Grid.Row="0"
+						Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+						CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
+						IsHitTestVisible="False" />
+					<Border x:Name="AlwaysLoadedHeaderGrid"
+						Height="{DynamicResource Redux.PaneHeaderHeight}" Padding="12,0"
+						Background="Transparent"
+						BorderThickness="0"
 						SnapsToDevicePixels="True"
 						ToolTip="Always loaded while installed - outside the normal load order">
 						<Grid>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto" />
-								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="*" />
 								<ColumnDefinition Width="Auto" />
 							</Grid.ColumnDefinitions>
-							<c:ReduxIcon Width="13" Height="13" Margin="0,0,7,0" VerticalAlignment="Center"
-								IconKey="{Binding OverrideModsCategoryIcon}"
-								Foreground="{Binding OverrideModsCategoryColor, Converter={StaticResource StringToSolidBrushConverter}}">
-								<c:ReduxIcon.Style>
-									<Style BasedOn="{StaticResource ReduxOptionalInterfaceIconStyle}" TargetType="{x:Type c:ReduxIcon}">
-										<Style.Triggers>
-											<DataTrigger Binding="{Binding OverrideModsCategoryHasIcon}" Value="False">
-												<Setter Property="Visibility" Value="Collapsed" />
-											</DataTrigger>
-										</Style.Triggers>
-									</Style>
-								</c:ReduxIcon.Style>
-							</c:ReduxIcon>
-							<TextBlock Grid.Column="1" VerticalAlignment="Center"
-								FontSize="{DynamicResource Redux.FontSize.12}" FontWeight="SemiBold" Text="Override Mods">
-								<TextBlock.Style>
-									<Style TargetType="{x:Type TextBlock}">
-										<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
-										<Style.Triggers>
-											<DataTrigger Binding="{Binding Settings.UseCategoryColorsForSidebarText}" Value="True">
-												<Setter Property="Foreground" Value="{Binding OverrideModsCategoryColor, Converter={StaticResource StringToSolidBrushConverter}}" />
-											</DataTrigger>
-										</Style.Triggers>
-									</Style>
-								</TextBlock.Style>
-							</TextBlock>
-							<Grid Grid.Column="2" Width="190" Margin="16,0,10,0" HorizontalAlignment="Right">
+							<TextBlock VerticalAlignment="Center"
+								Foreground="{Binding OverrideModsCategoryColor, Converter={StaticResource StringToSolidBrushConverter}}"
+								Style="{StaticResource ModSectionTitle}"
+								Text="Override Mods" />
+							<Grid x:Name="OverrideModsFilterHost" Grid.Column="1" Width="220" Margin="16,0,10,0" HorizontalAlignment="Right">
 								<c:UnfocusableTextBox x:Name="OverrideModsFilterTextBox"
 									Height="28" Padding="4,0" VerticalAlignment="Center"
 									behavior:ScreenReaderHelperBehavior.Name="Override Mods Filter"
 									AcceptsReturn="False" AcceptsTab="False"
 									adonisExtensions:CornerRadiusExtension.CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
-									Background="{DynamicResource ReduxSurfaceBrush}"
+									Background="{DynamicResource ReduxSurfaceMutedBrush}"
 									BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
 									CanUndoTextOnEscape="True" TextChanged="OverrideModsFilterTextBox_TextChanged"
 									ToolTip="Filter Override Mods" />
@@ -1961,25 +1974,29 @@
 									</TextBlock.Style>
 								</TextBlock>
 							</Grid>
-							<ToggleButton x:Name="AlwaysLoadedToggleButton" Grid.Column="3" Width="24" Height="24"
+							<ToggleButton x:Name="AlwaysLoadedToggleButton" Grid.Column="2"
 								AutomationProperties.Name="Collapse or expand Override Mods"
 								Style="{StaticResource ModDetailsToggleStyle}"
 								IsChecked="{Binding IsAlwaysLoadedExpanded, Mode=TwoWay}"
-								ToolTip="Collapse or expand Override Mods" />
+								ToolTip="{Binding Keys.ToggleOverrideMods.CommandToolTip}" />
 						</Grid>
 					</Border>
+					<Border Grid.Row="1" Style="{StaticResource ModPaneHeaderDividerStyle}" />
 					<c:ModListView x:Name="ForceLoadedModsListView"
-						Grid.Row="1"
+						Grid.Row="2"
+						MaxHeight="99999"
 						behavior:ScreenReaderHelperBehavior.Name="Force-Loaded Mods"
 						ContextMenuOpening="ModListView_ContextMenuOpening"
 						GridViewColumnHeader.Click="ListView_Click"
 						ItemContainerStyle="{StaticResource DivinityModDataListItem}"
 						LinkedHeaderListView="{Binding ElementName=ActiveModsListView}"
 						ScrollViewer.VerticalScrollBarVisibility="Auto"
-						View="{DynamicResource HeaderlessModGridView}">
+						Style="{StaticResource OverrideModListViewStyle}"
+						View="{DynamicResource OverrideModGridView}">
 						<c:ModListView.ContextMenu><ContextMenu /></c:ModListView.ContextMenu>
 					</c:ModListView>
 				</Grid>
+				</Border>
 			</Grid>
 		</Grid>
 		</Border>
@@ -2045,7 +2062,10 @@
 						</ColumnDefinition.Style>
 					</ColumnDefinition>
 				</Grid.ColumnDefinitions>
-				<TextBlock Grid.Column="1" Margin="8,0,8,0" Style="{StaticResource ModSectionTitle}" Text="Inactive Mods" Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}"/>
+				<TextBlock Grid.Column="1" Margin="8,0,8,0"
+					Style="{StaticResource ModSectionTitle}"
+					Text="Inactive Mods"
+					Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}" />
 				<StackPanel Grid.Column="5"
 					Orientation="Horizontal"
 					Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">

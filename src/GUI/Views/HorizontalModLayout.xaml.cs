@@ -741,13 +741,14 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			savedColors: ViewModel.Settings.SavedCategoryColors,
 			useCategoryColorsForSidebarSelection: ViewModel.Settings.UseCategoryColorsForInteractions,
 			useCategoryColorsForSidebarText: ViewModel.Settings.UseCategoryColorsForSidebarText,
-			showInterfaceIcons: ViewModel.Settings.ShowCategoryIconsInPills) { Owner = Window.GetWindow(this) };
+			showInterfaceIcons: ViewModel.Settings.ShowCategoryIconsInPills,
+			allowIconOnlyCategory: true) { Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme,
 			ReduxThemeService.GetActiveTheme(ViewModel.Settings), ViewModel.Settings.UsesGeneratedGradients);
 		var result = dialog.ShowDialog();
 		SaveCategoryDialogColors(dialog);
 		if (result == true && !ViewModel.TryAddCustomModCategory(dialog.CategoryName, dialog.CategoryColor,
-			dialog.CategoryIconId, dialog.CategoryDescription, out var error))
+			dialog.CategoryIconId, dialog.CategoryDescription, dialog.UseCategoryIconOnly, out var error))
 		{
 			ShowCategoryMessage(error, "Add Mod Category", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
@@ -779,7 +780,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			description: ViewModel.GetCurrentCategoryDescription(category),
 			useCategoryColorsForSidebarSelection: ViewModel.Settings.UseCategoryColorsForInteractions,
 			useCategoryColorsForSidebarText: ViewModel.Settings.UseCategoryColorsForSidebarText,
-			showInterfaceIcons: ViewModel.Settings.ShowCategoryIconsInPills) { Owner = Window.GetWindow(this) };
+			showInterfaceIcons: ViewModel.Settings.ShowCategoryIconsInPills,
+			allowIconOnlyCategory: ViewModel.IsCustomModCategory(category),
+			isIconOnlyCategory: ViewModel.IsIconOnlyModCategory(category)) { Owner = Window.GetWindow(this) };
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme,
 			ReduxThemeService.GetActiveTheme(ViewModel.Settings), ViewModel.Settings.UsesGeneratedGradients);
 		var result = dialog.ShowDialog();
@@ -791,7 +794,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			return;
 		}
 		if (!ViewModel.TrySetCategoryStyle(category, dialog.CategoryColor, dialog.CategoryIconId,
-			dialog.CategoryDescription, out var error))
+			dialog.CategoryDescription, dialog.UseCategoryIconOnly, out var error))
 		{
 			ShowCategoryMessage(error, "Edit Category", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
@@ -2762,28 +2765,44 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			ForceLoadedModsListView.Visibility = Visibility.Visible;
 			ActiveModListViewGridSplitter.Visibility = Visibility.Visible;
 			ActiveModsListGridRow.Height = GridLength.Auto;
+			OverrideModsFilterHost.Visibility = Visibility.Visible;
+			OverrideModsFilterHost.IsHitTestVisible = true;
 		}
+		else OverrideModsFilterHost.IsHitTestVisible = false;
 		var headerHeight = AlwaysLoadedHeaderGrid.ActualHeight
 			+ AlwaysLoadedHeaderGrid.Margin.Top
 			+ AlwaysLoadedHeaderGrid.Margin.Bottom;
+		var shellChromeHeight = AlwaysLoadedSectionShell.Margin.Top
+			+ AlwaysLoadedSectionShell.Margin.Bottom
+			+ AlwaysLoadedSectionShell.BorderThickness.Top
+			+ AlwaysLoadedSectionShell.BorderThickness.Bottom;
 		var targetHeight = showContents
 			? Math.Min(
 				Math.Max(MinimumExpandedOverrideModsRowHeight, _lastExpandedOverrideModsRowHeight),
 				GetMaximumExpandedOverrideModsHeight())
-			: Math.Max(1, headerHeight);
+			: Math.Max(1, headerHeight + shellChromeHeight);
 
-		var completed = await AnimatePanelValueAsync(
+		var heightTransition = AnimatePanelValueAsync(
 			startHeight,
 			targetHeight,
 			value => ActiveModsListForcedModsRow.Height = new GridLength(value),
 			token);
-		if (completed) ApplyOverrideModsLayout(hasAlwaysLoadedMods, showContents);
+		var filterTransition = AnimatePanelValueAsync(
+			OverrideModsFilterHost.Visibility == Visibility.Visible ? OverrideModsFilterHost.Opacity : 0,
+			showContents ? 1 : 0,
+			value => OverrideModsFilterHost.Opacity = value,
+			token);
+		var completed = await System.Threading.Tasks.Task.WhenAll(heightTransition, filterTransition);
+		if (completed.All(value => value)) ApplyOverrideModsLayout(hasAlwaysLoadedMods, showContents);
 	}
 
 	private void ApplyOverrideModsLayout(bool hasAlwaysLoadedMods, bool showContents)
 	{
 		ForceLoadedModsListView.Visibility = BoolToVisibilityConverter.FromBool(showContents);
 		ActiveModListViewGridSplitter.Visibility = BoolToVisibilityConverter.FromBool(showContents);
+		OverrideModsFilterHost.Opacity = showContents ? 1 : 0;
+		OverrideModsFilterHost.IsHitTestVisible = showContents;
+		OverrideModsFilterHost.Visibility = BoolToVisibilityConverter.FromBool(showContents);
 		ActiveModsListForcedModsRow.MinHeight = showContents ? MinimumExpandedOverrideModsRowHeight : 0;
 		ActiveModsListRow.Height = new GridLength(1, GridUnitType.Star);
 
@@ -3229,7 +3248,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					.Subscribe(_ => UpdateSeparatorBulkToggleButtons()));
 				UpdateSeparatorBulkToggleButtons();
 
-				d(this.OneWayBind(ViewModel, vm => vm.HasForceLoadedMods, v => v.AlwaysLoadedSectionGrid.Visibility, BoolToVisibilityConverter.FromBool));
+				d(this.OneWayBind(ViewModel, vm => vm.HasForceLoadedMods, v => v.AlwaysLoadedSectionShell.Visibility, BoolToVisibilityConverter.FromBool));
 				d(this.Bind(ViewModel, vm => vm.ActiveModFilterText, v => v.ActiveModsFilterTextBox.Text));
 				d(this.Bind(ViewModel, vm => vm.InactiveModFilterText, v => v.InactiveModsFilterTextBox.Text));
 

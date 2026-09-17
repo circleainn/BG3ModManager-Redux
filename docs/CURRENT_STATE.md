@@ -5,7 +5,7 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: September 15, 2026. Published baseline: `v0.1.0-alpha.16.4.4` at `e663ef9`.
+Last reviewed: September 17, 2026. Published baseline: `v0.1.0-alpha.16.4.4` at `e663ef9`.
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -13,6 +13,13 @@ with progress and cancellation. Export retains the import limits: 32 saves, 1 GB
 regressions pass; real campaign export/restore and cancellation still need a live check.
 
 ## Development status
+
+Post-16.4.4 development adds optional cross-order separator presentation with independent
+per-order placement, a reversible one-time upgrade prompt for existing separators, icon-only
+custom categories, and a compact category/separator editor that accepts opaque or non-square
+images. Override Mods now uses a dedicated unnumbered grid with the same pane chrome, scrollbar
+spacing, animated collapse behavior, and configurable columns as the main lists. Its animated
+collapse/expand action defaults to `Ctrl+Alt+O` and remains editable in Keyboard Shortcuts.
 
 Welcome Setup includes an optional starter-separator selection after the load-order tour. Chosen sections append to Active Mods through the existing separator/Undo workflow; matching active-section names are skipped and existing mods are not reordered. Canceling setup adds nothing. Downloads bulk deletion confirms once, skips installed/installing entries, and reuses the existing cancellation and package recycling path.
 

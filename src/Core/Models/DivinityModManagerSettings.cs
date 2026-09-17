@@ -62,7 +62,9 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DefaultValue(true), DataMember, Reactive] public bool ShowActiveModIndex { get; set; } = true;
     [DataMember, Reactive] public bool ShowInactiveModIndex { get; set; } = false;
 
-    [DataMember, Reactive] public string LastSeenWhatsNewVersion { get; set; } = String.Empty;
+	[DataMember, Reactive] public string LastSeenWhatsNewVersion { get; set; } = String.Empty;
+	// One-time upgrade choice for separators created before per-order/global scope was available.
+	[DataMember, Reactive] public bool HasResolvedPersistentSeparatorUpgrade { get; set; }
 	[DefaultValue(true)]
 	[SettingsEntry("Show What's New after updates", "Open release notes after Redux updates. Turn this off to skip future popups.")]
 	[DataMember, Reactive] public bool ShowWhatsNewAfterUpdates { get; set; } = true;
@@ -338,6 +340,9 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool HideEmptyModCategories { get; set; }
 
 	[DataMember, Reactive] public List<string> CustomModCategories { get; set; } = new();
+	// Custom categories whose visible label is suppressed while interface icons are enabled.
+	// The category name remains its stable identity and is still exposed through tooltips.
+	[DataMember, Reactive] public List<string> IconOnlyModCategories { get; set; } = new();
 	// Redux-only presentation order for the category sidebar. This never changes mod assignments or load order.
 	[DataMember, Reactive] public List<string> ModCategoryDisplayOrder { get; set; } = new();
 	// Legacy single-category assignments are retained for migration from early Redux builds.
@@ -548,6 +553,11 @@ public class DivinityModManagerSettings : ReactiveObject
 			ActiveCustomThemeId = String.Empty;
 		}
 		CustomModCategories ??= new List<string>();
+		IconOnlyModCategories = (IconOnlyModCategories ?? new List<string>())
+			.Where(category => !String.IsNullOrWhiteSpace(category) &&
+				CustomModCategories.Contains(category, StringComparer.OrdinalIgnoreCase))
+			.Distinct(StringComparer.OrdinalIgnoreCase)
+			.ToList();
 		ModCategoryDisplayOrder ??= new List<string>();
 		ModCategoryOverrides = ModCategoryOverrides != null
 			? new Dictionary<string, string>(ModCategoryOverrides, StringComparer.OrdinalIgnoreCase)
@@ -561,6 +571,8 @@ public class DivinityModManagerSettings : ReactiveObject
 		ModCategoryIcons = ModCategoryIcons != null
 			? new Dictionary<string, string>(ModCategoryIcons, StringComparer.OrdinalIgnoreCase)
 			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		IconOnlyModCategories.RemoveAll(category =>
+			!ModCategoryIcons.TryGetValue(category, out var iconId) || String.IsNullOrWhiteSpace(iconId));
 		ModCategoryDescriptions = ModCategoryDescriptions != null
 			? new Dictionary<string, string>(ModCategoryDescriptions, StringComparer.OrdinalIgnoreCase)
 			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

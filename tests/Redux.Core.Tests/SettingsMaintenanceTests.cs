@@ -87,6 +87,26 @@ public sealed class SettingsMaintenanceTests
 		RegressionAssert.SequenceEqual(new[] { "Shadowheart", "Tav" }, restored!.CollapsedSaveGameCampaigns);
 	}
 
+	public void IconOnlyCategoriesRemainCustomAndRequireAnIcon()
+	{
+		var settings = new DivinityModManagerSettings
+		{
+			CustomModCategories = new List<string> { "Compact", "No Icon" },
+			IconOnlyModCategories = new List<string> { "Compact", "compact", "No Icon", "Libraries" },
+			ModCategoryIcons = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+			{
+				["Compact"] = "star",
+				["No Icon"] = String.Empty,
+				["Libraries"] = "library"
+			}
+		};
+
+		var restored = JsonConvert.DeserializeObject<DivinityModManagerSettings>(JsonConvert.SerializeObject(settings));
+
+		RegressionAssert.True(restored != null);
+		RegressionAssert.SequenceEqual(new[] { "Compact" }, restored!.IconOnlyModCategories);
+	}
+
 	public void RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly()
 	{
 		var settings = new DivinityModManagerSettings

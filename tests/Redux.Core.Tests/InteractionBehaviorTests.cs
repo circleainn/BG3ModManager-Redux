@@ -152,9 +152,51 @@ public sealed class InteractionBehaviorTests
 
 		if (Math.Abs(headerSurface.ActualWidth - scrollBar.ActualWidth) >= 0.01)
 			throw new InvalidOperationException($"Header width {headerSurface.ActualWidth} did not match scrollbar width {scrollBar.ActualWidth}.");
+		RegressionAssert.Equal(new Thickness(0, 4, 0, 4), track.Margin);
 		var trackTop = track.TransformToAncestor(scrollBar).Transform(new Point()).Y;
-		if (Math.Abs(trackTop - headerSurface.ActualHeight) >= 0.01)
-			throw new InvalidOperationException($"Track started at {trackTop} instead of below the {headerSurface.ActualHeight}px header surface.");
+		var expectedTrackTop = headerSurface.ActualHeight + track.Margin.Top;
+		if (Math.Abs(trackTop - expectedTrackTop) >= 0.01)
+			throw new InvalidOperationException($"Track started at {trackTop} instead of {track.Margin.Top}px below the {headerSurface.ActualHeight}px header surface.");
+
+		var standardScrollBar = new ScrollBar
+		{
+			Width = 12,
+			Height = 260,
+			Maximum = 100,
+			ViewportSize = 20,
+			Template = (ControlTemplate)resources["ReduxVerticalScrollBarTemplate"]
+		};
+		host.Children.Clear();
+		host.Children.Add(standardScrollBar);
+		host.Measure(new Size(12, 260));
+		host.Arrange(new Rect(0, 0, 12, 260));
+		host.UpdateLayout();
+		var standardTrack = (Track?)standardScrollBar.Template.FindName("PART_Track", standardScrollBar)
+			?? throw new InvalidOperationException("The standard vertical scrollbar track was not found.");
+		RegressionAssert.Equal(new Thickness(0, 4, 0, 4), standardTrack.Margin);
+	}
+
+	public void OverrideModGridStartsAtNameWithoutALoadOrderPlaceholder()
+	{
+		var resources = new ResourceDictionary
+		{
+			Source = new Uri(
+				"pack://application:,,,/Redux;component/Themes/MainResourceDictionary.xaml",
+				UriKind.Absolute)
+		};
+		var view = (GridView)resources["OverrideModGridView"];
+		var headers = view.Columns.Select(column => column.Header switch
+		{
+			string header => header,
+			TextBlock textBlock => textBlock.Text,
+			_ => String.Empty
+		}).ToArray();
+
+		RegressionAssert.Equal("Name", headers[0]);
+		RegressionAssert.False(headers.Contains("#", StringComparer.OrdinalIgnoreCase));
+		RegressionAssert.True(ReferenceEquals(
+			resources["GridViewLeftContainerStyle"],
+			view.ColumnHeaderContainerStyle));
 	}
 
 	public void DrawerRetainsASelectedModDuringCrossListTransferOnly()
@@ -305,6 +347,24 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.Equal(7, restored.Position);
 		RegressionAssert.True(restored.IsCollapsed);
 		RegressionAssert.SequenceEqual(new[] { "order-specific-mod" }, restored.MemberModUuids);
+	}
+
+	public void PersistentSeparatorUpgradeOnlyTargetsExistingActiveSeparators()
+	{
+		var dividers = new[]
+		{
+			new ModListVisualDividerData { Id = "active-a", IsActiveList = true },
+			new ModListVisualDividerData { Id = "active-b", IsActiveList = true, IsGlobal = true },
+			new ModListVisualDividerData { Id = "inactive", IsActiveList = false }
+		};
+
+		RegressionAssert.False(PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(false, []));
+		RegressionAssert.False(PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(true, dividers));
+		RegressionAssert.True(PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(false, dividers));
+		RegressionAssert.Equal(1, PersistentSeparatorUpgradePolicy.MakeAllActiveSeparatorsPersistent(dividers));
+		RegressionAssert.True(dividers.Single(divider => divider.Id == "active-a").IsGlobal);
+		RegressionAssert.True(dividers.Single(divider => divider.Id == "active-b").IsGlobal);
+		RegressionAssert.False(dividers.Single(divider => divider.Id == "inactive").IsGlobal);
 	}
 
 	public void SavedCurrentStateRestoresIntoTheSingleCurrentEntry()

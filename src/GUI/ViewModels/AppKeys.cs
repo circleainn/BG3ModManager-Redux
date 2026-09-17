@@ -159,6 +159,14 @@ public class AppKeys : ReactiveObject
 		"Toggle every separator in the active load order between expanded and collapsed.")]
 	public Hotkey ToggleAllActiveSeparators { get; private set; } = new Hotkey(Key.None);
 
+	[MenuSettings(
+		"Edit",
+		"Collapse or Expand Override Mods",
+		false,
+		"Collapse or expand the Override Mods pane when override packages are installed.")]
+	public Hotkey ToggleOverrideMods { get; private set; } =
+		new Hotkey(Key.O, ModifierKeys.Control | ModifierKeys.Alt);
+
 	[MenuSettings("Settings", "Preferences...")]
 	public Hotkey OpenPreferences { get; private set; } = new Hotkey(Key.P, ModifierKeys.Control);
 

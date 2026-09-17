@@ -5,7 +5,6 @@ using DivinityModManager.Views;
 
 using DynamicData.Binding;
 
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Reflection;
 using System.Windows;
@@ -22,9 +21,6 @@ public class ModListView : ListView
 		.GetMethod("ItemInfoFromContainer", BindingFlags.NonPublic | BindingFlags.Instance);
 	private static readonly MethodInfo _updateAnchorAndActionItem = typeof(ListBox)
 		.GetMethod("UpdateAnchorAndActionItem", BindingFlags.NonPublic | BindingFlags.Instance);
-	private static readonly PropertyInfo _actualColumnIndex = typeof(GridViewColumn)
-		.GetProperty("ActualIndex", BindingFlags.NonPublic | BindingFlags.Instance);
-
 	public bool Resizing { get; set; }
 	public bool UserResizedColumns { get; set; }
 
@@ -74,50 +70,53 @@ public class ModListView : ListView
 		{
 			PropertyDescriptor pd = DependencyPropertyDescriptor.FromProperty(GridViewColumn.WidthProperty, typeof(GridViewColumn));
 
-			grid.Columns.CollectionChanged -= OnTargetGridCollectionChanged;
-			grid.Columns.CollectionChanged += OnTargetGridCollectionChanged;
-
 			foreach (var col in grid.Columns)
 			{
 				pd.RemoveValueChanged(col, OnColumnWidthChanged_Copy);
 				pd.AddValueChanged(col, OnColumnWidthChanged_Copy);
 			}
-		}
-	}
 
-	private void OnTargetGridCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-	{
-		if (e.Action == NotifyCollectionChangedAction.Move)
-		{
-			if (sender is GridViewColumnCollection colList)
-			{
-				var view = this.View as GridView;
-				var indexOrder = colList.Select(x => GetColumnActualIndex(x)).ToList();
-				DivinityApp.Log($"[Order] indexOrder({String.Join(";", indexOrder)})");
-				var len = view.Columns.Count;
-				for (int i = 0; i < len; i++)
-				{
-					var col = view.Columns[i];
-					var nextIndex = indexOrder.IndexOf(GetColumnActualIndex(col));
-					view.Columns.Move(i, nextIndex);
-				}
-			}
+			SynchronizeLinkedColumnWidths(grid);
 		}
 	}
 
 	private void OnColumnWidthChanged_Copy(object sender, EventArgs e)
 	{
-		if (sender is GridViewColumn col)
+		if (sender is GridViewColumn sourceColumn && View is GridView linkedView)
 		{
-			var thisView = this.View as GridView;
-			var index = GetColumnActualIndex(col);
-			var myCol = thisView.Columns.FirstOrDefault(x => GetColumnActualIndex(x) == index);
-			if (myCol != null)
+			var key = GetColumnKey(sourceColumn);
+			var linkedColumn = linkedView.Columns.FirstOrDefault(column =>
+				String.Equals(GetColumnKey(column), key, StringComparison.OrdinalIgnoreCase));
+			if (linkedColumn != null)
 			{
-				myCol.Width = col.Width;
+				linkedColumn.Width = sourceColumn.Width;
 			}
 		}
 	}
+
+	private void SynchronizeLinkedColumnWidths(GridView sourceView)
+	{
+		if (View is not GridView linkedView) return;
+
+		foreach (var sourceColumn in sourceView.Columns)
+		{
+			var key = GetColumnKey(sourceColumn);
+			if (String.IsNullOrWhiteSpace(key)) continue;
+
+			var linkedColumn = linkedView.Columns.FirstOrDefault(column =>
+				String.Equals(GetColumnKey(column), key, StringComparison.OrdinalIgnoreCase));
+			if (linkedColumn == null) continue;
+
+			linkedColumn.Width = sourceColumn.Width;
+		}
+	}
+
+	private static string GetColumnKey(GridViewColumn column) => column.Header switch
+	{
+		string header => header,
+		TextBlock textBlock => textBlock.Text,
+		_ => String.Empty
+	};
 
     private void StyleColumnDropIndicator()
     {
@@ -241,11 +240,6 @@ public class ModListView : ListView
 	protected override AutomationPeer OnCreateAutomationPeer()
 	{
 		return new ModListViewAutomationPeer(this);
-	}
-
-	private static int GetColumnActualIndex(GridViewColumn col)
-	{
-		return _actualColumnIndex?.GetValue(col) is int index ? index : -1;
 	}
 
 	protected override void OnKeyDown(KeyEventArgs e)

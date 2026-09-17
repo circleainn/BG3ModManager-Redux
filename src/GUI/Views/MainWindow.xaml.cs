@@ -847,6 +847,9 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 			ViewModel.Keys.OpenCommandPalette.AddAction(OpenCommandPalette);
 			ViewModel.Keys.ToggleAllActiveSeparators.AddAction(MainView.ToggleAllActiveSeparators);
 			ViewModel.Keys.ToggleModFileNames.AddAction(MainView.ModLayout.ToggleModFileNameColumn);
+			ViewModel.Keys.ToggleOverrideMods.AddAction(
+				() => ViewModel.IsAlwaysLoadedExpanded = !ViewModel.IsAlwaysLoadedExpanded,
+				ViewModel.WhenAnyValue(x => x.HasForceLoadedMods));
 			ViewModel.Keys.OpenSaveGameManager.AddAction(
 				() => MainView.ShowSaveManager(),
 				ViewModel.WhenAnyValue(x => x.SelectedProfile).Select(profile => profile != null));
