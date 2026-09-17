@@ -36,8 +36,8 @@
 		<SolidColorBrush x:Key="Redux.CategoryEditor.GreenTrackBrush" Color="{DynamicResource ReduxSuccessColor}" />
 		<SolidColorBrush x:Key="Redux.CategoryEditor.BlueTrackBrush" Color="{DynamicResource ReduxInfoColor}" />
 		<Style x:Key="CategoryColorSwatchStyle" TargetType="Border">
-			<Setter Property="Width" Value="34" /><Setter Property="Height" Value="28" />
-			<Setter Property="Margin" Value="0,0,7,7" /><Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Small}" />
+			<Setter Property="Width" Value="30" /><Setter Property="Height" Value="26" />
+			<Setter Property="Margin" Value="0,0,5,5" /><Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Small}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
 			<Setter Property="BorderThickness" Value="1" /><Setter Property="Cursor" Value="Hand" />
 			<Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" /></Trigger></Style.Triggers>
@@ -100,7 +100,7 @@
 	<Grid>
 		<Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 	<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-	<Grid Margin="18,16">
+	<Grid Margin="20,16,20,14">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
@@ -110,8 +110,8 @@
 			<RowDefinition Height="Auto" />
 			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
-		<TextBlock x:Name="DialogHeading" FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="Create a category" />
-		<TextBlock x:Name="DialogHelperText" Grid.Row="1" Margin="0,3,0,12" Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap"
+		<TextBlock x:Name="DialogHeading" FontSize="{DynamicResource Redux.FontSize.17}" FontWeight="SemiBold" Text="Create a category" />
+		<TextBlock x:Name="DialogHelperText" Grid.Row="1" Margin="0,3,0,14" Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap"
 			Text="Assign mods to this category from their right-click menu." />
 		<Grid Grid.Row="2">
 			<Grid.ColumnDefinitions>
@@ -122,28 +122,28 @@
 			<StackPanel x:Name="NameEditorPanel">
 				<TextBlock x:Name="CategoryNameFieldLabel" Margin="0,0,0,5" FontWeight="SemiBold"
 					Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Name" />
-				<TextBox x:Name="CategoryNameTextBox" MinHeight="48" VerticalAlignment="Top"
+				<TextBox x:Name="CategoryNameTextBox" MinHeight="40" VerticalAlignment="Top"
 					MaxLength="40" Padding="9,7" />
 			</StackPanel>
 			<StackPanel x:Name="DescriptionEditorPanel" Grid.Column="2">
 				<TextBlock Margin="0,0,0,5" FontWeight="SemiBold"
 					Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Description (optional)" />
-				<TextBox x:Name="CategoryDescriptionTextBox" MinHeight="48" MaxLength="240"
+				<TextBox x:Name="CategoryDescriptionTextBox" MinHeight="40" MaxLength="240"
 					AcceptsReturn="True" Padding="8,6" TextWrapping="Wrap"
 					TextChanged="CategoryDescriptionTextBox_TextChanged"
 					ToolTip="Shown when the category is hovered in the Categories pane" />
 			</StackPanel>
 		</Grid>
-		<Grid Grid.Row="4" Margin="0,10,0,0">
+		<Grid Grid.Row="4" Margin="0,12,0,0">
 			<Grid.ColumnDefinitions><ColumnDefinition Width="0.9*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="1.1*" /></Grid.ColumnDefinitions>
-		<Border x:Name="CategoryPreviewPanel" Margin="0" Padding="12,10"
+		<Border x:Name="CategoryPreviewPanel" Margin="0" Padding="12,9"
 			Background="{DynamicResource ReduxSurfaceElevatedBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}"
 			BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 			<Grid>
 				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 				<TextBlock FontSize="{DynamicResource Redux.FontSize.10}" FontWeight="SemiBold"
 					Foreground="{DynamicResource ReduxTextMutedBrush}" Text="LIVE PREVIEW" />
-				<Border x:Name="CategoryPreviewRow" Grid.Row="1" Margin="0,6,0,0"
+				<Border x:Name="CategoryPreviewRow" Grid.Row="1" Margin="0,7,0,0"
 					Background="Transparent" BorderBrush="Transparent"
 					BorderThickness="{DynamicResource Redux.Interaction.HoverBorderThickness}"
 					CornerRadius="{DynamicResource Redux.CornerRadius.PillTall}" Cursor="Hand"
@@ -347,7 +347,7 @@
 							<TextBlock x:Name="IconFieldLabel" FontWeight="SemiBold" Text="Icon" />
 							<TextBlock Grid.Column="1" Margin="10,1,0,0" FontSize="{DynamicResource Redux.FontSize.10}"
 								Foreground="{DynamicResource ReduxTextMutedBrush}"
-								Text="Choose a built-in symbol or import a square transparent PNG." TextWrapping="Wrap" />
+								Text="Choose a built-in symbol or import any PNG. Redux fits it to the icon automatically." TextWrapping="Wrap" />
 						</Grid>
 						<WrapPanel Grid.Row="1" Margin="0,8,0,0" VerticalAlignment="Center">
 								<ComboBox x:Name="CategoryIconComboBox" Width="62" SelectedValuePath="Id" MaxDropDownHeight="420"
@@ -395,12 +395,12 @@
 					</Grid>
 				</Border>
 		</Grid>
-		<TextBlock x:Name="ColorFieldLabel" Grid.Row="5" Margin="0,12,0,5" FontWeight="SemiBold"
+		<TextBlock x:Name="ColorFieldLabel" Grid.Row="5" Margin="0,14,0,6" FontWeight="SemiBold"
 			Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Color" />
 		<Border x:Name="ColorEditorCard" Grid.Row="6" Padding="14" Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 			BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 			<Grid>
-				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="14" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+				<Grid.RowDefinitions><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 				<Grid.ColumnDefinitions><ColumnDefinition Width="228" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" MinWidth="270" /></Grid.ColumnDefinitions>
 				<Grid x:Name="SpectrumSurface" Width="218" Height="218" HorizontalAlignment="Center"
 					Background="Transparent" Cursor="Cross" SnapsToDevicePixels="True"
@@ -504,9 +504,8 @@
 						<TextBlock Grid.Row="4" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="{Binding Value, ElementName=BlueSlider, StringFormat={}{0:0}}" />
 					</Grid>
-				</StackPanel>
-				<Grid Grid.Row="2" Grid.ColumnSpan="3">
-					<Grid.ColumnDefinitions><ColumnDefinition Width="1*" /><ColumnDefinition Width="20" /><ColumnDefinition Width="1*" /></Grid.ColumnDefinitions>
+				<Grid Margin="0,12,0,0">
+					<Grid.ColumnDefinitions><ColumnDefinition Width="1.25*" /><ColumnDefinition Width="16" /><ColumnDefinition Width="0.75*" /></Grid.ColumnDefinitions>
 					<StackPanel>
 						<TextBlock Margin="0,0,0,7" FontSize="{DynamicResource Redux.FontSize.11}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Presets" />
 						<WrapPanel>
@@ -539,6 +538,7 @@
 						FontSize="{DynamicResource Redux.FontSize.11}" Text="No saved colors yet." />
 				</StackPanel>
 				</Grid>
+				</StackPanel>
 			</Grid>
 		</Border>
 	</Grid>

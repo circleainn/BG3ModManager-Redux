@@ -6,7 +6,7 @@ using System.Windows.Media.Imaging;
 namespace DivinityModManager.Util;
 
 /// <summary>
-/// Imports small transparent PNG icons into Redux-owned storage and resolves their
+/// Imports PNG icons into Redux-owned storage and resolves their
 /// persisted, path-free references. Custom icons are presentation data only.
 /// </summary>
 public static partial class ReduxCustomIconService
@@ -15,6 +15,7 @@ public static partial class ReduxCustomIconService
 	public const string TintedReferencePrefix = "custom-png-tint:";
 	private const int MaximumFileBytes = 2 * 1024 * 1024;
 	private const int MaximumPixelDimension = 1024;
+	private const int MaximumSourcePixelDimension = 4096;
 
 	[GeneratedRegex("^[0-9a-f]{64}\\.png$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
 	private static partial Regex SafeFileNamePattern();
@@ -115,9 +116,9 @@ public static partial class ReduxCustomIconService
 				error = "Choose a PNG smaller than 2 MB.";
 				return false;
 			}
-			if (!TryValidatePng(bytes, out error)) return false;
+			if (!TryNormalizePng(bytes, out var normalizedBytes, out error)) return false;
 
-			var fileName = $"{Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant()}.png";
+			var fileName = $"{Convert.ToHexString(SHA256.HashData(normalizedBytes)).ToLowerInvariant()}.png";
 			var storageDirectory = GetStorageDirectory();
 			Directory.CreateDirectory(storageDirectory);
 			var destinationPath = Path.Combine(storageDirectory, fileName);
@@ -126,7 +127,7 @@ public static partial class ReduxCustomIconService
 				var temporaryPath = Path.Combine(storageDirectory, $".{Guid.NewGuid():N}.tmp");
 				try
 				{
-					File.WriteAllBytes(temporaryPath, bytes);
+					File.WriteAllBytes(temporaryPath, normalizedBytes);
 					File.Move(temporaryPath, destinationPath, true);
 				}
 				finally
@@ -155,7 +156,7 @@ public static partial class ReduxCustomIconService
 			var file = new FileInfo(path);
 			if (file.Length is <= 0 or > MaximumFileBytes) return false;
 			bytes = File.ReadAllBytes(path);
-			return TryValidatePng(bytes, out _);
+			return TryValidateStoredPng(bytes);
 		}
 		catch (Exception exception)
 		{
@@ -191,8 +192,9 @@ public static partial class ReduxCustomIconService
 			? (IsTintedReference(value) ? TintedReferencePrefix : ReferencePrefix) + Path.GetFileName(path)
 			: String.Empty;
 
-	private static bool TryValidatePng(byte[] bytes, out string error)
+	private static bool TryNormalizePng(byte[] bytes, out byte[] normalizedBytes, out string error)
 	{
+		normalizedBytes = null;
 		error = String.Empty;
 		try
 		{
@@ -205,32 +207,57 @@ public static partial class ReduxCustomIconService
 			}
 
 			var frame = decoder.Frames[0];
-			if (frame.PixelWidth <= 0 || frame.PixelHeight <= 0 || frame.PixelWidth != frame.PixelHeight)
+			if (frame.PixelWidth <= 0 || frame.PixelHeight <= 0 ||
+				frame.PixelWidth > MaximumSourcePixelDimension || frame.PixelHeight > MaximumSourcePixelDimension)
 			{
-				error = "Choose a square PNG so the icon is not stretched.";
-				return false;
-			}
-			if (frame.PixelWidth > MaximumPixelDimension)
-			{
-				error = "Custom icons must be 1024 × 1024 pixels or smaller.";
+				error = $"Custom icon source images must be {MaximumSourcePixelDimension} × {MaximumSourcePixelDimension} pixels or smaller.";
 				return false;
 			}
 
-			var converted = new FormatConvertedBitmap(frame, PixelFormats.Bgra32, null, 0);
-			var stride = converted.PixelWidth * 4;
-			var pixels = new byte[stride * converted.PixelHeight];
-			converted.CopyPixels(pixels, stride, 0);
-			for (var index = 3; index < pixels.Length; index += 4)
+			if (frame.PixelWidth == frame.PixelHeight && frame.PixelWidth <= MaximumPixelDimension)
 			{
-				if (pixels[index] < Byte.MaxValue) return true;
+				normalizedBytes = bytes;
+				return true;
 			}
 
-			error = "Choose a PNG with a transparent background.";
-			return false;
+			var targetSize = Math.Min(Math.Max(frame.PixelWidth, frame.PixelHeight), MaximumPixelDimension);
+			var squareFrame = new TransformedBitmap(
+				frame,
+				new ScaleTransform(
+					targetSize / (double)frame.PixelWidth,
+					targetSize / (double)frame.PixelHeight));
+			if (squareFrame.CanFreeze) squareFrame.Freeze();
+			var encoder = new PngBitmapEncoder();
+			encoder.Frames.Add(BitmapFrame.Create(squareFrame));
+			using var output = new MemoryStream();
+			encoder.Save(output);
+			if (output.Length > MaximumFileBytes)
+			{
+				error = "The resized custom icon is larger than 2 MB. Choose a simpler PNG.";
+				return false;
+			}
+			normalizedBytes = output.ToArray();
+			return true;
 		}
 		catch
 		{
 			error = "That file is not a valid PNG image.";
+			return false;
+		}
+	}
+
+	private static bool TryValidateStoredPng(byte[] bytes)
+	{
+		try
+		{
+			using var stream = new MemoryStream(bytes, writable: false);
+			var decoder = new PngBitmapDecoder(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+			if (decoder.Frames.Count != 1) return false;
+			var frame = decoder.Frames[0];
+			return frame.PixelWidth > 0 && frame.PixelWidth == frame.PixelHeight && frame.PixelWidth <= MaximumPixelDimension;
+		}
+		catch
+		{
 			return false;
 		}
 	}

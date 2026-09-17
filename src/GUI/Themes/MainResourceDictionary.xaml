@@ -5010,7 +5010,7 @@
 	<GridView x:Key="HeaderlessModGridView"
 	    x:Shared="False"
 	    AllowsColumnReorder="False"
-	    ColumnHeaderContainerStyle="{StaticResource GridViewHiddenLeftContainerStyle}">
+	    ColumnHeaderContainerStyle="{StaticResource GridViewLeftContainerStyle}">
 		<GridView.Columns>
 			<GridViewColumn Width="45"
 				behavior:ScreenReaderHelperBehavior.HelpText="This override package is outside the numbered load order"

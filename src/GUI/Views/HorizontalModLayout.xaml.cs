@@ -2688,7 +2688,50 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private void RememberExpandedOverrideModsHeight()
 	{
 		if (ActiveModsListForcedModsRow.ActualHeight >= MinimumExpandedOverrideModsRowHeight)
-			_lastExpandedOverrideModsRowHeight = ActiveModsListForcedModsRow.ActualHeight;
+			_lastExpandedOverrideModsRowHeight = Math.Min(
+				ActiveModsListForcedModsRow.ActualHeight,
+				GetMaximumExpandedOverrideModsHeight());
+	}
+
+	private double GetMaximumExpandedOverrideModsHeight()
+	{
+		var splitterHeight = Math.Max(0, ActiveModsListGridRow.ActualHeight);
+		return Math.Max(
+			MinimumExpandedOverrideModsRowHeight,
+			ActiveModListGrid.ActualHeight - ActiveModsListRow.MinHeight - splitterHeight);
+	}
+
+	private void ClampExpandedOverrideModsHeight()
+	{
+		if (ViewModel?.HasForceLoadedMods != true || ViewModel.IsAlwaysLoadedExpanded != true) return;
+		var maximumHeight = GetMaximumExpandedOverrideModsHeight();
+		if (ActiveModsListForcedModsRow.Height.IsAbsolute && ActiveModsListForcedModsRow.Height.Value > maximumHeight)
+			ActiveModsListForcedModsRow.Height = new GridLength(maximumHeight);
+		_lastExpandedOverrideModsRowHeight = Math.Min(_lastExpandedOverrideModsRowHeight, maximumHeight);
+	}
+
+	private static bool OverrideModMatchesFilter(DivinityModData mod, string query)
+	{
+		if (mod == null) return false;
+		bool Contains(string value) => !String.IsNullOrWhiteSpace(value) &&
+			CultureInfo.CurrentCulture.CompareInfo.IndexOf(value, query, CompareOptions.IgnoreCase) >= 0;
+		return Contains(mod.DisplayTitle)
+			|| Contains(mod.Name)
+			|| Contains(mod.FileName)
+			|| Contains(mod.Author)
+			|| Contains(mod.DisplayCategory)
+			|| Contains(mod.DisplaySource);
+	}
+
+	private void OverrideModsFilterTextBox_TextChanged(object sender, TextChangedEventArgs e)
+	{
+		if (ForceLoadedModsListView?.ItemsSource == null) return;
+		var query = OverrideModsFilterTextBox.Text?.Trim() ?? String.Empty;
+		var view = CollectionViewSource.GetDefaultView(ForceLoadedModsListView.ItemsSource);
+		view.Filter = String.IsNullOrWhiteSpace(query)
+			? null
+			: item => item is DivinityModData mod && OverrideModMatchesFilter(mod, query);
+		view.Refresh();
 	}
 
 	private void OverrideModsGridSplitter_DragCompleted(object sender, DragCompletedEventArgs e)
@@ -2724,7 +2767,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			+ AlwaysLoadedHeaderGrid.Margin.Top
 			+ AlwaysLoadedHeaderGrid.Margin.Bottom;
 		var targetHeight = showContents
-			? Math.Max(MinimumExpandedOverrideModsRowHeight, _lastExpandedOverrideModsRowHeight)
+			? Math.Min(
+				Math.Max(MinimumExpandedOverrideModsRowHeight, _lastExpandedOverrideModsRowHeight),
+				GetMaximumExpandedOverrideModsHeight())
 			: Math.Max(1, headerHeight);
 
 		var completed = await AnimatePanelValueAsync(
@@ -2752,7 +2797,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		ActiveModsListGridRow.Height = showContents ? GridLength.Auto : new GridLength(0);
 		ActiveModsListForcedModsRow.Height = showContents
-			? new GridLength(Math.Max(MinimumExpandedOverrideModsRowHeight, _lastExpandedOverrideModsRowHeight))
+			? new GridLength(Math.Min(
+				Math.Max(MinimumExpandedOverrideModsRowHeight, _lastExpandedOverrideModsRowHeight),
+				GetMaximumExpandedOverrideModsHeight()))
 			: GridLength.Auto;
 		ActiveModListViewGridSplitter.IsEnabled = showContents;
 	}
@@ -3090,6 +3137,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ModDetailsToggleButton.Unchecked += ModDetailsToggleButton_Unchecked;
 		ModDetailsGridSplitter.DragCompleted += ModDetailsGridSplitter_DragCompleted;
 		ActiveModListViewGridSplitter.DragCompleted += OverrideModsGridSplitter_DragCompleted;
+		ActiveModListGrid.SizeChanged += (_, _) => ClampExpandedOverrideModsHeight();
 		SetupListView(ActiveModsListView);
 		SetupListView(InactiveModsListView);
 

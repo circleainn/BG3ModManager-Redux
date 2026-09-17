@@ -380,6 +380,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	[Reactive] public bool IsLoadingOrder { get; set; }
 	[Reactive] public bool OrderJustLoaded { get; set; }
 	[Reactive] public bool IsDragging { get; set; }
+	[Reactive] public bool IsSyncingLoadOrder { get; private set; }
 	/// <summary>True when Active Mods is displayed in a metadata-sorted view rather than the real # load order.</summary>
 	[Reactive] public bool IsActiveListMetadataSorted { get; set; }
 	[Reactive] public bool IsInactiveListMetadataSorted { get; set; }
@@ -5824,6 +5825,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		// Sync is a new interaction boundary. A completed cross-pane drag must never
 		// leave the shell locked while the export review or file work is running.
 		DragHandler?.CompleteDragTracking();
+		IsSyncingLoadOrder = true;
 		RxApp.TaskpoolScheduler.ScheduleAsync(async (ctrl, t) =>
 		{
 			try
@@ -5844,6 +5846,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				await Observable.Start(() =>
 				{
 					DragHandler?.CompleteDragTracking();
+					IsSyncingLoadOrder = false;
 					return Unit.Default;
 				}, RxApp.MainThreadScheduler);
 			}
@@ -11174,7 +11177,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		Disposable.Create(() => NexusModsDataLoader.RateLimitsUpdated -= nexusRateLimitsHandler)
 			.DisposeWith(Disposables);
 
-		_isLocked = this.WhenAnyValue(x => x.IsDragging, x => x.IsRefreshing, x => x.IsLoadingOrder, (b1, b2, b3) => b1 || b2 || b3).ToProperty(this, nameof(IsLocked));
+		_isLocked = this.WhenAnyValue(
+			x => x.IsDragging,
+			x => x.IsRefreshing,
+			x => x.IsLoadingOrder,
+			x => x.IsSyncingLoadOrder,
+			(dragging, refreshing, loadingOrder, syncing) => dragging || refreshing || loadingOrder || syncing)
+			.ToProperty(this, nameof(IsLocked));
 
 		_allowDrop = this.WhenAnyValue(x => x.IsLoadingOrder, x => x.IsRefreshing, x => x.IsInitialized, (b1, b2, b3) => !b1 && !b2 && b3)
 			.ToProperty(this, nameof(AllowDrop), initialValue: true);
@@ -11426,7 +11435,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		var canExportToGame = hasNonNullProfile
 			.CombineLatest(canOpenDialogWindow, (hasProfile, canOpen) => hasProfile && canOpen)
 			.CombineLatest(
-				this.WhenAnyValue(x => x.IsLoadingOrder, x => x.IsRefreshing, (loading, refreshing) => !loading && !refreshing),
+				this.WhenAnyValue(
+					x => x.IsLoadingOrder,
+					x => x.IsRefreshing,
+					x => x.IsSyncingLoadOrder,
+					(loading, refreshing, syncing) => !loading && !refreshing && !syncing),
 				(canOpen, isIdle) => canOpen && isIdle);
 		Keys.ExportOrderToGame.AddAction(ExportLoadOrder, canExportToGame);
 		Keys.RestorePoints.AddAction(

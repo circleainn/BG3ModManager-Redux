@@ -9,19 +9,22 @@ source for individual implementation details.
 
 - Allow Active Mods to be reordered while a name or category filter is visible. Redux now uses the surrounding visible rows as anchors in the complete load order, so hidden rows retain their relative positions.
 - Keep each global separator's position, collapsed state, and section membership independent in every saved load order while sharing its name, color, icon, and description across orders.
-- Clear completed drag state before and after syncing the load order, preventing an interrupted cross-pane drag from leaving the main menus and controls dimmed.
+- Give **Sync Load Order to Game** its own scoped busy state and always release it when the operation succeeds, fails, or is cancelled; completed drag state is also cleared at both boundaries so the toolbar and menus cannot remain dimmed afterward.
 - Let long nested context menus scroll, including **Assign Category**, so every category remains reachable with the mouse wheel.
 - Allow mods in a filtered or column-sorted Inactive Mods view to be dragged directly into the intended position in Active Mods while keeping projected-list reordering guarded.
 - Decode the WebP artwork now returned by the Nexus CDN even when its saved URL ends in `.png` or `.jpeg`, restoring linked mod thumbnails.
+- Keep the Override Mods list within the split pane's real available height so its scrollbar remains usable at the maximum expanded size.
 
 ### Added
 
 - Add a visible separator-scope control to both panes. Active Mods separators can opt into **Use in every load order**; Inactive Mods explains that its organization is already shared automatically. Global separators share their styling and description while keeping an independent placement in each saved order, and existing Active Mods separators remain scoped to their saved order by default.
 - Add an assignable **Show or Hide Mod File Names** shortcut that toggles the File Name column in both mod panes. It has no default binding and can be set in **Keyboard Shortcuts**.
+- Let custom category and separator icons use opaque or non-square PNGs. Redux stretches and resizes imported images into a square icon automatically, while color tinting remains optional.
+- Add filtering and column sorting to Override Mods while preserving their always-loaded, outside-the-numbered-order behavior.
 
 ### Changed
 
-- Refresh the shared category and separator editor as a wider, shorter workspace with side-by-side identity fields, preview and icon controls, aligned labels, and compact inline options so the complete editor fits at its default size.
+- Refresh the shared category and separator editor as a wider, shorter workspace with side-by-side identity fields, preview and icon controls, aligned labels, compact inline options, and presets tucked beneath the sliders so the complete editor fits above its fixed action bar at the default size.
 
 ## 0.1.0-alpha.16.4.4 — 2026-09-15
 

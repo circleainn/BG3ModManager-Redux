@@ -1940,6 +1940,27 @@
 									</Style>
 								</TextBlock.Style>
 							</TextBlock>
+							<Grid Grid.Column="2" Width="190" Margin="16,0,10,0" HorizontalAlignment="Right">
+								<c:UnfocusableTextBox x:Name="OverrideModsFilterTextBox"
+									Height="28" Padding="4,0" VerticalAlignment="Center"
+									behavior:ScreenReaderHelperBehavior.Name="Override Mods Filter"
+									AcceptsReturn="False" AcceptsTab="False"
+									adonisExtensions:CornerRadiusExtension.CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+									Background="{DynamicResource ReduxSurfaceBrush}"
+									BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
+									CanUndoTextOnEscape="True" TextChanged="OverrideModsFilterTextBox_TextChanged"
+									ToolTip="Filter Override Mods" />
+								<TextBlock Padding="4,0" VerticalAlignment="Center"
+									Foreground="{DynamicResource ReduxTextMutedBrush}" IsHitTestVisible="False"
+									Text="Filter Overrides">
+									<TextBlock.Style>
+										<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+											<Setter Property="Visibility" Value="Collapsed" />
+											<Style.Triggers><DataTrigger Binding="{Binding Text, ElementName=OverrideModsFilterTextBox}" Value=""><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers>
+										</Style>
+									</TextBlock.Style>
+								</TextBlock>
+							</Grid>
 							<ToggleButton x:Name="AlwaysLoadedToggleButton" Grid.Column="3" Width="24" Height="24"
 								AutomationProperties.Name="Collapse or expand Override Mods"
 								Style="{StaticResource ModDetailsToggleStyle}"
@@ -1951,7 +1972,7 @@
 						Grid.Row="1"
 						behavior:ScreenReaderHelperBehavior.Name="Force-Loaded Mods"
 						ContextMenuOpening="ModListView_ContextMenuOpening"
-						HideHeader="True"
+						GridViewColumnHeader.Click="ListView_Click"
 						ItemContainerStyle="{StaticResource DivinityModDataListItem}"
 						LinkedHeaderListView="{Binding ElementName=ActiveModsListView}"
 						ScrollViewer.VerticalScrollBarVisibility="Auto"

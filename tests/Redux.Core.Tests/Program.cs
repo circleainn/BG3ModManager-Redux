@@ -43,6 +43,7 @@ internal static class Program
 		var archivePreflight = new ArchivePackagePreflightTests();
 		var interactionPerformance = new InteractionPerformanceTests();
 		var interactionBehavior = new InteractionBehaviorTests();
+		var customIcons = new CustomIconTests();
 		var automaticCategories = new AutomaticModCategoryTests();
 		var visualDividerDrag = new VisualDividerDragPolicyTests();
 		var inactiveOrder = new InactiveModOrderTests();
@@ -141,6 +142,7 @@ internal static class Program
 			(nameof(interactionBehavior.OnboardingKeepsActionsVisibleAtItsMinimumSupportedSize), interactionBehavior.OnboardingKeepsActionsVisibleAtItsMinimumSupportedSize),
 			(nameof(interactionBehavior.PopupPlacementPrefersRightwardGrowthWithScreenEdgeFallbacks), interactionBehavior.PopupPlacementPrefersRightwardGrowthWithScreenEdgeFallbacks),
 			(nameof(interactionBehavior.MessageBoxSupportsExplicitElevationWarningActions), interactionBehavior.MessageBoxSupportsExplicitElevationWarningActions),
+			(nameof(customIcons.OpaqueRectangularPngIsNormalizedToASquareIcon), customIcons.OpaqueRectangularPngIsNormalizedToASquareIcon),
 			(nameof(source.ReviewedModuleUuidResolvesItsProject), source.ReviewedModuleUuidResolvesItsProject),
 			(nameof(source.CommunityModuleUuidResolvesItsDependencySource), source.CommunityModuleUuidResolvesItsDependencySource),
 			(nameof(source.ReviewedLegacyNexusModsResolveTheirCorrectProjects), source.ReviewedLegacyNexusModsResolveTheirCorrectProjects),
