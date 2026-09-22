@@ -6,18 +6,28 @@ public sealed class ReduxModAnnotation
 {
 	public string ModUuid { get; set; } = String.Empty;
 	public string PrivateNote { get; set; } = String.Empty;
+	public string CustomAlias { get; set; } = String.Empty;
+	public string CustomPreviewImageReference { get; set; } = String.Empty;
 	public DateTimeOffset UpdatedUtc { get; set; } = DateTimeOffset.UtcNow;
 
 	[JsonIgnore]
 	public bool HasPrivateNote => !String.IsNullOrWhiteSpace(PrivateNote);
 
 	[JsonIgnore]
-	public bool HasContent => HasPrivateNote;
+	public bool HasCustomAlias => !String.IsNullOrWhiteSpace(CustomAlias);
+
+	[JsonIgnore]
+	public bool HasCustomPreviewImage => !String.IsNullOrWhiteSpace(CustomPreviewImageReference);
+
+	[JsonIgnore]
+	public bool HasContent => HasPrivateNote || HasCustomAlias || HasCustomPreviewImage;
 
 	public ReduxModAnnotation Clone() => new()
 	{
 		ModUuid = ModUuid,
 		PrivateNote = PrivateNote,
+		CustomAlias = CustomAlias,
+		CustomPreviewImageReference = CustomPreviewImageReference,
 		UpdatedUtc = UpdatedUtc
 	};
 }

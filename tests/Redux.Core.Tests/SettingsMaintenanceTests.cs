@@ -144,6 +144,27 @@ public sealed class SettingsMaintenanceTests
 		RegressionAssert.Equal("#123456", settings.ModCategoryColors["My Category"]);
 	}
 
+	public void AutomaticCategoryPreferencePreservesManualAndCustomOrganization()
+	{
+		var settings = new DivinityModManagerSettings
+		{
+			CustomModCategories = new List<string> { "My Category" },
+			ModCategoryAssignments = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
+			{
+				["first-mod"] = new List<string> { "My Category", "Armor" }
+			}
+		};
+
+		RegressionAssert.True(ModCategoryAssignmentReset.SetAutomaticClassificationEnabled(settings, false));
+		RegressionAssert.False(ModCategoryAssignmentReset.SetAutomaticClassificationEnabled(settings, false));
+		var restored = JsonConvert.DeserializeObject<DivinityModManagerSettings>(JsonConvert.SerializeObject(settings))!;
+
+		RegressionAssert.False(restored.EnableAutomaticModCategories);
+		RegressionAssert.SequenceEqual(new[] { "My Category" }, restored.CustomModCategories);
+		RegressionAssert.SequenceEqual(new[] { "My Category", "Armor" }, restored.ModCategoryAssignments["first-mod"]);
+		RegressionAssert.True(JsonConvert.DeserializeObject<DivinityModManagerSettings>("{}")!.EnableAutomaticModCategories);
+	}
+
 	public void RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain()
 	{
 		var mod = new DivinityModData

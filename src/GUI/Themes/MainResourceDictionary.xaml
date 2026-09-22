@@ -3749,7 +3749,7 @@
 				</Grid.ColumnDefinitions>
 				<StackPanel VerticalAlignment="Center">
 					<TextBlock FontSize="{DynamicResource Redux.FontSize.18}" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-						Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" />
+						Text="{Binding ListDisplayTitle}" TextTrimming="CharacterEllipsis" />
 					<TextBlock Margin="2,3,2,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
 						Text="{Binding Metadata.Title, StringFormat='Source project: {0}'}"
 						TextTrimming="CharacterEllipsis" Visibility="{Binding Metadata.OnlineSourceVisibility}" />
@@ -3900,6 +3900,41 @@
 					</ItemsControl.ItemsPanel>
 				</ItemsControl>
 			</StackPanel>
+
+			<Border Margin="4,0,4,9"
+				Padding="10,8"
+				Background="{DynamicResource ReduxListInteriorBrush}"
+				BorderBrush="{DynamicResource ReduxBorderBrush}"
+				BorderThickness="1"
+				CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
+				<Border.Style>
+					<Style TargetType="{x:Type Border}">
+						<Setter Property="Visibility" Value="Collapsed" />
+						<Style.Triggers>
+							<MultiDataTrigger>
+								<MultiDataTrigger.Conditions>
+									<Condition Binding="{Binding ShowDescriptionInHoverCard}" Value="True" />
+									<Condition Binding="{Binding Metadata.HasHoverDescription}" Value="True" />
+								</MultiDataTrigger.Conditions>
+								<Setter Property="Visibility" Value="Visible" />
+							</MultiDataTrigger>
+						</Style.Triggers>
+					</Style>
+				</Border.Style>
+				<StackPanel>
+					<TextBlock Margin="0"
+						MaxHeight="76"
+						AutomationProperties.Name="Mod description excerpt"
+						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+						Text="{Binding Metadata.HoverDescriptionExcerpt}"
+						TextTrimming="CharacterEllipsis"
+						TextWrapping="Wrap" />
+					<TextBlock Margin="0,5,0,0"
+						FontSize="{DynamicResource Redux.FontSize.10}"
+						Foreground="{DynamicResource ReduxTextMutedBrush}"
+						Text="Open details for the full description." />
+				</StackPanel>
+			</Border>
 
 			<Separator Margin="4,0" Background="{DynamicResource ReduxBorderBrush}" />
 			<StackPanel Margin="4,8,4,5" Orientation="Horizontal">
@@ -4301,6 +4336,9 @@
 					<Style BasedOn="{StaticResource Redux.Text.ListPrimary}" TargetType="{x:Type TextBlock}">
 						<Setter Property="Text" Value="{Binding Metadata.PackageTitle}" />
 						<Style.Triggers>
+							<DataTrigger Binding="{Binding HasCustomAlias}" Value="True">
+								<Setter Property="Text" Value="{Binding CustomAlias}" />
+							</DataTrigger>
 							<DataTrigger Binding="{Binding DisplayFileForName}" Value="True">
 								<Setter Property="Text" Value="{Binding FileName}" />
 							</DataTrigger>

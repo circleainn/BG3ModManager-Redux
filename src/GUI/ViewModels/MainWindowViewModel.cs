@@ -558,6 +558,18 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		return affectedModCount;
 	}
 
+	public bool SetAutomaticModCategoriesEnabled(bool enabled)
+	{
+		if (!ModCategoryAssignmentReset.SetAutomaticClassificationEnabled(Settings, enabled)) return false;
+		if (!SaveSettings())
+		{
+			ModCategoryAssignmentReset.SetAutomaticClassificationEnabled(Settings, !enabled);
+			throw new IOException("The automatic category preference could not be saved.");
+		}
+		RefreshModCategories();
+		return true;
+	}
+
 	/// <summary>
 	/// Called by App only after the prepared main window has been revealed,
 	/// activated, and allowed to complete a layout/render turn.
@@ -2932,6 +2944,15 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		var annotation = ReduxModAnnotationService.Find(_modAnnotationStore, mod.UUID);
 		mod.PrivateNote = annotation?.PrivateNote ?? String.Empty;
 		mod.HasPrivateNote = !String.IsNullOrWhiteSpace(mod.PrivateNote);
+		mod.CustomAlias = annotation?.CustomAlias ?? String.Empty;
+		mod.HasCustomAlias = !String.IsNullOrWhiteSpace(mod.CustomAlias);
+		mod.CustomPreviewImageReference = annotation?.CustomPreviewImageReference ?? String.Empty;
+		mod.CustomPreviewImagePath = ReduxModArtworkService.TryResolvePath(
+			mod.CustomPreviewImageReference, out var artworkPath) && File.Exists(artworkPath)
+			? artworkPath
+			: String.Empty;
+		mod.HasCustomPreviewImage = !String.IsNullOrWhiteSpace(mod.CustomPreviewImagePath);
+		mod.RaisePropertyChanged(nameof(DivinityModData.ListDisplayTitle));
 	}
 
 	public bool TrySetModPrivateNote(DivinityModData mod, string note, out string error)
@@ -8428,7 +8449,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			{
 				foreach (var m in modDataList)
 				{
-					if (CultureInfo.CurrentCulture.CompareInfo.IndexOf(m.Name, searchText, CompareOptions.IgnoreCase) >= 0)
+					if (CultureInfo.CurrentCulture.CompareInfo.IndexOf(m.Name, searchText, CompareOptions.IgnoreCase) >= 0 ||
+						(!String.IsNullOrWhiteSpace(m.CustomAlias) &&
+						 CultureInfo.CurrentCulture.CompareInfo.IndexOf(m.CustomAlias, searchText, CompareOptions.IgnoreCase) >= 0) ||
+						(!String.IsNullOrWhiteSpace(m.DisplayTitle) &&
+						 CultureInfo.CurrentCulture.CompareInfo.IndexOf(m.DisplayTitle, searchText, CompareOptions.IgnoreCase) >= 0))
 					{
 						m.Visibility = Visibility.Visible;
 					}
@@ -8494,7 +8519,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	}
 
 	private IReadOnlyList<string> GetAutomaticModCategories(DivinityModData mod)
-		=> AutomaticModCategoryClassifier.ClassifyCategories(mod, IsModCategoryEnabled, UncategorizedModsCategory);
+		=> Settings.EnableAutomaticModCategories
+			? AutomaticModCategoryClassifier.ClassifyCategories(mod, IsModCategoryEnabled, UncategorizedModsCategory)
+			: Array.Empty<string>();
 
 	private IReadOnlyList<string> GetEffectiveModCategories(DivinityModData mod)
 	{
@@ -8569,8 +8596,17 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private IReadOnlyList<string> GetSidebarCategoryOrder()
 	{
-		var ordered = ApplySavedCategoryOrder(ReduxDefaultCategoryDisplayOrder
-			.Concat(AutomaticModCategoryClassifier.CategoryNames)
+		var automaticCategories = Settings.EnableAutomaticModCategories
+			? ReduxDefaultCategoryDisplayOrder.Concat(AutomaticModCategoryClassifier.CategoryNames)
+			: Enumerable.Empty<string>();
+		var manuallyAssignedCategories = (Settings.ModCategoryAssignments ?? new Dictionary<string, List<string>>())
+			.Values
+			.Where(categories => categories != null)
+			.SelectMany(categories => categories)
+			.Where(category => !String.IsNullOrWhiteSpace(category)
+				&& !category.Equals(NoCategoryAssignment, StringComparison.OrdinalIgnoreCase));
+		var ordered = ApplySavedCategoryOrder(automaticCategories
+			.Concat(manuallyAssignedCategories)
 			.Distinct(StringComparer.OrdinalIgnoreCase)
 			.Concat(Settings.CustomModCategories ?? Enumerable.Empty<string>())
 			.Where(category => !category.Equals(UncategorizedModsCategory, StringComparison.OrdinalIgnoreCase)))
@@ -8793,6 +8829,62 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		if (!IsOverrideVisualDivider(divider) && divider.IsActiveList) HasUnsavedLoadOrderChanges = true;
 		QueueSave();
 		RecordLoadOrderEdit(historyBefore);
+		return true;
+	}
+
+	public bool TrySetModAlias(DivinityModData mod, string customAlias, out string error)
+	{
+		error = String.Empty;
+		if (mod == null || String.IsNullOrWhiteSpace(mod.UUID))
+		{
+			error = "Choose a mod before editing its alias.";
+			return false;
+		}
+
+		var proposed = _modAnnotationStore.Clone();
+		if (!ReduxModAnnotationService.TrySetAlias(
+				proposed,
+				mod.UUID,
+				customAlias,
+				out error) ||
+			!ReduxModAnnotationService.TrySave(GetModAnnotationsPath(), proposed, out error))
+			return false;
+
+		_modAnnotationStore = proposed;
+		foreach (var matchingMod in mods.Items.Where(item =>
+			String.Equals(item.UUID, mod.UUID, StringComparison.OrdinalIgnoreCase)))
+			ApplyModAnnotation(matchingMod);
+
+		// Aliases participate in both normal and Override searches. Re-evaluate
+		// projections immediately so clearing or adding one cannot leave a stale row.
+		OnFilterTextChanged(ActiveModFilterText, ActiveMods);
+		OnFilterTextChanged(InactiveModFilterText, InactiveMods);
+		RefreshOverrideVisualDividers();
+		return true;
+	}
+
+	public bool TrySetModArtworkReference(DivinityModData mod, string artworkReference, out string error)
+	{
+		error = String.Empty;
+		if (mod == null || String.IsNullOrWhiteSpace(mod.UUID))
+		{
+			error = "Choose a mod before editing its preview artwork.";
+			return false;
+		}
+
+		var proposed = _modAnnotationStore.Clone();
+		if (!ReduxModAnnotationService.TrySetArtwork(
+				proposed,
+				mod.UUID,
+				artworkReference,
+				out error) ||
+			!ReduxModAnnotationService.TrySave(GetModAnnotationsPath(), proposed, out error))
+			return false;
+
+		_modAnnotationStore = proposed;
+		foreach (var matchingMod in mods.Items.Where(item =>
+			String.Equals(item.UUID, mod.UUID, StringComparison.OrdinalIgnoreCase)))
+			ApplyModAnnotation(matchingMod);
 		return true;
 	}
 
@@ -9654,7 +9746,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		RecordLoadOrderEdit(historyBefore);
 	}
 
-	public void ApplyOverrideVisualModListDrop(IEnumerable<DivinityModData> draggedItems, int insertIndex)
+	public void ApplyOverrideVisualModListDrop(
+		IEnumerable<DivinityModData> draggedItems,
+		int insertIndex,
+		IReadOnlyList<DivinityModData> visibleItems = null)
 	{
 		var dragged = draggedItems?.Distinct().ToList() ?? [];
 		if (dragged.Count == 0 || dragged.Any(item => !DisplayOverrideMods.Contains(item))) return;
@@ -9670,7 +9765,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					sequence, Settings.OverrideVisualModListDividers, movingDivider).ToList();
 		}
 		insertIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(
-			DisplayOverrideMods.ToList(), sequence, insertIndex);
+			visibleItems ?? DisplayOverrideMods.ToList(), sequence, insertIndex);
 		var result = VisualModListDropPolicy.Apply(sequence, [], dragged, true, insertIndex).ActiveItems;
 		var historyBefore = CaptureLoadOrderEditState();
 		SaveOverrideVisualDividerPositions(result);
@@ -10354,6 +10449,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			mod.ShowInterfaceIcons = Settings.ShowCategoryIconsInPills;
 			mod.UseIconsOnly = Settings.UseIconsOnly;
 			mod.UseCategoryColorsForText = Settings.UseCategoryColorsForSidebarText;
+			mod.ShowDescriptionInHoverCard = Settings.ShowModDescriptionsInHoverCards;
 			mod.DisplayCategory = categories.FirstOrDefault() ?? UncategorizedModsCategory;
 			var displayCategories = categories
 				.Select(category => new ModCategoryDisplayData(
@@ -12079,6 +12175,16 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			});
 
 		Settings.WhenAnyValue(x => x.HideEmptyModCategories)
+			.Skip(1)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(_ => ScheduleRefreshModCategories());
+
+		Settings.WhenAnyValue(x => x.ShowModDescriptionsInHoverCards)
+			.Skip(1)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(_ => ScheduleRefreshModCategories());
+
+		Settings.WhenAnyValue(x => x.EnableAutomaticModCategories)
 			.Skip(1)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ => ScheduleRefreshModCategories());

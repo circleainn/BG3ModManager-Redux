@@ -9,6 +9,15 @@ namespace Redux.Core.Tests;
 
 public sealed class VisualDividerDragPolicyTests
 {
+	public void PureOverrideModsCanReorderOnlyWithinTheirOwnPane()
+	{
+		var pureOverride = CreateMod("override");
+		pureOverride.CanDrag = false;
+
+		RegressionAssert.True(VisualDividerDragPolicy.CanStartDrag(pureOverride, withinOverridePane: true));
+		RegressionAssert.False(VisualDividerDragPolicy.CanStartDrag(pureOverride, withinOverridePane: false));
+	}
+
 	public void EstablishedSectionsFollowTheirMembersAfterMultiModChanges()
 	{
 		var addedFirst = CreateMod("added-first");

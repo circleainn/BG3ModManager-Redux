@@ -44,6 +44,7 @@ internal static class Program
 		var interactionPerformance = new InteractionPerformanceTests();
 		var interactionBehavior = new InteractionBehaviorTests();
 		var customIcons = new CustomIconTests();
+		var customArtwork = new CustomArtworkTests();
 		var automaticCategories = new AutomaticModCategoryTests();
 		var visualDividerDrag = new VisualDividerDragPolicyTests();
 		var inactiveOrder = new InactiveModOrderTests();
@@ -279,6 +280,14 @@ internal static class Program
 			(nameof(annotations.ClearingTheLastValueRemovesTheAnnotation), annotations.ClearingTheLastValueRemovesTheAnnotation),
 			(nameof(annotations.OversizedNotesAreRejectedBeforeTheStoreChanges), annotations.OversizedNotesAreRejectedBeforeTheStoreChanges),
 			(nameof(annotations.BulkNotesUpdateAtomically), annotations.BulkNotesUpdateAtomically),
+			(nameof(annotations.AliasesPersistIndependentlyFromPrivateNotes), annotations.AliasesPersistIndependentlyFromPrivateNotes),
+			(nameof(annotations.OversizedAliasesAreRejectedBeforeTheStoreChanges), annotations.OversizedAliasesAreRejectedBeforeTheStoreChanges),
+			(nameof(annotations.AliasesRemainIndependentForPackagesThatShareProviderMetadata), annotations.AliasesRemainIndependentForPackagesThatShareProviderMetadata),
+			(nameof(annotations.CustomArtworkPersistsWithoutReplacingAliasesOrNotes), annotations.CustomArtworkPersistsWithoutReplacingAliasesOrNotes),
+			(nameof(customArtwork.JpegArtworkIsCopiedAsAPathSafePackageScopedPng), customArtwork.JpegArtworkIsCopiedAsAPathSafePackageScopedPng),
+			(nameof(customArtwork.CustomArtworkOverridesAndThenFallsBackToProviderArtwork), customArtwork.CustomArtworkOverridesAndThenFallsBackToProviderArtwork),
+			(nameof(customArtwork.HoverDescriptionsUseBoundedPlainTextFromCachedMetadata), customArtwork.HoverDescriptionsUseBoundedPlainTextFromCachedMetadata),
+			(nameof(customArtwork.MissingDescriptionsDoNotCreatePlaceholderHoverText), customArtwork.MissingDescriptionsDoNotCreatePlaceholderHoverText),
 			(nameof(overlaps.NormalizesSlashAndCaseDifferences), overlaps.NormalizesSlashAndCaseDifferences),
 			(nameof(overlaps.DuplicatePathsInsideOnePackageAreNotOverlaps), overlaps.DuplicatePathsInsideOnePackageAreNotOverlaps),
 			(nameof(overlaps.ExcludesUniquePathsAndCountsAffectedPackages), overlaps.ExcludesUniquePathsAndCountsAffectedPackages),
@@ -334,6 +343,7 @@ internal static class Program
 			(nameof(automaticCategories.UnknownProviderTaxonomyFallsBackToPackageKeywords), automaticCategories.UnknownProviderTaxonomyFallsBackToPackageKeywords),
 			(nameof(automaticCategories.DisabledProviderCategoryFallsBackToAnEnabledCategory), automaticCategories.DisabledProviderCategoryFallsBackToAnEnabledCategory),
 			(nameof(visualDividerDrag.NormalModDragNeverIncludesASelectedDivider), visualDividerDrag.NormalModDragNeverIncludesASelectedDivider),
+			(nameof(visualDividerDrag.PureOverrideModsCanReorderOnlyWithinTheirOwnPane), visualDividerDrag.PureOverrideModsCanReorderOnlyWithinTheirOwnPane),
 			(nameof(visualDividerDrag.EstablishedSectionsFollowTheirMembersAfterMultiModChanges), visualDividerDrag.EstablishedSectionsFollowTheirMembersAfterMultiModChanges),
 			(nameof(inactiveOrder.SavedInactiveOrderSurvivesRestartAndDiscoveryChanges), inactiveOrder.SavedInactiveOrderSurvivesRestartAndDiscoveryChanges),
 			(nameof(inactiveOrder.InactiveBlockMoveDoesNotChangeActiveOrder), inactiveOrder.InactiveBlockMoveDoesNotChangeActiveOrder),
@@ -377,6 +387,7 @@ internal static class Program
 			(nameof(settingsMaintenance.SaveGameCampaignCollapseStateRoundTripsWithoutDuplicates), settingsMaintenance.SaveGameCampaignCollapseStateRoundTripsWithoutDuplicates),
 			(nameof(settingsMaintenance.OverrideOrganizationRoundTripsIndependentlyFromInactiveMods), settingsMaintenance.OverrideOrganizationRoundTripsIndependentlyFromInactiveMods),
 			(nameof(settingsMaintenance.RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly), settingsMaintenance.RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly),
+			(nameof(settingsMaintenance.AutomaticCategoryPreferencePreservesManualAndCustomOrganization), settingsMaintenance.AutomaticCategoryPreferencePreservesManualAndCustomOrganization),
 			(nameof(settingsMaintenance.RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain), settingsMaintenance.RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain),
 			(nameof(settingsMaintenance.ElevationWarningRequiresAnElevatedUnsuppressedProcessAndSchedulesOnce), settingsMaintenance.ElevationWarningRequiresAnElevatedUnsuppressedProcessAndSchedulesOnce),
 			(nameof(settingsMaintenance.FailedElevationWarningSuppressionRestoresThePreviousPreference), settingsMaintenance.FailedElevationWarningSuppressionRestoresThePreviousPreference),

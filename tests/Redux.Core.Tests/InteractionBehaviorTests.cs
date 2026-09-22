@@ -493,10 +493,17 @@ public sealed class InteractionBehaviorTests
 			?? throw new InvalidOperationException("The mod name template did not create its text element.");
 
 		RegressionAssert.Equal("Provider project title", name.Text);
+		mod.CustomAlias = "My local alias";
+		mod.HasCustomAlias = true;
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		RegressionAssert.Equal("My local alias", name.Text);
 		mod.DisplayFileForName = true;
 		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
 		RegressionAssert.Equal("InstalledPackage.pak", name.Text);
 		mod.DisplayFileForName = false;
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		RegressionAssert.Equal("My local alias", name.Text);
+		mod.HasCustomAlias = false;
 		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
 		RegressionAssert.Equal("Provider project title", name.Text);
 	}

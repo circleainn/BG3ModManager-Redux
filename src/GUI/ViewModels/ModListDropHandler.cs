@@ -169,7 +169,10 @@ public class ModListDropHandler : DefaultDropHandler
 			if (ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayOverrideMods))
 			{
 				if (!ReferenceEquals(dropInfo.DragInfo.SourceCollection, _viewModel.DisplayOverrideMods)) return;
-				_viewModel.ApplyOverrideVisualModListDrop(visualData, insertIndex);
+				var visibleOverrideItems = (dropInfo.VisualTarget as ItemsControl)?.Items
+					.OfType<DivinityModData>()
+					.ToList();
+				_viewModel.ApplyOverrideVisualModListDrop(visualData, insertIndex, visibleOverrideItems);
 				RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(20), () =>
 					_viewModel.Layout.SelectMods(visualData));
 				return;

@@ -16,6 +16,7 @@ source for individual implementation details.
 - Allow mods in a filtered or column-sorted Inactive Mods view to be dragged directly into the intended position in Active Mods while keeping projected-list reordering guarded.
 - Decode the WebP artwork now returned by the Nexus CDN even when its saved URL ends in `.png` or `.jpeg`, restoring linked mod thumbnails.
 - Keep the Override Mods list within the split pane's real available height so its scrollbar remains usable at the maximum expanded size.
+- Allow pure override packages to be rearranged with their separators inside Override Mods even though those packages remain intentionally blocked from the numbered Active/Inactive load order. Filtered Override views now use visible rows as drop anchors so hidden entries keep their relative placement.
 
 ### Added
 
@@ -27,6 +28,10 @@ source for individual implementation details.
 - Let Override Mods use the same saved visual ordering, top-level and child separators, collapse controls, drag behavior, context actions, and Undo/Redo workflow as Inactive Mods. This organization remains Redux-only and never enters the numbered game load order.
 - Add an editable **Collapse or Expand Override Mods** shortcut, defaulting to **Ctrl+Alt+O**, which uses the pane's full animated transition.
 - Add one-level parent and child separators to Active and Inactive Mods. Child separators and their mod rows use a fixed nesting gutter that leaves the table columns aligned, collapse independently, and disappear with the complete branch when their parent closes. The separator context menu can create a child or promote it back to the top level.
+- Add persistent local aliases for installed mods. Set, edit, or clear an alias from a mod's context menu or details pane; aliases appear in lists, name sorting, and search while the original module, package, and provider metadata remains unchanged.
+- Add package-scoped custom preview artwork for installed mods. Choose, replace, or clear PNG, JPEG, WebP, BMP, or GIF images from the context menu or details pane; Redux keeps a bounded PNG copy in its own data folder, uses it in existing preview surfaces, and restores provider artwork when cleared.
+- Add an optional, bounded plain-text description excerpt to mod hover cards using metadata Redux has already loaded; the full description remains in the details drawer.
+- Add a persistent **Assign categories automatically** control in Settings and the Categories menu. Turning it off hides built-in automatic groups and stops future automatic classification while preserving custom categories and manual assignments; the same menu can explicitly reset every mod back to automatic assignment.
 
 ### Changed
 

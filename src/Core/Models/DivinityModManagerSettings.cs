@@ -147,6 +147,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool EnableColorblindSupport { get; set; }
 
 	[DefaultValue(true)]
+	[SettingsEntry("Show mod descriptions in hover cards", "Show a short excerpt from already-loaded local or provider metadata when hovering over a mod. Redux does not fetch descriptions on hover.")]
+	[DataMember, Reactive] public bool ShowModDescriptionsInHoverCards { get; set; } = true;
+
+	[DefaultValue(true)]
 	[DataMember, Reactive] public bool DarkThemeEnabled { get; set; }
 
 	[DefaultValue(ReduxThemeType.ReduxDark)]
@@ -353,6 +357,9 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public Dictionary<string, string> ModCategoryDescriptions { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	[DataMember, Reactive] public List<string> SavedCategoryColors { get; set; } = new();
 	[DataMember, Reactive] public List<string> DisabledModCategories { get; set; } = new();
+	[DefaultValue(true)]
+	[SettingsEntry("Assign categories automatically", "Classify mods into Redux's built-in categories. Turn this off to hide automatic categories while preserving custom categories and every manual assignment.")]
+	[DataMember, Reactive] public bool EnableAutomaticModCategories { get; set; } = true;
 
 	[DefaultValue(false)]
 	[DataMember, Reactive] public bool SaveModCategoryFilterBetweenSessions { get; set; }

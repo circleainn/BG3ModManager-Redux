@@ -859,10 +859,15 @@
 										<Setter Property="Cursor" Value="Hand" />
 										<Setter Property="ToolTip" Value="{Binding Metadata.GalleryTooltip}" />
 									</DataTrigger>
+									<DataTrigger Binding="{Binding Metadata.UsesCustomPreviewImage}" Value="True">
+										<Setter Property="Cursor" Value="Arrow" />
+										<Setter Property="ToolTip" Value="{Binding Metadata.GalleryTooltip}" />
+									</DataTrigger>
 									<!--  Hover glow matches the linked provider's brand color instead of always Redux purple.  -->
 									<MultiDataTrigger>
 										<MultiDataTrigger.Conditions>
 											<Condition Binding="{Binding Metadata.OnlineSourceVisibility}" Value="Visible" />
+											<Condition Binding="{Binding Metadata.UsesCustomPreviewImage}" Value="False" />
 											<Condition Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NEXUSMODS}" />
 											<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
 										</MultiDataTrigger.Conditions>
@@ -876,6 +881,7 @@
 									<MultiDataTrigger>
 										<MultiDataTrigger.Conditions>
 											<Condition Binding="{Binding Metadata.OnlineSourceVisibility}" Value="Visible" />
+											<Condition Binding="{Binding Metadata.UsesCustomPreviewImage}" Value="False" />
 											<Condition Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.MODIO}" />
 											<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
 										</MultiDataTrigger.Conditions>
@@ -889,6 +895,7 @@
 									<MultiDataTrigger>
 										<MultiDataTrigger.Conditions>
 											<Condition Binding="{Binding Metadata.OnlineSourceVisibility}" Value="Visible" />
+											<Condition Binding="{Binding Metadata.UsesCustomPreviewImage}" Value="False" />
 											<Condition Binding="{Binding Metadata.SourceType}" Value="{x:Static dapp:ModSourceType.NONE}" />
 											<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True" />
 										</MultiDataTrigger.Conditions>
@@ -984,6 +991,20 @@
 						</WrapPanel>
 						<WrapPanel Grid.Row="2" Margin="0,7,0,0">
 							<Border Style="{StaticResource ModDetailsMetadataChipStyle}"
+								Visibility="{Binding HasCustomAlias, Converter={StaticResource BoolToVisibilityConverter}}"
+								ToolTip="Original Redux/provider package title">
+								<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}">
+									<Run Text="Original: " /><Run Text="{Binding Metadata.PackageTitle, Mode=OneWay}" />
+								</TextBlock>
+							</Border>
+							<Border Style="{StaticResource ModDetailsMetadataChipStyle}"
+								Visibility="{Binding HasCustomAlias, Converter={StaticResource BoolToVisibilityConverter}}"
+								ToolTip="Original module name from meta.lsx">
+								<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}">
+									<Run Text="Module: " /><Run Text="{Binding Name, Mode=OneWay}" />
+								</TextBlock>
+							</Border>
+							<Border Style="{StaticResource ModDetailsMetadataChipStyle}"
 								ToolTip="{Binding SourceComponentTooltip}"
 								Visibility="{Binding SourceComponentVisibility}">
 								<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}"
@@ -1018,6 +1039,42 @@
 								<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 									Text="{Binding Metadata.AuthorLabel}" />
 							</Border>
+							<Button Click="EditModAliasButton_Click"
+								Style="{StaticResource ModDetailsSourceButtonStyle}"
+								ToolTip="Use a local display name while preserving the original package metadata.">
+								<TextBlock>
+									<TextBlock.Style>
+										<Style TargetType="{x:Type TextBlock}">
+											<Setter Property="Text" Value="Set alias" />
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding HasCustomAlias}" Value="True">
+													<Setter Property="Text" Value="Edit alias" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</TextBlock.Style>
+								</TextBlock>
+							</Button>
+							<Button Click="EditModArtworkButton_Click"
+								Style="{StaticResource ModDetailsSourceButtonStyle}"
+								ToolTip="Choose a local preview image without changing provider metadata.">
+								<TextBlock>
+									<TextBlock.Style>
+										<Style TargetType="{x:Type TextBlock}">
+											<Setter Property="Text" Value="Add artwork" />
+											<Style.Triggers>
+												<DataTrigger Binding="{Binding HasCustomPreviewImage}" Value="True">
+													<Setter Property="Text" Value="Replace artwork" />
+												</DataTrigger>
+											</Style.Triggers>
+										</Style>
+									</TextBlock.Style>
+								</TextBlock>
+							</Button>
+							<Button Click="ClearModArtworkButton_Click"
+								Content="Clear artwork"
+								Style="{StaticResource ModDetailsSourceButtonStyle}"
+								Visibility="{Binding HasCustomPreviewImage, Converter={StaticResource BoolToVisibilityConverter}}" />
 							<Button Command="{Binding Path=OpenURLCommand, Source={x:Static dapp:DivinityApp.Commands}}"
 								CommandParameter="{Binding Metadata.AuthorPageUrl}"
 								Content="{Binding}"
@@ -1486,6 +1543,20 @@
 						IsCheckable="True"
 						Click="DisableNewModIndicatorsMenuItem_Click">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Information}" /></MenuItem.Icon>
+					</MenuItem>
+					<Separator />
+					<MenuItem x:Name="AutomaticCategoriesMenuItem"
+						Header="Assign categories automatically"
+						IsCheckable="True"
+						Click="AutomaticCategoriesMenuItem_Click"
+						ToolTip="Turn off Redux's built-in automatic categories. Custom categories and manual assignments are preserved.">
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Sparkles}" /></MenuItem.Icon>
+					</MenuItem>
+					<MenuItem x:Name="RestoreAutomaticCategoriesMenuItem"
+						Header="Reset all mods to automatic categories..."
+						Click="RestoreAutomaticCategoriesMenuItem_Click"
+						ToolTip="Clear every per-mod manual category choice, including No Category. Category definitions and styles are kept.">
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
 					</MenuItem>
 					<Separator />
 					<MenuItem Header="Create Custom Category..." Click="AddCustomCategoryMenuItem_Click">
@@ -2365,11 +2436,21 @@
 					</Grid>
 					<TextBlock Grid.Column="1"
 						VerticalAlignment="Center"
-						Style="{StaticResource Redux.Text.WindowTitle}"
 						FontSize="{DynamicResource Redux.FontSize.15}"
 						MaxWidth="420"
-						Text="{Binding Content.Metadata.Title, ElementName=ModDetailsContent, TargetNullValue='Selected Mod'}"
-						TextTrimming="CharacterEllipsis" />
+						TextTrimming="CharacterEllipsis"
+						ToolTip="{Binding Content.Metadata.PackageTitle, ElementName=ModDetailsContent}">
+						<TextBlock.Style>
+							<Style BasedOn="{StaticResource Redux.Text.WindowTitle}" TargetType="{x:Type TextBlock}">
+								<Setter Property="Text" Value="{Binding Content.Metadata.Title, ElementName=ModDetailsContent, TargetNullValue='Selected Mod'}" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding Content.HasCustomAlias, ElementName=ModDetailsContent}" Value="True">
+										<Setter Property="Text" Value="{Binding Content.CustomAlias, ElementName=ModDetailsContent}" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</TextBlock.Style>
+					</TextBlock>
 					<ContentControl Grid.Column="2" Margin="6,0,0,0" VerticalAlignment="Center"
 						Content="{Binding Content, ElementName=ModDetailsContent}"
 						ContentTemplate="{StaticResource ModDetailsCategoryTemplate}" />

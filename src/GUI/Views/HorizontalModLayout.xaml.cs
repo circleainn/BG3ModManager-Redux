@@ -235,6 +235,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private const string CategoryAssignmentMenuTag = "ReduxCategoryAssignment";
 	private const string SourceLinkMenuTag = "ReduxSourceLink";
 	private const string PrivateNoteMenuTag = "ReduxPrivateNote";
+	private const string ModAliasMenuTag = "ReduxModAlias";
+	private const string ModArtworkMenuTag = "ReduxModArtwork";
 	private const string BulkActionsMenuTag = "ReduxBulkActions";
 	private const string BulkHiddenSeparatorTag = "ReduxBulkHiddenSeparator";
 	private Point _categoryDragStart;
@@ -301,6 +303,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ShowEmptyCategoriesMenuItem.IsChecked = !ViewModel.Settings.HideEmptyModCategories;
 		SaveCategoryFilterMenuItem.IsChecked = ViewModel.Settings.SaveModCategoryFilterBetweenSessions;
 		DisableNewModIndicatorsMenuItem.IsChecked = ViewModel.Settings.DisableNewModCategoryIndicators;
+		AutomaticCategoriesMenuItem.IsChecked = ViewModel.Settings.EnableAutomaticModCategories;
+		RestoreAutomaticCategoriesMenuItem.IsEnabled = ViewModel.Settings.EnableAutomaticModCategories &&
+			((ViewModel.Settings.ModCategoryAssignments?.Count ?? 0) > 0 ||
+			 (ViewModel.Settings.ModCategoryOverrides?.Count ?? 0) > 0);
 		EditCategoryMenuItem.IsEnabled = !String.IsNullOrWhiteSpace(ViewModel.SelectedModCategory) &&
 			!ViewModel.SelectedModCategory.Equals(MainWindowViewModel.AllModsCategory, StringComparison.OrdinalIgnoreCase);
 
@@ -330,6 +336,64 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private void DisableNewModIndicatorsMenuItem_Click(object sender, RoutedEventArgs e) =>
 		ViewModel.SetNewModCategoryIndicatorsDisabled(DisableNewModIndicatorsMenuItem.IsChecked);
+
+	private void AutomaticCategoriesMenuItem_Click(object sender, RoutedEventArgs e)
+	{
+		var enabled = AutomaticCategoriesMenuItem.IsChecked;
+		if (!enabled)
+		{
+			var result = ShowCategoryMessage(
+				"Turn off automatic categories?\n\n"
+				+ "Redux's built-in automatic category groups will be hidden and future automatic classifications will stay off. "
+				+ "Mods that only used automatic categories will appear under Uncategorized.\n\n"
+				+ "Custom category definitions, manual assignments, category styles, separators, installed mods, and load order will not change. "
+				+ "You can turn automatic categories back on from this menu or Settings.",
+				"Turn Off Automatic Categories?", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+			if (result != MessageBoxResult.Yes)
+			{
+				AutomaticCategoriesMenuItem.IsChecked = true;
+				return;
+			}
+		}
+
+		try
+		{
+			ViewModel.SetAutomaticModCategoriesEnabled(enabled);
+		}
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Error changing automatic category preference:\n{ex}");
+			AutomaticCategoriesMenuItem.IsChecked = ViewModel.Settings.EnableAutomaticModCategories;
+			ShowCategoryMessage("The automatic category preference could not be saved. Check the log for details.",
+				"Automatic Categories", MessageBoxButton.OK, MessageBoxImage.Error);
+		}
+	}
+
+	private void RestoreAutomaticCategoriesMenuItem_Click(object sender, RoutedEventArgs e)
+	{
+		const string message =
+			"Reset every mod to automatic categories?\n\n"
+			+ "All manual category assignments, including custom-category assignments and explicit No Category choices, will be cleared. "
+			+ "Redux will immediately classify each mod again using its current automatic rules and already-linked source metadata.\n\n"
+			+ "Custom category definitions, colors, icons, descriptions, sidebar order, separators, notes, sources, installed mods, and load order will not change.";
+		if (ShowCategoryMessage(message, "Reset to Automatic Categories?", MessageBoxButton.YesNo,
+			MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+
+		try
+		{
+			var restored = ViewModel.RestoreAutomaticModCategories();
+			ShowCategoryMessage(restored > 0
+				? $"Reset category assignments for {restored} mod{(restored == 1 ? "" : "s")}."
+				: "All mods were already using automatic categories.",
+				"Automatic Categories", MessageBoxButton.OK, MessageBoxImage.Information);
+		}
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Error restoring automatic mod categories:\n{ex}");
+			ShowCategoryMessage("Automatic categories could not be restored. Check the log for details.",
+				"Automatic Categories", MessageBoxButton.OK, MessageBoxImage.Error);
+		}
+	}
 
 	private void CategoryListBox_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 	{
@@ -963,6 +1027,14 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			menu.Items.Remove(generatedItem);
 		}
+		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, ModAliasMenuTag)).ToList())
+		{
+			menu.Items.Remove(generatedItem);
+		}
+		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, ModArtworkMenuTag)).ToList())
+		{
+			menu.Items.Remove(generatedItem);
+		}
 
 		var categoryTargets = listView.SelectedItems
 			.OfType<DivinityModData>()
@@ -1061,6 +1133,35 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				: null
 		};
 		privateNoteItem.Click += (_, _) => ShowModNoteDialog(categoryTargets);
+		var aliasItem = new MenuItem
+		{
+			Header = mod.HasCustomAlias ? "Edit Alias..." : "Set Alias...",
+			Tag = ModAliasMenuTag,
+			Icon = ReduxIcon.FromResource("Redux.Icon.Create", true),
+			ToolTip = "Use a local display name without changing the installed package or provider metadata."
+		};
+		aliasItem.Click += (_, _) => ShowModAliasDialog(mod);
+		var artworkMenu = new MenuItem
+		{
+			Header = "Preview Artwork",
+			Tag = ModArtworkMenuTag,
+			Icon = ReduxIcon.FromResource("Redux.Icon.Camera", true)
+		};
+		var chooseArtworkItem = new MenuItem
+		{
+			Header = mod.HasCustomPreviewImage ? "Replace Custom Artwork..." : "Choose Custom Artwork...",
+			Icon = ReduxIcon.FromResource("Redux.Icon.FolderOpen", true)
+		};
+		chooseArtworkItem.Click += (_, _) => ChooseModArtwork(mod);
+		artworkMenu.Items.Add(chooseArtworkItem);
+		var clearArtworkItem = new MenuItem
+		{
+			Header = "Clear Custom Artwork",
+			IsEnabled = mod.HasCustomPreviewImage,
+			Icon = ReduxIcon.FromResource("Redux.Icon.RemoveCircle", true)
+		};
+		clearArtworkItem.Click += (_, _) => ClearModArtwork(mod);
+		artworkMenu.Items.Add(clearArtworkItem);
 
 		if (hasBulkCategoryTargets)
 		{
@@ -1134,6 +1235,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			menu.Items.Insert(Math.Min(2, menu.Items.Count), categoryMenu);
 			menu.Items.Insert(Math.Min(3, menu.Items.Count), privateNoteItem);
+			menu.Items.Insert(Math.Min(4, menu.Items.Count), aliasItem);
+			menu.Items.Insert(Math.Min(5, menu.Items.Count), artworkMenu);
 		}
 
 		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, SourceLinkMenuTag)).ToList())
@@ -1347,6 +1450,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			ShowModNoteDialog(mod);
 	}
 
+	private void EditModAliasButton_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is FrameworkElement { DataContext: DivinityModData mod })
+			ShowModAliasDialog(mod);
+	}
+
 	private FrameworkElement CreateCategoryAssignmentIcon(string category)
 	{
 		var colorValue = ViewModel.GetCurrentCategoryColor(category);
@@ -1455,6 +1564,78 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				dialog.CategoryIconId, dialog.HideSeparatorLine, dialog.CategoryDescription,
 				dialog.UseSeparatorInEveryLoadOrder, parent?.Id);
 		UpdateSeparatorBulkToggleButtons();
+	}
+
+	private void ShowModAliasDialog(DivinityModData mod)
+	{
+		if (mod == null || mod.IsVisualDivider || String.IsNullOrWhiteSpace(mod.UUID)) return;
+		var dialog = new ReduxModAliasWindow(Window.GetWindow(this), mod);
+		dialog.ShowDialog();
+		if (!dialog.Accepted) return;
+		if (!ViewModel.TrySetModAlias(mod, dialog.Alias, out var error))
+		{
+			ShowCategoryMessage(error, "Mod Alias", MessageBoxButton.OK, MessageBoxImage.Warning);
+			return;
+		}
+
+		// WPF's sorted and filtered collection views do not always re-evaluate a
+		// computed display key after an annotation changes. Refresh each pane once.
+		RefreshDataView(ActiveModsListView);
+		RefreshDataView(InactiveModsListView);
+		RefreshDataView(ForceLoadedModsListView);
+	}
+
+	private void ChooseModArtwork(DivinityModData mod)
+	{
+		if (mod == null || mod.IsVisualDivider || String.IsNullOrWhiteSpace(mod.UUID)) return;
+		var dialog = new Microsoft.Win32.OpenFileDialog
+		{
+			Title = mod.HasCustomPreviewImage ? "Replace Custom Mod Artwork" : "Choose Custom Mod Artwork",
+			Filter = "Image files|*.png;*.jpg;*.jpeg;*.webp;*.bmp;*.gif|All files|*.*",
+			CheckFileExists = true,
+			Multiselect = false
+		};
+		if (dialog.ShowDialog(Window.GetWindow(this)) != true) return;
+		if (!ReduxModArtworkService.TryImport(dialog.FileName, mod.UUID, out var artworkReference, out var importError))
+		{
+			ShowCategoryMessage(importError, "Custom Mod Artwork", MessageBoxButton.OK, MessageBoxImage.Information);
+			return;
+		}
+
+		var previousReference = mod.CustomPreviewImageReference;
+		if (!ViewModel.TrySetModArtworkReference(mod, artworkReference, out var saveError))
+		{
+			if (!String.Equals(previousReference, artworkReference, StringComparison.OrdinalIgnoreCase))
+				ReduxModArtworkService.TryDelete(artworkReference, out _);
+			ShowCategoryMessage(saveError, "Custom Mod Artwork", MessageBoxButton.OK, MessageBoxImage.Warning);
+			return;
+		}
+		if (!String.Equals(previousReference, artworkReference, StringComparison.OrdinalIgnoreCase) &&
+			!ReduxModArtworkService.TryDelete(previousReference, out var deleteError))
+			ViewModel.ShowAlert(deleteError, AlertType.Warning, 8);
+	}
+
+	private void ClearModArtwork(DivinityModData mod)
+	{
+		if (mod?.HasCustomPreviewImage != true) return;
+		var previousReference = mod.CustomPreviewImageReference;
+		if (!ViewModel.TrySetModArtworkReference(mod, String.Empty, out var error))
+		{
+			ShowCategoryMessage(error, "Custom Mod Artwork", MessageBoxButton.OK, MessageBoxImage.Warning);
+			return;
+		}
+		if (!ReduxModArtworkService.TryDelete(previousReference, out var deleteError))
+			ViewModel.ShowAlert(deleteError, AlertType.Warning, 8);
+	}
+
+	private void EditModArtworkButton_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is FrameworkElement { DataContext: DivinityModData mod }) ChooseModArtwork(mod);
+	}
+
+	private void ClearModArtworkButton_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is FrameworkElement { DataContext: DivinityModData mod }) ClearModArtwork(mod);
 	}
 
 	private void AddOverrideSeparatorButton_Click(object sender, RoutedEventArgs e)
@@ -2950,7 +3131,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (mod == null) return false;
 		bool Contains(string value) => !String.IsNullOrWhiteSpace(value) &&
 			CultureInfo.CurrentCulture.CompareInfo.IndexOf(value, query, CompareOptions.IgnoreCase) >= 0;
-		return Contains(mod.DisplayTitle)
+		return Contains(mod.CustomAlias)
+			|| Contains(mod.DisplayTitle)
 			|| Contains(mod.Name)
 			|| Contains(mod.FileName)
 			|| Contains(mod.Author)
@@ -3975,7 +4157,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					candidateWidth = MeasureColumnText(listView, (listView == InactiveModsListView ? mod.InactiveIndex : mod.Index).ToString(CultureInfo.CurrentCulture)) + 20;
 					break;
 				case "Name":
-					candidateWidth = MeasureColumnText(listView, mod.DisplayTitle) + 28 + GetModNameAdornmentWidth(mod);
+					candidateWidth = MeasureColumnText(listView, mod.ListDisplayTitle) + 28 + GetModNameAdornmentWidth(mod);
 					break;
 				case "File Name":
 					candidateWidth = MeasureColumnText(listView, mod.FileName) + 24;
@@ -4472,7 +4654,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		var requestedLoadOrder = sortBy == "#";
 		if (sortBy == "Version") sortBy = "Version.Version";
-		if (sortBy == "Name") sortBy = "DisplayTitle";
+		if (sortBy == "Name") sortBy = "ListDisplayTitle";
 		if (sortBy == "File Name") sortBy = "FileName";
 		if (sortBy == "Modes") sortBy = "Targets";
 		if (sortBy == "Last Updated") sortBy = "DisplayLastUpdated";
@@ -4564,9 +4746,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				{
 					var targetWidth = ViewModel.Mods
 						.Where(mod => mod.IsActive || mod.IsForceLoaded)
-						.Where(mod => !String.IsNullOrWhiteSpace(mod.DisplayTitle))
+						.Where(mod => !String.IsNullOrWhiteSpace(mod.ListDisplayTitle))
 						.Select(mod =>
-							MeasureColumnText(ActiveModsListView, mod.DisplayTitle) +
+							MeasureColumnText(ActiveModsListView, mod.ListDisplayTitle) +
 							_FontSizeMeasurePadding +
 							GetModNameAdornmentWidth(mod))
 						.DefaultIfEmpty(0d)
@@ -4591,9 +4773,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (ViewModel.InactiveMods.Count > 0 && InactiveModsListView.View is GridView gridView && gridView.Columns.Count >= 2)
 		{
 			var targetWidth = ViewModel.InactiveMods
-				.Where(mod => !String.IsNullOrWhiteSpace(mod.DisplayTitle))
+				.Where(mod => !String.IsNullOrWhiteSpace(mod.ListDisplayTitle))
 				.Select(mod =>
-					MeasureColumnText(InactiveModsListView, mod.DisplayTitle) +
+					MeasureColumnText(InactiveModsListView, mod.ListDisplayTitle) +
 					_FontSizeMeasurePadding +
 					GetModNameAdornmentWidth(mod))
 				.DefaultIfEmpty(0d)

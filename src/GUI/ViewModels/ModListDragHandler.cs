@@ -132,10 +132,14 @@ public class ModListDragHandler : DefaultDragHandler
 			}
 			else if (dragInfo.SourceCollection == _viewModel.DisplayOverrideMods)
 			{
+				// Pure override packages deliberately have CanDrag=false because they
+				// cannot enter the normal active/inactive load order. That restriction
+				// must not prevent presentation-only ordering inside Override Mods.
 				var selected = VisualDividerDragPolicy.ResolveDragItems(
 					_viewModel.DisplayOverrideMods,
 					sourceItem,
-					x => x.Visibility == Visibility.Visible && x.CanDrag);
+					x => x.Visibility == Visibility.Visible &&
+						VisualDividerDragPolicy.CanStartDrag(x, withinOverridePane: true));
 				dragInfo.Data = selected.Count > 0 ? selected : null;
 			}
 			else if (dragInfo.SourceCollection == _viewModel.ActiveMods)
@@ -185,11 +189,19 @@ public class ModListDragHandler : DefaultDragHandler
 		// destination is Active Mods: the payload is resolved by mod identity, not by
 		// its display index. ModListDropHandler continues to reject reordering inside
 		// that projected inactive view.
-		if (dragInfo.Data is ISelectable d && !d.CanDrag)
+		var reorderingOverrideMods = ReferenceEquals(
+			dragInfo.SourceCollection,
+			_viewModel.DisplayOverrideMods);
+		if (dragInfo.Data is DivinityModData draggedMod &&
+			!VisualDividerDragPolicy.CanStartDrag(draggedMod, reorderingOverrideMods))
 		{
 			return false;
 		}
-		else if (dragInfo.Data is IEnumerable<DivinityModData> modData)
+		if (!reorderingOverrideMods && dragInfo.Data is ISelectable d && !d.CanDrag)
+		{
+			return false;
+		}
+		else if (!reorderingOverrideMods && dragInfo.Data is IEnumerable<DivinityModData> modData)
 		{
 			if (modData.All(x => !x.CanDrag))
 			{

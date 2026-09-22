@@ -43,7 +43,7 @@ public static class RemoteImageBehavior
 		try
 		{
 			var lazy = Cache.GetOrAdd(uri.AbsoluteUri, key =>
-				new Lazy<Task<BitmapSource>>(() => DownloadAsync(new Uri(key)), LazyThreadSafetyMode.ExecutionAndPublication));
+				new Lazy<Task<BitmapSource>>(() => LoadAsync(new Uri(key)), LazyThreadSafetyMode.ExecutionAndPublication));
 			var source = await lazy.Value;
 			if (!Equals(GetSourceUri(image), uri)) return;
 			image.Source = source;
@@ -52,8 +52,25 @@ public static class RemoteImageBehavior
 		catch (Exception ex)
 		{
 			Cache.TryRemove(uri.AbsoluteUri, out _);
-			DivinityApp.Log($"Could not load remote mod artwork from '{Redact(uri)}': {ex.Message}");
+			DivinityApp.Log($"Could not load mod artwork from '{Redact(uri)}': {ex.Message}");
 		}
+	}
+
+	private static async Task<BitmapSource> LoadAsync(Uri uri)
+	{
+		if (uri.IsFile)
+		{
+			var file = new FileInfo(uri.LocalPath);
+			if (!file.Exists) throw new FileNotFoundException("The custom artwork file is unavailable.", file.Name);
+			if (file.Length is <= 0 or > MaximumImageBytes)
+				throw new InvalidDataException("The custom artwork exceeds Redux's size limit.");
+			await using var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read,
+				FileShare.ReadWrite | FileShare.Delete, 81920, useAsync: true);
+			return await DecodeAsync(stream).ConfigureAwait(false);
+		}
+		if (uri.Scheme is not ("http" or "https"))
+			throw new InvalidDataException("Unsupported mod artwork URI scheme.");
+		return await DownloadAsync(uri).ConfigureAwait(false);
 	}
 
 	private static async Task<BitmapSource> DownloadAsync(Uri uri)
@@ -97,5 +114,7 @@ public static class RemoteImageBehavior
 		return bitmap;
 	}
 
-	private static string Redact(Uri uri) => $"{uri.Scheme}://{uri.Host}{uri.AbsolutePath}";
+	private static string Redact(Uri uri) => uri.IsFile
+		? $"local:{Path.GetFileName(uri.LocalPath)}"
+		: $"{uri.Scheme}://{uri.Host}{uri.AbsolutePath}";
 }

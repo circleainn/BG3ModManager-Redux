@@ -8,6 +8,9 @@ namespace DivinityModManager.Util;
 /// </summary>
 public static class VisualDividerDragPolicy
 {
+	public static bool CanStartDrag(DivinityModData item, bool withinOverridePane) =>
+		item != null && (withinOverridePane || item.CanDrag);
+
 	public static bool ContainsVisualDivider(IEnumerable<DivinityModData> items)
 	{
 		ArgumentNullException.ThrowIfNull(items);

@@ -102,7 +102,12 @@ uninstall guidance.
 - Matching Active, Inactive, and Override pane controls can collapse or expand every separator at once. The same action can
   be assigned a shortcut, while individual and context-menu controls remain available.
 - A resizable details drawer and hover cards for descriptions, requirements, files, changelogs,
-  source pages, diagnostics, and private notes.
+  source pages, diagnostics, private notes, and persistent local mod aliases. Aliases are searchable
+  display names; Redux keeps the original package and provider identity intact.
+- Automatic categorization can be disabled without deleting custom categories or manual assignments,
+  and the Categories menu can reset every mod back to automatic assignment when requested.
+- Package-scoped custom preview artwork for local or linked mods, stored as a normalized Redux-owned
+  image while leaving the installed package and provider artwork unchanged.
 - Configurable list columns and unified selection between Active and Inactive Mods. The # column
   starts visible in Active and hidden in Inactive; either can be changed in the column menu.
 - Override Mods has its own filterable, sortable pane outside the numbered order, with matching
@@ -112,7 +117,7 @@ uninstall guidance.
 - Category filtering applies to both panes. Click a filtered/sorted-view notice to clear that view;
   column-menu order follows your column arrangement.
 
-Categories, separators, and notes are Redux presentation data. They never enter the game's
+Categories, separators, aliases, custom artwork, and notes are Redux presentation data. They never enter the game's
 `modsettings.lsx`.
 
 <a id="diagnostics-and-load-order-advisor"></a>

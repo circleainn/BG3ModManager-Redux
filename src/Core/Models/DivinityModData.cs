@@ -51,10 +51,23 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 	[Reactive] public bool ShowInterfaceIcons { get; set; } = true;
 	[Reactive] public bool UseIconsOnly { get; set; }
 	[Reactive] public bool UseCategoryColorsForText { get; set; }
+	[Reactive] public bool ShowDescriptionInHoverCard { get; set; } = true;
 	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
 	public string PrivateNote { get; set; } = String.Empty;
 	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
 	public bool HasPrivateNote { get; set; }
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public string CustomAlias { get; set; } = String.Empty;
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public bool HasCustomAlias { get; set; }
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public string CustomPreviewImageReference { get; set; } = String.Empty;
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public string CustomPreviewImagePath { get; set; } = String.Empty;
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public bool HasCustomPreviewImage { get; set; }
+	[Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public string ListDisplayTitle => HasCustomAlias ? CustomAlias : DisplayTitle;
 	[Reactive] public int SourceComponentCount { get; set; } = 1;
 	[Reactive] public int SourceComponentIndex { get; set; } = 1;
 	[Reactive] public string SourceComponentSummary { get; set; }
