@@ -207,13 +207,6 @@
 									<DataTrigger Binding="{Binding Tag, ElementName=CategoryPreviewName}" Value="True">
 										<Setter Property="Foreground" Value="{DynamicResource Redux.CategoryEditor.IconBrush}" />
 									</DataTrigger>
-									<MultiDataTrigger>
-										<MultiDataTrigger.Conditions>
-											<Condition Binding="{Binding IsChecked, ElementName=IconOnlyCategoryCheckBox}" Value="True" />
-											<Condition Binding="{Binding Tag, ElementName=IconOnlyCategoryCheckBox}" Value="True" />
-										</MultiDataTrigger.Conditions>
-										<Setter Property="Visibility" Value="Collapsed" />
-									</MultiDataTrigger>
 									</Style.Triggers>
 								</Style>
 							</TextBlock.Style>
@@ -382,11 +375,6 @@
 								Checked="TintCustomIconCheckBox_Changed" Unchecked="TintCustomIconCheckBox_Changed"
 								ToolTip="Use the PNG transparency as a mask and apply this category or separator color.">
 								<TextBlock x:Name="TintCustomIconText" Text="Tint with category color" TextWrapping="Wrap" />
-							</CheckBox>
-							<CheckBox x:Name="IconOnlyCategoryCheckBox" Margin="0,0,18,0"
-								Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed"
-								ToolTip="Show this custom category as its icon while interface icons are enabled. Its name remains available in tooltips and menus.">
-								<TextBlock Text="Icon only" TextWrapping="Wrap" />
 							</CheckBox>
 							<CheckBox x:Name="HideSeparatorLineCheckBox" Margin="0,0,18,0"
 								Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed">

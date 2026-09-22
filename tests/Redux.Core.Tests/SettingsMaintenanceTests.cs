@@ -87,24 +87,32 @@ public sealed class SettingsMaintenanceTests
 		RegressionAssert.SequenceEqual(new[] { "Shadowheart", "Tav" }, restored!.CollapsedSaveGameCampaigns);
 	}
 
-	public void IconOnlyCategoriesRemainCustomAndRequireAnIcon()
+	public void OverrideOrganizationRoundTripsIndependentlyFromInactiveMods()
 	{
 		var settings = new DivinityModManagerSettings
 		{
-			CustomModCategories = new List<string> { "Compact", "No Icon" },
-			IconOnlyModCategories = new List<string> { "Compact", "compact", "No Icon", "Libraries" },
-			ModCategoryIcons = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+			InactiveModOrder = new List<string> { "inactive" },
+			OverrideModOrder = new List<string> { "override-b", "override-a" },
+			OverrideVisualModListDividers = new List<ModListVisualDividerData>
 			{
-				["Compact"] = "star",
-				["No Icon"] = String.Empty,
-				["Libraries"] = "library"
+				new()
+				{
+					Id = "override-divider", Title = "Always Loaded", Position = 1,
+					IsCollapsed = true, MemberModUuids = new List<string> { "override-a" }
+				}
 			}
 		};
 
-		var restored = JsonConvert.DeserializeObject<DivinityModManagerSettings>(JsonConvert.SerializeObject(settings));
+		var restored = JsonConvert.DeserializeObject<DivinityModManagerSettings>(
+			JsonConvert.SerializeObject(settings));
 
 		RegressionAssert.True(restored != null);
-		RegressionAssert.SequenceEqual(new[] { "Compact" }, restored!.IconOnlyModCategories);
+		RegressionAssert.SequenceEqual(new[] { "inactive" }, restored!.InactiveModOrder);
+		RegressionAssert.SequenceEqual(new[] { "override-b", "override-a" }, restored.OverrideModOrder);
+		RegressionAssert.Equal(1, restored.OverrideVisualModListDividers.Count);
+		RegressionAssert.Equal("override-divider", restored.OverrideVisualModListDividers[0].Id);
+		RegressionAssert.True(restored.OverrideVisualModListDividers[0].IsCollapsed);
+		RegressionAssert.SequenceEqual(new[] { "override-a" }, restored.OverrideVisualModListDividers[0].MemberModUuids);
 	}
 
 	public void RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly()

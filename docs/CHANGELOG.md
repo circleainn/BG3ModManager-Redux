@@ -7,6 +7,8 @@ source for individual implementation details.
 
 ### Fixed
 
+- Restore **Show File Name / Show Mod Display Name** for linked Nexus Mods and mod.io packages. Provider metadata can still enrich the normal title, while the per-mod toggle now reliably shows the installed package filename and switches back without requiring a refresh.
+- Fix a stack overflow when collapsing a parent separator: the normal mod-list sequence builder now calls the Active/Inactive list overload instead of recursively calling itself. Keep the nested separator collapse animation intact.
 - Allow Active Mods to be reordered while a name or category filter is visible. Redux now uses the surrounding visible rows as anchors in the complete load order, so hidden rows retain their relative positions.
 - Keep each global separator's position, collapsed state, and section membership independent in every saved load order while sharing its name, color, icon, and description across orders.
 - Give **Sync Load Order to Game** its own scoped busy state and always release it when the operation succeeds, fails, or is cancelled; completed drag state is also cleared at both boundaries so the toolbar and menus cannot remain dimmed afterward.
@@ -22,11 +24,14 @@ source for individual implementation details.
 - Add an assignable **Show or Hide Mod File Names** shortcut that toggles the File Name column in both mod panes. It has no default binding and can be set in **Keyboard Shortcuts**.
 - Let custom category and separator icons use opaque or non-square PNGs. Redux stretches and resizes imported images into a square icon automatically, while color tinting remains optional.
 - Add filtering and column sorting to Override Mods while preserving their always-loaded, outside-the-numbered-order behavior.
+- Let Override Mods use the same saved visual ordering, top-level and child separators, collapse controls, drag behavior, context actions, and Undo/Redo workflow as Inactive Mods. This organization remains Redux-only and never enters the numbered game load order.
 - Add an editable **Collapse or Expand Override Mods** shortcut, defaulting to **Ctrl+Alt+O**, which uses the pane's full animated transition.
-- Let user-created categories opt into an icon-only presentation. Their names remain available in tooltips and menus, and Redux falls back to the label whenever interface icons are hidden. Built-in Redux categories do not expose this per-category option.
+- Add one-level parent and child separators to Active and Inactive Mods. Child separators and their mod rows use a fixed nesting gutter that leaves the table columns aligned, collapse independently, and disappear with the complete branch when their parent closes. The separator context menu can create a child or promote it back to the top level.
 
 ### Changed
 
+- Remove the 40-character limit from separator labels while keeping the existing category-name limit. Long separator labels trim inside the list and expose their complete text on hover.
+- Unify Active, Inactive, and Override pane headers with compact real-mod counts, top-only header surfaces, consistent filter spacing, and shared column-header hover and pressed feedback. Override retains its semantic category color while using the same layout rhythm.
 - Refresh the shared category and separator editor as a wider, shorter workspace with side-by-side identity fields, compact full-width preview and icon rows, aligned options, and presets tucked beneath the sliders so the complete editor fits above its fixed action bar at the default size.
 - Restyle the expanded **Override Mods** section as a proper nested mod pane, with the same header height, filter treatment, attached column-header strip, and edge alignment as Active and Inactive Mods while preserving its existing collapse and always-loaded behavior.
 - Give the nested **Override Mods** pane the same rounded shell and subtle outline used by the surrounding mod panes.
@@ -34,6 +39,9 @@ source for individual implementation details.
 - Remove the unused number placeholder from **Override Mods** and align its column-header gutter, scrollbar start, clipping, and widths with the Active and Inactive mod panes while keeping Override's dedicated column order independent.
 - Give vertical scrollbars a consistent inset from pane headers and lower edges so their rails and thumbs no longer touch or visually clip into surrounding chrome.
 - Unify the Categories, Inactive Mods, Override Mods, and Mod Drawer collapse controls around the same compact chevron sizing, hover pill, motion, and interaction treatment.
+- Keep expanded parent moves marker-only while carrying their child separator structure; closed parent moves carry the complete nested block. Children inherit their parent's persistence scope so a branch cannot split across saved load orders.
+- Keep category label visibility controlled by the existing Themes and Appearance icon settings instead of storing a second per-category icon-only preference.
+- Give Override Mods the same column chooser, column resizing, header sorting, and drag-to-reorder column behavior as the other mod panes while retaining its unnumbered layout.
 
 ## 0.1.0-alpha.16.4.4 — 2026-09-15
 

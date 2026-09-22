@@ -16,6 +16,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace Redux.Core.Tests;
 
@@ -194,6 +195,7 @@ public sealed class InteractionBehaviorTests
 
 		RegressionAssert.Equal("Name", headers[0]);
 		RegressionAssert.False(headers.Contains("#", StringComparer.OrdinalIgnoreCase));
+		RegressionAssert.True(view.AllowsColumnReorder);
 		RegressionAssert.True(ReferenceEquals(
 			resources["GridViewLeftContainerStyle"],
 			view.ColumnHeaderContainerStyle));
@@ -325,7 +327,8 @@ public sealed class InteractionBehaviorTests
 		{
 			new ModListVisualDividerData
 			{
-				Id = "global", Title = "Everywhere", IsActiveList = true, IsGlobal = true
+				Id = "global", Title = "Everywhere", IsActiveList = true, IsGlobal = true,
+				ParentDividerId = "global-parent"
 			},
 			new ModListVisualDividerData
 			{
@@ -343,7 +346,9 @@ public sealed class InteractionBehaviorTests
 
 		RegressionAssert.Equal(2, snapshot.Count);
 		RegressionAssert.True(snapshot.Single(divider => divider.Id == "global").IsGlobal);
+		RegressionAssert.Equal("global-parent", snapshot.Single(divider => divider.Id == "global").ParentDividerId);
 		RegressionAssert.Equal("Everywhere", restored.Title);
+		RegressionAssert.Equal("global-parent", restored.ParentDividerId);
 		RegressionAssert.Equal(7, restored.Position);
 		RegressionAssert.True(restored.IsCollapsed);
 		RegressionAssert.SequenceEqual(new[] { "order-specific-mod" }, restored.MemberModUuids);
@@ -435,6 +440,65 @@ public sealed class InteractionBehaviorTests
 			brush is SolidColorBrush solid
 				? solid.Color
 				: throw new InvalidOperationException($"The {surface} did not resolve a solid semantic background brush.");
+	}
+
+	public void SeparatorEditorAllowsLongLabelsWithoutChangingCategoryLimit()
+	{
+		Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+		var separator = new CategoryNameDialog(visualDividerMode: true);
+		var category = new CategoryNameDialog();
+		try
+		{
+			var separatorName = (TextBox)separator.FindName("CategoryNameTextBox");
+			var categoryName = (TextBox)category.FindName("CategoryNameTextBox");
+			RegressionAssert.Equal(0, separatorName.MaxLength);
+			RegressionAssert.Equal(40, categoryName.MaxLength);
+		}
+		finally
+		{
+			separator.Close();
+			category.Close();
+		}
+	}
+
+	public void ModNameTemplateHonorsThePerModFileNameToggle()
+	{
+		Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+		var layout = new HorizontalModLayout();
+		var mod = new DivinityModData
+		{
+			UUID = "7a1731b4-1cc9-4495-9f4f-4e47c3eaf2ef",
+			Name = "Local module",
+			FilePath = @"C:\Mods\InstalledPackage.pak",
+			HasMetadata = true,
+			OnlineMetadataEnabled = true,
+			NexusModsEnabled = true
+		};
+		mod.NexusModsData.Update(new NexusModsModData
+		{
+			UUID = mod.UUID,
+			ModId = 12345,
+			Name = "Provider project title",
+			MetadataOrigin = NexusMetadataOrigin.Manual
+		});
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+
+		var template = (DataTemplate)layout.FindResource("ModNameTemplate");
+		var root = (FrameworkElement)template.LoadContent();
+		root.DataContext = mod;
+		root.Measure(new Size(500, 40));
+		root.Arrange(new Rect(0, 0, 500, 40));
+		root.UpdateLayout();
+		var name = (TextBlock?)root.FindName("ModNameText")
+			?? throw new InvalidOperationException("The mod name template did not create its text element.");
+
+		RegressionAssert.Equal("Provider project title", name.Text);
+		mod.DisplayFileForName = true;
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		RegressionAssert.Equal("InstalledPackage.pak", name.Text);
+		mod.DisplayFileForName = false;
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		RegressionAssert.Equal("Provider project title", name.Text);
 	}
 
 	public void PreferencesAndEditorActionsUseModernChromeAndLabeledIcons()

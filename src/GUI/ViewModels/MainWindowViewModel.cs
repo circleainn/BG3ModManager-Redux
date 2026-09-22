@@ -1,4 +1,4 @@
-﻿
+
 using DivinityModManager.AppServices;
 using DivinityModManager.Controls;
 using DivinityModManager.Extensions;
@@ -58,6 +58,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		List<DivinityModData> Active,
 		List<DivinityModData> Inactive,
 		List<ModListVisualDividerData> Dividers,
+		List<string> OverrideOrder,
+		List<ModListVisualDividerData> OverrideDividers,
 		bool HadUnsavedChanges);
 
 	private abstract record LoadOrderHistoryState;
@@ -257,6 +259,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	[Reactive] public string LoadOrderAdvisorStatusText { get; set; } = "No load-order review is currently recommended.";
 	public ObservableCollectionExtended<DivinityModData> DisplayActiveMods { get; } = new();
 	public ObservableCollectionExtended<DivinityModData> DisplayInactiveMods { get; } = new();
+	public ObservableCollectionExtended<DivinityModData> DisplayOverrideMods { get; } = new();
 	private bool _updatingVisualModLists;
 	private IDisposable _refreshVisualDividersTask;
 	private List<ModListVisualDividerData> _savedVisualDividerBaseline;
@@ -384,6 +387,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	/// <summary>True when Active Mods is displayed in a metadata-sorted view rather than the real # load order.</summary>
 	[Reactive] public bool IsActiveListMetadataSorted { get; set; }
 	[Reactive] public bool IsInactiveListMetadataSorted { get; set; }
+	[Reactive] public bool IsOverrideListMetadataSorted { get; set; }
 	[Reactive] public bool AppSettingsLoaded { get; set; }
 	[Reactive] public bool IsRefreshing { get; private set; }
 	[Reactive] public bool IsRefreshingModUpdates { get; private set; }
@@ -7303,6 +7307,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				Description = NormalizeCategoryDescription(divider.Description),
 				IsCollapsed = divider.IsCollapsed,
 				HideLine = divider.HideLine,
+				DividerId = divider.Id,
+				ParentDividerId = divider.ParentDividerId,
 				FallbackPosition = sequence.Take(visualIndex).Count(item => item.Mod != null),
 				BeforeModUuid = before?.UUID ?? String.Empty,
 				AfterModUuid = after?.UUID ?? String.Empty,
@@ -7353,8 +7359,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				Name = category.Trim(),
 				Color = GetCategoryColor(category),
 				IconId = PrepareReduxBundleIconForExport(GetCategoryIcon(category), presentation, assets),
-				Description = GetCategoryDescription(category),
-				IconOnly = IsIconOnlyModCategory(category)
+				Description = GetCategoryDescription(category)
 			});
 		}
 		presentation.CustomCategoryDisplayOrder = (Settings.ModCategoryDisplayOrder ?? new List<string>())
@@ -7562,7 +7567,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Settings.ModCategoryIcons ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
 		var descriptions = new Dictionary<string, string>(
 			Settings.ModCategoryDescriptions ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
-		var iconOnlyCategories = (Settings.IconOnlyModCategories ?? new List<string>()).ToList();
 		var assignments = (Settings.ModCategoryAssignments ?? new Dictionary<string, List<string>>())
 			.ToDictionary(entry => entry.Key, entry => entry.Value?.ToList() ?? new List<string>(),
 				StringComparer.OrdinalIgnoreCase);
@@ -7578,6 +7582,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				Position = item.Position,
 				IsCollapsed = item.IsCollapsed,
 				HideLine = item.HideLine,
+				ParentDividerId = item.ParentDividerId,
 				IsGlobal = item.IsGlobal,
 				MemberModUuids = item.MemberModUuids?.ToList()
 			})
@@ -7599,8 +7604,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			if (matchingCustom != null &&
 				String.Equals(GetCategoryColor(matchingCustom), importedColor, StringComparison.OrdinalIgnoreCase) &&
 				String.Equals(GetCategoryIcon(matchingCustom), importedIcon, StringComparison.OrdinalIgnoreCase) &&
-				String.Equals(GetCategoryDescription(matchingCustom), importedDescription, StringComparison.Ordinal) &&
-				IsIconOnlyModCategory(matchingCustom) == importedCategory.IconOnly)
+				String.Equals(GetCategoryDescription(matchingCustom), importedDescription, StringComparison.Ordinal))
 			{
 				effectiveName = matchingCustom;
 			}
@@ -7622,9 +7626,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			icons[effectiveName] = importedIcon;
 			if (String.IsNullOrWhiteSpace(importedDescription)) descriptions.Remove(effectiveName);
 			else descriptions[effectiveName] = importedDescription;
-			iconOnlyCategories.RemoveAll(category => category.Equals(effectiveName, StringComparison.OrdinalIgnoreCase));
-			if (importedCategory.IconOnly && !String.IsNullOrWhiteSpace(importedIcon))
-				iconOnlyCategories.Add(effectiveName);
 			categoryMap[requestedName] = effectiveName;
 		}
 
@@ -7664,14 +7665,18 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			if (mapped.Count > 0) assignments[assignment.Key] = mapped;
 		}
 
+		var importedDividerIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 		foreach (var importedDivider in presentation.Dividers)
 		{
 			var position = ResolveReduxBundleDividerPosition(importedDivider, dividers);
 			foreach (var existing in dividers.Where(item => item.IsActiveList && item.Position >= position))
 				existing.Position++;
+			var newDividerId = Guid.NewGuid().ToString("N");
+			if (!String.IsNullOrWhiteSpace(importedDivider.DividerId))
+				importedDividerIds[importedDivider.DividerId] = newDividerId;
 			dividers.Add(new ModListVisualDividerData
 			{
-				Id = Guid.NewGuid().ToString("N"),
+				Id = newDividerId,
 				Title = importedDivider.Title?.Trim() ?? String.Empty,
 				Color = NormalizeReduxBundleColor(importedDivider.Color),
 				IconId = ResolveReduxBundleIcon(importedDivider.IconId, importedIcons),
@@ -7683,13 +7688,21 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				MemberModUuids = importedDivider.MemberModUuids?.ToList()
 			});
 		}
+		foreach (var pair in presentation.Dividers.Zip(
+			dividers.TakeLast(presentation.Dividers.Count),
+			(imported, created) => (imported, created)))
+		{
+			if (!String.IsNullOrWhiteSpace(pair.imported.ParentDividerId) &&
+				importedDividerIds.TryGetValue(pair.imported.ParentDividerId, out var parentId))
+				pair.created.ParentDividerId = parentId;
+		}
+		VisualDividerHierarchyPolicy.Normalize(dividers);
 
 		var previousCustomCategories = Settings.CustomModCategories;
 		var previousDisplayOrder = Settings.ModCategoryDisplayOrder;
 		var previousColors = Settings.ModCategoryColors;
 		var previousIcons = Settings.ModCategoryIcons;
 		var previousDescriptions = Settings.ModCategoryDescriptions;
-		var previousIconOnlyCategories = Settings.IconOnlyModCategories;
 		var previousAssignments = Settings.ModCategoryAssignments;
 		var previousDividers = Settings.VisualModListDividers;
 		try
@@ -7702,7 +7715,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Settings.ModCategoryColors = colors;
 			Settings.ModCategoryIcons = icons;
 			Settings.ModCategoryDescriptions = descriptions;
-			Settings.IconOnlyModCategories = iconOnlyCategories.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 			Settings.ModCategoryAssignments = assignments;
 			Settings.VisualModListDividers = dividers;
 			if (!SaveSettings()) throw new IOException("The imported categories and separators could not be saved.");
@@ -7717,7 +7729,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Settings.ModCategoryColors = previousColors;
 			Settings.ModCategoryIcons = previousIcons;
 			Settings.ModCategoryDescriptions = previousDescriptions;
-			Settings.IconOnlyModCategories = previousIconOnlyCategories;
 			Settings.ModCategoryAssignments = previousAssignments;
 			Settings.VisualModListDividers = previousDividers;
 			DivinityApp.Log($"Failed to import Redux presentation: {exception}");
@@ -8601,14 +8612,39 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	// offer the same complete category set.
 	public IReadOnlyList<string> GetAssignableModCategories() => GetAllModCategories();
 	public bool IsCustomModCategory(string category) => Settings.CustomModCategories?.Contains(category, StringComparer.OrdinalIgnoreCase) == true;
-	public bool IsIconOnlyModCategory(string category) => IsCustomModCategory(category) &&
-		Settings.IconOnlyModCategories?.Contains(category, StringComparer.OrdinalIgnoreCase) == true;
 
-	public ModListVisualDividerData GetVisualDivider(DivinityModData item) => item?.IsVisualDivider == true
-		? Settings.VisualModListDividers?.FirstOrDefault(entry => entry.Id.Equals(item.VisualDividerId, StringComparison.OrdinalIgnoreCase))
-		: null;
+	public ModListVisualDividerData GetVisualDivider(DivinityModData item)
+	{
+		if (item?.IsVisualDivider != true) return null;
+		return Settings.VisualModListDividers?.FirstOrDefault(entry =>
+			entry.Id.Equals(item.VisualDividerId, StringComparison.OrdinalIgnoreCase))
+			?? Settings.OverrideVisualModListDividers?.FirstOrDefault(entry =>
+				entry.Id.Equals(item.VisualDividerId, StringComparison.OrdinalIgnoreCase));
+	}
 
-	public void AddVisualDivider(bool activeList, int position, string title, string color, string iconId, bool hideLine, string description = "", bool isGlobal = false)
+	private bool IsOverrideVisualDivider(ModListVisualDividerData divider) =>
+		divider != null && Settings.OverrideVisualModListDividers?.Contains(divider) == true;
+
+	private List<ModListVisualDividerData> GetVisualDividerStore(ModListVisualDividerData divider) =>
+		IsOverrideVisualDivider(divider)
+			? Settings.OverrideVisualModListDividers
+			: Settings.VisualModListDividers;
+
+	private ObservableCollectionExtended<DivinityModData> GetVisualDividerDisplay(ModListVisualDividerData divider) =>
+		IsOverrideVisualDivider(divider)
+			? DisplayOverrideMods
+			: divider.IsActiveList ? DisplayActiveMods : DisplayInactiveMods;
+
+	private IReadOnlyList<DivinityModData> BuildVisualDividerSequence(ModListVisualDividerData divider) =>
+		IsOverrideVisualDivider(divider) ? BuildOverrideVisualDividerSequence() : BuildVisualDividerSequence(divider.IsActiveList);
+
+	private void RefreshVisualDividerProjection(ModListVisualDividerData divider, bool preferBulkReset = false)
+	{
+		if (IsOverrideVisualDivider(divider)) RefreshOverrideVisualDividers(preferBulkReset);
+		else RefreshVisualDividers(divider.IsActiveList, preferBulkReset);
+	}
+
+	public void AddVisualDivider(bool activeList, int position, string title, string color, string iconId, bool hideLine, string description = "", bool isGlobal = false, string parentDividerId = "")
 	{
 		EnsureVisualDividerBaseline();
 		Settings.VisualModListDividers ??= new List<ModListVisualDividerData>();
@@ -8616,13 +8652,23 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		var sequence = BuildVisualDividerSequence(activeList).ToList();
 		var visibleItems = (activeList ? DisplayActiveMods : DisplayInactiveMods).ToList();
 		position = VisualModListDropPolicy.MapVisibleInsertionIndex(visibleItems, sequence, position);
+		var parent = Settings.VisualModListDividers.FirstOrDefault(candidate =>
+			candidate.IsActiveList == activeList && String.Equals(
+				candidate.Id, parentDividerId, StringComparison.OrdinalIgnoreCase));
+		if (parent != null)
+		{
+			if (!String.IsNullOrWhiteSpace(parent.ParentDividerId)) parent = null;
+			else position = VisualDividerHierarchyPolicy.ResolveChildInsertionIndex(
+				sequence, Settings.VisualModListDividers, parent);
+		}
 		var historyBefore = CaptureLoadOrderEditState();
 		var divider = new ModListVisualDividerData
 		{
 			Title = title?.Trim() ?? "", Color = color, IconId = ReduxIconCatalog.Normalize(iconId),
 			Description = description?.Trim() ?? "",
 			IsActiveList = activeList, Position = Math.Max(0, position), HideLine = hideLine,
-			IsGlobal = activeList && isGlobal,
+			ParentDividerId = parent?.Id ?? String.Empty,
+			IsGlobal = activeList && (parent?.IsGlobal ?? isGlobal),
 			MemberModUuids = new List<string>()
 		};
 		Settings.VisualModListDividers.Add(divider);
@@ -8647,9 +8693,16 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		divider.IconId = ReduxIconCatalog.Normalize(iconId);
 		divider.HideLine = hideLine;
 		divider.Description = description?.Trim() ?? "";
-		divider.IsGlobal = divider.IsActiveList && isGlobal;
-		RefreshVisualDividers();
-		if (divider.IsActiveList) HasUnsavedLoadOrderChanges = true;
+		var store = GetVisualDividerStore(divider);
+		var parent = store?.FirstOrDefault(candidate =>
+			String.Equals(candidate.Id, divider.ParentDividerId, StringComparison.OrdinalIgnoreCase));
+		divider.IsGlobal = !IsOverrideVisualDivider(divider) && divider.IsActiveList && (parent?.IsGlobal ?? isGlobal);
+		if (String.IsNullOrWhiteSpace(divider.ParentDividerId))
+			foreach (var child in VisualDividerHierarchyPolicy.ChildrenOf(
+				store, divider)) child.IsGlobal = divider.IsGlobal;
+		VisualDividerHierarchyPolicy.Normalize(store);
+		RefreshVisualDividerProjection(divider);
+		if (!IsOverrideVisualDivider(divider) && divider.IsActiveList) HasUnsavedLoadOrderChanges = true;
 		QueueSave();
 		RecordLoadOrderEdit(historyBefore);
 	}
@@ -8662,20 +8715,138 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		// visible and prevents them from remaining hidden until another projection.
 		if (divider == null || divider.IsCollapsed) return;
 		EnsureVisualDividerBaseline();
-		EnsureVisualDividerMemberships();
-		var sequence = BuildVisualDividerSequence(divider.IsActiveList)
+		EnsureVisualDividerMemberships(divider);
+		var isOverride = IsOverrideVisualDivider(divider);
+		var store = GetVisualDividerStore(divider);
+		var sequence = BuildVisualDividerSequence(divider)
 			.Where(entry => !entry.IsVisualDivider ||
 				!String.Equals(entry.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase))
 			.ToList();
 		var historyBefore = CaptureLoadOrderEditState();
-		Settings.VisualModListDividers.Remove(divider);
-		SaveVisualDividerPositions(sequence, divider.IsActiveList);
+		foreach (var child in VisualDividerHierarchyPolicy.ChildrenOf(
+			store, divider)) child.ParentDividerId = String.Empty;
+		store.Remove(divider);
+		SaveVisualDividerPositions(sequence, divider, isOverride);
 		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
-			sequence, Settings.VisualModListDividers, divider.IsActiveList);
-		RefreshVisualDividers();
-		if (divider.IsActiveList) HasUnsavedLoadOrderChanges = true;
+			sequence, store, divider.IsActiveList);
+		if (isOverride) RefreshOverrideVisualDividers(); else RefreshVisualDividers();
+		if (!isOverride && divider.IsActiveList) HasUnsavedLoadOrderChanges = true;
 		QueueSave();
 		RecordLoadOrderEdit(historyBefore);
+	}
+
+	public void AddOverrideVisualDivider(int position, string title, string color, string iconId, bool hideLine, string description = "", string parentDividerId = "")
+	{
+		Settings.OverrideVisualModListDividers ??= new List<ModListVisualDividerData>();
+		var sequence = BuildOverrideVisualDividerSequence().ToList();
+		position = VisualModListDropPolicy.MapVisibleInsertionIndex(DisplayOverrideMods.ToList(), sequence, position);
+		var parent = Settings.OverrideVisualModListDividers.FirstOrDefault(candidate =>
+			String.Equals(candidate.Id, parentDividerId, StringComparison.OrdinalIgnoreCase));
+		if (parent != null)
+		{
+			if (!String.IsNullOrWhiteSpace(parent.ParentDividerId)) parent = null;
+			else position = VisualDividerHierarchyPolicy.ResolveChildInsertionIndex(
+				sequence, Settings.OverrideVisualModListDividers, parent);
+		}
+		var historyBefore = CaptureLoadOrderEditState();
+		var divider = new ModListVisualDividerData
+		{
+			Title = title?.Trim() ?? "", Color = color, IconId = ReduxIconCatalog.Normalize(iconId),
+			Description = description?.Trim() ?? "", IsActiveList = false,
+			Position = Math.Max(0, position), HideLine = hideLine,
+			ParentDividerId = parent?.Id ?? String.Empty, IsGlobal = false,
+			MemberModUuids = new List<string>()
+		};
+		Settings.OverrideVisualModListDividers.Add(divider);
+		sequence.Insert(Math.Clamp(position, 0, sequence.Count), CreateVisualDividerItem(divider));
+		SaveOverrideVisualDividerPositions(sequence);
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+			sequence, Settings.OverrideVisualModListDividers, false);
+		RefreshOverrideVisualDividers();
+		QueueSave();
+		RecordLoadOrderEdit(historyBefore);
+	}
+
+	public bool RemoveVisualDividerParent(DivinityModData item)
+	{
+		var divider = GetVisualDivider(item);
+		if (divider == null || divider.IsCollapsed || String.IsNullOrWhiteSpace(divider.ParentDividerId)) return false;
+		EnsureVisualDividerBaseline();
+		EnsureVisualDividerMemberships(divider);
+		var store = GetVisualDividerStore(divider);
+		var historyBefore = CaptureLoadOrderEditState();
+		var parent = store.FirstOrDefault(candidate => String.Equals(
+			candidate.Id, divider.ParentDividerId, StringComparison.OrdinalIgnoreCase));
+		var sequence = BuildVisualDividerSequence(divider).ToList();
+		var marker = sequence.FirstOrDefault(candidate => candidate.IsVisualDivider && String.Equals(
+			candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
+		if (marker == null || parent == null) return false;
+		sequence.Remove(marker);
+		divider.ParentDividerId = String.Empty;
+		var insertIndex = VisualDividerHierarchyPolicy.ResolveChildInsertionIndex(
+			sequence, store, parent);
+		sequence.Insert(Math.Clamp(insertIndex, 0, sequence.Count), marker);
+		SaveVisualDividerPositions(sequence, divider, IsOverrideVisualDivider(divider));
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+			sequence, store, divider.IsActiveList);
+		RefreshVisualDividerProjection(divider);
+		if (!IsOverrideVisualDivider(divider) && divider.IsActiveList) HasUnsavedLoadOrderChanges = true;
+		QueueSave();
+		RecordLoadOrderEdit(historyBefore);
+		return true;
+	}
+
+	public IReadOnlyList<ModListVisualDividerData> GetEligibleVisualDividerParents(DivinityModData item)
+	{
+		var divider = GetVisualDivider(item);
+		if (divider == null || divider.IsCollapsed ||
+			VisualDividerHierarchyPolicy.HasChildren(GetVisualDividerStore(divider), divider)) return [];
+		return (GetVisualDividerStore(divider) ?? [])
+			.Where(candidate => candidate != null && candidate.IsActiveList == divider.IsActiveList &&
+				!candidate.IsCollapsed && String.IsNullOrWhiteSpace(candidate.ParentDividerId) &&
+				!String.Equals(candidate.Id, divider.Id, StringComparison.OrdinalIgnoreCase))
+			.OrderBy(candidate => candidate.Position)
+			.ToList();
+	}
+
+	public bool HasVisualDividerChildren(DivinityModData item)
+	{
+		var divider = GetVisualDivider(item);
+		return divider != null && VisualDividerHierarchyPolicy.HasChildren(GetVisualDividerStore(divider), divider);
+	}
+
+	public bool SetVisualDividerParent(DivinityModData item, string parentDividerId)
+	{
+		var divider = GetVisualDivider(item);
+		var store = GetVisualDividerStore(divider);
+		var parent = (store ?? []).FirstOrDefault(candidate =>
+			String.Equals(candidate.Id, parentDividerId, StringComparison.OrdinalIgnoreCase));
+		if (divider == null || parent == null || divider.IsCollapsed || parent.IsCollapsed ||
+			divider.IsActiveList != parent.IsActiveList ||
+			!String.IsNullOrWhiteSpace(parent.ParentDividerId) ||
+			VisualDividerHierarchyPolicy.HasChildren(GetVisualDividerStore(divider), divider)) return false;
+
+		EnsureVisualDividerBaseline();
+		EnsureVisualDividerMemberships(divider);
+		var historyBefore = CaptureLoadOrderEditState();
+		var sequence = BuildVisualDividerSequence(divider).ToList();
+		var marker = sequence.FirstOrDefault(candidate => candidate.IsVisualDivider && String.Equals(
+			candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
+		if (marker == null) return false;
+		sequence.Remove(marker);
+		divider.ParentDividerId = parent.Id;
+		divider.IsGlobal = parent.IsGlobal;
+		var insertIndex = VisualDividerHierarchyPolicy.ResolveChildInsertionIndex(
+			sequence, store, parent);
+		sequence.Insert(Math.Clamp(insertIndex, 0, sequence.Count), marker);
+		SaveVisualDividerPositions(sequence, divider, IsOverrideVisualDivider(divider));
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+			sequence, store, divider.IsActiveList);
+		RefreshVisualDividerProjection(divider);
+		if (!IsOverrideVisualDivider(divider) && divider.IsActiveList) HasUnsavedLoadOrderChanges = true;
+		QueueSave();
+		RecordLoadOrderEdit(historyBefore);
+		return true;
 	}
 
 	public void ToggleVisualDividerCollapsed(DivinityModData item)
@@ -8692,20 +8863,21 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	{
 		var divider = GetVisualDivider(item);
 		if (divider == null || divider.IsCollapsed == collapsed) return false;
-		EnsureVisualDividerMemberships();
+		EnsureVisualDividerMemberships(divider);
+		var store = GetVisualDividerStore(divider);
 		var historyBefore = CaptureLoadOrderEditState();
 		if (collapsed)
 		{
 			VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
-				BuildVisualDividerSequence(divider.IsActiveList),
-				Settings.VisualModListDividers,
+				BuildVisualDividerSequence(divider),
+				store,
 				divider.IsActiveList);
 		}
 		else
 		{
 			VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
-				BuildVisualDividerSequence(divider.IsActiveList),
-				Settings.VisualModListDividers,
+				BuildVisualDividerSequence(divider),
+				store,
 				divider.IsActiveList,
 				expandingDividerId: divider.Id);
 		}
@@ -8714,7 +8886,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			divider,
 			collapsed,
 			preserveRealizedContainers))
-			RefreshVisualDividers(divider.IsActiveList);
+			RefreshVisualDividerProjection(
+				divider,
+				preferBulkReset: VisualDividerHierarchyPolicy.HasChildren(store, divider));
 		// Keep disk I/O outside the collapse/expand animation window and coalesce
 		// rapid section changes into one persisted settings snapshot.
 		QueueSave(750);
@@ -8734,17 +8908,19 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	{
 		var divider = GetVisualDivider(item);
 		if (divider == null || divider.IsCollapsed || retainedMembers == null ||
+			VisualDividerHierarchyPolicy.HasChildren(GetVisualDividerStore(divider), divider) ||
 			!String.IsNullOrWhiteSpace(SelectedModCategory) &&
 			!SelectedModCategory.Equals(AllModsCategory, StringComparison.OrdinalIgnoreCase))
 			return false;
 
-		EnsureVisualDividerMemberships();
+		EnsureVisualDividerMemberships(divider);
+		var store = GetVisualDividerStore(divider);
 		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
-			BuildVisualDividerSequence(divider.IsActiveList),
-			Settings.VisualModListDividers,
+			BuildVisualDividerSequence(divider),
+			store,
 			divider.IsActiveList);
 
-		var target = divider.IsActiveList ? DisplayActiveMods : DisplayInactiveMods;
+		var target = GetVisualDividerDisplay(divider);
 		var marker = target.FirstOrDefault(candidate => candidate.IsVisualDivider &&
 			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
 		if (marker == null) return false;
@@ -8783,7 +8959,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public void RestoreVisualDividerProjection(DivinityModData item)
 	{
 		var divider = GetVisualDivider(item);
-		if (divider != null) RefreshVisualDividers(divider.IsActiveList);
+		if (divider != null) RefreshVisualDividerProjection(divider);
 	}
 
 	/// <summary>
@@ -8798,17 +8974,19 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		if (divider == null || !divider.IsCollapsed || !String.IsNullOrWhiteSpace(SelectedModCategory) &&
 			!SelectedModCategory.Equals(AllModsCategory, StringComparison.OrdinalIgnoreCase))
 			return null;
+		if (VisualDividerHierarchyPolicy.HasChildren(GetVisualDividerStore(divider), divider))
+			return null;
 
-		var target = divider.IsActiveList ? DisplayActiveMods : DisplayInactiveMods;
+		var target = GetVisualDividerDisplay(divider);
 		var marker = target.FirstOrDefault(candidate => candidate.IsVisualDivider &&
 			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
 		if (marker == null) return null;
 
 		var historyBefore = CaptureLoadOrderEditState();
-		var fullSequence = BuildVisualDividerSequence(divider.IsActiveList);
+		var fullSequence = BuildVisualDividerSequence(divider);
 		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
 			fullSequence,
-			Settings.VisualModListDividers,
+			GetVisualDividerStore(divider),
 			divider.IsActiveList,
 			expandingDividerId: divider.Id);
 		var markerIndex = fullSequence.ToList().FindIndex(candidate => candidate.IsVisualDivider &&
@@ -8843,7 +9021,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			offset < 0 || offset > members.Count || count < 0)
 			return false;
 
-		var target = divider.IsActiveList ? DisplayActiveMods : DisplayInactiveMods;
+		var target = GetVisualDividerDisplay(divider);
 		var marker = target.FirstOrDefault(candidate => candidate.IsVisualDivider &&
 			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
 		if (marker == null) return false;
@@ -8883,13 +9061,16 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		if (divider == null || !String.IsNullOrWhiteSpace(SelectedModCategory) &&
 			!SelectedModCategory.Equals(AllModsCategory, StringComparison.OrdinalIgnoreCase))
 			return false;
+		if (VisualDividerHierarchyPolicy.HasChildren(GetVisualDividerStore(divider), divider))
+			return false;
 
-		var target = divider.IsActiveList ? DisplayActiveMods : DisplayInactiveMods;
+		var target = GetVisualDividerDisplay(divider);
 		var marker = target.FirstOrDefault(candidate => candidate.IsVisualDivider &&
 			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
 		if (marker == null) return false;
 
 		marker.IsVisualDividerCollapsed = collapsed;
+		marker.ShowVisualDividerHiddenItemCount = collapsed && marker.VisualDividerHiddenItemCount > 0;
 		marker.CanDrag = true;
 		if (collapsed)
 		{
@@ -8913,7 +9094,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			return true;
 		}
 
-		var fullSequence = BuildVisualDividerSequence(divider.IsActiveList);
+		var fullSequence = BuildVisualDividerSequence(divider);
 		var markerIndex = fullSequence.ToList().FindIndex(candidate => candidate.IsVisualDivider &&
 			String.Equals(candidate.VisualDividerId, divider.Id, StringComparison.OrdinalIgnoreCase));
 		if (markerIndex < 0) return false;
@@ -8969,7 +9150,36 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		return changed;
 	}
 
-	public bool IsVisualModCollection(object collection) => ReferenceEquals(collection, DisplayActiveMods) || ReferenceEquals(collection, DisplayInactiveMods);
+	public bool CanSetAllOverrideVisualDividersCollapsed(bool collapsed) =>
+		Settings.OverrideVisualModListDividers?.Any(divider => divider.IsCollapsed != collapsed) == true;
+
+	public bool? ResolveAllOverrideVisualDividersCollapsedTarget() =>
+		VisualDividerStatePolicy.ResolveToggleTarget(Settings.OverrideVisualModListDividers, false);
+
+	public int SetAllOverrideVisualDividersCollapsed(bool collapsed)
+	{
+		if (!CanSetAllOverrideVisualDividersCollapsed(collapsed)) return 0;
+		EnsureOverrideVisualDividerMemberships();
+		var historyBefore = CaptureLoadOrderEditState();
+		var sequence = BuildOverrideVisualDividerSequence();
+		if (collapsed)
+			VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+				sequence, Settings.OverrideVisualModListDividers, false);
+		else
+			VisualDividerSectionPolicy.AssignMembersByCurrentBoundaries(
+				sequence, Settings.OverrideVisualModListDividers, false);
+		var changed = VisualDividerStatePolicy.SetAllCollapsed(
+			Settings.OverrideVisualModListDividers, false, collapsed);
+		if (changed <= 0) return 0;
+		RefreshOverrideVisualDividers(preferBulkReset: true);
+		QueueSave(750);
+		RecordLoadOrderEdit(historyBefore);
+		return changed;
+	}
+
+	public bool IsVisualModCollection(object collection) => ReferenceEquals(collection, DisplayActiveMods)
+		|| ReferenceEquals(collection, DisplayInactiveMods)
+		|| ReferenceEquals(collection, DisplayOverrideMods);
 
 	public int ResolveVisualModListInsertionIndex(System.Collections.IList visualItems, int targetIndex, bool insertAfter)
 	{
@@ -8984,7 +9194,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private bool EnsureVisualDividerMemberships()
 	{
 		Settings.VisualModListDividers ??= new List<ModListVisualDividerData>();
-		var migrated = VisualDividerSectionPolicy.MigrateLegacyMembership(
+		var migrated = VisualDividerHierarchyPolicy.Normalize(Settings.VisualModListDividers);
+		migrated |= VisualDividerSectionPolicy.MigrateLegacyMembership(
 			ActiveMods, Settings.VisualModListDividers, true, IsInitialized)
 			| VisualDividerSectionPolicy.MigrateLegacyMembership(
 				InactiveMods, Settings.VisualModListDividers, false, IsInitialized);
@@ -8994,11 +9205,37 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		return migrated;
 	}
 
+	private bool EnsureVisualDividerMemberships(ModListVisualDividerData divider) =>
+		IsOverrideVisualDivider(divider) ? EnsureOverrideVisualDividerMemberships() : EnsureVisualDividerMemberships();
+
+	private bool EnsureOverrideVisualDividerMemberships()
+	{
+		Settings.OverrideVisualModListDividers ??= new List<ModListVisualDividerData>();
+		var migrated = VisualDividerHierarchyPolicy.Normalize(Settings.OverrideVisualModListDividers);
+		var ordered = RestoreOverrideModOrder();
+		migrated |= VisualDividerSectionPolicy.MigrateLegacyMembership(
+			ordered, Settings.OverrideVisualModListDividers, false, IsInitialized);
+		migrated |= VisualDividerSectionPolicy.NormalizeOwnership(
+			Settings.OverrideVisualModListDividers, false);
+		if (migrated) QueueSave();
+		return migrated;
+	}
+
 	private IReadOnlyList<DivinityModData> BuildVisualDividerSequence(bool activeList) =>
 		VisualDividerSectionPolicy.BuildVisualSequence(
 			activeList ? ActiveMods : InactiveMods,
 			Settings.VisualModListDividers ?? Enumerable.Empty<ModListVisualDividerData>(),
 			activeList,
+			CreateVisualDividerItem);
+
+	private IReadOnlyList<DivinityModData> RestoreOverrideModOrder() =>
+		InactiveModOrderPolicy.Restore(ForceLoadedMods, Settings.OverrideModOrder).ToList();
+
+	private IReadOnlyList<DivinityModData> BuildOverrideVisualDividerSequence() =>
+		VisualDividerSectionPolicy.BuildVisualSequence(
+			RestoreOverrideModOrder(),
+			Settings.OverrideVisualModListDividers ?? Enumerable.Empty<ModListVisualDividerData>(),
+			false,
 			CreateVisualDividerItem);
 
 	private void SaveVisualDividerPositions(IReadOnlyList<DivinityModData> sequence, bool activeList)
@@ -9012,6 +9249,33 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			divider.IsActiveList = activeList;
 			divider.Position = index;
 		}
+		VisualDividerHierarchyPolicy.Normalize(Settings.VisualModListDividers);
+		VisualDividerHierarchyPolicy.NormalizePlacement(Settings.VisualModListDividers, activeList);
+	}
+
+	private void SaveVisualDividerPositions(
+		IReadOnlyList<DivinityModData> sequence,
+		ModListVisualDividerData divider,
+		bool isOverride)
+	{
+		if (isOverride) SaveOverrideVisualDividerPositions(sequence);
+		else SaveVisualDividerPositions(sequence, divider.IsActiveList);
+	}
+
+	private void SaveOverrideVisualDividerPositions(IReadOnlyList<DivinityModData> sequence)
+	{
+		Settings.OverrideModOrder = InactiveModOrderPolicy.Capture(sequence, Settings.OverrideModOrder);
+		for (var index = 0; index < sequence.Count; index++)
+		{
+			if (!sequence[index].IsVisualDivider) continue;
+			var divider = GetVisualDivider(sequence[index]);
+			if (divider == null || !IsOverrideVisualDivider(divider)) continue;
+			divider.IsActiveList = false;
+			divider.IsGlobal = false;
+			divider.Position = index;
+		}
+		VisualDividerHierarchyPolicy.Normalize(Settings.OverrideVisualModListDividers);
+		VisualDividerHierarchyPolicy.NormalizePlacement(Settings.OverrideVisualModListDividers, false);
 	}
 
 	private static List<ModListVisualDividerData> CloneVisualDividers(
@@ -9027,6 +9291,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Position = divider.Position,
 			IsCollapsed = divider.IsCollapsed,
 			HideLine = divider.HideLine,
+			ParentDividerId = divider.ParentDividerId,
 			IsGlobal = divider.IsGlobal,
 			MemberModUuids = divider.MemberModUuids?.ToList()
 		}).ToList();
@@ -9036,6 +9301,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		ActiveMods.ToList(),
 		InactiveMods.ToList(),
 		CloneVisualDividers(Settings.VisualModListDividers),
+		Settings.OverrideModOrder?.ToList() ?? [],
+		CloneVisualDividers(Settings.OverrideVisualModListDividers),
 		HasUnsavedLoadOrderChanges);
 
 	private static bool DividerHistoryStatesEqual(
@@ -9056,6 +9323,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				|| a.Position != b.Position
 				|| a.IsCollapsed != b.IsCollapsed
 				|| a.HideLine != b.HideLine
+				|| !String.Equals(a.ParentDividerId, b.ParentDividerId, StringComparison.OrdinalIgnoreCase)
 				|| a.IsGlobal != b.IsGlobal
 				|| !(a.MemberModUuids ?? []).SequenceEqual(
 					b.MemberModUuids ?? [], StringComparer.OrdinalIgnoreCase))
@@ -9067,7 +9335,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private static bool LoadOrderEditStatesEqual(LoadOrderEditState left, LoadOrderEditState right) =>
 		left.Active.SequenceEqual(right.Active, ReferenceEqualityComparer.Instance)
 		&& left.Inactive.SequenceEqual(right.Inactive, ReferenceEqualityComparer.Instance)
-		&& DividerHistoryStatesEqual(left.Dividers, right.Dividers);
+		&& DividerHistoryStatesEqual(left.Dividers, right.Dividers)
+		&& left.OverrideOrder.SequenceEqual(right.OverrideOrder, StringComparer.OrdinalIgnoreCase)
+		&& DividerHistoryStatesEqual(left.OverrideDividers, right.OverrideDividers);
 
 	private void UpdateLoadOrderHistoryAvailability()
 	{
@@ -9130,6 +9400,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		try
 		{
 			Settings.VisualModListDividers = CloneVisualDividers(state.Dividers);
+			Settings.OverrideModOrder = state.OverrideOrder.ToList();
+			Settings.OverrideVisualModListDividers = CloneVisualDividers(state.OverrideDividers);
 			ObservableCollectionSynchronizer.Synchronize(ActiveMods, state.Active, ReferenceEquals);
 			ObservableCollectionSynchronizer.Synchronize(InactiveMods, state.Inactive, ReferenceEquals);
 			Settings.InactiveModOrder = InactiveModOrderPolicy.Capture(state.Inactive, Settings.InactiveModOrder);
@@ -9147,6 +9419,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 
 		RefreshVisualDividers();
+		RefreshOverrideVisualDividers();
 		ScheduleModHealthRefresh();
 		HasUnsavedLoadOrderChanges = state.HadUnsavedChanges;
 		QueueSave();
@@ -9288,13 +9561,14 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			}
 			var sourceSequence = sourceActive ? activeSequence : inactiveSequence;
 			dragged = movingCollapsedSeparator
-				? VisualDividerSectionPolicy.ResolveCollapsedBlockDragPayload(
+				? VisualDividerHierarchyPolicy.ResolveCollapsedPayload(
 					sourceSequence,
-					movingDividerItem,
+					Settings.VisualModListDividers,
 					movingDivider).ToList()
-				: VisualDividerSectionPolicy.ResolveMarkerOnlyDragPayload(
+				: VisualDividerHierarchyPolicy.ResolveExpandedMarkerPayload(
 					sourceSequence,
-					dragged).ToList();
+					Settings.VisualModListDividers,
+					movingDivider).ToList();
 			if (dragged.Count == 0) return;
 		}
 		var destinationVisibleItems = (destinationActive ? DisplayActiveMods : DisplayInactiveMods).ToList();
@@ -9380,6 +9654,33 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		RecordLoadOrderEdit(historyBefore);
 	}
 
+	public void ApplyOverrideVisualModListDrop(IEnumerable<DivinityModData> draggedItems, int insertIndex)
+	{
+		var dragged = draggedItems?.Distinct().ToList() ?? [];
+		if (dragged.Count == 0 || dragged.Any(item => !DisplayOverrideMods.Contains(item))) return;
+		EnsureOverrideVisualDividerMemberships();
+		var sequence = BuildOverrideVisualDividerSequence().ToList();
+		var movingDivider = GetVisualDivider(dragged.FirstOrDefault(item => item.IsVisualDivider));
+		if (movingDivider != null)
+		{
+			dragged = movingDivider.IsCollapsed
+				? VisualDividerHierarchyPolicy.ResolveCollapsedPayload(
+					sequence, Settings.OverrideVisualModListDividers, movingDivider).ToList()
+				: VisualDividerHierarchyPolicy.ResolveExpandedMarkerPayload(
+					sequence, Settings.OverrideVisualModListDividers, movingDivider).ToList();
+		}
+		insertIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(
+			DisplayOverrideMods.ToList(), sequence, insertIndex);
+		var result = VisualModListDropPolicy.Apply(sequence, [], dragged, true, insertIndex).ActiveItems;
+		var historyBefore = CaptureLoadOrderEditState();
+		SaveOverrideVisualDividerPositions(result);
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+			result, Settings.OverrideVisualModListDividers, false);
+		RefreshOverrideVisualDividers();
+		QueueSave();
+		RecordLoadOrderEdit(historyBefore);
+	}
+
 	public IReadOnlyList<SaveModRequirement> ReviewSaveMods(IEnumerable<DivinityLoadOrderEntry> required) =>
 		SaveModReviewService.Review(required, UserMods.Concat(Mods).Concat(ForceLoadedMods).Distinct(),
 			ActiveMods.Select(m => m.UUID), InactiveMods.Select(m => m.UUID));
@@ -9411,23 +9712,36 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		ApplyVisualModListDrop(items, moveToActive, destination.Count);
 	}
 
-	private DivinityModData CreateVisualDividerItem(ModListVisualDividerData divider) => new()
+	private DivinityModData CreateVisualDividerItem(ModListVisualDividerData divider)
 	{
-		UUID = $"ReduxVisualDivider_{divider.Id}",
-		Name = divider.Title,
-		VisualDividerId = divider.Id,
-		VisualDividerTitle = divider.Title,
-		VisualDividerColor = divider.Color,
-		VisualDividerIconId = ReduxIconCatalog.Normalize(divider.IconId),
-		VisualDividerDescription = divider.Description ?? String.Empty,
-		ShowVisualDividerLine = !divider.HideLine,
-		IsVisualDividerCollapsed = divider.IsCollapsed,
-		VisualDividerChevronAngle = divider.IsCollapsed ? -90d : 0d,
-		IsVisualDivider = true,
-		IsActive = divider.IsActiveList,
-		ShowVisualDivider = true,
-		CanDrag = true
-	};
+		var paneDividers = Settings.VisualModListDividers ?? [];
+		var parent = paneDividers.FirstOrDefault(candidate => String.Equals(
+			candidate.Id, divider.ParentDividerId, StringComparison.OrdinalIgnoreCase));
+		var children = VisualDividerHierarchyPolicy.ChildrenOf(paneDividers, divider);
+		var hiddenCount = (divider.MemberModUuids?.Count ?? 0) +
+			children.Sum(child => child.MemberModUuids?.Count ?? 0);
+		return new DivinityModData
+		{
+			UUID = $"ReduxVisualDivider_{divider.Id}",
+			Name = divider.Title,
+			VisualDividerId = divider.Id,
+			VisualDividerTitle = divider.Title,
+			VisualDividerColor = divider.Color,
+			VisualDividerIconId = ReduxIconCatalog.Normalize(divider.IconId),
+			VisualDividerDescription = divider.Description ?? String.Empty,
+			ShowVisualDividerLine = !divider.HideLine,
+			IsVisualDividerCollapsed = divider.IsCollapsed,
+			VisualDividerChevronAngle = divider.IsCollapsed ? -90d : 0d,
+			IsChildVisualDivider = parent != null,
+			HasChildVisualDividers = children.Count > 0,
+			VisualDividerHiddenItemCount = hiddenCount,
+			ShowVisualDividerHiddenItemCount = divider.IsCollapsed && hiddenCount > 0,
+			IsVisualDivider = true,
+			IsActive = divider.IsActiveList,
+			ShowVisualDivider = true,
+			CanDrag = true
+		};
+	}
 
 	private static bool VisualModItemsMatch(DivinityModData current, DivinityModData desired) =>
 		ReferenceEquals(current, desired)
@@ -9448,6 +9762,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		current.ShowVisualDividerLine = desired.ShowVisualDividerLine;
 		current.IsVisualDividerCollapsed = desired.IsVisualDividerCollapsed;
 		current.VisualDividerChevronAngle = desired.VisualDividerChevronAngle;
+		current.IsChildVisualDivider = desired.IsChildVisualDivider;
+		current.HasChildVisualDividers = desired.HasChildVisualDividers;
+		current.VisualDividerHiddenItemCount = desired.VisualDividerHiddenItemCount;
+		current.ShowVisualDividerHiddenItemCount = desired.ShowVisualDividerHiddenItemCount;
 		current.ShowVisualDivider = desired.ShowVisualDivider;
 		current.CanDrag = desired.CanDrag;
 	}
@@ -9460,7 +9778,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			RefreshVisualDividers);
 	}
 
-	public void RefreshVisualDividers() => RefreshVisualDividers(null);
+	public void RefreshVisualDividers()
+	{
+		RefreshVisualDividers(null);
+		RefreshOverrideVisualDividers();
+	}
 
 	private void RefreshVisualDividers(bool? activeListOnly, bool preferBulkReset = false)
 	{
@@ -9529,26 +9851,41 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 						active,
 						CreateVisualDividerItem).ToList()
 					: visibleMods.ToList();
-				var collapsedMemberIds = showSeparators
-					? VisualDividerSectionPolicy.GetCollapsedMemberIds(
+				var indentedModIds = showSeparators
+					? VisualDividerHierarchyPolicy.ResolveIndentedModIds(
 						result,
 						Settings.VisualModListDividers ?? Enumerable.Empty<ModListVisualDividerData>(),
 						active)
 					: new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+				foreach (var mod in sourceMods)
+				{
+					mod.IsInsideChildVisualDivider = !String.IsNullOrWhiteSpace(mod.UUID) &&
+						indentedModIds.Contains(mod.UUID);
+				}
+				var collapsedProjection = showSeparators
+					? VisualDividerHierarchyPolicy.ResolveProjection(
+						result,
+						Settings.VisualModListDividers ?? Enumerable.Empty<ModListVisualDividerData>(),
+						active)
+					: new VisualDividerHierarchyProjection(
+						new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+						new HashSet<string>(StringComparer.OrdinalIgnoreCase));
 				// Collapsed membership is represented structurally by the display projection.
 				// Never collapse a realized ListViewItem before removing it: under pixel
 				// scrolling + recycling virtualization that creates zero-height containers
 				// and can trap WPF in repeated measurement. Clear only stale legacy state.
 				foreach (var mod in sourceMods)
 					if (mod.IsHiddenByVisualDivider) mod.IsHiddenByVisualDivider = false;
-				if (showSeparators && collapsedMemberIds.Count > 0)
+				if (showSeparators && (collapsedProjection.HiddenModUuids.Count > 0 ||
+					collapsedProjection.HiddenDividerIds.Count > 0))
 				{
 					// Keep collapsed members in ActiveMods/InactiveMods, but omit them from
 					// the virtualized display projection. Retaining zero-height collapsed
 					// containers made WPF's recycling panel repeatedly remeasure every row.
-					result = result.Where(item => item.IsVisualDivider ||
-						String.IsNullOrWhiteSpace(item.UUID) ||
-						!collapsedMemberIds.Contains(item.UUID)).ToList();
+					result = result.Where(item => item.IsVisualDivider
+						? !collapsedProjection.HiddenDividerIds.Contains(item.VisualDividerId ?? String.Empty)
+						: String.IsNullOrWhiteSpace(item.UUID) ||
+							!collapsedProjection.HiddenModUuids.Contains(item.UUID)).ToList();
 				}
 				if (target.Count == 0)
 				{
@@ -9620,6 +9957,67 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		finally { _updatingVisualModLists = false; }
 		if (membershipMigrated) QueueSave();
 	}
+
+	public void RefreshOverrideVisualDividers(bool preferBulkReset = false)
+	{
+		if (_updatingVisualModLists) return;
+		Settings.OverrideVisualModListDividers ??= [];
+		Settings.OverrideModOrder ??= [];
+		_updatingVisualModLists = true;
+		var migrated = false;
+		try
+		{
+			var ordered = RestoreOverrideModOrder().ToList();
+			migrated = VisualDividerHierarchyPolicy.Normalize(Settings.OverrideVisualModListDividers);
+			migrated |= VisualDividerSectionPolicy.MigrateLegacyMembership(
+				ordered, Settings.OverrideVisualModListDividers, false, IsInitialized);
+			migrated |= VisualDividerSectionPolicy.NormalizeOwnership(
+				Settings.OverrideVisualModListDividers, false);
+			if (IsInitialized)
+			{
+				migrated |= VisualDividerSectionPolicy.ReanchorPositionsToMembers(
+					ordered, Settings.OverrideVisualModListDividers, false);
+				migrated |= VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(
+					BuildOverrideVisualDividerSequence(), Settings.OverrideVisualModListDividers, false);
+			}
+			var result = IsOverrideListMetadataSorted
+				? ordered
+				: VisualDividerSectionPolicy.BuildVisualSequence(
+					ordered, Settings.OverrideVisualModListDividers, false, CreateVisualDividerItem).ToList();
+			var indented = IsOverrideListMetadataSorted
+				? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+				: VisualDividerHierarchyPolicy.ResolveIndentedModIds(
+					result, Settings.OverrideVisualModListDividers, false);
+			foreach (var mod in ordered)
+			{
+				mod.IsInsideChildVisualDivider = !String.IsNullOrWhiteSpace(mod.UUID) && indented.Contains(mod.UUID);
+				if (mod.IsHiddenByVisualDivider) mod.IsHiddenByVisualDivider = false;
+			}
+			if (!IsOverrideListMetadataSorted)
+			{
+				var projection = VisualDividerHierarchyPolicy.ResolveProjection(
+					result, Settings.OverrideVisualModListDividers, false);
+				result = result.Where(item => item.IsVisualDivider
+					? !projection.HiddenDividerIds.Contains(item.VisualDividerId ?? String.Empty)
+					: String.IsNullOrWhiteSpace(item.UUID) || !projection.HiddenModUuids.Contains(item.UUID)).ToList();
+			}
+			if (preferBulkReset || Math.Abs(DisplayOverrideMods.Count - result.Count) >= 8)
+			{
+				using (DisplayOverrideMods.SuspendNotifications())
+				{
+					DisplayOverrideMods.Clear();
+					DisplayOverrideMods.AddRange(result);
+				}
+			}
+			else
+			{
+				ObservableCollectionSynchronizer.Synchronize(
+					DisplayOverrideMods, result, VisualModItemsMatch, UpdateMatchedVisualModItem);
+			}
+		}
+		finally { _updatingVisualModLists = false; }
+		if (migrated) QueueSave();
+	}
 	public bool IsModCategoryEnabled(string category) => Settings.DisabledModCategories?.Contains(category, StringComparer.OrdinalIgnoreCase) != true;
 
 	public void SetModCategoryEnabled(string category, bool enabled)
@@ -9641,7 +10039,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		Settings.ModCategoryColors.Remove(existing);
 		Settings.ModCategoryIcons.Remove(existing);
 		Settings.ModCategoryDescriptions.Remove(existing);
-		Settings.IconOnlyModCategories?.RemoveAll(item => item.Equals(existing, StringComparison.OrdinalIgnoreCase));
 		Settings.DisabledModCategories.RemoveAll(item => item.Equals(existing, StringComparison.OrdinalIgnoreCase));
 		Settings.UnseenCategoryModIds.Remove(existing);
 		foreach (var assignment in Settings.ModCategoryAssignments.Values)
@@ -9703,7 +10100,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			: Settings.UnseenCategoryModIds.TryGetValue(category, out var ids) && ids.Count > 0);
 
 	public bool TryAddCustomModCategory(string categoryName, string color, string iconId, string description,
-		bool iconOnly, out string error)
+		out string error)
 	{
 		categoryName = categoryName?.Trim();
 		error = String.Empty;
@@ -9727,8 +10124,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		Settings.ModCategoryColors[categoryName] = color;
 		var normalizedIcon = ReduxIconCatalog.Normalize(iconId);
 		Settings.ModCategoryIcons[categoryName] = normalizedIcon;
-		Settings.IconOnlyModCategories ??= new List<string>();
-		if (iconOnly && !String.IsNullOrWhiteSpace(normalizedIcon)) Settings.IconOnlyModCategories.Add(categoryName);
 		description = NormalizeCategoryDescription(description);
 		if (!String.IsNullOrWhiteSpace(description)) Settings.ModCategoryDescriptions[categoryName] = description;
 		SaveSettings();
@@ -9739,7 +10134,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public string GetSuggestedCustomCategoryColor() => GetNextCustomCategoryColor();
 
 	public bool TrySetCategoryStyle(string category, string color, string iconId, string description,
-		bool iconOnly, out string error)
+		out string error)
 	{
 		error = String.Empty;
 		if (String.IsNullOrWhiteSpace(category) || !Regex.IsMatch(color ?? String.Empty, "^#[0-9A-Fa-f]{6}$"))
@@ -9751,10 +10146,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		// An explicit empty value overrides built-in defaults with the original dot.
 		var normalizedIcon = ReduxIconCatalog.Normalize(iconId);
 		Settings.ModCategoryIcons[category] = normalizedIcon;
-		Settings.IconOnlyModCategories ??= new List<string>();
-		Settings.IconOnlyModCategories?.RemoveAll(item => item.Equals(category, StringComparison.OrdinalIgnoreCase));
-		if (IsCustomModCategory(category) && iconOnly && !String.IsNullOrWhiteSpace(normalizedIcon))
-			Settings.IconOnlyModCategories.Add(category);
 		description = NormalizeCategoryDescription(description);
 		if (String.IsNullOrWhiteSpace(description)) Settings.ModCategoryDescriptions.Remove(category);
 		else Settings.ModCategoryDescriptions[category] = description;
@@ -9776,7 +10167,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		Settings.ModCategoryColors.Remove(category);
 		Settings.ModCategoryIcons.Remove(category);
 		Settings.ModCategoryDescriptions.Remove(category);
-		Settings.IconOnlyModCategories?.RemoveAll(item => item.Equals(category, StringComparison.OrdinalIgnoreCase));
 		SaveSettings();
 		RefreshModCategories();
 	}
@@ -9943,7 +10333,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					GetCategoryIcon(category),
 					GetCategoryDescription(category),
 					showIcons,
-					useIconsOnly || IsIconOnlyModCategory(category),
+					useIconsOnly,
 					useColoredText))
 				.ToList();
 		}
@@ -9972,7 +10362,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					GetCategoryIcon(category),
 					GetCategoryDescription(category),
 					Settings.ShowCategoryIconsInPills,
-					Settings.UseIconsOnly || IsIconOnlyModCategory(category),
+					Settings.UseIconsOnly,
 					Settings.UseCategoryColorsForSidebarText))
 				.ToList();
 			if (mod.DisplayCategories == null || !mod.DisplayCategories.SequenceEqual(displayCategories))
@@ -10040,7 +10430,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			mod.DisplayCategories.Any(item => item.Name.Equals(UncategorizedModsCategory, StringComparison.OrdinalIgnoreCase)));
 		categoryFilters.Add(new ModCategoryFilterItem(AllModsCategory, allMods.Count,
 			GetCategoryColor(AllModsCategory), GetCategoryIcon(AllModsCategory),
-			CategoryHasNewMods(AllModsCategory), GetCategoryDescription(AllModsCategory), false));
+			CategoryHasNewMods(AllModsCategory), GetCategoryDescription(AllModsCategory)));
 		foreach (var category in GetSidebarCategoryOrder())
 		{
 			if (!IsModCategoryEnabled(category)) continue;
@@ -10049,8 +10439,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				: allMods.Count(mod => mod.DisplayCategories.Any(item => item.Name.Equals(category, StringComparison.OrdinalIgnoreCase)));
 			if (!Settings.HideEmptyModCategories || count > 0)
 				categoryFilters.Add(new ModCategoryFilterItem(category, count, GetCategoryColor(category),
-					GetCategoryIcon(category), CategoryHasNewMods(category), GetCategoryDescription(category),
-					IsIconOnlyModCategory(category)));
+					GetCategoryIcon(category), CategoryHasNewMods(category), GetCategoryDescription(category)));
 		}
 		ObservableCollectionSynchronizer.Synchronize(
 			ModCategoryFilters,
@@ -10081,7 +10470,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		&& String.Equals(current.Color, desired.Color, StringComparison.OrdinalIgnoreCase)
 		&& String.Equals(current.IconId, desired.IconId, StringComparison.OrdinalIgnoreCase)
 		&& String.Equals(current.Description, desired.Description, StringComparison.Ordinal)
-		&& current.IsIconOnly == desired.IsIconOnly
 		&& current.HasNewMods == desired.HasNewMods;
 
 	/// <summary>
@@ -11842,6 +12230,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 		var forceLoadedModsConnection = this.ForceLoadedMods.ToObservableChangeSet().ObserveOn(RxApp.MainThreadScheduler);
 		_hasForceLoadedMods = forceLoadedModsConnection.Count().StartWith(0).Select(x => x > 0).ToProperty(this, nameof(HasForceLoadedMods), false, true, RxApp.MainThreadScheduler);
+		((INotifyCollectionChanged)ForceLoadedMods).CollectionChanged += (_, _) =>
+		{
+			if (_updatingVisualModLists) return;
+			RefreshOverrideVisualDividers();
+		};
 
 		CanSaveOrder = true;
 		LayoutMode = 0;

@@ -63,6 +63,7 @@ public static class LoadOrderPersistencePolicy
 			Position = divider.Position,
 			IsCollapsed = divider.IsCollapsed,
 			HideLine = divider.HideLine,
+			ParentDividerId = divider.ParentDividerId,
 			IsGlobal = divider.IsGlobal,
 			MemberModUuids = divider.MemberModUuids?.ToList()
 		}).ToList();
@@ -90,6 +91,7 @@ public static class LoadOrderPersistencePolicy
 			IsActiveList = true,
 			IsGlobal = true,
 			HideLine = definition.HideLine,
+			ParentDividerId = definition.ParentDividerId,
 			Position = placement.Position,
 			IsCollapsed = placement.IsCollapsed,
 			MemberModUuids = placement.MemberModUuids?.ToList()

@@ -71,6 +71,11 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 	public bool HasVisualDividerDescription => !String.IsNullOrWhiteSpace(VisualDividerDescription);
 	[Reactive] public bool IsVisualDividerCollapsed { get; set; }
 	[Reactive] public double VisualDividerChevronAngle { get; set; }
+	[Reactive] public bool IsChildVisualDivider { get; set; }
+	[Reactive] public bool IsInsideChildVisualDivider { get; set; }
+	[Reactive] public bool HasChildVisualDividers { get; set; }
+	[Reactive] public int VisualDividerHiddenItemCount { get; set; }
+	[Reactive] public bool ShowVisualDividerHiddenItemCount { get; set; }
 	[Reactive] public bool IsHiddenByVisualDivider { get; set; }
 	[Reactive] public bool ShowVisualDividerLine { get; set; } = true;
 
@@ -498,9 +503,11 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 			.Select(b => b ? Visibility.Visible : Visibility.Collapsed)
 			.ToUIProperty(this, x => x.OpenNexusModsLinkVisibility, Visibility.Collapsed);
 
-		// Presentation-only provider label used by the mod list.
+		// Presentation-only provider label used by the mod list. The row template
+		// temporarily replaces it with FileName when DisplayFileForName is enabled.
 		this.WhenAnyValue(x => x.Metadata.PackageTitle)
 			.ToUIProperty(this, x => x.DisplayTitle, DisplayName);
+
 		this.WhenAnyValue(x => x.IsActive, x => x.Index, x => x.IsForceLoaded, x => x.IsForceLoadedMergedMod, x => x.ForceAllowInLoadOrder)
 			.Select(state => state.Item3 && !state.Item4 && !state.Item5
 				? "Always loaded"

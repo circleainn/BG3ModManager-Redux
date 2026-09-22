@@ -23,7 +23,6 @@ public partial class CategoryNameDialog : AdonisWindow
 	private double _brightness;
 	private string _lastPreviewColor = String.Empty;
 	private readonly bool _allowEmptyName;
-	private readonly bool _allowIconOnlyCategory;
 	private readonly List<string> _savedColors;
 	private readonly ObservableCollection<IconChooserChoice> _iconChoices;
 	public IReadOnlyList<string> SavedColors => _savedColors;
@@ -33,7 +32,6 @@ public partial class CategoryNameDialog : AdonisWindow
 	public string CategoryDescription => CategoryDescriptionTextBox.Text?.Trim() ?? String.Empty;
 	public bool HideSeparatorLine => HideSeparatorLineCheckBox?.IsChecked == true;
 	public bool UseSeparatorInEveryLoadOrder => GlobalSeparatorCheckBox?.IsChecked == true;
-	public bool UseCategoryIconOnly => _allowIconOnlyCategory && IconOnlyCategoryCheckBox?.IsChecked == true;
 	public string CategoryColor => CategoryColorPicker.SelectedColor is Color color
 		? $"#{color.R:X2}{color.G:X2}{color.B:X2}" : "#8A6AF1";
 	public string CategoryIconId
@@ -124,14 +122,17 @@ public partial class CategoryNameDialog : AdonisWindow
 		bool useCategoryColorsForSidebarSelection = false, bool useCategoryColorsForSidebarText = false,
 		bool showInterfaceIcons = true, bool hideSeparatorLine = false,
 		bool allowGlobalSeparator = false, bool isGlobalSeparator = false,
-		bool allowIconOnlyCategory = false, bool isIconOnlyCategory = false)
+		bool? lockedGlobalSeparator = null)
 	{
 		InitializeComponent();
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
 		MaxHeight = Math.Max(MinHeight, SystemParameters.WorkArea.Height - 32);
 		Height = Math.Min(720, MaxHeight);
 		_allowEmptyName = visualDividerMode;
-		_allowIconOnlyCategory = !visualDividerMode && allowIconOnlyCategory;
+		// Categories retain their compact naming constraint. Separator labels can be
+		// descriptive and are safely trimmed in the list, so do not truncate them at
+		// the editor boundary.
+		CategoryNameTextBox.MaxLength = visualDividerMode ? 0 : 40;
 		_savedColors = (savedColors ?? Enumerable.Empty<string>())
 			.Where(IsValidHexColor).Select(value => value.ToUpperInvariant())
 			.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
@@ -155,9 +156,6 @@ public partial class CategoryNameDialog : AdonisWindow
 		CategoryIconComboBox.ItemsSource = _iconChoices;
 		CategoryIconComboBox.SelectedValue = normalizedIconId;
 		TintCustomIconCheckBox.IsChecked = tintCustomIcon;
-		IconOnlyCategoryCheckBox.Visibility = _allowIconOnlyCategory ? Visibility.Visible : Visibility.Collapsed;
-		IconOnlyCategoryCheckBox.IsChecked = _allowIconOnlyCategory && isIconOnlyCategory;
-		IconOnlyCategoryCheckBox.Tag = showInterfaceIcons;
 		UpdateCustomIconControls();
 		if (ColorConverter.ConvertFromString(color) is Color selectedColor) CategoryColorPicker.SelectedColor = selectedColor;
 		Title = visualDividerMode ? (String.IsNullOrEmpty(categoryName) ? "Add Separator" : "Edit Separator") : canEditName ? "Add Mod Category" : "Edit Category";
@@ -185,9 +183,18 @@ public partial class CategoryNameDialog : AdonisWindow
 			HideSeparatorLineCheckBox.IsChecked = hideSeparatorLine;
 			HideSeparatorLineCheckBox.Visibility = Visibility.Visible;
 			GlobalSeparatorCheckBox.Visibility = Visibility.Visible;
-			GlobalSeparatorCheckBox.IsChecked = allowGlobalSeparator ? isGlobalSeparator : true;
-			GlobalSeparatorCheckBox.IsEnabled = allowGlobalSeparator;
-			if (!allowGlobalSeparator)
+			GlobalSeparatorCheckBox.IsChecked = lockedGlobalSeparator.HasValue
+				? lockedGlobalSeparator.Value
+				: allowGlobalSeparator ? isGlobalSeparator : true;
+			GlobalSeparatorCheckBox.IsEnabled = allowGlobalSeparator && !lockedGlobalSeparator.HasValue;
+			if (lockedGlobalSeparator.HasValue)
+			{
+				GlobalSeparatorCheckBoxText.Text = "Use in every load order";
+				GlobalSeparatorCheckBox.ToolTip = lockedGlobalSeparator.Value
+					? "This child is persistent because its parent is persistent."
+					: "This child is local because its parent is local.";
+			}
+			else if (!allowGlobalSeparator)
 			{
 				GlobalSeparatorCheckBoxText.Text = "Used in every load order";
 				GlobalSeparatorCheckBox.ToolTip = "Inactive Mods organization is shared across every load order automatically.";
@@ -697,12 +704,6 @@ public partial class CategoryNameDialog : AdonisWindow
 		if (CategoryIconComboBox == null || TintCustomIconCheckBox == null) return;
 		var selectedId = CategoryIconComboBox.SelectedValue as string;
 		var isCustom = ReduxCustomIconService.IsCustomReference(selectedId);
-		if (IconOnlyCategoryCheckBox != null)
-		{
-			var canUseIconOnly = _allowIconOnlyCategory && !String.IsNullOrWhiteSpace(selectedId);
-			IconOnlyCategoryCheckBox.IsEnabled = canUseIconOnly;
-			if (!canUseIconOnly) IconOnlyCategoryCheckBox.IsChecked = false;
-		}
 		TintCustomIconCheckBox.Visibility = isCustom ? Visibility.Visible : Visibility.Collapsed;
 		DeleteCustomIconButton.Visibility = isCustom ? Visibility.Visible : Visibility.Collapsed;
 		if (CategoryIconComboBox.SelectedItem is IconChooserChoice choice && isCustom)

@@ -5,7 +5,7 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: September 17, 2026. Published baseline: `v0.1.0-alpha.16.4.4` at `e663ef9`.
+Last reviewed: September 22, 2026. Published baseline: `v0.1.0-alpha.16.4.4` at `e663ef9`.
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -15,11 +15,16 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 ## Development status
 
 Post-16.4.4 development adds optional cross-order separator presentation with independent
-per-order placement, a reversible one-time upgrade prompt for existing separators, icon-only
-custom categories, and a compact category/separator editor that accepts opaque or non-square
-images. Override Mods now uses a dedicated unnumbered grid with the same pane chrome, scrollbar
-spacing, animated collapse behavior, and configurable columns as the main lists. Its animated
+per-order placement, a reversible one-time upgrade prompt for existing separators, and a compact
+category/separator editor that accepts opaque or non-square images. Separators now support one
+explicit child level in both mod panes, with a shared nesting gutter that aligns parent controls, child controls, and indented names without shifting table columns, parent-wide collapse, hierarchy-aware block moves,
+undo, and persistence rules that keep every child in the same scope as its parent. Override
+Mods now uses a dedicated unnumbered grid with the same pane chrome, scrollbar
+spacing, title/count treatment, filter rhythm, animated collapse behavior, column chooser, and reorderable columns as the main lists. Its animated
 collapse/expand action defaults to `Ctrl+Alt+O` and remains editable in Keyboard Shortcuts.
+Linked-provider rows again honor the per-mod **Show File Name / Show Mod Display Name** action,
+and separator labels no longer inherit the category editor's 40-character limit. Long labels remain
+trimmed in the list and expose their complete value on hover.
 
 Welcome Setup includes an optional starter-separator selection after the load-order tour. Chosen sections append to Active Mods through the existing separator/Undo workflow; matching active-section names are skipped and existing mods are not reordered. Canceling setup adds nothing. Downloads bulk deletion confirms once, skips installed/installing entries, and reuses the existing cancellation and package recycling path.
 
@@ -196,7 +201,7 @@ The full publishing and recovery contract is in
 - Creator manifests and contribution reports provide evidence for review. They do not override
   parsed package identity or authorize automatic database changes.
 - Categories and separators are Redux presentation data and never enter `modsettings.lsx`.
-- Separators can organize Active and Inactive Mods. Inactive ordering is saved in Redux settings,
+- Separators can organize Active, Inactive, and Override Mods. Inactive and Override ordering are saved in Redux settings,
   shared across saved active orders, and never exported to the game. Column sorting is view-only.
   Closed separator blocks move within their current pane; invalid drops leave no drag marker.
 - Active separators are stored per saved load order. Loading a game-derived order is not the same

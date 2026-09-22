@@ -37,9 +37,9 @@
 				</Setter>
 			</Style>
 			<Style x:Key="OverrideModListViewStyle" BasedOn="{StaticResource ModOrderListViewWithDrag}" TargetType="{x:Type c:ModListView}">
-				<!-- Override Mods shares the exact pane chrome and scrollbar template, but remains read-only for ordering. -->
-				<Setter Property="dd:DragDrop.IsDragSource" Value="False" />
-				<Setter Property="dd:DragDrop.IsDropTarget" Value="False" />
+				<!-- Override Mods shares the pane chrome, columns, and header interactions used by the main lists. -->
+				<Setter Property="dd:DragDrop.IsDragSource" Value="True" />
+				<Setter Property="dd:DragDrop.IsDropTarget" Value="True" />
 			</Style>
 			<Style x:Key="ModSectionCard" TargetType="{x:Type Border}">
 				<!--
@@ -135,6 +135,48 @@
 			<Style x:Key="ModPaneHeaderStyle" TargetType="{x:Type Grid}">
 				<Setter Property="Height" Value="{DynamicResource Redux.PaneHeaderHeight}" />
 				<Setter Property="Margin" Value="12,0" />
+			</Style>
+			<Style x:Key="ModPaneHeaderSurfaceStyle" TargetType="{x:Type Border}">
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
+				<Setter Property="CornerRadius" Value="8,8,0,0" />
+				<Setter Property="IsHitTestVisible" Value="False" />
+			</Style>
+			<Style x:Key="ModPaneCountBadgeStyle" TargetType="{x:Type Border}">
+				<Setter Property="MinWidth" Value="24" />
+				<Setter Property="Height" Value="20" />
+				<Setter Property="Margin" Value="8,0,0,0" />
+				<Setter Property="Padding" Value="6,0" />
+				<Setter Property="VerticalAlignment" Value="Center" />
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+				<Setter Property="BorderThickness" Value="1" />
+				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Pill}" />
+			</Style>
+			<Style x:Key="ModPaneCountTextStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+				<Setter Property="HorizontalAlignment" Value="Center" />
+				<Setter Property="VerticalAlignment" Value="Center" />
+				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.10}" />
+				<Setter Property="FontWeight" Value="SemiBold" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
+			</Style>
+			<Style x:Key="ModPaneFilterTextBoxStyle"
+				BasedOn="{StaticResource {x:Type TextBox}}"
+				TargetType="{x:Type c:UnfocusableTextBox}">
+				<Setter Property="Height" Value="28" />
+				<Setter Property="Padding" Value="8,0" />
+				<Setter Property="VerticalAlignment" Value="Center" />
+				<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.ControlInner}" />
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+				<Setter Property="TextAlignment" Value="Left" />
+			</Style>
+			<Style x:Key="ModPaneFilterPlaceholderStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+				<Setter Property="Margin" Value="0" />
+				<Setter Property="Padding" Value="8,0" />
+				<Setter Property="HorizontalAlignment" Value="Left" />
+				<Setter Property="VerticalAlignment" Value="Center" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+				<Setter Property="IsHitTestVisible" Value="False" />
 			</Style>
 			<Style x:Key="ModPaneHeaderDividerStyle" TargetType="{x:Type Border}">
 				<Setter Property="Height" Value="1" />
@@ -1471,10 +1513,7 @@
 					<RowDefinition Height="1" />
 					<RowDefinition Height="*" />
 				</Grid.RowDefinitions>
-				<Border Grid.Row="0"
-					Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-					CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
-					IsHitTestVisible="False" />
+				<Border Grid.Row="0" Style="{StaticResource ModPaneHeaderSurfaceStyle}" />
 				<Border Grid.Row="1" Style="{StaticResource ModPaneHeaderDividerStyle}" />
 				<Grid>
 					<Grid.Style>
@@ -1654,13 +1693,6 @@
 											<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForSidebarText, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True">
 												<Setter Property="Foreground" Value="{Binding Color}" />
 											</DataTrigger>
-											<MultiDataTrigger>
-												<MultiDataTrigger.Conditions>
-													<Condition Binding="{Binding IsIconOnly}" Value="True" />
-													<Condition Binding="{Binding DataContext.Settings.ShowCategoryIconsInPills, RelativeSource={RelativeSource AncestorType={x:Type ListBox}}}" Value="True" />
-												</MultiDataTrigger.Conditions>
-												<Setter Property="Visibility" Value="Collapsed" />
-											</MultiDataTrigger>
 												</Style.Triggers>
 											</Style>
 										</TextBlock.Style>
@@ -1781,10 +1813,7 @@
 				<RowDefinition Height="1" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
-			<Border Grid.Row="0"
-				Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-				CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
-				IsHitTestVisible="False" />
+			<Border Grid.Row="0" Style="{StaticResource ModPaneHeaderSurfaceStyle}" />
 			<Border Grid.Row="1" Style="{StaticResource ModPaneHeaderDividerStyle}" />
 			<Grid Style="{StaticResource ModPaneHeaderStyle}">
 				<Grid.ColumnDefinitions>
@@ -1796,7 +1825,13 @@
 					<ColumnDefinition Width="8" />
 					<ColumnDefinition Width="220" />
 				</Grid.ColumnDefinitions>
-				<TextBlock Style="{StaticResource ModSectionTitle}" Text="Active Mods" />
+				<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+					<TextBlock Style="{StaticResource ModSectionTitle}" Text="Active Mods" />
+					<Border Style="{StaticResource ModPaneCountBadgeStyle}"
+						ToolTip="{Binding ActiveMods.Count, StringFormat={}{0} active mods}">
+						<TextBlock Style="{StaticResource ModPaneCountTextStyle}" Text="{Binding ActiveMods.Count}" />
+					</Border>
+				</StackPanel>
 				<DockPanel Grid.Column="1" Margin="12,0,8,0" LastChildFill="True">
 					<Button Margin="0,0,12,0" Tag="Active" Click="ClearModListSort_Click"
                         Style="{StaticResource ModViewNoticeButtonStyle}"
@@ -1812,30 +1847,18 @@
 				</DockPanel>
 				<c:UnfocusableTextBox x:Name="ActiveModsFilterTextBox"
 					Grid.Column="6"
-					Height="28"
-					Padding="4,0"
 					HorizontalAlignment="Stretch"
-					VerticalAlignment="Center"
 					behavior:ScreenReaderHelperBehavior.Name="Active Mods Filter"
 					AcceptsReturn="False"
 					AcceptsTab="False"
-					adonisExtensions:CornerRadiusExtension.CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
-					Background="{DynamicResource ReduxSurfaceMutedBrush}"
-					BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
 					CanUndoTextOnEscape="True"
-					TextAlignment="Left"
+					Style="{StaticResource ModPaneFilterTextBoxStyle}"
 					ToolTip="Filter Active Mods"
 					UpdateBindingOnFocusLost="True" />
 				<TextBlock Grid.Column="6"
-					Margin="0"
-					Padding="4,0"
-					HorizontalAlignment="Left"
-					VerticalAlignment="Center"
-					Foreground="{DynamicResource ReduxTextMutedBrush}"
-					IsHitTestVisible="False"
 					Text="Filter Active Mods">
 					<TextBlock.Style>
-						<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+						<Style BasedOn="{StaticResource ModPaneFilterPlaceholderStyle}" TargetType="{x:Type TextBlock}">
 							<Setter Property="Visibility" Value="Collapsed" />
 							<Style.Triggers>
 								<DataTrigger Binding="{Binding Text, ElementName=ActiveModsFilterTextBox}" Value="">
@@ -1933,10 +1956,7 @@
 						<RowDefinition Height="1" />
 						<RowDefinition Height="*" />
 					</Grid.RowDefinitions>
-					<Border Grid.Row="0"
-						Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-						CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
-						IsHitTestVisible="False" />
+					<Border Grid.Row="0" Style="{StaticResource ModPaneHeaderSurfaceStyle}" />
 					<Border x:Name="AlwaysLoadedHeaderGrid"
 						Height="{DynamicResource Redux.PaneHeaderHeight}" Padding="12,0"
 						Background="Transparent"
@@ -1949,36 +1969,67 @@
 								<ColumnDefinition Width="*" />
 								<ColumnDefinition Width="Auto" />
 							</Grid.ColumnDefinitions>
-							<TextBlock VerticalAlignment="Center"
-								Foreground="{Binding OverrideModsCategoryColor, Converter={StaticResource StringToSolidBrushConverter}}"
-								Style="{StaticResource ModSectionTitle}"
-								Text="Override Mods" />
-							<Grid x:Name="OverrideModsFilterHost" Grid.Column="1" Width="220" Margin="16,0,10,0" HorizontalAlignment="Right">
+							<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+								<TextBlock VerticalAlignment="Center"
+									Foreground="{Binding OverrideModsCategoryColor, Converter={StaticResource StringToSolidBrushConverter}}"
+									Style="{StaticResource ModSectionTitle}"
+									Text="Override Mods" />
+								<Border Style="{StaticResource ModPaneCountBadgeStyle}"
+									ToolTip="{Binding ForceLoadedMods.Count, StringFormat={}{0} override mods}">
+									<TextBlock Style="{StaticResource ModPaneCountTextStyle}" Text="{Binding ForceLoadedMods.Count}" />
+								</Border>
+							</StackPanel>
+							<Grid x:Name="OverrideModsFilterHost" Grid.Column="1" Width="340" Margin="16,0,10,0" HorizontalAlignment="Right">
+								<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+								<Button Grid.Column="0" Margin="0,0,8,0" Tag="Override" Click="ClearModListSort_Click"
+									Style="{StaticResource ModViewNoticeButtonStyle}"
+									ToolTip="Clear sorting and return to your arrangement"
+									AutomationProperties.Name="Clear override mod sorting"
+									Visibility="{Binding IsOverrideListMetadataSorted, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
+									<TextBlock Text="Sorted · Clear" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+								</Button>
 								<c:UnfocusableTextBox x:Name="OverrideModsFilterTextBox"
-									Height="28" Padding="4,0" VerticalAlignment="Center"
+									Grid.Column="1"
 									behavior:ScreenReaderHelperBehavior.Name="Override Mods Filter"
 									AcceptsReturn="False" AcceptsTab="False"
-									adonisExtensions:CornerRadiusExtension.CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
-									Background="{DynamicResource ReduxSurfaceMutedBrush}"
-									BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
 									CanUndoTextOnEscape="True" TextChanged="OverrideModsFilterTextBox_TextChanged"
+									Style="{StaticResource ModPaneFilterTextBoxStyle}"
 									ToolTip="Filter Override Mods" />
-								<TextBlock Padding="4,0" VerticalAlignment="Center"
-									Foreground="{DynamicResource ReduxTextMutedBrush}" IsHitTestVisible="False"
-									Text="Filter Overrides">
+								<TextBlock Grid.Column="1" Text="Filter Overrides">
 									<TextBlock.Style>
-										<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+										<Style BasedOn="{StaticResource ModPaneFilterPlaceholderStyle}" TargetType="{x:Type TextBlock}">
 											<Setter Property="Visibility" Value="Collapsed" />
 											<Style.Triggers><DataTrigger Binding="{Binding Text, ElementName=OverrideModsFilterTextBox}" Value=""><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers>
 										</Style>
 									</TextBlock.Style>
 								</TextBlock>
 							</Grid>
-							<ToggleButton x:Name="AlwaysLoadedToggleButton" Grid.Column="2"
-								AutomationProperties.Name="Collapse or expand Override Mods"
-								Style="{StaticResource ModDetailsToggleStyle}"
-								IsChecked="{Binding IsAlwaysLoadedExpanded, Mode=TwoWay}"
-								ToolTip="{Binding Keys.ToggleOverrideMods.CommandToolTip}" />
+							<StackPanel Grid.Column="2" Orientation="Horizontal">
+								<Button x:Name="OverrideSeparatorBulkToggleButton"
+									Style="{StaticResource ModPaneHeaderActionButtonStyle}"
+									Click="OverrideSeparatorBulkToggleButton_Click"
+									Loaded="OverrideSeparatorBulkToggleButton_Loaded"
+									MouseEnter="OverrideSeparatorBulkToggleButton_MouseEnter"
+									AutomationProperties.Name="Collapse all override separators">
+									<c:ReduxIcon x:Name="OverrideSeparatorBulkToggleIcon" Width="14" Height="14"
+										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+										StrokeData="{StaticResource Redux.Icon.ChevronUpStroke}" />
+								</Button>
+								<Button x:Name="AddOverrideSeparatorButton"
+									Style="{StaticResource ModPaneHeaderActionButtonStyle}"
+									Click="AddOverrideSeparatorButton_Click"
+									ToolTip="Add a separator after the selected override mod"
+									AutomationProperties.Name="Add override separator">
+									<c:ReduxIcon Width="14" Height="14"
+										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+										StrokeData="{StaticResource Redux.Icon.AddStroke}" />
+								</Button>
+								<ToggleButton x:Name="AlwaysLoadedToggleButton"
+									AutomationProperties.Name="Collapse or expand Override Mods"
+									Style="{StaticResource ModDetailsToggleStyle}"
+									IsChecked="{Binding IsAlwaysLoadedExpanded, Mode=TwoWay}"
+									ToolTip="{Binding Keys.ToggleOverrideMods.CommandToolTip}" />
+							</StackPanel>
 						</Grid>
 					</Border>
 					<Border Grid.Row="1" Style="{StaticResource ModPaneHeaderDividerStyle}" />
@@ -1988,8 +2039,15 @@
 						behavior:ScreenReaderHelperBehavior.Name="Force-Loaded Mods"
 						ContextMenuOpening="ModListView_ContextMenuOpening"
 						GridViewColumnHeader.Click="ListView_Click"
-						ItemContainerStyle="{StaticResource DivinityModDataListItem}"
-						LinkedHeaderListView="{Binding ElementName=ActiveModsListView}"
+						GridViewColumnHeader.PreviewMouseLeftButtonUp="ListViewColumnHeader_PreviewMouseLeftButtonUp"
+						GridViewColumnHeader.PreviewMouseRightButtonUp="ListViewColumnHeader_RightClick"
+						dd:DragDrop.DragHandler="{Binding DragHandler}"
+						dd:DragDrop.DropHandler="{Binding DropHandler}"
+						PreviewDragOver="ModListView_PreviewDragOver"
+						PreviewDrop="ModListView_PreviewDrop"
+						PreviewDragLeave="ModListView_PreviewDragLeave"
+						PreviewQueryContinueDrag="ModListView_PreviewQueryContinueDrag"
+						ItemContainerStyle="{StaticResource ListViewItemMouseEvents}"
 						ScrollViewer.VerticalScrollBarVisibility="Auto"
 						Style="{StaticResource OverrideModListViewStyle}"
 						View="{DynamicResource OverrideModGridView}">
@@ -2015,10 +2073,7 @@
 				<RowDefinition Height="1" />
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
-			<Border Grid.Row="0"
-				Background="{DynamicResource ReduxSurfaceElevatedBrush}"
-				CornerRadius="{DynamicResource Redux.CornerRadius.Card}"
-				IsHitTestVisible="False" />
+			<Border Grid.Row="0" Style="{StaticResource ModPaneHeaderSurfaceStyle}" />
 			<Border Grid.Row="1" Style="{StaticResource ModPaneHeaderDividerStyle}" />
 			<Grid>
 				<Grid.Style>
@@ -2062,10 +2117,16 @@
 						</ColumnDefinition.Style>
 					</ColumnDefinition>
 				</Grid.ColumnDefinitions>
-				<TextBlock Grid.Column="1" Margin="8,0,8,0"
-					Style="{StaticResource ModSectionTitle}"
-					Text="Inactive Mods"
-					Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}" />
+				<StackPanel Grid.Column="1" Margin="8,0,8,0"
+					VerticalAlignment="Center"
+					Orientation="Horizontal"
+					Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">
+					<TextBlock Style="{StaticResource ModSectionTitle}" Text="Inactive Mods" />
+					<Border Style="{StaticResource ModPaneCountBadgeStyle}"
+						ToolTip="{Binding InactiveMods.Count, StringFormat={}{0} inactive mods}">
+						<TextBlock Style="{StaticResource ModPaneCountTextStyle}" Text="{Binding InactiveMods.Count}" />
+					</Border>
+				</StackPanel>
 				<StackPanel Grid.Column="5"
 					Orientation="Horizontal"
 					Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">
@@ -2108,32 +2169,20 @@
 					ContentTemplate="{StaticResource ModCategoryFilterNoticeContentTemplate}"
 					Style="{StaticResource ModCategoryFilterNoticeButtonStyle}" />
                 </DockPanel>
-			<c:UnfocusableTextBox x:Name="InactiveModsFilterTextBox"
+				<c:UnfocusableTextBox x:Name="InactiveModsFilterTextBox"
 					Grid.Column="6"
-					Height="28"
-					Padding="4,0"
 					HorizontalAlignment="Stretch"
-					VerticalAlignment="Center"
 					behavior:ScreenReaderHelperBehavior.Name="Inactive Mods Filter"
 					AcceptsReturn="False"
 					AcceptsTab="False"
-					adonisExtensions:CornerRadiusExtension.CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
-					Background="{DynamicResource ReduxSurfaceMutedBrush}"
-					BorderBrush="{DynamicResource ReduxBorderStrongBrush}"
 					CanUndoTextOnEscape="True"
-					TextAlignment="Left"
+					Style="{StaticResource ModPaneFilterTextBoxStyle}"
 					ToolTip="Filter Inactive Mods"
 					UpdateBindingOnFocusLost="True" />
 				<TextBlock Grid.Column="6"
-					Margin="0"
-					Padding="4,0"
-					HorizontalAlignment="Left"
-					VerticalAlignment="Center"
-					Foreground="{DynamicResource ReduxTextMutedBrush}"
-					IsHitTestVisible="False"
 					Text="Filter Inactive Mods">
 					<TextBlock.Style>
-						<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+						<Style BasedOn="{StaticResource ModPaneFilterPlaceholderStyle}" TargetType="{x:Type TextBlock}">
 							<Setter Property="Visibility" Value="Collapsed" />
 							<Style.Triggers>
 								<DataTrigger Binding="{Binding Text, ElementName=InactiveModsFilterTextBox}" Value="">

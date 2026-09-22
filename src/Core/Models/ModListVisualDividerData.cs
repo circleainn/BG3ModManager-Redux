@@ -14,6 +14,9 @@ public class ModListVisualDividerData
 	[DataMember] public int Position { get; set; }
 	[DataMember] public bool IsCollapsed { get; set; }
 	[DataMember] public bool HideLine { get; set; }
+	// A child separator is rendered inside one top-level separator. Redux currently
+	// supports one nesting level so load-order movement and persistence stay clear.
+	[DataMember(EmitDefaultValue = false)] public string ParentDividerId { get; set; } = String.Empty;
 	// Global active-list separators remain available when switching saved load orders.
 	// Per-order separators remain the default so existing workflows keep their scope.
 	[DataMember(EmitDefaultValue = false)] public bool IsGlobal { get; set; }

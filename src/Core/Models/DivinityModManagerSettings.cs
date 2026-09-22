@@ -330,9 +330,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DefaultValue(true)]
 	[DataMember, Reactive] public bool ShowModListCategoryColumn { get; set; }
 
-	// Widths are stored independently because active and inactive lists can be sized
+	// Widths are stored independently because each pane can be sized
 	// for different content. Hidden columns retain their last useful width.
 	[DataMember, Reactive] public Dictionary<string, double> ActiveModListColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+	[DataMember, Reactive] public Dictionary<string, double> OverrideModListColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	[DataMember, Reactive] public Dictionary<string, double> InactiveModListColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
 	[DefaultValue(true)]
@@ -340,9 +341,6 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool HideEmptyModCategories { get; set; }
 
 	[DataMember, Reactive] public List<string> CustomModCategories { get; set; } = new();
-	// Custom categories whose visible label is suppressed while interface icons are enabled.
-	// The category name remains its stable identity and is still exposed through tooltips.
-	[DataMember, Reactive] public List<string> IconOnlyModCategories { get; set; } = new();
 	// Redux-only presentation order for the category sidebar. This never changes mod assignments or load order.
 	[DataMember, Reactive] public List<string> ModCategoryDisplayOrder { get; set; } = new();
 	// Legacy single-category assignments are retained for migration from early Redux builds.
@@ -370,6 +368,8 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool CategoriesPanelExpanded { get; set; } = true;
 
 	[DataMember] public List<string> InactiveModOrder { get; set; } = new();
+	// Presentation-only ordering for always-loaded override mods. This never affects modsettings.lsx.
+	[DataMember] public List<string> OverrideModOrder { get; set; } = new();
 
 	[DefaultValue(true)]
 	[DataMember, Reactive] public bool InactiveModsPanelExpanded { get; set; } = true;
@@ -397,6 +397,8 @@ public class DivinityModManagerSettings : ReactiveObject
 	// Retained so settings written by the first anchored-divider prototype still deserialize safely.
 	[DataMember, Reactive] public Dictionary<string, string> ModListVisualDividers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	[DataMember, Reactive] public List<ModListVisualDividerData> VisualModListDividers { get; set; } = new();
+	// Override organization is isolated from Active/Inactive divider ownership.
+	[DataMember, Reactive] public List<ModListVisualDividerData> OverrideVisualModListDividers { get; set; } = new();
 
 	[DefaultValue(true)]
 	[SettingsEntry("Move focus when transferring mods", "When Enter moves selected mods to the other list, move keyboard focus to that list too.")]
@@ -553,11 +555,6 @@ public class DivinityModManagerSettings : ReactiveObject
 			ActiveCustomThemeId = String.Empty;
 		}
 		CustomModCategories ??= new List<string>();
-		IconOnlyModCategories = (IconOnlyModCategories ?? new List<string>())
-			.Where(category => !String.IsNullOrWhiteSpace(category) &&
-				CustomModCategories.Contains(category, StringComparer.OrdinalIgnoreCase))
-			.Distinct(StringComparer.OrdinalIgnoreCase)
-			.ToList();
 		ModCategoryDisplayOrder ??= new List<string>();
 		ModCategoryOverrides = ModCategoryOverrides != null
 			? new Dictionary<string, string>(ModCategoryOverrides, StringComparer.OrdinalIgnoreCase)
@@ -571,13 +568,14 @@ public class DivinityModManagerSettings : ReactiveObject
 		ModCategoryIcons = ModCategoryIcons != null
 			? new Dictionary<string, string>(ModCategoryIcons, StringComparer.OrdinalIgnoreCase)
 			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-		IconOnlyModCategories.RemoveAll(category =>
-			!ModCategoryIcons.TryGetValue(category, out var iconId) || String.IsNullOrWhiteSpace(iconId));
 		ModCategoryDescriptions = ModCategoryDescriptions != null
 			? new Dictionary<string, string>(ModCategoryDescriptions, StringComparer.OrdinalIgnoreCase)
 			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 		ActiveModListColumnWidths = ActiveModListColumnWidths != null
 			? new Dictionary<string, double>(ActiveModListColumnWidths, StringComparer.OrdinalIgnoreCase)
+			: new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
+		OverrideModListColumnWidths = OverrideModListColumnWidths != null
+			? new Dictionary<string, double>(OverrideModListColumnWidths, StringComparer.OrdinalIgnoreCase)
 			: new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
 		InactiveModListColumnWidths = InactiveModListColumnWidths != null
 			? new Dictionary<string, double>(InactiveModListColumnWidths, StringComparer.OrdinalIgnoreCase)
@@ -592,6 +590,8 @@ public class DivinityModManagerSettings : ReactiveObject
 			? new Dictionary<string, string>(ModListVisualDividers, StringComparer.OrdinalIgnoreCase)
 			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 		VisualModListDividers ??= new List<ModListVisualDividerData>();
+		OverrideModOrder ??= new List<string>();
+		OverrideVisualModListDividers ??= new List<ModListVisualDividerData>();
 		CollapsedSaveGameCampaigns = (CollapsedSaveGameCampaigns ?? [])
 			.Where(name => !String.IsNullOrWhiteSpace(name))
 			.Select(name => name.Trim())

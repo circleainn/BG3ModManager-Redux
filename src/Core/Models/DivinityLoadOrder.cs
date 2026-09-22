@@ -311,6 +311,7 @@ public class DivinityLoadOrder : ReactiveObject
 			Position = divider.Position,
 			IsCollapsed = divider.IsCollapsed,
 			HideLine = divider.HideLine,
+			ParentDividerId = divider.ParentDividerId,
 			IsGlobal = divider.IsGlobal,
 			MemberModUuids = divider.MemberModUuids?.ToList()
 		}).ToList();

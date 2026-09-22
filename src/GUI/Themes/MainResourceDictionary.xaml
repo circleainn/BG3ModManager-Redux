@@ -2918,11 +2918,10 @@
 							Visibility="{Binding ShowVisualDivider, Converter={StaticResource BoolToVisibilityConverter}}">
 							<ContentControl.ContentTemplate>
 								<DataTemplate DataType="{x:Type data:DivinityModData}">
-									<Border Margin="12,8,12,6"
-										Padding="0,4"
-										Background="Transparent"
+									<Grid x:Name="VisualDividerRoot"
 										ToolTip="{Binding VisualDividerDescription}"
 										ToolTipService.IsEnabled="{Binding HasVisualDividerDescription}">
+										<Border Margin="12,8,12,6" Padding="0,4" Background="Transparent">
 										<Border.Triggers>
 											<EventTrigger RoutedEvent="MouseEnter">
 												<BeginStoryboard>
@@ -2955,12 +2954,40 @@
 												</BeginStoryboard>
 											</EventTrigger>
 										</Border.Triggers>
-										<Grid>
-								<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+											<Grid>
+												<Grid.ColumnDefinitions>
+													<!-- The optional hierarchy slot is part of the same row geometry as
+														the toggle and label. Its vertical stroke shares the parent toggle's
+														center line and its branch terminates at the child toggle. -->
+													<ColumnDefinition Width="Auto" />
+													<ColumnDefinition Width="Auto" />
+													<ColumnDefinition Width="Auto" />
+													<ColumnDefinition Width="Auto" />
+													<ColumnDefinition Width="*" />
+													<ColumnDefinition Width="Auto" />
+												</Grid.ColumnDefinitions>
+												<Grid Grid.Column="0"
+													Width="18" Height="22"
+													HorizontalAlignment="Left"
+													VerticalAlignment="Center"
+													IsHitTestVisible="False"
+													Visibility="{Binding IsChildVisualDivider, Converter={StaticResource BoolToVisibilityConverter}}">
+													<Path Data="M11,0 L11,7 C11,10 13,11 16,11 L23,11"
+														HorizontalAlignment="Left"
+														VerticalAlignment="Top"
+														Stretch="None"
+														Stroke="{DynamicResource ReduxTextMutedBrush}"
+														StrokeThickness="1.25"
+														StrokeStartLineCap="Flat"
+														StrokeEndLineCap="Round"
+														StrokeLineJoin="Round"
+														Opacity="0.72"
+														SnapsToDevicePixels="True" />
+												</Grid>
 								<!-- Fill/rail split for the same reason as RowHoverSurface/RowHoverRail: the
 									0.62 hover cap is meant for the fill's tint, not the rail's edge. -->
 								<Border x:Name="VisualDividerHoverSurface"
-									Grid.ColumnSpan="4"
+									Grid.ColumnSpan="6"
 									Margin="-6,-5"
 									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
 									OpacityMask="{StaticResource Redux.Hover.WashMask}"
@@ -2978,7 +3005,7 @@
 									</Border.Style>
 								</Border>
 								<Border x:Name="VisualDividerHoverRail"
-									Grid.ColumnSpan="4"
+									Grid.ColumnSpan="6"
 									Margin="-6,-5"
 									BorderThickness="{DynamicResource Redux.Rail.Thickness}"
 									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
@@ -2995,22 +3022,24 @@
 										</Style>
 									</Border.Style>
 								</Border>
-								<!-- Offset left so the rail lands in the same column as the mod-row rails; height comes from Redux.Rail.Height. -->
-				<Button Width="22" Height="22" Margin="0,0,5,0" Padding="0"
+							<Button Grid.Column="1" Width="22" Height="22" Margin="0,0,5,0" Padding="0"
 					dd:DragDrop.DragSourceIgnore="True"
 					Tag="ReduxDividerToggle">
-									<Button.Style>
-										<Style BasedOn="{StaticResource ReduxChromeButtonStyle}" TargetType="{x:Type Button}">
-											<Style.Triggers>
-												<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
-													<Setter Property="Background"
-														Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=4D}" />
-													<Setter Property="Foreground"
-														Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" />
-												</DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</Button.Style>
+					<Button.Style>
+						<Style BasedOn="{StaticResource ReduxChromeButtonStyle}" TargetType="{x:Type Button}">
+							<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
+							<Style.Triggers>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter Property="Foreground"
+										Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" />
+									<Setter Property="Background"
+										Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=33}" />
+									<Setter Property="BorderBrush"
+										Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" />
+								</Trigger>
+							</Style.Triggers>
+						</Style>
+					</Button.Style>
 									<Path Width="10" Height="5"
 										Data="{StaticResource Redux.Icon.ChevronDownStroke}"
 										RenderTransformOrigin="0.5,0.5"
@@ -3025,7 +3054,7 @@
 										</Path.RenderTransform>
 									</Path>
 								</Button>
-								<Grid Grid.Column="1" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center">
+								<Grid Grid.Column="2" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center">
 									<!--  Stroke ring, not a filled dot: default markers follow the Lucide stroke icon language.  -->
 									<Ellipse Width="9.5"
 										Height="9.5"
@@ -3050,20 +3079,32 @@
 										</controls:ReduxIcon.Style>
 									</controls:ReduxIcon>
 								</Grid>
-								<TextBlock Grid.Column="2" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.12}" FontWeight="SemiBold"
+								<TextBlock Grid.Column="3" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.12}" FontWeight="SemiBold"
 										Foreground="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
 										Text="{Binding VisualDividerTitle}" TextTrimming="CharacterEllipsis"
+										ToolTip="{Binding VisualDividerTitle}"
 										Visibility="{Binding VisualDividerTitle, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
 								<Border x:Name="VisualDividerLine"
-									Grid.Column="3"
+									Grid.Column="4"
 									Height="1.5"
 									VerticalAlignment="Center"
 									CornerRadius="1"
 									Background="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
 									Visibility="{Binding ShowVisualDividerLine, Converter={StaticResource BoolToVisibilityConverter}}" />
+								<Border Grid.Column="5" MinWidth="25" Margin="8,0,0,0" Padding="6,2"
+									VerticalAlignment="Center"
+									Background="{DynamicResource ReduxSurfaceMutedBrush}"
+									CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
+									Visibility="{Binding ShowVisualDividerHiddenItemCount, Converter={StaticResource BoolToVisibilityConverter}}">
+									<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+										Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+										FontSize="{DynamicResource Redux.FontSize.10}"
+										Text="{Binding VisualDividerHiddenItemCount}" />
+								</Border>
+												</Grid>
+											</Border>
 										</Grid>
-									</Border>
-								</DataTemplate>
+									</DataTemplate>
 							</ContentControl.ContentTemplate>
 						</ContentControl>
 						<Border x:Name="RowBorder"
@@ -3073,7 +3114,7 @@
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="{TemplateBinding BorderThickness}"
 							SnapsToDevicePixels="True">
-							<Grid>
+							<Grid x:Name="ModRowRoot">
 								<!--
 									Fill and rail used to be one Border (fill Background + rail
 									BorderBrush). Selection and hover both cap the whole element's
@@ -3171,9 +3212,9 @@
 									IsHitTestVisible="False"
 									Opacity="0" />
 								<GridViewRowPresenter x:Name="ModRowPresenter"
-									Margin="{TemplateBinding Padding}"
 									Columns="{Binding Path=View.Columns, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
 									Content="{TemplateBinding Content}"
+									Margin="{Binding Padding, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}"
 									VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
 							</Grid>
 						</Border>
@@ -4232,6 +4273,19 @@
 	</DataTemplate>
 	<DataTemplate x:Key="ModNameTemplate" DataType="{x:Type data:DivinityModData}">
 		<controls:ModEntryGrid>
+			<controls:ModEntryGrid.Style>
+				<Style TargetType="{x:Type controls:ModEntryGrid}">
+					<Setter Property="Margin" Value="0" />
+					<Style.Triggers>
+						<!-- Keep the table geometry intact. Hierarchy belongs to the primary
+							 identity cell, so order/category/author columns remain under their
+							 headers even when a child separator owns this mod. -->
+						<DataTrigger Binding="{Binding IsInsideChildVisualDivider}" Value="True">
+							<Setter Property="Margin" Value="18,0,0,0" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</controls:ModEntryGrid.Style>
 			<controls:ModEntryGrid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
@@ -4239,12 +4293,21 @@
 			</controls:ModEntryGrid.ColumnDefinitions>
 			<TextBlock x:Name="ModNameText"
 			    HorizontalAlignment="Stretch"
-			    Style="{StaticResource Redux.Text.ListPrimary}"
 			    Tag="{Binding}"
-				Text="{Binding DisplayTitle}"
 				TextTrimming="CharacterEllipsis"
 			    ToolTip="{StaticResource ModToolTip}"
-			    ToolTipService.IsEnabled="{Binding HasToolTip}" />
+			    ToolTipService.IsEnabled="{Binding HasToolTip}">
+				<TextBlock.Style>
+					<Style BasedOn="{StaticResource Redux.Text.ListPrimary}" TargetType="{x:Type TextBlock}">
+						<Setter Property="Text" Value="{Binding Metadata.PackageTitle}" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding DisplayFileForName}" Value="True">
+								<Setter Property="Text" Value="{Binding FileName}" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</TextBlock.Style>
+			</TextBlock>
 			<Border Grid.Column="1"
 				Width="8"
 				Height="8"
@@ -4942,6 +5005,14 @@
 		<Setter Property="Margin" Value="0" />
 		<Setter Property="SnapsToDevicePixels" Value="True" />
 		<Style.Triggers>
+			<Trigger Property="IsMouseOver" Value="True">
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceBrush}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+			</Trigger>
+			<Trigger Property="IsPressed" Value="True">
+				<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+			</Trigger>
 			<!--
 				GridView creates a trailing padding header above its reserved vertical-scrollbar
 				gutter. Keep that generated corner on the same semantic surface as the real
@@ -5013,7 +5084,7 @@
 	</Style>
 	<GridView x:Key="OverrideModGridView"
 	    x:Shared="False"
-	    AllowsColumnReorder="False"
+	    AllowsColumnReorder="True"
 	    ColumnHeaderContainerStyle="{StaticResource GridViewLeftContainerStyle}">
 		<GridView.Columns>
 			<GridViewColumn Width="240" CellTemplate="{StaticResource ModNameTemplate}">

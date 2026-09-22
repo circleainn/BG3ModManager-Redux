@@ -130,6 +130,14 @@ public class ModListDragHandler : DefaultDragHandler
 					x => x.Visibility == Visibility.Visible && x.CanDrag);
 				dragInfo.Data = selected.Count > 0 ? selected : null;
 			}
+			else if (dragInfo.SourceCollection == _viewModel.DisplayOverrideMods)
+			{
+				var selected = VisualDividerDragPolicy.ResolveDragItems(
+					_viewModel.DisplayOverrideMods,
+					sourceItem,
+					x => x.Visibility == Visibility.Visible && x.CanDrag);
+				dragInfo.Data = selected.Count > 0 ? selected : null;
+			}
 			else if (dragInfo.SourceCollection == _viewModel.ActiveMods)
 			{
 				var selected = _viewModel.ActiveMods.Where(x => x.IsSelected && x.Visibility == Visibility.Visible);
@@ -170,6 +178,9 @@ public class ModListDragHandler : DefaultDragHandler
 			// Keep sorting view-only by allowing reordering only in the # view.
 			return false;
 		}
+		if (_viewModel.IsOverrideListMetadataSorted &&
+			ReferenceEquals(dragInfo.SourceCollection, _viewModel.DisplayOverrideMods))
+			return false;
 		// A sorted or filtered inactive projection is still a safe source when the
 		// destination is Active Mods: the payload is resolved by mod identity, not by
 		// its display index. ModListDropHandler continues to reject reordering inside
