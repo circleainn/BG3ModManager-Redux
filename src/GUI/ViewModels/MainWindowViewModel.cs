@@ -9918,7 +9918,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	{
 		var dragged = draggedItems?.Distinct().ToList() ?? new List<DivinityModData>();
 		if (dragged.Count == 0) return;
-		if (destinationActive && dragged.Any(mod => mod.IsForceLoaded)) return;
+		if (destinationActive && dragged.Any(mod => !VisualDividerDragPolicy.CanEnterActiveLoadOrder(mod))) return;
 		EnsureVisualDividerBaseline();
 		EnsureVisualDividerMemberships();
 		var activeSequence = BuildVisualDividerSequence(true).ToList();

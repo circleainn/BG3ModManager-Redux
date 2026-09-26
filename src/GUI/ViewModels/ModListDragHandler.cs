@@ -62,17 +62,15 @@ public class ModListDragHandler : DefaultDragHandler
 	private IDragInfo _lastDragInfo;
 
 	private IDisposable _stopDraggingFallbackTask;
-	public bool IsDraggingVisualDivider { get; private set; }
 	public bool CanDropOnPane(bool active)
 	{
 		var items = (_lastDragInfo?.Data as IEnumerable<DivinityModData>)?.ToArray() ?? [];
 		if (active && _viewModel.IsDraggingHeldOverride) return true;
-		if (active && (_viewModel.IsOverrideVisualModCollection(_lastDragInfo?.SourceCollection) ||
-			items.Any(mod => mod.IsForceLoaded))) return false;
+		if (active && _viewModel.IsOverrideVisualModCollection(_lastDragInfo?.SourceCollection)) return false;
 		if (!active && _viewModel.IsOverrideVisualModCollection(_lastDragInfo?.SourceCollection))
 			return items.Length > 0 && items.All(mod => mod.IsForceLoaded &&
 				!mod.IsForceLoadedMergedMod && !mod.IsVisualDivider);
-		return !IsDraggingVisualDivider || VisualDividerDragPolicy.CanDropOnPane(items, active);
+		return VisualDividerDragPolicy.CanDropOnPane(items, active);
 	}
 
 	public bool CanDropOnOverridePane()
@@ -90,7 +88,6 @@ public class ModListDragHandler : DefaultDragHandler
 	{
 		_viewModel.IsDragging = false;
 		_viewModel.IsDraggingHeldOverride = false;
-		IsDraggingVisualDivider = false;
 		_stopDraggingFallbackTask?.Dispose();
 		_stopDraggingFallbackTask = null;
 
@@ -122,7 +119,6 @@ public class ModListDragHandler : DefaultDragHandler
 
 	public override void StartDrag(IDragInfo dragInfo)
 	{
-		IsDraggingVisualDivider = false;
 		if (dragInfo != null)
 		{
 			_lastDragInfo = dragInfo;
@@ -180,8 +176,6 @@ public class ModListDragHandler : DefaultDragHandler
 				&& draggedMods.All(mod => mod.IsHeldOverride && mod.IsForceLoaded
 					&& !mod.IsForceLoadedMergedMod && !mod.IsVisualDivider)
 				&& draggedMods.All(mod => _viewModel.DisplayInactiveMods.Contains(mod));
-				IsDraggingVisualDivider = dragInfo.Data is IEnumerable<DivinityModData> draggedItems &&
-					VisualDividerDragPolicy.ContainsVisualDivider(draggedItems);
 				_viewModel.IsDragging = true;
 				ScheduleStopDraggingFallback();
 			}

@@ -3,6 +3,10 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
+## Unreleased
+
+- Allow packages that override game files and also have a normal load-order entry to move into Active Mods. Pure Override PAKs continue to use Override Mods.
+
 ## 0.1.0-alpha.16.5.1 — 2026-09-26
 
 A focused hotfix for load-order switching, Override controls, and mod update checks.
