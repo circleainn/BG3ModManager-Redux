@@ -4337,9 +4337,49 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		return String.IsNullOrEmpty(mod.WorkshopData.ID) || !UpdateHandler.Workshop.CacheData.Mods.ContainsKey(mod.UUID);
 	}
 
-	private void RefreshAllModUpdatesBackground()
+	private bool ConfirmBulkModUpdateCheck()
 	{
-		if (UserMods.Count == 0)
+		var nexusMods = UserMods.Where(mod =>
+			mod.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START).ToArray();
+		var fileProjects = nexusMods.Where(mod => mod.NexusModsData.LastFileId > 0)
+			.Select(mod => mod.NexusModsData.ModId).Distinct().Count();
+		var estimatedNexusRequests = nexusMods.Length + fileProjects;
+		var nexusCost = estimatedNexusRequests > 0 && Modules.SourceIntegrationsEnabled && DivinityApp.NexusModsEnabled
+			&& !String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey)
+			? $"Up to {estimatedNexusRequests} Nexus API requests: {fileProjects} file-history checks and {nexusMods.Length} source-metadata lookups."
+			: "No Nexus API requests are planned with the current source settings and API key.";
+		var message = $"Check updates for all {UserMods.Count} installed mods?\n\n{nexusCost}\n\n"
+			+ "Other connected sources may also be queried. Nexus API limits are shared with downloads and other apps; Redux skips file checks beyond the remaining quota.\n\n"
+			+ "To check only one linked Nexus mod, right-click that mod and choose Check Nexus File Update.";
+		return ReduxMessageBox.Show(Window, message, "Check Mod Updates", MessageBoxButton.YesNo,
+			MessageBoxImage.Information, MessageBoxResult.No) == MessageBoxResult.Yes;
+	}
+
+	public void CheckNexusFileUpdate(DivinityModData mod)
+	{
+		if (mod == null || !UserMods.Contains(mod) || !AppSettingsLoaded) return;
+		if (IsRefreshing || IsRefreshingModUpdates)
+		{
+			ShowAlert("Finish the current refresh or update check before checking this mod.", AlertType.Info, 10);
+			return;
+		}
+		if (!Modules.SourceIntegrationsEnabled || !DivinityApp.NexusModsEnabled ||
+			String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey))
+		{
+			ShowAlert("Enable Nexus source integration and add an API key in Preferences to check this file.", AlertType.Warning, 18);
+			return;
+		}
+		if (mod.NexusModsData.ModId < DivinityApp.NEXUSMODS_MOD_ID_START || mod.NexusModsData.LastFileId <= 0)
+		{
+			ShowAlert("Link this mod to its Nexus file before checking for a replacement.", AlertType.Info, 12);
+			return;
+		}
+		RefreshModUpdatesBackground([mod], refreshSourceDetails: false);
+	}
+
+	private void RefreshModUpdatesBackground(IReadOnlyList<DivinityModData> targetMods, bool refreshSourceDetails)
+	{
+		if (targetMods.Count == 0)
 		{
 			ModUpdateCheckStatus = "No installed mods to check.";
 			ShowAlert(ModUpdateCheckStatus, AlertType.Info, 12);
@@ -4352,11 +4392,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			return;
 		}
 		var refreshGeneration = ++_modUpdateRefreshGeneration;
-		var checkedCount = UserMods.Count;
+		var checkedCount = targetMods.Count;
 		var checkFailed = false;
 		var checkCanceled = false;
 		NexusFileUpdateCheckResult fileUpdateCheck = null;
-		ModUpdateCheckStatus = $"Checking sources for {checkedCount} mod{(checkedCount == 1 ? String.Empty : "s")}…";
+		ModUpdateCheckStatus = refreshSourceDetails
+			? $"Checking sources for {checkedCount} mod{(checkedCount == 1 ? String.Empty : "s")}…"
+			: $"Checking Nexus file updates for {targetMods[0].DisplayName}…";
 		IsRefreshingModUpdates = true;
 		_allModUpdatesRefreshTask.Disposable = RxApp.TaskpoolScheduler.ScheduleAsync(async (scheduler, cancellationToken) =>
 		{
@@ -4371,17 +4413,17 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				UpdateHandler.Nexus.IsEnabled = DivinityApp.NexusModsEnabled && Modules.SourceIntegrationsEnabled;
 				UpdateHandler.Modio.IsEnabled = Modules.SourceIntegrationsEnabled;
 
-				await UpdateHandler.LoadAsync(UserMods, Version.ToString(), cancellationToken);
-				await UpdateHandler.UpdateAsync(UserMods, cancellationToken);
-				await UpdateHandler.SaveAsync(UserMods, Version.ToString(), cancellationToken);
+				await UpdateHandler.LoadAsync(targetMods, Version.ToString(), cancellationToken);
 				if (UpdateHandler.Nexus.IsEnabled)
 				{
+					if (!String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey))
+						NexusModsDataLoader.Init(Settings.NexusModsAPIKey, AppTitle, Version.ToString());
 					RxApp.MainThreadScheduler.Schedule(() =>
 					{
 						if (refreshGeneration == _modUpdateRefreshGeneration)
 							ModUpdateCheckStatus = "Checking linked Nexus file history…";
 					});
-					fileUpdateCheck = await NexusModsDataLoader.GetAvailableFileUpdatesAsync(UserMods, cancellationToken);
+					fileUpdateCheck = await NexusModsDataLoader.GetAvailableFileUpdatesAsync(targetMods, cancellationToken);
 					if (fileUpdateCheck?.CheckedModFiles.Count > 0)
 					{
 						var verified = UpdateHandler.Nexus.CacheData.VerifiedFileUpdates
@@ -4396,6 +4438,14 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 						}
 						await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), cancellationToken);
 					}
+				}
+				// This explicit action promises file-update checks. Refreshing every
+				// project's source metadata first can exhaust the Nexus quota before
+				// any installed-file replacement is examined.
+				if (refreshSourceDetails)
+				{
+					await UpdateHandler.UpdateAsync(targetMods, cancellationToken);
+					await UpdateHandler.SaveAsync(targetMods, Version.ToString(), cancellationToken);
 				}
 			}
 			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -4426,28 +4476,43 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 						{
 							if (fileUpdateCheck != null)
 							{
-								foreach (var mod in UserMods)
+								foreach (var mod in targetMods)
 									if (fileUpdateCheck.CheckedModFiles.TryGetValue(mod.UUID, out var checkedFile)
 										&& mod.NexusModsData.ModId == checkedFile.ProjectId
 										&& mod.NexusModsData.LastFileId == checkedFile.FileId)
 										mod.HasAvailableSourceUpdate = fileUpdateCheck.AvailableModUuids.Contains(mod.UUID);
 							}
-							List<DivinityModData> availableSourceUpdateMods = fileUpdateCheck == null ? [] : UserMods
+							List<DivinityModData> availableSourceUpdateMods = fileUpdateCheck == null ? [] : targetMods
 								.Where(mod => fileUpdateCheck.AvailableModUuids.Contains(mod.UUID) && mod.HasAvailableSourceUpdate)
 								.OrderBy(mod => mod.DisplayName, StringComparer.CurrentCultureIgnoreCase)
 								.ToList();
 							var updateCount = availableSourceUpdateMods.Count;
 							var updateNames = String.Join(", ", availableSourceUpdateMods.Take(3).Select(mod => mod.DisplayName));
 							if (updateCount > 3) updateNames += $" and {updateCount - 3} more";
+							var verificationIncomplete = fileUpdateCheck == null
+								|| fileUpdateCheck.FailedProjects > 0 || fileUpdateCheck.SkippedProjects > 0;
 							ModUpdateCheckStatus = updateCount > 0
 								? $"{updateCount} Nexus file update{(updateCount == 1 ? String.Empty : "s")}: {updateNames}. Open Mod Review to see the affected mods and their source pages."
-								: $"Checked {checkedCount} mod{(checkedCount == 1 ? String.Empty : "s")}. Source details refreshed.";
+								: refreshSourceDetails
+									? $"Source refresh finished for {checkedCount} mod{(checkedCount == 1 ? String.Empty : "s")}."
+									: verificationIncomplete
+										? $"Could not verify a Nexus file update for {targetMods[0].DisplayName}."
+										: $"No verified Nexus file update for {targetMods[0].DisplayName}.";
 							if (UpdateHandler.Nexus.IsEnabled && fileUpdateCheck == null)
-								ModUpdateCheckStatus += " Nexus file checks were skipped because the API is unavailable or rate-limited.";
-							else if (fileUpdateCheck?.FailedProjects > 0)
-								ModUpdateCheckStatus += $" {fileUpdateCheck.FailedProjects} Nexus project{(fileUpdateCheck.FailedProjects == 1 ? String.Empty : "s")} could not be checked.";
+								ModUpdateCheckStatus += String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey)
+									? " Add a Nexus Mods API key in Preferences to check installed file updates."
+									: " Nexus file checks could not run; the API is unavailable or its hourly/daily limit is exhausted.";
+							else if (fileUpdateCheck != null)
+							{
+								ModUpdateCheckStatus += $" Checked {fileUpdateCheck.CheckedModFiles.Count} linked Nexus file{(fileUpdateCheck.CheckedModFiles.Count == 1 ? String.Empty : "s")}.";
+								if (fileUpdateCheck.SkippedProjects > 0)
+									ModUpdateCheckStatus += $" {fileUpdateCheck.SkippedProjects} project{(fileUpdateCheck.SkippedProjects == 1 ? String.Empty : "s")} skipped because of the remaining API limit.";
+								if (fileUpdateCheck.FailedProjects > 0)
+									ModUpdateCheckStatus += $" {fileUpdateCheck.FailedProjects} Nexus project{(fileUpdateCheck.FailedProjects == 1 ? String.Empty : "s")} could not be checked.";
+							}
 							ShowAlert(ModUpdateCheckStatus,
-								fileUpdateCheck?.FailedProjects > 0 || UpdateHandler.Nexus.IsEnabled && fileUpdateCheck == null
+								fileUpdateCheck is { FailedProjects: > 0 } or { SkippedProjects: > 0 }
+									|| UpdateHandler.Nexus.IsEnabled && fileUpdateCheck == null
 									? AlertType.Warning : AlertType.Success, 12);
 							ScheduleModHealthRefresh();
 						}
@@ -11030,7 +11095,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		var path = order.IsModSettings ? GetCurrentWorkingOrderPath() : order.FilePath;
 		if (String.IsNullOrWhiteSpace(path) || (!order.IsModSettings && !File.Exists(path))) return false;
 		var previous = order.OverrideModFiles?.ToList();
-		var selected = (previous ?? mods.Items.Where(mod => mod.IsForceLoaded && !mod.IsForceLoadedMergedMod)
+		// Opting into per-order management must begin with the Overrides that are
+		// actually installed. Held PAKs belong to Inactive Mods; including them here
+		// would unexpectedly re-enable every held Override when enabling just one.
+		var selected = (previous ?? mods.Items.Where(mod => mod.IsForceLoaded &&
+			!mod.IsForceLoadedMergedMod && IsInstalledOverridePath(mod.FilePath))
 			.Select(mod => Path.GetFileName(mod.FilePath)))
 			.ToHashSet(StringComparer.OrdinalIgnoreCase);
 		foreach (var mod in moving)
@@ -12416,9 +12485,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 		RefreshModUpdatesCommand = ReactiveCommand.Create(() =>
 		{
+			if (UserMods.Count > 0 && !ConfirmBulkModUpdateCheck()) return;
 			ModUpdatesViewData?.Clear();
 			ModUpdatesViewVisible = ModUpdatesAvailable = false;
-			RefreshAllModUpdatesBackground();
+			RefreshModUpdatesBackground(UserMods.ToList(), refreshSourceDetails: true);
 		}, canRefreshModUpdates, RxApp.MainThreadScheduler);
 
 		Keys.RefreshModUpdates.AddAction(() => RefreshModUpdatesCommand.Execute(Unit.Default).Subscribe(), canRefreshModUpdates);

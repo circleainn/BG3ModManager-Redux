@@ -3,6 +3,15 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
+## 0.1.0-alpha.16.5.1 — 2026-09-26
+
+A focused hotfix for load-order switching, Override controls, and mod update checks.
+
+- Allow reviewed Override PAK moves when the BG3 Mods folder is a Windows junction or symbolic link. Redux pins the resolved target for the operation and its recovery journal, and refuses a switch if the link changes.
+- Restore inactive Override PAKs through drag-and-drop or a right-click action, and clarify the action when the Override pane is empty.
+- Keep nested mod numbers, names, and status icons indented together. Keep separator submenus open while moving the pointer into them.
+- Explain the potential Nexus API cost before checking every mod, allow a single linked mod to be checked from its context menu, and report partial checks when rate limits prevent full coverage.
+
 ## 0.1.0-alpha.16.5 — 2026-09-25
 
 Alpha.16.5 focuses on organizing mod lists, managing Overrides and native plugins, and making updates and storage easier to control.

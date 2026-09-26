@@ -253,6 +253,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private const string PrivateNoteMenuTag = "ReduxPrivateNote";
 	private const string ModAliasMenuTag = "ReduxModAlias";
 	private const string ModArtworkMenuTag = "ReduxModArtwork";
+	private const string OverrideTransferMenuTag = "ReduxOverrideTransfer";
+	private const string ModUpdateMenuTag = "ReduxModUpdate";
 	private const string BulkActionsMenuTag = "ReduxBulkActions";
 	private const string BulkHiddenSeparatorTag = "ReduxBulkHiddenSeparator";
 	private Point _categoryDragStart;
@@ -1054,6 +1056,32 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			menu.Items.Remove(generatedItem);
 		}
+		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, OverrideTransferMenuTag)).ToList())
+		{
+			menu.Items.Remove(generatedItem);
+		}
+		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, ModUpdateMenuTag)).ToList())
+		{
+			menu.Items.Remove(generatedItem);
+		}
+		if (mod.IsForceLoaded && !mod.IsForceLoadedMergedMod && !mod.ForceAllowInLoadOrder)
+		{
+			var activateOverride = listView == InactiveModsListView && mod.IsHeldOverride;
+			var disableOverride = listView == ForceLoadedModsListView && !mod.IsHeldOverride;
+			if (activateOverride || disableOverride)
+			{
+				var transfer = new MenuItem
+				{
+					Header = activateOverride ? "Enable in Override Mods" : "Disable for This Load Order",
+					Tag = OverrideTransferMenuTag,
+					Icon = ReduxIcon.FromResource(
+						activateOverride ? "Redux.Icon.ArrowBackStroke" : "Redux.Icon.ArrowForwardStroke", true),
+					ToolTip = "Move this Override PAK between the game folder and Redux's managed holding folder."
+				};
+				transfer.Click += (_, _) => ViewModel.TransferOverrideMods([mod], activateOverride);
+				menu.Items.Insert(0, transfer);
+			}
+		}
 
 		var categoryTargets = listView.SelectedItems
 			.OfType<DivinityModData>()
@@ -1351,6 +1379,19 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				sourceMenu.Items.Add(modioLinkItem);
 			}
 			menu.Items.Insert(Math.Min(3, menu.Items.Count), sourceMenu);
+			if (mod.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START
+				&& mod.NexusModsData.LastFileId > 0)
+			{
+				var checkUpdate = new MenuItem
+				{
+					Header = "Check Nexus File Update",
+					Tag = ModUpdateMenuTag,
+					Icon = ReduxIcon.FromResource("Redux.Icon.RefreshStroke", true),
+					ToolTip = "Check this installed Nexus file for an explicit replacement. Uses one Nexus API request."
+				};
+				checkUpdate.Click += (_, _) => ViewModel.CheckNexusFileUpdate(mod);
+				menu.Items.Insert(Math.Min(4, menu.Items.Count), checkUpdate);
+			}
 		}
 
 		foreach (var generatedItem in menu.Items.OfType<FrameworkElement>().Where(entry => Equals(entry.Tag, VisualDividerMenuTag)).ToList())

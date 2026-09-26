@@ -88,8 +88,13 @@ public class ModListDropHandler : DefaultDropHandler
 		var sourceOverride = _viewModel.IsOverrideVisualModCollection(dropInfo.DragInfo?.SourceCollection);
 		var targetInactive = _viewModel.IsInactiveVisualModCollection(dropInfo.TargetCollection);
 		var sourceInactive = _viewModel.IsInactiveVisualModCollection(dropInfo.DragInfo?.SourceCollection);
-		if (!(sourceOverride && targetInactive || sourceInactive && activate)) return false;
 		var items = ExtractData(dropInfo.Data).OfType<DivinityModData>().ToArray();
+		// Filtered ListViews can provide a view wrapper for SourceCollection. A held
+		// Override still has an unambiguous source when it is visible in Inactive Mods.
+		if (!sourceInactive && items.Length > 0)
+			sourceInactive = items.All(mod => mod.IsHeldOverride &&
+				_viewModel.DisplayInactiveMods.Contains(mod));
+		if (!(sourceOverride && targetInactive || sourceInactive && activate)) return false;
 		return items.Length > 0 && items.All(mod => mod.IsForceLoaded &&
 			!mod.IsForceLoadedMergedMod && !mod.IsVisualDivider);
 	}

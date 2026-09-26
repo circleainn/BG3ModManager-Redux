@@ -265,6 +265,8 @@ public class ModListView : ListView
 			}
 			UpdateInset(GroupingContentInsetProperty, new Thickness(gutter, 0, 0, 0));
 			UpdateInset(RootModNameInsetProperty, new Thickness(nameShift, 0, 0, 0));
+			// Move the whole child name cell with the child number and branch,
+			// including its status icons, while preserving other data columns.
 			UpdateInset(ChildModNameInsetProperty, new Thickness(nameShift + (HasSeparatorRows && nameCanShift ? HierarchyLevelStep : 0), 0, 0, 0));
 			UpdateInset(RootModIndexInsetProperty, new Thickness(indexShift, 0, 2, 0));
 			if (UsesHierarchyIndexAlignment != alignIndex) SetValue(UsesHierarchyIndexAlignmentProperty, alignIndex);

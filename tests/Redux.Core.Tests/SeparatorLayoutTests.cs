@@ -142,7 +142,11 @@ internal sealed class SeparatorLayoutTests
 					TextAt(2, "VisualDividerTitleText"), TextAt(3, "ModNameText") };
 				var positions = labels.Select(label => label.TransformToAncestor(list).Transform(new Point()).X).ToArray();
 				RegressionAssert.True(Math.Abs(positions[2] - positions[0] - 20) <= 1);
-				RegressionAssert.True(Math.Abs(positions[3] - positions[1] - list.ChildModNameInset.Left + list.RootModNameInset.Left) <= 1);
+				var childNameShift = list.ChildModNameInset.Left - list.RootModNameInset.Left;
+				if (Math.Abs(positions[3] - positions[1] - childNameShift) > 1)
+					throw new InvalidOperationException($"{key}: root name {positions[1]}, child name {positions[3]}, expected shift {childNameShift}.");
+				if (columns.Columns[0].Header as string == "#" && columns.Columns[1].Header as string == "Name")
+					RegressionAssert.Equal(ModListView.HierarchyLevelStep, childNameShift);
 				var header = list.FindVisualChildren<TextBlock>().Single(text => text.Name == "HeaderLabel" && text.Text == "Name");
 				var headerLeft = header.TransformToAncestor(list).Transform(new Point()).X;
 				if (Math.Abs(headerLeft + list.RootModNameInset.Left - positions[1]) > 1)
@@ -189,8 +193,12 @@ internal sealed class SeparatorLayoutTests
                                 RegressionAssert.True(clip.Bounds.Contains(inkInElement));
                             }
                         }
-                        if (Math.Abs(iconBounds.Left + iconBounds.Width / 2 - numberBounds.Left - numberBounds.Width / 2) > 1)
-                            throw new InvalidOperationException($"Number center {numberBounds.Left + numberBounds.Width / 2} must match icon center {iconBounds.Left + iconBounds.Width / 2}.");
+						var expectedCenter = indexHeaderBounds.Left + indexHeaderBounds.Width / 2
+							+ (pair.Divider == 2 ? ModListView.HierarchyLevelStep : 0);
+						if (Math.Abs(expectedCenter - numberBounds.Left - numberBounds.Width / 2) > 1)
+							throw new InvalidOperationException($"Number center {numberBounds.Left + numberBounds.Width / 2} must match # header center {expectedCenter}.");
+						if (Math.Abs(iconBounds.Left + iconBounds.Width / 2 - expectedCenter) > 1)
+							throw new InvalidOperationException("The separator icon and its mod number must align.");
                     }
                 }
 				RegressionAssert.Equal(labels[0].FontSize, labels[2].FontSize);

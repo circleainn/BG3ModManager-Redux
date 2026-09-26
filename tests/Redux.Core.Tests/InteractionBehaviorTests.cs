@@ -888,8 +888,8 @@ public sealed class InteractionBehaviorTests
 			new Size(240, 180),
 			new Size(80, 32),
 			new Point(0, 0));
-		RegressionAssert.Equal(new Point(80, 0), beside[0].Point);
-		RegressionAssert.Equal(new Point(-240, 0), beside[1].Point);
+		RegressionAssert.Equal(new Point(70, 0), beside[0].Point);
+		RegressionAssert.Equal(new Point(-230, 0), beside[1].Point);
 
 		var popup = new Popup();
 		ReduxWindowBehavior.SetPreferredPopupPlacement(
