@@ -65,6 +65,9 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public string LastSeenWhatsNewVersion { get; set; } = String.Empty;
 	// One-time upgrade choice for separators created before per-order/global scope was available.
 	[DataMember, Reactive] public bool HasResolvedPersistentSeparatorUpgrade { get; set; }
+	// Snapshot existing orders once. Removing an entry resolves only that order;
+	// separators created after the snapshot never trigger an upgrade prompt.
+	[DataMember(EmitDefaultValue = false), Reactive] public Dictionary<string, List<string>> PendingSeparatorUpgradeOrders { get; set; }
 	[DefaultValue(true)]
 	[SettingsEntry("Show What's New after updates", "Open release notes after Redux updates. Turn this off to skip future popups.")]
 	[DataMember, Reactive] public bool ShowWhatsNewAfterUpdates { get; set; } = true;
@@ -233,6 +236,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("Concurrent Nexus downloads", "Maximum simultaneous Nexus file transfers, from 1 through 6.")]
 	[DataMember, Reactive] public int NxmActiveDownloadLimit { get; set; } = 3;
 
+	[DefaultValue("")]
+	[SettingsEntry("Managed Downloads folder", "Choose where new download packages and their queue/history are stored. Each location keeps its own queue. The change takes effect after restarting Redux; existing files are not moved or deleted.")]
+	[DataMember, Reactive] public string ManagedDownloadsDirectory { get; set; } = String.Empty;
+
 	[DefaultValue(true)]
 	[SettingsEntry("Confirm Nexus downloads", "Legacy preference. Downloads no longer require a routine confirmation.", HideFromUI = true)]
 	[DataMember, Reactive] public bool ConfirmCleanNxmDownloads { get; set; } = true;
@@ -248,6 +255,14 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DefaultValue(false)]
 	[SettingsEntry("Retain installed package archives", "Keep a deduplicated copy of successfully installed packages for later reinstall. Disabled by default and may use significant disk space.")]
 	[DataMember, Reactive] public bool RetainInstalledPackageArchives { get; set; }
+
+	[DefaultValue(true)]
+	[SettingsEntry("Keep previous mod versions", "Keep recovery copies after successful replacements. When disabled, backups are removed after the next successful replacement. Existing backups can also be reviewed in Download Manager.")]
+	[DataMember, Reactive] public bool RetainPreviousModVersions { get; set; } = true;
+
+	[DefaultValue(2)]
+	[SettingsEntry("Previous mod versions limit (GB)", "Total storage for replaced PAKs. After successful replacements, remove oldest backups first to stay within this limit. Separate from downloaded package archives.")]
+	[DataMember, Reactive] public int PreviousModVersionsQuotaGb { get; set; } = 2;
 
 	[DefaultValue(10)]
 	[SettingsEntry("Package archive quota (GB)", "Maximum disk space for retained install packages. Redux prunes the least recently used packages when this limit is reached.")]

@@ -1816,9 +1816,12 @@ public static partial class DivinityModDataLoader
 
 		try
 		{
+			token.ThrowIfCancellationRequested();
 			using var vfs = new VFS();
 			vfs.AttachGameDirectory(gameDataPath);
+			token.ThrowIfCancellationRequested();
 			vfs.FinishBuild();
+			token.ThrowIfCancellationRequested();
 
 			var modResources = new ModResources();
 			var modHelper = new ModPathVisitor(modResources, vfs)
@@ -1831,12 +1834,14 @@ public static partial class DivinityModDataLoader
 			};
 
 			modHelper.DiscoverMods();
+			token.ThrowIfCancellationRequested();
 
 			if (modResources.Mods != null && modResources.Mods.Values != null)
 			{
 				var currentTime = DateTime.Now;
 				foreach (var modInfo in modResources.Mods.Values)
 				{
+					token.ThrowIfCancellationRequested();
 					var modData = await LoadModFromModInfo(gameDataPath, vfs, modInfo, true, token);
 					if (modData != null)
 					{
@@ -1845,6 +1850,10 @@ public static partial class DivinityModDataLoader
 				}
 				DivinityApp.Log($"Took {DateTime.Now - currentTime:s\\.ff} seconds(s) to load builtin mods ({String.Join(";", modResources.Mods.Select(x => x.Value.Name))}).");
 			}
+		}
+		catch (OperationCanceledException) when (token.IsCancellationRequested)
+		{
+			DivinityApp.Log("Loading base game mods was canceled.");
 		}
 		catch (Exception ex)
 		{

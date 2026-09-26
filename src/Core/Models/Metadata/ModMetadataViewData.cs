@@ -294,6 +294,23 @@ public sealed class ModMetadataViewData : ReactiveObject
 		{
 			AttachOnlineMetadata(ref _modioMetadata, _mod.ModioData);
 		}
+		else if (e.PropertyName is not (null or "" or
+			nameof(DivinityModData.OnlineMetadataEnabled) or
+			nameof(DivinityModData.NexusModsEnabled) or
+			nameof(DivinityModData.DisplayName) or
+			nameof(DivinityModData.FileName) or
+			nameof(DivinityModData.Author) or
+			nameof(DivinityModData.DisplayVersion) or
+			nameof(DivinityModData.Description) or
+			nameof(DivinityModData.HasMetadata) or
+			nameof(DivinityModData.HasCustomPreviewImage) or
+			nameof(DivinityModData.CustomPreviewImagePath) or
+			nameof(DivinityModData.LastModifiedDateText)))
+		{
+			// DisplayTitle and ListDisplayTitle are outputs of PackageTitle. Reacting
+			// to them here schedules an endless metadata/title notification loop.
+			return;
+		}
 
 		RaiseDisplayPropertiesChanged();
 	}

@@ -447,6 +447,55 @@ public sealed class VisualDividerDragPolicyTests
 		RegressionAssert.Equal(3, mapped);
 	}
 
+	public void IncomingOverrideUsesItsDropSlotAndSeparatorMembership()
+	{
+		var parent = CreateDivider("parent", collapsed: false);
+		var child = CreateDivider("child", collapsed: false);
+		var next = CreateDivider("next", collapsed: false);
+		var first = CreateMod("first");
+		var second = CreateMod("second");
+		var incoming = CreateMod("incoming");
+		var full = new[] { parent, first, child, second, next };
+		var insertIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(full, full, 3);
+		var placed = VisualModListDropPolicy.Apply(full, [], [incoming], true, insertIndex).ActiveItems;
+		var descriptors = new[]
+		{
+			new ModListVisualDividerData { Id = "parent", IsActiveList = false, Position = 0 },
+			new ModListVisualDividerData { Id = "child", ParentDividerId = "parent", IsActiveList = false, Position = 2 },
+			new ModListVisualDividerData { Id = "next", IsActiveList = false, Position = 5 }
+		};
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(placed, descriptors, false);
+		RegressionAssert.SequenceEqual(new[] { parent, first, child, incoming, second, next }, placed);
+		RegressionAssert.SequenceEqual(new[] { incoming.UUID, second.UUID }, descriptors[1].MemberModUuids);
+	}
+
+	public void OutgoingOverrideUsesInactiveSlotAfterCollapsedSeparator()
+	{
+		var closed = CreateDivider("closed", collapsed: true);
+		var hidden = CreateMod("hidden");
+		var open = CreateDivider("open", collapsed: false);
+		var first = CreateMod("first");
+		var last = CreateMod("last");
+		var incoming = CreateMod("incoming");
+		var full = new[] { closed, hidden, open, first, last };
+		var visible = new[] { closed, open, first, last };
+		var insertIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(visible, full, 3);
+		var placed = VisualModListDropPolicy.Apply(full, [], [incoming], true, insertIndex).ActiveItems;
+		var descriptors = new[]
+		{
+			new ModListVisualDividerData
+			{
+				Id = "closed", IsActiveList = false, IsCollapsed = true,
+				MemberModUuids = new List<string> { hidden.UUID }
+			},
+			new ModListVisualDividerData { Id = "open", IsActiveList = false }
+		};
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(placed, descriptors, false);
+		RegressionAssert.SequenceEqual(new[] { closed, hidden, open, first, incoming, last }, placed);
+		RegressionAssert.SequenceEqual(new[] { hidden.UUID }, descriptors[0].MemberModUuids);
+		RegressionAssert.SequenceEqual(new[] { first.UUID, incoming.UUID, last.UUID }, descriptors[1].MemberModUuids);
+	}
+
 	public void FilteredReorderUsesVisibleRowsAsCanonicalAnchors()
 	{
 		var full = Enumerable.Range(1, 15)

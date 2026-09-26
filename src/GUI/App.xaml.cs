@@ -91,6 +91,10 @@ public partial class App : Application
 			startupWindow.Attach(mainWindow.ViewModel);
 
 			var revealStarted = false;
+			startupWindow.Closed += (_, _) =>
+			{
+				if (!revealStarted && !Dispatcher.HasShutdownStarted) Shutdown();
+			};
 			PropertyChangedEventHandler initializedHandler = null;
 			initializedHandler = async (_, args) =>
 			{
@@ -141,7 +145,6 @@ public partial class App : Application
 			MainWindow = mainWindow;
 			mainWindow.Show();
 			DrainNxmActivations();
-			startupWindow.Owner = mainWindow;
 			if (!protocolStartup) startupWindow.Activate();
 		}));
 	}

@@ -357,6 +357,7 @@ public static class LoadOrderAdvisorOrganizer
 			result.Add(new ModListVisualDividerData
 			{
 				Title = currentGroup,
+				HideLine = true,
 				Description = currentGroup == "Needs Review"
 					? "Mods without reliable offline placement guidance."
 					: "Suggested by the Redux Load Order Advisor.",

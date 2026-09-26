@@ -3,50 +3,47 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
-## Unreleased
+## 0.1.0-alpha.16.5 — release candidate
 
-### Fixed
-
-- Restore **Show File Name / Show Mod Display Name** for linked Nexus Mods and mod.io packages. Provider metadata can still enrich the normal title, while the per-mod toggle now reliably shows the installed package filename and switches back without requiring a refresh.
-- Fix a stack overflow when collapsing a parent separator: the normal mod-list sequence builder now calls the Active/Inactive list overload instead of recursively calling itself. Keep the nested separator collapse animation intact.
-- Allow Active Mods to be reordered while a name or category filter is visible. Redux now uses the surrounding visible rows as anchors in the complete load order, so hidden rows retain their relative positions.
-- Keep each global separator's position, collapsed state, and section membership independent in every saved load order while sharing its name, color, icon, and description across orders.
-- Give **Sync Load Order to Game** its own scoped busy state and always release it when the operation succeeds, fails, or is cancelled; completed drag state is also cleared at both boundaries so the toolbar and menus cannot remain dimmed afterward.
-- Let long nested context menus scroll, including **Assign Category**, so every category remains reachable with the mouse wheel.
-- Allow mods in a filtered or column-sorted Inactive Mods view to be dragged directly into the intended position in Active Mods while keeping projected-list reordering guarded.
-- Decode the WebP artwork now returned by the Nexus CDN even when its saved URL ends in `.png` or `.jpeg`, restoring linked mod thumbnails.
-- Keep the Override Mods list within the split pane's real available height so its scrollbar remains usable at the maximum expanded size.
-- Allow pure override packages to be rearranged with their separators inside Override Mods even though those packages remain intentionally blocked from the numbered Active/Inactive load order. Filtered Override views now use visible rows as drop anchors so hidden entries keep their relative placement.
+The next alpha focuses on organizing mod lists, managing Overrides and native plugins, and making updates and storage easier to control.
 
 ### Added
 
-- Add a visible separator-scope control to both panes. Active Mods separators can opt into **Use in every load order**; Inactive Mods explains that its organization is already shared automatically. Global separators share their styling and description while keeping an independent placement in each saved order, and existing Active Mods separators remain scoped to their saved order by default.
-- Offer existing users a one-time separator upgrade choice when Redux finds separators created before persistent scope was available: make every separator in the current load order persistent, or leave them unchanged for manual review. Fresh installs and users without existing separators do not see the prompt. The bulk conversion remains an unsaved load-order edit and can be undone with Ctrl+Z before saving.
-- Add an assignable **Show or Hide Mod File Names** shortcut that toggles the File Name column in both mod panes. It has no default binding and can be set in **Keyboard Shortcuts**.
-- Let custom category and separator icons use opaque or non-square PNGs. Redux stretches and resizes imported images into a square icon automatically, while color tinting remains optional.
-- Add filtering and column sorting to Override Mods while preserving their always-loaded, outside-the-numbered-order behavior.
-- Let Override Mods use the same saved visual ordering, top-level and child separators, collapse controls, drag behavior, context actions, and Undo/Redo workflow as Inactive Mods. This organization remains Redux-only and never enters the numbered game load order.
-- Add an editable **Collapse or Expand Override Mods** shortcut, defaulting to **Ctrl+Alt+O**, which uses the pane's full animated transition.
-- Add one-level parent and child separators to Active and Inactive Mods. Child separators and their mod rows use a fixed nesting gutter that leaves the table columns aligned, collapse independently, and disappear with the complete branch when their parent closes. The separator context menu can create a child or promote it back to the top level.
-- Add persistent local aliases for installed mods. Set, edit, or clear an alias from a mod's context menu or details pane; aliases appear in lists, name sorting, and search while the original module, package, and provider metadata remains unchanged.
-- Add package-scoped custom preview artwork for installed mods. Choose, replace, or clear PNG, JPEG, WebP, BMP, or GIF images from the context menu or details pane; Redux keeps a bounded PNG copy in its own data folder, uses it in existing preview surfaces, and restores provider artwork when cleared.
-- Add an optional, bounded plain-text description excerpt to mod hover cards using metadata Redux has already loaded; the full description remains in the details drawer.
-- Add a persistent **Assign categories automatically** control in Settings and the Categories menu. Turning it off hides built-in automatic groups and stops future automatic classification while preserving custom categories and manual assignments; the same menu can explicitly reset every mod back to automatic assignment.
+- Organize Active, Inactive, and Override Mods with one level of sub-separators. Collapse branches independently, move complete collapsed groups, and drag mods between sections with Undo/Redo support.
+- Make Active separators available in every saved load order while keeping each order's position, membership, and collapsed state independent. Existing orders get a one-time, undoable choice to share their separators and turn off legacy separator lines.
+- Let a saved load order opt into its own Override PAK selection. Redux validates file changes when switching orders, holds disabled PAKs in a managed folder, and recovers interrupted moves. Orders that do not opt in retain the existing all-overrides behavior.
+- Manage reviewed native plugins through an existing YANML installation, including installation, updates, exact-version adoption, and removal of Redux-owned DLLs. Redux shows the destination and blocks incompatible YANML configurations; YANML's watcher, injector, and autostart remain separate setup.
+- Set persistent local aliases and custom preview artwork for installed mods without changing package or provider identity. Aliases participate in search and sorting; clearing artwork restores the provider image.
+- Choose a managed Downloads folder in Preferences. The change takes effect after restart; Redux does not move or delete files in the previous folder.
+- Limit retained previous PAK versions separately from download archives, with a 2 GB default, an off switch, and a reviewed cleanup action. Backups are pruned only after a successful replacement.
+- Check mod updates from the Mod Review status menu and see a small theme-colored dot when Nexus explicitly reports a replacement for the installed file. Available updates name the affected mods in Review recommended, with a link to each mod page. Unverified versions remain unmarked.
+- Choose **Update & Back Up** when updating Redux to save a ZIP of the existing installation, BG3 mod PAKs and previous versions, saved orders, and profile load-order files before restart.
+- Control automatic category assignment without deleting manual categories, and optionally show a short available description in mod hover cards.
+- Assign a shortcut for showing mod filenames, collapse or expand Override Mods with Ctrl+Alt+O, and import opaque or non-square PNGs as category or separator icons.
 
 ### Changed
 
-- Remove the 40-character limit from separator labels while keeping the existing category-name limit. Long separator labels trim inside the list and expose their complete text on hover.
-- Unify Active, Inactive, and Override pane headers with compact real-mod counts, top-only header surfaces, consistent filter spacing, and shared column-header hover and pressed feedback. Override retains its semantic category color while using the same layout rhythm.
-- Refresh the shared category and separator editor as a wider, shorter workspace with side-by-side identity fields, compact full-width preview and icon rows, aligned options, and presets tucked beneath the sliders so the complete editor fits above its fixed action bar at the default size.
-- Restyle the expanded **Override Mods** section as a proper nested mod pane, with the same header height, filter treatment, attached column-header strip, and edge alignment as Active and Inactive Mods while preserving its existing collapse and always-loaded behavior.
-- Give the nested **Override Mods** pane the same rounded shell and subtle outline used by the surrounding mod panes.
-- Fade the **Override Mods** filter out with the pane's collapse transition and restore it smoothly when the pane expands, leaving the compact collapsed header text-only.
-- Remove the unused number placeholder from **Override Mods** and align its column-header gutter, scrollbar start, clipping, and widths with the Active and Inactive mod panes while keeping Override's dedicated column order independent.
-- Give vertical scrollbars a consistent inset from pane headers and lower edges so their rails and thumbs no longer touch or visually clip into surrounding chrome.
-- Unify the Categories, Inactive Mods, Override Mods, and Mod Drawer collapse controls around the same compact chevron sizing, hover pill, motion, and interaction treatment.
-- Keep expanded parent moves marker-only while carrying their child separator structure; closed parent moves carry the complete nested block. Children inherit their parent's persistence scope so a branch cannot split across saved load orders.
-- Keep category label visibility controlled by the existing Themes and Appearance icon settings instead of storing a second per-category icon-only preference.
-- Give Override Mods the same column chooser, column resizing, header sorting, and drag-to-reorder column behavior as the other mod panes while retaining its unnumbered layout.
+- Redesign separators as compact section headings with consistent parent and sub-separator sizing, rounded and muted branch connectors, aligned load-order numbers, section-count badges, and a single connected hover surface. Custom colors, gradients, text-color settings, and reduced motion remain supported. New separator lines are off by default; existing choices are preserved.
+- Align Active, Inactive, and Override pane headers, filters, columns, scrollbars, and resize feedback. Names stay within their columns, resize handles remain in the header, and panes without a # column reclaim that space.
+- Keep the toolbar's Mod Review status compact so its hover state does not crowd or clip adjacent controls; open the full review and update actions in its menu.
+- Give Override Mods the same filtering, sorting, column controls, separator organization, and drag placement as the other panes while keeping Overrides outside the numbered game load order.
+- Streamline the category and separator editor around a visible color field, hue strip, palettes, and a compact identity row. Precision controls remain available; the redundant live preview is removed.
+- Explain the difference between provider **Last Updated** and local-file **Last Modified** in column tooltips. The local timestamp is not necessarily the installation date.
+- Keep pane separator actions beside their search fields, use distinct fold/unfold icons, and make column-header menus easier to use without reopening them for each column.
+- Allow longer separator names, with trimming in the list and the complete name on hover. Keep the existing category-name limit.
+
+### Fixed
+
+- Keep the selected BG3 profile across Refresh and honor the game's selected profile at startup instead of always choosing Public.
+- Keep the game-backed **Current** order aligned with a successful Sync, including automatically included dependencies, while leaving named saved orders and unsaved working edits separate. Record the first export without changing the selected order, and update Current only after a successful recovery from an externally emptied game order.
+- Prevent a stack overflow when collapsing a parent separator. Keep collapse animations tied to their original order and prevent parent branches from briefly reopening during transitions.
+- Restore separator-upgrade choices after restart, refresh branch connectors after moves, and keep collapsed groups and their membership stable across order changes.
+- Preserve a pre-upgrade copy of an existing load order before migrating legacy separators, and leave the order untouched if that backup cannot be made.
+- Make filtered or sorted mod moves land at the intended visible position, including Inactive-to-Active and both directions between Inactive and Override Mods. Reject illegal Override-to-Active drops and clear their drag indicators.
+- Keep Override search usable in sorted and collapsed views and its scrollbar reachable at the pane's maximum height; widen the pane's resize target.
+- Restore linked mods' **Show File Name / Show Mod Display Name** toggle and update aliases in place without blanking or refreshing all three mod panes.
+- Decode Nexus WebP thumbnails even when their URLs end in .png or .jpeg, and show each conflicting PAK's title and filename in duplicate-UUID diagnostics.
+- Restore category icons in sidebar menus, make long **Assign Category** menus scroll, and show sort direction in all three mod-list headers.
 
 ## 0.1.0-alpha.16.4.4 — 2026-09-15
 

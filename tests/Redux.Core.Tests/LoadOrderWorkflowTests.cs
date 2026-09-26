@@ -10,6 +10,52 @@ namespace Redux.Core.Tests;
 
 internal sealed class LoadOrderWorkflowTests
 {
+	public void RefreshKeepsSelectedProfileInsteadOfForcingPublic()
+	{
+		var profiles = new[]
+		{
+			new DivinityProfileData("public-uuid", "public/modsettings.lsx") { ProfileName = "Public" },
+			new DivinityProfileData("custom-uuid", "custom/modsettings.lsx") { ProfileName = "Custom" }
+		};
+		RegressionAssert.Equal(1, LoadOrderPersistencePolicy.FindPreferredProfileIndex(profiles, "custom-uuid"));
+		RegressionAssert.Equal(0, LoadOrderPersistencePolicy.FindPreferredProfileIndex(profiles, "missing-uuid"));
+		RegressionAssert.Equal(0, LoadOrderPersistencePolicy.FindPreferredProfileIndex(profiles, null));
+		RegressionAssert.Equal(-1, LoadOrderPersistencePolicy.FindPreferredProfileIndex([], null));
+	}
+
+	public void EmptyGameOrderRecoveryTargetsCurrentEvenWhenNamedOrderComesFirst()
+	{
+		var named = new DivinityLoadOrder { Name = "My saved order" };
+		var current = new DivinityLoadOrder { Name = "Current", IsModSettings = true };
+		RegressionAssert.True(ReferenceEquals(current,
+			LoadOrderPersistencePolicy.FindGameBackedCurrentOrder([named, current])));
+		RegressionAssert.True(LoadOrderPersistencePolicy.FindGameBackedCurrentOrder([named]) == null);
+	}
+
+	public void FirstSyncBackupDoesNotReplaceOrSelectTheWorkingOrder()
+	{
+		var current = new DivinityLoadOrder { Name = "Current", IsModSettings = true, FilePath = "modsettings.lsx" };
+		var named = new DivinityLoadOrder { Name = "My order", FilePath = "mine.json" };
+		var displayed = new System.Collections.ObjectModel.ObservableCollection<DivinityLoadOrder> { current, named };
+		var saved = new System.Collections.Generic.List<DivinityLoadOrder> { named };
+		const int selectedIndex = 1;
+		var backup = new DivinityLoadOrder
+		{
+			Name = "LastExported", FilePath = "last-exported.json",
+			Order = [new DivinityLoadOrderEntry { UUID = "exported-mod", Name = "Exported" }]
+		};
+		LoadOrderPersistencePolicy.RememberGameExportBackup(displayed, saved, backup);
+		RegressionAssert.True(ReferenceEquals(named, displayed[selectedIndex]));
+		RegressionAssert.Equal("My order", saved[0].Name);
+		RegressionAssert.Equal(1, saved.Count(order => order.Name == "LastExported"));
+		RegressionAssert.Equal("exported-mod", displayed.Last().Order.Single().UUID);
+		backup.Order[0].UUID = "updated-export";
+		LoadOrderPersistencePolicy.RememberGameExportBackup(displayed, saved, backup);
+		RegressionAssert.Equal(3, displayed.Count);
+		RegressionAssert.True(ReferenceEquals(named, displayed[selectedIndex]));
+		RegressionAssert.Equal("updated-export", displayed.Last().Order.Single().UUID);
+	}
+
 	public void StartupRestoresRememberedOrderWhileRefreshKeepsCurrentSelection()
 	{
 		RegressionAssert.Equal(

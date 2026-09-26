@@ -110,7 +110,8 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Refresh Mods", false, "Rescan the configured Mods folder and refresh the mod lists.")]
 	public Hotkey Refresh { get; private set; } = new Hotkey(Key.F5);
 
-	[MenuSettings("File", "Refresh Mod Updates")]
+	[MenuSettings("File", "Check Mod Updates", false,
+		"Check linked mods against enabled sources. Available updates appear in the Mod Updates view.")]
 	public Hotkey RefreshModUpdates { get; private set; } = new Hotkey(Key.None);
 
 	[MenuSettings("Edit", "Undo Last Action", false,

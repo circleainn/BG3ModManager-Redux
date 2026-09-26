@@ -367,7 +367,7 @@ public sealed class LegacyAndOverrideHealthRule : IModHealthRule
 				"Mod Fixer files were detected inside this package. BG3 Patch 7 and newer generally do not require Mod Fixer, and it does not need to be installed separately."));
 		}
 
-		if (!mod.IsForceLoaded)
+		if (!mod.IsForceLoaded || mod.IsHeldOverride)
 		{
 			return;
 		}
@@ -410,7 +410,7 @@ public sealed class McmActivationHealthRule : IModHealthRule
 	public void Evaluate(ModHealthAnalysisContext context, ICollection<ModHealthFinding> findings)
 	{
 		var mod = context.Mod;
-		if (!String.Equals(mod.UUID, McmUuid, StringComparison.OrdinalIgnoreCase)
+		if (mod.IsHeldOverride || !String.Equals(mod.UUID, McmUuid, StringComparison.OrdinalIgnoreCase)
 			|| context.ActiveUuids.Contains(McmUuid))
 		{
 			return;
@@ -421,5 +421,19 @@ public sealed class McmActivationHealthRule : IModHealthRule
 			ModHealthSeverity.Warning,
 			"Mod Configuration Menu is not active",
 			"MCM includes files that can load before its normal module entry is active. That can make MCM appear in game while it warns that the load order was reset. Move MCM into the active pane and use Sync Load Order to Game. Its reference to BG3MM also applies to compatible managers such as Redux."));
+	}
+}
+
+/// <summary>Surfaces verified source-file updates in the shared review menu.</summary>
+public sealed class SourceUpdateHealthRule : IModHealthRule
+{
+	public void Evaluate(ModHealthAnalysisContext context, ICollection<ModHealthFinding> findings)
+	{
+		if (!context.Mod.HasAvailableSourceUpdate) return;
+		findings.Add(new ModHealthFinding(
+			ModHealthFindingCode.SourceUpdateAvailable,
+			ModHealthSeverity.Warning,
+			"Mod update available",
+			"A newer Nexus file is linked to this installed mod. Open its source page to download the newer file, then install it in Redux."));
 	}
 }

@@ -68,6 +68,8 @@ public partial class ReduxStartupWindow : Window, IReduxTypographyIsolated
 		DataContext = viewModel;
 	}
 
+	private void CloseStartup_Click(object sender, RoutedEventArgs e) => Close();
+
 	public Task CloseWithTransitionAsync()
 	{
 		if (!SystemParameters.ClientAreaAnimation || ReduxWindowBehavior.ReduceMotion)

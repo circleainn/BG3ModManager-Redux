@@ -223,16 +223,20 @@ public class ModUpdatesViewData : ReactiveObject
 				try
 				{
 					var destinationPath = Path.Combine(args.ModPakFolder, fileName);
-					string backupPath = null;
-					if (File.Exists(destinationPath))
+					DivinityModManager.AppServices.ModBackupRetention.CommitReplacement(() =>
 					{
-						backupPath = GetUniqueBackupPath(backupFolder, destinationPath);
-					}
-					AtomicFileWriter.CopyFile(workItem.File, destinationPath, backupPath);
-					if (backupPath != null)
-					{
-						DivinityApp.Log($"Replaced '{destinationPath}' and saved the previous file to '{backupPath}'.");
-					}
+						string backupPath = null;
+						if (File.Exists(destinationPath))
+						{
+							backupPath = GetUniqueBackupPath(backupFolder, destinationPath);
+						}
+						AtomicFileWriter.CopyFile(workItem.File, destinationPath, backupPath);
+						if (backupPath != null)
+						{
+							DivinityApp.Log($"Replaced '{destinationPath}' and saved the previous file to '{backupPath}'.");
+						}
+						if (backupPath != null) _mainWindowViewModel.PrunePreviousModVersionsAfterInstall();
+					});
 					args.TotalMoved++;
 				}
 				catch (Exception ex)

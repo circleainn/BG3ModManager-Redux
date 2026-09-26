@@ -1,6 +1,7 @@
 ﻿using DivinityModManager;
 using DivinityModManager.AppServices;
 using DivinityModManager.Controls;
+using DivinityModManager.Extensions;
 using DivinityModManager.Models;
 using DivinityModManager.Models.App;
 using DivinityModManager.Models.Modio;
@@ -14,6 +15,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
@@ -22,6 +24,70 @@ namespace Redux.Core.Tests;
 
 public sealed class InteractionBehaviorTests
 {
+	public void CategoryMenusKeepIconsAlongsideEnabledChecks()
+	{
+		var original = DivinityApp.ShowInterfaceIcons;
+		try
+		{
+			DivinityApp.ShowInterfaceIcons = true;
+			var resources = new ResourceDictionary { Source = new Uri("pack://application:,,,/Redux;component/Themes/MainResourceDictionary.xaml") };
+			var menu = new MenuItem { Resources = resources, Header = "Gameplay", Icon = new ReduxIcon { IconKey = "layers" }, IsCheckable = true, IsChecked = true,
+				Template = (ControlTemplate)resources["ReduxPopupMenuItemTemplate"] };
+			ReduxMenuItemExtension.SetCheckOnRight(menu, true);
+			void Layout()
+			{
+				menu.Measure(new Size(300, 40)); menu.Arrange(new Rect(0, 0, 300, 40));
+				menu.UpdateLayout(); Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ContextIdle);
+			}
+			Layout();
+			var icon = (ContentPresenter)menu.Template.FindName("IconPresenter", menu);
+			var check = (Viewbox)menu.Template.FindName("CheckMarkPresenter", menu);
+			RegressionAssert.Equal(Visibility.Visible, icon.Visibility);
+			RegressionAssert.Equal(Visibility.Visible, check.Visibility);
+			RegressionAssert.Equal(2, Grid.GetColumn(check));
+			menu.IsChecked = false; Layout();
+			RegressionAssert.Equal(Visibility.Visible, icon.Visibility);
+			RegressionAssert.Equal(Visibility.Collapsed, check.Visibility);
+			menu.IsChecked = true; DivinityApp.ShowInterfaceIcons = false; Layout();
+			RegressionAssert.Equal(Visibility.Collapsed, icon.Visibility);
+			RegressionAssert.Equal(Visibility.Visible, check.Visibility);
+			RegressionAssert.Equal(0, Grid.GetColumn(check));
+			RegressionAssert.Equal(22d, ((ColumnDefinition)menu.Template.FindName("IconColumn", menu)).Width.Value);
+		}
+		finally { DivinityApp.ShowInterfaceIcons = original; }
+	}
+
+	public void AliasEditsUpdateLiveViewsWithoutResettingOtherRows()
+	{
+		var first = new RegressionModData { UUID = "first", Name = "Alpha", CustomAlias = "Alpha", HasCustomAlias = true };
+		var second = new RegressionModData { UUID = "second", Name = "Beta", CustomAlias = "Beta", HasCustomAlias = true };
+		var source = new System.Collections.ObjectModel.ObservableCollection<DivinityModData> { first, second };
+		var list = new ModListView { ItemsSource = source };
+		var view = System.Windows.Data.CollectionViewSource.GetDefaultView(source);
+		view.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(DivinityModData.ListDisplayTitle), System.ComponentModel.ListSortDirection.Ascending));
+		var resets = 0;
+		view.CollectionChanged += (_, args) => { if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset) resets++; };
+		void Rename(string value)
+		{
+			first.CustomAlias = value;
+			ReactiveUI.IReactiveObject reactive = first;
+			reactive.RaisePropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(DivinityModData.ListDisplayTitle)));
+			Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ContextIdle);
+		}
+		Rename("Zulu");
+		RegressionAssert.True(ReferenceEquals(second, view.Cast<DivinityModData>().First()));
+		RegressionAssert.Equal(0, resets);
+		view.Filter = item => ((DivinityModData)item).ListDisplayTitle.StartsWith("Z", StringComparison.Ordinal);
+		resets = 0;
+		Rename("Changed");
+		RegressionAssert.Equal(0, view.Cast<object>().Count());
+		Rename("Zulu again");
+		RegressionAssert.True(ReferenceEquals(first, view.Cast<DivinityModData>().Single()));
+		RegressionAssert.Equal(0, resets);
+		RegressionAssert.Equal("Beta", second.ListDisplayTitle);
+		RegressionAssert.Equal(2, source.Count);
+	}
+
 	public void ProviderPasswordFieldsFollowLoadedSettingsAndUserEdits()
 	{
 		var source = new DivinityModManagerSettings
@@ -197,8 +263,52 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.False(headers.Contains("#", StringComparer.OrdinalIgnoreCase));
 		RegressionAssert.True(view.AllowsColumnReorder);
 		RegressionAssert.True(ReferenceEquals(
-			resources["GridViewLeftContainerStyle"],
+			resources["ReduxModColumnHeaderStyle"],
 			view.ColumnHeaderContainerStyle));
+	}
+
+	public void OverridePaneUsesTheSharedListInteractionSetup()
+	{
+		Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+		var layout = new HorizontalModLayout();
+		var panes = new[] { layout.ActiveModsView, layout.InactiveModsView, layout.ForceLoadedModsView };
+		// The shared chrome must still create the Override/drawer arrow when
+		// those buttons have no content, and keep its expanded state binding.
+		var toggle = new ToggleButton { Style = (Style)layout.FindResource("ModDetailsToggleStyle"), IsChecked = true };
+		var reduceMotion = ReduxWindowBehavior.ReduceMotion;
+		try
+		{
+			ReduxWindowBehavior.ConfigureAccessibility(true, ReduxWindowBehavior.BackgroundEffectsDisabled);
+			void ArrangeToggle()
+			{
+				toggle.Measure(new Size(30, 28)); toggle.Arrange(new Rect(0, 0, 30, 28)); toggle.UpdateLayout();
+				Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ContextIdle);
+				// Let the animation manager replace the previous trigger's clock.
+				var frame = new DispatcherFrame();
+				var timer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(40) };
+				timer.Tick += (_, _) => { timer.Stop(); frame.Continue = false; };
+				timer.Start(); Dispatcher.PushFrame(frame);
+			}
+			ArrangeToggle();
+			var glyph = toggle.FindVisualChildren<System.Windows.Shapes.Path>().Single();
+			RegressionAssert.Equal(0d, ((RotateTransform)glyph.RenderTransform).Angle);
+			toggle.IsChecked = false; ArrangeToggle();
+			RegressionAssert.Equal(180d, ((RotateTransform)glyph.RenderTransform).Angle);
+			toggle.IsChecked = true; ArrangeToggle();
+			RegressionAssert.Equal(0d, ((RotateTransform)glyph.RenderTransform).Angle);
+		}
+		finally { ReduxWindowBehavior.ConfigureAccessibility(reduceMotion, ReduxWindowBehavior.BackgroundEffectsDisabled); }
+
+		foreach (var pane in panes)
+		{
+			var gestures = pane.InputBindings.OfType<KeyBinding>()
+				.Select(binding => binding.Gesture)
+				.OfType<KeyGesture>()
+				.Select(gesture => (gesture.Key, gesture.Modifiers))
+				.ToHashSet();
+			RegressionAssert.True(gestures.Contains((Key.A, ModifierKeys.Control)));
+			RegressionAssert.True(gestures.Contains((Key.D, ModifierKeys.Control)));
+		}
 	}
 
 	public void DrawerRetainsASelectedModDuringCrossListTransferOnly()
@@ -372,6 +482,49 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.False(dividers.Single(divider => divider.Id == "inactive").IsGlobal);
 	}
 
+	public void SeparatorUpgradeTracksOrdersAndPreservesNewSeparators()
+	{
+		var first = new DivinityLoadOrder { Name = "First", FilePath = @"C:\Orders\first.json",
+			VisualDividers = [new() { Id = "first", IsActiveList = true, Position = 3, MemberModUuids = ["mod-a"] }] };
+		var second = new DivinityLoadOrder { Name = "Second", FilePath = @"C:\Orders\second.json",
+			VisualDividers = [new() { Id = "second", IsActiveList = true, IsGlobal = true }] };
+		var empty = new DivinityLoadOrder { Name = "New user", VisualDividers = [] };
+		var pending = PersistentSeparatorUpgradePolicy.SnapshotExistingOrders([first, second, empty], first, first.VisualDividers);
+		RegressionAssert.Equal(2, pending.Count);
+		first.VisualDividers.Add(new() { Id = "created-after-update", IsActiveList = true });
+		var eligible = PersistentSeparatorUpgradePolicy.EligibleSeparators(first.VisualDividers, pending[PersistentSeparatorUpgradePolicy.OrderKey(first)]);
+		RegressionAssert.Equal(1, eligible.Count);
+		RegressionAssert.Equal(1, PersistentSeparatorUpgradePolicy.MakeAllActiveSeparatorsPersistent(eligible));
+		RegressionAssert.Equal(1, PersistentSeparatorUpgradePolicy.DisableExistingLines(eligible));
+		RegressionAssert.Equal(3, eligible[0].Position);
+		RegressionAssert.SequenceEqual(new[] { "mod-a" }, eligible[0].MemberModUuids);
+		RegressionAssert.False(first.VisualDividers[1].IsGlobal);
+		RegressionAssert.False(first.VisualDividers[1].HideLine);
+		pending.Remove(PersistentSeparatorUpgradePolicy.OrderKey(first));
+		var settings = new DivinityModManagerSettings { PendingSeparatorUpgradeOrders = pending };
+		var restored = Newtonsoft.Json.JsonConvert.DeserializeObject<DivinityModManagerSettings>(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
+		RegressionAssert.False(restored!.PendingSeparatorUpgradeOrders.ContainsKey(PersistentSeparatorUpgradePolicy.OrderKey(first)));
+		RegressionAssert.True(restored.PendingSeparatorUpgradeOrders.ContainsKey(PersistentSeparatorUpgradePolicy.OrderKey(second)));
+		// Startup copies only reactive properties into the existing settings object.
+		var runtimeSettings = new DivinityModManagerSettings();
+		runtimeSettings.SetFrom<DivinityModManagerSettings, ReactiveUI.Fody.Helpers.ReactiveAttribute>(restored);
+		RegressionAssert.True(runtimeSettings.PendingSeparatorUpgradeOrders != null);
+		RegressionAssert.False(runtimeSettings.PendingSeparatorUpgradeOrders!.ContainsKey(PersistentSeparatorUpgradePolicy.OrderKey(first)));
+		RegressionAssert.True(runtimeSettings.PendingSeparatorUpgradeOrders.ContainsKey(PersistentSeparatorUpgradePolicy.OrderKey(second)));
+		// An empty snapshot means every existing order has answered, not a fresh migration.
+		pending.Clear();
+		var serializer = new Newtonsoft.Json.JsonSerializerSettings { DefaultValueHandling = Newtonsoft.Json.DefaultValueHandling.IgnoreAndPopulate };
+		restored = Newtonsoft.Json.JsonConvert.DeserializeObject<DivinityModManagerSettings>(Newtonsoft.Json.JsonConvert.SerializeObject(settings, serializer), serializer)!;
+		runtimeSettings.SetFrom<DivinityModManagerSettings, ReactiveUI.Fody.Helpers.ReactiveAttribute>(restored);
+		RegressionAssert.True(runtimeSettings.PendingSeparatorUpgradeOrders != null);
+		RegressionAssert.Equal(0, runtimeSettings.PendingSeparatorUpgradeOrders!.Count);
+		// Already-persistent orders can still opt out of legacy lines.
+		RegressionAssert.True(PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(false, second.VisualDividers));
+		RegressionAssert.Equal(1, PersistentSeparatorUpgradePolicy.DisableExistingLines(second.VisualDividers));
+		RegressionAssert.False(PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(false, second.VisualDividers));
+		RegressionAssert.Equal(0, PersistentSeparatorUpgradePolicy.SnapshotExistingOrders([empty], empty, []).Count);
+	}
+
 	public void SavedCurrentStateRestoresIntoTheSingleCurrentEntry()
 	{
 		var current = new DivinityLoadOrder
@@ -394,6 +547,26 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.True(current.IsModSettings);
 		RegressionAssert.Equal(1, current.Order.Count);
 		RegressionAssert.Equal("saved-working-order", current.Order[0].UUID);
+	}
+
+	public void NewerGameOrderKeepsCurrentWorkspaceSeparators()
+	{
+		var current = new DivinityLoadOrder
+		{
+			Name = "Current",
+			IsModSettings = true,
+			Order = [new DivinityLoadOrderEntry { UUID = "newer-game-order" }]
+		};
+		var savedState = new DivinityLoadOrder
+		{
+			Order = [new DivinityLoadOrderEntry { UUID = "older-working-order" }],
+			VisualDividers = [new ModListVisualDividerData { Id = "current-separator", IsActiveList = true }]
+		};
+
+		RegressionAssert.True(LoadOrderPersistencePolicy.RestoreSavedCurrentState(current, savedState,
+			restoreOrder: false));
+		RegressionAssert.Equal("newer-game-order", current.Order.Single().UUID);
+		RegressionAssert.Equal("current-separator", current.VisualDividers.Single().Id);
 	}
 
 	public void DuplicateWandChoiceNormalizesToTheSingleVisibleIcon()
@@ -452,6 +625,9 @@ public sealed class InteractionBehaviorTests
 			var separatorName = (TextBox)separator.FindName("CategoryNameTextBox");
 			var categoryName = (TextBox)category.FindName("CategoryNameTextBox");
 			RegressionAssert.Equal(0, separatorName.MaxLength);
+			RegressionAssert.True(separator.HideSeparatorLine);
+			((CheckBox)separator.FindName("ShowSeparatorLineCheckBox")).IsChecked = true;
+			RegressionAssert.False(separator.HideSeparatorLine);
 			RegressionAssert.Equal(40, categoryName.MaxLength);
 		}
 		finally

@@ -119,7 +119,8 @@ public sealed class ModHealthSnapshot
 		NonExtenderAttentionFindings = AttentionFindings
 			.Where(finding => finding.Code is not (
 				ModHealthFindingCode.ScriptExtenderUnavailable or
-				ModHealthFindingCode.ScriptExtenderVersionMismatch))
+				ModHealthFindingCode.ScriptExtenderVersionMismatch or
+				ModHealthFindingCode.SourceUpdateAvailable))
 			.ToArray();
 		HealthAttentionFindings = Findings
 			.Where(finding =>

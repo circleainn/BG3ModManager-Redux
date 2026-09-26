@@ -1,5 +1,6 @@
 ﻿using DivinityModManager.Models;
 using DivinityModManager.ModUpdater.Cache;
+using DivinityModManager.Models.Cache;
 using DivinityModManager.Models.NexusMods;
 using DivinityModManager.Util;
 
@@ -69,18 +70,23 @@ public class ModUpdateHandler : ReactiveObject
 		if (Nexus.IsEnabled)
 		{
 			var data = await Nexus.LoadCacheAsync(currentAppVersion, cts);
-			foreach (var entry in data.Mods)
+			if (data != null)
 			{
-				if (Nexus.CacheData.Mods.TryGetValue(entry.Key, out var existing))
+				Nexus.CacheData.VerifiedFileUpdates = data.VerifiedFileUpdates
+					?? new Dictionary<string, NexusVerifiedFileUpdate>(StringComparer.OrdinalIgnoreCase);
+				foreach (var entry in data.Mods)
 				{
-					if (existing.UpdatedTimestamp < entry.Value.UpdatedTimestamp || !existing.IsUpdated)
+					if (Nexus.CacheData.Mods.TryGetValue(entry.Key, out var existing))
+					{
+						if (existing.UpdatedTimestamp < entry.Value.UpdatedTimestamp || !existing.IsUpdated)
+						{
+							Nexus.CacheData.Mods[entry.Key] = entry.Value;
+						}
+					}
+					else
 					{
 						Nexus.CacheData.Mods[entry.Key] = entry.Value;
 					}
-				}
-				else
-				{
-					Nexus.CacheData.Mods[entry.Key] = entry.Value;
 				}
 			}
 		}

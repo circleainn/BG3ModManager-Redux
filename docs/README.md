@@ -37,6 +37,7 @@ detail.
 | Guide | What it covers |
 |:--|:--|
 | [Contributing](CONTRIBUTING.md) | Build, test, documentation, and pull-request expectations |
+| [Interface principles and workflow review](UI_DESIGN.md) | Shared UI rules, local findings, and end-to-end usability checks |
 | [Architecture](ARCHITECTURE.md) | Major components, ownership boundaries, and safe write patterns |
 | [Release process and update recovery](PUBLIC_ALPHA_RELEASES.md) | Versioning, packaging, publishing, verification, and recovery |
 | [Security policy](SECURITY.md) | Supported versions, reporting, and security boundaries |

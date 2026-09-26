@@ -15,7 +15,7 @@ public sealed class ModDiagnosticFindingGroupViewModel
 	public string Title { get; }
 	public string Message { get; }
 	public IReadOnlyList<ModDiagnosticAffectedModViewModel> AffectedMods { get; }
-	public ModHealthSnapshot PrimarySnapshot => AffectedMods[0].Snapshot;
+	public ModHealthSnapshot PrimarySnapshot => AffectedMods.First(item => item.IsListed).Snapshot;
 	public int AffectedCount => AffectedMods.Count;
 	public string AffectedCountText => $"{AffectedCount} mod{(AffectedCount == 1 ? String.Empty : "s")}";
 	public bool HasMultipleAffectedMods => AffectedCount > 1;
@@ -40,19 +40,35 @@ public sealed class ModDiagnosticFindingGroupViewModel
 		ModHealthFinding finding,
 		IEnumerable<ModHealthSnapshot> affectedSnapshots,
 		IEnumerable<DivinityModData> installedMods,
-		bool sourceIntegrationsEnabled)
+		bool sourceIntegrationsEnabled,
+		IEnumerable<DivinityModData> excludedDuplicateMods = null)
 	{
 		if (finding == null) throw new ArgumentNullException(nameof(finding));
 
 		Code = finding.Code;
 		Severity = finding.Severity;
 		Title = finding.Title;
-		Message = finding.Message;
-		AffectedMods = (affectedSnapshots ?? Enumerable.Empty<ModHealthSnapshot>())
+		Message = finding.Code == ModHealthFindingCode.DuplicateUuid
+			? "These packages declare the same UUID. Review their filenames and sources, then keep only the version you intend to use. Redux has not changed either file."
+			: finding.Message;
+		var listed = (affectedSnapshots ?? Enumerable.Empty<ModHealthSnapshot>())
 			.Where(snapshot => snapshot?.Mod != null)
 			.Distinct()
-			.Select(snapshot => new ModDiagnosticAffectedModViewModel(snapshot))
-			.OrderBy(item => item.Mod.Index)
+			.Select(snapshot => new ModDiagnosticAffectedModViewModel(
+				snapshot, true, finding.Code == ModHealthFindingCode.DuplicateUuid));
+		var excluded = finding.Code == ModHealthFindingCode.DuplicateUuid
+			? (excludedDuplicateMods ?? Enumerable.Empty<DivinityModData>())
+				.Where(mod => mod != null && String.Equals(mod.UUID,
+					finding.RelatedModUuids.FirstOrDefault(), StringComparison.OrdinalIgnoreCase))
+				.Select(mod => new ModDiagnosticAffectedModViewModel(
+					new ModHealthSnapshot(mod, new[] { finding }), false, true))
+			: Enumerable.Empty<ModDiagnosticAffectedModViewModel>();
+		AffectedMods = listed.Concat(excluded)
+			.DistinctBy(item => String.IsNullOrWhiteSpace(item.Mod.FilePath)
+				? $"missing:{item.Mod.UUID}:{item.Mod.DisplayName}"
+				: item.Mod.FilePath, StringComparer.OrdinalIgnoreCase)
+			.OrderByDescending(item => item.IsListed)
+			.ThenBy(item => item.Mod.Index)
 			.ThenBy(item => item.Mod.DisplayName, StringComparer.CurrentCultureIgnoreCase)
 			.ToArray();
 
@@ -91,7 +107,7 @@ public sealed class ModDiagnosticFindingGroupViewModel
 				or ModHealthFindingCode.DependencyLoadsLater
 				or ModHealthFindingCode.RecommendedPredecessorLoadsLater;
 		CanOpenAffectedModSource = sourceIntegrationsEnabled
-			&& Code == ModHealthFindingCode.MissingDependency
+			&& Code is (ModHealthFindingCode.MissingDependency or ModHealthFindingCode.SourceUpdateAvailable)
 			&& AffectedMods.Count == 1
 			&& !String.IsNullOrWhiteSpace(PrimarySnapshot.Mod.Metadata?.SourcePageUrl);
 	}
@@ -112,9 +128,19 @@ public sealed class ModDiagnosticAffectedModViewModel
 {
 	public ModHealthSnapshot Snapshot { get; }
 	public DivinityModData Mod => Snapshot.Mod;
+	public bool IsListed { get; }
+	public bool ShowFileName { get; }
+	public string FileName => String.IsNullOrWhiteSpace(Mod.FilePath)
+		? Mod.FileName
+		: Path.GetFileName(Mod.FilePath);
+	public bool IsSourceUpdate => Snapshot.Findings.Any(finding => finding.Code == ModHealthFindingCode.SourceUpdateAvailable);
+	public string ActionDescription => IsSourceUpdate ? "Open the mod page to download the newer file"
+		: IsListed ? "Show in mod list" : "Show package in File Explorer";
 
-	public ModDiagnosticAffectedModViewModel(ModHealthSnapshot snapshot)
+	public ModDiagnosticAffectedModViewModel(ModHealthSnapshot snapshot, bool isListed = true, bool showFileName = false)
 	{
 		Snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
+		IsListed = isListed;
+		ShowFileName = showFileName;
 	}
 }

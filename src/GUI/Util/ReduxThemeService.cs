@@ -349,6 +349,8 @@ public static class ReduxThemeService
 		// Pill gradients contain alpha-bearing color stops, so WPF cannot express them as
 		// simple DynamicResource color references. Regenerate every semantic variant when
 		// the palette changes; otherwise custom themes inherit the base theme's pill colors.
+		// Keep separator colors user-defined while honoring the theme's gradient preference.
+		SetBrushResource(resources, "Redux.Separator.WashMask", CreateSeparatorWashMask(useGeneratedGradients));
 		SetBrushResource(resources, "ReduxAccentPillBackground", CreatePillGradient(palette["ReduxAccentColor"]));
 		SetBrushResource(resources, "ReduxSelectionPillBackground", CreateSelectionPillGradient(palette["ReduxSelectionColor"]));
 		SetBrushResource(resources, "ReduxSuccessPillBackground", CreatePillGradient(palette["ReduxSuccessColor"]));
@@ -377,6 +379,17 @@ public static class ReduxThemeService
 					? BestForeground(ScaleBrightness(palette["ReduxErrorColor"], 0.72))
 					: System.Windows.Media.Colors.White
 				: BestForeground(palette["ReduxErrorColor"]));
+	}
+
+	private static Brush CreateSeparatorWashMask(bool useGeneratedGradients)
+	{
+		if (!useGeneratedGradients) return CreateSolidBrush(System.Windows.Media.Colors.White);
+		var brush = new LinearGradientBrush { StartPoint = new Point(0, 0), EndPoint = new Point(1, 0) };
+		brush.GradientStops.Add(new GradientStop(System.Windows.Media.Colors.White, 0));
+		brush.GradientStops.Add(new GradientStop(Color.FromArgb(0x66, 255, 255, 255), 0.35));
+		brush.GradientStops.Add(new GradientStop(Color.FromArgb(0x38, 255, 255, 255), 1));
+		brush.Freeze();
+		return brush;
 	}
 
 	private static SolidColorBrush CreateSolidBrush(Color color)

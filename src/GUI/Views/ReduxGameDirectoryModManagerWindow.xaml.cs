@@ -19,6 +19,7 @@ public sealed record ReduxGameDirectoryModListItem(
 	string DetailsText,
 	string ThumbnailUrl)
 {
+	public bool IsYanml { get; init; }
 	public string Name { get; init; } = Entry.Name;
 	public ReduxGameDirectoryModStatus Status => Entry.Status;
 	public string StatusText => IsExternalReplacement ? "Backup unavailable" : Status switch
@@ -52,13 +53,14 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 	private const long ScriptExtenderNexusModId = 2172;
 	private readonly MainWindowViewModel _viewModel;
 	private readonly ReduxGameDirectoryInstallService _installer;
+	private ReduxGameDirectoryInstallService _yanmlInstaller;
 	private readonly Dictionary<long, NexusModsModData> _sourceDetails = new();
 	private readonly CancellationTokenSource _sourceDetailsCancellation = new();
 
 	public ReduxGameDirectoryModManagerWindow()
 	{
 		InitializeComponent();
-		ReduxExternalDropFeedback.Attach(this, paths => paths.Length == 1, "Drop to install a root mod", "Redux.Icon.GameController", "Redux will review the archive before installing.");
+		ReduxExternalDropFeedback.Attach(this, paths => paths.Length == 1, "Drop to review a native archive", "Redux.Icon.GameController", "Redux will review the archive and its destination before installing.");
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
 		ReduxWindowBehavior.AttachRoundedCorners(this);
 	}
@@ -93,7 +95,8 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 	public static async Task<bool> ReviewAndInstallAsync(
 		Window owner,
 		MainWindowViewModel viewModel,
-		string archivePath)
+		string archivePath,
+		bool preferYanml = false)
 	{
 		ReduxGameDirectoryArchiveInspection inspection;
 		try
@@ -118,7 +121,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		ReduxGameDirectoryInstallTransaction transaction;
 		try
 		{
-			installer = CreateInstaller(viewModel);
+			installer = CreateInstallerForArchive(viewModel, inspection.Definition, preferYanml);
 			transaction = await installer.StageAsync(inspection.Definition.NexusModId, archivePath);
 		}
 		catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
@@ -139,12 +142,14 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 			{
 				var relative = file.DestinationPath.StartsWith("bin/", StringComparison.OrdinalIgnoreCase)
 					? file.DestinationPath[4..] : file.DestinationPath;
-				var destination = Path.Combine(installer.GameBin, relative.Replace('/', Path.DirectorySeparatorChar));
+				var destination = installer.GetManagedFilePath(file.DestinationPath);
 				var preserve = file.PreserveExisting && File.Exists(destination);
 				var replacesExisting = inspection.Definition.ReplacesExistingGameFiles && File.Exists(destination) && !preserve;
 				return new ReduxInstallReviewItem(
 					Path.GetFileName(file.DestinationPath),
-					$"Destination: BG3\\bin\\{relative.Replace('/', '\\')}",
+					installer.NativePluginDestination == ReduxNativePluginDestination.YanmlPlugins
+						? $"Destination: YANML Plugins\\{relative[("NativeMods/".Length)..].Replace('/', '\\')}"
+						: $"Destination: BG3\\bin\\{relative.Replace('/', '\\')}",
 					preserve ? "Keep existing settings" : replacesExisting ? "Replace file · protect original" : isRepair ? "Repair managed file" : isUpdate ? "Update managed file" : "Install managed file",
 					isRepair ? ReduxInstallReviewTone.Warning : preserve || replacesExisting ? ReduxInstallReviewTone.Info
 						: isUpdate ? ReduxInstallReviewTone.Success : ReduxInstallReviewTone.Info);
@@ -154,11 +159,30 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 				"Companion PAK · installs through Redux's normal Mods-folder workflow",
 				"Install as inactive mod",
 				ReduxInstallReviewTone.Info)));
+			if (inspection.Definition.Kind == ReduxGameDirectoryModKind.NativeLoader
+				&& ReduxAlternativeNativeLoader.HasYanmlConfiguration(
+					Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)))
+				reviewItems.Add(new ReduxInstallReviewItem("Loader conflict",
+				"A YANML configuration exists on this PC. YANML's author advises against running it alongside Native Mod Loader.",
+				"Verify that YANML is fully uninstalled before continuing", ReduxInstallReviewTone.Warning));
+			if (installer.NativePluginDestination == ReduxNativePluginDestination.YanmlPlugins
+				&& CreateInstaller(viewModel).DetectLoader().IsPresent)
+				reviewItems.Add(new ReduxInstallReviewItem("Loader conflict",
+				"Native Mod Loader is also present in the game folder. YANML's author advises against running both loaders.",
+				"Remove or disable one loader before launching BG3", ReduxInstallReviewTone.Warning));
+			if (installer.NativePluginDestination == ReduxNativePluginDestination.YanmlPlugins
+				&& inspection.ManagedFiles.Any(file => file.DestinationPath.EndsWith(".toml", StringComparison.OrdinalIgnoreCase)
+					|| file.DestinationPath.EndsWith(".ini", StringComparison.OrdinalIgnoreCase)))
+				reviewItems.Add(new ReduxInstallReviewItem("Plugin settings",
+				"Some plugins still read settings from BG3\\bin\\NativeMods even when YANML loads their DLL from the local Plugins folder.",
+				"Check the plugin's settings path if it loads but ignores configuration", ReduxInstallReviewTone.Info));
 
 			var summary = $"{(isRepair ? "Managed repair" : isUpdate ? "Managed update" : "New managed install")} · {inspection.Definition.Name} · {inspection.LayoutName} · {inspection.FileCount} files · "
 				+ $"{FormatBytes(inspection.ExpandedBytes)} expanded";
 			var dialog = new ReduxInstallReviewWindow(owner, reviewItems,
-				ReduxInstallReviewKind.GameDirectory, installer.GameBin, summary);
+				ReduxInstallReviewKind.GameDirectory,
+				installer.NativePluginDestination == ReduxNativePluginDestination.YanmlPlugins
+					? installer.NativePluginDirectory : installer.GameBin, summary);
 			if (dialog.ShowDialog() != true && !dialog.Accepted) return false;
 
 			try
@@ -180,7 +204,8 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		}
 	}
 
-	private static ReduxGameDirectoryInstallService CreateInstaller(MainWindowViewModel viewModel)
+	private static ReduxGameDirectoryInstallService CreateInstaller(MainWindowViewModel viewModel,
+		ReduxNativePluginDestination destination = ReduxNativePluginDestination.GameBin)
 	{
 		var executable = Environment.ExpandEnvironmentVariables(viewModel.Settings.GameExecutablePath);
 		if (!File.Exists(executable))
@@ -191,23 +216,54 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		return new ReduxGameDirectoryInstallService(
 			Path.GetDirectoryName(Path.GetFullPath(executable))!,
 			DivinityApp.GetAppDirectory("Data", "GameDirectoryInstalls"),
-			version);
+			version, destination);
+	}
+
+	private static ReduxGameDirectoryInstallService CreateInstallerForArchive(MainWindowViewModel viewModel,
+		ReduxGameDirectoryModDefinition definition, bool preferYanml = false)
+	{
+		var gameInstaller = CreateInstaller(viewModel);
+		if (definition.Kind != ReduxGameDirectoryModKind.NativePlugin) return gameInstaller;
+		var configured = ReduxAlternativeNativeLoader.HasYanmlConfiguration(
+			Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+		if (preferYanml && !configured)
+			throw new InvalidOperationException("Configure YANML and start it once before installing native plugins to its Plugins folder.");
+		if (configured && (preferYanml || !gameInstaller.DetectLoader().IsPresent))
+			return CreateInstaller(viewModel, ReduxNativePluginDestination.YanmlPlugins);
+		return gameInstaller;
 	}
 
 	private void RefreshList()
 	{
+		UpdateAlternativeLoaderNotice();
 		_viewModel.RefreshScriptExtenderMissingStatus();
 		try
 		{
-			var entries = _installer.GetInstalledMods().Select(CreateListItem).ToArray();
+			var entries = _installer.GetInstalledMods().Select(entry => CreateListItem(entry, false)).ToList();
+			if (ReduxAlternativeNativeLoader.HasYanmlConfiguration(
+				Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData))
+				|| ReduxGameDirectoryInstallService.HasYanmlOwnershipRecord(_installer.GameBin,
+					DivinityApp.GetAppDirectory("Data", "GameDirectoryInstalls")))
+			{
+				try
+				{
+					_yanmlInstaller ??= CreateInstaller(_viewModel, ReduxNativePluginDestination.YanmlPlugins);
+					entries.AddRange(_yanmlInstaller.GetInstalledMods().Select(entry => CreateListItem(entry, true)));
+				}
+				catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException)
+				{
+					InstallYanmlButton.IsEnabled = false;
+					NativeWarningText.Text = $"Redux cannot safely manage this YANML Plugins folder: {ex.Message}";
+				}
+			}
 			var scriptExtender = entries.FirstOrDefault(item => item.Entry.NexusModId == ScriptExtenderNexusModId);
 			UpdateScriptExtenderAction(scriptExtender,
 				entries.Any(item => item.Status == ReduxGameDirectoryModStatus.RecoveryRequired));
 			InstalledList.ItemsSource = entries;
-			InstalledList.Visibility = entries.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
-			EmptyText.Visibility = entries.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+			InstalledList.Visibility = entries.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+			EmptyText.Visibility = entries.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 		}
-		catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
+		catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException)
 		{
 			InstalledList.ItemsSource = null;
 			InstalledList.Visibility = Visibility.Collapsed;
@@ -216,7 +272,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		}
 	}
 
-	private ReduxGameDirectoryModListItem CreateListItem(ReduxGameDirectoryModEntry entry)
+	private ReduxGameDirectoryModListItem CreateListItem(ReduxGameDirectoryModEntry entry, bool isYanml)
 	{
 		var definition = ReduxGameDirectoryModCatalog.Find(entry.NexusModId);
 		var metadata = ResolveSourceDetails(entry.NexusModId);
@@ -240,6 +296,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 			? entry.DetectedVersion : metadata?.Version;
 		var details = String.Join(" · ", new[]
 		{
+			isYanml ? "YANML Plugins" : "BG3 game folder",
 			kind,
 			String.IsNullOrWhiteSpace(sourceUrl) ? null : "Nexus Mods",
 			String.IsNullOrWhiteSpace(creator) ? null : $"by {creator}",
@@ -252,6 +309,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		return new ReduxGameDirectoryModListItem(entry, files, sourceUrl, summary, details,
 			metadata?.PreviewImageUrl ?? String.Empty)
 		{
+			IsYanml = isYanml,
 			Name = !String.IsNullOrWhiteSpace(metadata?.Name) ? metadata.Name.Trim() : entry.Name
 		};
 	}
@@ -270,8 +328,8 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 	{
 		if (!_viewModel.Modules.SourceIntegrationsEnabled || !_viewModel.UpdateHandler.Nexus.IsEnabled
 			|| !NexusModsDataLoader.CanFetchData) return;
-		var projectIds = _installer.GetInstalledMods()
-			.Select(entry => entry.NexusModId)
+		var projectIds = (_installer.GetInstalledMods().Select(entry => entry.NexusModId)
+			.Concat(_yanmlInstaller?.GetInstalledMods().Select(entry => entry.NexusModId) ?? []))
 			.Where(id => id >= DivinityApp.NEXUSMODS_MOD_ID_START && ResolveSourceDetails(id) == null)
 			.Distinct().ToArray();
 		if (projectIds.Length == 0) return;
@@ -289,7 +347,11 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		if (_sourceDetails.Count > 0) RefreshList();
 	}
 
-	private async void InstallButton_Click(object sender, RoutedEventArgs e)
+	private async void InstallButton_Click(object sender, RoutedEventArgs e) => await PickAndInstallAsync(false);
+
+	private async void InstallYanmlButton_Click(object sender, RoutedEventArgs e) => await PickAndInstallAsync(true);
+
+	private async Task PickAndInstallAsync(bool preferYanml)
 	{
 		var dialog = new OpenFileDialog
 		{
@@ -300,7 +362,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		};
 		if (dialog.ShowDialog(this) != true) return;
 		await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
-		if (await ReviewAndInstallAsync(this, _viewModel, dialog.FileName)) RefreshList();
+		if (await ReviewAndInstallAsync(this, _viewModel, dialog.FileName, preferYanml)) RefreshList();
 	}
 
 	public static async Task InstallReviewedArchiveWithoutReviewAsync(
@@ -310,7 +372,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 	{
 		var inspection = await Task.Run(() => ReduxGameDirectoryInstallService.TryInspectKnownArchive(archivePath))
 			?? throw new InvalidDataException("This archive no longer matches a reviewed game-directory package.");
-		var installer = CreateInstaller(viewModel);
+		var installer = CreateInstallerForArchive(viewModel, inspection.Definition);
 		await using var transaction = await installer.StageAsync(inspection.Definition.NexusModId, archivePath);
 		await transaction.CommitAsync();
 		if (inspection.PackageEntries.Count > 0
@@ -323,9 +385,14 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		long nexusModId,
 		string archivePath)
 	{
-		var installer = CreateInstaller(viewModel);
+		var definition = ReduxGameDirectoryModCatalog.Find(nexusModId)
+			?? throw new InvalidDataException("This native project is not in Redux's reviewed catalog.");
+		var installer = CreateInstallerForArchive(viewModel, definition);
 		await installer.InspectArchiveAsync(nexusModId, archivePath);
-		return installer.DetectLoader();
+		var loaderStatus = installer.DetectLoader();
+		if (loaderStatus.IsAlternativeLoader && !loaderStatus.IsPresent)
+			throw new InvalidOperationException(loaderStatus.Description);
+		return loaderStatus;
 	}
 
 	private async void ScriptExtenderButton_Click(object sender, RoutedEventArgs e)
@@ -475,7 +542,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		if (answer != MessageBoxResult.Yes) return;
 		try
 		{
-			await _installer.RestoreAsync(item.Entry.NexusModId);
+			await (item.IsYanml ? _yanmlInstaller : _installer).RestoreAsync(item.Entry.NexusModId);
 			_viewModel.ShowAlert($"Removed {item.Name} and restored any files it replaced.", AlertType.Success, 20);
 			RefreshList();
 		}
@@ -491,7 +558,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		if (sender is not FrameworkElement { DataContext: ReduxGameDirectoryModListItem item } || !item.CanAdopt) return;
 		try
 		{
-			await _installer.AdoptExternalAsync(item.Entry.NexusModId);
+			await (item.IsYanml ? _yanmlInstaller : _installer).AdoptExternalAsync(item.Entry.NexusModId);
 			_viewModel.ShowAlert($"Redux now manages {item.Name}.", AlertType.Success, 20);
 			RefreshList();
 		}
@@ -510,6 +577,25 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 
 	private void OpenGameFolderButton_Click(object sender, RoutedEventArgs e) =>
 		ProcessHelper.TryOpenPath(_installer.GameBin, Directory.Exists);
+
+	private void OpenYanmlPluginsButton_Click(object sender, RoutedEventArgs e) =>
+		ProcessHelper.TryOpenPath(ReduxAlternativeNativeLoader.CurrentPluginsDirectory, Directory.Exists);
+
+	private void UpdateAlternativeLoaderNotice()
+	{
+		var configured = ReduxAlternativeNativeLoader.HasYanmlConfiguration(
+			Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+		var ownsYanmlPlugins = ReduxGameDirectoryInstallService.HasYanmlOwnershipRecord(_installer.GameBin,
+			DivinityApp.GetAppDirectory("Data", "GameDirectoryInstalls"));
+		OpenYanmlPluginsButton.Visibility = configured || ownsYanmlPlugins ? Visibility.Visible : Visibility.Collapsed;
+		InstallYanmlButton.Visibility = configured ? Visibility.Visible : Visibility.Collapsed;
+		InstallYanmlButton.IsEnabled = configured;
+		NativeWarningText.Text = configured
+			? "Native DLLs run code inside the game. YANML uses the local Plugins folder; Redux can now install reviewed plugins there. YANML itself must be started or installed separately. Some plugins still read settings from BG3\\bin\\NativeMods."
+			: ownsYanmlPlugins
+				? "YANML's configuration is missing. Redux can still show its previous plugin ownership, but new installs are blocked until YANML is configured again."
+				: "Native DLLs run code inside the game. Install only from sources you trust.";
+	}
 
 	private void RefreshButton_Click(object sender, RoutedEventArgs e) => RefreshList();
 

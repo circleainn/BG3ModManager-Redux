@@ -63,8 +63,25 @@ public class ModListDragHandler : DefaultDragHandler
 
 	private IDisposable _stopDraggingFallbackTask;
 	public bool IsDraggingVisualDivider { get; private set; }
-	public bool CanDropOnPane(bool active) => !IsDraggingVisualDivider ||
-		VisualDividerDragPolicy.CanDropOnPane((_lastDragInfo?.Data as IEnumerable<DivinityModData>) ?? [], active);
+	public bool CanDropOnPane(bool active)
+	{
+		var items = (_lastDragInfo?.Data as IEnumerable<DivinityModData>)?.ToArray() ?? [];
+		if (active && (_viewModel.IsOverrideVisualModCollection(_lastDragInfo?.SourceCollection) ||
+			items.Any(mod => mod.IsForceLoaded))) return false;
+		if (!active && _viewModel.IsOverrideVisualModCollection(_lastDragInfo?.SourceCollection))
+			return items.Length > 0 && items.All(mod => mod.IsForceLoaded &&
+				!mod.IsForceLoadedMergedMod && !mod.IsVisualDivider);
+		return !IsDraggingVisualDivider || VisualDividerDragPolicy.CanDropOnPane(items, active);
+	}
+
+	public bool CanDropOnOverridePane()
+	{
+		if (_viewModel.IsOverrideVisualModCollection(_lastDragInfo?.SourceCollection)) return true;
+		if (!_viewModel.IsInactiveVisualModCollection(_lastDragInfo?.SourceCollection)) return false;
+		var items = (_lastDragInfo?.Data as IEnumerable<DivinityModData>)?.ToArray() ?? [];
+		return items.Length > 0 && items.All(mod => mod.IsForceLoaded &&
+			!mod.IsForceLoadedMergedMod && !mod.IsVisualDivider);
+	}
 
 	private void StopDragTracking()
 	{
@@ -114,7 +131,7 @@ public class ModListDragHandler : DefaultDragHandler
 			if (sourceItem == null && originalData is IEnumerable<DivinityModData> originalItems)
 				sourceItem = originalItems.FirstOrDefault();
 			dragInfo.Data = null;
-			if (dragInfo.SourceCollection == _viewModel.DisplayActiveMods)
+			if (_viewModel.IsActiveVisualModCollection(dragInfo.SourceCollection))
 			{
 				var selected = VisualDividerDragPolicy.ResolveDragItems(
 					_viewModel.DisplayActiveMods,
@@ -122,7 +139,7 @@ public class ModListDragHandler : DefaultDragHandler
 					x => x.Visibility == Visibility.Visible && x.CanDrag);
 				dragInfo.Data = selected.Count > 0 ? selected : null;
 			}
-			else if (dragInfo.SourceCollection == _viewModel.DisplayInactiveMods)
+			else if (_viewModel.IsInactiveVisualModCollection(dragInfo.SourceCollection))
 			{
 				var selected = VisualDividerDragPolicy.ResolveDragItems(
 					_viewModel.DisplayInactiveMods,
@@ -130,7 +147,7 @@ public class ModListDragHandler : DefaultDragHandler
 					x => x.Visibility == Visibility.Visible && x.CanDrag);
 				dragInfo.Data = selected.Count > 0 ? selected : null;
 			}
-			else if (dragInfo.SourceCollection == _viewModel.DisplayOverrideMods)
+			else if (_viewModel.IsOverrideVisualModCollection(dragInfo.SourceCollection))
 			{
 				// Pure override packages deliberately have CanDrag=false because they
 				// cannot enter the normal active/inactive load order. That restriction
@@ -175,7 +192,7 @@ public class ModListDragHandler : DefaultDragHandler
 			return false;
 		}
 		if (_viewModel.IsActiveListMetadataSorted &&
-			(ReferenceEquals(dragInfo.SourceCollection, _viewModel.DisplayActiveMods) ||
+			(_viewModel.IsActiveVisualModCollection(dragInfo.SourceCollection) ||
 			 ReferenceEquals(dragInfo.SourceCollection, _viewModel.ActiveMods)))
 		{
 			// A row index in a sorted ICollectionView is not a real load-order index.
@@ -183,15 +200,13 @@ public class ModListDragHandler : DefaultDragHandler
 			return false;
 		}
 		if (_viewModel.IsOverrideListMetadataSorted &&
-			ReferenceEquals(dragInfo.SourceCollection, _viewModel.DisplayOverrideMods))
+			_viewModel.IsOverrideVisualModCollection(dragInfo.SourceCollection))
 			return false;
 		// A sorted or filtered inactive projection is still a safe source when the
 		// destination is Active Mods: the payload is resolved by mod identity, not by
 		// its display index. ModListDropHandler continues to reject reordering inside
 		// that projected inactive view.
-		var reorderingOverrideMods = ReferenceEquals(
-			dragInfo.SourceCollection,
-			_viewModel.DisplayOverrideMods);
+		var reorderingOverrideMods = _viewModel.IsOverrideVisualModCollection(dragInfo.SourceCollection);
 		if (dragInfo.Data is DivinityModData draggedMod &&
 			!VisualDividerDragPolicy.CanStartDrag(draggedMod, reorderingOverrideMods))
 		{

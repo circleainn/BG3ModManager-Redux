@@ -1088,7 +1088,7 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private void ToolbarModDiagnosticsStatusButton_Click(object sender, RoutedEventArgs e)
 	{
-		if (!ViewModel.Modules.ModDiagnosticsEnabled || !ViewModel.HasActiveDiagnosticAttention)
+		if (!ViewModel.Modules.ModDiagnosticsEnabled)
 			return;
 
 		if (sender is Button button)
@@ -1100,6 +1100,12 @@ public partial class MainViewControl : MainViewControlViewBase
 		e.Handled = true;
 	}
 
+	private void ToolbarCheckModUpdates_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is Button button)
+			button.FindVisualParent<ContextMenu>()?.SetCurrentValue(ContextMenu.IsOpenProperty, false);
+	}
+
 	private async void ToolbarModDiagnosticsStatusButton_MouseEnter(object sender, MouseEventArgs e)
 	{
 		if (sender is not Button button)
@@ -1109,16 +1115,12 @@ public partial class MainViewControl : MainViewControlViewBase
 			return;
 
 		AnimateToolbarModDiagnosticsStatus(button, true);
-		if (!ViewModel.HasActiveDiagnosticAttention)
-			return;
-
 		var hoverVersion = ++_diagnosticStatusHoverVersion;
 		RestoreToolbarStatusMenuOpacity(button.ContextMenu);
 		await Task.Delay(160);
 		if (hoverVersion == _diagnosticStatusHoverVersion
 			&& button.IsMouseOver
-			&& ViewModel.Modules.ModDiagnosticsEnabled
-			&& ViewModel.HasActiveDiagnosticAttention)
+			&& ViewModel.Modules.ModDiagnosticsEnabled)
 		{
 			OpenToolbarModDiagnosticsMenu(button);
 		}
@@ -1132,7 +1134,7 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private void ToolbarModDiagnosticsStatusButton_ContextMenuOpening(object sender, ContextMenuEventArgs e)
 	{
-		if (!ViewModel.Modules.ModDiagnosticsEnabled || !ViewModel.HasActiveDiagnosticAttention)
+		if (!ViewModel.Modules.ModDiagnosticsEnabled)
 			e.Handled = true;
 	}
 
@@ -1426,9 +1428,10 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private static void AnimateToolbarModDiagnosticsStatus(Button button, bool expand)
 	{
-		// The menu-row variants intentionally remain icon-only. They reuse the same
-		// status popup lifecycle without changing the width of the application menu.
-		if (button.Name.StartsWith("CompactToolbar", StringComparison.Ordinal))
+		// The status remains icon-sized at every toolbar width. Its popup carries the
+		// complete label and actions, so hover cannot push neighboring groups offscreen.
+		if (button.Name.StartsWith("CompactToolbar", StringComparison.Ordinal)
+			|| button.Name == "ToolbarModDiagnosticsStatusButton")
 			return;
 
 		const double compactLabelOpacity = 0;
@@ -1521,10 +1524,37 @@ public partial class MainViewControl : MainViewControlViewBase
 
 	private void ToolbarDiagnosticAffectedMod_Click(object sender, RoutedEventArgs e)
 	{
-		if (sender is Button { CommandParameter: ModHealthSnapshot snapshot } button)
+		if (sender is Button { CommandParameter: ModDiagnosticAffectedModViewModel affected } button)
 		{
 			button.FindVisualParent<ContextMenu>()?.SetCurrentValue(ContextMenu.IsOpenProperty, false);
-			ModLayout.FocusDiagnosticSnapshot(snapshot);
+			if (affected.IsSourceUpdate)
+			{
+				DivinityApp.Commands.OpenModSourcePage(affected.Mod);
+			}
+			else if (affected.IsListed)
+			{
+				ModLayout.FocusDiagnosticSnapshot(affected.Snapshot);
+			}
+			else if (File.Exists(affected.Mod.FilePath))
+			{
+				try
+				{
+					var start = new System.Diagnostics.ProcessStartInfo("explorer.exe") { UseShellExecute = false };
+					start.ArgumentList.Add("/select,");
+					start.ArgumentList.Add(affected.Mod.FilePath);
+					System.Diagnostics.Process.Start(start);
+				}
+				catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or IOException)
+				{
+					ReduxMessageBox.Show(Window.GetWindow(this), ex.Message, "Could not show package",
+						MessageBoxButton.OK, MessageBoxImage.Warning);
+				}
+			}
+			else
+			{
+				ReduxMessageBox.Show(Window.GetWindow(this), "This package is no longer at its scanned location. Refresh the mod list to update diagnostics.",
+					"Package not found", MessageBoxButton.OK, MessageBoxImage.Information);
+			}
 		}
 
 		e.Handled = true;
@@ -1734,13 +1764,10 @@ public partial class MainViewControl : MainViewControlViewBase
 			.Subscribe(AnimateToolbarVisibility);
 		_modDiagnosticsStatusSubscription?.Dispose();
 		_modDiagnosticsStatusSubscription = ViewModel
-			.WhenAnyValue(
-				vm => vm.Modules.ModDiagnosticsEnabled,
-				vm => vm.HasActiveDiagnosticAttention,
-				(enabled, hasAttention) => enabled && hasAttention)
+			.WhenAnyValue(vm => vm.Modules.ModDiagnosticsEnabled)
 			.DistinctUntilChanged()
 			.ObserveOn(RxApp.MainThreadScheduler)
-			.Where(canShowAttention => !canShowAttention)
+			.Where(enabled => !enabled)
 			.Subscribe(_ => CloseToolbarModDiagnosticsMenu());
 
 		this.OneWayBind(ViewModel, vm => vm.UpdatesViewVisibility, view => view.ModUpdaterPanel.Visibility);

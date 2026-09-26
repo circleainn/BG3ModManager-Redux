@@ -1,4 +1,4 @@
-using DivinityModManager.Controls;
+﻿using DivinityModManager.Controls;
 using DivinityModManager.Converters;
 using DivinityModManager.Models;
 using DivinityModManager.Models.Health;
@@ -179,9 +179,25 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			}
 		}
 
+		private Action<bool> _pendingCompletion;
+		public void DeferCompletion(Action<bool> completion)
+		{
+			_pendingCompletion = completion;
+			Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background,
+				new Action(() => CompletePending(true)));
+		}
+		private bool CompletePending(bool completed)
+		{
+			var pending = _pendingCompletion;
+			_pendingCompletion = null;
+			if (pending == null) return false;
+			try { pending(completed); }
+			catch (Exception ex) { DivinityApp.Log($"Deferred separator completion failed: {ex}"); }
+			return true;
+		}
 		public void Complete()
 		{
-			if (_finished) return;
+			if (CompletePending(true) || _finished) return;
 			try
 			{
 				_update(1);
@@ -196,7 +212,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		public void Cancel()
 		{
-			if (_finished) return;
+			if (CompletePending(false) || _finished) return;
 			FinishCore(false);
 		}
 
@@ -313,7 +329,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		EnableCategoriesMenuItem.Items.Clear();
 		foreach (var category in ViewModel.GetAllModCategories())
 		{
-			var item = new MenuItem { Header = category, IsCheckable = true, IsChecked = ViewModel.IsModCategoryEnabled(category) };
+			var item = new MenuItem { Header = category, IsCheckable = true, IsChecked = ViewModel.IsModCategoryEnabled(category), Icon = CreateCategoryAssignmentIcon(category) };
+			ReduxMenuItemExtension.SetCheckOnRight(item, true);
 			item.Click += (_, _) => ViewModel.SetModCategoryEnabled(category, item.IsChecked);
 			EnableCategoriesMenuItem.Items.Add(item);
 		}
@@ -321,7 +338,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		DeleteCustomCategoryMenuItem.Items.Clear();
 		foreach (var category in ViewModel.Settings.CustomModCategories ?? Enumerable.Empty<string>())
 		{
-			var item = new MenuItem { Header = category };
+			var item = new MenuItem { Header = category, Icon = CreateCategoryAssignmentIcon(category) };
 			item.Click += (_, _) =>
 			{
 				var result = ShowCategoryMessage(
@@ -566,7 +583,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (listView == InactiveModsListView)
 			return ViewModel.IsInactiveListMetadataSorted || ViewModel.DragHandler?.CanDropOnPane(false) == false;
 		if (listView == ForceLoadedModsListView)
-			return ViewModel.IsOverrideListMetadataSorted || !String.IsNullOrWhiteSpace(OverrideModsFilterTextBox?.Text);
+			return ViewModel.IsOverrideListMetadataSorted || ViewModel.DragHandler?.CanDropOnOverridePane() == false;
 		return false;
 	}
 
@@ -659,7 +676,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		else if (e.Action == DragAction.Drop)
 		{
 			ViewModel.DragHandler?.CompleteDragTracking();
-			ScheduleClearModListDropIndicator(sender as ListView);
+			// The source receives this event even when the pointer is released over
+			// another pane. Clear whichever pane owns the indicator now.
+			ScheduleClearModListDropIndicator(null);
 		}
 	}
 
@@ -943,13 +962,13 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			var divider = ViewModel.GetVisualDivider(mod);
 			var addChild = new MenuItem
 			{
-				Header = "Add Child Separator...",
+				Header = "Add Sub-separator...",
 				Tag = VisualDividerMenuTag,
 				IsEnabled = divider != null && String.IsNullOrWhiteSpace(divider.ParentDividerId) &&
 					!mod.IsVisualDividerCollapsed,
 				ToolTip = mod.IsVisualDividerCollapsed
-					? "Expand this separator before adding a child."
-					: "Create an indented separator inside this parent.",
+					? "Expand this separator before adding a sub-separator."
+					: "Create a sub-separator inside this separator.",
 				Icon = ReduxIcon.FromResource("Redux.Icon.AddStroke", true)
 			};
 			addChild.Click += (_, _) => ShowAddVisualDividerDialog(
@@ -962,14 +981,14 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					? Visibility.Visible : Visibility.Collapsed,
 				IsEnabled = !mod.IsVisualDividerCollapsed,
 				ToolTip = mod.IsVisualDividerCollapsed
-					? "Expand this separator before changing its parent."
-					: "Promote this child to a top-level separator.",
+					? "Expand this separator before changing its nesting."
+					: "Make this sub-separator a standalone separator.",
 				Icon = ReduxIcon.FromResource("Redux.Icon.ChevronLeftStroke", true)
 			};
 			removeParent.Click += (_, _) => ViewModel.RemoveVisualDividerParent(mod);
 			var moveInto = new MenuItem
 			{
-				Header = "Move into Parent",
+				Header = "Make Sub-separator",
 				Tag = VisualDividerMenuTag,
 				Visibility = divider != null && String.IsNullOrWhiteSpace(divider.ParentDividerId)
 					? Visibility.Visible : Visibility.Collapsed,
@@ -990,8 +1009,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			{
 				moveInto.IsEnabled = false;
 				moveInto.ToolTip = mod.IsVisualDividerCollapsed
-					? "Expand this separator before changing its parent."
-					: "No eligible top-level separators are available in this pane.";
+					? "Expand this separator before changing its nesting."
+					: "No eligible separators are available in this pane.";
 			}
 			var remove = new MenuItem
 			{
@@ -1374,7 +1393,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			Header = "Collapse All Separators",
 			Tag = tag,
 			IsEnabled = overrideList ? ViewModel.CanSetAllOverrideVisualDividersCollapsed(true) : ViewModel.CanSetAllVisualDividersCollapsed(activeList, true),
-			Icon = ReduxIcon.FromResource("Redux.Icon.ChevronUpStroke", true)
+			Icon = ReduxIcon.FromResource("Redux.Icon.FoldSections", true)
 		};
 		collapseAll.Click += (_, _) => { if (overrideList) SetAllOverrideVisualDividersCollapsed(true); else SetAllVisualDividersCollapsed(activeList, true); };
 
@@ -1383,7 +1402,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			Header = "Expand All Separators",
 			Tag = tag,
 			IsEnabled = overrideList ? ViewModel.CanSetAllOverrideVisualDividersCollapsed(false) : ViewModel.CanSetAllVisualDividersCollapsed(activeList, false),
-			Icon = ReduxIcon.FromResource("Redux.Icon.ChevronDownStroke", true)
+			Icon = ReduxIcon.FromResource("Redux.Icon.UnfoldSections", true)
 		};
 		expandAll.Click += (_, _) => { if (overrideList) SetAllOverrideVisualDividersCollapsed(false); else SetAllVisualDividersCollapsed(activeList, false); };
 
@@ -1539,18 +1558,20 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			? null
 			: (overrideList ? ViewModel.Settings.OverrideVisualModListDividers : ViewModel.Settings.VisualModListDividers)?.FirstOrDefault(divider => String.Equals(
 				divider.Id, parentDividerId, StringComparison.OrdinalIgnoreCase));
-		var dialog = new CategoryNameDialog(color: parent?.Color ?? ViewModel.GetSuggestedCustomCategoryColor(),
+		var dialog = new CategoryNameDialog(color: parent?.Color ?? ViewModel.GetSuggestedSeparatorColor(),
 			savedColors: ViewModel.Settings.SavedCategoryColors, visualDividerMode: true,
 			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForInteractions,
 			allowGlobalSeparator: !overrideList && activeList && parent == null,
+			useCategoryColorsForSidebarText: ViewModel.Settings.UseCategoryColorsForSidebarText,
 			isGlobalSeparator: parent?.IsGlobal == true,
-			lockedGlobalSeparator: activeList && parent != null ? parent.IsGlobal : null)
+			lockedGlobalSeparator: activeList && parent != null ? parent.IsGlobal : null,
+			isChildSeparator: parent != null)
 			{ Owner = Window.GetWindow(this) };
 		if (parent != null)
 		{
-			dialog.Title = "Add Child Separator";
-			dialog.DialogHeading.Text = $"Add a child to {parent.Title}";
-			dialog.DialogHelperText.Text = "This separator will collapse with its parent and can still collapse its own mods.";
+			dialog.Title = "Add Sub-separator";
+			dialog.DialogHeading.Text = $"Add a sub-separator to {parent.Title}";
+			dialog.DialogHelperText.Text = "This sub-separator will collapse with its containing separator and can still collapse its own mods.";
 		}
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme,
 			ReduxThemeService.GetActiveTheme(ViewModel.Settings), ViewModel.Settings.UsesGeneratedGradients);
@@ -1578,11 +1599,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			return;
 		}
 
-		// WPF's sorted and filtered collection views do not always re-evaluate a
-		// computed display key after an annotation changes. Refresh each pane once.
-		RefreshDataView(ActiveModsListView);
-		RefreshDataView(InactiveModsListView);
-		RefreshDataView(ForceLoadedModsListView);
+		// ModListView observes alias changes for live sorting/filtering. The existing
+		// row updates in place; refreshing every pane here discarded their containers.
 	}
 
 	private void ChooseModArtwork(DivinityModData mod)
@@ -1723,8 +1741,13 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			return;
 		}
 
+		var animationOrder = ViewModel.SelectedModOrder;
+		var animationStore = ViewModel.Settings.VisualModListDividers;
+		bool IsCurrentContext() => ReferenceEquals(animationOrder, ViewModel.SelectedModOrder) &&
+			ReferenceEquals(animationStore, ViewModel.Settings.VisualModListDividers);
 		void ApplyState()
 		{
+			if (!IsCurrentContext()) return;
 			ViewModel.SetAllVisualDividersCollapsed(activeList, collapsed);
 			UpdateSeparatorBulkToggleButtons();
 		}
@@ -1750,6 +1773,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		void Update(double progress)
 		{
+			if (!IsCurrentContext()) { transition?.Cancel(); return; }
 			if (progress < fadeOutEnd)
 			{
 				var phase = progress / fadeOutEnd;
@@ -1853,7 +1877,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		System.Windows.Automation.AutomationProperties.SetName(OverrideSeparatorBulkToggleButton, action);
 		OverrideSeparatorBulkToggleIcon.SetResourceReference(
 			ReduxIcon.StrokeDataProperty,
-			collapse ? "Redux.Icon.ChevronUpStroke" : "Redux.Icon.ChevronDownStroke");
+			collapse ? "Redux.Icon.FoldSections" : "Redux.Icon.UnfoldSections");
 	}
 
 	private void UpdateSeparatorBulkToggleButtons()
@@ -1882,7 +1906,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		System.Windows.Automation.AutomationProperties.SetName(button, action);
 		icon.SetResourceReference(
 			ReduxIcon.StrokeDataProperty,
-			collapse ? "Redux.Icon.ChevronUpStroke" : "Redux.Icon.ChevronDownStroke");
+			collapse ? "Redux.Icon.FoldSections" : "Redux.Icon.UnfoldSections");
 	}
 
 	private void ShowEditVisualDividerDialog(DivinityModData item)
@@ -1899,19 +1923,27 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			useCategoryColorsForHover: ViewModel.Settings.UseCategoryColorsForInteractions,
 			description: divider.Description,
 			hideSeparatorLine: divider.HideLine,
+			useCategoryColorsForSidebarText: ViewModel.Settings.UseCategoryColorsForSidebarText,
 			allowGlobalSeparator: !overrideDivider && divider.IsActiveList && parent == null,
 			isGlobalSeparator: divider.IsGlobal,
-			lockedGlobalSeparator: divider.IsActiveList && parent != null ? parent.IsGlobal : null)
+			lockedGlobalSeparator: divider.IsActiveList && parent != null ? parent.IsGlobal : null,
+			isChildSeparator: parent != null)
 			{ Owner = Window.GetWindow(this) };
+		var parentChoices = ViewModel.GetEligibleVisualDividerParents(item).ToList();
+		if (parent != null && !parentChoices.Any(candidate => candidate.Id == parent.Id)) parentChoices.Add(parent);
+		var canChangeParent = !divider.IsCollapsed && !ViewModel.HasVisualDividerChildren(item);
+		dialog.ConfigureSeparatorParent(parentChoices, divider.ParentDividerId, canChangeParent,
+			!overrideDivider && divider.IsActiveList,
+			divider.IsCollapsed ? "Expand this separator before changing its nesting." : "Move the existing sub-separators before nesting this separator.");
 		if (parent != null)
-			dialog.DialogHelperText.Text = $"Child of {parent.Title}. It collapses with its parent and can still collapse its own mods.";
+			dialog.DialogHelperText.Text = $"Inside {parent.Title}. It collapses with that separator and can still collapse its own mods.";
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme,
 			ReduxThemeService.GetActiveTheme(ViewModel.Settings), ViewModel.Settings.UsesGeneratedGradients);
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
 		SaveCategoryDialogColors(dialog);
 		ViewModel.UpdateVisualDivider(item, dialog.CategoryName, dialog.CategoryColor,
 			dialog.CategoryIconId, dialog.HideSeparatorLine, dialog.CategoryDescription,
-			dialog.UseSeparatorInEveryLoadOrder);
+			dialog.UseSeparatorInEveryLoadOrder, dialog.SelectedSeparatorParentId);
 	}
 
 	public ModListView ActiveModsView => ActiveModsListView;
@@ -2357,6 +2389,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			if (activeList && ReferenceEquals(_activeVisualDividerTransition, value)) _activeVisualDividerTransition = null;
 			else if (overrideList && ReferenceEquals(_overrideVisualDividerTransition, value)) _overrideVisualDividerTransition = null;
 			else if (!activeList && !overrideList && ReferenceEquals(_inactiveVisualDividerTransition, value)) _inactiveVisualDividerTransition = null;
+			listView.RefreshGroupingAnimation();
 		}
 		var animatedDivider = ViewModel.GetVisualDivider(dividerItem);
 		var animatedParentId = animatedDivider != null && String.IsNullOrWhiteSpace(animatedDivider.ParentDividerId)
@@ -2374,7 +2407,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			return;
 		}
 
-		DivinityModData GetCurrentDividerItem() =>
+		var animationOrder = ViewModel.SelectedModOrder;
+		var animationStore = overrideList ? ViewModel.Settings.OverrideVisualModListDividers : ViewModel.Settings.VisualModListDividers;
+		bool IsAnimationContextCurrent() => ReferenceEquals(animationOrder, ViewModel.SelectedModOrder) &&
+			ReferenceEquals(animationStore, overrideList ? ViewModel.Settings.OverrideVisualModListDividers : ViewModel.Settings.VisualModListDividers);
+		DivinityModData GetCurrentDividerItem() => !IsAnimationContextCurrent() ? null :
 			listView.Items.OfType<DivinityModData>()
 				.FirstOrDefault(candidate => candidate.IsVisualDivider &&
 					String.Equals(candidate.VisualDividerId, dividerId, StringComparison.OrdinalIgnoreCase));
@@ -2455,6 +2492,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			VisualDividerAnimation transition = null;
 			void UpdateParentExpansion(double progress)
 			{
+				if (!IsAnimationContextCurrent()) { GetPaneTransition()?.Cancel(); return; }
 				var current = GetCurrentDividerItem();
 				if (current != null) current.VisualDividerChevronAngle = -90d * (1 - progress);
 				foreach (var row in sectionRows.Where(candidate => candidate.IsCurrent))
@@ -2464,6 +2502,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				}
 				foreach (var row in followingRows.Where(candidate => candidate.IsCurrent))
 					row.Translation.Y = -sectionTravel * (1 - progress);
+				listView.RefreshGroupingAnimation();
 			}
 
 			void FinishParentExpansion(bool completed)
@@ -2507,6 +2546,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 			void UpdateExpansion(double progress)
 			{
+				if (!IsAnimationContextCurrent()) { GetPaneTransition()?.Cancel(); return; }
 				expandingDividerItem.VisualDividerChevronAngle = -90d * (1 - progress);
 				var remaining = 1 - progress;
 				for (var index = 0; index < expandingSectionRows.Count; index++)
@@ -2522,6 +2562,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					if (expandingFollowingRows[index].IsCurrent)
 						expandingFollowingRows[index].Translation.Y = -expandingSectionTravel * remaining;
 				}
+				listView.RefreshGroupingAnimation();
 			}
 
 			void FinishExpansion(bool completed)
@@ -2564,7 +2605,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 							}
 						}));
 					}
-					else if (!completed)
+					else if (!completed && IsAnimationContextCurrent())
 					{
 						ViewModel.SetVisualDividerCollapsed(
 							expandingDividerItem,
@@ -2649,6 +2690,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 			void Update(double progress)
 			{
+				if (!IsAnimationContextCurrent()) { GetPaneTransition()?.Cancel(); return; }
 				var visibleProgress = 1 - progress;
 				dividerItem.VisualDividerChevronAngle =
 					startingChevronAngle + ((-90d - startingChevronAngle) * progress);
@@ -2663,62 +2705,42 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					if (followingRows[index].IsCurrent)
 						followingRows[index].Translation.Y = -sectionTravel * progress;
 				}
+				listView.RefreshGroupingAnimation();
 			}
 
 			VisualDividerAnimation transition = null;
 			void Finish(bool completed)
 			{
-				var deferParentProjection = completed && collapsingParent;
-				try
+				void CommitProjection(bool commit)
 				{
-					// Release borrowed transforms before the collection change can recycle
-					// these containers for unrelated rows.
-					foreach (var row in sectionRows) row.Restore();
-					foreach (var row in followingRows) row.Restore();
-					if (completed && !deferParentProjection)
-						ViewModel.SetVisualDividerCollapsed(
-							dividerItem,
-							true,
-							preserveRealizedContainers: true);
-					else if (restorePreparedProjectionOnCancel)
-						ViewModel.RestoreVisualDividerProjection(dividerItem);
-				}
-				finally
-				{
-					virtualizationCache?.Dispose();
-					if (deferParentProjection)
+					try
 					{
-						// A parent rebuild removes child markers as well as mod rows. Doing that
-						// inside CompositionTarget.Rendering can reenter WPF's measure pass and
-						// stall or crash on a long nested list. Let this frame finish first.
-						Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
-						{
-							try
-							{
-								var current = GetCurrentDividerItem();
-								if (current != null && !current.IsVisualDividerCollapsed)
-									ViewModel.SetVisualDividerCollapsed(current, true);
-							}
-							catch (Exception ex)
-							{
-								DivinityApp.Log($"Nested separator collapse could not complete: {ex}");
-							}
-							finally
-							{
-								var final = GetCurrentDividerItem();
-								if (final != null) final.VisualDividerChevronAngle = final.IsVisualDividerCollapsed ? -90 : 0;
-								ClearPaneTransition(transition);
-							}
-						}));
+						// Restore and rebuild together, before another frame can display
+						// the old expanded projection. Release transforms before recycling.
+						foreach (var row in sectionRows) row.Restore();
+						foreach (var row in followingRows) row.Restore();
+						var current = GetCurrentDividerItem();
+						if (commit && ReferenceEquals(GetPaneTransition(), transition) && current != null && !current.IsVisualDividerCollapsed)
+							ViewModel.SetVisualDividerCollapsed(current, true, preserveRealizedContainers: !collapsingParent);
+						else if (!commit && IsAnimationContextCurrent() && restorePreparedProjectionOnCancel)
+							ViewModel.RestoreVisualDividerProjection(dividerItem);
 					}
-					else
+					finally
 					{
-						var finalDividerItem = GetCurrentDividerItem();
-						if (finalDividerItem != null)
-							finalDividerItem.VisualDividerChevronAngle = finalDividerItem.IsVisualDividerCollapsed ? -90 : 0;
+						virtualizationCache?.Dispose();
+						var final = GetCurrentDividerItem();
+						if (final != null) final.VisualDividerChevronAngle = final.IsVisualDividerCollapsed ? -90 : 0;
 						ClearPaneTransition(transition);
 					}
 				}
+
+				if (completed && collapsingParent)
+				{
+					// Parent rebuilds must stay outside CompositionTarget.Rendering to
+					// avoid reentering measure. Hold the collapsed visuals until commit.
+					transition.DeferCompletion(CommitProjection);
+				}
+				else CommitProjection(completed);
 			}
 
 			transition = new VisualDividerAnimation(GetPanelMotionMilliseconds(), Update, Finish);
@@ -3144,6 +3166,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		if (ForceLoadedModsListView?.ItemsSource == null) return;
 		var query = OverrideModsFilterTextBox.Text?.Trim() ?? String.Empty;
+		if (ViewModel != null)
+		{
+			ViewModel.OverrideModFilterText = query;
+			ViewModel.RefreshOverrideVisualDividers();
+		}
 		var view = CollectionViewSource.GetDefaultView(ForceLoadedModsListView.ItemsSource);
 		view.Filter = String.IsNullOrWhiteSpace(query)
 			? null
@@ -3573,6 +3600,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		ActiveModListGrid.SizeChanged += (_, _) => ClampExpandedOverrideModsHeight();
 		SetupListView(ActiveModsListView);
 		SetupListView(InactiveModsListView);
+		SetupListView(ForceLoadedModsListView);
 
 		bool setInitialFocus = true;
 
@@ -4021,7 +4049,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		return columnName switch
 		{
 			"#" => 45,
-			"Name" => 240,
+			"Name" => 298,
 			"File Name" => 190,
 			"Version" => 90,
 			"Last Updated" => 115,
@@ -4033,22 +4061,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		};
 	}
 
-	private static double GetFallbackMinimumColumnWidth(string columnName)
-	{
-		return columnName switch
-		{
-			"#" => 35,
-			"Name" => 100,
-			"File Name" => 100,
-			"Version" => 60,
-			"Last Updated" => 70,
-			"Last Modified" => 75,
-			"Author" => 70,
-			"Category" => 70,
-			"Source" => 90,
-			_ => 60
-		};
-	}
+	private static double GetFallbackMinimumColumnWidth(string columnName) => ModListView.GetColumnWidthFloor(columnName);
 
 	/// <summary>
 	/// Resolves the live Redux.FontSize.11 token pills actually render at, rather than
@@ -4094,11 +4107,13 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		return count;
 	}
 
-	private double GetModNameAdornmentWidth(DivinityModData mod)
+	private double GetModNameAdornmentWidth(DivinityModData mod, ModListView listView)
 	{
 		// Each status glyph occupies 16px plus 2px horizontal margin per side.
 		// The newly-detected marker has its own 8px surface and 10px of spacing.
-		return (GetModNameIconCount(mod) * 20d) + (mod.IsNewlyDetected ? 18d : 0d);
+		return (GetModNameIconCount(mod) * 20d)
+			+ (mod.IsNewlyDetected ? 18d : 0d)
+			+ (mod.HasAvailableSourceUpdate ? 16d : 0d);
 	}
 
 	/// <summary>
@@ -4130,7 +4145,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		return columnName switch
 		{
 			"File Name" => 280,
-			"Name" => 340,
+			"Name" => 398,
 			"Author" => 220,
 			_ => Double.PositiveInfinity
 		};
@@ -4157,7 +4172,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					candidateWidth = MeasureColumnText(listView, (listView == InactiveModsListView ? mod.InactiveIndex : mod.Index).ToString(CultureInfo.CurrentCulture)) + 20;
 					break;
 				case "Name":
-					candidateWidth = MeasureColumnText(listView, mod.ListDisplayTitle) + 28 + GetModNameAdornmentWidth(mod);
+					candidateWidth = MeasureColumnText(listView, mod.ListDisplayTitle) + 28 + GetModNameAdornmentWidth(mod, listView);
 					break;
 				case "File Name":
 					candidateWidth = MeasureColumnText(listView, mod.FileName) + 24;
@@ -4227,6 +4242,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		var columnName = GetColumnName(column);
 		var minimumWidth = GetHeaderMinimumColumnWidth(listView, columnName);
+		ModListView.SetMinimumColumnWidth(column, minimumWidth);
 		if (column.Width < minimumWidth)
 		{
 			column.Width = minimumWidth;
@@ -4462,11 +4478,17 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			return;
 		}
 
-		var menu = new ContextMenu
-		{
-			Placement = PlacementMode.MousePoint,
-			PlacementTarget = listView
-		};
+		if (ViewModel == null) return;
+		var menu = CreateModListColumnMenu(listView);
+		menu.Placement = PlacementMode.MousePoint;
+		menu.PlacementTarget = listView;
+		menu.IsOpen = true;
+		e.Handled = true;
+	}
+
+	private ContextMenu CreateModListColumnMenu(ModListView listView)
+	{
+		var menu = new ContextMenu();
 		menu.Items.Add(new MenuItem
 		{
 			Header = "Visible Columns",
@@ -4498,6 +4520,15 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
             var item = new MenuItem
             {
                 Header = columnName,
+                StaysOpenOnClick = true,
+                ToolTip = columnName switch
+                {
+                    "Last Modified" => "When the local mod file was modified. This is not necessarily its installation date.",
+                    "Last Updated" => "The source update date when available; otherwise the local file date.",
+                    "File Name" => "Show the actual file name alongside the mod name.",
+                    "#" => "Show order numbers in this pane.",
+                    _ => "Show or hide this column across the mod panes."
+                },
                 IsCheckable = true,
                 IsChecked = columnName == "#"
                     ? (inactivePane ? ViewModel.Settings.ShowInactiveModIndex : ViewModel.Settings.ShowActiveModIndex)
@@ -4554,7 +4585,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		menu.Items.Add(autoSizeItem);
 		var resetItem = new MenuItem
 		{
-			Header = "Reset Columns",
+			Header = "Reset All Pane Columns",
 			Icon = ReduxIcon.FromResource("Redux.Icon.RefreshStroke", true)
 		};
 		resetItem.Click += (_, _) =>
@@ -4564,8 +4595,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		};
 		menu.Items.Add(resetItem);
 
-		menu.IsOpen = true;
-		e.Handled = true;
+		return menu;
 	}
 
 	private void AutoSizeModListColumns(ModListView listView, bool persist)
@@ -4653,14 +4683,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	public void Sort(string sortBy, ListSortDirection direction, object sender)
 	{
 		var requestedLoadOrder = sortBy == "#";
-		if (sortBy == "Version") sortBy = "Version.Version";
-		if (sortBy == "Name") sortBy = "ListDisplayTitle";
-		if (sortBy == "File Name") sortBy = "FileName";
-		if (sortBy == "Modes") sortBy = "Targets";
-		if (sortBy == "Last Updated") sortBy = "DisplayLastUpdated";
-		if (sortBy == "Last Modified") sortBy = "LastModified";
-		if (sortBy == "Category") sortBy = "DisplayCategory";
-		if (sortBy == "Source") sortBy = "DisplaySource";
+		sortBy = ModListView.GetSortProperty(sortBy);
 
 		try
 		{
@@ -4704,7 +4727,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				else ViewModel?.RefreshVisualDividers();
 				foreach (var mod in lv.ItemsSource.OfType<DivinityModData>().Where(item => !item.IsVisualDivider))
 					mod.IsHiddenByVisualDivider = false;
-				dataView.Filter = item => item is not DivinityModData mod || !mod.IsVisualDivider;
+				var query = lv == ForceLoadedModsListView ? OverrideModsFilterTextBox?.Text?.Trim() ?? String.Empty : String.Empty;
+				dataView.Filter = item => item is not DivinityModData mod ||
+					(!mod.IsVisualDivider && (String.IsNullOrWhiteSpace(query) || OverrideModMatchesFilter(mod, query)));
 			}
 			SortDescription sd = new SortDescription(sortBy, direction);
 			dataView.SortDescriptions.Add(sd);
@@ -4736,7 +4761,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		if (ViewModel == null || ActiveModsListView.UserResizedColumns) return;
 		var count = Math.Max(ViewModel.ActiveMods.Count, ViewModel.ForceLoadedMods.Count);
-		if (count > 0 && ActiveModsListView.View is GridView gridView && gridView.Columns.Count >= 2)
+		if (count > 0 && ActiveModsListView.View is GridView gridView)
 		{
 			RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(250), () =>
 			{
@@ -4750,16 +4775,17 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 						.Select(mod =>
 							MeasureColumnText(ActiveModsListView, mod.ListDisplayTitle) +
 							_FontSizeMeasurePadding +
-							GetModNameAdornmentWidth(mod))
+							GetModNameAdornmentWidth(mod, ActiveModsListView))
 						.DefaultIfEmpty(0d)
 						.Max();
 
-					if (targetWidth > 0)
+					var nameColumn = gridView.Columns.FirstOrDefault(column => GetColumnName(column) == "Name");
+					if (targetWidth > 0 && nameColumn != null)
 					{
-						if (Math.Abs(gridView.Columns[1].Width - targetWidth) >= 30)
+						if (Math.Abs(nameColumn.Width - targetWidth) >= 30)
 						{
 							ActiveModsListView.Resizing = true;
-							gridView.Columns[1].Width = targetWidth;
+							nameColumn.Width = targetWidth;
 						}
 					}
 				}
@@ -4770,14 +4796,14 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	public void AutoSizeNameColumn_InactiveMods()
 	{
 		if (ViewModel == null || InactiveModsListView.UserResizedColumns) return;
-		if (ViewModel.InactiveMods.Count > 0 && InactiveModsListView.View is GridView gridView && gridView.Columns.Count >= 2)
+		if (ViewModel.InactiveMods.Count > 0 && InactiveModsListView.View is GridView gridView)
 		{
 			var targetWidth = ViewModel.InactiveMods
 				.Where(mod => !String.IsNullOrWhiteSpace(mod.ListDisplayTitle))
 				.Select(mod =>
 					MeasureColumnText(InactiveModsListView, mod.ListDisplayTitle) +
 					_FontSizeMeasurePadding +
-					GetModNameAdornmentWidth(mod))
+					GetModNameAdornmentWidth(mod, InactiveModsListView))
 				.DefaultIfEmpty(0d)
 				.Max();
 

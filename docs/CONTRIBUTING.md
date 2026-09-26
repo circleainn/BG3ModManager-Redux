@@ -11,6 +11,8 @@ before investing in an implementation.
 - Search existing issues and recent commits.
 - Preserve inherited BG3MM behavior unless the change explicitly replaces it.
 - Reuse Redux services, shared semantic resources, controls, and terminology.
+- For interface changes, follow the [shared UI rules and workflow checks](UI_DESIGN.md); review the
+  complete task across affected panes rather than only the edited control.
 - Never include credentials, user state, private paths, downloaded mods, saves, or build outputs.
 
 ## Build and validate

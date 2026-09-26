@@ -607,6 +607,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 	/// </summary>
 	private void ApplyCurrentTheme(Window window)
 	{
+		ReduxWindowBehavior.AttachTaskbarPresence(window);
 		if (ViewModel?.Settings == null) return;
 		ReduxThemeService.Apply(window.Resources, ViewModel.Settings.ColorTheme,
 			ReduxThemeService.GetActiveTheme(ViewModel.Settings), ViewModel.Settings.UsesGeneratedGradients);

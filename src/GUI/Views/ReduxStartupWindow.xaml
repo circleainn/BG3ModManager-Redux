@@ -6,7 +6,7 @@
     Height="320"
     ResizeMode="NoResize"
     ShowActivated="True"
-    ShowInTaskbar="False"
+    ShowInTaskbar="True"
     WindowStartupLocation="CenterScreen"
     WindowStyle="None"
     AllowsTransparency="False"
@@ -81,6 +81,7 @@
 			<Grid>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
 					<ColumnDefinition Width="Auto" />
 				</Grid.ColumnDefinitions>
@@ -95,10 +96,19 @@
 				    Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 				    Text="BG3 Mod Manager Redux" />
 				<TextBlock Grid.Column="2"
+				    Margin="0,0,8,0"
 				    VerticalAlignment="Center"
 				    FontSize="{DynamicResource Redux.FontSize.10}"
 				    Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 				    Text="{Binding VersionText, RelativeSource={RelativeSource AncestorType=Window}}" />
+				<Button Grid.Column="3" Width="26" Height="26" Padding="0"
+				    Style="{StaticResource ReduxPaneHeaderActionButtonStyle}"
+				    Click="CloseStartup_Click" ToolTip="Close Redux"
+				    AutomationProperties.Name="Close Redux">
+					<controls:ReduxIcon Width="14" Height="14"
+					    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+					    StrokeData="{StaticResource Redux.Icon.Close}" />
+				</Button>
 			</Grid>
 
 			<StackPanel Grid.Row="1"

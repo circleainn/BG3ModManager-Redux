@@ -141,24 +141,6 @@
 				<Setter Property="CornerRadius" Value="8,8,0,0" />
 				<Setter Property="IsHitTestVisible" Value="False" />
 			</Style>
-			<Style x:Key="ModPaneCountBadgeStyle" TargetType="{x:Type Border}">
-				<Setter Property="MinWidth" Value="24" />
-				<Setter Property="Height" Value="20" />
-				<Setter Property="Margin" Value="8,0,0,0" />
-				<Setter Property="Padding" Value="6,0" />
-				<Setter Property="VerticalAlignment" Value="Center" />
-				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-				<Setter Property="BorderThickness" Value="1" />
-				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Pill}" />
-			</Style>
-			<Style x:Key="ModPaneCountTextStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
-				<Setter Property="HorizontalAlignment" Value="Center" />
-				<Setter Property="VerticalAlignment" Value="Center" />
-				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.10}" />
-				<Setter Property="FontWeight" Value="SemiBold" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
-			</Style>
 			<Style x:Key="ModPaneFilterTextBoxStyle"
 				BasedOn="{StaticResource {x:Type TextBox}}"
 				TargetType="{x:Type c:UnfocusableTextBox}">
@@ -167,7 +149,7 @@
 				<Setter Property="VerticalAlignment" Value="Center" />
 				<Setter Property="adonisExtensions:CornerRadiusExtension.CornerRadius" Value="{DynamicResource Redux.CornerRadius.ControlInner}" />
 				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderBrush}" />
 				<Setter Property="TextAlignment" Value="Left" />
 			</Style>
 			<Style x:Key="ModPaneFilterPlaceholderStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
@@ -182,7 +164,7 @@
 				<Setter Property="Height" Value="1" />
 				<Setter Property="HorizontalAlignment" Value="Stretch" />
 				<Setter Property="Background" Value="{DynamicResource ReduxBorderBrush}" />
-				<Setter Property="Opacity" Value="0.8" />
+				<Setter Property="Opacity" Value="0.35" />
 				<Setter Property="IsHitTestVisible" Value="False" />
 			</Style>
 			<!--
@@ -406,97 +388,35 @@
 					</Setter.Value>
 				</Setter>
 			</Style>
-			<Style x:Key="ModDetailsToggleStyle" TargetType="{x:Type ToggleButton}">
+			<Style x:Key="ModDetailsToggleStyle" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource ReduxChromeToggleStyle}">
 				<Setter Property="Width" Value="30" />
 				<Setter Property="Height" Value="28" />
-				<Setter Property="Background" Value="Transparent" />
-				<Setter Property="BorderThickness" Value="0" />
-				<Setter Property="Cursor" Value="Hand" />
-				<Setter Property="FocusVisualStyle" Value="{x:Null}" />
-				<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
-				<Setter Property="Template">
+				<Setter Property="ContentTemplate">
 					<Setter.Value>
-						<ControlTemplate TargetType="{x:Type ToggleButton}">
-							<Border x:Name="ToggleChrome"
-								Background="Transparent"
-								CornerRadius="{DynamicResource Redux.CornerRadius.Control}"
-								RenderTransformOrigin="0.5,0.5"
-								util:ReduxWindowBehavior.HoverLift="1">
-								<Border.RenderTransform>
-									<TranslateTransform Y="0" />
-								</Border.RenderTransform>
-								<Grid>
-									<Border x:Name="HoverSurface"
-										Width="24"
-										Height="24"
-										HorizontalAlignment="Center"
-										VerticalAlignment="Center"
-										Background="{DynamicResource ReduxAccentSoftBrush}"
-										CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
-										IsHitTestVisible="False"
-										Opacity="0" />
-									<Path x:Name="ToggleGlyph"
-										Width="10" Height="5"
-										HorizontalAlignment="Center"
-										VerticalAlignment="Center"
-										Data="{StaticResource Redux.Icon.ChevronUpStroke}"
-										RenderTransformOrigin="0.5,0.5"
-										Stroke="{TemplateBinding Foreground}"
-										StrokeEndLineCap="Round"
-										StrokeLineJoin="Round"
-										StrokeStartLineCap="Round"
-										StrokeThickness="1.25"
-										Stretch="Fill">
-										<Path.RenderTransform>
-											<RotateTransform Angle="0" />
-										</Path.RenderTransform>
-									</Path>
-								</Grid>
-							</Border>
-							<ControlTemplate.Triggers>
-								<!--  Rotate rather than swap geometry so the flip animates smoothly.  -->
-								<Trigger Property="IsChecked" Value="False">
-									<Trigger.EnterActions>
-										<BeginStoryboard>
-											<Storyboard>
-												<DoubleAnimation Storyboard.TargetName="ToggleGlyph" Storyboard.TargetProperty="RenderTransform.Angle"
-													To="180" Duration="{StaticResource Redux.Motion.Panel}" EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
-											</Storyboard>
-										</BeginStoryboard>
-									</Trigger.EnterActions>
-									<Trigger.ExitActions>
-										<BeginStoryboard>
-											<Storyboard>
-												<DoubleAnimation Storyboard.TargetName="ToggleGlyph" Storyboard.TargetProperty="RenderTransform.Angle"
-													To="0" Duration="{StaticResource Redux.Motion.Panel}" EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
-											</Storyboard>
-										</BeginStoryboard>
-									</Trigger.ExitActions>
-								</Trigger>
-								<Trigger Property="IsMouseOver" Value="True">
-									<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
-									<Trigger.EnterActions>
-										<BeginStoryboard>
-											<Storyboard>
-												<DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
-													To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-											</Storyboard>
-										</BeginStoryboard>
-									</Trigger.EnterActions>
-									<Trigger.ExitActions>
-										<BeginStoryboard>
-											<Storyboard>
-												<DoubleAnimation Storyboard.TargetName="HoverSurface" Storyboard.TargetProperty="Opacity"
-													To="0" Duration="{StaticResource Redux.Motion.Standard}" />
-											</Storyboard>
-										</BeginStoryboard>
-									</Trigger.ExitActions>
-								</Trigger>
-								<Trigger Property="IsPressed" Value="True">
-									<Setter TargetName="HoverSurface" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
-								</Trigger>
-							</ControlTemplate.Triggers>
-						</ControlTemplate>
+						<DataTemplate>
+							<Path Width="10" Height="5" Data="{StaticResource Redux.Icon.ChevronUpStroke}"
+								RenderTransformOrigin="0.5,0.5" Stretch="Fill" StrokeThickness="1.25"
+								Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}"
+								StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round">
+								<Path.RenderTransform><RotateTransform Angle="0" /></Path.RenderTransform>
+								<Path.Style>
+									<Style TargetType="{x:Type Path}">
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" Value="False">
+												<DataTrigger.EnterActions><BeginStoryboard><Storyboard>
+													<util:ReduxDoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle" To="180"
+														Duration="{StaticResource Redux.Motion.Panel}" EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
+												</Storyboard></BeginStoryboard></DataTrigger.EnterActions>
+												<DataTrigger.ExitActions><BeginStoryboard><Storyboard>
+													<util:ReduxDoubleAnimation Storyboard.TargetProperty="RenderTransform.Angle" To="0"
+														Duration="{StaticResource Redux.Motion.Panel}" EasingFunction="{StaticResource Redux.Motion.PanelEase}" />
+												</Storyboard></BeginStoryboard></DataTrigger.ExitActions>
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</Path.Style>
+							</Path>
+						</DataTemplate>
 					</Setter.Value>
 				</Setter>
 			</Style>
@@ -760,6 +680,13 @@
 					</ItemsControl.ItemsPanel>
 				</ItemsControl>
 			</DataTemplate>
+            <Style x:Key="ModDetailsLocalActionButtonStyle" BasedOn="{StaticResource ReduxMinorActionButtonStyle}" TargetType="Button">
+                <Setter Property="Height" Value="27"/>
+                <Setter Property="MinHeight" Value="27"/>
+                <Setter Property="Margin" Value="0,0,6,5"/>
+                <Setter Property="Padding" Value="9,3"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+            </Style>
 			<Style x:Key="ModDetailsSourceButtonStyle" BasedOn="{StaticResource ReduxAccentPillButtonStyle}" TargetType="{x:Type Button}">
 				<Setter Property="Height" Value="27" />
 				<Setter Property="Margin" Value="0,0,6,5" />
@@ -1040,9 +967,12 @@
 									Text="{Binding Metadata.AuthorLabel}" />
 							</Border>
 							<Button Click="EditModAliasButton_Click"
-								Style="{StaticResource ModDetailsSourceButtonStyle}"
+								Style="{StaticResource ModDetailsLocalActionButtonStyle}"
 								ToolTip="Use a local display name while preserving the original package metadata.">
-								<TextBlock>
+								<StackPanel Orientation="Horizontal">
+                                    <c:ReduxIcon Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center"
+                                        Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Create}"/>
+                                    <TextBlock>
 									<TextBlock.Style>
 										<Style TargetType="{x:Type TextBlock}">
 											<Setter Property="Text" Value="Set alias" />
@@ -1054,11 +984,15 @@
 										</Style>
 									</TextBlock.Style>
 								</TextBlock>
-							</Button>
+                                </StackPanel>
+                            </Button>
 							<Button Click="EditModArtworkButton_Click"
-								Style="{StaticResource ModDetailsSourceButtonStyle}"
+								Style="{StaticResource ModDetailsLocalActionButtonStyle}"
 								ToolTip="Choose a local preview image without changing provider metadata.">
-								<TextBlock>
+								<StackPanel Orientation="Horizontal">
+                                    <c:ReduxIcon Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center"
+                                        Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Camera}"/>
+                                    <TextBlock>
 									<TextBlock.Style>
 										<Style TargetType="{x:Type TextBlock}">
 											<Setter Property="Text" Value="Add artwork" />
@@ -1070,10 +1004,11 @@
 										</Style>
 									</TextBlock.Style>
 								</TextBlock>
-							</Button>
+                                </StackPanel>
+                            </Button>
 							<Button Click="ClearModArtworkButton_Click"
 								Content="Clear artwork"
-								Style="{StaticResource ModDetailsSourceButtonStyle}"
+								Style="{StaticResource ModDetailsLocalActionButtonStyle}"
 								Visibility="{Binding HasCustomPreviewImage, Converter={StaticResource BoolToVisibilityConverter}}" />
 							<Button Command="{Binding Path=OpenURLCommand, Source={x:Static dapp:DivinityApp.Commands}}"
 								CommandParameter="{Binding Metadata.AuthorPageUrl}"
@@ -1784,14 +1719,9 @@
 										</Border.Effect>
 									</Border>
 								</StackPanel>
-								<Border Grid.Column="2"
-									MinWidth="28"
-									Margin="8,0,0,0"
-									Padding="6,2"
-									BorderThickness="1"
-									CornerRadius="{DynamicResource Redux.CornerRadius.Pill}">
+								<Border Grid.Column="2">
 									<Border.Style>
-										<Style TargetType="{x:Type Border}">
+										<Style TargetType="{x:Type Border}" BasedOn="{StaticResource ReduxCountBadgeStyle}">
 											<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
 											<Setter Property="BorderBrush" Value="Transparent" />
 											<Style.Triggers>
@@ -1824,7 +1754,7 @@
 										FontWeight="SemiBold"
 										Text="{Binding Count}">
 										<TextBlock.Style>
-											<Style TargetType="{x:Type TextBlock}">
+											<Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource ReduxCountTextStyle}">
 												<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
 												<Style.Triggers>
 													<DataTrigger Binding="{Binding Count}" Value="0">
@@ -1888,14 +1818,10 @@
 			<Border Grid.Row="1" Style="{StaticResource ModPaneHeaderDividerStyle}" />
 			<Grid Style="{StaticResource ModPaneHeaderStyle}">
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="8" />
-					<ColumnDefinition Width="220" />
-				</Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="8"/><ColumnDefinition Width="220"/><ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 				<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
 					<TextBlock Style="{StaticResource ModSectionTitle}" Text="Active Mods" />
 					<Border Style="{StaticResource ModPaneCountBadgeStyle}"
@@ -1917,7 +1843,7 @@
 						Style="{StaticResource ModCategoryFilterNoticeButtonStyle}" />
 				</DockPanel>
 				<c:UnfocusableTextBox x:Name="ActiveModsFilterTextBox"
-					Grid.Column="6"
+					Grid.Column="5"
 					HorizontalAlignment="Stretch"
 					behavior:ScreenReaderHelperBehavior.Name="Active Mods Filter"
 					AcceptsReturn="False"
@@ -1926,7 +1852,7 @@
 					Style="{StaticResource ModPaneFilterTextBoxStyle}"
 					ToolTip="Filter Active Mods"
 					UpdateBindingOnFocusLost="True" />
-				<TextBlock Grid.Column="6"
+				<TextBlock Grid.Column="5"
 					Text="Filter Active Mods">
 					<TextBlock.Style>
 						<Style BasedOn="{StaticResource ModPaneFilterPlaceholderStyle}" TargetType="{x:Type TextBlock}">
@@ -1939,7 +1865,7 @@
 						</Style>
 					</TextBlock.Style>
 				</TextBlock>
-				<StackPanel Grid.Column="2" Orientation="Horizontal">
+				<StackPanel Grid.Column="6" Margin="10,0,0,0" Orientation="Horizontal">
 					<Button x:Name="ActiveSeparatorBulkToggleButton"
 						Style="{StaticResource ModPaneHeaderActionButtonStyle}"
 						IsEnabled="False"
@@ -1953,7 +1879,7 @@
 							Width="14"
 							Height="14"
 							Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-							StrokeData="{StaticResource Redux.Icon.ChevronUpStroke}" />
+							StrokeData="{StaticResource Redux.Icon.FoldSections}" />
 					</Button>
 					<Button Style="{StaticResource ModPaneHeaderActionButtonStyle}"
 						Click="AddActiveSeparatorButton_Click"
@@ -1965,14 +1891,14 @@
 					</Button>
 				</StackPanel>
 				<TextBlock x:Name="ActiveModsFilterResultText"
-					Grid.Column="3"
+					Grid.Column="2"
 					Margin="0,0,8,0"
 					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
 					behavior:ScreenReaderHelperBehavior.Name="Total Hidden Active Mods"
 					AutomationProperties.HelpText="{Binding Text, RelativeSource={RelativeSource Self}}" />
 				<TextBlock x:Name="ActiveSelectedText"
-					Grid.Column="4"
+					Grid.Column="3"
 					Margin="0,0,8,0"
 					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
@@ -2007,14 +1933,15 @@
 				</c:ModListView>
 				<GridSplitter x:Name="ActiveModListViewGridSplitter"
 					Grid.Row="1"
-					Height="6"
+					Height="12"
 					HorizontalAlignment="Stretch"
 					VerticalAlignment="Stretch"
 					ResizeBehavior="PreviousAndNext"
 					ShowsPreview="False"
 					Style="{StaticResource ReduxHorizontalSplitterStyle}"
+					ToolTip="Drag to resize Active and Override Mods"
 					Visibility="Collapsed" />
-				<Border x:Name="AlwaysLoadedSectionShell" Grid.Row="2" Margin="6,4,6,6"
+				<Border x:Name="AlwaysLoadedSectionShell" Grid.Row="2" Margin="6,1,6,6"
 					Background="{DynamicResource ReduxSurfaceBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}"
 					BorderThickness="1"
@@ -2050,7 +1977,8 @@
 									<TextBlock Style="{StaticResource ModPaneCountTextStyle}" Text="{Binding ForceLoadedMods.Count}" />
 								</Border>
 							</StackPanel>
-							<Grid x:Name="OverrideModsFilterHost" Grid.Column="1" Width="340" Margin="16,0,10,0" HorizontalAlignment="Right">
+							<Grid x:Name="OverrideModsFilterHost" Grid.Column="1" Margin="16,0,10,0">
+                                <Grid HorizontalAlignment="Right" Width="{Binding ActualWidth, ElementName=OverrideModsFilterHost}" MaxWidth="220">
 								<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 								<Button Grid.Column="0" Margin="0,0,8,0" Tag="Override" Click="ClearModListSort_Click"
 									Style="{StaticResource ModViewNoticeButtonStyle}"
@@ -2075,8 +2003,9 @@
 									</TextBlock.Style>
 								</TextBlock>
 							</Grid>
+                            </Grid>
 							<StackPanel Grid.Column="2" Orientation="Horizontal">
-								<Button x:Name="OverrideSeparatorBulkToggleButton"
+					<Button x:Name="OverrideSeparatorBulkToggleButton"
 									Style="{StaticResource ModPaneHeaderActionButtonStyle}"
 									Click="OverrideSeparatorBulkToggleButton_Click"
 									Loaded="OverrideSeparatorBulkToggleButton_Loaded"
@@ -2084,7 +2013,7 @@
 									AutomationProperties.Name="Collapse all override separators">
 									<c:ReduxIcon x:Name="OverrideSeparatorBulkToggleIcon" Width="14" Height="14"
 										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-										StrokeData="{StaticResource Redux.Icon.ChevronUpStroke}" />
+										StrokeData="{StaticResource Redux.Icon.FoldSections}" />
 								</Button>
 								<Button x:Name="AddOverrideSeparatorButton"
 									Style="{StaticResource ModPaneHeaderActionButtonStyle}"
@@ -2166,7 +2095,7 @@
 					<ColumnDefinition>
 						<ColumnDefinition.Style>
 							<Style TargetType="{x:Type ColumnDefinition}">
-								<Setter Property="Width" Value="Auto" />
+								<Setter Property="Width" Value="220" />
 								<Style.Triggers>
 									<DataTrigger Binding="{Binding IsInactiveModsExpanded}" Value="False">
 										<Setter Property="Width" Value="0" />
@@ -2178,7 +2107,7 @@
 					<ColumnDefinition>
 						<ColumnDefinition.Style>
 							<Style TargetType="{x:Type ColumnDefinition}">
-								<Setter Property="Width" Value="220" />
+								<Setter Property="Width" Value="Auto" />
 								<Style.Triggers>
 									<DataTrigger Binding="{Binding IsInactiveModsExpanded}" Value="False">
 										<Setter Property="Width" Value="0" />
@@ -2198,7 +2127,7 @@
 						<TextBlock Style="{StaticResource ModPaneCountTextStyle}" Text="{Binding InactiveMods.Count}" />
 					</Border>
 				</StackPanel>
-				<StackPanel Grid.Column="5"
+				<StackPanel Grid.Column="6" Margin="10,0,0,0"
 					Orientation="Horizontal"
 					Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">
 					<Button x:Name="InactiveSeparatorBulkToggleButton"
@@ -2213,7 +2142,7 @@
 						<c:ReduxIcon x:Name="InactiveSeparatorBulkToggleIcon"
 							Width="14" Height="14"
 							Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-							StrokeData="{StaticResource Redux.Icon.ChevronUpStroke}" />
+							StrokeData="{StaticResource Redux.Icon.FoldSections}" />
 					</Button>
 					<Button x:Name="AddInactiveSeparatorButton"
 						Style="{StaticResource ModPaneHeaderActionButtonStyle}"
@@ -2241,7 +2170,7 @@
 					Style="{StaticResource ModCategoryFilterNoticeButtonStyle}" />
                 </DockPanel>
 				<c:UnfocusableTextBox x:Name="InactiveModsFilterTextBox"
-					Grid.Column="6"
+					Grid.Column="5"
 					HorizontalAlignment="Stretch"
 					behavior:ScreenReaderHelperBehavior.Name="Inactive Mods Filter"
 					AcceptsReturn="False"
@@ -2250,7 +2179,7 @@
 					Style="{StaticResource ModPaneFilterTextBoxStyle}"
 					ToolTip="Filter Inactive Mods"
 					UpdateBindingOnFocusLost="True" />
-				<TextBlock Grid.Column="6"
+				<TextBlock Grid.Column="5"
 					Text="Filter Inactive Mods">
 					<TextBlock.Style>
 						<Style BasedOn="{StaticResource ModPaneFilterPlaceholderStyle}" TargetType="{x:Type TextBlock}">

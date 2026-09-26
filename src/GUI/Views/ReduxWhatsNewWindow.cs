@@ -1,4 +1,4 @@
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -77,6 +77,10 @@ public sealed class ReduxWhatsNewWindow : Window
 		}
 		var githubIcon = new ContentControl { Width = 14, Height = 14, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
 		githubIcon.SetResourceReference(ContentControl.ContentTemplateProperty, "GithubPlatformIconTemplate");
+		var supportIcon = ReduxIcon.FromResource("Redux.Icon.Heart", true);
+		supportIcon.Width = 14; supportIcon.Height = 14;
+		supportIcon.Margin = new Thickness(0, 0, 6, 0);
+		supportIcon.VerticalAlignment = VerticalAlignment.Center;
 		var closeIcon = ReduxIcon.FromResource("Redux.Icon.Close", true);
 		closeIcon.Width = 14; closeIcon.Height = 14;
 		closeIcon.Margin = new Thickness(0, 0, 6, 0);
@@ -85,11 +89,16 @@ public sealed class ReduxWhatsNewWindow : Window
 		System.Windows.Automation.AutomationProperties.SetName(github, "View release notes on GitHub");
 		github.SetResourceReference(StyleProperty, "ReduxSecondaryActionButtonStyle");
 		github.Click += (_, _) => ProcessHelper.TryOpenUrl(url);
+		var support = new Button { Content = ActionContent(supportIcon, "Support me"), Margin = new Thickness(0, 0, 8, 0) };
+		System.Windows.Automation.AutomationProperties.SetName(support, "Support circleain on Ko-fi");
+		support.ToolTip = "Support circleain on Ko-fi";
+		support.SetResourceReference(StyleProperty, "ReduxSecondaryActionButtonStyle");
+		support.Click += (_, _) => ProcessHelper.TryOpenUrl(DivinityApp.URL_REDUX_DONATION);
 		var close = new Button { Content = ActionContent(closeIcon, "Close"), IsCancel = true, IsDefault = true };
 		System.Windows.Automation.AutomationProperties.SetName(close, "Close");
 		close.SetResourceReference(StyleProperty, "ReduxPrimaryActionButtonStyle");
 		close.Click += (_, _) => Close();
-		actions.Children.Add(github); actions.Children.Add(close);
+		actions.Children.Add(support); actions.Children.Add(github); actions.Children.Add(close);
 		footer.Children.Add(actions);
 		Grid.SetRow(footer, 3); root.Children.Add(footer); Content = root;
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);

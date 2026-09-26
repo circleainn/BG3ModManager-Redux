@@ -5,6 +5,7 @@
     xmlns:behavior="clr-namespace:DivinityModManager.Controls.Behavior"
     xmlns:chrome="clr-namespace:Xceed.Wpf.Toolkit.Chromes;assembly=DotNetProjects.Wpf.Extended.Toolkit"
     xmlns:controls="clr-namespace:DivinityModManager.Controls"
+    xmlns:component="clr-namespace:System.ComponentModel;assembly=System.ComponentModel.TypeConverter"
     xmlns:conv="clr-namespace:DivinityModManager.Converters"
     xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
     xmlns:health="clr-namespace:DivinityModManager.Models.Health;assembly=DivinityModManagerCore"
@@ -133,6 +134,11 @@
 		works with any brush - including the category-colour bindings - without needing a
 		gradient resource per colour. Only the alpha channel of these stops matters.
 	-->
+	<LinearGradientBrush x:Key="Redux.Separator.WashMask" StartPoint="0,0" EndPoint="1,0">
+		<GradientStop Offset="0" Color="#FFFFFFFF" />
+		<GradientStop Offset="0.35" Color="#66FFFFFF" />
+		<GradientStop Offset="1" Color="#38FFFFFF" />
+	</LinearGradientBrush>
 	<LinearGradientBrush x:Key="Redux.Hover.WashMask" StartPoint="0,0" EndPoint="1,0">
 		<GradientStop Offset="0" Color="#FF000000" />
 		<GradientStop Offset="0.35" Color="#66000000" />
@@ -462,18 +468,26 @@
 				<Setter TargetName="IconPresenter" Property="Visibility" Value="Collapsed" />
 				<Setter TargetName="CheckMarkPresenter" Property="Visibility" Value="Visible" />
 			</Trigger>
-			<DataTrigger Binding="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons)}" Value="False">
+			<Trigger Property="util:ReduxMenuItemExtension.CheckOnRight" Value="True">
+                <Setter TargetName="IconPresenter" Property="Visibility" Value="Visible" />
+                <Setter TargetName="CheckMarkPresenter" Property="Grid.Column" Value="2" />
+                <Setter TargetName="CheckMarkPresenter" Property="Margin" Value="12,0,4,0" />
+            </Trigger>
+            <DataTrigger Binding="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons)}" Value="False">
 				<!-- Keep the checkmark column available for checkable settings, but remove all
 				     decorative and platform icons from popup/context-menu rows. -->
 				<Setter TargetName="IconPresenter" Property="Visibility" Value="Collapsed" />
 				<Setter TargetName="IconColumn" Property="Width" Value="0" />
+                <Setter TargetName="CheckMarkPresenter" Property="Grid.Column" Value="0" />
+                <Setter TargetName="CheckMarkPresenter" Property="Margin" Value="0,0,4,0" />
 			</DataTrigger>
 			<MultiDataTrigger>
 				<MultiDataTrigger.Conditions>
 					<Condition Binding="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons)}" Value="False" />
-					<Condition Binding="{Binding IsCheckable, RelativeSource={RelativeSource TemplatedParent}}" Value="True" />
+					<Condition Binding="{Binding IsCheckable, RelativeSource={RelativeSource Self}}" Value="True" />
 				</MultiDataTrigger.Conditions>
 				<Setter TargetName="IconColumn" Property="Width" Value="22" />
+
 			</MultiDataTrigger>
 			<Trigger Property="IsHighlighted" Value="True">
 				<Trigger.EnterActions>
@@ -608,6 +622,7 @@
 	<!-- Shared chrome for compact collapse/expand controls. Each caller supplies its directional chevron. -->
 	<Style x:Key="ReduxChromeActionStyle" TargetType="{x:Type primitives:ButtonBase}">
 		<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+		<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentHoverBrush}" />
 		<Setter Property="BorderThickness" Value="0" />
 		<Setter Property="Cursor" Value="Hand" />
 		<Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -633,16 +648,21 @@
 								CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
 								IsHitTestVisible="False"
 								Opacity="0" />
+							<Border x:Name="KeyboardFocusSurface" Width="24" Height="24"
+								HorizontalAlignment="Center" VerticalAlignment="Center"
+								BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1"
+								CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
+								IsHitTestVisible="False" Opacity="0" />
 							<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
 						</Grid>
 					</Border>
 					<ControlTemplate.Triggers>
 						<Trigger Property="IsMouseOver" Value="True">
-							<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
+							<Setter Property="Foreground" Value="{Binding BorderBrush, RelativeSource={RelativeSource Self}}" />
 							<Trigger.EnterActions>
 								<BeginStoryboard>
 									<Storyboard>
-										<DoubleAnimation Storyboard.TargetName="HoverSurface"
+										<util:ReduxDoubleAnimation Storyboard.TargetName="HoverSurface"
 											Storyboard.TargetProperty="Opacity"
 											To="1"
 											Duration="{StaticResource Redux.Motion.Fast}"
@@ -653,7 +673,7 @@
 							<Trigger.ExitActions>
 								<BeginStoryboard>
 									<Storyboard>
-										<DoubleAnimation Storyboard.TargetName="HoverSurface"
+										<util:ReduxDoubleAnimation Storyboard.TargetName="HoverSurface"
 											Storyboard.TargetProperty="Opacity"
 											To="0"
 											Duration="{StaticResource Redux.Motion.Standard}" />
@@ -661,6 +681,22 @@
 								</BeginStoryboard>
 							</Trigger.ExitActions>
 						</Trigger>
+						<Trigger Property="IsPressed" Value="True">
+							<Setter TargetName="HoverSurface" Property="Background" Value="{DynamicResource ReduxPressedBrush}" />
+						</Trigger>
+						<MultiDataTrigger>
+							<MultiDataTrigger.Conditions>
+								<Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource Self}}" Value="True" />
+								<Condition Binding="{Binding Path=(dapp:DivinityApp.IsKeyboardNavigating)}" Value="True" />
+							</MultiDataTrigger.Conditions>
+							<Setter TargetName="KeyboardFocusSurface" Property="Opacity" Value="1" />
+						</MultiDataTrigger>
+						<!-- Separator rows own one continuous hover surface, including the chevron. -->
+						<Trigger Property="Tag" Value="ReduxDividerToggle">
+							<Setter TargetName="HoverSurface" Property="Visibility" Value="Collapsed" />
+							<Setter TargetName="ButtonChrome" Property="util:ReduxWindowBehavior.HoverLift" Value="0" />
+						</Trigger>
+						<Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /></Trigger>
 					</ControlTemplate.Triggers>
 				</ControlTemplate>
 			</Setter.Value>
@@ -1468,7 +1504,9 @@
 		<PathGeometry Figures="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
 		<PathGeometry Figures="m9 12 2 2 4-4" />
 	</GeometryGroup>
-	<PathGeometry x:Key="Redux.Icon.Check" Figures="M20 6 9 17l-5-5" />
+	<PathGeometry x:Key="Redux.Icon.FoldSections" Figures="M4 3H20 M4 21H20 M8 7l4 4 4-4 M8 17l4-4 4 4" />
+    <PathGeometry x:Key="Redux.Icon.UnfoldSections" Figures="M4 3H20 M4 21H20 M8 10l4-4 4 4 M8 14l4 4 4-4" />
+    <PathGeometry x:Key="Redux.Icon.Check" Figures="M20 6 9 17l-5-5" />
 	<GeometryGroup x:Key="Redux.Icon.Flag">
 		<PathGeometry Figures="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
 		<LineGeometry StartPoint="4,15" EndPoint="4,22" />
@@ -2457,7 +2495,7 @@
 				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
 			<Border x:Name="ColumnHeaderSurface"
-				Background="{DynamicResource ReduxSurfaceMutedBrush}"
+				Background="{DynamicResource ReduxSurfaceElevatedBrush}"
 				BorderBrush="{DynamicResource ReduxBorderBrush}"
 				BorderThickness="0,0,0,1"
 				IsHitTestVisible="False" />
@@ -2749,6 +2787,182 @@
 		</Grid>
 	</DataTemplate>
 
+	<Style x:Key="ReduxCountBadgeStyle" TargetType="{x:Type Border}">
+		<Setter Property="MinWidth" Value="28"/>
+		<Setter Property="Margin" Value="8,0,0,0"/>
+		<Setter Property="Padding" Value="6,2"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}"/>
+		<Setter Property="BorderBrush" Value="Transparent"/>
+		<Setter Property="BorderThickness" Value="1"/>
+		<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Pill}"/>
+	</Style>
+	<Style x:Key="ReduxCountTextStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+		<Setter Property="HorizontalAlignment" Value="Center"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+		<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.11}"/>
+		<Setter Property="FontWeight" Value="SemiBold"/>
+		<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}"/>
+		<Style.Triggers>
+			<Trigger Property="Text" Value="0">
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}"/>
+				<Setter Property="Opacity" Value="0.72"/>
+			</Trigger>
+		</Style.Triggers>
+	</Style>
+			<Style x:Key="ModPaneCountBadgeStyle" TargetType="{x:Type Border}">
+				<Setter Property="MinWidth" Value="24" />
+				<Setter Property="Height" Value="20" />
+				<Setter Property="Margin" Value="8,0,0,0" />
+				<Setter Property="Padding" Value="6,0" />
+				<Setter Property="VerticalAlignment" Value="Center" />
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+				<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+				<Setter Property="BorderThickness" Value="1" />
+				<Setter Property="CornerRadius" Value="{DynamicResource Redux.CornerRadius.Pill}" />
+			</Style>
+			<Style x:Key="ModPaneCountTextStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
+				<Setter Property="HorizontalAlignment" Value="Center" />
+				<Setter Property="VerticalAlignment" Value="Center" />
+				<Setter Property="FontSize" Value="{DynamicResource Redux.FontSize.10}" />
+				<Setter Property="FontWeight" Value="SemiBold" />
+				<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
+			</Style>
+	<Style x:Key="ReduxSeparatorToggleStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource ReduxChromeButtonStyle}">
+		<!-- Share the pane chevrons' chrome and motion, retaining the separator's custom color. -->
+		<Setter Property="BorderBrush" Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"/>
+		<Setter Property="Background" Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=24}"/>
+		<Setter Property="AutomationProperties.Name" Value="{Binding VisualDividerTitle, StringFormat='Collapse {0}'}"/>
+		<Setter Property="ToolTip" Value="{Binding Path=(AutomationProperties.Name), RelativeSource={RelativeSource Self}}"/>
+		<Style.Triggers>
+			<DataTrigger Binding="{Binding IsVisualDividerCollapsed}" Value="True">
+				<Setter Property="AutomationProperties.Name" Value="{Binding VisualDividerTitle, StringFormat='Expand {0}'}"/>
+			</DataTrigger>
+		</Style.Triggers>
+	</Style>
+	<DataTemplate x:Key="ReduxSeparatorHeaderTemplate" DataType="{x:Type data:DivinityModData}">
+		<Grid x:Name="VisualDividerRoot" ToolTip="{Binding VisualDividerDescription}" ToolTipService.IsEnabled="{Binding HasVisualDividerDescription}">
+			<Border x:Name="VisualDividerChrome" MinHeight="32" Margin="2,2,2,2" Background="Transparent">
+				<Border.Triggers>
+					<EventTrigger RoutedEvent="PreviewMouseLeftButtonDown">
+						<BeginStoryboard>
+							<Storyboard>
+								<util:ReduxSelectionFlashAnimation Storyboard.TargetName="VisualDividerClickFlash" Storyboard.TargetProperty="Opacity" Duration="0:0:0.22"/>
+							</Storyboard>
+						</BeginStoryboard>
+					</EventTrigger>
+				</Border.Triggers>
+				<Grid>
+					<Grid x:Name="VisualDividerFeedback" Margin="0,1" Opacity="0" IsHitTestVisible="False">
+						<Border x:Name="VisualDividerHoverSurface" Opacity="0.62"
+							OpacityMask="{DynamicResource Redux.Separator.WashMask}"
+							CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+							Background="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=33}"/>
+						<Border x:Name="VisualDividerHoverRail" BorderThickness="{DynamicResource Redux.Rail.Thickness}"
+							BorderBrush="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
+							CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"/>
+					</Grid>
+					<Border x:Name="VisualDividerClickFlash" Margin="0,1" Opacity="0" IsHitTestVisible="False"
+						OpacityMask="{DynamicResource Redux.Separator.WashMask}"
+						Background="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=33}"
+						CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"/>
+                        <Button x:Name="VisualDividerToggle" Width="24" Height="24" Margin="3,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Padding="0" dd:DragDrop.DragSourceIgnore="True" Tag="ReduxDividerToggle" Style="{StaticResource ReduxSeparatorToggleStyle}">
+								<Path Width="10" Height="5" Stretch="Fill" Data="{StaticResource Redux.Icon.ChevronDownStroke}" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" StrokeThickness="1.25" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" RenderTransformOrigin="0.5,0.5">
+                                    <Path.RenderTransform><RotateTransform Angle="{Binding VisualDividerChevronAngle}"/></Path.RenderTransform>
+                                </Path>
+							</Button>
+                    <!-- Keep each separator button, icon, and label together, independent of table columns. -->
+					<Grid x:Name="VisualDividerLabelGroup" Margin="30,0,12,0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="24"/>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<Grid Width="24" Height="26" HorizontalAlignment="Left" VerticalAlignment="Center">
+							<Grid x:Name="VisualDividerMarker" Width="14" Height="14" Margin="4,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
+								<Ellipse Width="9.5" Height="9.5" Fill="Transparent" StrokeThickness="1.5" Stroke="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" Visibility="{Binding HasVisualDividerIcon, Converter={StaticResource BoolToVisibilityConverterReversed}}"/>
+								<controls:ReduxIcon IconKey="{Binding VisualDividerIconId}" Width="14" Height="14" Foreground="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" Visibility="{Binding HasVisualDividerIcon, Converter={StaticResource BoolToVisibilityConverter}}"/>
+							</Grid>
+						</Grid>
+						<DockPanel Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center">
+							<TextBlock x:Name="VisualDividerTitleText" DockPanel.Dock="Left" Margin="0,0,12,0" VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.13}" FontWeight="SemiBold" Text="{Binding VisualDividerTitle}" TextTrimming="CharacterEllipsis" ToolTip="{Binding VisualDividerTitle}">
+								<TextBlock.Style>
+									<Style TargetType="{x:Type TextBlock}">
+										<Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}"/>
+										<Style.Triggers>
+											<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="True">
+												<Setter Property="Foreground" Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"/>
+											</DataTrigger>
+										</Style.Triggers>
+									</Style>
+								</TextBlock.Style>
+							</TextBlock>
+							<Border x:Name="VisualDividerLine" Height="2" VerticalAlignment="Center" Opacity="0.55" Visibility="{Binding ShowVisualDividerLine, Converter={StaticResource BoolToVisibilityConverter}}" Background="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"/>
+						</DockPanel>
+						<Border x:Name="VisualDividerCountBadge" Grid.Column="2">
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}" BasedOn="{StaticResource ReduxCountBadgeStyle}">
+                                    <Setter Property="ToolTip" Value="{Binding VisualDividerHiddenItemCount, StringFormat='{}{0} mods'}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="True">
+                                            <Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+                                        </DataTrigger>
+                                        <MultiDataTrigger>
+                                            <MultiDataTrigger.Conditions>
+                                                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="True" />
+                                                <Condition Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True" />
+                                            </MultiDataTrigger.Conditions>
+                                            <Setter Property="Background" Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=30}" />
+                                        </MultiDataTrigger>
+                                        <DataTrigger Binding="{Binding VisualDividerHiddenItemCount}" Value="1">
+                                            <Setter Property="ToolTip" Value="1 mod" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock x:Name="VisualDividerCountText"
+                                Text="{Binding VisualDividerHiddenItemCount}"
+                                AutomationProperties.Name="{Binding ToolTip, RelativeSource={RelativeSource AncestorType={x:Type Border}}}">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource ReduxCountTextStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
+                                            </DataTrigger>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ContentControl}}}" Value="True" />
+                                                    <Condition Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Foreground" Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" />
+                                            </MultiDataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Border>
+					</Grid>
+				</Grid>
+			</Border>
+		</Grid>
+		<DataTemplate.Triggers>
+			<Trigger SourceName="VisualDividerChrome" Property="IsMouseOver" Value="True">
+				<Trigger.EnterActions><BeginStoryboard><Storyboard>
+					<util:ReduxDoubleAnimation Storyboard.TargetName="VisualDividerFeedback" Storyboard.TargetProperty="Opacity"
+						To="1" Duration="{StaticResource Redux.Motion.Fast}" EasingFunction="{StaticResource Redux.Motion.EaseOut}"/>
+				</Storyboard></BeginStoryboard></Trigger.EnterActions>
+				<Trigger.ExitActions><BeginStoryboard><Storyboard>
+					<util:ReduxDoubleAnimation Storyboard.TargetName="VisualDividerFeedback" Storyboard.TargetProperty="Opacity"
+						To="0" Duration="{StaticResource Redux.Motion.Standard}"/>
+				</Storyboard></BeginStoryboard></Trigger.ExitActions>
+				<Setter TargetName="VisualDividerToggle" Property="Foreground" Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" />
+			</Trigger>
+			<DataTrigger Binding="{Binding IsChildVisualDivider}" Value="True">
+				<Setter TargetName="VisualDividerChrome" Property="Margin" Value="22,2,2,2"/>
+				<Setter TargetName="VisualDividerTitleText" Property="FontWeight" Value="Normal"/>
+			</DataTrigger>
+		</DataTemplate.Triggers>
+	</DataTemplate>
 	<Style x:Key="DivinityModDataListItem" BasedOn="{StaticResource {x:Type ListViewItem}}" TargetType="{x:Type ListViewItem}">
 		<!-- Let WPF's item-selection model restore recycled containers directly. The
 			 former generator-status callback re-walked the complete mod collection every
@@ -2914,198 +3128,11 @@
 						<!-- Separator visuals are expensive and irrelevant to ordinary mod rows. -->
 						<ContentControl x:Name="VisualDivider"
 							Content="{Binding}"
+							ContentTemplate="{StaticResource ReduxSeparatorHeaderTemplate}"
+							Tag="{Binding DataContext.Settings.UseCategoryColorsForSidebarText, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
 							Focusable="False"
 							Visibility="{Binding ShowVisualDivider, Converter={StaticResource BoolToVisibilityConverter}}">
-							<ContentControl.ContentTemplate>
-								<DataTemplate DataType="{x:Type data:DivinityModData}">
-									<Grid x:Name="VisualDividerRoot"
-										ToolTip="{Binding VisualDividerDescription}"
-										ToolTipService.IsEnabled="{Binding HasVisualDividerDescription}">
-										<Border Margin="12,8,12,6" Padding="0,4" Background="Transparent">
-										<Border.Triggers>
-											<EventTrigger RoutedEvent="MouseEnter">
-												<BeginStoryboard>
-													<Storyboard>
-														<DoubleAnimation Storyboard.TargetName="VisualDividerHoverSurface"
-															Storyboard.TargetProperty="Opacity"
-															To="0.62"
-															Duration="{StaticResource Redux.Motion.Fast}"
-															EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-														<DoubleAnimation Storyboard.TargetName="VisualDividerHoverRail"
-															Storyboard.TargetProperty="Opacity"
-															To="1"
-															Duration="{StaticResource Redux.Motion.Fast}"
-															EasingFunction="{StaticResource Redux.Motion.EaseOut}" />
-													</Storyboard>
-												</BeginStoryboard>
-											</EventTrigger>
-											<EventTrigger RoutedEvent="MouseLeave">
-												<BeginStoryboard>
-													<Storyboard>
-														<DoubleAnimation Storyboard.TargetName="VisualDividerHoverSurface"
-															Storyboard.TargetProperty="Opacity"
-															To="0"
-															Duration="{StaticResource Redux.Motion.Standard}" />
-														<DoubleAnimation Storyboard.TargetName="VisualDividerHoverRail"
-															Storyboard.TargetProperty="Opacity"
-															To="0"
-															Duration="{StaticResource Redux.Motion.Standard}" />
-													</Storyboard>
-												</BeginStoryboard>
-											</EventTrigger>
-										</Border.Triggers>
-											<Grid>
-												<Grid.ColumnDefinitions>
-													<!-- The optional hierarchy slot is part of the same row geometry as
-														the toggle and label. Its vertical stroke shares the parent toggle's
-														center line and its branch terminates at the child toggle. -->
-													<ColumnDefinition Width="Auto" />
-													<ColumnDefinition Width="Auto" />
-													<ColumnDefinition Width="Auto" />
-													<ColumnDefinition Width="Auto" />
-													<ColumnDefinition Width="*" />
-													<ColumnDefinition Width="Auto" />
-												</Grid.ColumnDefinitions>
-												<Grid Grid.Column="0"
-													Width="18" Height="22"
-													HorizontalAlignment="Left"
-													VerticalAlignment="Center"
-													IsHitTestVisible="False"
-													Visibility="{Binding IsChildVisualDivider, Converter={StaticResource BoolToVisibilityConverter}}">
-													<Path Data="M11,0 L11,7 C11,10 13,11 16,11 L23,11"
-														HorizontalAlignment="Left"
-														VerticalAlignment="Top"
-														Stretch="None"
-														Stroke="{DynamicResource ReduxTextMutedBrush}"
-														StrokeThickness="1.25"
-														StrokeStartLineCap="Flat"
-														StrokeEndLineCap="Round"
-														StrokeLineJoin="Round"
-														Opacity="0.72"
-														SnapsToDevicePixels="True" />
-												</Grid>
-								<!-- Fill/rail split for the same reason as RowHoverSurface/RowHoverRail: the
-									0.62 hover cap is meant for the fill's tint, not the rail's edge. -->
-								<Border x:Name="VisualDividerHoverSurface"
-									Grid.ColumnSpan="6"
-									Margin="-6,-5"
-									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
-									OpacityMask="{StaticResource Redux.Hover.WashMask}"
-									IsHitTestVisible="False"
-									Opacity="0">
-									<Border.Style>
-										<Style TargetType="{x:Type Border}">
-											<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
-											<Style.Triggers>
-												<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
-													<Setter Property="Background" Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=4D}" />
-												</DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</Border.Style>
-								</Border>
-								<Border x:Name="VisualDividerHoverRail"
-									Grid.ColumnSpan="6"
-									Margin="-6,-5"
-									BorderThickness="{DynamicResource Redux.Rail.Thickness}"
-									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
-									IsHitTestVisible="False"
-									Opacity="0">
-									<Border.Style>
-										<Style TargetType="{x:Type Border}">
-											<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
-											<Style.Triggers>
-												<DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
-													<Setter Property="BorderBrush" Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" />
-												</DataTrigger>
-											</Style.Triggers>
-										</Style>
-									</Border.Style>
-								</Border>
-							<Button Grid.Column="1" Width="22" Height="22" Margin="0,0,5,0" Padding="0"
-					dd:DragDrop.DragSourceIgnore="True"
-					Tag="ReduxDividerToggle">
-					<Button.Style>
-						<Style BasedOn="{StaticResource ReduxChromeButtonStyle}" TargetType="{x:Type Button}">
-							<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
-							<Style.Triggers>
-								<Trigger Property="IsMouseOver" Value="True">
-									<Setter Property="Foreground"
-										Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" />
-									<Setter Property="Background"
-										Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=33}" />
-									<Setter Property="BorderBrush"
-										Value="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}" />
-								</Trigger>
-							</Style.Triggers>
-						</Style>
-					</Button.Style>
-									<Path Width="10" Height="5"
-										Data="{StaticResource Redux.Icon.ChevronDownStroke}"
-										RenderTransformOrigin="0.5,0.5"
-										Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-										StrokeEndLineCap="Round"
-										StrokeLineJoin="Round"
-										StrokeStartLineCap="Round"
-										StrokeThickness="1.25"
-										Stretch="Fill">
-										<Path.RenderTransform>
-											<RotateTransform Angle="{Binding VisualDividerChevronAngle}" />
-										</Path.RenderTransform>
-									</Path>
-								</Button>
-								<Grid Grid.Column="2" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center">
-									<!--  Stroke ring, not a filled dot: default markers follow the Lucide stroke icon language.  -->
-									<Ellipse Width="9.5"
-										Height="9.5"
-										Fill="Transparent"
-										Stroke="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
-										StrokeThickness="1.5"
-										Visibility="{Binding HasVisualDividerIcon, Converter={StaticResource BoolToVisibilityConverterReversed}}" />
-									<controls:ReduxIcon IconKey="{Binding VisualDividerIconId}"
-										Foreground="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
-										Visibility="{Binding HasVisualDividerIcon, Converter={StaticResource BoolToVisibilityConverter}}">
-										<controls:ReduxIcon.Style>
-											<Style BasedOn="{StaticResource {x:Type controls:ReduxIcon}}" TargetType="{x:Type controls:ReduxIcon}">
-												<Setter Property="Width" Value="13" />
-												<Setter Property="Height" Value="13" />
-												<Style.Triggers>
-													<DataTrigger Binding="{Binding VisualDividerIconId}" Value="marker-diamond">
-														<Setter Property="Width" Value="11" />
-														<Setter Property="Height" Value="11" />
-													</DataTrigger>
-												</Style.Triggers>
-											</Style>
-										</controls:ReduxIcon.Style>
-									</controls:ReduxIcon>
-								</Grid>
-								<TextBlock Grid.Column="3" Margin="0,0,10,0" VerticalAlignment="Center" FontSize="{DynamicResource Redux.FontSize.12}" FontWeight="SemiBold"
-										Foreground="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
-										Text="{Binding VisualDividerTitle}" TextTrimming="CharacterEllipsis"
-										ToolTip="{Binding VisualDividerTitle}"
-										Visibility="{Binding VisualDividerTitle, Converter={StaticResource StringNotEmptyToVisibilityConverter}}" />
-								<Border x:Name="VisualDividerLine"
-									Grid.Column="4"
-									Height="1.5"
-									VerticalAlignment="Center"
-									CornerRadius="1"
-									Background="{Binding VisualDividerColor, Converter={StaticResource StringToSolidBrushConverter}}"
-									Visibility="{Binding ShowVisualDividerLine, Converter={StaticResource BoolToVisibilityConverter}}" />
-								<Border Grid.Column="5" MinWidth="25" Margin="8,0,0,0" Padding="6,2"
-									VerticalAlignment="Center"
-									Background="{DynamicResource ReduxSurfaceMutedBrush}"
-									CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
-									Visibility="{Binding ShowVisualDividerHiddenItemCount, Converter={StaticResource BoolToVisibilityConverter}}">
-									<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
-										Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-										FontSize="{DynamicResource Redux.FontSize.10}"
-										Text="{Binding VisualDividerHiddenItemCount}" />
-								</Border>
-												</Grid>
-											</Border>
-										</Grid>
-									</DataTemplate>
-							</ContentControl.ContentTemplate>
+
 						</ContentControl>
 						<Border x:Name="RowBorder"
 							MinHeight="{TemplateBinding MinHeight}"
@@ -3115,6 +3142,23 @@
 							BorderThickness="{TemplateBinding BorderThickness}"
 							SnapsToDevicePixels="True">
 							<Grid x:Name="ModRowRoot">
+                                <Grid x:Name="ModRowFeedback" IsHitTestVisible="False">
+                                    <Grid.Style>
+                                        <Style TargetType="{x:Type Grid}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsInsideChildVisualDivider}" Value="True">
+                                                    <Setter Property="Margin" Value="{Binding ChildModFeedbackInset, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}, FallbackValue='0'}"/>
+                                                </DataTrigger>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding IsInsideChildVisualDivider}" Value="False"/>
+                                                        <Condition Binding="{Binding IsInsideVisualDivider}" Value="True"/>
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="Margin" Value="{Binding RootModFeedbackInset, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}, FallbackValue='0'}"/>
+                                                </MultiDataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
 								<!--
 									Fill and rail used to be one Border (fill Background + rail
 									BorderBrush). Selection and hover both cap the whole element's
@@ -3205,21 +3249,47 @@
 										</Style>
 									</Border.Style>
 								</Border>
-								<Border x:Name="RowConfirmationFlash"
-									Margin="2,1"
-									Background="{Binding DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=4D, FallbackValue=#4D9676FF}"
-									CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
-									IsHitTestVisible="False"
-									Opacity="0" />
-								<GridViewRowPresenter x:Name="ModRowPresenter"
+								<Border x:Name="RowConfirmationFlash" Margin="2,1"
+                                    CornerRadius="{DynamicResource Redux.CornerRadius.ControlInner}"
+                                    IsHitTestVisible="False" Opacity="0">
+                                    <Border.Style>
+                                        <Style TargetType="{x:Type Border}">
+                                            <Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True">
+                                                    <Setter Property="Background" Value="{Binding DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=4D}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                </Border>
+								</Grid>
+                                <GridViewRowPresenter x:Name="ModRowPresenter"
 									Columns="{Binding Path=View.Columns, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
 									Content="{TemplateBinding Content}"
 									Margin="{Binding Padding, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}"
 									VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+								<!-- The hierarchy number shares the icon lane, which can cross
+								     the narrow # cell for sub-separators. Reuse that column's
+								     template outside its clipping cell; the data grid stays intact. -->
+								<ContentPresenter x:Name="HierarchyIndexPresenter" Tag="HierarchyIndex"
+									Margin="16,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="Collapsed"
+									Content="{TemplateBinding Content}"
+									ContentTemplate="{Binding View.Columns[0].CellTemplate, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}"/>
 							</Grid>
 						</Border>
 					</StackPanel>
 					<ControlTemplate.Triggers>
+						<DataTrigger Binding="{Binding UsesHierarchyIndexAlignment, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True">
+							<Setter TargetName="HierarchyIndexPresenter" Property="Visibility" Value="Visible"/>
+						</DataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding HasSeparatorRows, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True"/>
+                                <Condition Binding="{Binding IsInsideVisualDivider}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="RowBorder" Property="Margin" Value="{Binding GroupingContentInset, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}"/>
+                        </MultiDataTrigger>
 						<Trigger Property="IsMouseOver" Value="True">
 							<!-- Suppress inherited ListViewItem hover chrome. Redux draws its
 								own category-aware surface and rail below; allowing the base
@@ -3365,6 +3435,7 @@
 	<Style BasedOn="{StaticResource VirtualizedModListView}" TargetType="controls:ModListView">
 	</Style>
 	<Style x:Key="ModOrderListView" BasedOn="{StaticResource VirtualizedModListView}" TargetType="ListView">
+		<Setter Property="controls:ModListView.UsesSeparatorHeaders" Value="True" />
 		<Setter Property="KeyboardNavigation.AcceptsReturn" Value="False" />
 		<Setter Property="KeyboardNavigation.TabNavigation" Value="Continue" />
 		<Setter Property="dd:DragDrop.IsDragSource" Value="True" />
@@ -3374,6 +3445,10 @@
 			<Setter.Value>
 				<ControlTemplate TargetType="{x:Type controls:ModListView}">
 					<Grid Background="{TemplateBinding Background}">
+						<Border Height="30" VerticalAlignment="Top" IsHitTestVisible="False"
+							Visibility="{Binding HideHeader, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverterReversed}}"
+							Background="{DynamicResource ReduxSurfaceElevatedBrush}"
+							BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="0,0,0,1"/>
 						<ScrollViewer Name="ListScrollViewer" Style="{DynamicResource {x:Static GridView.GridViewScrollViewerStyleKey}}">
 							<ScrollViewer.Resources>
 								<Style BasedOn="{StaticResource {x:Type ScrollBar}}" TargetType="{x:Type ScrollBar}">
@@ -3386,7 +3461,15 @@
 							</ScrollViewer.Resources>
 							<ItemsPresenter x:Name="ListItemsPresenter" />
 						</ScrollViewer>
-						<Border Name="EmptyStatePanel"
+						<controls:SeparatorGroupingGutter Owner="{Binding RelativeSource={RelativeSource TemplatedParent}}" Opacity="0.8" IsHitTestVisible="False"/>
+						<Grid x:Name="ColumnResizeFeedback" Width="8" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" Opacity="0" IsHitTestVisible="False">
+                            <Grid.RenderTransform><TranslateTransform X="{Binding ColumnResizeOffset, RelativeSource={RelativeSource TemplatedParent}}"/></Grid.RenderTransform>
+                            <Border Width="8" Background="{DynamicResource ReduxAccentHoverBrush}" CornerRadius="3" Opacity="0.22"/>
+                            <Border Width="2" HorizontalAlignment="Center" Background="{DynamicResource ReduxAccentHoverBrush}" CornerRadius="1">
+                                <Border.Effect><DropShadowEffect Color="{DynamicResource ReduxAccentColor}" BlurRadius="8" ShadowDepth="0" Opacity="0.45"/></Border.Effect>
+                            </Border>
+                        </Grid>
+                        <Border Name="EmptyStatePanel"
 							Margin="24"
 							HorizontalAlignment="Center"
 							VerticalAlignment="Center"
@@ -3431,6 +3514,14 @@
 						    Visibility="Collapsed" />
 					</Grid>
 					<ControlTemplate.Triggers>
+                        <Trigger Property="IsColumnResizing" Value="True">
+                            <Trigger.EnterActions><BeginStoryboard><Storyboard>
+                                <util:ReduxDoubleAnimation Storyboard.TargetName="ColumnResizeFeedback" Storyboard.TargetProperty="Opacity" To="1" Duration="{StaticResource Redux.Motion.Fast}"/>
+                            </Storyboard></BeginStoryboard></Trigger.EnterActions>
+                            <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                                <util:ReduxDoubleAnimation Storyboard.TargetName="ColumnResizeFeedback" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource Redux.Motion.Standard}"/>
+                            </Storyboard></BeginStoryboard></Trigger.ExitActions>
+                        </Trigger>
 						<Trigger Property="HasItems" Value="False">
 							<Setter TargetName="EmptyStatePanel" Property="Visibility" Value="Visible" />
 						</Trigger>
@@ -3798,6 +3889,10 @@
 								<Setter Property="Background" Value="{DynamicResource ReduxInfoPillBackground}" />
 								<Setter Property="BorderBrush" Value="{DynamicResource ReduxInfoPillBorderBrush}" />
 							</MultiDataTrigger>
+							<DataTrigger Binding="{Binding IsHeldOverride}" Value="True">
+								<Setter Property="Background" Value="{DynamicResource ReduxSurfaceBrush}" />
+								<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
+							</DataTrigger>
 							<MultiDataTrigger>
 								<MultiDataTrigger.Conditions>
 									<Condition Binding="{Binding UseIconsOnly}" Value="True" />
@@ -3833,6 +3928,10 @@
 											</MultiDataTrigger.Conditions>
 											<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
 										</MultiDataTrigger>
+										<DataTrigger Binding="{Binding IsHeldOverride}" Value="True">
+											<Setter Property="IconKey" Value="circle-minus" />
+											<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+										</DataTrigger>
 										<MultiDataTrigger>
 											<MultiDataTrigger.Conditions>
 												<Condition Binding="{Binding UseIconsOnly}" Value="True" />
@@ -3858,8 +3957,12 @@
 											<Condition Binding="{Binding ForceAllowInLoadOrder}" Value="False" />
 										</MultiDataTrigger.Conditions>
 										<Setter Property="Foreground" Value="{DynamicResource ReduxInfoBrush}" />
-										<Setter Property="Text" Value="Always Loaded" />
+										<Setter Property="Text" Value="Override enabled" />
 									</MultiDataTrigger>
+									<DataTrigger Binding="{Binding IsHeldOverride}" Value="True">
+										<Setter Property="Foreground" Value="{DynamicResource ReduxTextMutedBrush}" />
+										<Setter Property="Text" Value="Override inactive" />
+									</DataTrigger>
 									<!-- Presentation color is optional; status remains communicated by
 									     the semantic border, surface, and icon when labels use theme text. -->
 									<DataTrigger Binding="{Binding UseCategoryColorsForText}" Value="False">
@@ -4308,21 +4411,9 @@
 	</DataTemplate>
 	<DataTemplate x:Key="ModNameTemplate" DataType="{x:Type data:DivinityModData}">
 		<controls:ModEntryGrid>
-			<controls:ModEntryGrid.Style>
-				<Style TargetType="{x:Type controls:ModEntryGrid}">
-					<Setter Property="Margin" Value="0" />
-					<Style.Triggers>
-						<!-- Keep the table geometry intact. Hierarchy belongs to the primary
-							 identity cell, so order/category/author columns remain under their
-							 headers even when a child separator owns this mod. -->
-						<DataTrigger Binding="{Binding IsInsideChildVisualDivider}" Value="True">
-							<Setter Property="Margin" Value="18,0,0,0" />
-						</DataTrigger>
-					</Style.Triggers>
-				</Style>
-			</controls:ModEntryGrid.Style>
 			<controls:ModEntryGrid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
+				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="Auto" />
 				<ColumnDefinition Width="Auto" />
 			</controls:ModEntryGrid.ColumnDefinitions>
@@ -4334,14 +4425,17 @@
 			    ToolTipService.IsEnabled="{Binding HasToolTip}">
 				<TextBlock.Style>
 					<Style BasedOn="{StaticResource Redux.Text.ListPrimary}" TargetType="{x:Type TextBlock}">
-						<Setter Property="Text" Value="{Binding Metadata.PackageTitle}" />
+						<Setter Property="Text" Value="{Binding ListDisplayTitle}" />
 						<Style.Triggers>
-							<DataTrigger Binding="{Binding HasCustomAlias}" Value="True">
-								<Setter Property="Text" Value="{Binding CustomAlias}" />
-							</DataTrigger>
-							<DataTrigger Binding="{Binding DisplayFileForName}" Value="True">
-								<Setter Property="Text" Value="{Binding FileName}" />
-							</DataTrigger>
+                            <DataTrigger Binding="{Binding IsInsideChildVisualDivider}" Value="True">
+                                <Setter Property="Margin" Value="{Binding ChildModNameInset, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}, FallbackValue='0'}"/>
+                            </DataTrigger><MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding HasSeparatorRows, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True"/>
+                                    <Condition Binding="{Binding IsInsideChildVisualDivider}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Margin" Value="{Binding RootModNameInset, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}"/>
+                            </MultiDataTrigger>
 						</Style.Triggers>
 					</Style>
 				</TextBlock.Style>
@@ -4383,9 +4477,18 @@
 					</Style>
 				</Border.Style>
 			</Border>
+			<Border Grid.Column="2"
+				Width="7"
+				Height="7"
+				Margin="6,0,3,0"
+				VerticalAlignment="Center"
+				Background="{DynamicResource ReduxAccentBrush}"
+				CornerRadius="4"
+				ToolTip="A newer file is linked to this installed Nexus Mods file"
+				Visibility="{Binding HasAvailableSourceUpdate, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
 			<!-- Materialize the status subtree only when at least one indicator can render. -->
 			<ContentControl x:Name="DeferredModNameDetails"
-				Grid.Column="2"
+				Grid.Column="3"
 				Padding="0,0,4,0"
 				HorizontalContentAlignment="Left"
 				VerticalContentAlignment="Center"
@@ -4438,17 +4541,53 @@
 						Margin="2,0"
 						Padding="5,0"
 						VerticalAlignment="Center"
-						Background="{DynamicResource ReduxSurfaceMutedBrush}"
-						BorderThickness="0"
+						BorderThickness="1"
 						CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
 						ToolTip="{Binding SourceComponentTooltip}"
 						Visibility="{Binding SourceComponentVisibility, FallbackValue=Collapsed}">
+						<Border.Style>
+							<Style TargetType="{x:Type Border}">
+								<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
+								<Setter Property="BorderBrush" Value="Transparent" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}" Value="True">
+										<Setter Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" />
+										<Setter Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" />
+									</DataTrigger>
+									<MultiDataTrigger>
+										<MultiDataTrigger.Conditions>
+											<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}" Value="True" />
+											<Condition Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True" />
+										</MultiDataTrigger.Conditions>
+										<Setter Property="Background" Value="{Binding DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}, ConverterParameter=4D}" />
+										<Setter Property="BorderBrush" Value="{Binding DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}}" />
+									</MultiDataTrigger>
+								</Style.Triggers>
+							</Style>
+						</Border.Style>
 						<TextBlock HorizontalAlignment="Center"
 							VerticalAlignment="Center"
 							FontSize="{DynamicResource Redux.FontSize.10}"
 							FontWeight="SemiBold"
-							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="{Binding SourceComponentIndex}" />
+							Text="{Binding SourceComponentIndex}">
+							<TextBlock.Style>
+								<Style TargetType="{x:Type TextBlock}">
+									<Setter Property="Foreground" Value="{DynamicResource ReduxTextSecondaryBrush}" />
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}" Value="True">
+											<Setter Property="Foreground" Value="{DynamicResource ReduxAccentHoverBrush}" />
+										</DataTrigger>
+										<MultiDataTrigger>
+											<MultiDataTrigger.Conditions>
+												<Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}" Value="True" />
+												<Condition Binding="{Binding DataContext.Settings.UseCategoryColorsForInteractions, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Value="True" />
+											</MultiDataTrigger.Conditions>
+											<Setter Property="Foreground" Value="{Binding DisplayCategories[0].Color, Converter={StaticResource StringToSolidBrushConverter}}" />
+										</MultiDataTrigger>
+									</Style.Triggers>
+								</Style>
+							</TextBlock.Style>
+						</TextBlock>
 					</Border>
 					<controls:ReduxIcon Width="16"
 					    Height="16"
@@ -5064,18 +5203,147 @@
 			</Trigger>
 		</Style.Triggers>
 	</Style>
+	<!-- The mod panes share one header template and the same cell inset as their rows.
+	     Keep WPF's named resize and floating-drag parts; do not replace header behavior. -->
+	<Style x:Key="ReduxModColumnHeaderStyle" BasedOn="{StaticResource GridViewLeftContainerStyle}" TargetType="{x:Type GridViewColumnHeader}">
+		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
+		<Setter Property="FontWeight" Value="Medium" />
+		<Setter Property="Padding" Value="{x:Static controls:ModListView.ColumnHeaderPadding}" />
+		<Setter Property="BorderThickness" Value="0,0,0,1" />
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
+					<Grid Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+						<Border BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" />
+						<Grid Margin="{TemplateBinding Padding}" ClipToBounds="True">
+							<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <Path x:Name="SortDirectionGlyph" Grid.Column="1" Width="8" Height="4" Margin="6,0,0,0"
+                                Visibility="Collapsed" VerticalAlignment="Center" Stretch="Fill" IsHitTestVisible="False"
+                                Data="{StaticResource Redux.Icon.ChevronDownStroke}" Stroke="{TemplateBinding Foreground}"
+                                StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" RenderTransformOrigin="0.5,0.5">
+                                <Path.RenderTransform><RotateTransform Angle="0" /></Path.RenderTransform>
+                            </Path>
+                            <ContentPresenter x:Name="HeaderContent" ContentSource="Content"
+								HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+								VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+								RecognizesAccessKey="True" SnapsToDevicePixels="True" />
+						</Grid>
+						<Border x:Name="ResizeGripHalo" Width="8" Margin="0,4,0,4" HorizontalAlignment="Right" Background="{DynamicResource ReduxAccentHoverBrush}" CornerRadius="3" Opacity="0" IsHitTestVisible="False"/>
+                        <Border x:Name="ResizeGuide" Opacity="0" Width="1" Margin="0,7,0,7" HorizontalAlignment="Right"
+							Background="{DynamicResource ReduxBorderBrush}" IsHitTestVisible="False" />
+						<Thumb x:Name="PART_HeaderGripper" Width="7" HorizontalAlignment="Right" Cursor="SizeWE"
+							Background="Transparent" Focusable="False">
+							<Thumb.Template><ControlTemplate TargetType="{x:Type Thumb}"><Border Background="{TemplateBinding Background}" /></ControlTemplate></Thumb.Template>
+						</Thumb>
+					</Grid>
+					<ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Path={x:Static controls:ModListView.ColumnSortDirectionPath}, RelativeSource={RelativeSource Self}}" Value="{x:Static component:ListSortDirection.Ascending}">
+                            <Setter TargetName="SortDirectionGlyph" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="SortDirectionGlyph" Property="RenderTransform"><Setter.Value><RotateTransform Angle="180" /></Setter.Value></Setter>
+                            <Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+                            <Setter Property="AutomationProperties.ItemStatus" Value="Sorted ascending" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path={x:Static controls:ModListView.ColumnSortDirectionPath}, RelativeSource={RelativeSource Self}}" Value="{x:Static component:ListSortDirection.Descending}">
+                            <Setter TargetName="SortDirectionGlyph" Property="Visibility" Value="Visible" />
+                            <Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+                            <Setter Property="AutomationProperties.ItemStatus" Value="Sorted descending" />
+                        </DataTrigger>
+						<Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ResizeGuide" Property="Opacity" Value="0.65" /></Trigger>
+                        <Trigger SourceName="PART_HeaderGripper" Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions><BeginStoryboard><Storyboard>
+                                <util:ReduxDoubleAnimation Storyboard.TargetName="ResizeGripHalo" Storyboard.TargetProperty="Opacity" To="0.22" Duration="{StaticResource Redux.Motion.Fast}"/>
+                            </Storyboard></BeginStoryboard></Trigger.EnterActions>
+                            <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                                <util:ReduxDoubleAnimation Storyboard.TargetName="ResizeGripHalo" Storyboard.TargetProperty="Opacity" To="0" Duration="{StaticResource Redux.Motion.Standard}"/>
+                            </Storyboard></BeginStoryboard></Trigger.ExitActions>
+                            <Setter TargetName="ResizeGuide" Property="Opacity" Value="1"/>
+                            <Setter TargetName="ResizeGuide" Property="Background" Value="{DynamicResource ReduxAccentHoverBrush}"/>
+                        </Trigger>
+                        <Trigger SourceName="PART_HeaderGripper" Property="IsDragging" Value="True">
+                            <Setter TargetName="ResizeGuide" Property="Opacity" Value="1"/>
+                            <Setter TargetName="ResizeGuide" Property="Background" Value="{DynamicResource ReduxAccentHoverBrush}"/>
+                        </Trigger>
+					</ControlTemplate.Triggers>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+		<Style.Triggers>
+			<MultiDataTrigger>
+				<MultiDataTrigger.Conditions>
+					<Condition Binding="{Binding Content, RelativeSource={RelativeSource Self}}" Value="#"/>
+					<Condition Binding="{Binding UsesHierarchyIndexAlignment, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True"/>
+				</MultiDataTrigger.Conditions>
+				<Setter Property="Padding" Value="17,0,0,0"/>
+			</MultiDataTrigger>
+			<Trigger Property="Role" Value="Floating">
+				<Setter Property="Opacity" Value="0.8" />
+				<Setter Property="Template"><Setter.Value><ControlTemplate TargetType="{x:Type GridViewColumnHeader}"><Canvas x:Name="PART_FloatingHeaderCanvas" /></ControlTemplate></Setter.Value></Setter>
+			</Trigger>
+			<Trigger Property="Role" Value="Padding">
+				<Setter Property="Background" Value="{DynamicResource ReduxSurfaceElevatedBrush}" />
+				<Setter Property="IsHitTestVisible" Value="True" />
+				<Setter Property="Template"><Setter.Value><ControlTemplate TargetType="{x:Type GridViewColumnHeader}"><Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,0,0,1" /></ControlTemplate></Setter.Value></Setter>
+			</Trigger>
+		</Style.Triggers>
+	</Style>
 	<Style x:Key="GridViewCenteredContainerStyle" BasedOn="{StaticResource GridViewLeftContainerStyle}" TargetType="{x:Type GridViewColumnHeader}">
 		<Setter Property="HorizontalContentAlignment" Value="Center" />
 		<Setter Property="VerticalContentAlignment" Value="Center" />
 		<Setter Property="Margin" Value="0" />
 	</Style>
 	<DataTemplate x:Key="GridViewTextblockHeaderTemplate">
-		<TextBlock Margin="2,0,2,0" Text="{Binding}" />
+		<TextBlock x:Name="HeaderLabel" Margin="2,0,2,0" Text="{Binding}" TextTrimming="CharacterEllipsis" />
+		<DataTemplate.Triggers>
+			<MultiDataTrigger>
+				<MultiDataTrigger.Conditions>
+					<Condition Binding="{Binding}" Value="#"/>
+					<Condition Binding="{Binding UsesHierarchyIndexAlignment, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True"/>
+				</MultiDataTrigger.Conditions>
+				<Setter TargetName="HeaderLabel" Property="Width" Value="{x:Static controls:ModListView.HierarchyIndexWidth}"/>
+				<Setter TargetName="HeaderLabel" Property="TextAlignment" Value="Center"/>
+			</MultiDataTrigger>
+			<DataTrigger Binding="{Binding UsesSeparatorHeaders, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True">
+				<Setter TargetName="HeaderLabel" Property="Margin" Value="0" />
+			</DataTrigger>
+
+			<DataTrigger Binding="{Binding}" Value="Last Updated">
+				<Setter TargetName="HeaderLabel" Property="ToolTip" Value="Latest known mod update date from its linked source or package metadata; not the local file date." />
+			</DataTrigger>
+			<DataTrigger Binding="{Binding}" Value="Last Modified">
+				<Setter TargetName="HeaderLabel" Property="ToolTip" Value="Date the installed local mod file was last changed. Right-click the header to show or hide this column." />
+			</DataTrigger>
+		</DataTemplate.Triggers>
 	</DataTemplate>
+	<Style x:Key="ModOrderIndexTextStyle" BasedOn="{StaticResource Redux.Text.Metadata}" TargetType="{x:Type TextBlock}">
+		<Setter Property="Margin" Value="2,0,2,0" />
+		<Style.Triggers>
+			<DataTrigger Binding="{Binding UsesHierarchyIndexAlignment, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True">
+				<Setter Property="Width" Value="{x:Static controls:ModListView.HierarchyIndexWidth}"/>
+				<Setter Property="HorizontalAlignment" Value="Left"/>
+				<Setter Property="TextAlignment" Value="Center"/>
+				<Setter Property="Visibility" Value="Hidden"/>
+			</DataTrigger>
+			<DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType={x:Type ContentPresenter}}}" Value="HierarchyIndex">
+				<Setter Property="Visibility" Value="Visible"/>
+			</DataTrigger>
+			<DataTrigger Binding="{Binding HasSeparatorRows, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True">
+				<Setter Property="Margin" Value="{Binding RootModIndexInset, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}"/>
+			</DataTrigger>
+			<!-- Indent the rendered number with its sub-separator icon without
+			     making the narrow native index cell measure wider and clip it. -->
+			<MultiDataTrigger>
+				<MultiDataTrigger.Conditions>
+					<Condition Binding="{Binding UsesHierarchyIndexAlignment, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True"/>
+					<Condition Binding="{Binding IsInsideChildVisualDivider}" Value="True"/>
+				</MultiDataTrigger.Conditions>
+				<Setter Property="RenderTransform"><Setter.Value><TranslateTransform X="{x:Static controls:ModListView.HierarchyLevelStep}"/></Setter.Value></Setter>
+			</MultiDataTrigger>
+		</Style.Triggers>
+	</Style>
 	<GridView x:Key="ModGridView"
 	    x:Shared="False"
 	    AllowsColumnReorder="True"
-	    ColumnHeaderContainerStyle="{StaticResource GridViewLeftContainerStyle}">
+	    ColumnHeaderContainerStyle="{StaticResource ReduxModColumnHeaderStyle}">
 		<GridView.Columns>
 			<GridViewColumn Width="45"
 			    behavior:ScreenReaderHelperBehavior.HelpText="The mod order index column"
@@ -5084,18 +5352,14 @@
 			    HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate>
 					<DataTemplate>
-						<TextBlock Margin="2,0,2,0"
+						<TextBlock x:Name="ModOrderIndexText"
 							Background="Transparent"
-							Style="{StaticResource Redux.Text.Metadata}"
+							Style="{StaticResource ModOrderIndexTextStyle}"
 							Text="{Binding Index}" />
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
-			<GridViewColumn Width="240" CellTemplate="{StaticResource ModNameTemplate}">
-				<GridViewColumn.Header>
-					<TextBlock Text="Name" />
-				</GridViewColumn.Header>
-			</GridViewColumn>
+			<GridViewColumn Width="298" CellTemplate="{StaticResource ModNameTemplate}" Header="Name" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
@@ -5123,13 +5387,9 @@
 	<GridView x:Key="OverrideModGridView"
 	    x:Shared="False"
 	    AllowsColumnReorder="True"
-	    ColumnHeaderContainerStyle="{StaticResource GridViewLeftContainerStyle}">
+	    ColumnHeaderContainerStyle="{StaticResource ReduxModColumnHeaderStyle}">
 		<GridView.Columns>
-			<GridViewColumn Width="240" CellTemplate="{StaticResource ModNameTemplate}">
-				<GridViewColumn.Header>
-					<TextBlock Text="Name" />
-				</GridViewColumn.Header>
-			</GridViewColumn>
+			<GridViewColumn Width="298" CellTemplate="{StaticResource ModNameTemplate}" Header="Name" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="175" CellTemplate="{StaticResource ModCategoryTemplate}" Header="Category" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="130" CellTemplate="{StaticResource ModAuthorTemplate}" Header="Author" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
 			<GridViewColumn Width="115" CellTemplate="{StaticResource ModLastUpdatedTemplate}" Header="Last Updated" HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />
@@ -5152,7 +5412,7 @@
 	<GridView x:Key="InactiveModGridView"
 	    x:Shared="False"
 	    AllowsColumnReorder="True"
-	    ColumnHeaderContainerStyle="{StaticResource GridViewLeftContainerStyle}">
+	    ColumnHeaderContainerStyle="{StaticResource ReduxModColumnHeaderStyle}">
 		<GridView.Columns>
 <GridViewColumn Width="45"
 			    behavior:ScreenReaderHelperBehavior.HelpText="The inactive arrangement index column"
@@ -5161,15 +5421,15 @@
 			    HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}">
 				<GridViewColumn.CellTemplate>
 					<DataTemplate>
-						<TextBlock Margin="2,0,2,0"
+						<TextBlock x:Name="ModOrderIndexText"
 							Background="Transparent"
-							Style="{StaticResource Redux.Text.Metadata}"
+							Style="{StaticResource ModOrderIndexTextStyle}"
 							Text="{Binding InactiveIndex}" />
 					</DataTemplate>
 				</GridViewColumn.CellTemplate>
 			</GridViewColumn>
 
-			<GridViewColumn Width="240"
+			<GridViewColumn Width="298"
 			    CellTemplate="{StaticResource ModNameTemplate}"
 			    Header="Name"
 			    HeaderTemplate="{StaticResource GridViewTextblockHeaderTemplate}" />

@@ -1,9 +1,8 @@
-using AdonisUI.Controls;
+﻿using AdonisUI.Controls;
 using DivinityModManager.Controls;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Input;
 using DivinityModManager.Util;
 using Microsoft.Win32;
@@ -15,7 +14,6 @@ namespace DivinityModManager.Views;
 public partial class CategoryNameDialog : AdonisWindow
 {
 	private bool _updatingColorControls;
-	private bool _draggingHue;
 	private bool _draggingColorPlane;
 	private bool _preserveHsvOnColorChange;
 	private double _hue;
@@ -30,7 +28,7 @@ public partial class CategoryNameDialog : AdonisWindow
 	public bool ResetToDefaultRequested { get; private set; }
 	public string CategoryName => CategoryNameTextBox.Text?.Trim();
 	public string CategoryDescription => CategoryDescriptionTextBox.Text?.Trim() ?? String.Empty;
-	public bool HideSeparatorLine => HideSeparatorLineCheckBox?.IsChecked == true;
+	public bool HideSeparatorLine => ShowSeparatorLineCheckBox?.IsChecked != true;
 	public bool UseSeparatorInEveryLoadOrder => GlobalSeparatorCheckBox?.IsChecked == true;
 	public string CategoryColor => CategoryColorPicker.SelectedColor is Color color
 		? $"#{color.R:X2}{color.G:X2}{color.B:X2}" : "#8A6AF1";
@@ -43,6 +41,41 @@ public partial class CategoryNameDialog : AdonisWindow
 				? ReduxCustomIconService.WithTint(iconId, TintCustomIconCheckBox?.IsChecked == true)
 				: iconId;
 		}
+	}
+
+	private sealed record SeparatorParentChoice(string Id, string Label, bool IsGlobal);
+	private bool _parentScopeCanChange;
+	public string SelectedSeparatorParentId => SeparatorParentComboBox.SelectedValue as string ?? String.Empty;
+
+	public void ConfigureSeparatorParent(IEnumerable<DivinityModManager.Models.ModListVisualDividerData> parents,
+		string currentParentId, bool canChange, bool canChoosePersistence, string disabledReason = null)
+	{
+		_parentScopeCanChange = canChoosePersistence;
+		var choices = new List<SeparatorParentChoice> { new(String.Empty, "None — standalone separator", false) };
+		choices.AddRange(parents.Select(parent => new SeparatorParentChoice(parent.Id,
+			String.IsNullOrWhiteSpace(parent.Title) ? $"Untitled separator (position {parent.Position + 1})" : parent.Title, parent.IsGlobal)));
+		SeparatorParentComboBox.ItemsSource = choices;
+		SeparatorParentComboBox.SelectedValue = currentParentId ?? String.Empty;
+		SeparatorParentComboBox.IsEnabled = canChange;
+		if (!canChange) SeparatorParentComboBox.ToolTip = disabledReason;
+		if (SeparatorParentPanel.Visibility != Visibility.Visible)
+			Height = Math.Min(Height + 36, MaxHeight);
+		SeparatorParentPanel.Visibility = Visibility.Visible;
+		DescriptionEditorPanel.Margin = new Thickness(0, 8, 0, 8);
+		UpdateParentPersistence();
+	}
+
+	private void SeparatorParentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateParentPersistence();
+	private void UpdateParentPersistence()
+	{
+		if (GlobalSeparatorCheckBox == null || SeparatorParentComboBox?.SelectedItem is not SeparatorParentChoice choice) return;
+		var hasParent = !String.IsNullOrEmpty(choice.Id);
+		Title = hasParent ? "Edit Sub-separator" : "Edit Separator";
+		GlobalSeparatorCheckBox.IsEnabled = _parentScopeCanChange && !hasParent;
+		if (hasParent) GlobalSeparatorCheckBox.IsChecked = choice.IsGlobal;
+		GlobalSeparatorCheckBox.ToolTip = hasParent
+			? "Sub-separators inherit persistence from their containing separator."
+			: _parentScopeCanChange ? "Keep this separator available across saved load orders." : "This pane's organization is shared across load orders.";
 	}
 
 	private sealed class IconChooserChoice : INotifyPropertyChanged
@@ -86,21 +119,24 @@ public partial class CategoryNameDialog : AdonisWindow
 		NameEditorPanel.Visibility = Visibility.Collapsed;
 		IconChooserCard.Visibility = Visibility.Collapsed;
 		DescriptionEditorPanel.Visibility = Visibility.Collapsed;
-		CategoryPreviewPanel.Visibility = Visibility.Collapsed;
 		ConfirmButtonText.Text = "Save";
 		ConfirmButtonIcon.StrokeData = FindResource("Redux.Icon.Save") as Geometry;
-		MinHeight = Math.Min(560, MaxHeight);
-		Height = Math.Min(620, MaxHeight);
+		DialogHeading.Visibility = Visibility.Visible;
+		IconOptionsPanel.Visibility = Visibility.Collapsed;
+		DialogHelperText.Visibility = Visibility.Visible;
+		MinHeight = Math.Min(380, MaxHeight);
+		Height = Math.Min(480, MaxHeight);
 	}
 
 	public void ConfigureNameOnly(string title, string heading, string helperText, string confirmText)
 	{
+		IconChooserCard.Visibility = Visibility.Collapsed;
+		IconOptionsPanel.Visibility = Visibility.Collapsed;
+		DialogHelperText.Visibility = Visibility.Visible;
 		Title = title;
 		DialogHeading.Text = heading;
 		DialogHelperText.Text = helperText;
 		DescriptionEditorPanel.Visibility = Visibility.Collapsed;
-		CategoryPreviewPanel.Visibility = Visibility.Collapsed;
-		SeparatorPreviewPanel.Visibility = Visibility.Collapsed;
 		ColorFieldLabel.Visibility = Visibility.Collapsed;
 		ColorEditorCard.Visibility = Visibility.Collapsed;
 		ResetToDefaultButton.Visibility = Visibility.Collapsed;
@@ -120,14 +156,15 @@ public partial class CategoryNameDialog : AdonisWindow
 		IEnumerable<string> savedColors = null, bool visualDividerMode = false, string iconId = "",
 		bool canResetToDefault = false, bool useCategoryColorsForHover = false, string description = "",
 		bool useCategoryColorsForSidebarSelection = false, bool useCategoryColorsForSidebarText = false,
-		bool showInterfaceIcons = true, bool hideSeparatorLine = false,
+		bool showInterfaceIcons = true, bool hideSeparatorLine = true,
 		bool allowGlobalSeparator = false, bool isGlobalSeparator = false,
-		bool? lockedGlobalSeparator = null)
+		bool? lockedGlobalSeparator = null, bool isChildSeparator = false)
 	{
 		InitializeComponent();
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
-		MaxHeight = Math.Max(MinHeight, SystemParameters.WorkArea.Height - 32);
-		Height = Math.Min(720, MaxHeight);
+		MaxHeight = Math.Max(240, SystemParameters.WorkArea.Height - 32);
+		MinHeight = Math.Min(MinHeight, MaxHeight);
+		Height = Math.Min(visualDividerMode ? 600 : 550, MaxHeight);
 		_allowEmptyName = visualDividerMode;
 		// Categories retain their compact naming constraint. Separator labels can be
 		// descriptive and are safely trimmed in the list, so do not truncate them at
@@ -138,9 +175,8 @@ public partial class CategoryNameDialog : AdonisWindow
 			.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 		CategoryNameTextBox.Text = categoryName;
 		CategoryDescriptionTextBox.Text = description ?? String.Empty;
-		CategoryPreviewPanel.Tag = useCategoryColorsForSidebarSelection;
-		CategoryPreviewName.Tag = useCategoryColorsForSidebarText;
-		CategoryPreviewIconHost.Visibility = showInterfaceIcons ? Visibility.Visible : Visibility.Collapsed;
+		DescriptionEditorPanel.Header = String.IsNullOrWhiteSpace(description) ? "Add a description" : "Description";
+		DescriptionEditorPanel.IsExpanded = !String.IsNullOrWhiteSpace(description);
 		CategoryNameTextBox.IsEnabled = canEditName;
 		_iconChoices = new ObservableCollection<IconChooserChoice>(ReduxIconCatalog.Choices
 			.Select(choice => new IconChooserChoice(choice)));
@@ -161,9 +197,9 @@ public partial class CategoryNameDialog : AdonisWindow
 		Title = visualDividerMode ? (String.IsNullOrEmpty(categoryName) ? "Add Separator" : "Edit Separator") : canEditName ? "Add Mod Category" : "Edit Category";
 		DialogHeading.Text = visualDividerMode ? "Style a separator" : canEditName ? "Create a category" : $"Edit {categoryName}";
 		DialogHelperText.Text = visualDividerMode
-			? "Choose a name, color, and icon. Leave the name empty for a line-only separator."
+			? "Organize your mods with a label, icon, and color."
 			: canEditName
-			? "Choose a unique name, optional description, color, and marker or icon. Dot is the default."
+			? "Give your category a name, then choose an icon and color."
 			: canResetToDefault
 			? "Built-in category names cannot be changed. Change its color and icon, or reset it to the default."
 			: "Choose a color and marker or icon. Dot is the default.";
@@ -177,11 +213,8 @@ public partial class CategoryNameDialog : AdonisWindow
 		{
 			CategoryNameFieldLabel.Text = "Label (optional)";
 			DescriptionEditorPanel.Visibility = Visibility.Visible;
-			CategoryPreviewPanel.Visibility = Visibility.Collapsed;
-			SeparatorPreviewPanel.Visibility = Visibility.Visible;
-			SeparatorPreviewPanel.Tag = useCategoryColorsForHover;
-			HideSeparatorLineCheckBox.IsChecked = hideSeparatorLine;
-			HideSeparatorLineCheckBox.Visibility = Visibility.Visible;
+			ShowSeparatorLineCheckBox.IsChecked = !hideSeparatorLine;
+			ShowSeparatorLineCheckBox.Visibility = Visibility.Visible;
 			GlobalSeparatorCheckBox.Visibility = Visibility.Visible;
 			GlobalSeparatorCheckBox.IsChecked = lockedGlobalSeparator.HasValue
 				? lockedGlobalSeparator.Value
@@ -191,8 +224,8 @@ public partial class CategoryNameDialog : AdonisWindow
 			{
 				GlobalSeparatorCheckBoxText.Text = "Use in every load order";
 				GlobalSeparatorCheckBox.ToolTip = lockedGlobalSeparator.Value
-					? "This child is persistent because its parent is persistent."
-					: "This child is local because its parent is local.";
+					? "This sub-separator inherits persistence from its containing separator."
+					: "This sub-separator is local because its containing separator is local.";
 			}
 			else if (!allowGlobalSeparator)
 			{
@@ -205,7 +238,6 @@ public partial class CategoryNameDialog : AdonisWindow
 			CategoryNameTextBox.ToolTip = "Optional separator label";
 			CategoryDescriptionTextBox.ToolTip = "Shown when the separator is hovered in the mod list";
 		}
-		UpdateCategoryPreviewToolTip();
 		UpdateColorPresentation();
 		RefreshSavedColors();
 		Loaded += (_, _) => { CategoryNameTextBox.Focus(); UpdateModernColorSurface(); };
@@ -215,32 +247,20 @@ public partial class CategoryNameDialog : AdonisWindow
 	private static bool IsValidHexColor(string value) =>
 		!String.IsNullOrWhiteSpace(value) && System.Text.RegularExpressions.Regex.IsMatch(value, "^#[0-9A-Fa-f]{6}$");
 
-	private void CategoryDescriptionTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
-		UpdateCategoryPreviewToolTip();
-
-	private void UpdateCategoryPreviewToolTip()
-	{
-		if (CategoryPreviewRow == null || CategoryDescriptionTextBox == null) return;
-		var description = CategoryDescriptionTextBox.Text?.Trim();
-		CategoryPreviewRow.ToolTip = String.IsNullOrWhiteSpace(description) ? null : description;
-		if (SeparatorPreviewPanel != null)
-			SeparatorPreviewPanel.ToolTip = String.IsNullOrWhiteSpace(description) ? null : description;
-	}
-
 	private void RefreshSavedColors()
 	{
 		if (SavedColorsPanel == null) return;
 		SavedColorsPanel.Children.Clear();
 		foreach (var value in _savedColors)
 		{
-			var swatch = new Border
+			var swatch = new Button
 			{
 				Tag = value,
 				Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(value)),
 				Style = (Style)FindResource("CategoryColorSwatchStyle"),
 				ToolTip = $"{value}\nLeft-click to use. Right-click to remove."
 			};
-			swatch.MouseLeftButtonUp += ColorSwatch_Click;
+			swatch.Click += ColorSwatch_Click;
 			swatch.MouseRightButtonUp += SavedColorSwatch_RightClick;
 			SavedColorsPanel.Children.Add(swatch);
 		}
@@ -259,7 +279,7 @@ public partial class CategoryNameDialog : AdonisWindow
 
 	private void SavedColorSwatch_RightClick(object sender, MouseButtonEventArgs e)
 	{
-		if (sender is Border { Tag: string value })
+		if (sender is FrameworkElement { Tag: string value })
 		{
 			_savedColors.RemoveAll(item => item.Equals(value, StringComparison.OrdinalIgnoreCase));
 			RefreshSavedColors();
@@ -276,19 +296,6 @@ public partial class CategoryNameDialog : AdonisWindow
 		HexColorTextBox.Text = hex;
 		SelectedColorPreview.Background = new SolidColorBrush(color);
 		Resources["Redux.CategoryEditor.IconBrush"] = new SolidColorBrush(color);
-		// Same horizontal sheen and alpha pair as the sidebar's category hover (see
-		// CategoryHoverSurface in HorizontalModLayout.xaml), so the preview matches what
-		// hovering the real category row will actually look like.
-		var hoverGradient = new LinearGradientBrush
-		{
-			StartPoint = new Point(0, 0),
-			EndPoint = new Point(1, 0)
-		};
-		hoverGradient.GradientStops.Add(new GradientStop(Color.FromArgb(0x28, color.R, color.G, color.B), 0));
-		hoverGradient.GradientStops.Add(new GradientStop(Color.FromArgb(0x10, color.R, color.G, color.B), 1));
-		Resources["Redux.CategoryEditor.HoverBrush"] = hoverGradient;
-		Resources["Redux.CategoryEditor.CountHoverBrush"] =
-			new SolidColorBrush(Color.FromArgb(0x24, color.R, color.G, color.B));
 		if (!_preserveHsvOnColorChange)
 		{
 			RgbToHsv(color, out var calculatedHue, out _saturation, out _brightness);
@@ -305,6 +312,7 @@ public partial class CategoryNameDialog : AdonisWindow
 		Resources["Redux.CategoryEditor.GreenTrackBrush"] = CreateHorizontalGradient(Color.FromRgb(color.R, 0, color.B), Color.FromRgb(color.R, 255, color.B));
 		Resources["Redux.CategoryEditor.BlueTrackBrush"] = CreateHorizontalGradient(Color.FromRgb(color.R, color.G, 0), Color.FromRgb(color.R, color.G, 255));
 		_updatingColorControls = true;
+		HueSlider.Value = _hue;
 		SaturationSlider.Value = _saturation * 100;
 		BrightnessSlider.Value = _brightness * 100;
 		RedSlider.Value = color.R;
@@ -326,188 +334,31 @@ public partial class CategoryNameDialog : AdonisWindow
 		return brush;
 	}
 
+	private void ColorPlane_SizeChanged(object sender, SizeChangedEventArgs e)
+	{
+		ColorPlane.Clip = new RectangleGeometry(new Rect(e.NewSize), 6, 6);
+		UpdateModernColorSurface();
+	}
+
 	private void UpdateModernColorSurface()
 	{
-		if (SpectrumSurface == null || ColorWheelImage == null) return;
-		RenderColorWheel();
+		if (ColorPlane == null || ColorPlane.ActualWidth <= 0 || ColorPlane.ActualHeight <= 0 || ColorPlaneMarker == null) return;
 		Resources["Redux.CategoryEditor.HueBrush"] = new SolidColorBrush(HsvToRgb(_hue, 1, 1));
-		if (SpectrumSurface.ActualWidth > 0 && SpectrumSurface.ActualHeight > 0)
-		{
-			var centerX = SpectrumSurface.ActualWidth / 2;
-			var centerY = SpectrumSurface.ActualHeight / 2;
-			var ringRadius = Math.Min(SpectrumSurface.ActualWidth, SpectrumSurface.ActualHeight) * 0.42;
-			var angle = _hue * Math.PI / 180d;
-			SpectrumMarker.Margin = new Thickness(
-				centerX + Math.Cos(angle) * ringRadius - SpectrumMarker.Width / 2,
-				centerY + Math.Sin(angle) * ringRadius - SpectrumMarker.Height / 2, 0, 0);
-		}
-		if (ColorPlane?.ActualWidth > 0 && ColorPlane.ActualHeight > 0)
-		{
-			var markerPoint = ColorValuesToDiscPoint(_saturation, _brightness);
-			ColorPlaneMarker.Margin = new Thickness(
-				markerPoint.X - ColorPlaneMarker.Width / 2,
-				markerPoint.Y - ColorPlaneMarker.Height / 2,
-				0, 0);
-		}
+		// Keep the complete pointer visible at the edges without changing the selected color.
+		ColorPlaneMarker.Margin = new Thickness(
+			Math.Clamp(_saturation * ColorPlane.ActualWidth - 6, 0, Math.Max(0, ColorPlane.ActualWidth - 12)),
+			Math.Clamp((1 - _brightness) * ColorPlane.ActualHeight - 6, 0, Math.Max(0, ColorPlane.ActualHeight - 12)), 0, 0);
 	}
 
-	private Point ColorValuesToDiscPoint(double saturation, double brightness)
+	private void HueSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
 	{
-		var centerX = ColorPlane.ActualWidth / 2;
-		var centerY = ColorPlane.ActualHeight / 2;
-		var radius = Math.Max(0, Math.Min(centerX, centerY) - ColorPlaneMarker.Width / 2);
-		var squareX = saturation * 2 - 1;
-		var squareY = (1 - brightness) * 2 - 1;
-		if (Math.Abs(squareX) <= Double.Epsilon && Math.Abs(squareY) <= Double.Epsilon)
-			return new Point(centerX, centerY);
-
-		double discRadius;
-		double angle;
-		if (Math.Abs(squareX) > Math.Abs(squareY))
-		{
-			discRadius = squareX;
-			angle = Math.PI / 4 * (squareY / squareX);
-		}
-		else
-		{
-			discRadius = squareY;
-			angle = Math.PI / 2 - Math.PI / 4 * (squareX / squareY);
-		}
-
-		return new Point(
-			centerX + radius * discRadius * Math.Cos(angle),
-			centerY + radius * discRadius * Math.Sin(angle));
-	}
-
-	private void DiscPointToColorValues(Point point, out double saturation, out double brightness)
-	{
-		var centerX = ColorPlane.ActualWidth / 2;
-		var centerY = ColorPlane.ActualHeight / 2;
-		// Input uses the complete visible disc. The marker itself is inset separately
-		// when rendered, so the outer pixels do not become a hidden all-black clamp zone.
-		var radius = Math.Max(1, Math.Min(centerX, centerY));
-		var discX = (point.X - centerX) / radius;
-		var discY = (point.Y - centerY) / radius;
-		var discRadius = Math.Sqrt(discX * discX + discY * discY);
-		if (discRadius > 1)
-		{
-			discX /= discRadius;
-			discY /= discRadius;
-			discRadius = 1;
-		}
-
-		if (discRadius <= Double.Epsilon)
-		{
-			saturation = 0.5;
-			brightness = 0.5;
-			return;
-		}
-
-		var angle = Math.Atan2(discY, discX);
-		double squareX;
-		double squareY;
-		if (angle < -3 * Math.PI / 4)
-		{
-			squareX = -discRadius;
-			squareY = -discRadius * (angle + Math.PI) / (Math.PI / 4);
-		}
-		else if (angle < -Math.PI / 4)
-		{
-			squareY = -discRadius;
-			squareX = discRadius * (angle + Math.PI / 2) / (Math.PI / 4);
-		}
-		else if (angle < Math.PI / 4)
-		{
-			squareX = discRadius;
-			squareY = discRadius * angle / (Math.PI / 4);
-		}
-		else if (angle < 3 * Math.PI / 4)
-		{
-			squareY = discRadius;
-			squareX = -discRadius * (angle - Math.PI / 2) / (Math.PI / 4);
-		}
-		else
-		{
-			squareX = -discRadius;
-			squareY = -discRadius * (angle - Math.PI) / (Math.PI / 4);
-		}
-
-		saturation = Math.Clamp((squareX + 1) / 2, 0, 1);
-		brightness = 1 - Math.Clamp((squareY + 1) / 2, 0, 1);
-	}
-
-	private void RenderColorWheel()
-	{
-		if (ColorWheelImage == null || ColorWheelImage.Source != null) return;
-		// Render at 2x and let WPF downsample it for a smoother ring on scaled displays.
-		const int size = 396;
-		var pixels = new byte[size * size * 4];
-		var center = (size - 1) / 2d;
-		var outerRadius = center;
-		var innerRadius = center * 0.62;
-		for (var y = 0; y < size; y++)
-		{
-			for (var x = 0; x < size; x++)
-			{
-				var dx = x - center;
-				var dy = y - center;
-				var distance = Math.Sqrt(dx * dx + dy * dy);
-				if (distance < innerRadius || distance > outerRadius) continue;
-				var hue = Math.Atan2(dy, dx) * 180d / Math.PI;
-				if (hue < 0) hue += 360;
-				var color = HsvToRgb(hue, 1, 1);
-				var offset = (y * size + x) * 4;
-				pixels[offset] = color.B;
-				pixels[offset + 1] = color.G;
-				pixels[offset + 2] = color.R;
-				pixels[offset + 3] = 255;
-			}
-		}
-		var bitmap = new WriteableBitmap(size, size, 96, 96, PixelFormats.Bgra32, null);
-		bitmap.WritePixels(new Int32Rect(0, 0, size, size), pixels, size * 4, 0);
-		bitmap.Freeze();
-		ColorWheelImage.Source = bitmap;
-	}
-
-	private bool SetSpectrumFromPoint(Point point, bool requireRingHit)
-	{
-		var centerX = SpectrumSurface.ActualWidth / 2;
-		var centerY = SpectrumSurface.ActualHeight / 2;
-		var dx = point.X - centerX;
-		var dy = point.Y - centerY;
-		var radius = Math.Min(centerX, centerY);
-		var distance = Math.Sqrt(dx * dx + dy * dy);
-
-		// The center is a read-only preview. Only the visible hue ring changes hue.
-		if (requireRingHit && (distance < radius * 0.69 || distance > radius))
-			return false;
-		if (distance <= Double.Epsilon)
-			return false;
-
-		_hue = Math.Atan2(dy, dx) * 180d / Math.PI;
-		if (_hue < 0) _hue += 360;
+		if (_updatingColorControls || CategoryColorPicker == null) return;
+		_hue = e.NewValue;
 		SetSelectedHsvColor();
-		return true;
-	}
-
-	private void Spectrum_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-	{
-		if (ColorPlane.IsMouseOver) return;
-		if (!SetSpectrumFromPoint(e.GetPosition(SpectrumSurface), requireRingHit: true)) return;
-		_draggingHue = true;
-		SpectrumSurface.CaptureMouse();
-		e.Handled = true;
-	}
-
-	private void Spectrum_MouseMove(object sender, MouseEventArgs e)
-	{
-		if (_draggingHue && e.LeftButton == MouseButtonState.Pressed)
-			SetSpectrumFromPoint(e.GetPosition(SpectrumSurface), requireRingHit: false);
 	}
 
 	private void ColorSurface_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 	{
-		_draggingHue = false;
 		_draggingColorPlane = false;
 		Mouse.Capture(null);
 	}
@@ -515,7 +366,8 @@ public partial class CategoryNameDialog : AdonisWindow
 	private void SetColorPlaneFromPoint(Point point)
 	{
 		if (ColorPlane.ActualWidth <= 0 || ColorPlane.ActualHeight <= 0) return;
-		DiscPointToColorValues(point, out _saturation, out _brightness);
+		_saturation = Math.Clamp(point.X / ColorPlane.ActualWidth, 0, 1);
+		_brightness = 1 - Math.Clamp(point.Y / ColorPlane.ActualHeight, 0, 1);
 		SetSelectedHsvColor();
 	}
 
@@ -607,19 +459,19 @@ public partial class CategoryNameDialog : AdonisWindow
 	{
 		var value = HexColorTextBox.Text?.Trim();
 		if (!String.IsNullOrWhiteSpace(value) && !value.StartsWith('#')) value = $"#{value}";
-		if (ColorConverter.ConvertFromString(value) is Color color) CategoryColorPicker.SelectedColor = color;
+		if (IsValidHexColor(value) && ColorConverter.ConvertFromString(value) is Color color) CategoryColorPicker.SelectedColor = color;
 		else UpdateColorPresentation();
 	}
 
 	private void HexColorTextBox_Commit(object sender, RoutedEventArgs e) => ApplyHexColor();
 	private void HexColorTextBox_KeyDown(object sender, KeyEventArgs e)
 	{
-		if (e.Key == Key.Enter) { ApplyHexColor(); CategoryColorPicker.Focus(); e.Handled = true; }
+		if (e.Key == Key.Enter) { ApplyHexColor(); HexColorTextBox.SelectAll(); e.Handled = true; }
 	}
 
-	private void ColorSwatch_Click(object sender, MouseButtonEventArgs e)
+	private void ColorSwatch_Click(object sender, RoutedEventArgs e)
 	{
-		if (sender is Border { Tag: string value } && ColorConverter.ConvertFromString(value) is Color color)
+		if (sender is FrameworkElement { Tag: string value } && ColorConverter.ConvertFromString(value) is Color color)
 			CategoryColorPicker.SelectedColor = color;
 	}
 
@@ -704,6 +556,7 @@ public partial class CategoryNameDialog : AdonisWindow
 		if (CategoryIconComboBox == null || TintCustomIconCheckBox == null) return;
 		var selectedId = CategoryIconComboBox.SelectedValue as string;
 		var isCustom = ReduxCustomIconService.IsCustomReference(selectedId);
+		if (IconOptionsPanel != null) IconOptionsPanel.Visibility = _allowEmptyName || isCustom ? Visibility.Visible : Visibility.Collapsed;
 		TintCustomIconCheckBox.Visibility = isCustom ? Visibility.Visible : Visibility.Collapsed;
 		DeleteCustomIconButton.Visibility = isCustom ? Visibility.Visible : Visibility.Collapsed;
 		if (CategoryIconComboBox.SelectedItem is IconChooserChoice choice && isCustom)
@@ -711,4 +564,5 @@ public partial class CategoryNameDialog : AdonisWindow
 			choice.PreviewIconId = ReduxCustomIconService.WithTint(selectedId, TintCustomIconCheckBox.IsChecked == true);
 		}
 	}
+
 }

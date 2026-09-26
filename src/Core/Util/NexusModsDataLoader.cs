@@ -20,6 +20,11 @@ public class NexusModsRateLimitsUpdatedEventArgs : EventArgs
 
 public delegate void NexusModsRateLimitsUpdatedEventHandler(object sender, NexusModsRateLimitsUpdatedEventArgs e);
 
+public sealed record NexusFileUpdateCheckResult(
+	Dictionary<string, (long ProjectId, long FileId)> CheckedModFiles,
+	HashSet<string> AvailableModUuids,
+	int FailedProjects);
+
 public static class NexusModsDataLoader
 {
 	private static INexusModsClient _client;
@@ -86,6 +91,69 @@ public static class NexusModsDataLoader
 	{
 		_isActive = false;
 		if (_pendingDispose) Dispose();
+	}
+
+	public static bool HasExplicitFileReplacement(long installedFileId, IEnumerable<NexusModFileUpdate> updates) =>
+		installedFileId > 0 && updates?.Any(update => update.OldFileId == installedFileId
+			&& update.NewFileId > 0 && update.NewFileId != installedFileId) == true;
+
+	/// <summary>
+	/// Only explicit Nexus file-replacement links count as an available update.
+	/// A project's newest primary file may be unrelated to an installed optional file.
+	/// </summary>
+	public static async Task<NexusFileUpdateCheckResult> GetAvailableFileUpdatesAsync(IEnumerable<DivinityModData> mods, CancellationToken token)
+	{
+		var available = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		var checkedMods = new Dictionary<string, (long ProjectId, long FileId)>(StringComparer.OrdinalIgnoreCase);
+		var failedProjects = 0;
+		var linked = mods.Where(mod => mod.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START
+			&& mod.NexusModsData.LastFileId > 0)
+			.GroupBy(mod => mod.NexusModsData.ModId).ToArray();
+		if (linked.Length == 0) return new NexusFileUpdateCheckResult(checkedMods, available, 0);
+		if (!CanFetchData || !CanDoTask(linked.Length)) return null;
+
+		_isActive = true;
+		try
+		{
+			// Projects are independent, but keep requests bounded to respect the API
+			// and avoid turning a large mod list into an unbounded request burst.
+			using var slots = new SemaphoreSlim(4);
+			var results = await Task.WhenAll(linked.Select(async project =>
+			{
+				await slots.WaitAsync(token);
+				try
+				{
+					var inquirer = new InfosInquirer(_client);
+					var files = await inquirer.ModFiles.GetModFilesAsync(DivinityApp.NEXUSMODS_GAME_DOMAIN, project.Key, token);
+					if (files?.ModFileUpdates == null) return (Failed: true, Checked: new List<(string Uuid, long ProjectId, long FileId, bool Available)>());
+					var checkedFiles = project.Select(mod => (Uuid: mod.UUID, ProjectId: project.Key,
+						FileId: mod.NexusModsData.LastFileId,
+						Available: HasExplicitFileReplacement(mod.NexusModsData.LastFileId, files.ModFileUpdates))).ToList();
+					return (Failed: false, Checked: checkedFiles);
+				}
+				catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+				catch (Exception ex)
+				{
+					DivinityApp.Log($"Could not check Nexus file replacements for project {project.Key}: {ex}");
+					return (Failed: true, Checked: new List<(string Uuid, long ProjectId, long FileId, bool Available)>());
+				}
+				finally { slots.Release(); }
+			}));
+			foreach (var result in results)
+			{
+				if (result.Failed) failedProjects++;
+				foreach (var file in result.Checked)
+				{
+					checkedMods[file.Uuid] = (file.ProjectId, file.FileId);
+					if (file.Available) available.Add(file.Uuid);
+				}
+			}
+		}
+		finally
+		{
+			OnTaskDone();
+		}
+		return new NexusFileUpdateCheckResult(checkedMods, available, failedProjects);
 	}
 
 	public static async Task<List<NexusModsModDownloadLink>> GetLatestDownloadsForMods(List<DivinityModData> mods, CancellationToken t)
@@ -160,8 +228,6 @@ public static class NexusModsDataLoader
 			}
 			return taskResult;
 		}
-		var totalLoaded = 0;
-
 		_isActive = true;
 
 		try
@@ -188,30 +254,45 @@ public static class NexusModsDataLoader
 
 			// InfosInquirer.Dispose also disposes the shared API client. The loader owns
 			// that client lifetime, so a following changelog request can reuse it safely.
-			var dataLoader = new InfosInquirer(_client);
-			foreach (var mod in targetMods)
+			using var slots = new SemaphoreSlim(4);
+			var fetched = await Task.WhenAll(targetMods.Select(async mod =>
 			{
-				var result = await dataLoader.Mods.GetMod(DivinityApp.NEXUSMODS_GAME_DOMAIN, mod.NexusModsData.ModId, t);
-				if (result != null)
+				await slots.WaitAsync(t);
+				try
 				{
-					var associationOrigin = mod.NexusModsData.MetadataOrigin;
-					mod.NexusModsData.Update(result);
-					// Live API data enriches the record, but the association origin still
-					// explains how Redux connected this installed package to the project.
-					mod.NexusModsData.MetadataOrigin = associationOrigin switch
+					var dataLoader = new InfosInquirer(_client);
+					var result = await dataLoader.Mods.GetMod(DivinityApp.NEXUSMODS_GAME_DOMAIN, mod.NexusModsData.ModId, t);
+					if (result == null) return (Action)null;
+					return (Action)(() =>
 					{
-						NexusMetadataOrigin.Manual => NexusMetadataOrigin.Manual,
-						NexusMetadataOrigin.NexusArchiveImport => NexusMetadataOrigin.NexusArchiveImport,
-						NexusMetadataOrigin.ReduxBundleImport => NexusMetadataOrigin.ReduxBundleImport,
-						NexusMetadataOrigin.BundledProvenance => NexusMetadataOrigin.BundledProvenance,
-						NexusMetadataOrigin.CreatorManifest => NexusMetadataOrigin.CreatorManifest,
-						_ => NexusMetadataOrigin.LiveApi
-					};
-					taskResult.UpdatedMods.Add(mod);
-					totalLoaded++;
+						var associationOrigin = mod.NexusModsData.MetadataOrigin;
+						mod.NexusModsData.Update(result);
+						// Live API data enriches the record, but the association origin still
+						// explains how Redux connected this installed package to the project.
+						mod.NexusModsData.MetadataOrigin = associationOrigin switch
+						{
+							NexusMetadataOrigin.Manual => NexusMetadataOrigin.Manual,
+							NexusMetadataOrigin.NexusArchiveImport => NexusMetadataOrigin.NexusArchiveImport,
+							NexusMetadataOrigin.ReduxBundleImport => NexusMetadataOrigin.ReduxBundleImport,
+							NexusMetadataOrigin.BundledProvenance => NexusMetadataOrigin.BundledProvenance,
+							NexusMetadataOrigin.CreatorManifest => NexusMetadataOrigin.CreatorManifest,
+							_ => NexusMetadataOrigin.LiveApi
+						};
+					});
 				}
-
-				if (t.IsCancellationRequested) break;
+				catch (OperationCanceledException) when (t.IsCancellationRequested) { throw; }
+				catch (Exception ex)
+				{
+					DivinityApp.Log($"Could not refresh Nexus metadata for '{mod.DisplayName}': {ex}");
+					return (Action)null;
+				}
+				finally { slots.Release(); }
+			}));
+			for (var index = 0; index < fetched.Length; index++)
+			{
+				if (fetched[index] == null) continue;
+				fetched[index]();
+				taskResult.UpdatedMods.Add(targetMods[index]);
 			}
 		}
 		catch (Exception ex)

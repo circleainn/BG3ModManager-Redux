@@ -82,6 +82,23 @@ public class ModListDropHandler : DefaultDropHandler
 		data is ModCategoryFilterItem ||
 		data is IDataObject dataObject && dataObject.GetDataPresent(typeof(ModCategoryFilterItem));
 
+	private bool IsOverrideTransfer(IDropInfo dropInfo, out bool activate)
+	{
+		activate = _viewModel.IsOverrideVisualModCollection(dropInfo.TargetCollection);
+		var sourceOverride = _viewModel.IsOverrideVisualModCollection(dropInfo.DragInfo?.SourceCollection);
+		var targetInactive = _viewModel.IsInactiveVisualModCollection(dropInfo.TargetCollection);
+		var sourceInactive = _viewModel.IsInactiveVisualModCollection(dropInfo.DragInfo?.SourceCollection);
+		if (!(sourceOverride && targetInactive || sourceInactive && activate)) return false;
+		var items = ExtractData(dropInfo.Data).OfType<DivinityModData>().ToArray();
+		return items.Length > 0 && items.All(mod => mod.IsForceLoaded &&
+			!mod.IsForceLoadedMergedMod && !mod.IsVisualDivider);
+	}
+
+	private bool IsOverrideModDropOnActivePane(IDropInfo dropInfo) =>
+		(dropInfo.TargetCollection == _viewModel.ActiveMods ||
+		 _viewModel.IsActiveVisualModCollection(dropInfo.TargetCollection)) &&
+		ExtractData(dropInfo.Data).OfType<DivinityModData>().Any(mod => mod.IsForceLoaded);
+
 	public override void DragOver(IDropInfo dropInfo)
 	{
 		if (IsCategoryPayload(dropInfo?.Data))
@@ -90,28 +107,42 @@ public class ModListDropHandler : DefaultDropHandler
 			dropInfo.DropTargetAdorner = null;
 			return;
 		}
+		if (IsOverrideModDropOnActivePane(dropInfo))
+		{
+			dropInfo.Effects = DragDropEffects.None;
+			dropInfo.DropTargetAdorner = null;
+			return;
+		}
 
 		if (!_viewModel.AllowDrop ||
-			(_viewModel.IsOverrideListMetadataSorted && ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayOverrideMods)) ||
-			(_viewModel.IsInactiveListMetadataSorted && ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayInactiveMods)) ||
-			(_viewModel.IsActiveListMetadataSorted && ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayActiveMods)))
+			(_viewModel.IsOverrideListMetadataSorted && _viewModel.IsOverrideVisualModCollection(dropInfo.TargetCollection)) ||
+			(_viewModel.IsInactiveListMetadataSorted && _viewModel.IsInactiveVisualModCollection(dropInfo.TargetCollection)) ||
+			(_viewModel.IsActiveListMetadataSorted && _viewModel.IsActiveVisualModCollection(dropInfo.TargetCollection)))
 		{
 			DivinityApp.Log($"[AllowDrop] IsRefreshing({_viewModel.IsRefreshing}) IsInitialized({_viewModel.IsInitialized}) IsLoadingOrder({_viewModel.IsLoadingOrder})");
 			dropInfo.Effects = DragDropEffects.None;
+			dropInfo.DropTargetAdorner = null;
+			return;
+		}
+		var overrideTransfer = IsOverrideTransfer(dropInfo, out _);
+		if (overrideTransfer)
+		{
+			dropInfo.Effects = DragDropEffects.Move;
+			dropInfo.DropTargetAdorner = null;
 			return;
 		}
 		base.DragOver(dropInfo);
 		if (dropInfo.Effects != DragDropEffects.None && dropInfo.DropTargetAdorner == DropTargetAdorners.Insert)
 			dropInfo.DropTargetAdorner = null;
-		var targetsOverride = ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayOverrideMods);
-		var startsInOverride = ReferenceEquals(dropInfo.DragInfo?.SourceCollection, _viewModel.DisplayOverrideMods);
+		var targetsOverride = _viewModel.IsOverrideVisualModCollection(dropInfo.TargetCollection);
+		var startsInOverride = _viewModel.IsOverrideVisualModCollection(dropInfo.DragInfo?.SourceCollection);
 		if (targetsOverride != startsInOverride)
 		{
 			dropInfo.Effects = DragDropEffects.None;
 			dropInfo.DropTargetAdorner = null;
 			return;
 		}
-		if (ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayInactiveMods) &&
+		if (_viewModel.IsInactiveVisualModCollection(dropInfo.TargetCollection) &&
 			!VisualDividerDragPolicy.CanDropOnPane(
 				ExtractData(dropInfo.Data).OfType<DivinityModData>(),
 				destinationActive: false))
@@ -141,10 +172,10 @@ public class ModListDropHandler : DefaultDropHandler
 			return;
 		}
 
-		if (!_viewModel.AllowDrop ||
-			(_viewModel.IsOverrideListMetadataSorted && ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayOverrideMods)) ||
-			(_viewModel.IsInactiveListMetadataSorted && ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayInactiveMods)) ||
-			(_viewModel.IsActiveListMetadataSorted && ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayActiveMods)))
+		if (IsOverrideModDropOnActivePane(dropInfo) || !_viewModel.AllowDrop ||
+			(_viewModel.IsOverrideListMetadataSorted && _viewModel.IsOverrideVisualModCollection(dropInfo.TargetCollection)) ||
+			(_viewModel.IsInactiveListMetadataSorted && _viewModel.IsInactiveVisualModCollection(dropInfo.TargetCollection)) ||
+			(_viewModel.IsActiveListMetadataSorted && _viewModel.IsActiveVisualModCollection(dropInfo.TargetCollection)))
 		{
 			return;
 		}
@@ -154,6 +185,23 @@ public class ModListDropHandler : DefaultDropHandler
 		if (dropInfo.Data is DataObject dropFileData && dropFileData.ContainsFileDropList()) return;
 
 		if (dropInfo.DragInfo == null) return;
+		if (IsOverrideTransfer(dropInfo, out var activateOverride))
+		{
+			var previewInsertIndex = dropInfo.VisualTarget is DependencyObject visualTarget
+				? ReduxDropFeedback.GetStableInsertIndex(visualTarget)
+				: -1;
+			var transferInsertIndex = previewInsertIndex >= 0 ? previewInsertIndex : dropInfo.UnfilteredInsertIndex;
+			var visibleDestinationItems = (dropInfo.VisualTarget as ItemsControl)?.Items
+				.OfType<DivinityModData>().ToList();
+			if (dropInfo.VisualTarget is DependencyObject target)
+				ReduxDropFeedback.SetStableInsertIndex(target, -1);
+			_viewModel.TransferOverrideMods(
+				ExtractData(dropInfo.Data).OfType<DivinityModData>(),
+				activateOverride,
+				transferInsertIndex,
+				visibleDestinationItems);
+			return;
+		}
 
 		var insertIndex = dropInfo.UnfilteredInsertIndex;
 		if (_viewModel.IsVisualModCollection(dropInfo.TargetCollection))
@@ -166,9 +214,9 @@ public class ModListDropHandler : DefaultDropHandler
 			if (dropInfo.VisualTarget is DependencyObject target)
 				ReduxDropFeedback.SetStableInsertIndex(target, -1);
 			var visualData = ExtractData(dropInfo.Data).OfType<DivinityModData>().ToList();
-			if (ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayOverrideMods))
+			if (_viewModel.IsOverrideVisualModCollection(dropInfo.TargetCollection))
 			{
-				if (!ReferenceEquals(dropInfo.DragInfo.SourceCollection, _viewModel.DisplayOverrideMods)) return;
+				if (!_viewModel.IsOverrideVisualModCollection(dropInfo.DragInfo.SourceCollection)) return;
 				var visibleOverrideItems = (dropInfo.VisualTarget as ItemsControl)?.Items
 					.OfType<DivinityModData>()
 					.ToList();
@@ -177,8 +225,8 @@ public class ModListDropHandler : DefaultDropHandler
 					_viewModel.Layout.SelectMods(visualData));
 				return;
 			}
-			if (ReferenceEquals(dropInfo.DragInfo.SourceCollection, _viewModel.DisplayOverrideMods)) return;
-			var destinationActive = ReferenceEquals(dropInfo.TargetCollection, _viewModel.DisplayActiveMods);
+			if (_viewModel.IsOverrideVisualModCollection(dropInfo.DragInfo.SourceCollection)) return;
+			var destinationActive = _viewModel.IsActiveVisualModCollection(dropInfo.TargetCollection);
 			if (!VisualDividerDragPolicy.CanDropOnPane(visualData, destinationActive)) return;
 			_viewModel.ApplyVisualModListDrop(visualData, destinationActive, insertIndex);
 			RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(20), () =>

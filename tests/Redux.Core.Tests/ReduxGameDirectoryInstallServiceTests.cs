@@ -11,6 +11,88 @@ namespace Redux.Core.Tests;
 
 public sealed class ReduxGameDirectoryInstallServiceTests
 {
+	public void YanmlPluginInstallUsesLocalFolderAndIndependentOwnership()
+	{
+		using var fixture = new NativeFixture();
+		var localAppData = fixture.NewArchivePath("LocalAppData");
+		var plugins = ReduxAlternativeNativeLoader.PluginsDirectory(localAppData);
+		Directory.CreateDirectory(plugins);
+		File.WriteAllText(Path.Combine(plugins, "config.toml"), "[core]\nenabled = true\n");
+		fixture.CreateWasdArchive(fixture.Pe("YANML WASD plugin"), "[input]\nforward = \"W\"\n");
+		var installer = new ReduxGameDirectoryInstallService(fixture.GameBin, fixture.StateDirectory,
+			NativeFixture.SupportedVersion, false, ReduxNativePluginDestination.YanmlPlugins, localAppData);
+		RegressionAssert.True(installer.DetectLoader().IsAlternativeLoader);
+		RegressionAssert.True(installer.DetectLoader().IsPresent);
+		File.WriteAllText(Path.Combine(plugins, "config.toml"), "[core]\nenabled = false # paused\n");
+		RegressionAssert.False(installer.DetectLoader().IsPresent);
+		RegressionAssert.Throws<InvalidOperationException>(() => installer.StageAsync(781, fixture.WasdArchivePath)
+			.GetAwaiter().GetResult());
+		File.WriteAllText(Path.Combine(plugins, "config.toml"), "[core]\nenabled = true\ninstall_root = 'C:\\Unrelated BG3'\n");
+		RegressionAssert.False(installer.DetectLoader().IsPresent);
+		RegressionAssert.Contains(installer.DetectLoader().Description, "different BG3 installation");
+		var gameRoot = Path.GetDirectoryName(fixture.GameBin)!;
+		File.WriteAllText(Path.Combine(plugins, "config.toml"),
+			$"[core]\nenabled = true\ninstall_root = '{gameRoot}'\n");
+		RegressionAssert.True(installer.DetectLoader().IsPresent);
+		var escapedRoot = gameRoot.Replace("\\", "\\\\");
+		File.WriteAllText(Path.Combine(plugins, "config.toml"),
+			$"[core]\nenabled = true\ninstall_root = \"{escapedRoot}\"\n");
+		RegressionAssert.True(installer.DetectLoader().IsPresent);
+		File.WriteAllText(Path.Combine(plugins, "config.toml"), "[core]\nenabled = true\n");
+		var transaction = installer.StageAsync(781, fixture.WasdArchivePath).GetAwaiter().GetResult();
+		try { transaction.CommitAsync().GetAwaiter().GetResult(); }
+		finally { transaction.DisposeAsync().AsTask().GetAwaiter().GetResult(); }
+		RegressionAssert.True(File.Exists(Path.Combine(plugins, "BG3WASD.dll")));
+		RegressionAssert.True(File.Exists(Path.Combine(plugins, "BG3WASD.toml")));
+		RegressionAssert.False(File.Exists(Path.Combine(fixture.NativeModsDirectory, "BG3WASD.dll")));
+		RegressionAssert.True(installer.GetInstalledMods().Any(mod => mod.NexusModId == 781
+			&& mod.Status == ReduxGameDirectoryModStatus.Managed));
+		RegressionAssert.False(fixture.Installer().GetInstalledMods().Any(mod => mod.NexusModId == 781));
+		RegressionAssert.True(ReduxGameDirectoryInstallService.HasYanmlOwnershipRecord(fixture.GameBin, fixture.StateDirectory));
+		File.Delete(Path.Combine(plugins, "config.toml"));
+		var reopened = new ReduxGameDirectoryInstallService(fixture.GameBin, fixture.StateDirectory,
+			NativeFixture.SupportedVersion, false, ReduxNativePluginDestination.YanmlPlugins, localAppData);
+		RegressionAssert.False(reopened.DetectLoader().IsPresent);
+		RegressionAssert.True(reopened.GetInstalledMods().Any(mod => mod.NexusModId == 781 && mod.CanRestore));
+		File.WriteAllText(Path.Combine(plugins, "config.toml"), "[core]\nenabled = true\n");
+		installer.RestoreAsync(781).GetAwaiter().GetResult();
+		RegressionAssert.False(File.Exists(Path.Combine(plugins, "BG3WASD.dll")));
+		RegressionAssert.True(File.Exists(Path.Combine(plugins, "BG3WASD.toml")));
+		var unmanagedDll = fixture.Pe("external replacement");
+		File.WriteAllBytes(Path.Combine(plugins, "BG3WASD.dll"), unmanagedDll);
+		RegressionAssert.Throws<InvalidOperationException>(() => installer.StageAsync(781, fixture.WasdArchivePath)
+			.GetAwaiter().GetResult());
+		RegressionAssert.SequenceEqual(unmanagedDll, File.ReadAllBytes(Path.Combine(plugins, "BG3WASD.dll")));
+	}
+
+	public void YanmlConfigurationExplainsNativePluginDestination()
+	{
+		var directory = Directory.CreateTempSubdirectory("redux-yanml-");
+		try
+		{
+			var loader = new ReduxNativeLoaderStatus(false, false, "Native Mod Loader is missing.");
+			var ordinary = ReduxAlternativeNativeLoader.MissingLoaderMessage("WASD", loader, directory.FullName);
+			RegressionAssert.Contains(ordinary, "requires Native Mod Loader");
+			RegressionAssert.False(ordinary.Contains("YANML", StringComparison.Ordinal));
+
+			var plugins = ReduxAlternativeNativeLoader.PluginsDirectory(directory.FullName);
+			Directory.CreateDirectory(plugins);
+			File.WriteAllText(Path.Combine(plugins, "config.toml"), "[core]\n");
+			var alternative = ReduxAlternativeNativeLoader.MissingLoaderMessage("WASD", loader, directory.FullName);
+			RegressionAssert.Contains(alternative, plugins);
+			RegressionAssert.Contains(alternative, "BG3\\bin\\NativeMods");
+			RegressionAssert.Contains(alternative, "Install for YANML");
+		}
+		finally
+		{
+			var tempRoot = Path.GetFullPath(Path.GetTempPath());
+			var target = Path.GetFullPath(directory.FullName);
+			if (!target.StartsWith(tempRoot, StringComparison.OrdinalIgnoreCase))
+				throw new InvalidOperationException("Unexpected test cleanup path.");
+			Directory.Delete(target, recursive: true);
+		}
+	}
+
 	public void VanillaBinkIsNotAnExternalNativeLoader()
 	{
 		using var fixture = new NativeFixture();

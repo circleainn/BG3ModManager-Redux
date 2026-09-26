@@ -228,7 +228,7 @@
 				<StackPanel>
 					<TextBlock Style="{StaticResource ReduxWindowHeadingStyle}" Text="Game-Directory Mod Manager" />
 					<TextBlock Margin="0,5,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap"
-						Text="Manage native mods installed in the game folder." />
+						Text="Manage reviewed native plugins and mods installed beside BG3." />
 				</StackPanel>
 
 				<WrapPanel Grid.Row="1" Margin="{DynamicResource Redux.Manager.ToolbarMargin}" Orientation="Horizontal">
@@ -258,6 +258,28 @@
 							<TextBlock Text="Open Game Folder" />
 						</StackPanel>
 					</Button>
+					<Button x:Name="InstallYanmlButton" Margin="{DynamicResource Redux.Manager.ActionMargin}"
+						AutomationProperties.Name="Install native plugin for YANML" Click="InstallYanmlButton_Click"
+						Style="{StaticResource ReduxSecondaryActionButtonStyle}" Visibility="Collapsed"
+						ToolTip="Review a native plugin archive and install its DLL in YANML's local Plugins folder.">
+						<StackPanel Orientation="Horizontal">
+							<controls:ReduxIcon VerticalAlignment="Center" Width="15" Height="15" Margin="0,0,7,0"
+								Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+								StrokeData="{StaticResource Redux.Icon.Download}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" />
+							<TextBlock Text="Install for YANML..." />
+						</StackPanel>
+					</Button>
+					<Button x:Name="OpenYanmlPluginsButton" Margin="{DynamicResource Redux.Manager.ActionMargin}"
+						AutomationProperties.Name="Open YANML plugins folder" Click="OpenYanmlPluginsButton_Click"
+						Style="{StaticResource ReduxSecondaryActionButtonStyle}" Visibility="Collapsed"
+						ToolTip="YANML loads native plugins from this local folder, outside Redux's game-directory workflow.">
+						<StackPanel Orientation="Horizontal">
+							<controls:ReduxIcon VerticalAlignment="Center" Width="15" Height="15" Margin="0,0,7,0"
+								Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
+								StrokeData="{StaticResource Redux.Icon.FolderOpen}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" />
+							<TextBlock Text="YANML Plugins" />
+						</StackPanel>
+					</Button>
 					<Button Margin="{DynamicResource Redux.Manager.ActionMargin}" AutomationProperties.Name="Refresh game-directory mods" Click="RefreshButton_Click" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
 						<StackPanel Orientation="Horizontal">
 							<controls:ReduxIcon VerticalAlignment="Center" Width="15" Height="15" Margin="0,0,7,0"
@@ -276,7 +298,7 @@
 						<controls:ReduxIcon Grid.Column="1" Width="16" Height="16" Margin="11,10,8,10" VerticalAlignment="Top"
 							Foreground="{DynamicResource ReduxWarningBrush}" IconKey="warning"
 							Style="{StaticResource ReduxOptionalInterfaceIconStyle}" />
-						<TextBlock Grid.Column="2" Margin="0,9,12,9" Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap"
+						<TextBlock x:Name="NativeWarningText" Grid.Column="2" Margin="0,9,12,9" Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap"
 							Text="Native DLLs run code inside the game. Install only from sources you trust." />
 					</Grid>
 				</Border>
