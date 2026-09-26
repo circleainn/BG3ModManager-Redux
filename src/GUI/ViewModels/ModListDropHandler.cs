@@ -112,7 +112,8 @@ public class ModListDropHandler : DefaultDropHandler
 	private bool IsOverrideModDropOnActivePane(IDropInfo dropInfo) =>
 		(dropInfo.TargetCollection == _viewModel.ActiveMods ||
 		 _viewModel.IsActiveVisualModCollection(dropInfo.TargetCollection)) &&
-		ExtractData(dropInfo.Data).OfType<DivinityModData>().Any(mod => mod.IsForceLoaded) &&
+		ExtractData(dropInfo.Data).OfType<DivinityModData>().Any(mod =>
+			!VisualDividerDragPolicy.CanEnterActiveLoadOrder(mod)) &&
 		!IsHeldOverrideActivationOnActivePane(dropInfo);
 
 	public override void DragOver(IDropInfo dropInfo)

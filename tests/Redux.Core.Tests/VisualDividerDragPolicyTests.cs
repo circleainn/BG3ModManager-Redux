@@ -18,6 +18,25 @@ public sealed class VisualDividerDragPolicyTests
 		RegressionAssert.False(VisualDividerDragPolicy.CanStartDrag(pureOverride, withinOverridePane: false));
 	}
 
+	public void MixedOverridesCanEnterActiveWhilePureOverridesStayOut()
+	{
+		var mixed = CreateMod("mixed");
+		mixed.IsForceLoaded = true;
+		mixed.IsForceLoadedMergedMod = true;
+		var pure = CreateMod("pure");
+		pure.IsForceLoaded = true;
+		var explicitlyAllowed = CreateMod("allowed");
+		explicitlyAllowed.IsForceLoaded = true;
+		explicitlyAllowed.ForceAllowInLoadOrder = true;
+
+		RegressionAssert.True(VisualDividerDragPolicy.CanDropOnPane([mixed], destinationActive: true));
+		RegressionAssert.True(VisualDividerDragPolicy.CanDropOnPane([CreateMod("ordinary"), mixed], destinationActive: true));
+		RegressionAssert.False(VisualDividerDragPolicy.CanDropOnPane([pure], destinationActive: true));
+		RegressionAssert.False(VisualDividerDragPolicy.CanDropOnPane([mixed, pure], destinationActive: true));
+		RegressionAssert.True(VisualDividerDragPolicy.CanDropOnPane([explicitlyAllowed], destinationActive: true));
+		RegressionAssert.True(VisualDividerDragPolicy.CanDropOnPane([pure], destinationActive: false));
+	}
+
 	public void EstablishedSectionsFollowTheirMembersAfterMultiModChanges()
 	{
 		var addedFirst = CreateMod("added-first");

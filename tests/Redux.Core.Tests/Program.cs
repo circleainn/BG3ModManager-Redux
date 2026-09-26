@@ -376,6 +376,7 @@ internal static class Program
 			(nameof(automaticCategories.DisabledProviderCategoryFallsBackToAnEnabledCategory), automaticCategories.DisabledProviderCategoryFallsBackToAnEnabledCategory),
 			(nameof(visualDividerDrag.NormalModDragNeverIncludesASelectedDivider), visualDividerDrag.NormalModDragNeverIncludesASelectedDivider),
 			(nameof(visualDividerDrag.PureOverrideModsCanReorderOnlyWithinTheirOwnPane), visualDividerDrag.PureOverrideModsCanReorderOnlyWithinTheirOwnPane),
+			(nameof(visualDividerDrag.MixedOverridesCanEnterActiveWhilePureOverridesStayOut), visualDividerDrag.MixedOverridesCanEnterActiveWhilePureOverridesStayOut),
 			(nameof(visualDividerDrag.EstablishedSectionsFollowTheirMembersAfterMultiModChanges), visualDividerDrag.EstablishedSectionsFollowTheirMembersAfterMultiModChanges),
 			(nameof(inactiveOrder.SavedInactiveOrderSurvivesRestartAndDiscoveryChanges), inactiveOrder.SavedInactiveOrderSurvivesRestartAndDiscoveryChanges),
 			(nameof(inactiveOrder.InactiveBlockMoveDoesNotChangeActiveOrder), inactiveOrder.InactiveBlockMoveDoesNotChangeActiveOrder),

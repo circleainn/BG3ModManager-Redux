@@ -17,8 +17,13 @@ public static class VisualDividerDragPolicy
 		return items.Any(item => item?.IsVisualDivider == true);
 	}
 
+	public static bool CanEnterActiveLoadOrder(DivinityModData item) =>
+		item != null && (!item.IsForceLoaded || item.IsForceLoadedMergedMod || item.ForceAllowInLoadOrder);
+
 	public static bool CanDropOnPane(IEnumerable<DivinityModData> items, bool destinationActive) =>
-		items.All(item => item?.IsVisualDivider != true || !item.IsVisualDividerCollapsed || item.IsActive == destinationActive);
+		items.All(item => item != null &&
+			(!destinationActive || CanEnterActiveLoadOrder(item)) &&
+			(!item.IsVisualDivider || !item.IsVisualDividerCollapsed || item.IsActive == destinationActive));
 
 	public static IReadOnlyList<DivinityModData> ResolveDragItems(
 		IEnumerable<DivinityModData> visualItems,
