@@ -1,4 +1,4 @@
-
+﻿
 
 using DivinityModManager.Models.Github;
 using DivinityModManager.Models.Health;
@@ -42,6 +42,10 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 
 	[Reactive] public string ModType { get; set; }
 	[Reactive] public bool IsNewlyDetected { get; set; }
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public bool IsHeldOverride { get; set; }
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public bool HasAvailableSourceUpdate { get; set; }
 	[Reactive] public ModHealthSnapshot HealthSnapshot { get; set; }
 	[Reactive] public ReduxCreatorManifestData CreatorManifest { get; set; } = ReduxCreatorManifestData.NotPresent;
 	[Reactive] public string DisplayCategory { get; set; }
@@ -51,10 +55,29 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 	[Reactive] public bool ShowInterfaceIcons { get; set; } = true;
 	[Reactive] public bool UseIconsOnly { get; set; }
 	[Reactive] public bool UseCategoryColorsForText { get; set; }
+	[Reactive] public bool ShowDescriptionInHoverCard { get; set; } = true;
 	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
 	public string PrivateNote { get; set; } = String.Empty;
 	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
 	public bool HasPrivateNote { get; set; }
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public string CustomAlias { get; set; } = String.Empty;
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public bool HasCustomAlias { get; set; }
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public string CustomPreviewImageReference { get; set; } = String.Empty;
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public string CustomPreviewImagePath { get; set; } = String.Empty;
+	[Reactive, Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public bool HasCustomPreviewImage { get; set; }
+	[Newtonsoft.Json.JsonIgnore, System.Text.Json.Serialization.JsonIgnore]
+	public string ListDisplayTitle => DisplayFileForName
+		? GetDisplayName()
+		: HasCustomAlias && !String.IsNullOrWhiteSpace(CustomAlias)
+			? CustomAlias
+			: !String.IsNullOrWhiteSpace(Metadata?.PackageTitle)
+				? Metadata.PackageTitle
+				: GetDisplayName();
 	[Reactive] public int SourceComponentCount { get; set; } = 1;
 	[Reactive] public int SourceComponentIndex { get; set; } = 1;
 	[Reactive] public string SourceComponentSummary { get; set; }
@@ -71,6 +94,12 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 	public bool HasVisualDividerDescription => !String.IsNullOrWhiteSpace(VisualDividerDescription);
 	[Reactive] public bool IsVisualDividerCollapsed { get; set; }
 	[Reactive] public double VisualDividerChevronAngle { get; set; }
+	[Reactive] public bool IsChildVisualDivider { get; set; }
+	[Reactive] public bool IsInsideVisualDivider { get; set; }
+	[Reactive] public bool IsInsideChildVisualDivider { get; set; }
+	[Reactive] public bool HasChildVisualDividers { get; set; }
+	[Reactive] public int VisualDividerHiddenItemCount { get; set; }
+	[Reactive] public bool ShowVisualDividerHiddenItemCount { get; set; }
 	[Reactive] public bool IsHiddenByVisualDivider { get; set; }
 	[Reactive] public bool ShowVisualDividerLine { get; set; } = true;
 
@@ -498,9 +527,16 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 			.Select(b => b ? Visibility.Visible : Visibility.Collapsed)
 			.ToUIProperty(this, x => x.OpenNexusModsLinkVisibility, Visibility.Collapsed);
 
-		// Presentation-only provider label used by the mod list.
+		// Keep the provider title available separately from the user's list-title choice.
 		this.WhenAnyValue(x => x.Metadata.PackageTitle)
 			.ToUIProperty(this, x => x.DisplayTitle, DisplayName);
+		this.WhenAnyValue(x => x.DisplayFileForName, x => x.FilePath,
+			x => x.HasCustomAlias, x => x.CustomAlias, x => x.DisplayTitle)
+			.Select(_ => ListDisplayTitle)
+			.DistinctUntilChanged(StringComparer.Ordinal)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(_ => this.RaisePropertyChanged(nameof(ListDisplayTitle)));
+
 		this.WhenAnyValue(x => x.IsActive, x => x.Index, x => x.IsForceLoaded, x => x.IsForceLoadedMergedMod, x => x.ForceAllowInLoadOrder)
 			.Select(state => state.Item3 && !state.Item4 && !state.Item5
 				? "Always loaded"
@@ -548,7 +584,7 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 			.ToUIProperty(this, x => x.MissingDependencyToolTip, string.Empty);
 
 		this.WhenAnyValue(x => x.IsActive, x => x.IsForceLoaded, x => x.IsForceLoadedMergedMod,
-			x => x.ForceAllowInLoadOrder).Subscribe((b) =>
+			x => x.ForceAllowInLoadOrder, x => x.IsHeldOverride).Subscribe((b) =>
 			{
 				var isActive = b.Item1;
 				var isForceLoaded = b.Item2;
@@ -561,7 +597,7 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 				}
 				else
 				{
-					CanDrag = !isForceLoaded || isForceLoadedMergedMod;
+					CanDrag = !isForceLoaded || isForceLoadedMergedMod || b.Item5;
 				}
 			});
 
@@ -640,8 +676,8 @@ public class DivinityModData : DivinityBaseModData, ISelectable
 		ExtenderModStatus = DivinityExtenderModStatus.None;
 		OsirisModStatus = DivinityOsirisModStatus.NONE;
 
-		this.WhenAnyValue(x => x.LastUpdated).SkipWhile(x => !x.HasValue)
-			.Select(x => $"Last Modified on {x.Value.ToString(DivinityApp.DateTimeColumnFormat, CultureInfo.InstalledUICulture)}")
+		this.WhenAnyValue(x => x.LastModified)
+			.Select(x => x.HasValue ? $"Last Modified on {x.Value.ToString(DivinityApp.DateTimeColumnFormat, CultureInfo.InstalledUICulture)}" : String.Empty)
 			.ToUIProperty(this, x => x.LastModifiedDateText, string.Empty);
 
 		this.WhenAnyValue(x => x.FilePath)

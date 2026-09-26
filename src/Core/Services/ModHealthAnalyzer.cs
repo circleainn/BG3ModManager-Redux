@@ -17,7 +17,8 @@ public sealed class ModHealthAnalyzer : IModHealthAnalyzer
 		new CreatorManifestHealthRule(),
 		new ScriptExtenderHealthRule(),
 		new LegacyAndOverrideHealthRule(),
-		new McmActivationHealthRule()
+		new McmActivationHealthRule(),
+		new SourceUpdateHealthRule()
 	};
 	private static readonly IReadOnlyList<IModHealthRule> DefaultAdvisorRules = new IModHealthRule[]
 	{

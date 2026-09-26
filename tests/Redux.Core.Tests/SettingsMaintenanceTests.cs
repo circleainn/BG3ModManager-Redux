@@ -87,6 +87,34 @@ public sealed class SettingsMaintenanceTests
 		RegressionAssert.SequenceEqual(new[] { "Shadowheart", "Tav" }, restored!.CollapsedSaveGameCampaigns);
 	}
 
+	public void OverrideOrganizationRoundTripsIndependentlyFromInactiveMods()
+	{
+		var settings = new DivinityModManagerSettings
+		{
+			InactiveModOrder = new List<string> { "inactive" },
+			OverrideModOrder = new List<string> { "override-b", "override-a" },
+			OverrideVisualModListDividers = new List<ModListVisualDividerData>
+			{
+				new()
+				{
+					Id = "override-divider", Title = "Always Loaded", Position = 1,
+					IsCollapsed = true, MemberModUuids = new List<string> { "override-a" }
+				}
+			}
+		};
+
+		var restored = JsonConvert.DeserializeObject<DivinityModManagerSettings>(
+			JsonConvert.SerializeObject(settings));
+
+		RegressionAssert.True(restored != null);
+		RegressionAssert.SequenceEqual(new[] { "inactive" }, restored!.InactiveModOrder);
+		RegressionAssert.SequenceEqual(new[] { "override-b", "override-a" }, restored.OverrideModOrder);
+		RegressionAssert.Equal(1, restored.OverrideVisualModListDividers.Count);
+		RegressionAssert.Equal("override-divider", restored.OverrideVisualModListDividers[0].Id);
+		RegressionAssert.True(restored.OverrideVisualModListDividers[0].IsCollapsed);
+		RegressionAssert.SequenceEqual(new[] { "override-a" }, restored.OverrideVisualModListDividers[0].MemberModUuids);
+	}
+
 	public void RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly()
 	{
 		var settings = new DivinityModManagerSettings
@@ -114,6 +142,27 @@ public sealed class SettingsMaintenanceTests
 		RegressionAssert.Equal(0, settings.ModCategoryOverrides.Count);
 		RegressionAssert.SequenceEqual(new[] { "My Category" }, settings.CustomModCategories);
 		RegressionAssert.Equal("#123456", settings.ModCategoryColors["My Category"]);
+	}
+
+	public void AutomaticCategoryPreferencePreservesManualAndCustomOrganization()
+	{
+		var settings = new DivinityModManagerSettings
+		{
+			CustomModCategories = new List<string> { "My Category" },
+			ModCategoryAssignments = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
+			{
+				["first-mod"] = new List<string> { "My Category", "Armor" }
+			}
+		};
+
+		RegressionAssert.True(ModCategoryAssignmentReset.SetAutomaticClassificationEnabled(settings, false));
+		RegressionAssert.False(ModCategoryAssignmentReset.SetAutomaticClassificationEnabled(settings, false));
+		var restored = JsonConvert.DeserializeObject<DivinityModManagerSettings>(JsonConvert.SerializeObject(settings))!;
+
+		RegressionAssert.False(restored.EnableAutomaticModCategories);
+		RegressionAssert.SequenceEqual(new[] { "My Category" }, restored.CustomModCategories);
+		RegressionAssert.SequenceEqual(new[] { "My Category", "Armor" }, restored.ModCategoryAssignments["first-mod"]);
+		RegressionAssert.True(JsonConvert.DeserializeObject<DivinityModManagerSettings>("{}")!.EnableAutomaticModCategories);
 	}
 
 	public void RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain()

@@ -29,6 +29,7 @@ THIRD_PARTY_LICENSE_FILES = (
 	Path("ArchivoBlack-OFL-1.1.txt"),
 	Path("IBMPlexMono-OFL-1.1.txt"),
 	Path("NewtonsoftJson-MIT.txt"),
+	Path("ImageSharp-Split-License.txt"),
 )
 
 USER_STATE_DIRECTORIES = {

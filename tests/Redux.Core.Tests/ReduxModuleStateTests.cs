@@ -274,6 +274,7 @@ internal sealed class ReduxModuleStateTests
 		host.Children.Add(primaryButton);
 		dark.UsesGeneratedGradients = false;
 		ReduxThemeService.PreviewColors(resources, dark);
+		RegressionAssert.True(FindResource(resources, "Redux.Separator.WashMask") is SolidColorBrush);
 		RegressionAssert.True(FindResource(resources, "ReduxPrimaryActionBackgroundBrush") is SolidColorBrush);
 		RegressionAssert.True(primaryButton.Background is SolidColorBrush);
 		RegressionAssert.True(resources["ReduxDestructiveActionBackgroundBrush"] is SolidColorBrush);
@@ -281,6 +282,7 @@ internal sealed class ReduxModuleStateTests
 
 		dark.UsesGeneratedGradients = true;
 		ReduxThemeService.PreviewColors(resources, dark);
+		RegressionAssert.True(FindResource(resources, "Redux.Separator.WashMask") is LinearGradientBrush);
 		RegressionAssert.True(FindResource(resources, "ReduxPrimaryActionBackgroundBrush") is LinearGradientBrush);
 		RegressionAssert.True(primaryButton.Background is LinearGradientBrush);
 		RegressionAssert.True(resources["ReduxDestructiveActionBackgroundBrush"] is LinearGradientBrush);

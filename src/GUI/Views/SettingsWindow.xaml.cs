@@ -1,5 +1,6 @@
 ﻿using DivinityModManager.Controls;
 using DivinityModManager.Models;
+using DivinityModManager.AppServices;
 using DivinityModManager.Models.App;
 using DivinityModManager.Models.Extender;
 using DivinityModManager.Models.View;
@@ -15,6 +16,7 @@ using Splat;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -88,11 +90,14 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(DivinityModManagerSettings.DocumentsFolderPathOverride),
 			nameof(DivinityModManagerSettings.LoadOrderPath)),
 		new("Downloads and archives",
-			"Optionally keep verified install packages for later reinstall. This storage is separate from Download Manager history.",
+			"Choose a download workspace and optionally keep verified install packages for later reinstall. Retained archives are stored separately.",
+			nameof(DivinityModManagerSettings.ManagedDownloadsDirectory),
 			nameof(DivinityModManagerSettings.NxmActiveDownloadLimit),
 			nameof(DivinityModManagerSettings.BringNxmDownloadsToFront),
 			nameof(DivinityModManagerSettings.RetainInstalledPackageArchives),
-			nameof(DivinityModManagerSettings.RetainedPackageArchiveQuotaGb)),
+			nameof(DivinityModManagerSettings.RetainedPackageArchiveQuotaGb),
+			nameof(DivinityModManagerSettings.RetainPreviousModVersions),
+			nameof(DivinityModManagerSettings.PreviousModVersionsQuotaGb)),
 		new("Game launch",
 			"Control how Redux starts Baldur's Gate 3 and what happens after launch.",
 			nameof(DivinityModManagerSettings.LaunchType),
@@ -733,6 +738,102 @@ public partial class SettingsWindow : SettingsWindowBase
 					break;
 
 				case TypeCode.String:
+					if (prop.Property.Name == nameof(DivinityModManagerSettings.ManagedDownloadsDirectory)
+						&& source is DivinityModManagerSettings downloadSettings)
+					{
+						var defaultDirectory = DivinityApp.GetAppDirectory("Data", "Downloads");
+						var locationPanel = new StackPanel { Orientation = Orientation.Vertical };
+						var locationRow = new Grid();
+						locationRow.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+						locationRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+						locationRow.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+						var locationText = new TextBox
+						{
+							IsReadOnly = true,
+							VerticalContentAlignment = VerticalAlignment.Center,
+							MinWidth = 0
+						};
+						var browseButton = new Button
+						{
+							Content = "Browse…",
+							Margin = new Thickness(6, 0, 0, 0),
+							Style = FindResource("ReduxSecondaryActionButtonStyle") as Style
+						};
+						var resetButton = new Button
+						{
+							Content = "Default",
+							Margin = new Thickness(6, 0, 0, 0),
+							Style = FindResource("ReduxSecondaryActionButtonStyle") as Style
+						};
+						locationRow.Children.Add(locationText);
+						locationRow.Children.Add(browseButton);
+						locationRow.Children.Add(resetButton);
+						Grid.SetColumn(browseButton, 1);
+						Grid.SetColumn(resetButton, 2);
+						locationPanel.Children.Add(locationRow);
+						var locationHint = new TextBlock
+						{
+							Text = "Switches on restart. The current folder's queue and files stay where they are.",
+							TextWrapping = TextWrapping.Wrap,
+							Margin = new Thickness(0, 4, 0, 0)
+						};
+						locationHint.SetResourceReference(TextBlock.ForegroundProperty, "ReduxTextMutedBrush");
+						locationHint.SetResourceReference(TextBlock.FontSizeProperty, "Redux.FontSize.11");
+						locationPanel.Children.Add(locationHint);
+						void RefreshLocation()
+						{
+							locationText.Text = String.IsNullOrWhiteSpace(downloadSettings.ManagedDownloadsDirectory)
+								? defaultDirectory : downloadSettings.ManagedDownloadsDirectory;
+							resetButton.IsEnabled = !String.IsNullOrWhiteSpace(downloadSettings.ManagedDownloadsDirectory);
+						}
+						RefreshLocation();
+						browseButton.Click += (_, _) =>
+						{
+							var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog
+							{
+								Description = "Choose the managed Downloads folder",
+								UseDescriptionForTitle = true,
+								ShowNewFolderButton = true,
+								SelectedPath = locationText.Text
+							};
+							if (dialog.ShowDialog(this) != true) return;
+							if (!ManagedDownloadsLocation.TryPrepare(dialog.SelectedPath, defaultDirectory,
+									out var selected, out var locationError))
+							{
+								ReduxMessageBox.Show(this, locationError, "Downloads folder unavailable",
+									MessageBoxButton.OK, MessageBoxImage.Warning);
+								return;
+							}
+							var hasQueue = File.Exists(Path.Combine(selected, "downloads.json"));
+							var detail = hasQueue
+								? "Redux found an existing queue in that folder and will use it after restart."
+								: "Redux will start a separate queue in that folder after restart.";
+							if (ReduxMessageBox.Show(this,
+									$"Use this Downloads folder?\n\n{selected}\n\n{detail} Your current queue and packages stay in their existing folder. No files will be moved or deleted.",
+									"Change Downloads folder", MessageBoxButton.YesNo, MessageBoxImage.Question,
+									MessageBoxResult.No) != MessageBoxResult.Yes) return;
+							downloadSettings.ManagedDownloadsDirectory =
+								String.Equals(selected, defaultDirectory, StringComparison.OrdinalIgnoreCase)
+									? String.Empty : selected;
+							RefreshLocation();
+						};
+						resetButton.Click += (_, _) =>
+						{
+							if (ReduxMessageBox.Show(this,
+									$"Use Redux's default Downloads folder after restart?\n\n{defaultDirectory}\n\nThe current folder's queue and packages stay where they are.",
+									"Reset Downloads folder", MessageBoxButton.YesNo, MessageBoxImage.Question,
+									MessageBoxResult.No) != MessageBoxResult.Yes) return;
+							downloadSettings.ManagedDownloadsDirectory = String.Empty;
+							RefreshLocation();
+						};
+						PropertyChangedEventManager.AddHandler(downloadSettings,
+							(_, _) => RefreshLocation(), nameof(DivinityModManagerSettings.ManagedDownloadsDirectory));
+						targetGrid.Children.Add(locationPanel);
+						Grid.SetRow(locationPanel, targetRow);
+						Grid.SetColumn(locationPanel, 1);
+						createdObject = locationPanel;
+						break;
+					}
 					if (IsSourceIntegrationSetting(prop.Property.Name))
 					{
 						var passwordBox = new PasswordBox
@@ -839,7 +940,7 @@ public partial class SettingsWindow : SettingsWindowBase
 						ud.Minimum = 1;
 						ud.Maximum = 6;
 					}
-					else if (prop.Property.Name == nameof(DivinityModManagerSettings.RetainedPackageArchiveQuotaGb))
+					else if (prop.Property.Name == nameof(DivinityModManagerSettings.RetainedPackageArchiveQuotaGb) || prop.Property.Name == nameof(DivinityModManagerSettings.PreviousModVersionsQuotaGb))
 					{
 						ud.Minimum = 1;
 						ud.Maximum = 100;

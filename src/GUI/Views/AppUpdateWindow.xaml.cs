@@ -24,6 +24,12 @@ public partial class AppUpdateWindow : AppUpdateWindowBase
 
 	public override void HideWindow_Closing(object sender, CancelEventArgs e)
 	{
+		if (ViewModel.IsBackingUp)
+		{
+			e.Cancel = true;
+			ViewModel.CancelBackup();
+			return;
+		}
 		base.HideWindow_Closing(sender, e);
 		ViewModel.IsVisible = false;
 	}
@@ -43,10 +49,15 @@ public partial class AppUpdateWindow : AppUpdateWindowBase
 		this.WhenActivated(d =>
 		{
 			d(this.BindCommand(ViewModel, vm => vm.ConfirmCommand, v => v.ConfirmButton));
+			d(this.BindCommand(ViewModel, vm => vm.BackupAndConfirmCommand, v => v.BackupAndConfirmButton));
 			d(this.BindCommand(ViewModel, vm => vm.SkipCommand, v => v.SkipButton));
 			d(this.OneWayBind(ViewModel, vm => vm.ConfirmButtonText, v => v.ConfirmButtonText.Text));
 			d(this.OneWayBind(ViewModel, vm => vm.CanConfirm, v => v.ConfirmButton.Visibility,
 				canConfirm => canConfirm ? Visibility.Visible : Visibility.Collapsed));
+			d(this.OneWayBind(ViewModel, vm => vm.CanConfirm, v => v.BackupAndConfirmButton.Visibility,
+				canConfirm => canConfirm ? Visibility.Visible : Visibility.Collapsed));
+			d(this.OneWayBind(ViewModel, vm => vm.HasAvailableUpdate, v => v.BackupExplanation.Visibility,
+				available => available ? Visibility.Visible : Visibility.Collapsed));
 			d(this.OneWayBind(ViewModel, vm => vm.SkipButtonText, v => v.SkipButtonText.Text));
 			d(this.OneWayBind(ViewModel, vm => vm.UpdateDescription, v => v.UpdateDescription.Text));
 			d(this.OneWayBind(ViewModel, vm => vm.UpdateProgress, v => v.UpdateProgressBar.Value));

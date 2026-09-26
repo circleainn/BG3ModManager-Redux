@@ -16,6 +16,19 @@ namespace Redux.Core.Tests;
 
 internal sealed class ModHealthTests
 {
+	public void VerifiedSourceUpdateAppearsInReviewForAnInactiveMod()
+	{
+		var mod = CreateMod("update", "Updated Mod", isActive: false);
+		mod.HasAvailableSourceUpdate = true;
+		var snapshot = FindSnapshot(new ModHealthAnalyzer().AnalyzeAll(new[] { mod }, []), mod.UUID);
+		RegressionAssert.True(HasFinding(snapshot, ModHealthFindingCode.SourceUpdateAvailable));
+		RegressionAssert.True(snapshot.NeedsAttention);
+		RegressionAssert.False(snapshot.NeedsNonExtenderAttention);
+		mod.HasAvailableSourceUpdate = false;
+		var refreshed = FindSnapshot(new ModHealthAnalyzer().AnalyzeAll(new[] { mod }, []), mod.UUID);
+		RegressionAssert.False(HasFinding(refreshed, ModHealthFindingCode.SourceUpdateAvailable));
+	}
+
 	public void MissingAndInactiveDependenciesRemainIndependentOfLoadOrderGuidance()
 	{
 		var inactiveDependency = CreateMod("dependency", "Dependency", isActive: false);
@@ -365,6 +378,9 @@ internal sealed class ModHealthTests
 		RegressionAssert.Equal(ModHealthSeverity.Warning, finding.Severity);
 		RegressionAssert.Contains(finding.Message, "Sync Load Order to Game");
 		RegressionAssert.Contains(finding.Message, "Redux");
+		mcm.IsHeldOverride = true;
+		var held = FindSnapshot(analyzer.AnalyzeAll(new[] { mcm }, Array.Empty<DivinityModData>()), mcm.UUID);
+		RegressionAssert.False(HasFinding(held, ModHealthFindingCode.McmNotActive));
 
 		var active = FindSnapshot(analyzer.AnalyzeAll(new[] { mcm }, new[] { mcm }), mcm.UUID);
 		RegressionAssert.False(HasFinding(active, ModHealthFindingCode.McmNotActive));

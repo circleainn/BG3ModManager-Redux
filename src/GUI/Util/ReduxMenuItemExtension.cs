@@ -24,6 +24,11 @@ namespace DivinityModManager.Util;
 public static class ReduxMenuItemExtension
 {
 	private static readonly List<WeakReference<MenuItem>> SemanticMenuItems = new();
+	// Category identity stays on the left; enabled state gets its own trailing check.
+	public static readonly DependencyProperty CheckOnRightProperty = DependencyProperty.RegisterAttached(
+		"CheckOnRight", typeof(bool), typeof(ReduxMenuItemExtension), new PropertyMetadata(false));
+	public static bool GetCheckOnRight(DependencyObject element) => (bool)element.GetValue(CheckOnRightProperty);
+	public static void SetCheckOnRight(DependencyObject element, bool value) => element.SetValue(CheckOnRightProperty, value);
 
 	static ReduxMenuItemExtension()
 	{

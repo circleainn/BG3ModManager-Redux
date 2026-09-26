@@ -3,7 +3,7 @@
 <img src="docs/assets/nexus-description/00-redux-header.png#gh-dark-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 <img src="docs/assets/nexus-description/00-redux-header-light.png#gh-light-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 
-[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.4.4-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
+[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.5-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-4F86F7?style=flat-square)](#requirements-and-alpha-status)
 [![License](https://img.shields.io/badge/license-MIT-42A66F?style=flat-square)](LICENSE)
 [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/circleain)
@@ -25,15 +25,15 @@ Redux is a Windows mod manager built on
 BG3MM's proven package, profile, and load-order foundation while adding a cohesive interface,
 stronger organization, safer review workflows, and optional offline-assisted guidance.
 
-<h3 id="new-in-16-4" align="center">New in 16.4</h3>
+<h3 id="new-in-16-5" align="center">New in 16.5</h3>
 <hr>
 
-- **Save Game Manager overhaul:** a right-hand details pane with screenshots, location, party portraits and save facts; inline mod warnings; mod review; save/campaign ZIP exports; and consistent context menus.
-- **Download Manager overhaul:** clearer package rows, streamlined toolbars, separate actions for Downloads, Installed, and Archives, and red **Delete All** actions.
-- **Nexus Collection Importer:** select and filter collection files, compare installed mods, follow download progress, reopen recent collections, and save supported BG3 load orders for later use.
-- **Organization and onboarding:** automatically saved inactive ordering and separators, shared sorting/filtering behavior, live appearance previews, and optional starter separators.
+- **Organize every mod pane:** separators and one level of sub-separators in Active, Inactive, and Override Mods, with collapse, grouped moves, and a choice for existing separators.
+- **Overrides per saved order:** opt in to a reviewed PAK selection for each order, with managed storage for disabled Overrides and recovery for interrupted moves.
+- **Clearer updates and storage:** find verified Nexus replacements through Mod Review, choose the managed Downloads folder, limit previous PAK versions, and back up the existing installation and mod-list data before updating Redux.
+- **Personalize and refine:** set local aliases and artwork, manage supported native plugins through YANML, and use improved pane layouts, Sync state, and drag placement.
 
-Read the [full 16.4 changelog](docs/releases/0.1.0-alpha.16.4.md).
+Read the [full 16.5 release notes](docs/releases/0.1.0-alpha.16.5.md).
 
 <h3 id="install-and-update" align="center">Install and update</h3>
 <hr>
@@ -51,7 +51,7 @@ approved archive, and Redux's built-in updater uses that archive for existing in
 4. Run `Redux.exe`. On first launch, review the detected game and profile paths before
    installing or syncing anything.
 
-`0.1.0-alpha.16.4.4` is the current public-alpha release. The updater acts only when the official
+`0.1.0-alpha.16.5` is the version of this build. The updater acts only when the official
 public-alpha channel points to a newer, fully published package. You can also update manually by
 backing up the Redux folder and extracting the complete newer archive over it. Release archives
 exclude runtime state such as `Data`, `_Logs`, caches, downloads, retained archives, and backups.
@@ -83,7 +83,14 @@ uninstall guidance.
 3. **Save deliberately.** Active load-order changes do not overwrite the selected saved order until
    **Save** is pressed. Inactive ordering and separators save automatically as Redux organization.
 4. **Review the game change.** **Sync Load Order to Game** shows what will activate, deactivate, or
-   move before Redux writes `modsettings.lsx`.
+   move before Redux writes `modsettings.lsx`. After syncing a saved order, **Current** reflects
+   the order sent to the game; the saved order itself still needs an explicit **Save** to retain edits.
+
+To check linked mods for updates, open **File > Check Mod Updates**. Redux checks enabled
+sources and shows matches in the **Mod Updates** view. A mod needs a recognized source link for
+Nexus Mods or mod.io results. To find when an installed package last changed on your computer,
+right-click a mod-list column header and enable **Last Modified**; **Last Updated** is the mod's
+known source or package-metadata date.
 
 <h3 id="what-redux-adds" align="center">What Redux adds</h3>
 <hr>
@@ -94,19 +101,34 @@ uninstall guidance.
 
 - Automatic and custom categories with names, descriptions, colors, icons, ordering, and filtering.
 - Up to three visible category assignments per mod.
-- Separators with persistent membership and collapse state. Closed separators move with their
-  contained mods and do not absorb nearby rows unexpectedly.
-- Compact Active Mods controls can collapse or expand every separator at once. The same action can
+- Separators with persistent membership and collapse state in Active, Inactive, and Override Mods. A top-level separator can contain one
+  level of child separators, shown as smaller section headers with short elbows and aligned labels. Optional separator lines,
+  custom colors and PNG icons remain available; gradients and colored labels follow your theme preferences. Closing the parent hides the
+  complete branch, and children inherit their parent's persistence scope. Active separators can stay local to one saved order or share their presentation
+  across every order while retaining an independent placement in each. Closed separators move with
+  their contained mods and do not absorb nearby rows unexpectedly.
+- Matching Active, Inactive, and Override pane controls can collapse or expand every separator at once. The same action can
   be assigned a shortcut, while individual and context-menu controls remain available.
 - A resizable details drawer and hover cards for descriptions, requirements, files, changelogs,
-  source pages, diagnostics, and private notes.
+  source pages, diagnostics, private notes, and persistent local mod aliases. Aliases are searchable
+  display names; Redux keeps the original package and provider identity intact.
+- Automatic categorization can be disabled without deleting custom categories or manual assignments,
+  and the Categories menu can reset every mod back to automatic assignment when requested.
+- Package-scoped custom preview artwork for local or linked mods, stored as a normalized Redux-owned
+  image while leaving the installed package and provider artwork unchanged.
 - Configurable list columns and unified selection between Active and Inactive Mods. The # column
   starts visible in Active and hidden in Inactive; either can be changed in the column menu.
+- Override Mods has its own filterable, sortable pane outside the numbered order, with matching
+  automatically saved visual ordering and nested separators that never enter `modsettings.lsx`, plus
+  title/count treatment, headers, scrollbars, collapse motion, and a configurable collapse/expand shortcut.
+- Saved load orders can optionally manage which Override PAKs are installed. Use **Load Order → Override Mods for This Order**
+  to choose files. Redux previews each switch, holds disabled PAKs in its own folder, and restores them when another order
+  needs them. Orders without this setting continue to load all Override PAKs.
 - Inactive ordering and separators save automatically, independently of active-order Save/Discard.
 - Category filtering applies to both panes. Click a filtered/sorted-view notice to clear that view;
   column-menu order follows your column arrangement.
 
-Categories, separators, and notes are Redux presentation data. They never enter the game's
+Categories, separators, aliases, custom artwork, and notes are Redux presentation data. They never enter the game's
 `modsettings.lsx`.
 
 <a id="diagnostics-and-load-order-advisor"></a>
@@ -204,6 +226,17 @@ Reviewed add-only plugins installed elsewhere can be adopted without rewriting t
 Redux removes only unchanged adopted DLLs. User-editable `.toml` and `.ini` configuration and
 companion PAKs remain user-owned.
 
+If [Yet Another BG3 Native Mod Loader](https://github.com/MolotovCherry/Yet-Another-BG3-Native-Mod-Loader)
+has created its local `Plugins/config.toml`, the manager offers **Install for YANML...** and
+**YANML Plugins**. Reviewed native plugin archives can be installed, updated, adopted when their
+DLLs exactly match a reviewed release, and removed from `%LocalAppData%\Larian Studios\Baldur's
+Gate 3\Plugins`. Redux keeps YANML ownership separate from game-folder native mods and does not
+overwrite unowned DLLs or user-edited plugin configuration. Ordinary imports use YANML's Plugins
+folder automatically when its configuration exists and Native Mod Loader is absent. YANML's
+autostart, watcher, or injector must still be set up separately. Some plugins read their settings
+from `BG3\bin\NativeMods` even when YANML loads their DLL from the local Plugins folder; follow
+the plugin author's instructions or YANML's folder-link guidance if settings do not apply.
+
 Replacer mods use stricter ownership. Redux never adopts an external replacer because it did not
 preserve the files that were already replaced. To bring one under management, remove the external
 replacer, verify BG3 through Steam or GOG, then install it through Redux. Before replacing anything,
@@ -238,6 +271,11 @@ Downloads are queued in a managed folder with bounded concurrency, visible progr
 pause/resume/retry behavior, restart recovery, and a verified SHA-256 archive identity. Free-user
 downloads that lose their temporary authorization ask for a new link without saving the temporary
 key or signed URL. Network state remains separate from package inspection and installation.
+In **Preferences → Downloads and archives**, choose **Managed Downloads folder** to use another
+writable location. The change takes effect after restarting Redux. Each location keeps its own
+queue, installed history, and downloaded packages; changing the setting leaves the previous folder
+untouched, and **Default** switches back to Redux's original folder. The optional retained-package
+library and previous-mod backups are separate storage settings.
 Completed packages are automatically classified and remain separate from installation until their
 destination-aware **Install** action is chosen. Redux then verifies the archive again and routes
 ordinary PAKs to Inactive Mods, reviewed native and Script Extender packages through Game-Directory

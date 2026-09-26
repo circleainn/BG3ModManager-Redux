@@ -84,6 +84,16 @@ public sealed class ReduxSelectionFlashAnimation : DoubleAnimationBase
 /// </summary>
 public static class ReduxWindowBehavior
 {
+	private const int GwlExStyle = -20;
+	private const int WsExAppWindow = 0x00040000;
+	private const int WsExToolWindow = 0x00000080;
+
+	[DllImport("user32.dll", EntryPoint = "GetWindowLongW", SetLastError = true)]
+	private static extern int GetWindowLong(IntPtr window, int index);
+
+	[DllImport("user32.dll", EntryPoint = "SetWindowLongW", SetLastError = true)]
+	private static extern int SetWindowLong(IntPtr window, int index, int value);
+
 	private static readonly Duration EntranceDuration = TimeSpan.FromMilliseconds(140);
 	private static readonly Duration ExitDuration = TimeSpan.FromMilliseconds(150);
 	private static readonly ConditionalWeakTable<Window, AnimatedCloseState> AnimatedCloseStates = new();
@@ -92,6 +102,7 @@ public static class ReduxWindowBehavior
 	private static readonly ConditionalWeakTable<Window, RoundedCornerState> RoundedCornerStates = new();
 	private static readonly ConditionalWeakTable<Window, ResizeFeedbackState> ResizeFeedbackStates = new();
 	private static readonly ConditionalWeakTable<Window, WindowMotionPreferenceState> WindowMotionPreferenceStates = new();
+	private static readonly ConditionalWeakTable<Window, object> TaskbarPresenceStates = new();
 	private static readonly ConditionalWeakTable<Window, OwnerBackdropState> OwnerBackdropStates = new();
 	private static readonly ConditionalWeakTable<Window, BackdropLeaseState> BackdropLeaseStates = new();
 	private static readonly ConditionalWeakTable<FrameworkElement, HoverMotionState> HoverMotionStates = new();
@@ -1126,6 +1137,7 @@ public static class ReduxWindowBehavior
 		double workAreaMargin = 48,
 		bool dimOwner = true)
 	{
+		AttachTaskbarPresence(window);
 		AttachAdaptiveSizing(window, workAreaMargin);
 		var state = AnimatedCloseStates.GetOrCreateValue(window);
 		if (state.IsAttached) return;
@@ -1194,6 +1206,7 @@ public static class ReduxWindowBehavior
 
 	public static bool? ShowDialogWithOwnerBackdrop(Window dialog, Window owner)
 	{
+		AttachTaskbarPresence(dialog);
 		ApplyOwnerBackdrop(dialog, owner);
 		try
 		{
@@ -1203,6 +1216,23 @@ public static class ReduxWindowBehavior
 		{
 			RemoveOwnerBackdrop(dialog);
 		}
+	}
+
+	/// <summary>Give secondary windows their own taskbar and Alt-Tab entry even when owned.</summary>
+	public static void AttachTaskbarPresence(Window window)
+	{
+		if (window == null || TaskbarPresenceStates.TryGetValue(window, out _)) return;
+		TaskbarPresenceStates.Add(window, new object());
+		window.ShowInTaskbar = true;
+		void ApplyStyle()
+		{
+			var handle = new WindowInteropHelper(window).Handle;
+			if (handle == IntPtr.Zero) return;
+			var style = GetWindowLong(handle, GwlExStyle);
+			SetWindowLong(handle, GwlExStyle, (style | WsExAppWindow) & ~WsExToolWindow);
+		}
+		window.SourceInitialized += (_, _) => ApplyStyle();
+		ApplyStyle();
 	}
 
 	public static bool HasDialogTransitions(Window window) =>

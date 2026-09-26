@@ -50,6 +50,10 @@ public class DivinityLoadOrder : ReactiveObject
 	[DataMember(EmitDefaultValue = false)]
 	public List<ModListVisualDividerData> VisualDividers { get; set; }
 
+	/// <summary>Null keeps legacy behavior; an empty list opts in with no Override PAKs.</summary>
+	[DataMember(EmitDefaultValue = false)]
+	public List<string> OverrideModFiles { get; set; }
+
 	public void Add(DivinityModData mod, bool force = false)
 	{
 		try
@@ -311,6 +315,8 @@ public class DivinityLoadOrder : ReactiveObject
 			Position = divider.Position,
 			IsCollapsed = divider.IsCollapsed,
 			HideLine = divider.HideLine,
+			ParentDividerId = divider.ParentDividerId,
+			IsGlobal = divider.IsGlobal,
 			MemberModUuids = divider.MemberModUuids?.ToList()
 		}).ToList();
 
@@ -330,6 +336,7 @@ public class DivinityLoadOrder : ReactiveObject
 			Name = this.Name,
 			Order = this.Order.ToList(),
 			VisualDividers = CloneVisualDividers(this.VisualDividers),
+			OverrideModFiles = this.OverrideModFiles?.ToList(),
 			LastModifiedDate = this.LastModifiedDate
 		};
 	}

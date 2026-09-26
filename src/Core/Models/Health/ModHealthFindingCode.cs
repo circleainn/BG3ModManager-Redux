@@ -22,5 +22,6 @@ public enum ModHealthFindingCode
 	AlwaysLoaded,
 	ContainsFileOverrides,
 	AlwaysLoadedWithLoadOrderEntry,
-	McmNotActive
+	McmNotActive,
+	SourceUpdateAvailable
 }

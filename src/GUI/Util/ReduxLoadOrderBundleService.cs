@@ -237,6 +237,7 @@ public static class ReduxLoadOrderBundleService
 				divider == null || (divider.Title?.Length ?? 0) > 160 ||
 				!IsValidColor(divider.Color) || (divider.IconId?.Length ?? 0) > 160 ||
 				(divider.Description?.Length ?? 0) > 240 ||
+				(divider.DividerId?.Length ?? 0) > 64 || (divider.ParentDividerId?.Length ?? 0) > 64 ||
 				divider.FallbackPosition < 0 || divider.FallbackPosition > orderUuids.Count ||
 				(divider.MemberModUuids != null &&
 					(divider.MemberModUuids.Count > orderUuids.Count ||
@@ -246,6 +247,19 @@ public static class ReduxLoadOrderBundleService
 				(!String.IsNullOrWhiteSpace(divider.BeforeModUuid) && !orderedUuidSet.Contains(divider.BeforeModUuid)) ||
 				(!String.IsNullOrWhiteSpace(divider.AfterModUuid) && !orderedUuidSet.Contains(divider.AfterModUuid))))
 			throw new InvalidDataException("The Redux Modlist contains an invalid separator.");
+		var dividersWithIds = presentation.Dividers
+			.Where(divider => !String.IsNullOrWhiteSpace(divider.DividerId)).ToList();
+		if (dividersWithIds.Select(divider => divider.DividerId)
+			.Distinct(StringComparer.OrdinalIgnoreCase).Count() != dividersWithIds.Count)
+			throw new InvalidDataException("The Redux Modlist contains an invalid separator hierarchy.");
+		var dividerIds = dividersWithIds.ToDictionary(
+			divider => divider.DividerId, StringComparer.OrdinalIgnoreCase);
+		if (
+			presentation.Dividers.Any(divider => !String.IsNullOrWhiteSpace(divider.ParentDividerId) &&
+				(!dividerIds.TryGetValue(divider.ParentDividerId, out var parent) ||
+				 String.Equals(divider.DividerId, divider.ParentDividerId, StringComparison.OrdinalIgnoreCase) ||
+				 !String.IsNullOrWhiteSpace(parent.ParentDividerId))))
+			throw new InvalidDataException("The Redux Modlist contains an invalid separator hierarchy.");
 		var explicitlyAssignedDividerUuids = presentation.Dividers
 			.Where(divider => divider.MemberModUuids != null)
 			.SelectMany(divider => divider.MemberModUuids)

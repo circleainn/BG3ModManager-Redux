@@ -126,6 +126,7 @@ public class DivinityGlobalCommands : ReactiveObject
 
 	public void OpenModGalleryPage(DivinityModData mod)
 	{
+		if (mod?.HasCustomPreviewImage == true) return;
 		OpenURL(mod.Metadata.GalleryPageUrl);
 	}
 

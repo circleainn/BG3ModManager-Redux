@@ -1,5 +1,8 @@
 using System;
+using System.IO;
+using System.Linq;
 using System.Windows;
+using System.Windows.Threading;
 
 using DivinityModManager;
 using DivinityModManager.AppServices;
@@ -15,11 +18,44 @@ using DivinityModManager.Util;
 using DivinityModManager.ViewModels;
 
 using Newtonsoft.Json;
+using NexusModsNET.DataModels;
+using ReactiveUI;
 
 namespace Redux.Core.Tests;
 
 public sealed class SourceAssociationTests
 {
+	public void VerifiedNexusUpdateDotSurvivesOnlyForTheSameRecentInstalledFile()
+	{
+		var now = DateTimeOffset.UtcNow;
+		var cache = new NexusModsCachedData();
+		cache.VerifiedFileUpdates["module"] = new NexusVerifiedFileUpdate
+		{
+			ProjectId = 123,
+			FileId = 456,
+			CheckedAt = now.ToUnixTimeSeconds()
+		};
+		var restored = RoundTrip(cache);
+		RegressionAssert.True(restored.HasVerifiedUpdate("module", 123, 456, now));
+		RegressionAssert.False(restored.HasVerifiedUpdate("module", 123, 457, now));
+		RegressionAssert.False(restored.HasVerifiedUpdate("module", 124, 456, now));
+		RegressionAssert.False(restored.HasVerifiedUpdate("module", 123, 456, now.AddDays(8)));
+	}
+
+	public void NexusUpdateDotRequiresAnExplicitReplacementForTheInstalledFile()
+	{
+		var replacements = new[]
+		{
+			new NexusModFileUpdate { OldFileId = 101, NewFileId = 202 },
+			new NexusModFileUpdate { OldFileId = 303, NewFileId = 404 }
+		};
+		RegressionAssert.True(NexusModsDataLoader.HasExplicitFileReplacement(101, replacements));
+		RegressionAssert.False(NexusModsDataLoader.HasExplicitFileReplacement(0, replacements));
+		RegressionAssert.False(NexusModsDataLoader.HasExplicitFileReplacement(202, replacements));
+		RegressionAssert.False(NexusModsDataLoader.HasExplicitFileReplacement(999, replacements));
+		RegressionAssert.False(NexusModsDataLoader.HasExplicitFileReplacement(101, null));
+	}
+
 	private const string ReviewedModuleUuid = "069e5871-efe8-44bb-b02a-fe957df5ae0e";
 	private const string CommunityModuleUuid = "67fbbd53-7c7d-4cfa-9409-6d737b4d92a9";
 	private const string AmbiguousProviderUuid = "26922ba9-6018-5252-075d-7ff2ba6ed879";
@@ -76,6 +112,57 @@ public sealed class SourceAssociationTests
 		RegressionAssert.Equal("Better Inventory UI (with Mark Books as Read support)", officialMod.Metadata.Title);
 		RegressionAssert.Equal("Addon for Better Inventory UI (unofficial)", unofficialMod.Metadata.PackageTitle);
 		RegressionAssert.Equal("Addon for Better Inventory UI (official)", officialMod.Metadata.PackageTitle);
+	}
+
+	public void LinkedModFileNameToggleUpdatesTheVisibleTitle()
+	{
+		var mod = new DivinityModData
+		{
+			UUID = "7a1731b4-1cc9-4495-9f4f-4e47c3eaf2ef",
+			Name = "Local module",
+			Folder = "LocalModule",
+			HasMetadata = true,
+			OnlineMetadataEnabled = true
+		};
+		mod.FilePath = Path.Combine(Path.GetTempPath(), "LocalModule.pak");
+		var official = ReduxModDatabaseService.TryResolveFile(4597, 88943);
+		RegressionAssert.True(official != null);
+		mod.NexusModsEnabled = true;
+		mod.NexusModsData.Update(official!.CreateMetadata(mod.UUID));
+		RegressionAssert.Equal("Addon for Better Inventory UI (official)", mod.ListDisplayTitle);
+		var listTitleNotifications = 0;
+		mod.PropertyChanged += (_, args) =>
+		{
+			if (args.PropertyName == nameof(DivinityModData.ListDisplayTitle)) listTitleNotifications++;
+		};
+
+		mod.DisplayFileForName = true;
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		RegressionAssert.Equal("LocalModule.pak", mod.ListDisplayTitle);
+		mod.DisplayFileForName = false;
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		RegressionAssert.Equal("Addon for Better Inventory UI (official)", mod.ListDisplayTitle);
+		RegressionAssert.True(listTitleNotifications <= 6);
+	}
+
+	public void DisplayTitleDoesNotRebroadcastPackageMetadata()
+	{
+		var mod = CreateMod();
+		var packageTitleNotifications = 0;
+		mod.Metadata.PropertyChanged += (_, args) =>
+		{
+			if (args.PropertyName == nameof(ModMetadataViewData.PackageTitle)) packageTitleNotifications++;
+		};
+
+		mod.Name = "Renamed local module";
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		var afterRename = packageTitleNotifications;
+		RegressionAssert.True(afterRename > 0 && afterRename < 10);
+
+		// DisplayTitle is the output of PackageTitle and must never invalidate it.
+		mod.RaisePropertyChanged(nameof(DivinityModData.DisplayTitle));
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		RegressionAssert.Equal(afterRename, packageTitleNotifications);
 	}
 
 	public void ModioManualLinkParserAcceptsOnlyBg3Projects()
@@ -254,6 +341,33 @@ public sealed class SourceAssociationTests
 
 		RegressionAssert.Equal(false, result.Success);
 		RegressionAssert.Equal(-1L, result.ModId);
+	}
+
+	public void DuplicateDiagnosticNamesBothPackagesAndKeepsListedFocusTarget()
+	{
+		var listed = CreateMod();
+		listed.UUID = "11111111-1111-1111-1111-111111111111";
+		listed.Name = "Kept package";
+		listed.FilePath = Path.Combine("Mods", "kept.pak");
+		listed.Index = 8;
+		var excluded = CreateMod();
+		excluded.UUID = listed.UUID;
+		excluded.Name = "Older package";
+		excluded.FilePath = Path.Combine("Mods", "older.pak");
+		var finding = new ModHealthFinding(ModHealthFindingCode.DuplicateUuid,
+			ModHealthSeverity.Error, "Duplicate mod UUID", "Duplicate UUID detected.", new[] { listed.UUID });
+		var snapshot = new ModHealthSnapshot(listed, new[] { finding });
+
+		var group = new ModDiagnosticFindingGroupViewModel(finding,
+			new[] { snapshot }, new[] { listed }, sourceIntegrationsEnabled: false,
+			excludedDuplicateMods: new[] { excluded });
+
+		RegressionAssert.Equal(2, group.AffectedCount);
+		RegressionAssert.True(ReferenceEquals(snapshot, group.PrimarySnapshot));
+		RegressionAssert.True(group.AffectedMods.Any(item => item.IsListed && item.FileName == "kept.pak"));
+		RegressionAssert.True(group.AffectedMods.Any(item => !item.IsListed && item.FileName == "older.pak"));
+		RegressionAssert.True(group.AffectedMods.All(item => item.ShowFileName));
+		RegressionAssert.Contains(group.Message, "Redux has not changed either file");
 	}
 
 	public void ModioArchiveNamesNeverImplyNexusProjects()

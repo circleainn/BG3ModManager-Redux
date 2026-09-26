@@ -607,6 +607,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 	/// </summary>
 	private void ApplyCurrentTheme(Window window)
 	{
+		ReduxWindowBehavior.AttachTaskbarPresence(window);
 		if (ViewModel?.Settings == null) return;
 		ReduxThemeService.Apply(window.Resources, ViewModel.Settings.ColorTheme,
 			ReduxThemeService.GetActiveTheme(ViewModel.Settings), ViewModel.Settings.UsesGeneratedGradients);
@@ -846,6 +847,10 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 			ViewModel.Keys.OpenKeybindings.AddAction(() => OpenPreferences(SettingsWindowTab.Keybindings));
 			ViewModel.Keys.OpenCommandPalette.AddAction(OpenCommandPalette);
 			ViewModel.Keys.ToggleAllActiveSeparators.AddAction(MainView.ToggleAllActiveSeparators);
+			ViewModel.Keys.ToggleModFileNames.AddAction(MainView.ModLayout.ToggleModFileNameColumn);
+			ViewModel.Keys.ToggleOverrideMods.AddAction(
+				() => ViewModel.IsAlwaysLoadedExpanded = !ViewModel.IsAlwaysLoadedExpanded,
+				ViewModel.WhenAnyValue(x => x.HasForceLoadedMods));
 			ViewModel.Keys.OpenSaveGameManager.AddAction(
 				() => MainView.ShowSaveManager(),
 				ViewModel.WhenAnyValue(x => x.SelectedProfile).Select(profile => profile != null));

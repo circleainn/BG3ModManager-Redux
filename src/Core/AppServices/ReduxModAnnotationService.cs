@@ -8,6 +8,8 @@ namespace DivinityModManager.AppServices;
 public static class ReduxModAnnotationService
 {
 	public const int MaximumNoteLength = 8000;
+	public const int MaximumAliasLength = 160;
+	public const int MaximumArtworkReferenceLength = 160;
 	private const int MaximumAnnotationCount = 10000;
 
 	public static ReduxModAnnotationStore Load(string path)
@@ -111,23 +113,98 @@ public static class ReduxModAnnotationService
 			store.Mods.Remove(duplicate);
 		}
 
-		var annotation = duplicates.FirstOrDefault();
-		if (String.IsNullOrWhiteSpace(normalizedNote))
-		{
-			if (annotation != null)
-			{
-				store.Mods.Remove(annotation);
-			}
-			return true;
-		}
-
-		annotation ??= new ReduxModAnnotation { ModUuid = modUuid.Trim() };
+		var annotation = duplicates.FirstOrDefault()
+			?? new ReduxModAnnotation { ModUuid = modUuid.Trim() };
 		if (!store.Mods.Contains(annotation))
 		{
 			store.Mods.Add(annotation);
 		}
 		annotation.PrivateNote = normalizedNote;
 		annotation.UpdatedUtc = DateTimeOffset.UtcNow;
+		if (!annotation.HasContent) store.Mods.Remove(annotation);
+		return TryValidate(store, out error);
+	}
+
+	public static bool TrySetAlias(
+		ReduxModAnnotationStore store,
+		string modUuid,
+		string customAlias,
+		out string error)
+	{
+		error = String.Empty;
+		if (store == null)
+		{
+			error = "The annotation store is unavailable.";
+			return false;
+		}
+		if (String.IsNullOrWhiteSpace(modUuid))
+		{
+			error = "This mod does not have a stable UUID.";
+			return false;
+		}
+
+		var normalizedAlias = NormalizeAlias(customAlias);
+		if (normalizedAlias.Length > MaximumAliasLength)
+		{
+			error = $"Aliases can contain up to {MaximumAliasLength:N0} characters.";
+			return false;
+		}
+
+		store.Mods ??= [];
+		var duplicates = store.Mods
+			.Where(annotation => annotation != null
+				&& String.Equals(annotation.ModUuid, modUuid, StringComparison.OrdinalIgnoreCase))
+			.ToArray();
+		foreach (var duplicate in duplicates.Skip(1)) store.Mods.Remove(duplicate);
+
+		var annotation = duplicates.FirstOrDefault()
+			?? new ReduxModAnnotation { ModUuid = modUuid.Trim() };
+		if (!store.Mods.Contains(annotation)) store.Mods.Add(annotation);
+		annotation.CustomAlias = normalizedAlias;
+		annotation.UpdatedUtc = DateTimeOffset.UtcNow;
+		if (!annotation.HasContent) store.Mods.Remove(annotation);
+		return TryValidate(store, out error);
+	}
+
+	public static bool TrySetArtwork(
+		ReduxModAnnotationStore store,
+		string modUuid,
+		string artworkReference,
+		out string error)
+	{
+		error = String.Empty;
+		if (store == null)
+		{
+			error = "The annotation store is unavailable.";
+			return false;
+		}
+		if (String.IsNullOrWhiteSpace(modUuid))
+		{
+			error = "This mod does not have a stable UUID.";
+			return false;
+		}
+
+		var normalizedReference = artworkReference?.Trim() ?? String.Empty;
+		if (normalizedReference.Length > MaximumArtworkReferenceLength ||
+			(!String.IsNullOrWhiteSpace(normalizedReference) && !IsValidArtworkReference(normalizedReference)))
+		{
+			error = "The custom artwork reference is invalid.";
+			return false;
+		}
+
+		store.Mods ??= [];
+		var duplicates = store.Mods
+			.Where(annotation => annotation != null
+				&& String.Equals(annotation.ModUuid, modUuid, StringComparison.OrdinalIgnoreCase))
+			.ToArray();
+		foreach (var duplicate in duplicates.Skip(1)) store.Mods.Remove(duplicate);
+
+		var annotation = duplicates.FirstOrDefault()
+			?? new ReduxModAnnotation { ModUuid = modUuid.Trim() };
+		if (!store.Mods.Contains(annotation)) store.Mods.Add(annotation);
+		annotation.CustomPreviewImageReference = normalizedReference;
+		annotation.UpdatedUtc = DateTimeOffset.UtcNow;
+		if (!annotation.HasContent) store.Mods.Remove(annotation);
 		return TryValidate(store, out error);
 	}
 
@@ -180,6 +257,28 @@ public static class ReduxModAnnotationService
 			.Replace('\r', '\n')
 			.Trim();
 
+	private static string NormalizeAlias(string customAlias) =>
+		String.Join(" ", (customAlias ?? String.Empty)
+			.Replace('\r', ' ')
+			.Replace('\n', ' ')
+			.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+
+	private static bool IsValidArtworkReference(string artworkReference)
+	{
+		const string prefix = "custom-artwork:";
+		if (String.IsNullOrWhiteSpace(artworkReference) ||
+			!artworkReference.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) return false;
+		var fileName = artworkReference[prefix.Length..];
+		if (fileName.Length != 53 || fileName[16] != '-' ||
+			!fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase)) return false;
+		for (var index = 0; index < 49; index++)
+		{
+			if (index == 16) continue;
+			if (!Uri.IsHexDigit(fileName[index])) return false;
+		}
+		return true;
+	}
+
 	private static bool TryValidate(ReduxModAnnotationStore store, out string error)
 	{
 		error = String.Empty;
@@ -215,6 +314,17 @@ public static class ReduxModAnnotationService
 			if ((annotation.PrivateNote ?? String.Empty).Length > MaximumNoteLength)
 			{
 				error = $"An annotation exceeds the {MaximumNoteLength:N0}-character note limit.";
+				return false;
+			}
+			if ((annotation.CustomAlias ?? String.Empty).Length > MaximumAliasLength)
+			{
+				error = $"An annotation exceeds the {MaximumAliasLength:N0}-character alias limit.";
+				return false;
+			}
+			if ((annotation.CustomPreviewImageReference ?? String.Empty).Length > MaximumArtworkReferenceLength ||
+				(annotation.HasCustomPreviewImage && !IsValidArtworkReference(annotation.CustomPreviewImageReference)))
+			{
+				error = "An annotation contains an invalid custom artwork reference.";
 				return false;
 			}
 			if (!annotation.HasContent)

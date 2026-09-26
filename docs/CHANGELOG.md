@@ -3,9 +3,47 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
-## Unreleased
+## 0.1.0-alpha.16.5 — 2026-09-25
 
-No changes recorded yet.
+Alpha.16.5 focuses on organizing mod lists, managing Overrides and native plugins, and making updates and storage easier to control.
+
+### Added
+
+- Organize Active, Inactive, and Override Mods with one level of sub-separators. Collapse branches independently, move complete collapsed groups, and drag mods between sections with Undo/Redo support.
+- Make Active separators available in every saved load order while keeping each order's position, membership, and collapsed state independent. Existing orders get a one-time, undoable choice to share their separators and turn off legacy separator lines.
+- Let a saved load order opt into its own Override PAK selection. Redux validates file changes when switching orders, holds disabled PAKs in a managed folder, and recovers interrupted moves. Orders that do not opt in retain the existing all-overrides behavior.
+- Manage reviewed native plugins through an existing YANML installation, including installation, updates, exact-version adoption, and removal of Redux-owned DLLs. Redux shows the destination and blocks incompatible YANML configurations; YANML's watcher, injector, and autostart remain separate setup.
+- Set persistent local aliases and custom preview artwork for installed mods without changing package or provider identity. Aliases participate in search and sorting; clearing artwork restores the provider image.
+- Choose a managed Downloads folder in Preferences. The change takes effect after restart; Redux does not move or delete files in the previous folder.
+- Limit retained previous PAK versions separately from download archives, with a 2 GB default, an off switch, and a reviewed cleanup action. Backups are pruned only after a successful replacement.
+- Check mod updates from the Mod Review status menu and see a small theme-colored dot when Nexus explicitly reports a replacement for the installed file. Available updates name the affected mods in Review recommended, with a link to each mod page. Unverified versions remain unmarked.
+- Choose **Update & Back Up** when updating Redux to save a ZIP of the existing installation, BG3 mod PAKs and previous versions, saved orders, and profile load-order files before restart.
+- Control automatic category assignment without deleting manual categories, and optionally show a short available description in mod hover cards.
+- Assign a shortcut for showing mod filenames, collapse or expand Override Mods with Ctrl+Alt+O, and import opaque or non-square PNGs as category or separator icons.
+
+### Changed
+
+- Redesign separators as compact section headings with consistent parent and sub-separator sizing, rounded and muted branch connectors, aligned load-order numbers, section-count badges, and a single connected hover surface. Custom colors, gradients, text-color settings, and reduced motion remain supported. New separator lines are off by default; existing choices are preserved.
+- Align Active, Inactive, and Override pane headers, filters, columns, scrollbars, and resize feedback. Names stay within their columns, resize handles remain in the header, and panes without a # column reclaim that space.
+- Keep the toolbar's Mod Review status compact so its hover state does not crowd or clip adjacent controls; open the full review and update actions in its menu.
+- Give Override Mods the same filtering, sorting, column controls, separator organization, and drag placement as the other panes while keeping Overrides outside the numbered game load order.
+- Streamline the category and separator editor around a visible color field, hue strip, palettes, and a compact identity row. Precision controls remain available; the redundant live preview is removed.
+- Explain the difference between provider **Last Updated** and local-file **Last Modified** in column tooltips. The local timestamp is not necessarily the installation date.
+- Keep pane separator actions beside their search fields, use distinct fold/unfold icons, and make column-header menus easier to use without reopening them for each column.
+- Allow longer separator names, with trimming in the list and the complete name on hover. Keep the existing category-name limit.
+
+### Fixed
+
+- Keep the selected BG3 profile across Refresh and honor the game's selected profile at startup instead of always choosing Public.
+- Keep the game-backed **Current** order aligned with a successful Sync, including automatically included dependencies, while leaving named saved orders and unsaved working edits separate. Record the first export without changing the selected order, and update Current only after a successful recovery from an externally emptied game order.
+- Prevent a stack overflow when collapsing a parent separator. Keep collapse animations tied to their original order and prevent parent branches from briefly reopening during transitions.
+- Restore separator-upgrade choices after restart, refresh branch connectors after moves, and keep collapsed groups and their membership stable across order changes.
+- Preserve a pre-upgrade copy of an existing load order before migrating legacy separators, and leave the order untouched if that backup cannot be made.
+- Make filtered or sorted mod moves land at the intended visible position, including Inactive-to-Active and both directions between Inactive and Override Mods. Reject illegal Override-to-Active drops and clear their drag indicators.
+- Keep Override search usable in sorted and collapsed views and its scrollbar reachable at the pane's maximum height; widen the pane's resize target.
+- Restore linked mods' **Show File Name / Show Mod Display Name** toggle and update aliases in place without blanking or refreshing all three mod panes.
+- Decode Nexus WebP thumbnails even when their URLs end in .png or .jpeg, and show each conflicting PAK's title and filename in duplicate-UUID diagnostics.
+- Restore category icons in sidebar menus, make long **Assign Category** menus scroll, and show sort direction in all three mod-list headers.
 
 ## 0.1.0-alpha.16.4.4 — 2026-09-15
 

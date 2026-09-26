@@ -7,6 +7,43 @@ namespace DivinityModManager.AppServices;
 /// </summary>
 public static class LoadOrderPersistencePolicy
 {
+	/// <summary>Keep the selected profile on refresh; on startup use the game's selected profile before falling back to Public.</summary>
+	public static int FindPreferredProfileIndex(IReadOnlyList<DivinityProfileData> profiles, string? selectedProfileUuid)
+	{
+		if (profiles == null || profiles.Count == 0) return -1;
+		if (!String.IsNullOrWhiteSpace(selectedProfileUuid))
+		{
+			for (var index = 0; index < profiles.Count; index++)
+				if (String.Equals(profiles[index]?.UUID, selectedProfileUuid, StringComparison.OrdinalIgnoreCase))
+					return index;
+		}
+		for (var index = 0; index < profiles.Count; index++)
+			if (String.Equals(profiles[index]?.ProfileName, "Public", StringComparison.OrdinalIgnoreCase))
+				return index;
+		return 0;
+	}
+
+	public static DivinityLoadOrder FindGameBackedCurrentOrder(IEnumerable<DivinityLoadOrder> orders) =>
+		orders?.FirstOrDefault(order => order?.IsModSettings == true);
+
+	/// <summary>Record the game-export backup without selecting it or rewriting a named order.</summary>
+	public static void RememberGameExportBackup(IList<DivinityLoadOrder> displayedOrders,
+		IList<DivinityLoadOrder> savedOrders, DivinityLoadOrder backup)
+	{
+		if (displayedOrders == null || savedOrders == null || backup == null) return;
+		var displayed = displayedOrders.FirstOrDefault(order =>
+			String.Equals(order.FilePath, backup.FilePath, StringComparison.OrdinalIgnoreCase));
+		var saved = savedOrders.FirstOrDefault(order =>
+			String.Equals(order.FilePath, backup.FilePath, StringComparison.OrdinalIgnoreCase));
+		var entries = backup.Order.Select(entry => entry.Clone()).ToArray();
+		if (displayed != null && !ReferenceEquals(displayed, backup))
+			displayed.SetOrder(entries.Select(entry => entry.Clone()));
+		if (saved != null && !ReferenceEquals(saved, displayed) && !ReferenceEquals(saved, backup))
+			saved.SetOrder(entries.Select(entry => entry.Clone()));
+		if (displayed == null) displayedOrders.Add(saved ?? backup);
+		if (saved == null) savedOrders.Add(displayed ?? backup);
+	}
+
 	/// <summary>
 	/// Keeps the currently selected order during an in-app refresh and restores the
 	/// remembered order during initial startup, before a selection exists.
@@ -30,6 +67,7 @@ public static class LoadOrderPersistencePolicy
 			Name = selectedOrder?.Name,
 			FilePath = selectedOrder?.FilePath,
 			LastModifiedDate = DateTime.Now,
+			OverrideModFiles = selectedOrder?.OverrideModFiles?.ToList(),
 			VisualDividers = CloneActiveVisualDividers(
 				activeVisualDividers ?? selectedOrder?.VisualDividers)
 		};
@@ -63,8 +101,40 @@ public static class LoadOrderPersistencePolicy
 			Position = divider.Position,
 			IsCollapsed = divider.IsCollapsed,
 			HideLine = divider.HideLine,
+			ParentDividerId = divider.ParentDividerId,
+			IsGlobal = divider.IsGlobal,
 			MemberModUuids = divider.MemberModUuids?.ToList()
 		}).ToList();
+
+	/// <summary>
+	/// Keeps a global separator's shared appearance while restoring the position and
+	/// section membership recorded by the selected load order.
+	/// </summary>
+	public static ModListVisualDividerData MergeGlobalDividerPlacement(
+		ModListVisualDividerData definition,
+		ModListVisualDividerData savedPlacement)
+	{
+		if (definition == null) return null;
+		var placement = savedPlacement != null &&
+			String.Equals(definition.Id, savedPlacement.Id, StringComparison.OrdinalIgnoreCase)
+			? savedPlacement
+			: definition;
+		return new ModListVisualDividerData
+		{
+			Id = definition.Id,
+			Title = definition.Title,
+			Color = definition.Color,
+			IconId = definition.IconId,
+			Description = definition.Description,
+			IsActiveList = true,
+			IsGlobal = true,
+			HideLine = definition.HideLine,
+			ParentDividerId = definition.ParentDividerId,
+			Position = placement.Position,
+			IsCollapsed = placement.IsCollapsed,
+			MemberModUuids = placement.MemberModUuids?.ToList()
+		};
+	}
 
 	public static bool RequiresSaveAs(DivinityLoadOrder order)
 	{
@@ -76,14 +146,19 @@ public static class LoadOrderPersistencePolicy
 	/// Restores Redux's saved Current workspace without replacing the logical Current
 	/// entry or redirecting it to a second selectable load order.
 	/// </summary>
-	public static bool RestoreSavedCurrentState(DivinityLoadOrder currentOrder, DivinityLoadOrder savedCurrentState)
+	public static bool RestoreSavedCurrentState(DivinityLoadOrder currentOrder, DivinityLoadOrder savedCurrentState,
+		bool restoreOrder = true)
 	{
 		if (currentOrder == null || savedCurrentState == null) return false;
-		currentOrder.SetOrder(savedCurrentState.Order.Select(entry => entry.Clone()));
+		if (restoreOrder)
+		{
+			currentOrder.SetOrder(savedCurrentState.Order.Select(entry => entry.Clone()));
+			currentOrder.LastModifiedDate = savedCurrentState.LastModifiedDate;
+		}
 		currentOrder.VisualDividers = savedCurrentState.VisualDividers == null
 			? null
 			: CloneActiveVisualDividers(savedCurrentState.VisualDividers);
-		currentOrder.LastModifiedDate = savedCurrentState.LastModifiedDate;
+		currentOrder.OverrideModFiles = savedCurrentState.OverrideModFiles?.ToList();
 		return true;
 	}
 }

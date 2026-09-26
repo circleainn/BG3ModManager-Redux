@@ -47,7 +47,13 @@ internal sealed class InactiveModOrderTests
 		var add = (System.Windows.Controls.Button)layout.FindName("AddInactiveSeparatorButton");
 		var actions = (System.Windows.Controls.StackPanel)add.Parent;
 		var collapseAll = (System.Windows.Controls.Button)layout.FindName("InactiveSeparatorBulkToggleButton");
-		RegressionAssert.Equal(5, System.Windows.Controls.Grid.GetColumn(actions));
+		RegressionAssert.Equal(6, System.Windows.Controls.Grid.GetColumn(actions));
+		var inactiveSearch = (System.Windows.FrameworkElement)layout.FindName("InactiveModsFilterTextBox");
+		RegressionAssert.Equal(5, System.Windows.Controls.Grid.GetColumn(inactiveSearch));
+		var activeActions = (System.Windows.Controls.StackPanel)((System.Windows.Controls.Button)layout.FindName("ActiveSeparatorBulkToggleButton")).Parent;
+		var activeSearch = (System.Windows.FrameworkElement)layout.FindName("ActiveModsFilterTextBox");
+		RegressionAssert.Equal(6, System.Windows.Controls.Grid.GetColumn(activeActions));
+		RegressionAssert.Equal(5, System.Windows.Controls.Grid.GetColumn(activeSearch));
 		RegressionAssert.True(add.Style != null);
 		RegressionAssert.True(collapseAll.Style != null);
 		RegressionAssert.True(ReferenceEquals(actions, collapseAll.Parent));

@@ -9,6 +9,15 @@ namespace Redux.Core.Tests;
 
 public sealed class VisualDividerDragPolicyTests
 {
+	public void PureOverrideModsCanReorderOnlyWithinTheirOwnPane()
+	{
+		var pureOverride = CreateMod("override");
+		pureOverride.CanDrag = false;
+
+		RegressionAssert.True(VisualDividerDragPolicy.CanStartDrag(pureOverride, withinOverridePane: true));
+		RegressionAssert.False(VisualDividerDragPolicy.CanStartDrag(pureOverride, withinOverridePane: false));
+	}
+
 	public void EstablishedSectionsFollowTheirMembersAfterMultiModChanges()
 	{
 		var addedFirst = CreateMod("added-first");
@@ -438,6 +447,79 @@ public sealed class VisualDividerDragPolicyTests
 		RegressionAssert.Equal(3, mapped);
 	}
 
+	public void IncomingOverrideUsesItsDropSlotAndSeparatorMembership()
+	{
+		var parent = CreateDivider("parent", collapsed: false);
+		var child = CreateDivider("child", collapsed: false);
+		var next = CreateDivider("next", collapsed: false);
+		var first = CreateMod("first");
+		var second = CreateMod("second");
+		var incoming = CreateMod("incoming");
+		var full = new[] { parent, first, child, second, next };
+		var insertIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(full, full, 3);
+		var placed = VisualModListDropPolicy.Apply(full, [], [incoming], true, insertIndex).ActiveItems;
+		var descriptors = new[]
+		{
+			new ModListVisualDividerData { Id = "parent", IsActiveList = false, Position = 0 },
+			new ModListVisualDividerData { Id = "child", ParentDividerId = "parent", IsActiveList = false, Position = 2 },
+			new ModListVisualDividerData { Id = "next", IsActiveList = false, Position = 5 }
+		};
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(placed, descriptors, false);
+		RegressionAssert.SequenceEqual(new[] { parent, first, child, incoming, second, next }, placed);
+		RegressionAssert.SequenceEqual(new[] { incoming.UUID, second.UUID }, descriptors[1].MemberModUuids);
+	}
+
+	public void OutgoingOverrideUsesInactiveSlotAfterCollapsedSeparator()
+	{
+		var closed = CreateDivider("closed", collapsed: true);
+		var hidden = CreateMod("hidden");
+		var open = CreateDivider("open", collapsed: false);
+		var first = CreateMod("first");
+		var last = CreateMod("last");
+		var incoming = CreateMod("incoming");
+		var full = new[] { closed, hidden, open, first, last };
+		var visible = new[] { closed, open, first, last };
+		var insertIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(visible, full, 3);
+		var placed = VisualModListDropPolicy.Apply(full, [], [incoming], true, insertIndex).ActiveItems;
+		var descriptors = new[]
+		{
+			new ModListVisualDividerData
+			{
+				Id = "closed", IsActiveList = false, IsCollapsed = true,
+				MemberModUuids = new List<string> { hidden.UUID }
+			},
+			new ModListVisualDividerData { Id = "open", IsActiveList = false }
+		};
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(placed, descriptors, false);
+		RegressionAssert.SequenceEqual(new[] { closed, hidden, open, first, incoming, last }, placed);
+		RegressionAssert.SequenceEqual(new[] { hidden.UUID }, descriptors[0].MemberModUuids);
+		RegressionAssert.SequenceEqual(new[] { first.UUID, incoming.UUID, last.UUID }, descriptors[1].MemberModUuids);
+	}
+
+	public void FilteredReorderUsesVisibleRowsAsCanonicalAnchors()
+	{
+		var full = Enumerable.Range(1, 15)
+			.Select(index => CreateMod(index.ToString()))
+			.ToArray();
+		var visible = new[] { full[0], full[2], full[4], full[9], full[14] };
+		var moved = full[9];
+		var insertIndex = VisualModListDropPolicy.MapVisibleInsertionIndex(
+			visible,
+			full,
+			visibleInsertionIndex: 2);
+
+		var result = VisualModListDropPolicy.Apply(
+			full,
+			Array.Empty<DivinityModData>(),
+			new[] { moved },
+			true,
+			insertIndex);
+
+		RegressionAssert.SequenceEqual(
+			new[] { "1", "2", "3", "4", "10", "5", "6", "7", "8", "9", "11", "12", "13", "14", "15" },
+			result.ActiveItems.Select(item => item.UUID));
+	}
+
 	public void VisibleDropSlotMatchesRecreatedDividerByIdentity()
 	{
 		var fullDivider = CreateDivider("section", collapsed: true);
@@ -632,6 +714,137 @@ public sealed class VisualDividerDragPolicyTests
 		RegressionAssert.True(hidden.Contains(first.UUID));
 		RegressionAssert.False(hidden.Contains(second.UUID));
 		RegressionAssert.True(hidden.Contains(third.UUID));
+	}
+
+	public void ExpandedParentDragCarriesChildMarkersButLeavesMods()
+	{
+		var parent = new ModListVisualDividerData { Id = "parent", IsActiveList = true, Position = 0 };
+		var child = new ModListVisualDividerData
+		{
+			Id = "child", ParentDividerId = parent.Id, IsActiveList = true, Position = 2
+		};
+		var parentMarker = CreateDivider("parent", false);
+		var first = CreateMod("first");
+		var childMarker = CreateDivider("child", false);
+		var second = CreateMod("second");
+
+		var payload = VisualDividerHierarchyPolicy.ResolveExpandedMarkerPayload(
+			[parentMarker, first, childMarker, second], [parent, child], parent);
+
+		RegressionAssert.SequenceEqual([parentMarker, childMarker], payload);
+	}
+
+	public void CollapsedParentDragCarriesItsCompleteNestedBlock()
+	{
+		var parent = new ModListVisualDividerData { Id = "parent", IsActiveList = true, IsCollapsed = true, Position = 0 };
+		var child = new ModListVisualDividerData
+		{
+			Id = "child", ParentDividerId = parent.Id, IsActiveList = true, Position = 2
+		};
+		var next = new ModListVisualDividerData { Id = "next", IsActiveList = true, Position = 4 };
+		var parentMarker = CreateDivider("parent", true);
+		var first = CreateMod("first");
+		var childMarker = CreateDivider("child", false);
+		var second = CreateMod("second");
+		var nextMarker = CreateDivider("next", false);
+		var outside = CreateMod("outside");
+
+		var payload = VisualDividerHierarchyPolicy.ResolveCollapsedPayload(
+			[parentMarker, first, childMarker, second, nextMarker, outside],
+			[parent, child, next], parent);
+
+		RegressionAssert.SequenceEqual([parentMarker, first, childMarker, second], payload);
+	}
+
+	public void CollapsedParentProjectionHidesChildrenAndAllNestedMods()
+	{
+		var parent = new ModListVisualDividerData { Id = "parent", IsActiveList = true, IsCollapsed = true, Position = 0 };
+		var child = new ModListVisualDividerData
+		{
+			Id = "child", ParentDividerId = parent.Id, IsActiveList = true, Position = 2
+		};
+		var next = new ModListVisualDividerData { Id = "next", IsActiveList = true, Position = 4 };
+		var first = CreateMod("first");
+		var second = CreateMod("second");
+		var outside = CreateMod("outside");
+		var projection = VisualDividerHierarchyPolicy.ResolveProjection(
+			[CreateDivider("parent", true), first, CreateDivider("child", false), second,
+				CreateDivider("next", false), outside],
+			[parent, child, next], true);
+
+		RegressionAssert.True(projection.HiddenDividerIds.Contains("child"));
+		RegressionAssert.True(projection.HiddenModUuids.Contains(first.UUID));
+		RegressionAssert.True(projection.HiddenModUuids.Contains(second.UUID));
+		RegressionAssert.False(projection.HiddenModUuids.Contains(outside.UUID));
+	}
+
+	public void ChildSectionIndentationFollowsOnlyItsOwnedRows()
+	{
+		var parent = new ModListVisualDividerData { Id = "parent", IsActiveList = true, Position = 0 };
+		var child = new ModListVisualDividerData
+		{
+			Id = "child", ParentDividerId = parent.Id, IsActiveList = true, Position = 2
+		};
+		var lastChild = new ModListVisualDividerData
+		{
+			Id = "last-child", ParentDividerId = parent.Id, IsActiveList = true, Position = 4
+		};
+		var next = new ModListVisualDividerData { Id = "next", IsActiveList = true, Position = 6 };
+		var parentMod = CreateMod("parent-mod");
+		var firstChildMod = CreateMod("child-first");
+		var secondChildMod = CreateMod("child-second");
+		var outside = CreateMod("outside");
+
+		var indented = VisualDividerHierarchyPolicy.ResolveIndentedModIds(
+			[CreateDivider("parent", false), parentMod, CreateDivider("child", false),
+				firstChildMod, CreateDivider("last-child", false), secondChildMod,
+				CreateDivider("next", false), outside],
+			[parent, child, lastChild, next], true);
+
+		RegressionAssert.False(indented.Contains(parentMod.UUID));
+		RegressionAssert.True(indented.Contains(firstChildMod.UUID));
+		RegressionAssert.True(indented.Contains(secondChildMod.UUID));
+		RegressionAssert.False(indented.Contains(outside.UUID));
+
+	}
+
+	public void HierarchyValidationPreventsNestingAndMatchesParentPersistence()
+	{
+		var localParent = new ModListVisualDividerData { Id = "local", IsActiveList = true };
+		var invalidGlobalChild = new ModListVisualDividerData
+		{
+			Id = "global-child", ParentDividerId = localParent.Id, IsActiveList = true, IsGlobal = true
+		};
+		var nested = new ModListVisualDividerData
+		{
+			Id = "nested", ParentDividerId = invalidGlobalChild.Id, IsActiveList = true
+		};
+		var globalParent = new ModListVisualDividerData { Id = "global", IsActiveList = true, IsGlobal = true };
+		var invalidLocalChild = new ModListVisualDividerData
+		{
+			Id = "local-child", ParentDividerId = globalParent.Id, IsActiveList = true
+		};
+
+		RegressionAssert.True(VisualDividerHierarchyPolicy.Normalize(
+			[localParent, invalidGlobalChild, nested, globalParent, invalidLocalChild]));
+		RegressionAssert.Equal(localParent.Id, invalidGlobalChild.ParentDividerId);
+		RegressionAssert.False(invalidGlobalChild.IsGlobal);
+		RegressionAssert.Equal(String.Empty, nested.ParentDividerId);
+		RegressionAssert.Equal(globalParent.Id, invalidLocalChild.ParentDividerId);
+		RegressionAssert.True(invalidLocalChild.IsGlobal);
+	}
+
+	public void ChildMovedPastAnotherParentIsPromotedToTopLevel()
+	{
+		var parent = new ModListVisualDividerData { Id = "parent", IsActiveList = true, Position = 0 };
+		var next = new ModListVisualDividerData { Id = "next", IsActiveList = true, Position = 2 };
+		var child = new ModListVisualDividerData
+		{
+			Id = "child", ParentDividerId = parent.Id, IsActiveList = true, Position = 3
+		};
+
+		RegressionAssert.True(VisualDividerHierarchyPolicy.NormalizePlacement([parent, next, child], true));
+		RegressionAssert.Equal(String.Empty, child.ParentDividerId);
 	}
 
 	private static DivinityModData CreateDividerItem(ModListVisualDividerData divider) => new()

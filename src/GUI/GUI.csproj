@@ -15,9 +15,9 @@
 		<AssemblyName>Redux</AssemblyName>
 		<AssemblyTitle>Baldur's Gate 3 Mod Manager Redux</AssemblyTitle>
 
-		<AssemblyVersion>0.1.16.404</AssemblyVersion>
-		<FileVersion>0.1.16.404</FileVersion>
-		<InformationalVersion>0.1.0-alpha.16.4.4</InformationalVersion>
+		<AssemblyVersion>0.1.16.500</AssemblyVersion>
+		<FileVersion>0.1.16.500</FileVersion>
+		<InformationalVersion>0.1.0-alpha.16.5</InformationalVersion>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
 
 		<Product>Baldur's Gate 3 Mod Manager Redux</Product>
@@ -65,6 +65,7 @@
 		<PackageReference Include="ReactiveUI.Fody" Version="19.5.41" />
 		<PackageReference Include="ReactiveUI.WPF" Version="20.1.63" />
 		<PackageReference Include="SharpCompress" Version="0.50.4" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
 		<PackageReference Include="Splat" Version="15.3.1" />
 		<PackageReference Include="System.Drawing.Common" Version="8.0.30" />
 		<PackageReference Include="System.Reactive" Version="6.0.1" />

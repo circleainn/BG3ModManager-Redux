@@ -17,6 +17,94 @@ public enum ReduxGameDirectoryModKind
 	ScriptExtender
 }
 
+public enum ReduxNativePluginDestination
+{
+	GameBin,
+	YanmlPlugins
+}
+
+public static class ReduxAlternativeNativeLoader
+{
+	public static string PluginsDirectory(string localAppData) =>
+		Path.Combine(localAppData, "Larian Studios", "Baldur's Gate 3", "Plugins");
+
+	public static string CurrentPluginsDirectory =>
+		PluginsDirectory(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+
+	public static bool HasYanmlConfiguration(string localAppData) =>
+		File.Exists(Path.Combine(PluginsDirectory(localAppData), "config.toml"));
+
+	public static bool IsPluginLoadingDisabled(string configurationPath)
+	{
+		var inCore = false;
+		foreach (var rawLine in File.ReadLines(configurationPath))
+		{
+			var line = rawLine.Trim();
+			if (line.StartsWith('['))
+			{
+				inCore = line.Equals("[core]", StringComparison.OrdinalIgnoreCase);
+				continue;
+			}
+			if (!inCore || !line.StartsWith("enabled", StringComparison.OrdinalIgnoreCase)) continue;
+			var separator = line.IndexOf('=');
+			if (separator < 0 || !line[..separator].Trim().Equals("enabled", StringComparison.OrdinalIgnoreCase)) continue;
+			var value = line[(separator + 1)..].Split('#', 2)[0].Trim();
+			if (value.Equals("false", StringComparison.OrdinalIgnoreCase)) return true;
+		}
+		return false;
+	}
+
+	public static string? ReadConfiguredInstallRoot(string configurationPath)
+	{
+		var inCore = false;
+		foreach (var rawLine in File.ReadLines(configurationPath))
+		{
+			var line = rawLine.Trim();
+			if (line.StartsWith('['))
+			{
+				inCore = line.Equals("[core]", StringComparison.OrdinalIgnoreCase);
+				continue;
+			}
+			if (!inCore) continue;
+			var separator = line.IndexOf('=');
+			if (separator < 0 || !line[..separator].Trim().Equals("install_root", StringComparison.OrdinalIgnoreCase)) continue;
+			var value = line[(separator + 1)..].Trim();
+			if (value.StartsWith('\''))
+			{
+				var end = value.IndexOf('\'', 1);
+				return end > 1 ? value[1..end] : null;
+			}
+			if (value.StartsWith('"'))
+			{
+				for (var index = 1; index < value.Length; index++)
+				{
+					if (value[index] != '"') continue;
+					var backslashes = 0;
+					for (var previous = index - 1; previous >= 0 && value[previous] == '\\'; previous--)
+						backslashes++;
+					if (backslashes % 2 != 0) continue;
+					try { return JsonSerializer.Deserialize<string>(value[..(index + 1)]); }
+					catch (JsonException) { return null; }
+				}
+			}
+			return null;
+		}
+		return null;
+	}
+
+	public static string MissingLoaderMessage(string modName, ReduxNativeLoaderStatus loaderStatus, string localAppData)
+	{
+		if (loaderStatus.Description.Contains("YANML", StringComparison.OrdinalIgnoreCase))
+			return $"{modName} cannot load through YANML. {loaderStatus.Description}";
+		if (!HasYanmlConfiguration(localAppData))
+			return $"{modName} requires Native Mod Loader. {loaderStatus.Description}";
+		return $"{modName} cannot be installed by this game-directory workflow while Native Mod Loader is missing. "
+			+ $"A Yet Another Native Mod Loader configuration was found at {PluginsDirectory(localAppData)}. "
+			+ "YANML loads plugins from that Plugins folder, while this workflow targets BG3\\bin\\NativeMods. "
+			+ "Use Install for YANML in the manager to review and manage this native plugin at the correct destination.";
+	}
+}
+
 public sealed record ReduxGameDirectoryModLayout(
 	string Name,
 	IReadOnlyDictionary<string, string> ManagedEntries,
@@ -232,7 +320,8 @@ public static class ReduxGameDirectoryModCatalog
 	}
 }
 
-public sealed record ReduxNativeLoaderStatus(bool IsPresent, bool IsVerified, string Description);
+public sealed record ReduxNativeLoaderStatus(bool IsPresent, bool IsVerified, string Description,
+	bool IsAlternativeLoader = false);
 
 public sealed record ReduxGameDirectoryArchiveFile(
 	string ArchivePath,
@@ -302,6 +391,7 @@ public sealed class ReduxGameDirectoryInstallService
 	};
 
 	private readonly string _gameBin;
+	private readonly string? _yanmlPluginsDirectory;
 	private readonly string _stateRoot;
 	private readonly string _manifestPath;
 	private readonly string _journalDirectory;
@@ -313,19 +403,49 @@ public sealed class ReduxGameDirectoryInstallService
 	private readonly bool _enforceReviewedReplacementOriginals;
 	private readonly SemaphoreSlim _operationGate = new(1, 1);
 	public string GameBin => _gameBin;
+	public ReduxNativePluginDestination NativePluginDestination { get; }
+	public string NativePluginDirectory => _yanmlPluginsDirectory ?? Path.Combine(_gameBin, "NativeMods");
+	public string GetManagedFilePath(string canonicalRelativePath) =>
+		ResolveTargetPath(ToTargetRelative(canonicalRelativePath), createParent: false);
 	public string RecoveryDirectory => _stateRoot;
+	public static bool HasYanmlOwnershipRecord(string gameBin, string stateDirectory)
+	{
+		var identity = HashText(Path.GetFullPath(gameBin).ToUpperInvariant() + "|YANML");
+		return File.Exists(Path.Combine(stateDirectory, "native-mods", identity, "manifest.json"));
+	}
 
 	public ReduxGameDirectoryInstallService(string gameBin, string stateDirectory, Version gameVersion)
-		: this(gameBin, stateDirectory, gameVersion, true) { }
+		: this(gameBin, stateDirectory, gameVersion, true, ReduxNativePluginDestination.GameBin) { }
+
+	public ReduxGameDirectoryInstallService(string gameBin, string stateDirectory, Version gameVersion,
+		ReduxNativePluginDestination nativePluginDestination)
+		: this(gameBin, stateDirectory, gameVersion, true, nativePluginDestination) { }
 
 	internal ReduxGameDirectoryInstallService(string gameBin, string stateDirectory, Version gameVersion,
 		bool enforceReviewedReplacementOriginals)
+		: this(gameBin, stateDirectory, gameVersion, enforceReviewedReplacementOriginals, ReduxNativePluginDestination.GameBin) { }
+
+	internal ReduxGameDirectoryInstallService(string gameBin, string stateDirectory, Version gameVersion,
+		bool enforceReviewedReplacementOriginals, ReduxNativePluginDestination nativePluginDestination,
+		string? yanmlLocalAppData = null)
 	{
 		_gameBin = NormalizeExistingDirectory(gameBin, nameof(gameBin));
+		NativePluginDestination = nativePluginDestination;
+		if (nativePluginDestination == ReduxNativePluginDestination.YanmlPlugins)
+		{
+			var localAppData = yanmlLocalAppData
+				?? Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+			_yanmlPluginsDirectory = ReduxAlternativeNativeLoader.PluginsDirectory(localAppData);
+			if (Directory.Exists(_yanmlPluginsDirectory))
+				EnsureSafeDirectoryTree(_yanmlPluginsDirectory, create: false);
+			var configuration = Path.Combine(_yanmlPluginsDirectory, "config.toml");
+			if (File.Exists(configuration)) EnsureSafeRegularFile(configuration);
+		}
 		ValidateGameBin();
 		_gameVersion = gameVersion;
 		_enforceReviewedReplacementOriginals = enforceReviewedReplacementOriginals;
-		_gameBinIdentity = HashText(_gameBin.ToUpperInvariant());
+		_gameBinIdentity = HashText(_gameBin.ToUpperInvariant()
+			+ (nativePluginDestination == ReduxNativePluginDestination.YanmlPlugins ? "|YANML" : String.Empty));
 
 		var root = NormalizeOrCreateDirectory(stateDirectory, nameof(stateDirectory));
 		_stateRoot = Path.Combine(root, "native-mods", _gameBinIdentity);
@@ -338,6 +458,13 @@ public sealed class ReduxGameDirectoryInstallService
 		EnsureSafeDirectoryTree(_journalDirectory, create: true);
 		EnsureSafeDirectoryTree(_backupDirectory, create: true);
 		EnsureSafeDirectoryTree(_stagingDirectory, create: true);
+	}
+
+	private void EnsureDestinationSupports(ReduxGameDirectoryModDefinition definition)
+	{
+		if (NativePluginDestination == ReduxNativePluginDestination.YanmlPlugins
+			&& definition.Kind != ReduxGameDirectoryModKind.NativePlugin)
+			throw new InvalidOperationException("YANML's Plugins folder accepts native plugins only. Install loaders and Script Extender through their own workflows.");
 	}
 
 	public ReduxNativeLoaderStatus DetectLoader()
@@ -381,7 +508,9 @@ public sealed class ReduxGameDirectoryInstallService
 		}
 
 		var managedPackages = results.Select(result => result.PackageId).ToHashSet(StringComparer.OrdinalIgnoreCase);
-		foreach (var package in ReduxGameDirectoryModCatalog.All.Where(definition => definition.SupportsGuardedInstall)
+		foreach (var package in ReduxGameDirectoryModCatalog.All.Where(definition => definition.SupportsGuardedInstall
+			&& (NativePluginDestination == ReduxNativePluginDestination.GameBin
+				|| definition.Kind == ReduxGameDirectoryModKind.NativePlugin))
 			.GroupBy(definition => definition.PackageId, StringComparer.OrdinalIgnoreCase))
 		{
 			if (managedPackages.Contains(package.Key)) continue;
@@ -432,14 +561,14 @@ public sealed class ReduxGameDirectoryInstallService
 				existingSnapshots.Select(snapshot => snapshot.RelativePath).ToArray(), false, detectedVersion, canAdopt));
 		}
 
-		var nativeModsDirectory = Path.Combine(_gameBin, "NativeMods");
+		var nativeModsDirectory = NativePluginDirectory;
 		if (Directory.Exists(nativeModsDirectory))
 		{
 			EnsureSafeDirectoryContents(nativeModsDirectory);
 			var catalogPaths = ReduxGameDirectoryModCatalog.All.SelectMany(definition => definition.RelativeFiles)
 				.Select(ToTargetRelative).ToHashSet(StringComparer.Ordinal);
 			var otherDlls = Directory.EnumerateFiles(nativeModsDirectory, "*.dll", SearchOption.AllDirectories)
-				.Select(path => Path.GetRelativePath(_gameBin, path).Replace('\\', '/'))
+				.Select(path => "NativeMods/" + Path.GetRelativePath(nativeModsDirectory, path).Replace('\\', '/'))
 				.Where(path => !catalogPaths.Contains(path))
 				.OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
 				.Take(65).ToArray();
@@ -474,6 +603,7 @@ public sealed class ReduxGameDirectoryInstallService
 	{
 		var definition = ReduxGameDirectoryModCatalog.Find(projectId)
 			?? throw new InvalidDataException("This game-directory mod is not in Redux's reviewed catalog.");
+		EnsureDestinationSupports(definition);
 		if (definition.Kind is not (ReduxGameDirectoryModKind.NativePlugin or ReduxGameDirectoryModKind.ScriptExtender))
 			throw new InvalidOperationException("Only reviewed add-only native components can be adopted by the game-directory manager.");
 		if (definition.ReplacesExistingGameFiles)
@@ -611,6 +741,7 @@ public sealed class ReduxGameDirectoryInstallService
 	{
 		var definition = ReduxGameDirectoryModCatalog.Find(projectId)
 			?? throw new InvalidDataException("This Nexus project is not approved for native installation.");
+		EnsureDestinationSupports(definition);
 		if (!definition.SupportsGuardedInstall)
 			throw new InvalidOperationException($"{definition.Name} uses an existing Redux installation workflow.");
 		await _operationGate.WaitAsync(cancellationToken);
@@ -643,6 +774,7 @@ public sealed class ReduxGameDirectoryInstallService
 	{
 		var definition = ReduxGameDirectoryModCatalog.Find(projectId)
 			?? throw new InvalidDataException("This Nexus project is not approved for native installation.");
+		EnsureDestinationSupports(definition);
 		if (!definition.SupportsGuardedInstall)
 			throw new InvalidOperationException($"{definition.Name} uses an existing Redux installation workflow.");
 		await _operationGate.WaitAsync(cancellationToken);
@@ -659,7 +791,8 @@ public sealed class ReduxGameDirectoryInstallService
 			EnsurePackageSpecificPrerequisites(definition);
 			var loaderStatus = DetectLoader(manifest);
 			if (definition.RequiresLoader && !loaderStatus.IsPresent)
-				throw new InvalidOperationException($"{definition.Name} requires Native Mod Loader. {loaderStatus.Description}");
+				throw new InvalidOperationException(ReduxAlternativeNativeLoader.MissingLoaderMessage(
+					definition.Name, loaderStatus, Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)));
 
 			var archive = ValidateArchivePath(archivePath);
 			var archiveFingerprint = CaptureFingerprint(archive);
@@ -689,6 +822,7 @@ public sealed class ReduxGameDirectoryInstallService
 	{
 		var definition = ReduxGameDirectoryModCatalog.Find(projectId)
 			?? throw new InvalidDataException("This Nexus project is not managed by the native installer.");
+		EnsureDestinationSupports(definition);
 		if (!definition.SupportsGuardedInstall)
 			throw new InvalidOperationException($"{definition.Name} uses an existing Redux installation workflow.");
 		await _operationGate.WaitAsync(cancellationToken);
@@ -877,7 +1011,7 @@ public sealed class ReduxGameDirectoryInstallService
 			.Select(path => CaptureDestination(ToTargetRelative(path)))
 			.ToDictionary(snapshot => snapshot.RelativePath, StringComparer.Ordinal);
 		var guards = snapshots.Values.ToList();
-		if (definition.RequiresLoader)
+		if (definition.RequiresLoader && NativePluginDestination == ReduxNativePluginDestination.GameBin)
 		{
 			foreach (var loaderFile in ReduxGameDirectoryModCatalog.Find(944)!.RelativeFiles)
 				guards.Add(CaptureDestination(ToTargetRelative(loaderFile)));
@@ -914,11 +1048,14 @@ public sealed class ReduxGameDirectoryInstallService
 		}
 
 		var review = new StringBuilder();
-		review.Append(definition.Name).Append(" is staged for explicit confirmation.\n\nGame directory: ").Append(_gameBin)
+		review.Append(definition.Name).Append(" is staged for explicit confirmation.\n\nDestination: ")
+			.Append(NativePluginDestination == ReduxNativePluginDestination.YanmlPlugins ? NativePluginDirectory : _gameBin)
 			.Append("\n\nRedux will change: ")
 			.Append(String.Join(", ", writes.Select(write => write.RelativePath))).Append('.');
 		if (definition.RequiresLoader && !loaderStatus.IsVerified)
-			review.Append(" Native Mod Loader is external and unverified; review plugin compatibility before continuing.");
+			review.Append(NativePluginDestination == ReduxNativePluginDestination.YanmlPlugins
+				? " Redux cannot verify that the YANML watcher, injector, or autostart is running when BG3 starts."
+				: " Native Mod Loader is external and unverified; review plugin compatibility before continuing.");
 		review.Append(" Archive structure and AMD64 PE headers were checked locally; this does not prove publisher provenance or universal game compatibility.");
 
 		return new NativeInstallPlan(definition, manifestFingerprint, archivePath, archiveFingerprint,
@@ -1416,6 +1553,38 @@ public sealed class ReduxGameDirectoryInstallService
 
 	private ReduxNativeLoaderStatus DetectLoader(NativeInstallManifest? manifest)
 	{
+		if (NativePluginDestination == ReduxNativePluginDestination.YanmlPlugins)
+		{
+			var configuration = Path.Combine(NativePluginDirectory, "config.toml");
+			if (!File.Exists(configuration))
+				return new ReduxNativeLoaderStatus(false, false, "YANML's Plugins configuration is missing.");
+			EnsureSafeRegularFile(configuration);
+			if (new FileInfo(configuration).Length > 1024 * 1024)
+				return new ReduxNativeLoaderStatus(false, false, "YANML's config.toml is too large to verify.", IsAlternativeLoader: true);
+			if (ReduxAlternativeNativeLoader.IsPluginLoadingDisabled(configuration))
+				return new ReduxNativeLoaderStatus(false, false,
+					"YANML's [core] enabled setting is false. Enable plugin loading in config.toml before installing plugins.",
+					IsAlternativeLoader: true);
+			var configuredRoot = ReduxAlternativeNativeLoader.ReadConfiguredInstallRoot(configuration);
+			if (!String.IsNullOrWhiteSpace(configuredRoot))
+			{
+				string normalizedRoot;
+				try { normalizedRoot = Path.GetFullPath(configuredRoot).TrimEnd(Path.DirectorySeparatorChar); }
+				catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+				{
+					return new ReduxNativeLoaderStatus(false, false, "YANML's install_root path is invalid.", IsAlternativeLoader: true);
+				}
+				var gameRoot = Path.GetFullPath(Path.Combine(_gameBin, ".."))
+					.TrimEnd(Path.DirectorySeparatorChar);
+				if (!normalizedRoot.Equals(gameRoot, StringComparison.OrdinalIgnoreCase))
+					return new ReduxNativeLoaderStatus(false, false,
+						"YANML's [core] install_root points to a different BG3 installation. Update config.toml before installing plugins.",
+						IsAlternativeLoader: true);
+			}
+			return new ReduxNativeLoaderStatus(true, false,
+				"YANML Plugins folder is configured. Redux cannot verify whether YANML's watcher, injector, or autostart is running when BG3 starts.",
+				IsAlternativeLoader: true);
+		}
 		const string loader = "bink2w64.dll";
 		const string original = "bink2w64_original.dll";
 		var owned = manifest == null ? null : FindInstallation(manifest, ReduxGameDirectoryModCatalog.Find(944)!.PackageId);
@@ -1494,13 +1663,14 @@ public sealed class ReduxGameDirectoryInstallService
 		if (!definition.RequiresLoader) return;
 		var loaderStatus = DetectLoader(manifest);
 		if (!loaderStatus.IsPresent)
-			throw new InvalidOperationException($"{definition.Name} requires Native Mod Loader. {loaderStatus.Description}");
+			throw new InvalidOperationException(ReduxAlternativeNativeLoader.MissingLoaderMessage(
+				definition.Name, loaderStatus, Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)));
 	}
 
 	private void EnsurePackageSpecificPrerequisites(ReduxGameDirectoryModDefinition definition)
 	{
 		if (definition.NexusModId != 23959) return;
-		var nativeMods = Path.Combine(_gameBin, "NativeMods");
+		var nativeMods = NativePluginDirectory;
 		if (!Directory.Exists(nativeMods)) return;
 		EnsureSafeDirectoryTree(nativeMods, create: false);
 		if (Directory.EnumerateFileSystemEntries(nativeMods, "BG3NativeCameraTweaks*", SearchOption.TopDirectoryOnly).Any())
@@ -1564,8 +1734,11 @@ public sealed class ReduxGameDirectoryInstallService
 	{
 		if (!IsTargetRelativePath(relativePath)) throw new InvalidDataException("A native target path is invalid.");
 		var parts = relativePath.Split('/');
-		var directory = _gameBin;
-		for (var index = 0; index < parts.Length - 1; index++)
+		var isYanmlPlugin = NativePluginDestination == ReduxNativePluginDestination.YanmlPlugins
+			&& parts.Length > 1 && parts[0].Equals("NativeMods", StringComparison.OrdinalIgnoreCase);
+		var root = isYanmlPlugin ? NativePluginDirectory : _gameBin;
+		var directory = root;
+		for (var index = isYanmlPlugin ? 1 : 0; index < parts.Length - 1; index++)
 		{
 			directory = Path.Combine(directory, parts[index]);
 			if (PathEntryExists(directory) && !Directory.Exists(directory))
@@ -1574,8 +1747,8 @@ public sealed class ReduxGameDirectoryInstallService
 			else if (createParent) EnsureSafeDirectoryTree(directory, create: true);
 		}
 		var target = Path.GetFullPath(Path.Combine(directory, parts[^1]));
-		if (!target.StartsWith(_gameBin + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-			throw new InvalidDataException("A native target escapes the game bin directory.");
+		if (!target.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+			throw new InvalidDataException("A native target escapes its managed directory.");
 		return target;
 	}
 

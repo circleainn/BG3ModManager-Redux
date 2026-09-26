@@ -1,4 +1,4 @@
-using DivinityModManager.AppServices;
+﻿using DivinityModManager.AppServices;
 using DivinityModManager.Models.NexusMods;
 using DivinityModManager.Util;
 using DivinityModManager.ViewModels;
@@ -14,6 +14,7 @@ namespace DivinityModManager.Views;
 public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 {
 	private readonly MainWindowViewModel _viewModel;
+	private void PreviousVersions_Click(object sender, RoutedEventArgs e) => _viewModel?.ReviewPreviousModVersions(this);
 
 	public ReduxNexusDownloadsWindow()
 	{

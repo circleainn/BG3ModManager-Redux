@@ -1,4 +1,7 @@
-# Post-16.4.4 issue audit
+# Historical post-16.4.4 issue audit
+
+This audit records the pre-16.5 triage. The [16.5 changelog](CHANGELOG.md) supersedes rows for
+features and fixes that were subsequently implemented.
 
 Updated September 15, 2026 against the published `v0.1.0-alpha.16.4.4` baseline at `e663ef9`,
 current issue bodies/discussions, and the September 14–15 [Nexus reports](https://www.nexusmods.com/baldursgate3/mods/23799?tab=posts).
@@ -9,8 +12,8 @@ public-alpha update channel are published; the historical 16.4 verification reco
 
 | Issue | Assessment | Next action |
 |:--|:--|:--|
-| [#127](https://github.com/circleainn/BG3ModManager-Redux/issues/127) Order changes/separators after Sync or restart | Alpha.16.4.3 fixes startup forcing Current instead of the remembered named order. | Keep open for exact reproduction of the separate Sync-specific mod movement/state reports. Do not make Sync silently save. |
-| [#130](https://github.com/circleainn/BG3ModManager-Redux/issues/130) Missing thumbnails with working downloads | Alpha.16.4.3 evicts failed remote images so temporary download/decode failures can retry. | Obtain an affected mod/provider to distinguish a failed request from metadata with no usable image URL. |
+| [#127](https://github.com/circleainn/BG3ModManager-Redux/issues/127) Order changes/separators after Sync or restart | The 16.5 candidate preserves the selected BG3 profile through Refresh and updates game-backed Current after a successful Sync without silently saving a named order. | Keep open for an exact current-build reproduction of any remaining Sync-specific mod movement or state change. |
+| [#130](https://github.com/circleainn/BG3ModManager-Redux/issues/130) Missing thumbnails with working downloads | The 16.5 candidate also decodes WebP thumbnails when the URL has a misleading image extension; earlier builds already retry failed images. | Obtain an affected mod/provider if the image is still absent in the candidate. |
 
 Issue #127 remains high priority because it may affect intended load-order state. Reporter versions
 must not be inferred from comment dates. Preserve the remaining reports as separate investigations.

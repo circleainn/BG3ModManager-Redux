@@ -6,6 +6,8 @@ using DivinityModManager.AppServices;
 
 using System.ComponentModel;
 using System.Globalization;
+using System.Net;
+using System.Text.RegularExpressions;
 using System.Windows;
 
 namespace DivinityModManager.Models.Metadata;
@@ -17,6 +19,12 @@ namespace DivinityModManager.Models.Metadata;
 /// </summary>
 public sealed class ModMetadataViewData : ReactiveObject
 {
+	private const int MaximumHoverDescriptionLength = 280;
+	private const int MaximumHoverDescriptionInputLength = 8192;
+	private static readonly Regex HiddenMarkupRegex = new("<(script|style)\\b[^>]*>.*?</\\1>", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled);
+	private static readonly Regex BreakMarkupRegex = new("<(br|/p|/div|/li|/h[1-6])\\b[^>]*>", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+	private static readonly Regex MarkupRegex = new("<[^>]+>", RegexOptions.Compiled);
+	private static readonly Regex WhitespaceRegex = new("\\s+", RegexOptions.Compiled);
 	private readonly DivinityModData _mod;
 	private INotifyPropertyChanged _nexusMetadata;
 	private INotifyPropertyChanged _modioMetadata;
@@ -107,10 +115,56 @@ public sealed class ModMetadataViewData : ReactiveObject
 	public string SourcePageUrl => Provider?.SourcePageUrl ?? String.Empty;
 	public string GalleryPageUrl => Provider?.GalleryPageUrl ?? String.Empty;
 	public string ChangelogPageUrl => Provider?.ChangelogPageUrl ?? String.Empty;
-	public Uri PreviewImageUri => Uri.TryCreate(Provider?.PreviewImageUrl, UriKind.Absolute, out var uri) ? uri : null;
+	public Uri PreviewImageUri
+	{
+		get
+		{
+			if (_mod.HasCustomPreviewImage &&
+				Uri.TryCreate(_mod.CustomPreviewImagePath, UriKind.Absolute, out var customUri)) return customUri;
+			return Uri.TryCreate(Provider?.PreviewImageUrl, UriKind.Absolute, out var providerUri) ? providerUri : null;
+		}
+	}
+
+	/// <summary>
+	/// A bounded, plain-text excerpt built only from metadata already attached to the
+	/// package. Reading this property never starts provider or network work.
+	/// </summary>
+	public string HoverDescriptionExcerpt
+	{
+		get
+		{
+			var value = HasOnlineMetadata
+				? !String.IsNullOrWhiteSpace(Provider?.Summary) ? Provider.Summary : Provider?.Description
+				: _mod.Description;
+			return CreateHoverDescriptionExcerpt(value);
+		}
+	}
+
+	public bool HasHoverDescription => !String.IsNullOrWhiteSpace(HoverDescriptionExcerpt);
+
+	internal static string CreateHoverDescriptionExcerpt(string value)
+	{
+		if (String.IsNullOrWhiteSpace(value)) return String.Empty;
+
+		var boundedInput = value.Length > MaximumHoverDescriptionInputLength
+			? value[..MaximumHoverDescriptionInputLength]
+			: value;
+		var plainText = HiddenMarkupRegex.Replace(WebUtility.HtmlDecode(boundedInput), " ");
+		plainText = BreakMarkupRegex.Replace(plainText, " ");
+		plainText = MarkupRegex.Replace(plainText, " ");
+		plainText = WhitespaceRegex.Replace(plainText, " ").Trim();
+		if (plainText.Length <= MaximumHoverDescriptionLength) return plainText;
+
+		var breakAt = plainText.LastIndexOf(' ', MaximumHoverDescriptionLength);
+		if (breakAt < MaximumHoverDescriptionLength / 2) breakAt = MaximumHoverDescriptionLength;
+		return plainText[..breakAt].TrimEnd() + "…";
+	}
+	public bool UsesCustomPreviewImage => _mod.HasCustomPreviewImage && PreviewImageUri?.IsFile == true;
 	public Visibility PreviewImageVisibility => PreviewImageUri != null ? Visibility.Visible : Visibility.Collapsed;
 	public string SourcePageButtonLabel => $"View Mod on {SourceLabel}";
-	public string GalleryTooltip => $"View image gallery on {SourceLabel}";
+	public string GalleryTooltip => UsesCustomPreviewImage
+		? "Custom preview artwork stored by Redux"
+		: $"View image gallery on {SourceLabel}";
 	public string DescriptionHeading => SourceType != ModSourceType.NONE ? $"Description from {SourceLabel}" : "Local description";
 	public string ChangelogHeading => SourceType != ModSourceType.NONE ? $"Changelog from {SourceLabel}" : "No online changelog linked";
 	public string ChangelogButtonLabel => $"Open {SourceLabel} changelog page";
@@ -240,6 +294,23 @@ public sealed class ModMetadataViewData : ReactiveObject
 		{
 			AttachOnlineMetadata(ref _modioMetadata, _mod.ModioData);
 		}
+		else if (e.PropertyName is not (null or "" or
+			nameof(DivinityModData.OnlineMetadataEnabled) or
+			nameof(DivinityModData.NexusModsEnabled) or
+			nameof(DivinityModData.DisplayName) or
+			nameof(DivinityModData.FileName) or
+			nameof(DivinityModData.Author) or
+			nameof(DivinityModData.DisplayVersion) or
+			nameof(DivinityModData.Description) or
+			nameof(DivinityModData.HasMetadata) or
+			nameof(DivinityModData.HasCustomPreviewImage) or
+			nameof(DivinityModData.CustomPreviewImagePath) or
+			nameof(DivinityModData.LastModifiedDateText)))
+		{
+			// DisplayTitle and ListDisplayTitle are outputs of PackageTitle. Reacting
+			// to them here schedules an endless metadata/title notification loop.
+			return;
+		}
 
 		RaiseDisplayPropertiesChanged();
 	}
@@ -271,6 +342,8 @@ public sealed class ModMetadataViewData : ReactiveObject
 		this.RaisePropertyChanged(nameof(Version));
 		this.RaisePropertyChanged(nameof(Summary));
 		this.RaisePropertyChanged(nameof(Description));
+		this.RaisePropertyChanged(nameof(HoverDescriptionExcerpt));
+		this.RaisePropertyChanged(nameof(HasHoverDescription));
 		this.RaisePropertyChanged(nameof(ChangelogText));
 		this.RaisePropertyChanged(nameof(SourceType));
 		this.RaisePropertyChanged(nameof(SourceLabel));
@@ -280,6 +353,7 @@ public sealed class ModMetadataViewData : ReactiveObject
 		this.RaisePropertyChanged(nameof(GalleryPageUrl));
 		this.RaisePropertyChanged(nameof(ChangelogPageUrl));
 		this.RaisePropertyChanged(nameof(PreviewImageUri));
+		this.RaisePropertyChanged(nameof(UsesCustomPreviewImage));
 		this.RaisePropertyChanged(nameof(PreviewImageVisibility));
 		this.RaisePropertyChanged(nameof(SourcePageButtonLabel));
 		this.RaisePropertyChanged(nameof(GalleryTooltip));

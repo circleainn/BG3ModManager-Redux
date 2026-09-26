@@ -60,6 +60,7 @@ internal sealed class ReduxBundleTests
 			RegressionAssert.SequenceEqual(
 				new[] { SecondUuid },
 				contents.Presentation.Dividers[0].MemberModUuids);
+			RegressionAssert.Equal("chapter-one", contents.Presentation.Dividers[1].ParentDividerId);
 			RegressionAssert.SequenceEqual(
 				assets[CustomIconAsset],
 				contents.Assets[CustomIconAsset]);
@@ -89,7 +90,8 @@ internal sealed class ReduxBundleTests
 		WithTemporaryBundle(path =>
 		{
 			var presentation = CreatePresentation();
-			presentation.Dividers[0].MemberModUuids = null!;
+			foreach (var divider in presentation.Dividers)
+				divider.MemberModUuids = null!;
 
 			RegressionAssert.True(ReduxLoadOrderBundleService.TryExport(
 				path, CreateOrder(), presentation, CreateAssets(), out _));
@@ -358,6 +360,7 @@ internal sealed class ReduxBundleTests
 			{
 				new()
 				{
+					DividerId = "chapter-one",
 					Title = "Chapter One",
 					Color = "#42A77C",
 					IconId = String.Empty,
@@ -367,6 +370,15 @@ internal sealed class ReduxBundleTests
 					BeforeModUuid = FirstUuid,
 					AfterModUuid = SecondUuid,
 					MemberModUuids = new List<string> { SecondUuid }
+				},
+				new()
+				{
+					DividerId = "chapter-one-notes",
+					ParentDividerId = "chapter-one",
+					Title = "Chapter notes",
+					Color = "#42A77C",
+					FallbackPosition = 2,
+					MemberModUuids = new List<string>()
 				}
 			},
 			CustomIconAssets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

@@ -8,6 +8,8 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 
+using Microsoft.Win32;
+
 namespace DivinityModManager.ViewModels;
 
 public enum ReduxUpdateCheckState
@@ -27,6 +29,7 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 	private readonly ReduxUpdatePackageService _packages;
 	private readonly ReduxUpdateLaunchService _launcher;
 	private int _checkInProgress;
+	private CancellationTokenSource _backupCancellation;
 	private string _releaseNotesUrl = DivinityApp.URL_REDUX_RELEASES;
 	private ReduxUpdateDecision _availableUpdate;
 
@@ -40,11 +43,14 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 	[Reactive] public string UpdateChangelogView { get; set; } = String.Empty;
 	[Reactive] public double UpdateProgress { get; set; }
 	[Reactive] public bool IsProgressVisible { get; set; }
+	[Reactive] public bool IsBackingUp { get; private set; }
 	[Reactive] public bool HasAvailableUpdate { get; set; }
 	[Reactive] public ReduxUpdateCheckState CheckState { get; set; } = ReduxUpdateCheckState.Idle;
 
 	public ICommand ConfirmCommand { get; }
+	public ICommand BackupAndConfirmCommand { get; }
 	public ICommand SkipCommand { get; }
+	public void CancelBackup() => _backupCancellation?.Cancel();
 
 	public AppUpdateWindowViewModel(
 		ReduxUpdateChannelService updates,
@@ -55,9 +61,14 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 		_packages = packages ?? throw new ArgumentNullException(nameof(packages));
 		_launcher = launcher ?? throw new ArgumentNullException(nameof(launcher));
 		var canConfirm = this.WhenAnyValue(x => x.CanConfirm);
-		ConfirmCommand = ReactiveCommand.CreateFromTask(PrepareAndRestartAsync, canConfirm, RxApp.MainThreadScheduler);
+		ConfirmCommand = ReactiveCommand.CreateFromTask(() => PrepareAndRestartAsync(false), canConfirm, RxApp.MainThreadScheduler);
+		BackupAndConfirmCommand = ReactiveCommand.CreateFromTask(() => PrepareAndRestartAsync(true), canConfirm, RxApp.MainThreadScheduler);
 		var canSkip = this.WhenAnyValue(x => x.CanSkip);
-		SkipCommand = ReactiveCommand.Create(() => IsVisible = false, canSkip, RxApp.MainThreadScheduler);
+		SkipCommand = ReactiveCommand.Create(() =>
+		{
+			if (IsBackingUp) CancelBackup();
+			else IsVisible = false;
+		}, canSkip, RxApp.MainThreadScheduler);
 	}
 
 	public void ScheduleUpdateCheck(bool showAlerts = false) => _ = CheckForUpdatesAsync(showAlerts);
@@ -172,9 +183,28 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 
 	}
 
-	private async Task PrepareAndRestartAsync()
+	private async Task PrepareAndRestartAsync(bool createBackup)
 	{
 		if (CheckState != ReduxUpdateCheckState.UpdateAvailable || _availableUpdate == null) return;
+		string backupPath = null;
+		if (createBackup)
+		{
+			var chooser = new SaveFileDialog
+			{
+				Title = "Save a pre-update Redux and mod-list backup",
+				Filter = "ZIP archive (*.zip)|*.zip",
+				DefaultExt = ".zip",
+				AddExtension = true,
+				OverwritePrompt = true,
+				FileName = $"Redux-before-{_availableUpdate.Manifest.DisplayVersion}-{DateTime.Now:yyyyMMdd-HHmm}.zip",
+				InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+			};
+			var dialogOwner = Application.Current?.Windows.OfType<AppUpdateWindow>()
+				.FirstOrDefault(window => window.IsVisible) ?? (Window)MainWindow.Self;
+			if (chooser.ShowDialog(dialogOwner) != true) return;
+			backupPath = chooser.FileName;
+		}
+		var backingUp = false;
 		try
 		{
 			CheckState = ReduxUpdateCheckState.PreparingUpdate;
@@ -193,16 +223,60 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 				?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Redux.exe");
 			var mainWindow = MainWindow.Self
 				?? throw new InvalidOperationException("The Redux main window is not available for restart.");
+			if (backupPath != null)
+			{
+				backingUp = true;
+				IsBackingUp = true;
+				_backupCancellation = new CancellationTokenSource();
+				CanSkip = true;
+				SkipButtonText = "Cancel backup";
+				var main = mainWindow.ViewModel;
+				var orders = String.IsNullOrWhiteSpace(main.Settings.LoadOrderPath)
+					? DivinityApp.GetAppDirectory("Orders")
+					: Path.IsPathRooted(main.Settings.LoadOrderPath)
+						? main.Settings.LoadOrderPath
+						: DivinityApp.GetAppDirectory(main.Settings.LoadOrderPath);
+				var previousVersions = String.IsNullOrWhiteSpace(main.PathwayData.AppDataGameFolder)
+					? String.Empty : Path.Combine(main.PathwayData.AppDataGameFolder, "Mods_Old_ModManager");
+				var backupProgress = new Progress<ReduxPreUpdateBackupService.Progress>(value =>
+				{
+					UpdateDescription = $"Backing up {Path.GetFileName(value.CurrentFile)}…";
+					UpdateProgress = value.TotalBytes <= 0 ? 0 : Math.Clamp((double)value.CopiedBytes / value.TotalBytes, 0, 1);
+				});
+				await Task.Run(() => ReduxPreUpdateBackupService.CreateAsync(backupPath,
+				[
+					new("Redux", Path.GetDirectoryName(processPath)!),
+					new("BG3 Mods", main.PathwayData.AppDataModsPath),
+					new("Previous Mod Versions", previousVersions),
+					new("Saved Orders", orders),
+					new("Profile Load Orders", main.PathwayData.AppDataProfilesPath, true)
+				], backupProgress, _backupCancellation.Token));
+				backingUp = false;
+				IsBackingUp = false;
+				CanSkip = false;
+				SkipButtonText = "Later";
+			}
 			_launcher.Queue(prepared, Path.GetDirectoryName(processPath)!, Environment.ProcessId);
-			UpdateDescription = "Redux will finish the update after it closes.";
+			UpdateDescription = backupPath == null ? "Redux will finish the update after it closes."
+				: "Backup saved. Redux will finish the update after it closes.";
 			mainWindow.RequestExitForUpdate();
+		}
+		catch (OperationCanceledException) when (backingUp)
+		{
+			_launcher.CancelPending();
+			CheckState = ReduxUpdateCheckState.UpdateAvailable;
+			UpdateDescription = "Backup canceled. Redux was not updated.";
+			CanConfirm = true;
+			IsVisible = true;
 		}
 		catch (Exception ex)
 		{
 			DivinityApp.Log($"Could not prepare Redux update:\n{ex}");
 			_launcher.CancelPending();
 			CheckState = ReduxUpdateCheckState.UpdateAvailable;
-			UpdateDescription = "Redux could not safely prepare this update. The current installation was not changed.";
+			UpdateDescription = backingUp
+				? $"Backup failed: {ex.Message} Redux was not updated."
+				: "Redux could not safely prepare this update. The current installation was not changed.";
 			ConfirmButtonText = "Try Again";
 			CanConfirm = true;
 			IsVisible = true;
@@ -210,8 +284,12 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 		}
 		finally
 		{
+			IsBackingUp = false;
+			_backupCancellation?.Dispose();
+			_backupCancellation = null;
 			IsChecking = false;
 			CanSkip = true;
+			if (CheckState == ReduxUpdateCheckState.UpdateAvailable) SkipButtonText = "Later";
 			IsProgressVisible = false;
 		}
 	}

@@ -56,7 +56,9 @@ public struct DivinityModFilterData
 
 		if (PropertyContains("Name"))
 		{
-			if (ValueContains(mod.Name)) return true;
+			if ((!String.IsNullOrWhiteSpace(mod.CustomAlias) && ValueContains(mod.CustomAlias)) ||
+				(!String.IsNullOrWhiteSpace(mod.DisplayTitle) && ValueContains(mod.DisplayTitle)) ||
+				ValueContains(mod.Name)) return true;
 		}
 
 		if (PropertyContains("File"))

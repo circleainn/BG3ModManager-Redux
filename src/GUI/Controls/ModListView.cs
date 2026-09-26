@@ -5,8 +5,8 @@ using DivinityModManager.Views;
 
 using DynamicData.Binding;
 
-using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Collections.Specialized;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Automation.Peers;
@@ -18,15 +18,271 @@ namespace DivinityModManager.Controls;
 
 public class ModListView : ListView
 {
+	protected override void OnItemsSourceChanged(System.Collections.IEnumerable oldValue, System.Collections.IEnumerable newValue)
+	{
+		base.OnItemsSourceChanged(oldValue, newValue);
+		if (newValue == null || System.Windows.Data.CollectionViewSource.GetDefaultView(newValue) is not ICollectionViewLiveShaping live) return;
+		if (live.CanChangeLiveSorting)
+		{
+			if (!live.LiveSortingProperties.Contains(nameof(DivinityModData.ListDisplayTitle)))
+				live.LiveSortingProperties.Add(nameof(DivinityModData.ListDisplayTitle));
+			live.IsLiveSorting = true;
+		}
+		if (live.CanChangeLiveFiltering)
+		{
+			foreach (var property in new[] { nameof(DivinityModData.CustomAlias), nameof(DivinityModData.HasCustomAlias), nameof(DivinityModData.ListDisplayTitle) })
+				if (!live.LiveFilteringProperties.Contains(property)) live.LiveFilteringProperties.Add(property);
+			live.IsLiveFiltering = true;
+		}
+	}
+
 	private static readonly MethodInfo _itemInfoFromContainer = typeof(ItemsControl)
 		.GetMethod("ItemInfoFromContainer", BindingFlags.NonPublic | BindingFlags.Instance);
 	private static readonly MethodInfo _updateAnchorAndActionItem = typeof(ListBox)
 		.GetMethod("UpdateAnchorAndActionItem", BindingFlags.NonPublic | BindingFlags.Instance);
-	private static readonly PropertyInfo _actualColumnIndex = typeof(GridViewColumn)
-		.GetProperty("ActualIndex", BindingFlags.NonPublic | BindingFlags.Instance);
-
 	public bool Resizing { get; set; }
 	public bool UserResizedColumns { get; set; }
+	public static readonly DependencyProperty MinimumColumnWidthProperty = DependencyProperty.RegisterAttached(
+		"MinimumColumnWidth", typeof(double), typeof(ModListView), new PropertyMetadata(0d));
+	public static void SetMinimumColumnWidth(DependencyObject column, double value) => column.SetValue(MinimumColumnWidthProperty, value);
+	public static double GetMinimumColumnWidth(DependencyObject column) => (double)column.GetValue(MinimumColumnWidthProperty);
+	public static double GetColumnWidthFloor(string name) => name switch
+	{
+		"#" => 45, "Name" or "File Name" => 100, "Version" => 60,
+		"Last Updated" or "Author" or "Category" => 70, "Last Modified" => 75,
+		"Source" => 90, _ => 60
+	};
+	public static readonly DependencyProperty IsColumnResizingProperty = DependencyProperty.Register(
+		nameof(IsColumnResizing), typeof(bool), typeof(ModListView), new PropertyMetadata(false));
+	public bool IsColumnResizing => (bool)GetValue(IsColumnResizingProperty);
+	public static readonly DependencyProperty ColumnResizeOffsetProperty = DependencyProperty.Register(
+		nameof(ColumnResizeOffset), typeof(double), typeof(ModListView), new PropertyMetadata(0d));
+	public double ColumnResizeOffset => (double)GetValue(ColumnResizeOffsetProperty);
+	private GridViewColumnHeader _resizingHeader;
+
+	private GridViewColumnHeader ResizeHeader(RoutedEventArgs e)
+	{
+		if (!UsesSeparatorHeaders || e.OriginalSource is not Thumb { Name: "PART_HeaderGripper" } thumb) return null;
+		var header = thumb.FindVisualParent<GridViewColumnHeader>();
+		return header?.FindVisualParent<ModListView>() == this ? header : null;
+	}
+
+	private void OnColumnResizeStarted(object sender, DragStartedEventArgs e)
+	{
+		_resizingHeader = ResizeHeader(e);
+		if (_resizingHeader?.Column == null) return;
+		UserResizedColumns = true;
+		SetValue(IsColumnResizingProperty, true);
+		ClampResizingColumn();
+	}
+
+	private void OnColumnResizeDelta(object sender, DragDeltaEventArgs e)
+	{
+		if (IsColumnResizing && ResizeHeader(e) == _resizingHeader) ClampResizingColumn();
+	}
+
+	private void OnColumnResizeCompleted(object sender, DragCompletedEventArgs e)
+	{
+		if (!IsColumnResizing || ResizeHeader(e) != _resizingHeader) return;
+		ClampResizingColumn();
+		SetValue(IsColumnResizingProperty, false);
+		_resizingHeader = null;
+	}
+
+	private void ClampResizingColumn()
+	{
+		if (_resizingHeader?.Column is not { } column) return;
+		var minimum = GetMinimumColumnWidth(column);
+		if (minimum <= 0) minimum = GetColumnWidthFloor(GetColumnKey(column));
+		// Zero is a valid hidden-column sentinel outside a drag. During a drag it
+		// must be clamped too, before another layout can collapse the header.
+		if (Double.IsNaN(column.Width) || column.Width < minimum) column.Width = minimum;
+		var edge = _resizingHeader.TransformToAncestor(this).Transform(new Point(column.Width, 0)).X;
+		SetValue(ColumnResizeOffsetProperty, Math.Max(0, edge - 4));
+	}
+
+	// One 20px hierarchy step is shared by buttons, icons/numbers, labels and feedback.
+	public const double NameHierarchyGutterWidth = 48d;
+	public static readonly DependencyProperty GroupingContentInsetProperty = DependencyProperty.Register(
+		nameof(GroupingContentInset), typeof(Thickness), typeof(ModListView), new PropertyMetadata(new Thickness(0)));
+	public Thickness GroupingContentInset => (Thickness)GetValue(GroupingContentInsetProperty);
+	public static readonly DependencyProperty RootModNameInsetProperty = DependencyProperty.Register(
+		nameof(RootModNameInset), typeof(Thickness), typeof(ModListView), new PropertyMetadata(new Thickness(0)));
+	public Thickness RootModNameInset => (Thickness)GetValue(RootModNameInsetProperty);
+	public static readonly DependencyProperty RootModIndexInsetProperty = DependencyProperty.Register(
+		nameof(RootModIndexInset), typeof(Thickness), typeof(ModListView), new PropertyMetadata(new Thickness(2, 0, 2, 0)));
+	public Thickness RootModIndexInset => (Thickness)GetValue(RootModIndexInsetProperty);
+	public static readonly DependencyProperty RootModFeedbackInsetProperty = DependencyProperty.Register(
+		nameof(RootModFeedbackInset), typeof(Thickness), typeof(ModListView), new PropertyMetadata(new Thickness(0)));
+	public Thickness RootModFeedbackInset => (Thickness)GetValue(RootModFeedbackInsetProperty);
+	public const double HierarchyLevelStep = 20d;
+	public const double SeparatorBranchCenter = 17d;
+	public static Thickness RootSeparatorToggleInset => new(SeparatorBranchCenter - 12, 0, 0, 0);
+	public static Thickness ChildSeparatorToggleInset => new(SeparatorBranchCenter - 12 + HierarchyLevelStep, 0, 0, 0);
+	public const double SeparatorLabelLeft = 56d;
+	public const double SeparatorMarkerCenter = 39d;
+	public const double HierarchyIndexWidth = 32d;
+	public static Thickness RootSeparatorLabelInset => new(SeparatorMarkerCenter - 7, 0, 14, 0);
+	public static Thickness ChildSeparatorLabelInset => new(SeparatorMarkerCenter - 7 + HierarchyLevelStep, 0, 14, 0);
+	public static readonly DependencyProperty ChildModNameInsetProperty = DependencyProperty.Register(
+		nameof(ChildModNameInset), typeof(Thickness), typeof(ModListView), new PropertyMetadata(new Thickness(0)));
+	public Thickness ChildModNameInset => (Thickness)GetValue(ChildModNameInsetProperty);
+	public static readonly DependencyProperty ChildModFeedbackInsetProperty = DependencyProperty.Register(
+		nameof(ChildModFeedbackInset), typeof(Thickness), typeof(ModListView), new PropertyMetadata(new Thickness(0)));
+	public Thickness ChildModFeedbackInset => (Thickness)GetValue(ChildModFeedbackInsetProperty);
+	public static readonly DependencyProperty UsesHierarchyIndexAlignmentProperty = DependencyProperty.Register(
+		nameof(UsesHierarchyIndexAlignment), typeof(bool), typeof(ModListView), new PropertyMetadata(false));
+	public bool UsesHierarchyIndexAlignment => (bool)GetValue(UsesHierarchyIndexAlignmentProperty);
+	internal readonly record struct GroupingRange(DivinityModData Item, int Start, int End);
+	private readonly List<GroupingRange> _groupingRanges = new();
+	internal IReadOnlyList<GroupingRange> GroupingRanges
+	{
+		get
+		{
+			// A same-size reorder need not arrange the outer ListView again.
+			// Drawing and layout observers must always see the current item order.
+			if (_groupingRangesDirty) { UpdateGroupingRanges(); _groupingRangesDirty = false; }
+			return _groupingRanges;
+		}
+	}
+	// The existing row transition owns the clock; the gutter only redraws on its frames.
+	internal event EventHandler GroupingAnimationFrame;
+	internal void RefreshGroupingAnimation() => GroupingAnimationFrame?.Invoke(this, EventArgs.Empty);
+	private bool _groupingRangesDirty = true;
+	private void UpdateGroupingRanges()
+	{
+		_groupingRanges.Clear();
+		int parent = -1, child = -1;
+		void End(int slot, int end)
+		{
+			if (slot >= 0) _groupingRanges[slot] = _groupingRanges[slot] with { End = end };
+		}
+		for (int index = 0; index < Items.Count; index++)
+		{
+			if (Items[index] is not DivinityModData { IsVisualDivider: true } divider) continue;
+			End(child, index - 1); child = -1;
+			if (!divider.IsChildVisualDivider) { End(parent, index - 1); parent = _groupingRanges.Count; }
+			else child = _groupingRanges.Count;
+			_groupingRanges.Add(new(divider, index, Items.Count - 1));
+		}
+	}
+	public const double ColumnCellInset = 19d;
+	// GridView's header presenter supplies 2px that the row presenter does not.
+	public static Thickness ColumnHeaderPadding => new(ColumnCellInset - 2, 0, 12, 0);
+	private int _separatorRowCount;
+	public static readonly DependencyProperty CurrentSortDirectionProperty =
+		DependencyProperty.RegisterAttached("CurrentSortDirection", typeof(ListSortDirection?), typeof(ModListView),
+			new PropertyMetadata(null));
+	public static ListSortDirection? GetCurrentSortDirection(DependencyObject column) =>
+		(ListSortDirection?)column.GetValue(CurrentSortDirectionProperty);
+	public static void SetCurrentSortDirection(DependencyObject column, ListSortDirection? value) =>
+		column.SetValue(CurrentSortDirectionProperty, value);
+	public static PropertyPath ColumnSortDirectionPath => new("Column.(0)", CurrentSortDirectionProperty);
+
+	internal static string GetSortProperty(string column) => column switch
+	{
+		"Name" => "ListDisplayTitle",
+		"File Name" => "FileName",
+		"Version" => "Version.Version",
+		"Modes" => "Targets",
+		"Last Updated" => "DisplayLastUpdated",
+		"Last Modified" => "LastModified",
+		"Category" => "DisplayCategory",
+		"Source" => "DisplaySource",
+		_ => column
+	};
+
+	private void UpdateColumnSortIndicators()
+	{
+		if (View is not GridView grid) return;
+		// Read the actual view, including programmatic sorting and clearing. A header
+		// click cache can outlive a refresh or refer to a different pane.
+		var sort = Items.SortDescriptions.FirstOrDefault();
+		foreach (var column in grid.Columns)
+		{
+			var property = GetSortProperty(GetColumnKey(column));
+			ListSortDirection? direction = Items.SortDescriptions.Count > 0 && property == sort.PropertyName
+				? sort.Direction : null;
+			if (GetCurrentSortDirection(column) != direction)
+				SetCurrentSortDirection(column, direction);
+		}
+	}
+	public static readonly DependencyProperty UsesSeparatorHeadersProperty =
+		DependencyProperty.Register(nameof(UsesSeparatorHeaders), typeof(bool), typeof(ModListView),
+			new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsArrange));
+	public bool UsesSeparatorHeaders
+	{
+		get => (bool)GetValue(UsesSeparatorHeadersProperty);
+		set => SetValue(UsesSeparatorHeadersProperty, value);
+	}
+	private static readonly DependencyPropertyKey HasSeparatorRowsPropertyKey =
+		DependencyProperty.RegisterReadOnly(nameof(HasSeparatorRows), typeof(bool), typeof(ModListView), new PropertyMetadata(false));
+	public static readonly DependencyProperty HasSeparatorRowsProperty = HasSeparatorRowsPropertyKey.DependencyProperty;
+	public bool HasSeparatorRows => (bool)GetValue(HasSeparatorRowsProperty);
+
+	protected override void OnItemsChanged(NotifyCollectionChangedEventArgs e)
+	{
+		base.OnItemsChanged(e);
+		_groupingRangesDirty = true;
+		InvalidateArrange();
+		if (e.Action == NotifyCollectionChangedAction.Move) return;
+		var hadSeparators = _separatorRowCount > 0;
+		// Track incremental changes so loading thousands of ordinary rows does not
+		// repeatedly scan the whole list just to decide whether a gutter is needed.
+		if (e.Action == NotifyCollectionChangedAction.Reset)
+			_separatorRowCount = Items.OfType<DivinityModData>().Count(item => item.IsVisualDivider);
+		else
+		{
+			_separatorRowCount -= e.OldItems?.OfType<DivinityModData>().Count(item => item.IsVisualDivider) ?? 0;
+			_separatorRowCount += e.NewItems?.OfType<DivinityModData>().Count(item => item.IsVisualDivider) ?? 0;
+		}
+		if (hadSeparators != (_separatorRowCount > 0))
+		{
+			SetValue(HasSeparatorRowsPropertyKey, _separatorRowCount > 0);
+			InvalidateArrange();
+		}
+	}
+
+	protected override Size ArrangeOverride(Size arrangeBounds)
+	{
+		if (_groupingRangesDirty) { UpdateGroupingRanges(); _groupingRangesDirty = false; }
+		if (UsesSeparatorHeaders)
+		{
+			// Only the leading number/name cells may use the hierarchy space.
+			// Never pull a reordered cell over another data column.
+			var columns = (View as GridView)?.Columns;
+			var first = columns?.Count > 0 ? GetColumnKey(columns[0]) : String.Empty;
+			var nameCanShift = first == "Name" || (first == "#" && columns.Count > 1 && GetColumnKey(columns[1]) == "Name");
+			// Keep content inside its actual data column. Numbered lists need only
+			// 8px before the index; a leading Name column replaces the number lane.
+			var gutter = !HasSeparatorRows ? 0 : first == "#" ? 8 : first == "Name" ? 17 : NameHierarchyGutterWidth;
+			var nameShift = 0d;
+			var alignIndex = HasSeparatorRows && first == "#";
+			var indexShift = alignIndex ? SeparatorMarkerCenter + 4 - HierarchyIndexWidth / 2 - gutter - ColumnCellInset : 2;
+			void UpdateInset(DependencyProperty property, Thickness value)
+			{
+				if ((Thickness)GetValue(property) != value) SetValue(property, value);
+			}
+			UpdateInset(GroupingContentInsetProperty, new Thickness(gutter, 0, 0, 0));
+			UpdateInset(RootModNameInsetProperty, new Thickness(nameShift, 0, 0, 0));
+			UpdateInset(ChildModNameInsetProperty, new Thickness(nameShift + (HasSeparatorRows && nameCanShift ? HierarchyLevelStep : 0), 0, 0, 0));
+			UpdateInset(RootModIndexInsetProperty, new Thickness(indexShift, 0, 2, 0));
+			if (UsesHierarchyIndexAlignment != alignIndex) SetValue(UsesHierarchyIndexAlignmentProperty, alignIndex);
+			// Without a number cell, leave a little more room between the
+			// interaction rail and the name without moving the column content.
+			var feedbackShift = HasSeparatorRows && first is "#" or "Name" ? (first == "Name" ? 19d : 23d) - gutter : 0;
+			UpdateInset(RootModFeedbackInsetProperty, new Thickness(feedbackShift, 0, 0, 0));
+			UpdateInset(ChildModFeedbackInsetProperty, new Thickness(feedbackShift + (feedbackShift != 0 ? HierarchyLevelStep : 0), 0, 0, 0));
+			// Preserve the native presenter's 2px cell inset.
+			var margin = new Thickness(2 + gutter, 0, 2, 0);
+			foreach (var header in this.FindVisualChildren<GridViewHeaderRowPresenter>())
+				if (header.Margin != margin) header.Margin = margin;
+		}
+		var result = base.ArrangeOverride(arrangeBounds);
+		if (!UsesSeparatorHeaders) return result;
+		UpdateColumnSortIndicators();
+		return result;
+	}
 
 	private ModListView _copyHeaderView = null;
 
@@ -74,50 +330,53 @@ public class ModListView : ListView
 		{
 			PropertyDescriptor pd = DependencyPropertyDescriptor.FromProperty(GridViewColumn.WidthProperty, typeof(GridViewColumn));
 
-			grid.Columns.CollectionChanged -= OnTargetGridCollectionChanged;
-			grid.Columns.CollectionChanged += OnTargetGridCollectionChanged;
-
 			foreach (var col in grid.Columns)
 			{
 				pd.RemoveValueChanged(col, OnColumnWidthChanged_Copy);
 				pd.AddValueChanged(col, OnColumnWidthChanged_Copy);
 			}
-		}
-	}
 
-	private void OnTargetGridCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-	{
-		if (e.Action == NotifyCollectionChangedAction.Move)
-		{
-			if (sender is GridViewColumnCollection colList)
-			{
-				var view = this.View as GridView;
-				var indexOrder = colList.Select(x => GetColumnActualIndex(x)).ToList();
-				DivinityApp.Log($"[Order] indexOrder({String.Join(";", indexOrder)})");
-				var len = view.Columns.Count;
-				for (int i = 0; i < len; i++)
-				{
-					var col = view.Columns[i];
-					var nextIndex = indexOrder.IndexOf(GetColumnActualIndex(col));
-					view.Columns.Move(i, nextIndex);
-				}
-			}
+			SynchronizeLinkedColumnWidths(grid);
 		}
 	}
 
 	private void OnColumnWidthChanged_Copy(object sender, EventArgs e)
 	{
-		if (sender is GridViewColumn col)
+		if (sender is GridViewColumn sourceColumn && View is GridView linkedView)
 		{
-			var thisView = this.View as GridView;
-			var index = GetColumnActualIndex(col);
-			var myCol = thisView.Columns.FirstOrDefault(x => GetColumnActualIndex(x) == index);
-			if (myCol != null)
+			var key = GetColumnKey(sourceColumn);
+			var linkedColumn = linkedView.Columns.FirstOrDefault(column =>
+				String.Equals(GetColumnKey(column), key, StringComparison.OrdinalIgnoreCase));
+			if (linkedColumn != null)
 			{
-				myCol.Width = col.Width;
+				linkedColumn.Width = sourceColumn.Width;
 			}
 		}
 	}
+
+	private void SynchronizeLinkedColumnWidths(GridView sourceView)
+	{
+		if (View is not GridView linkedView) return;
+
+		foreach (var sourceColumn in sourceView.Columns)
+		{
+			var key = GetColumnKey(sourceColumn);
+			if (String.IsNullOrWhiteSpace(key)) continue;
+
+			var linkedColumn = linkedView.Columns.FirstOrDefault(column =>
+				String.Equals(GetColumnKey(column), key, StringComparison.OrdinalIgnoreCase));
+			if (linkedColumn == null) continue;
+
+			linkedColumn.Width = sourceColumn.Width;
+		}
+	}
+
+	private static string GetColumnKey(GridViewColumn column) => column.Header switch
+	{
+		string header => header,
+		TextBlock textBlock => textBlock.Text,
+		_ => String.Empty
+	};
 
     private void StyleColumnDropIndicator()
     {
@@ -135,6 +394,9 @@ public class ModListView : ListView
 
 	public ModListView() : base()
 	{
+		AddHandler(Thumb.DragStartedEvent, new DragStartedEventHandler(OnColumnResizeStarted), true);
+		AddHandler(Thumb.DragDeltaEvent, new DragDeltaEventHandler(OnColumnResizeDelta), true);
+		AddHandler(Thumb.DragCompletedEvent, new DragCompletedEventHandler(OnColumnResizeCompleted), true);
         Loaded += (_, _) => StyleColumnDropIndicator();
         AddHandler(GridViewColumnHeader.PreviewMouseLeftButtonDownEvent,
             new MouseButtonEventHandler((_, e) =>
@@ -241,11 +503,6 @@ public class ModListView : ListView
 	protected override AutomationPeer OnCreateAutomationPeer()
 	{
 		return new ModListViewAutomationPeer(this);
-	}
-
-	private static int GetColumnActualIndex(GridViewColumn col)
-	{
-		return _actualColumnIndex?.GetValue(col) is int index ? index : -1;
 	}
 
 	protected override void OnKeyDown(KeyEventArgs e)

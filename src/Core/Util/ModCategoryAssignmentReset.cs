@@ -9,6 +9,15 @@ namespace DivinityModManager.Util;
 /// </summary>
 public static class ModCategoryAssignmentReset
 {
+	public static bool SetAutomaticClassificationEnabled(DivinityModManagerSettings settings, bool enabled)
+	{
+		ArgumentNullException.ThrowIfNull(settings);
+		if (settings.EnableAutomaticModCategories == enabled) return false;
+
+		settings.EnableAutomaticModCategories = enabled;
+		return true;
+	}
+
 	public static int ClearManualAssignments(DivinityModManagerSettings settings)
 	{
 		ArgumentNullException.ThrowIfNull(settings);

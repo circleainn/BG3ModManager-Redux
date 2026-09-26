@@ -85,6 +85,80 @@ internal sealed class ModAnnotationTests
 		RegressionAssert.Equal("Shared note", ReduxModAnnotationService.Find(store, second).PrivateNote);
 	}
 
+	public void AliasesPersistIndependentlyFromPrivateNotes()
+	{
+		WithTemporaryPath(path =>
+		{
+			var uuid = Guid.NewGuid().ToString();
+			var store = new ReduxModAnnotationStore();
+			RegressionAssert.True(ReduxModAnnotationService.TrySet(store, uuid, "Keep this note", out _));
+			RegressionAssert.True(ReduxModAnnotationService.TrySetAlias(store, uuid, "My clearer mod name", out _));
+			RegressionAssert.True(ReduxModAnnotationService.TrySet(store, uuid, String.Empty, out _));
+			RegressionAssert.Equal(1, store.Mods.Count);
+			RegressionAssert.Equal("My clearer mod name", ReduxModAnnotationService.Find(store, uuid).CustomAlias);
+
+			RegressionAssert.True(ReduxModAnnotationService.TrySave(path, store, out _));
+			var loaded = ReduxModAnnotationService.Load(path);
+			RegressionAssert.Equal("My clearer mod name", ReduxModAnnotationService.Find(loaded, uuid).CustomAlias);
+			RegressionAssert.True(ReduxModAnnotationService.TrySetAlias(loaded, uuid, String.Empty, out _));
+			RegressionAssert.Equal(0, loaded.Mods.Count);
+		});
+	}
+
+	public void OversizedAliasesAreRejectedBeforeTheStoreChanges()
+	{
+		var uuid = Guid.NewGuid().ToString();
+		var store = new ReduxModAnnotationStore();
+		RegressionAssert.True(ReduxModAnnotationService.TrySetAlias(store, uuid, "Original alias", out _));
+
+		var updated = ReduxModAnnotationService.TrySetAlias(
+			store,
+			uuid,
+			new string('x', ReduxModAnnotationService.MaximumAliasLength + 1),
+			out var error);
+
+		RegressionAssert.False(updated);
+		RegressionAssert.Contains(error, ReduxModAnnotationService.MaximumAliasLength.ToString());
+		RegressionAssert.Equal("Original alias", ReduxModAnnotationService.Find(store, uuid).CustomAlias);
+	}
+
+	public void AliasesRemainIndependentForPackagesThatShareProviderMetadata()
+	{
+		var firstPackageUuid = Guid.NewGuid().ToString();
+		var secondPackageUuid = Guid.NewGuid().ToString();
+		var store = new ReduxModAnnotationStore();
+
+		RegressionAssert.True(ReduxModAnnotationService.TrySetAlias(store, firstPackageUuid, "Core package", out _));
+		RegressionAssert.True(ReduxModAnnotationService.TrySetAlias(store, secondPackageUuid, "Optional package", out _));
+
+		RegressionAssert.Equal("Core package", ReduxModAnnotationService.Find(store, firstPackageUuid).CustomAlias);
+		RegressionAssert.Equal("Optional package", ReduxModAnnotationService.Find(store, secondPackageUuid).CustomAlias);
+	}
+
+	public void CustomArtworkPersistsWithoutReplacingAliasesOrNotes()
+	{
+		var uuid = Guid.NewGuid().ToString();
+		var store = new ReduxModAnnotationStore();
+		RegressionAssert.True(ReduxModAnnotationService.TrySet(store, uuid, "Private note", out _));
+		RegressionAssert.True(ReduxModAnnotationService.TrySetAlias(store, uuid, "Local alias", out _));
+		RegressionAssert.True(ReduxModAnnotationService.TrySetArtwork(
+			store, uuid, "custom-artwork:0123456789abcdef-0123456789abcdef0123456789abcdef.png", out _));
+
+		var annotation = ReduxModAnnotationService.Find(store, uuid);
+		RegressionAssert.True(annotation.HasCustomPreviewImage);
+		RegressionAssert.Equal("Private note", annotation.PrivateNote);
+		RegressionAssert.Equal("Local alias", annotation.CustomAlias);
+		RegressionAssert.False(ReduxModAnnotationService.TrySetArtwork(
+			store, uuid, "custom-artwork:..\\outside.png", out _));
+
+		RegressionAssert.True(ReduxModAnnotationService.TrySetArtwork(store, uuid, String.Empty, out _));
+		annotation = ReduxModAnnotationService.Find(store, uuid);
+		RegressionAssert.True(annotation != null);
+		RegressionAssert.False(annotation.HasCustomPreviewImage);
+		RegressionAssert.Equal("Private note", annotation.PrivateNote);
+		RegressionAssert.Equal("Local alias", annotation.CustomAlias);
+	}
+
 	private static void WithTemporaryPath(Action<string> action)
 	{
 		var directory = Path.Combine(Path.GetTempPath(), "ReduxAnnotationTests", Guid.NewGuid().ToString("N"));

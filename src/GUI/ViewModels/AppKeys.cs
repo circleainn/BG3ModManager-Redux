@@ -110,7 +110,8 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("File", "Refresh Mods", false, "Rescan the configured Mods folder and refresh the mod lists.")]
 	public Hotkey Refresh { get; private set; } = new Hotkey(Key.F5);
 
-	[MenuSettings("File", "Refresh Mod Updates")]
+	[MenuSettings("File", "Check Mod Updates", false,
+		"Check linked mods against enabled sources. Available updates appear in the Mod Updates view.")]
 	public Hotkey RefreshModUpdates { get; private set; } = new Hotkey(Key.None);
 
 	[MenuSettings("Edit", "Undo Last Action", false,
@@ -147,10 +148,25 @@ public class AppKeys : ReactiveObject
 
 	[MenuSettings(
 		"Edit",
+		"Show or Hide Mod File Names",
+		true,
+		"Toggle the File Name column in both the active and inactive mod lists.")]
+	public Hotkey ToggleModFileNames { get; private set; } = new Hotkey(Key.None);
+
+	[MenuSettings(
+		"Edit",
 		"Expand or Collapse All Active Separators",
 		false,
 		"Toggle every separator in the active load order between expanded and collapsed.")]
 	public Hotkey ToggleAllActiveSeparators { get; private set; } = new Hotkey(Key.None);
+
+	[MenuSettings(
+		"Edit",
+		"Collapse or Expand Override Mods",
+		false,
+		"Collapse or expand the Override Mods pane when override packages are installed.")]
+	public Hotkey ToggleOverrideMods { get; private set; } =
+		new Hotkey(Key.O, ModifierKeys.Control | ModifierKeys.Alt);
 
 	[MenuSettings("Settings", "Preferences...")]
 	public Hotkey OpenPreferences { get; private set; } = new Hotkey(Key.P, ModifierKeys.Control);

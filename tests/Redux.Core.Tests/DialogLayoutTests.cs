@@ -91,7 +91,7 @@ public sealed class DialogLayoutTests
 			((TabControl)downloads.FindName("DownloadsTabs")).SelectionChanged -= selectionHandler;
 			((Button)downloads.FindName("ClearArchivesButton")).Visibility = Visibility.Visible;
 			((Button)downloads.FindName("ClearInstalledButton")).Visibility = Visibility.Visible;
-			VerifyLayout(downloads, theme, 760, 540, "downloads");
+			VerifyLayout(downloads, theme, 760, 540, "downloads", "PreviousVersionsButton", "DownloadsCloseButton");
 			var root = (Grid)downloads.Content;
 			var actions = (WrapPanel)downloads.FindName("DownloadActions");
 			foreach (Button button in actions.Children)

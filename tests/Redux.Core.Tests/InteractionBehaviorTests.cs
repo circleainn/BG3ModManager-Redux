@@ -1,6 +1,7 @@
 ﻿using DivinityModManager;
 using DivinityModManager.AppServices;
 using DivinityModManager.Controls;
+using DivinityModManager.Extensions;
 using DivinityModManager.Models;
 using DivinityModManager.Models.App;
 using DivinityModManager.Models.Modio;
@@ -14,13 +15,79 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace Redux.Core.Tests;
 
 public sealed class InteractionBehaviorTests
 {
+	public void CategoryMenusKeepIconsAlongsideEnabledChecks()
+	{
+		var original = DivinityApp.ShowInterfaceIcons;
+		try
+		{
+			DivinityApp.ShowInterfaceIcons = true;
+			var resources = new ResourceDictionary { Source = new Uri("pack://application:,,,/Redux;component/Themes/MainResourceDictionary.xaml") };
+			var menu = new MenuItem { Resources = resources, Header = "Gameplay", Icon = new ReduxIcon { IconKey = "layers" }, IsCheckable = true, IsChecked = true,
+				Template = (ControlTemplate)resources["ReduxPopupMenuItemTemplate"] };
+			ReduxMenuItemExtension.SetCheckOnRight(menu, true);
+			void Layout()
+			{
+				menu.Measure(new Size(300, 40)); menu.Arrange(new Rect(0, 0, 300, 40));
+				menu.UpdateLayout(); Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ContextIdle);
+			}
+			Layout();
+			var icon = (ContentPresenter)menu.Template.FindName("IconPresenter", menu);
+			var check = (Viewbox)menu.Template.FindName("CheckMarkPresenter", menu);
+			RegressionAssert.Equal(Visibility.Visible, icon.Visibility);
+			RegressionAssert.Equal(Visibility.Visible, check.Visibility);
+			RegressionAssert.Equal(2, Grid.GetColumn(check));
+			menu.IsChecked = false; Layout();
+			RegressionAssert.Equal(Visibility.Visible, icon.Visibility);
+			RegressionAssert.Equal(Visibility.Collapsed, check.Visibility);
+			menu.IsChecked = true; DivinityApp.ShowInterfaceIcons = false; Layout();
+			RegressionAssert.Equal(Visibility.Collapsed, icon.Visibility);
+			RegressionAssert.Equal(Visibility.Visible, check.Visibility);
+			RegressionAssert.Equal(0, Grid.GetColumn(check));
+			RegressionAssert.Equal(22d, ((ColumnDefinition)menu.Template.FindName("IconColumn", menu)).Width.Value);
+		}
+		finally { DivinityApp.ShowInterfaceIcons = original; }
+	}
+
+	public void AliasEditsUpdateLiveViewsWithoutResettingOtherRows()
+	{
+		var first = new RegressionModData { UUID = "first", Name = "Alpha", CustomAlias = "Alpha", HasCustomAlias = true };
+		var second = new RegressionModData { UUID = "second", Name = "Beta", CustomAlias = "Beta", HasCustomAlias = true };
+		var source = new System.Collections.ObjectModel.ObservableCollection<DivinityModData> { first, second };
+		var list = new ModListView { ItemsSource = source };
+		var view = System.Windows.Data.CollectionViewSource.GetDefaultView(source);
+		view.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(DivinityModData.ListDisplayTitle), System.ComponentModel.ListSortDirection.Ascending));
+		var resets = 0;
+		view.CollectionChanged += (_, args) => { if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset) resets++; };
+		void Rename(string value)
+		{
+			first.CustomAlias = value;
+			ReactiveUI.IReactiveObject reactive = first;
+			reactive.RaisePropertyChanged(new System.ComponentModel.PropertyChangedEventArgs(nameof(DivinityModData.ListDisplayTitle)));
+			Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ContextIdle);
+		}
+		Rename("Zulu");
+		RegressionAssert.True(ReferenceEquals(second, view.Cast<DivinityModData>().First()));
+		RegressionAssert.Equal(0, resets);
+		view.Filter = item => ((DivinityModData)item).ListDisplayTitle.StartsWith("Z", StringComparison.Ordinal);
+		resets = 0;
+		Rename("Changed");
+		RegressionAssert.Equal(0, view.Cast<object>().Count());
+		Rename("Zulu again");
+		RegressionAssert.True(ReferenceEquals(first, view.Cast<DivinityModData>().Single()));
+		RegressionAssert.Equal(0, resets);
+		RegressionAssert.Equal("Beta", second.ListDisplayTitle);
+		RegressionAssert.Equal(2, source.Count);
+	}
+
 	public void ProviderPasswordFieldsFollowLoadedSettingsAndUserEdits()
 	{
 		var source = new DivinityModManagerSettings
@@ -56,6 +123,26 @@ public sealed class InteractionBehaviorTests
 			[new Uri("https://user:password@images.example.test/mod.png?token=secret#account")])!;
 
 		RegressionAssert.Equal("https://images.example.test/mod.png", result);
+	}
+
+	public void RemoteImageLoaderDecodesWebpReturnedForNexusArtwork()
+	{
+		using var encoded = new System.IO.MemoryStream();
+		using (var image = new SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(2, 2))
+		{
+			SixLabors.ImageSharp.ImageExtensions.SaveAsWebp(image, encoded);
+		}
+		encoded.Position = 0;
+
+		var behavior = typeof(SettingsWindow).Assembly.GetType(
+			"DivinityModManager.Util.RemoteImageBehavior")!;
+		var decode = behavior.GetMethod("DecodeAsync", BindingFlags.NonPublic | BindingFlags.Static)!;
+		var task = (System.Threading.Tasks.Task<System.Windows.Media.Imaging.BitmapSource>)decode.Invoke(null, [encoded])!;
+		var bitmap = task.GetAwaiter().GetResult();
+
+		RegressionAssert.Equal(2, bitmap.PixelWidth);
+		RegressionAssert.Equal(2, bitmap.PixelHeight);
+		RegressionAssert.True(bitmap.IsFrozen);
 	}
 
 	public void ReduceMotionKeepsPrimaryListStoryboardsFreezeSafeAndInstant()
@@ -132,9 +219,96 @@ public sealed class InteractionBehaviorTests
 
 		if (Math.Abs(headerSurface.ActualWidth - scrollBar.ActualWidth) >= 0.01)
 			throw new InvalidOperationException($"Header width {headerSurface.ActualWidth} did not match scrollbar width {scrollBar.ActualWidth}.");
+		RegressionAssert.Equal(new Thickness(0, 4, 0, 4), track.Margin);
 		var trackTop = track.TransformToAncestor(scrollBar).Transform(new Point()).Y;
-		if (Math.Abs(trackTop - headerSurface.ActualHeight) >= 0.01)
-			throw new InvalidOperationException($"Track started at {trackTop} instead of below the {headerSurface.ActualHeight}px header surface.");
+		var expectedTrackTop = headerSurface.ActualHeight + track.Margin.Top;
+		if (Math.Abs(trackTop - expectedTrackTop) >= 0.01)
+			throw new InvalidOperationException($"Track started at {trackTop} instead of {track.Margin.Top}px below the {headerSurface.ActualHeight}px header surface.");
+
+		var standardScrollBar = new ScrollBar
+		{
+			Width = 12,
+			Height = 260,
+			Maximum = 100,
+			ViewportSize = 20,
+			Template = (ControlTemplate)resources["ReduxVerticalScrollBarTemplate"]
+		};
+		host.Children.Clear();
+		host.Children.Add(standardScrollBar);
+		host.Measure(new Size(12, 260));
+		host.Arrange(new Rect(0, 0, 12, 260));
+		host.UpdateLayout();
+		var standardTrack = (Track?)standardScrollBar.Template.FindName("PART_Track", standardScrollBar)
+			?? throw new InvalidOperationException("The standard vertical scrollbar track was not found.");
+		RegressionAssert.Equal(new Thickness(0, 4, 0, 4), standardTrack.Margin);
+	}
+
+	public void OverrideModGridStartsAtNameWithoutALoadOrderPlaceholder()
+	{
+		var resources = new ResourceDictionary
+		{
+			Source = new Uri(
+				"pack://application:,,,/Redux;component/Themes/MainResourceDictionary.xaml",
+				UriKind.Absolute)
+		};
+		var view = (GridView)resources["OverrideModGridView"];
+		var headers = view.Columns.Select(column => column.Header switch
+		{
+			string header => header,
+			TextBlock textBlock => textBlock.Text,
+			_ => String.Empty
+		}).ToArray();
+
+		RegressionAssert.Equal("Name", headers[0]);
+		RegressionAssert.False(headers.Contains("#", StringComparer.OrdinalIgnoreCase));
+		RegressionAssert.True(view.AllowsColumnReorder);
+		RegressionAssert.True(ReferenceEquals(
+			resources["ReduxModColumnHeaderStyle"],
+			view.ColumnHeaderContainerStyle));
+	}
+
+	public void OverridePaneUsesTheSharedListInteractionSetup()
+	{
+		Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+		var layout = new HorizontalModLayout();
+		var panes = new[] { layout.ActiveModsView, layout.InactiveModsView, layout.ForceLoadedModsView };
+		// The shared chrome must still create the Override/drawer arrow when
+		// those buttons have no content, and keep its expanded state binding.
+		var toggle = new ToggleButton { Style = (Style)layout.FindResource("ModDetailsToggleStyle"), IsChecked = true };
+		var reduceMotion = ReduxWindowBehavior.ReduceMotion;
+		try
+		{
+			ReduxWindowBehavior.ConfigureAccessibility(true, ReduxWindowBehavior.BackgroundEffectsDisabled);
+			void ArrangeToggle()
+			{
+				toggle.Measure(new Size(30, 28)); toggle.Arrange(new Rect(0, 0, 30, 28)); toggle.UpdateLayout();
+				Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ContextIdle);
+				// Let the animation manager replace the previous trigger's clock.
+				var frame = new DispatcherFrame();
+				var timer = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromMilliseconds(40) };
+				timer.Tick += (_, _) => { timer.Stop(); frame.Continue = false; };
+				timer.Start(); Dispatcher.PushFrame(frame);
+			}
+			ArrangeToggle();
+			var glyph = toggle.FindVisualChildren<System.Windows.Shapes.Path>().Single();
+			RegressionAssert.Equal(0d, ((RotateTransform)glyph.RenderTransform).Angle);
+			toggle.IsChecked = false; ArrangeToggle();
+			RegressionAssert.Equal(180d, ((RotateTransform)glyph.RenderTransform).Angle);
+			toggle.IsChecked = true; ArrangeToggle();
+			RegressionAssert.Equal(0d, ((RotateTransform)glyph.RenderTransform).Angle);
+		}
+		finally { ReduxWindowBehavior.ConfigureAccessibility(reduceMotion, ReduxWindowBehavior.BackgroundEffectsDisabled); }
+
+		foreach (var pane in panes)
+		{
+			var gestures = pane.InputBindings.OfType<KeyBinding>()
+				.Select(binding => binding.Gesture)
+				.OfType<KeyGesture>()
+				.Select(gesture => (gesture.Key, gesture.Modifiers))
+				.ToHashSet();
+			RegressionAssert.True(gestures.Contains((Key.A, ModifierKeys.Control)));
+			RegressionAssert.True(gestures.Contains((Key.D, ModifierKeys.Control)));
+		}
 	}
 
 	public void DrawerRetainsASelectedModDuringCrossListTransferOnly()
@@ -257,6 +431,100 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.False(ReferenceEquals(saved.VisualDividers, working.VisualDividers));
 	}
 
+	public void GlobalSeparatorsKeepIndependentPerOrderPlacements()
+	{
+		var dividers = new[]
+		{
+			new ModListVisualDividerData
+			{
+				Id = "global", Title = "Everywhere", IsActiveList = true, IsGlobal = true,
+				ParentDividerId = "global-parent"
+			},
+			new ModListVisualDividerData
+			{
+				Id = "local", Title = "This order", IsActiveList = true
+			}
+		};
+
+		var snapshot = LoadOrderPersistencePolicy.CloneActiveVisualDividers(dividers);
+		var savedPlacement = new ModListVisualDividerData
+		{
+			Id = "global", Title = "Old copied title", IsActiveList = true, IsGlobal = true,
+			Position = 7, IsCollapsed = true, MemberModUuids = ["order-specific-mod"]
+		};
+		var restored = LoadOrderPersistencePolicy.MergeGlobalDividerPlacement(dividers[0], savedPlacement);
+
+		RegressionAssert.Equal(2, snapshot.Count);
+		RegressionAssert.True(snapshot.Single(divider => divider.Id == "global").IsGlobal);
+		RegressionAssert.Equal("global-parent", snapshot.Single(divider => divider.Id == "global").ParentDividerId);
+		RegressionAssert.Equal("Everywhere", restored.Title);
+		RegressionAssert.Equal("global-parent", restored.ParentDividerId);
+		RegressionAssert.Equal(7, restored.Position);
+		RegressionAssert.True(restored.IsCollapsed);
+		RegressionAssert.SequenceEqual(new[] { "order-specific-mod" }, restored.MemberModUuids);
+	}
+
+	public void PersistentSeparatorUpgradeOnlyTargetsExistingActiveSeparators()
+	{
+		var dividers = new[]
+		{
+			new ModListVisualDividerData { Id = "active-a", IsActiveList = true },
+			new ModListVisualDividerData { Id = "active-b", IsActiveList = true, IsGlobal = true },
+			new ModListVisualDividerData { Id = "inactive", IsActiveList = false }
+		};
+
+		RegressionAssert.False(PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(false, []));
+		RegressionAssert.False(PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(true, dividers));
+		RegressionAssert.True(PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(false, dividers));
+		RegressionAssert.Equal(1, PersistentSeparatorUpgradePolicy.MakeAllActiveSeparatorsPersistent(dividers));
+		RegressionAssert.True(dividers.Single(divider => divider.Id == "active-a").IsGlobal);
+		RegressionAssert.True(dividers.Single(divider => divider.Id == "active-b").IsGlobal);
+		RegressionAssert.False(dividers.Single(divider => divider.Id == "inactive").IsGlobal);
+	}
+
+	public void SeparatorUpgradeTracksOrdersAndPreservesNewSeparators()
+	{
+		var first = new DivinityLoadOrder { Name = "First", FilePath = @"C:\Orders\first.json",
+			VisualDividers = [new() { Id = "first", IsActiveList = true, Position = 3, MemberModUuids = ["mod-a"] }] };
+		var second = new DivinityLoadOrder { Name = "Second", FilePath = @"C:\Orders\second.json",
+			VisualDividers = [new() { Id = "second", IsActiveList = true, IsGlobal = true }] };
+		var empty = new DivinityLoadOrder { Name = "New user", VisualDividers = [] };
+		var pending = PersistentSeparatorUpgradePolicy.SnapshotExistingOrders([first, second, empty], first, first.VisualDividers);
+		RegressionAssert.Equal(2, pending.Count);
+		first.VisualDividers.Add(new() { Id = "created-after-update", IsActiveList = true });
+		var eligible = PersistentSeparatorUpgradePolicy.EligibleSeparators(first.VisualDividers, pending[PersistentSeparatorUpgradePolicy.OrderKey(first)]);
+		RegressionAssert.Equal(1, eligible.Count);
+		RegressionAssert.Equal(1, PersistentSeparatorUpgradePolicy.MakeAllActiveSeparatorsPersistent(eligible));
+		RegressionAssert.Equal(1, PersistentSeparatorUpgradePolicy.DisableExistingLines(eligible));
+		RegressionAssert.Equal(3, eligible[0].Position);
+		RegressionAssert.SequenceEqual(new[] { "mod-a" }, eligible[0].MemberModUuids);
+		RegressionAssert.False(first.VisualDividers[1].IsGlobal);
+		RegressionAssert.False(first.VisualDividers[1].HideLine);
+		pending.Remove(PersistentSeparatorUpgradePolicy.OrderKey(first));
+		var settings = new DivinityModManagerSettings { PendingSeparatorUpgradeOrders = pending };
+		var restored = Newtonsoft.Json.JsonConvert.DeserializeObject<DivinityModManagerSettings>(Newtonsoft.Json.JsonConvert.SerializeObject(settings));
+		RegressionAssert.False(restored!.PendingSeparatorUpgradeOrders.ContainsKey(PersistentSeparatorUpgradePolicy.OrderKey(first)));
+		RegressionAssert.True(restored.PendingSeparatorUpgradeOrders.ContainsKey(PersistentSeparatorUpgradePolicy.OrderKey(second)));
+		// Startup copies only reactive properties into the existing settings object.
+		var runtimeSettings = new DivinityModManagerSettings();
+		runtimeSettings.SetFrom<DivinityModManagerSettings, ReactiveUI.Fody.Helpers.ReactiveAttribute>(restored);
+		RegressionAssert.True(runtimeSettings.PendingSeparatorUpgradeOrders != null);
+		RegressionAssert.False(runtimeSettings.PendingSeparatorUpgradeOrders!.ContainsKey(PersistentSeparatorUpgradePolicy.OrderKey(first)));
+		RegressionAssert.True(runtimeSettings.PendingSeparatorUpgradeOrders.ContainsKey(PersistentSeparatorUpgradePolicy.OrderKey(second)));
+		// An empty snapshot means every existing order has answered, not a fresh migration.
+		pending.Clear();
+		var serializer = new Newtonsoft.Json.JsonSerializerSettings { DefaultValueHandling = Newtonsoft.Json.DefaultValueHandling.IgnoreAndPopulate };
+		restored = Newtonsoft.Json.JsonConvert.DeserializeObject<DivinityModManagerSettings>(Newtonsoft.Json.JsonConvert.SerializeObject(settings, serializer), serializer)!;
+		runtimeSettings.SetFrom<DivinityModManagerSettings, ReactiveUI.Fody.Helpers.ReactiveAttribute>(restored);
+		RegressionAssert.True(runtimeSettings.PendingSeparatorUpgradeOrders != null);
+		RegressionAssert.Equal(0, runtimeSettings.PendingSeparatorUpgradeOrders!.Count);
+		// Already-persistent orders can still opt out of legacy lines.
+		RegressionAssert.True(PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(false, second.VisualDividers));
+		RegressionAssert.Equal(1, PersistentSeparatorUpgradePolicy.DisableExistingLines(second.VisualDividers));
+		RegressionAssert.False(PersistentSeparatorUpgradePolicy.ShouldOfferUpgrade(false, second.VisualDividers));
+		RegressionAssert.Equal(0, PersistentSeparatorUpgradePolicy.SnapshotExistingOrders([empty], empty, []).Count);
+	}
+
 	public void SavedCurrentStateRestoresIntoTheSingleCurrentEntry()
 	{
 		var current = new DivinityLoadOrder
@@ -279,6 +547,26 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.True(current.IsModSettings);
 		RegressionAssert.Equal(1, current.Order.Count);
 		RegressionAssert.Equal("saved-working-order", current.Order[0].UUID);
+	}
+
+	public void NewerGameOrderKeepsCurrentWorkspaceSeparators()
+	{
+		var current = new DivinityLoadOrder
+		{
+			Name = "Current",
+			IsModSettings = true,
+			Order = [new DivinityLoadOrderEntry { UUID = "newer-game-order" }]
+		};
+		var savedState = new DivinityLoadOrder
+		{
+			Order = [new DivinityLoadOrderEntry { UUID = "older-working-order" }],
+			VisualDividers = [new ModListVisualDividerData { Id = "current-separator", IsActiveList = true }]
+		};
+
+		RegressionAssert.True(LoadOrderPersistencePolicy.RestoreSavedCurrentState(current, savedState,
+			restoreOrder: false));
+		RegressionAssert.Equal("newer-game-order", current.Order.Single().UUID);
+		RegressionAssert.Equal("current-separator", current.VisualDividers.Single().Id);
 	}
 
 	public void DuplicateWandChoiceNormalizesToTheSingleVisibleIcon()
@@ -325,6 +613,75 @@ public sealed class InteractionBehaviorTests
 			brush is SolidColorBrush solid
 				? solid.Color
 				: throw new InvalidOperationException($"The {surface} did not resolve a solid semantic background brush.");
+	}
+
+	public void SeparatorEditorAllowsLongLabelsWithoutChangingCategoryLimit()
+	{
+		Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+		var separator = new CategoryNameDialog(visualDividerMode: true);
+		var category = new CategoryNameDialog();
+		try
+		{
+			var separatorName = (TextBox)separator.FindName("CategoryNameTextBox");
+			var categoryName = (TextBox)category.FindName("CategoryNameTextBox");
+			RegressionAssert.Equal(0, separatorName.MaxLength);
+			RegressionAssert.True(separator.HideSeparatorLine);
+			((CheckBox)separator.FindName("ShowSeparatorLineCheckBox")).IsChecked = true;
+			RegressionAssert.False(separator.HideSeparatorLine);
+			RegressionAssert.Equal(40, categoryName.MaxLength);
+		}
+		finally
+		{
+			separator.Close();
+			category.Close();
+		}
+	}
+
+	public void ModNameTemplateHonorsThePerModFileNameToggle()
+	{
+		Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+		var layout = new HorizontalModLayout();
+		var mod = new DivinityModData
+		{
+			UUID = "7a1731b4-1cc9-4495-9f4f-4e47c3eaf2ef",
+			Name = "Local module",
+			FilePath = @"C:\Mods\InstalledPackage.pak",
+			HasMetadata = true,
+			OnlineMetadataEnabled = true,
+			NexusModsEnabled = true
+		};
+		mod.NexusModsData.Update(new NexusModsModData
+		{
+			UUID = mod.UUID,
+			ModId = 12345,
+			Name = "Provider project title",
+			MetadataOrigin = NexusMetadataOrigin.Manual
+		});
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+
+		var template = (DataTemplate)layout.FindResource("ModNameTemplate");
+		var root = (FrameworkElement)template.LoadContent();
+		root.DataContext = mod;
+		root.Measure(new Size(500, 40));
+		root.Arrange(new Rect(0, 0, 500, 40));
+		root.UpdateLayout();
+		var name = (TextBlock?)root.FindName("ModNameText")
+			?? throw new InvalidOperationException("The mod name template did not create its text element.");
+
+		RegressionAssert.Equal("Provider project title", name.Text);
+		mod.CustomAlias = "My local alias";
+		mod.HasCustomAlias = true;
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		RegressionAssert.Equal("My local alias", name.Text);
+		mod.DisplayFileForName = true;
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		RegressionAssert.Equal("InstalledPackage.pak", name.Text);
+		mod.DisplayFileForName = false;
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		RegressionAssert.Equal("My local alias", name.Text);
+		mod.HasCustomAlias = false;
+		Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.Background);
+		RegressionAssert.Equal("Provider project title", name.Text);
 	}
 
 	public void PreferencesAndEditorActionsUseModernChromeAndLabeledIcons()
