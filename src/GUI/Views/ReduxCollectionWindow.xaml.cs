@@ -277,7 +277,7 @@ public partial class ReduxCollectionWindow : AdonisUI.Controls.AdonisWindow
         _sessionDirty = false;
         _preview = null; _collectionOrder = null; _downloadProgress = null; _openedGuideItem = null; DownloadGuidePanel.Visibility = Visibility.Collapsed; SaveOrderButton.ToolTip = "Import a collection to check whether it includes a BG3 load order."; PresentFiles(Array.Empty<CollectionFileChoice>()); Heading.Text = "Add a Nexus collection"; CollectionSummary.Text = ""; CollectionImage.Source = null; CollectionImage.Visibility = Visibility.Collapsed;
         if (!NexusCollectionLink.TryParse(LinkBox.Text, out var link)) { StatusText.Text = "Enter a Baldur’s Gate 3 Nexus collection link."; return; }
-        if (!_viewModel.Modules.SourceIntegrationsEnabled) { StatusText.Text = "Enable online mod information in Preferences to load collections."; return; }
+        if (!_viewModel.Modules.SourceIntegrationsEnabled) { StatusText.Text = "In Preferences > General > Optional features, turn off 'Disable online mod information' to load collections."; return; }
         Busy(true); StatusText.Text = "Loading collection…";
         try
         {

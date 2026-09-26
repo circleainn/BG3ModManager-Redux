@@ -581,7 +581,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private bool ModListRejectsDrop(ListView listView)
 	{
 		if (listView == ActiveModsListView)
-			return ViewModel.IsActiveListMetadataSorted || ViewModel.DragHandler?.CanDropOnPane(true) == false;
+			return !ViewModel.IsDraggingHeldOverride && ViewModel.IsActiveListMetadataSorted ||
+				ViewModel.DragHandler?.CanDropOnPane(true) == false;
 		if (listView == InactiveModsListView)
 			return ViewModel.IsInactiveListMetadataSorted || ViewModel.DragHandler?.CanDropOnPane(false) == false;
 		if (listView == ForceLoadedModsListView)
@@ -616,6 +617,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			ClearModListDropIndicator();
 			e.Effects = DragDropEffects.None;
 			e.Handled = true;
+			return;
+		}
+		if (listView == ActiveModsListView && ViewModel.IsDraggingHeldOverride)
+		{
+			ClearModListDropIndicator();
 			return;
 		}
 
@@ -3182,8 +3188,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private void ClampExpandedOverrideModsHeight()
 	{
-		if (ViewModel?.ShowOverrideModsPane != true
-			|| ViewModel.IsAlwaysLoadedExpanded != true && ViewModel.IsDraggingHeldOverride != true) return;
+		if (ViewModel?.ShowOverrideModsPane != true || ViewModel.IsAlwaysLoadedExpanded != true) return;
 		var maximumHeight = GetMaximumExpandedOverrideModsHeight();
 		if (ActiveModsListForcedModsRow.Height.IsAbsolute && ActiveModsListForcedModsRow.Height.Value > maximumHeight)
 			ActiveModsListForcedModsRow.Height = new GridLength(maximumHeight);
@@ -3228,7 +3233,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private async void UpdateOverrideModsLayout(bool hasAlwaysLoadedMods, bool isExpanded)
 	{
 		var showContents = hasAlwaysLoadedMods && isExpanded;
-		if (!IsLoaded || !hasAlwaysLoadedMods || ActiveModsListForcedModsRow.ActualHeight <= 0)
+		if (!IsLoaded || !hasAlwaysLoadedMods)
 		{
 			ApplyOverrideModsLayout(hasAlwaysLoadedMods, showContents);
 			return;
@@ -3275,12 +3280,18 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			showContents ? 1 : 0,
 			value => OverrideModsFilterHost.Opacity = value,
 			token);
-		var completed = await System.Threading.Tasks.Task.WhenAll(heightTransition, filterTransition);
+		var shellTransition = AnimatePanelValueAsync(
+			AlwaysLoadedSectionShell.Opacity,
+			1,
+			value => AlwaysLoadedSectionShell.Opacity = value,
+			token);
+		var completed = await System.Threading.Tasks.Task.WhenAll(heightTransition, filterTransition, shellTransition);
 		if (completed.All(value => value)) ApplyOverrideModsLayout(hasAlwaysLoadedMods, showContents);
 	}
 
 	private void ApplyOverrideModsLayout(bool hasAlwaysLoadedMods, bool showContents)
 	{
+		AlwaysLoadedSectionShell.Opacity = hasAlwaysLoadedMods ? 1 : 0;
 		ForceLoadedModsListView.Visibility = BoolToVisibilityConverter.FromBool(showContents);
 		ActiveModListViewGridSplitter.Visibility = BoolToVisibilityConverter.FromBool(showContents);
 		OverrideModsFilterHost.Opacity = showContents ? 1 : 0;
@@ -3751,12 +3762,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				d(this.OneWayBind(ViewModel, vm => vm.InactiveSelectedText, v => v.InactiveSelectedText.Text));
 				d(this.OneWayBind(ViewModel, vm => vm.InactiveSelected, v => v.InactiveSelectedText.Visibility, IntToVisibilityConverter.FromInt));
 
-				d(ViewModel.WhenAnyValue(x => x.ShowOverrideModsPane, x => x.IsAlwaysLoadedExpanded,
-					x => x.IsDraggingHeldOverride)
+				d(ViewModel.WhenAnyValue(x => x.ShowOverrideModsPane, x => x.IsAlwaysLoadedExpanded)
 					.ObserveOn(RxApp.MainThreadScheduler).Subscribe((state) =>
-				{
-					UpdateOverrideModsLayout(state.Item1, state.Item2 || state.Item3);
-				}));
+					{
+						UpdateOverrideModsLayout(state.Item1, state.Item2);
+					}));
 
 				ViewModel.Keys.MoveFocusLeft.AddAction(() =>
 				{

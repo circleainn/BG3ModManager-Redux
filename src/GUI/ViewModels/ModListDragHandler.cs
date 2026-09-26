@@ -66,6 +66,7 @@ public class ModListDragHandler : DefaultDragHandler
 	public bool CanDropOnPane(bool active)
 	{
 		var items = (_lastDragInfo?.Data as IEnumerable<DivinityModData>)?.ToArray() ?? [];
+		if (active && _viewModel.IsDraggingHeldOverride) return true;
 		if (active && (_viewModel.IsOverrideVisualModCollection(_lastDragInfo?.SourceCollection) ||
 			items.Any(mod => mod.IsForceLoaded))) return false;
 		if (!active && _viewModel.IsOverrideVisualModCollection(_lastDragInfo?.SourceCollection))

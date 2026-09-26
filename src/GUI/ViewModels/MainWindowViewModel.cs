@@ -4369,7 +4369,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		if (!Modules.SourceIntegrationsEnabled || !DivinityApp.NexusModsEnabled ||
 			String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey))
 		{
-			ShowAlert("Enable Nexus source integration and add an API key in Preferences to check this file.", AlertType.Warning, 18);
+			ShowAlert(!Modules.SourceIntegrationsEnabled
+				? "In Preferences > General > Optional features, turn off 'Disable online mod information' to check Nexus files."
+				: !DivinityApp.NexusModsEnabled
+					? "Nexus Mods support is unavailable in this build."
+					: "Add a Nexus Mods API key in Preferences > General > Online accounts to check this file.", AlertType.Warning, 18);
 			return;
 		}
 		if (mod.NexusModsData.ModId < DivinityApp.NEXUSMODS_MOD_ID_START || mod.NexusModsData.LastFileId <= 0)
@@ -4390,7 +4394,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 		if (!Modules.SourceIntegrationsEnabled && !UpdateHandler.Workshop.IsEnabled && !UpdateHandler.Github.IsEnabled)
 		{
-			ModUpdateCheckStatus = "Enable source integrations in Preferences to check mod sources.";
+			ModUpdateCheckStatus = "In Preferences > General > Optional features, turn off 'Disable online mod information' to check mod sources.";
 			ShowAlert(ModUpdateCheckStatus, AlertType.Warning, 18);
 			return;
 		}
@@ -12983,8 +12987,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				&& IsInstalledOverridePath(x.FilePath))
 			.Count().StartWith(0).Select(x => x > 0)
 			.ToProperty(this, nameof(HasForceLoadedMods), false, true, RxApp.MainThreadScheduler);
-		_showOverrideModsPane = this.WhenAnyValue(x => x.HasForceLoadedMods, x => x.IsDraggingHeldOverride,
-			(hasEnabledOverride, draggingHeldOverride) => hasEnabledOverride || draggingHeldOverride)
+		_showOverrideModsPane = this.WhenAnyValue(x => x.HasForceLoadedMods)
 			.ToProperty(this, nameof(ShowOverrideModsPane), false, true, RxApp.MainThreadScheduler);
 		((INotifyCollectionChanged)ForceLoadedMods).CollectionChanged += (_, _) =>
 		{
