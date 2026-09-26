@@ -3,9 +3,12 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
-## Unreleased
+## 0.1.0-alpha.16.5.2 — 2026-09-26
+
+A silent maintenance hotfix carrying forward all alpha.16.5.1 fixes.
 
 - Allow packages that override game files and also have a normal load-order entry to move into Active Mods. Pure Override PAKs continue to use Override Mods.
+- Retain the alpha.16.5.1 corrections for linked BG3 Mods folders, held Override activation, separator layout, nested menus, and mod-update checks.
 
 ## 0.1.0-alpha.16.5.1 — 2026-09-26
 
