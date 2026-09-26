@@ -5,7 +5,7 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: September 25, 2026. Release line: `0.1.0-alpha.16.5`.
+Last reviewed: September 26, 2026. Release line: `0.1.0-alpha.16.5.1`.
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -89,7 +89,7 @@ mods, and never saves or syncs automatically.
 |:--|:--|
 | Product | Baldur's Gate 3 Mod Manager Redux |
 | Short name | Redux |
-| Latest version | `0.1.0-alpha.16.5` |
+| Latest version | `0.1.0-alpha.16.5.1` |
 | Lifecycle | Public alpha |
 | Supported platform | Windows 10/11 x64 |
 | Required runtime | .NET 8 Desktop Runtime |
@@ -99,7 +99,7 @@ mods, and never saves or syncs automatically.
 | Update channel | `public-alpha` |
 | Active milestone | `v0.1.0 – Public Alpha` |
 
-The release tag is `v0.1.0-alpha.16.5`. Always verify the live branches and releases before
+The release tag is `v0.1.0-alpha.16.5.1`. Always verify the live branches and releases before
 preparing another publication.
 
 ## What Redux is
