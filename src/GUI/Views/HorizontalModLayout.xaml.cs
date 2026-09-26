@@ -3233,6 +3233,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private async void UpdateOverrideModsLayout(bool hasAlwaysLoadedMods, bool isExpanded)
 	{
 		var showContents = hasAlwaysLoadedMods && isExpanded;
+		_overrideModsTransition?.Cancel();
 		if (!IsLoaded || !hasAlwaysLoadedMods)
 		{
 			ApplyOverrideModsLayout(hasAlwaysLoadedMods, showContents);
@@ -3241,10 +3242,17 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (!showContents)
 			RememberExpandedOverrideModsHeight();
 
-		_overrideModsTransition?.Cancel();
 		_overrideModsTransition = new System.Threading.CancellationTokenSource();
 		var token = _overrideModsTransition.Token;
-		var startHeight = ActiveModsListForcedModsRow.ActualHeight;
+		var revealing = AlwaysLoadedSectionShell.Visibility != Visibility.Visible;
+		if (revealing)
+		{
+			ActiveModsListForcedModsRow.Height = new GridLength(0);
+			ActiveModsListForcedModsRow.MinHeight = 0;
+			AlwaysLoadedSectionShell.Opacity = 0;
+			AlwaysLoadedSectionShell.Visibility = Visibility.Visible;
+		}
+		var startHeight = revealing ? 0 : ActiveModsListForcedModsRow.ActualHeight;
 
 		ActiveModsListRow.Height = new GridLength(1, GridUnitType.Star);
 		ActiveModsListForcedModsRow.MinHeight = 0;
@@ -3292,6 +3300,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private void ApplyOverrideModsLayout(bool hasAlwaysLoadedMods, bool showContents)
 	{
 		AlwaysLoadedSectionShell.Opacity = hasAlwaysLoadedMods ? 1 : 0;
+		AlwaysLoadedSectionShell.Visibility = hasAlwaysLoadedMods ? Visibility.Visible : Visibility.Collapsed;
 		ForceLoadedModsListView.Visibility = BoolToVisibilityConverter.FromBool(showContents);
 		ActiveModListViewGridSplitter.Visibility = BoolToVisibilityConverter.FromBool(showContents);
 		OverrideModsFilterHost.Opacity = showContents ? 1 : 0;
@@ -3748,7 +3757,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					.Subscribe(_ => UpdateSeparatorBulkToggleButtons()));
 				UpdateSeparatorBulkToggleButtons();
 
-				d(this.OneWayBind(ViewModel, vm => vm.ShowOverrideModsPane, v => v.AlwaysLoadedSectionShell.Visibility, BoolToVisibilityConverter.FromBool));
 				d(this.Bind(ViewModel, vm => vm.ActiveModFilterText, v => v.ActiveModsFilterTextBox.Text));
 				d(this.Bind(ViewModel, vm => vm.InactiveModFilterText, v => v.InactiveModsFilterTextBox.Text));
 

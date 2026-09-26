@@ -1941,7 +1941,7 @@
 					Style="{StaticResource ReduxHorizontalSplitterStyle}"
 					ToolTip="Drag to resize Active and Override Mods"
 					Visibility="Collapsed" />
-				<Border x:Name="AlwaysLoadedSectionShell" Grid.Row="2" Margin="6,1,6,6"
+				<Border x:Name="AlwaysLoadedSectionShell" Grid.Row="2" Margin="6,1,6" Visibility="Collapsed"
 					Background="{DynamicResource ReduxSurfaceBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}"
 					BorderThickness="1"
