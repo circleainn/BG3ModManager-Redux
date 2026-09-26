@@ -3182,7 +3182,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private void ClampExpandedOverrideModsHeight()
 	{
-		if (ViewModel?.HasForceLoadedMods != true || ViewModel.IsAlwaysLoadedExpanded != true) return;
+		if (ViewModel?.ShowOverrideModsPane != true
+			|| ViewModel.IsAlwaysLoadedExpanded != true && ViewModel.IsDraggingHeldOverride != true) return;
 		var maximumHeight = GetMaximumExpandedOverrideModsHeight();
 		if (ActiveModsListForcedModsRow.Height.IsAbsolute && ActiveModsListForcedModsRow.Height.Value > maximumHeight)
 			ActiveModsListForcedModsRow.Height = new GridLength(maximumHeight);
@@ -3736,7 +3737,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					.Subscribe(_ => UpdateSeparatorBulkToggleButtons()));
 				UpdateSeparatorBulkToggleButtons();
 
-				d(this.OneWayBind(ViewModel, vm => vm.HasForceLoadedMods, v => v.AlwaysLoadedSectionShell.Visibility, BoolToVisibilityConverter.FromBool));
+				d(this.OneWayBind(ViewModel, vm => vm.ShowOverrideModsPane, v => v.AlwaysLoadedSectionShell.Visibility, BoolToVisibilityConverter.FromBool));
 				d(this.Bind(ViewModel, vm => vm.ActiveModFilterText, v => v.ActiveModsFilterTextBox.Text));
 				d(this.Bind(ViewModel, vm => vm.InactiveModFilterText, v => v.InactiveModsFilterTextBox.Text));
 
@@ -3750,10 +3751,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				d(this.OneWayBind(ViewModel, vm => vm.InactiveSelectedText, v => v.InactiveSelectedText.Text));
 				d(this.OneWayBind(ViewModel, vm => vm.InactiveSelected, v => v.InactiveSelectedText.Visibility, IntToVisibilityConverter.FromInt));
 
-				d(ViewModel.WhenAnyValue(x => x.HasForceLoadedMods, x => x.IsAlwaysLoadedExpanded)
+				d(ViewModel.WhenAnyValue(x => x.ShowOverrideModsPane, x => x.IsAlwaysLoadedExpanded,
+					x => x.IsDraggingHeldOverride)
 					.ObserveOn(RxApp.MainThreadScheduler).Subscribe((state) =>
 				{
-					UpdateOverrideModsLayout(state.Item1, state.Item2);
+					UpdateOverrideModsLayout(state.Item1, state.Item2 || state.Item3);
 				}));
 
 				ViewModel.Keys.MoveFocusLeft.AddAction(() =>

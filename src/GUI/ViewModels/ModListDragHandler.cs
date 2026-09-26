@@ -88,6 +88,7 @@ public class ModListDragHandler : DefaultDragHandler
 	private void StopDragTracking()
 	{
 		_viewModel.IsDragging = false;
+		_viewModel.IsDraggingHeldOverride = false;
 		IsDraggingVisualDivider = false;
 		_stopDraggingFallbackTask?.Dispose();
 		_stopDraggingFallbackTask = null;
@@ -173,6 +174,11 @@ public class ModListDragHandler : DefaultDragHandler
 			}
 			if (dragInfo.Data != null)
 			{
+			var draggedMods = (dragInfo.Data as IEnumerable<DivinityModData>)?.ToArray() ?? [];
+			_viewModel.IsDraggingHeldOverride = draggedMods.Length > 0
+				&& draggedMods.All(mod => mod.IsHeldOverride && mod.IsForceLoaded
+					&& !mod.IsForceLoadedMergedMod && !mod.IsVisualDivider)
+				&& draggedMods.All(mod => _viewModel.DisplayInactiveMods.Contains(mod));
 				IsDraggingVisualDivider = dragInfo.Data is IEnumerable<DivinityModData> draggedItems &&
 					VisualDividerDragPolicy.ContainsVisualDivider(draggedItems);
 				_viewModel.IsDragging = true;

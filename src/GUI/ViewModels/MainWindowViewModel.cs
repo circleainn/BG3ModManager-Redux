@@ -413,6 +413,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private readonly ObservableAsPropertyHelper<bool> _hasForceLoadedMods;
 	public bool HasForceLoadedMods => _hasForceLoadedMods.Value;
+	private readonly ObservableAsPropertyHelper<bool> _showOverrideModsPane;
+	public bool ShowOverrideModsPane => _showOverrideModsPane.Value;
+	[Reactive] public bool IsDraggingHeldOverride { get; set; }
 
 	[Reactive] public bool IsDeletingFiles { get; private set; }
 
@@ -12976,9 +12979,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 		_hasForceLoadedMods = modsConnection.AutoRefresh(x => x.FilePath)
 			.AutoRefresh(x => x.IsForceLoaded)
-			.Filter(x => x.IsForceLoaded && !x.IsForceLoadedMergedMod && !x.ForceAllowInLoadOrder)
+			.Filter(x => x.IsForceLoaded && !x.IsForceLoadedMergedMod && !x.ForceAllowInLoadOrder
+				&& IsInstalledOverridePath(x.FilePath))
 			.Count().StartWith(0).Select(x => x > 0)
 			.ToProperty(this, nameof(HasForceLoadedMods), false, true, RxApp.MainThreadScheduler);
+		_showOverrideModsPane = this.WhenAnyValue(x => x.HasForceLoadedMods, x => x.IsDraggingHeldOverride,
+			(hasEnabledOverride, draggingHeldOverride) => hasEnabledOverride || draggingHeldOverride)
+			.ToProperty(this, nameof(ShowOverrideModsPane), false, true, RxApp.MainThreadScheduler);
 		((INotifyCollectionChanged)ForceLoadedMods).CollectionChanged += (_, _) =>
 		{
 			if (_updatingVisualModLists) return;
