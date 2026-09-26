@@ -5,7 +5,7 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: September 22, 2026. Published baseline: `v0.1.0-alpha.16.4.4` at `e663ef9`.
+Last reviewed: September 25, 2026. Release line: `0.1.0-alpha.16.5`.
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -14,7 +14,7 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 
 ## Development status
 
-Post-16.4.4 development adds optional cross-order separator presentation with independent
+Alpha.16.5 adds optional cross-order separator presentation with independent
 per-order placement, a reversible one-time upgrade prompt for existing separators, and a compact
 category/separator editor that accepts opaque or non-square images. Separators now support one
 explicit child level in both mod panes, with a shared nesting gutter that aligns parent controls, child controls, and indented names without shifting table columns, parent-wide collapse, hierarchy-aware block moves,
@@ -47,7 +47,7 @@ Collection previews compare exact Nexus mod/file IDs against existing PAKs in bo
 
 The accumulated work shipped in the alpha.16.4 update. Dev runs build and regression
 checks but publishes no downloadable portable build or release; main owns public releases.
-The Unreleased changelog is reserved for work after the 16.4.4 maintenance release.
+The [16.5 changelog](CHANGELOG.md) records the changes after the 16.4.4 maintenance release.
 
 Alpha.16.4.1 fixes separator regressions reported in #121 and #123: filtered views hide separators,
 bulk collapse/expand no longer fades the whole recycled list, established sections re-anchor to their
@@ -76,7 +76,8 @@ local to each Redux installation; changing to another folder does not migrate th
 The September 15 reports cover separate causes rather than one common regression. Alpha.16.4.3
 addresses the reproducible load-order action, startup selection, source-link targeting, credential,
 and thumbnail retry paths. Remaining sync-specific and missing-source-image reports still require
-their own evidence. See [the next-update audit](NEXT_UPDATE_AUDIT.md) for current issue status.
+their own evidence. See the [historical post-16.4.4 audit](NEXT_UPDATE_AUDIT.md) for the earlier triage;
+the 16.5 changelog records the newer candidate fixes.
 
 ## Current release
 
@@ -88,7 +89,7 @@ mods, and never saves or syncs automatically.
 |:--|:--|
 | Product | Baldur's Gate 3 Mod Manager Redux |
 | Short name | Redux |
-| Latest version | `0.1.0-alpha.16.4.4` |
+| Latest version | `0.1.0-alpha.16.5` |
 | Lifecycle | Public alpha |
 | Supported platform | Windows 10/11 x64 |
 | Required runtime | .NET 8 Desktop Runtime |
@@ -98,7 +99,7 @@ mods, and never saves or syncs automatically.
 | Update channel | `public-alpha` |
 | Active milestone | `v0.1.0 – Public Alpha` |
 
-The maintenance release tag is `v0.1.0-alpha.16.4.4`. Always verify the live branches and releases before
+The release tag is `v0.1.0-alpha.16.5`. Always verify the live branches and releases before
 preparing another publication.
 
 ## What Redux is

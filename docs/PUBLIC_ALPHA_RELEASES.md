@@ -7,7 +7,7 @@ the exact files published on GitHub and Nexus Mods.
 ## Release artifacts
 
 `0.1.0-alpha.15` was the first Redux public-alpha version; `0.1.0-alpha.16.4.4` closed the
-alpha.16.4 maintenance series before the alpha.16.5 candidate.
+alpha.16.4 maintenance series before alpha.16.5.
 Each public alpha has an immutable version and a matching Git tag such as
 `v0.1.0-alpha.16.2`. A correction to an already-published alpha uses a hotfix suffix such as
 `0.1.0-alpha.16.1`, then `.16.2`; a quiet correction to one of those hotfixes may add a maintenance

@@ -3,9 +3,9 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
-## 0.1.0-alpha.16.5 — release candidate
+## 0.1.0-alpha.16.5 — 2026-09-25
 
-The next alpha focuses on organizing mod lists, managing Overrides and native plugins, and making updates and storage easier to control.
+Alpha.16.5 focuses on organizing mod lists, managing Overrides and native plugins, and making updates and storage easier to control.
 
 ### Added
 

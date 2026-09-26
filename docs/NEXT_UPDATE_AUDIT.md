@@ -1,4 +1,7 @@
-# Post-16.4.4 issue audit
+# Historical post-16.4.4 issue audit
+
+This audit records the pre-16.5 triage. The [16.5 changelog](CHANGELOG.md) supersedes rows for
+features and fixes that were subsequently implemented.
 
 Updated September 15, 2026 against the published `v0.1.0-alpha.16.4.4` baseline at `e663ef9`,
 current issue bodies/discussions, and the September 14–15 [Nexus reports](https://www.nexusmods.com/baldursgate3/mods/23799?tab=posts).
