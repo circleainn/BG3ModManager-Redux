@@ -4411,6 +4411,15 @@
 	</DataTemplate>
 	<DataTemplate x:Key="ModNameTemplate" DataType="{x:Type data:DivinityModData}">
 		<controls:ModEntryGrid>
+			<controls:ModEntryGrid.Style>
+				<Style TargetType="{x:Type controls:ModEntryGrid}">
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding IsInsideChildVisualDivider}" Value="True">
+							<Setter Property="Margin" Value="{Binding ChildModNameInset, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}"/>
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</controls:ModEntryGrid.Style>
 			<controls:ModEntryGrid.ColumnDefinitions>
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
@@ -4427,9 +4436,7 @@
 					<Style BasedOn="{StaticResource Redux.Text.ListPrimary}" TargetType="{x:Type TextBlock}">
 						<Setter Property="Text" Value="{Binding ListDisplayTitle}" />
 						<Style.Triggers>
-                            <DataTrigger Binding="{Binding IsInsideChildVisualDivider}" Value="True">
-                                <Setter Property="Margin" Value="{Binding ChildModNameInset, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}, FallbackValue='0'}"/>
-                            </DataTrigger><MultiDataTrigger>
+                            <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
                                     <Condition Binding="{Binding HasSeparatorRows, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True"/>
                                     <Condition Binding="{Binding IsInsideChildVisualDivider}" Value="False"/>
@@ -5329,8 +5336,7 @@
 			<DataTrigger Binding="{Binding HasSeparatorRows, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True">
 				<Setter Property="Margin" Value="{Binding RootModIndexInset, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}"/>
 			</DataTrigger>
-			<!-- Indent the rendered number with its sub-separator icon without
-			     making the narrow native index cell measure wider and clip it. -->
+			<!-- The number follows its sub-separator icon without resizing the narrow # cell. -->
 			<MultiDataTrigger>
 				<MultiDataTrigger.Conditions>
 					<Condition Binding="{Binding UsesHierarchyIndexAlignment, RelativeSource={RelativeSource AncestorType={x:Type controls:ModListView}}}" Value="True"/>

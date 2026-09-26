@@ -406,11 +406,14 @@ public static class ReduxWindowBehavior
 		Size targetSize,
 		Point offset) =>
 	[
+		// Keep the submenu's transparent hit area over the parent row. A popup
+		// placed exactly at the row edge can lose hover while crossing the menu's
+		// inset chrome, especially with display scaling or a diagonal pointer path.
 		new CustomPopupPlacement(
-			new Point(targetSize.Width + offset.X, offset.Y),
+			new Point(targetSize.Width - 10 + offset.X, offset.Y),
 			PopupPrimaryAxis.Vertical),
 		new CustomPopupPlacement(
-			new Point(-popupSize.Width - offset.X, offset.Y),
+			new Point(10 - popupSize.Width - offset.X, offset.Y),
 			PopupPrimaryAxis.Vertical)
 	];
 

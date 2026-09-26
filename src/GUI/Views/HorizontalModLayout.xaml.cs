@@ -253,6 +253,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private const string PrivateNoteMenuTag = "ReduxPrivateNote";
 	private const string ModAliasMenuTag = "ReduxModAlias";
 	private const string ModArtworkMenuTag = "ReduxModArtwork";
+	private const string OverrideTransferMenuTag = "ReduxOverrideTransfer";
+	private const string ModUpdateMenuTag = "ReduxModUpdate";
 	private const string BulkActionsMenuTag = "ReduxBulkActions";
 	private const string BulkHiddenSeparatorTag = "ReduxBulkHiddenSeparator";
 	private Point _categoryDragStart;
@@ -579,7 +581,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private bool ModListRejectsDrop(ListView listView)
 	{
 		if (listView == ActiveModsListView)
-			return ViewModel.IsActiveListMetadataSorted || ViewModel.DragHandler?.CanDropOnPane(true) == false;
+			return !ViewModel.IsDraggingHeldOverride && ViewModel.IsActiveListMetadataSorted ||
+				ViewModel.DragHandler?.CanDropOnPane(true) == false;
 		if (listView == InactiveModsListView)
 			return ViewModel.IsInactiveListMetadataSorted || ViewModel.DragHandler?.CanDropOnPane(false) == false;
 		if (listView == ForceLoadedModsListView)
@@ -614,6 +617,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			ClearModListDropIndicator();
 			e.Effects = DragDropEffects.None;
 			e.Handled = true;
+			return;
+		}
+		if (listView == ActiveModsListView && ViewModel.IsDraggingHeldOverride)
+		{
+			ClearModListDropIndicator();
 			return;
 		}
 
@@ -1054,6 +1062,32 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			menu.Items.Remove(generatedItem);
 		}
+		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, OverrideTransferMenuTag)).ToList())
+		{
+			menu.Items.Remove(generatedItem);
+		}
+		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, ModUpdateMenuTag)).ToList())
+		{
+			menu.Items.Remove(generatedItem);
+		}
+		if (mod.IsForceLoaded && !mod.IsForceLoadedMergedMod && !mod.ForceAllowInLoadOrder)
+		{
+			var activateOverride = listView == InactiveModsListView && mod.IsHeldOverride;
+			var disableOverride = listView == ForceLoadedModsListView && !mod.IsHeldOverride;
+			if (activateOverride || disableOverride)
+			{
+				var transfer = new MenuItem
+				{
+					Header = activateOverride ? "Enable in Override Mods" : "Disable for This Load Order",
+					Tag = OverrideTransferMenuTag,
+					Icon = ReduxIcon.FromResource(
+						activateOverride ? "Redux.Icon.ArrowBackStroke" : "Redux.Icon.ArrowForwardStroke", true),
+					ToolTip = "Move this Override PAK between the game folder and Redux's managed holding folder."
+				};
+				transfer.Click += (_, _) => ViewModel.TransferOverrideMods([mod], activateOverride);
+				menu.Items.Insert(0, transfer);
+			}
+		}
 
 		var categoryTargets = listView.SelectedItems
 			.OfType<DivinityModData>()
@@ -1351,6 +1385,19 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				sourceMenu.Items.Add(modioLinkItem);
 			}
 			menu.Items.Insert(Math.Min(3, menu.Items.Count), sourceMenu);
+			if (mod.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START
+				&& mod.NexusModsData.LastFileId > 0)
+			{
+				var checkUpdate = new MenuItem
+				{
+					Header = "Check Nexus File Update",
+					Tag = ModUpdateMenuTag,
+					Icon = ReduxIcon.FromResource("Redux.Icon.RefreshStroke", true),
+					ToolTip = "Check this installed Nexus file for an explicit replacement. Uses one Nexus API request."
+				};
+				checkUpdate.Click += (_, _) => ViewModel.CheckNexusFileUpdate(mod);
+				menu.Items.Insert(Math.Min(4, menu.Items.Count), checkUpdate);
+			}
 		}
 
 		foreach (var generatedItem in menu.Items.OfType<FrameworkElement>().Where(entry => Equals(entry.Tag, VisualDividerMenuTag)).ToList())
@@ -3141,7 +3188,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private void ClampExpandedOverrideModsHeight()
 	{
-		if (ViewModel?.HasForceLoadedMods != true || ViewModel.IsAlwaysLoadedExpanded != true) return;
+		if (ViewModel?.ShowOverrideModsPane != true || ViewModel.IsAlwaysLoadedExpanded != true) return;
 		var maximumHeight = GetMaximumExpandedOverrideModsHeight();
 		if (ActiveModsListForcedModsRow.Height.IsAbsolute && ActiveModsListForcedModsRow.Height.Value > maximumHeight)
 			ActiveModsListForcedModsRow.Height = new GridLength(maximumHeight);
@@ -3186,7 +3233,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private async void UpdateOverrideModsLayout(bool hasAlwaysLoadedMods, bool isExpanded)
 	{
 		var showContents = hasAlwaysLoadedMods && isExpanded;
-		if (!IsLoaded || !hasAlwaysLoadedMods || ActiveModsListForcedModsRow.ActualHeight <= 0)
+		_overrideModsTransition?.Cancel();
+		if (!IsLoaded || !hasAlwaysLoadedMods)
 		{
 			ApplyOverrideModsLayout(hasAlwaysLoadedMods, showContents);
 			return;
@@ -3194,10 +3242,17 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (!showContents)
 			RememberExpandedOverrideModsHeight();
 
-		_overrideModsTransition?.Cancel();
 		_overrideModsTransition = new System.Threading.CancellationTokenSource();
 		var token = _overrideModsTransition.Token;
-		var startHeight = ActiveModsListForcedModsRow.ActualHeight;
+		var revealing = AlwaysLoadedSectionShell.Visibility != Visibility.Visible;
+		if (revealing)
+		{
+			ActiveModsListForcedModsRow.Height = new GridLength(0);
+			ActiveModsListForcedModsRow.MinHeight = 0;
+			AlwaysLoadedSectionShell.Opacity = 0;
+			AlwaysLoadedSectionShell.Visibility = Visibility.Visible;
+		}
+		var startHeight = revealing ? 0 : ActiveModsListForcedModsRow.ActualHeight;
 
 		ActiveModsListRow.Height = new GridLength(1, GridUnitType.Star);
 		ActiveModsListForcedModsRow.MinHeight = 0;
@@ -3233,12 +3288,19 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			showContents ? 1 : 0,
 			value => OverrideModsFilterHost.Opacity = value,
 			token);
-		var completed = await System.Threading.Tasks.Task.WhenAll(heightTransition, filterTransition);
+		var shellTransition = AnimatePanelValueAsync(
+			AlwaysLoadedSectionShell.Opacity,
+			1,
+			value => AlwaysLoadedSectionShell.Opacity = value,
+			token);
+		var completed = await System.Threading.Tasks.Task.WhenAll(heightTransition, filterTransition, shellTransition);
 		if (completed.All(value => value)) ApplyOverrideModsLayout(hasAlwaysLoadedMods, showContents);
 	}
 
 	private void ApplyOverrideModsLayout(bool hasAlwaysLoadedMods, bool showContents)
 	{
+		AlwaysLoadedSectionShell.Opacity = hasAlwaysLoadedMods ? 1 : 0;
+		AlwaysLoadedSectionShell.Visibility = hasAlwaysLoadedMods ? Visibility.Visible : Visibility.Collapsed;
 		ForceLoadedModsListView.Visibility = BoolToVisibilityConverter.FromBool(showContents);
 		ActiveModListViewGridSplitter.Visibility = BoolToVisibilityConverter.FromBool(showContents);
 		OverrideModsFilterHost.Opacity = showContents ? 1 : 0;
@@ -3695,7 +3757,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					.Subscribe(_ => UpdateSeparatorBulkToggleButtons()));
 				UpdateSeparatorBulkToggleButtons();
 
-				d(this.OneWayBind(ViewModel, vm => vm.HasForceLoadedMods, v => v.AlwaysLoadedSectionShell.Visibility, BoolToVisibilityConverter.FromBool));
 				d(this.Bind(ViewModel, vm => vm.ActiveModFilterText, v => v.ActiveModsFilterTextBox.Text));
 				d(this.Bind(ViewModel, vm => vm.InactiveModFilterText, v => v.InactiveModsFilterTextBox.Text));
 
@@ -3709,11 +3770,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				d(this.OneWayBind(ViewModel, vm => vm.InactiveSelectedText, v => v.InactiveSelectedText.Text));
 				d(this.OneWayBind(ViewModel, vm => vm.InactiveSelected, v => v.InactiveSelectedText.Visibility, IntToVisibilityConverter.FromInt));
 
-				d(ViewModel.WhenAnyValue(x => x.HasForceLoadedMods, x => x.IsAlwaysLoadedExpanded)
+				d(ViewModel.WhenAnyValue(x => x.ShowOverrideModsPane, x => x.IsAlwaysLoadedExpanded)
 					.ObserveOn(RxApp.MainThreadScheduler).Subscribe((state) =>
-				{
-					UpdateOverrideModsLayout(state.Item1, state.Item2);
-				}));
+					{
+						UpdateOverrideModsLayout(state.Item1, state.Item2);
+					}));
 
 				ViewModel.Keys.MoveFocusLeft.AddAction(() =>
 				{
