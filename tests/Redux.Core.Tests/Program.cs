@@ -89,6 +89,7 @@ internal static class Program
 			(nameof(overrideOrders.ChangedFileOrOccupiedDestinationBlocksReviewedSwitch), overrideOrders.ChangedFileOrOccupiedDestinationBlocksReviewedSwitch),
 			(nameof(overrideOrders.InterruptedSwitchRestoresAlreadyMovedPackages), overrideOrders.InterruptedSwitchRestoresAlreadyMovedPackages),
 			(nameof(overrideOrders.LinkedModsFolderSwitchesOverridesWithoutFollowingARetargetedLink), overrideOrders.LinkedModsFolderSwitchesOverridesWithoutFollowingARetargetedLink),
+			(nameof(overrideOrders.HoldingFolderCannotBeInsideTheModsTargetEvenWhenItIsADriveRoot), overrideOrders.HoldingFolderCannotBeInsideTheModsTargetEvenWhenItIsADriveRoot),
 			(nameof(source.VerifiedNexusUpdateDotSurvivesOnlyForTheSameRecentInstalledFile), source.VerifiedNexusUpdateDotSurvivesOnlyForTheSameRecentInstalledFile),
 			(nameof(source.NexusUpdateDotRequiresAnExplicitReplacementForTheInstalledFile), source.NexusUpdateDotRequiresAnExplicitReplacementForTheInstalledFile),
 			(nameof(source.LinkedModFileNameToggleUpdatesTheVisibleTitle), source.LinkedModFileNameToggleUpdatesTheVisibleTitle),

@@ -162,10 +162,15 @@ public sealed class OverrideOrderFileService
 		String.Equals(Path.GetDirectoryName(path), _modsFolder, StringComparison.OrdinalIgnoreCase)
 			? Path.Combine(_modsFolderTarget, Path.GetFileName(path)) : path;
 
-	private static bool IsSameOrChildPath(string path, string parent) =>
-		String.Equals(path, parent, StringComparison.OrdinalIgnoreCase)
-		|| path.StartsWith(Path.TrimEndingDirectorySeparator(parent) + Path.DirectorySeparatorChar,
-			StringComparison.OrdinalIgnoreCase);
+	private static bool IsSameOrChildPath(string path, string parent)
+	{
+		var normalizedParent = Path.TrimEndingDirectorySeparator(parent);
+		var prefix = Path.EndsInDirectorySeparator(normalizedParent)
+			? normalizedParent : normalizedParent + Path.DirectorySeparatorChar;
+		return String.Equals(Path.TrimEndingDirectorySeparator(path), normalizedParent,
+			StringComparison.OrdinalIgnoreCase)
+			|| path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+	}
 
 	private static Move Inspect(string name, string source, string destination, bool activate)
 	{

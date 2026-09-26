@@ -152,6 +152,14 @@ public sealed class OverrideOrderFileServiceTests
 		}
 	}
 
+	public void HoldingFolderCannotBeInsideTheModsTargetEvenWhenItIsADriveRoot()
+	{
+		var root = Path.GetPathRoot(Path.GetTempPath())!;
+		var holding = Path.Combine(Path.GetTempPath(), "ReduxOverrideOrderTests", "Holding");
+		try { _ = new OverrideOrderFileService(root, holding); throw new InvalidOperationException("A nested holding folder was accepted."); }
+		catch (IOException) { }
+	}
+
 	private static void CreateJunction(string link, string target)
 	{
 		const string script = "$ErrorActionPreference='Stop'; New-Item -ItemType Junction -Path $env:REDUX_TEST_LINK -Target $env:REDUX_TEST_TARGET | Out-Null";
