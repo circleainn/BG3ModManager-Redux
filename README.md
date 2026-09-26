@@ -3,7 +3,7 @@
 <img src="docs/assets/nexus-description/00-redux-header.png#gh-dark-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 <img src="docs/assets/nexus-description/00-redux-header-light.png#gh-light-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 
-[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.5-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
+[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.5.1-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-4F86F7?style=flat-square)](#requirements-and-alpha-status)
 [![License](https://img.shields.io/badge/license-MIT-42A66F?style=flat-square)](LICENSE)
 [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/circleain)
@@ -33,7 +33,7 @@ stronger organization, safer review workflows, and optional offline-assisted gui
 - **Clearer updates and storage:** find verified Nexus replacements through Mod Review, choose the managed Downloads folder, limit previous PAK versions, and back up the existing installation and mod-list data before updating Redux.
 - **Personalize and refine:** set local aliases and artwork, manage supported native plugins through YANML, and use improved pane layouts, Sync state, and drag placement.
 
-Read the [full 16.5 release notes](docs/releases/0.1.0-alpha.16.5.md).
+Read the [16.5.1 hotfix notes](docs/releases/0.1.0-alpha.16.5.1.md) and the [full 16.5 release notes](docs/releases/0.1.0-alpha.16.5.md).
 
 <h3 id="install-and-update" align="center">Install and update</h3>
 <hr>
@@ -51,7 +51,7 @@ approved archive, and Redux's built-in updater uses that archive for existing in
 4. Run `Redux.exe`. On first launch, review the detected game and profile paths before
    installing or syncing anything.
 
-`0.1.0-alpha.16.5` is the version of this build. The updater acts only when the official
+`0.1.0-alpha.16.5.1` is the version of this build. The updater acts only when the official
 public-alpha channel points to a newer, fully published package. You can also update manually by
 backing up the Redux folder and extracting the complete newer archive over it. Release archives
 exclude runtime state such as `Data`, `_Logs`, caches, downloads, retained archives, and backups.
@@ -121,9 +121,10 @@ known source or package-metadata date.
 - Override Mods has its own filterable, sortable pane outside the numbered order, with matching
   automatically saved visual ordering and nested separators that never enter `modsettings.lsx`, plus
   title/count treatment, headers, scrollbars, collapse motion, and a configurable collapse/expand shortcut.
-- Saved load orders can optionally manage which Override PAKs are installed. Use **Load Order → Override Mods for This Order**
-  to choose files. Redux previews each switch, holds disabled PAKs in its own folder, and restores them when another order
-  needs them. Orders without this setting continue to load all Override PAKs.
+- Saved load orders can manage which Override PAKs are installed. Drag a held Override from Inactive Mods into
+  Override Mods to enable it, or move one back to disable it; the same actions are available from the mod's
+  right-click menu. Redux holds disabled PAKs in its own folder and restores them when an order needs them.
+  Orders that have not opted in continue to load all Override PAKs.
 - Inactive ordering and separators save automatically, independently of active-order Save/Discard.
 - Category filtering applies to both panes. Click a filtered/sorted-view notice to clear that view;
   column-menu order follows your column arrangement.

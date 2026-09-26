@@ -6,6 +6,7 @@ namespace DivinityModManager.AppServices;
 public sealed class OverrideOrderFileService
 {
 	public sealed record Move(string FileName, string Source, string Destination, long Length, DateTime ModifiedUtc, bool Activate);
+	private sealed record SwitchJournal(string ModsFolderTarget, IReadOnlyList<Move> Moves);
 	public sealed record Plan(IReadOnlyList<Move> Moves)
 	{
 		public IReadOnlyList<Move> ToActivate => Moves.Where(move => move.Activate).ToList();
@@ -13,6 +14,7 @@ public sealed class OverrideOrderFileService
 	}
 
 	private readonly string _modsFolder;
+	private readonly string _modsFolderTarget;
 	private readonly string _holdingFolder;
 	private readonly string _journalPath;
 
@@ -22,6 +24,10 @@ public sealed class OverrideOrderFileService
 		_holdingFolder = Path.GetFullPath(holdingFolder ?? throw new ArgumentNullException(nameof(holdingFolder)));
 		if (String.Equals(_modsFolder, _holdingFolder, StringComparison.OrdinalIgnoreCase))
 			throw new ArgumentException("The Override holding folder must be separate from the game's Mods folder.");
+		_modsFolderTarget = ResolveModsFolderTarget();
+		if (IsSameOrChildPath(_modsFolderTarget, _holdingFolder)
+			|| IsSameOrChildPath(_holdingFolder, _modsFolderTarget))
+			throw new IOException("The Override holding folder must be separate from the Mods folder and its link target.");
 		_journalPath = Path.Combine(_holdingFolder, "pending-switch.json");
 	}
 
@@ -72,14 +78,14 @@ public sealed class OverrideOrderFileService
 		Directory.CreateDirectory(_modsFolder);
 		Directory.CreateDirectory(_holdingFolder);
 		var journalTemp = _journalPath + ".tmp";
-		File.WriteAllText(journalTemp, JsonSerializer.Serialize(plan.Moves));
+		File.WriteAllText(journalTemp, JsonSerializer.Serialize(new SwitchJournal(_modsFolderTarget, plan.Moves)));
 		File.Move(journalTemp, _journalPath);
 		try
 		{
 			foreach (var move in plan.Moves)
 			{
 				Validate(move);
-				File.Move(move.Source, move.Destination);
+				File.Move(PhysicalPath(move.Source), PhysicalPath(move.Destination));
 			}
 			File.Delete(_journalPath);
 		}
@@ -95,19 +101,26 @@ public sealed class OverrideOrderFileService
 		if (!File.Exists(_journalPath)) return;
 		EnsureFoldersSafe();
 		Directory.CreateDirectory(_modsFolder);
-		var moves = JsonSerializer.Deserialize<List<Move>>(File.ReadAllText(_journalPath))
-			?? throw new IOException("The interrupted Override switch journal is invalid.");
+		var journalText = File.ReadAllText(_journalPath);
+		var legacyJournal = journalText.TrimStart().StartsWith('[');
+		var journal = legacyJournal ? null : JsonSerializer.Deserialize<SwitchJournal>(journalText);
+		var moves = legacyJournal ? JsonSerializer.Deserialize<List<Move>>(journalText) : journal?.Moves;
+		if (moves == null || legacyJournal && !String.Equals(_modsFolder, _modsFolderTarget, StringComparison.OrdinalIgnoreCase)
+			|| journal != null && !String.Equals(journal.ModsFolderTarget, _modsFolderTarget, StringComparison.OrdinalIgnoreCase))
+			throw new IOException("The interrupted Override switch journal does not match the current Mods folder target. The journal was retained.");
 		foreach (var move in moves.AsEnumerable().Reverse())
 		{
 			ValidateLocation(move);
-			if (File.Exists(move.Source))
+			var source = PhysicalPath(move.Source);
+			var destination = PhysicalPath(move.Destination);
+			if (File.Exists(source))
 			{
 				Validate(move);
 				continue;
 			}
-			if (!File.Exists(move.Destination) || !Matches(move.Destination, move))
+			if (!File.Exists(destination) || !Matches(destination, move))
 				throw new IOException($"Cannot safely recover '{move.FileName}'; its location or contents changed. The recovery journal was retained.");
-			File.Move(move.Destination, move.Source);
+			File.Move(destination, source);
 		}
 		File.Delete(_journalPath);
 	}
@@ -127,10 +140,36 @@ public sealed class OverrideOrderFileService
 
 	private void EnsureFoldersSafe()
 	{
-		foreach (var folder in new[] { _modsFolder, _holdingFolder })
-			if (Directory.Exists(folder) &&
-				(new DirectoryInfo(folder).Attributes & FileAttributes.ReparsePoint) != 0)
-				throw new IOException("An Override mod folder is a link. Redux will not move files through it automatically.");
+		if (!String.Equals(ResolveModsFolderTarget(), _modsFolderTarget, StringComparison.OrdinalIgnoreCase))
+			throw new IOException("The Mods folder link changed since this Override switch began. No files were moved.");
+		if (Directory.Exists(_holdingFolder)
+			&& (new DirectoryInfo(_holdingFolder).Attributes & FileAttributes.ReparsePoint) != 0)
+			throw new IOException("The Override holding folder is a link. Open it manually before switching orders.");
+	}
+
+	private string ResolveModsFolderTarget()
+	{
+		if (!Directory.Exists(_modsFolder)) return _modsFolder;
+		var folder = new DirectoryInfo(_modsFolder);
+		if ((folder.Attributes & FileAttributes.ReparsePoint) == 0) return _modsFolder;
+		var target = folder.ResolveLinkTarget(true);
+		if (target is not DirectoryInfo || !target.Exists)
+			throw new IOException("The linked Mods folder target is unavailable. No Override files were moved.");
+		return Path.GetFullPath(target.FullName);
+	}
+
+	private string PhysicalPath(string path) =>
+		String.Equals(Path.GetDirectoryName(path), _modsFolder, StringComparison.OrdinalIgnoreCase)
+			? Path.Combine(_modsFolderTarget, Path.GetFileName(path)) : path;
+
+	private static bool IsSameOrChildPath(string path, string parent)
+	{
+		var normalizedParent = Path.TrimEndingDirectorySeparator(parent);
+		var prefix = Path.EndsInDirectorySeparator(normalizedParent)
+			? normalizedParent : normalizedParent + Path.DirectorySeparatorChar;
+		return String.Equals(Path.TrimEndingDirectorySeparator(path), normalizedParent,
+			StringComparison.OrdinalIgnoreCase)
+			|| path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
 	}
 
 	private static Move Inspect(string name, string source, string destination, bool activate)
@@ -157,7 +196,7 @@ public sealed class OverrideOrderFileService
 	private void Validate(Move move)
 	{
 		ValidateLocation(move);
-		if (!Matches(move.Source, move) || File.Exists(move.Destination))
+		if (!Matches(PhysicalPath(move.Source), move) || File.Exists(PhysicalPath(move.Destination)))
 			throw new IOException($"'{move.FileName}' changed since review, or its destination is occupied. No files were moved.");
 	}
 

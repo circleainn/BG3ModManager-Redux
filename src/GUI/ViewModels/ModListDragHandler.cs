@@ -66,6 +66,7 @@ public class ModListDragHandler : DefaultDragHandler
 	public bool CanDropOnPane(bool active)
 	{
 		var items = (_lastDragInfo?.Data as IEnumerable<DivinityModData>)?.ToArray() ?? [];
+		if (active && _viewModel.IsDraggingHeldOverride) return true;
 		if (active && (_viewModel.IsOverrideVisualModCollection(_lastDragInfo?.SourceCollection) ||
 			items.Any(mod => mod.IsForceLoaded))) return false;
 		if (!active && _viewModel.IsOverrideVisualModCollection(_lastDragInfo?.SourceCollection))
@@ -77,15 +78,18 @@ public class ModListDragHandler : DefaultDragHandler
 	public bool CanDropOnOverridePane()
 	{
 		if (_viewModel.IsOverrideVisualModCollection(_lastDragInfo?.SourceCollection)) return true;
-		if (!_viewModel.IsInactiveVisualModCollection(_lastDragInfo?.SourceCollection)) return false;
 		var items = (_lastDragInfo?.Data as IEnumerable<DivinityModData>)?.ToArray() ?? [];
-		return items.Length > 0 && items.All(mod => mod.IsForceLoaded &&
+		var fromInactive = _viewModel.IsInactiveVisualModCollection(_lastDragInfo?.SourceCollection)
+			|| items.Length > 0 && items.All(mod => mod.IsHeldOverride &&
+				_viewModel.DisplayInactiveMods.Contains(mod));
+		return fromInactive && items.Length > 0 && items.All(mod => mod.IsForceLoaded &&
 			!mod.IsForceLoadedMergedMod && !mod.IsVisualDivider);
 	}
 
 	private void StopDragTracking()
 	{
 		_viewModel.IsDragging = false;
+		_viewModel.IsDraggingHeldOverride = false;
 		IsDraggingVisualDivider = false;
 		_stopDraggingFallbackTask?.Dispose();
 		_stopDraggingFallbackTask = null;
@@ -171,6 +175,11 @@ public class ModListDragHandler : DefaultDragHandler
 			}
 			if (dragInfo.Data != null)
 			{
+			var draggedMods = (dragInfo.Data as IEnumerable<DivinityModData>)?.ToArray() ?? [];
+			_viewModel.IsDraggingHeldOverride = draggedMods.Length > 0
+				&& draggedMods.All(mod => mod.IsHeldOverride && mod.IsForceLoaded
+					&& !mod.IsForceLoadedMergedMod && !mod.IsVisualDivider)
+				&& draggedMods.All(mod => _viewModel.DisplayInactiveMods.Contains(mod));
 				IsDraggingVisualDivider = dragInfo.Data is IEnumerable<DivinityModData> draggedItems &&
 					VisualDividerDragPolicy.ContainsVisualDivider(draggedItems);
 				_viewModel.IsDragging = true;

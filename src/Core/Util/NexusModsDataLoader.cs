@@ -23,7 +23,8 @@ public delegate void NexusModsRateLimitsUpdatedEventHandler(object sender, Nexus
 public sealed record NexusFileUpdateCheckResult(
 	Dictionary<string, (long ProjectId, long FileId)> CheckedModFiles,
 	HashSet<string> AvailableModUuids,
-	int FailedProjects);
+	int FailedProjects,
+	int SkippedProjects = 0);
 
 public static class NexusModsDataLoader
 {
@@ -110,7 +111,14 @@ public static class NexusModsDataLoader
 			&& mod.NexusModsData.LastFileId > 0)
 			.GroupBy(mod => mod.NexusModsData.ModId).ToArray();
 		if (linked.Length == 0) return new NexusFileUpdateCheckResult(checkedMods, available, 0);
-		if (!CanFetchData || !CanDoTask(linked.Length)) return null;
+		if (!CanFetchData) return null;
+		// A large library may exceed the remaining hourly budget. Check as many
+		// distinct projects as the API allows instead of skipping every file.
+		var remaining = Math.Min(_client.RateLimitsManagement.APILimits.HourlyRemaining,
+			_client.RateLimitsManagement.APILimits.DailyRemaining);
+		if (remaining <= 0) return null;
+		var projectsToCheck = linked.Take(remaining).ToArray();
+		var skippedProjects = linked.Length - projectsToCheck.Length;
 
 		_isActive = true;
 		try
@@ -118,7 +126,7 @@ public static class NexusModsDataLoader
 			// Projects are independent, but keep requests bounded to respect the API
 			// and avoid turning a large mod list into an unbounded request burst.
 			using var slots = new SemaphoreSlim(4);
-			var results = await Task.WhenAll(linked.Select(async project =>
+			var results = await Task.WhenAll(projectsToCheck.Select(async project =>
 			{
 				await slots.WaitAsync(token);
 				try
@@ -153,7 +161,7 @@ public static class NexusModsDataLoader
 		{
 			OnTaskDone();
 		}
-		return new NexusFileUpdateCheckResult(checkedMods, available, failedProjects);
+		return new NexusFileUpdateCheckResult(checkedMods, available, failedProjects, skippedProjects);
 	}
 
 	public static async Task<List<NexusModsModDownloadLink>> GetLatestDownloadsForMods(List<DivinityModData> mods, CancellationToken t)
