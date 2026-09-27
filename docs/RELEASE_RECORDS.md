@@ -1,5 +1,15 @@
 # Public-alpha publication records
 
+## 0.1.0-alpha.16.5.3 — maintenance release
+
+- Source: `main` merge commit `4a4c7c38c5dfd37a09a54ba044a5f43310e8d972`; annotated tag `v0.1.0-alpha.16.5.3` points to that commit.
+- Windows CI: [release-prep run 36327407098](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/36327407098) and [merged-main run 36327883462](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/36327883462) passed. Local Debug and Publish builds passed with 544/544 regression checks in each configuration; the NuGet vulnerability audit found no vulnerable packages.
+- [GitHub portable ZIP](https://github.com/circleainn/BG3ModManager-Redux/releases/download/v0.1.0-alpha.16.5.3/BG3ModManager-Redux_v0.1.0-alpha.16.5.3.zip): `BG3ModManager-Redux_v0.1.0-alpha.16.5.3.zip`, 18,057,260 bytes, SHA-256 `e190928a902ce46367e9b60580e67c3a7f7d3af124d6975f7e2f87f750a87ccd`. An anonymous download matched the tested main-branch ZIP and manifest. The archive has 76 inventoried files and exactly four `Updater/` files.
+- Public-alpha manifest: 618 bytes, SHA-256 `7e8fb9bf75440726149653fbe0107587157bbf7725cbb15444a7ca7c1231090c`. Its [fixed public URL](https://github.com/circleainn/BG3ModManager-Redux/releases/download/public-alpha/Redux-Update-Public-Alpha.json) was fetched anonymously after publication and returned display version `0.1.0-alpha.16.5.3`, internal version `0.1.16.503`, and the matching ZIP digest and length.
+- Nexus Mods: the protected [publication run 36327997718](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/36327997718) succeeded after reviewer approval. The official upload action submitted the verified GitHub ZIP to [Redux on Nexus Mods](https://www.nexusmods.com/baldursgate3/mods/23799?tab=files), file `7943154`, and returned file-version ID `14920716517882`. The live public file page showed version `0.1.0-alpha.16.5.3`, the portable file, and its matching fix summary; virus scanning was still in progress at that check.
+- The GitHub release is marked Latest and uses the no-announcement marker. The 16.5.3 notes list only its new fixes; the changelog briefly groups earlier 16.5.1 and 16.5.2 fixes under Prior fixes. No public announcement or Nexus comment reply was sent as part of this release.
+- The maintainer performs live application checks separately. No clean-extraction, manual update/removal, NXM association, or gameplay load-order smoke result is claimed in this publication record.
+
 ## 0.1.0-alpha.16.5.2 — silent maintenance release
 
 - Source: `main` merge commit `79666410f12a6204ca745e8a97b8d36d1a021d8d`; annotated tag `v0.1.0-alpha.16.5.2` points to that commit.
