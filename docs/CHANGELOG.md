@@ -5,27 +5,22 @@ source for individual implementation details.
 
 ## Unreleased
 
+## 0.1.0-alpha.16.5.3 — 2026-09-27
+
+A maintenance update for load-order sync, shutdown, menus, and source links.
+
 - Keep every explicitly selected mod at its chosen position when exporting. Add only omitted installed dependencies automatically, and identify any conflicting dependency metadata in the Sync review.
 - Stop generated right-click actions from accumulating when switching between mods and separators.
 - Keep the main window open when closing with unsaved changes is declined, and finish shutting down after the window closes.
 - Retain a previously verified Nexus link when a refreshed mod lacks its optional creator manifest; update or remove the link when a valid current manifest contradicts it.
 - Point Nexus API-key guidance to its actual Preferences section.
 
-## 0.1.0-alpha.16.5.2 — 2026-09-26
+### Prior fixes in the 16.5 series
 
-A silent maintenance hotfix carrying forward all alpha.16.5.1 fixes.
+These shipped in earlier builds; they are listed here for people updating past them.
 
-- Allow packages that override game files and also have a normal load-order entry to move into Active Mods. Pure Override PAKs continue to use Override Mods.
-- Retain the alpha.16.5.1 corrections for linked BG3 Mods folders, held Override activation, separator layout, nested menus, and mod-update checks.
-
-## 0.1.0-alpha.16.5.1 — 2026-09-26
-
-A focused hotfix for load-order switching, Override controls, and mod update checks.
-
-- Allow reviewed Override PAK moves when the BG3 Mods folder is a Windows junction or symbolic link. Redux pins the resolved target for the operation and its recovery journal, and refuses a switch if the link changes.
-- Restore inactive Override PAKs through drag-and-drop or a right-click action. When the Override pane is empty, drop a held Override onto Active Mods to enable it and smoothly reveal the pane.
-- Keep nested mod numbers, names, and status icons indented together. Keep separator submenus open while moving the pointer into them.
-- Explain the potential Nexus API cost before checking every mod, allow a single linked mod to be checked from its context menu, and report partial checks when rate limits prevent full coverage. Update-check prompts now name the exact Preferences controls needed for online information and Nexus API access.
+- **16.5.2:** Mixed packages with both direct game-file overrides and a normal load-order entry can move into Active Mods. Pure Override PAKs stay in Override Mods.
+- **16.5.1:** Linked BG3 Mods folders work with reviewed Override switches; inactive Overrides can be activated by drop or menu action; nested rows and submenus behave consistently; mod-update checks explain Nexus API cost, support a single mod, and report partial results.
 
 ## 0.1.0-alpha.16.5 — 2026-09-25
 
