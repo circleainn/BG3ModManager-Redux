@@ -682,6 +682,11 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 	private void MainWindow_Closing(object sender, CancelEventArgs e)
 	{
+		if (_nxmShutdownReady) return;
+		// The confirmation dialog pumps the dispatcher while WPF is processing
+		// Closing. Cancel this first attempt before opening it so choosing No
+		// cannot leave a hidden main window with a live Redux process.
+		e.Cancel = true;
 		if (!ConfirmDiscardUnsavedLoadOrder())
 		{
 			if (_updateRestartRequested)
@@ -691,11 +696,8 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 					"The update was not applied because Redux remained open. Save or discard your changes, then try again.");
 				_updateRestartRequested = false;
 			}
-			e.Cancel = true;
 			return;
 		}
-		if (_nxmShutdownReady) return;
-		e.Cancel = true;
 		if (_nxmShutdownInProgress) return;
 		_nxmShutdownInProgress = true;
 		// Always leave the original WPF closing event before pausing the queue or
@@ -735,18 +737,21 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 
 	private void OnClosed()
 	{
-		if (ViewModel.Settings.SaveWindowLocation) UpdateWindowSettings();
-		ViewModel.SaveSettings();
-		if (_updateRestartRequested)
+		try
 		{
-			var launcher = Services.Get<ReduxUpdateLaunchService>();
-			if (launcher != null && !launcher.StartPending(out var error) && !String.IsNullOrWhiteSpace(error))
+			if (ViewModel.Settings.SaveWindowLocation) UpdateWindowSettings();
+			ViewModel.SaveSettings();
+			if (_updateRestartRequested)
 			{
-				System.Windows.MessageBox.Show(error, "Redux Update Failed",
-					System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+				var launcher = Services.Get<ReduxUpdateLaunchService>();
+				if (launcher != null && !launcher.StartPending(out var error) && !String.IsNullOrWhiteSpace(error))
+				{
+					System.Windows.MessageBox.Show(error, "Redux Update Failed",
+						System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+				}
 			}
 		}
-		Application.Current.Shutdown();
+		finally { Application.Current.Shutdown(); }
 	}
 
 	private WindowInteropHelper _wih;

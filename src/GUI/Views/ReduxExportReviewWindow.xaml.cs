@@ -24,6 +24,9 @@ public sealed class ReduxExportReviewData
 	public string DiagnosticTitle { get; }
 	public string DiagnosticSummary { get; }
 	public string DependencySummary { get; }
+	public bool HasDependencyOrderWarnings => DependencyOrderWarnings.Count > 0;
+	public IReadOnlyList<string> DependencyOrderWarnings { get; }
+	public string DependencyOrderWarningSummary { get; }
 
 	public ReduxExportReviewData(
 		string orderName,
@@ -32,7 +35,8 @@ public sealed class ReduxExportReviewData
 		int healthErrorCount,
 		int healthWarningCount,
 		int guidanceCount,
-		int missingDependencyCount)
+		int missingDependencyCount,
+		IReadOnlyList<string> dependencyOrderWarnings = null)
 	{
 		comparison ??= new LoadOrderComparison(false, [], 0);
 		var safeOrderName = String.IsNullOrWhiteSpace(orderName) ? "Current" : orderName;
@@ -56,9 +60,13 @@ public sealed class ReduxExportReviewData
 		BaselineSummary = comparison.HasPreviousOrder
 			? "Compared with the selected profile's current game load order."
 			: "This profile does not have an earlier game load order to compare.";
+		DependencyOrderWarnings = dependencyOrderWarnings ?? Array.Empty<string>();
+		DependencyOrderWarningSummary = String.Join("\n", DependencyOrderWarnings.Take(2))
+			+ (DependencyOrderWarnings.Count > 2
+				? $"\nAnd {DependencyOrderWarnings.Count - 2} more dependency-order warning(s)." : String.Empty);
 
 		HasDiagnosticErrors = healthErrorCount > 0;
-		HasDiagnosticWarnings = healthWarningCount > 0 || missingDependencyCount > 0;
+		HasDiagnosticWarnings = healthWarningCount > 0 || missingDependencyCount > 0 || HasDependencyOrderWarnings;
 		if (HasDiagnosticErrors)
 		{
 			DiagnosticTitle = "Fix errors before applying changes";
@@ -75,6 +83,7 @@ public sealed class ReduxExportReviewData
 		var diagnosticParts = new List<string>();
 		if (healthErrorCount > 0) diagnosticParts.Add(FormatCount(healthErrorCount, "error"));
 		if (healthWarningCount > 0) diagnosticParts.Add(FormatCount(healthWarningCount, "warning"));
+		if (HasDependencyOrderWarnings) diagnosticParts.Add(FormatCount(DependencyOrderWarnings.Count, "dependency-order warning"));
 		if (guidanceCount > 0) diagnosticParts.Add(FormatCount(guidanceCount, "Load Order Advisor note"));
 		DiagnosticSummary = diagnosticParts.Count == 0
 			? "No errors or warnings were found in this order."

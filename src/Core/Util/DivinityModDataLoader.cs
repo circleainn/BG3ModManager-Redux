@@ -1429,58 +1429,74 @@ public static partial class DivinityModDataLoader
 
 	public static List<DivinityModData> GetDependencyMods(DivinityModData mod, IEnumerable<DivinityModData> allMods, HashSet<string> addedMods)
 	{
-		List<DivinityModData> mods = new List<DivinityModData>();
-		var dependencies = mod.Dependencies.Items.Where(x => !IgnoreModDependency(x.UUID));
-		foreach (var d in dependencies)
+		var byUuid = allMods.Where(candidate => !String.IsNullOrWhiteSpace(candidate.UUID))
+			.GroupBy(candidate => candidate.UUID, StringComparer.OrdinalIgnoreCase)
+			.ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+		return GetDependencyMods(mod, byUuid, addedMods,
+			new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+			new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+	}
+
+	private static List<DivinityModData> GetDependencyMods(
+		DivinityModData mod,
+		IReadOnlyDictionary<string, DivinityModData> byUuid,
+		HashSet<string> addedMods,
+		HashSet<string> explicitlySelected,
+		HashSet<string> visiting)
+	{
+		var result = new List<DivinityModData>();
+		if (mod == null || String.IsNullOrWhiteSpace(mod.UUID) || !visiting.Add(mod.UUID)) return result;
+		try
 		{
-			var dependencyModData = allMods.FirstOrDefault(x => x.UUID == d.UUID);
-			if (dependencyModData != null)
+			foreach (var dependency in mod.Dependencies.Items)
 			{
-				var dependencyMods = GetDependencyMods(dependencyModData, allMods, addedMods);
-				if (dependencyMods.Count > 0)
-				{
-					foreach (var m in dependencyMods)
-					{
-						if (!addedMods.Contains(m.UUID))
-						{
-							addedMods.Add(m.UUID);
-							mods.Add(m);
-						}
-					}
-				}
-				if (!addedMods.Contains(dependencyModData.UUID))
-				{
-					mods.Add(dependencyModData);
-					addedMods.Add(dependencyModData.UUID);
-				}
+				if (String.IsNullOrWhiteSpace(dependency.UUID)
+					|| IgnoreModDependency(dependency.UUID)
+					|| addedMods.Contains(dependency.UUID)
+					|| explicitlySelected.Contains(dependency.UUID)
+					|| !byUuid.TryGetValue(dependency.UUID, out var dependencyMod)
+					|| visiting.Contains(dependency.UUID)) continue;
+
+				result.AddRange(GetDependencyMods(dependencyMod, byUuid, addedMods, explicitlySelected, visiting));
+				if (addedMods.Add(dependencyMod.UUID)) result.Add(dependencyMod);
 			}
 		}
-		return mods;
+		finally { visiting.Remove(mod.UUID); }
+		return result;
 	}
 
 	public static List<DivinityModData> BuildOutputList(IEnumerable<DivinityLoadOrderEntry> order, IEnumerable<DivinityModData> allMods, bool addDependencies = true, DivinityModData selectedAdventure = null)
 	{
 		List<DivinityModData> orderList = new List<DivinityModData>();
-		var addedMods = new HashSet<string>();
+		var addedMods = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		var orderEntries = order.Where(entry => !entry.Missing).ToArray();
+		var explicitlySelected = orderEntries.Select(entry => entry.UUID)
+			.Where(uuid => !String.IsNullOrWhiteSpace(uuid))
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		if (!String.IsNullOrWhiteSpace(selectedAdventure?.UUID)) explicitlySelected.Add(selectedAdventure.UUID);
+		var byUuid = allMods.Where(mod => !String.IsNullOrWhiteSpace(mod.UUID))
+			.GroupBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
+			.ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
 
 		if (selectedAdventure != null)
 		{
-			if (addDependencies && selectedAdventure.HasDependencies)
+			if (addDependencies && selectedAdventure.Dependencies.Count > 0)
 			{
-				orderList.AddRange(GetDependencyMods(selectedAdventure, allMods, addedMods));
+				orderList.AddRange(GetDependencyMods(selectedAdventure, byUuid, addedMods,
+					explicitlySelected, new HashSet<string>(StringComparer.OrdinalIgnoreCase)));
 			}
 			orderList.Add(selectedAdventure);
 			addedMods.Add(selectedAdventure.UUID);
 		}
 
-		foreach (var m in order.Where(x => !x.Missing))
+		foreach (var m in orderEntries)
 		{
-			var mData = allMods.FirstOrDefault(x => x.UUID == m.UUID);
-			if (mData != null)
+			if (m.UUID != null && byUuid.TryGetValue(m.UUID, out var mData))
 			{
-				if (addDependencies && mData.HasDependencies)
+				if (addDependencies && mData.Dependencies.Count > 0)
 				{
-					orderList.AddRange(GetDependencyMods(mData, allMods, addedMods));
+					orderList.AddRange(GetDependencyMods(mData, byUuid, addedMods,
+						explicitlySelected, new HashSet<string>(StringComparer.OrdinalIgnoreCase)));
 				}
 
 				if (!addedMods.Contains(mData.UUID))
@@ -1496,6 +1512,29 @@ public static partial class DivinityModDataLoader
 		}
 
 		return orderList;
+	}
+
+	public static IReadOnlyList<(DivinityModData Dependency, DivinityModData Dependent)> FindReversedDependencies(
+		IReadOnlyList<DivinityModData> order)
+	{
+		var positions = order.Select((mod, index) => (mod, index))
+			.Where(pair => !String.IsNullOrWhiteSpace(pair.mod?.UUID))
+			.GroupBy(pair => pair.mod.UUID, StringComparer.OrdinalIgnoreCase)
+			.ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+		var result = new List<(DivinityModData Dependency, DivinityModData Dependent)>();
+		foreach (var dependent in order)
+		{
+			if (String.IsNullOrWhiteSpace(dependent?.UUID)
+				|| !positions.TryGetValue(dependent.UUID, out var dependentPosition)) continue;
+			foreach (var dependency in dependent.Dependencies.Items)
+			{
+				if (String.IsNullOrWhiteSpace(dependency.UUID) || IgnoreModDependency(dependency.UUID)
+					|| !positions.TryGetValue(dependency.UUID, out var dependencyPosition)
+					|| dependencyPosition.index <= dependentPosition.index) continue;
+				result.Add((dependencyPosition.mod, dependent));
+			}
+		}
+		return result;
 	}
 
 	public static string GenerateModSettingsFile(IEnumerable<DivinityModData> orderList)

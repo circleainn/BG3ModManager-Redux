@@ -3,6 +3,14 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
+## Unreleased
+
+- Keep every explicitly selected mod at its chosen position when exporting. Add only omitted installed dependencies automatically, and identify any conflicting dependency metadata in the Sync review.
+- Stop generated right-click actions from accumulating when switching between mods and separators.
+- Keep the main window open when closing with unsaved changes is declined, and finish shutting down after the window closes.
+- Retain a previously verified Nexus link when a refreshed mod lacks its optional creator manifest; update or remove the link when a valid current manifest contradicts it.
+- Point Nexus API-key guidance to its actual Preferences section.
+
 ## 0.1.0-alpha.16.5.2 — 2026-09-26
 
 A silent maintenance hotfix carrying forward all alpha.16.5.1 fixes.
