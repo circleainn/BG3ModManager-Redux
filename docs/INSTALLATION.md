@@ -56,7 +56,13 @@ only the obsolete `BG3ModManager.exe`, `BG3ModManager.dll`, `BG3ModManager.deps.
 
 Public-alpha builds can check Redux's official GitHub update channel in the background. When a
 newer release is available, Redux shows the version and official release notes before offering
-**Update & Restart**. Choosing **Later** leaves the current installation unchanged.
+**Update & Restart** or **Update & Back Up**. Choosing **Later** leaves the current installation
+unchanged.
+
+**Update & Back Up** first saves a ZIP you choose containing the current Redux installation, BG3
+mod PAKs and retained previous versions, saved orders, and profile load-order files. It does not
+include game saves, so keep those backed up separately. Use this option when you want a recovery
+copy before updating; the ordinary **Update & Restart** action does not create that ZIP.
 
 The update is downloaded into per-user temporary staging, checked against the release's declared
 byte length and SHA-256 hash, and inspected before Redux closes. A separate narrow updater then

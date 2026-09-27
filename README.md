@@ -3,7 +3,7 @@
 <img src="docs/assets/nexus-description/00-redux-header.png#gh-dark-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 <img src="docs/assets/nexus-description/00-redux-header-light.png#gh-light-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 
-[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.5.1-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
+[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.5.3-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-4F86F7?style=flat-square)](#requirements-and-alpha-status)
 [![License](https://img.shields.io/badge/license-MIT-42A66F?style=flat-square)](LICENSE)
 [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/circleain)
@@ -31,9 +31,9 @@ stronger organization, safer review workflows, and optional offline-assisted gui
 - **Organize every mod pane:** separators and one level of sub-separators in Active, Inactive, and Override Mods, with collapse, grouped moves, and a choice for existing separators.
 - **Overrides per saved order:** opt in to a reviewed PAK selection for each order, with managed storage for disabled Overrides and recovery for interrupted moves.
 - **Clearer updates and storage:** find verified Nexus replacements through Mod Review, choose the managed Downloads folder, limit previous PAK versions, and back up the existing installation and mod-list data before updating Redux.
-- **Personalize and refine:** set local aliases and artwork, manage supported native plugins through YANML, and use improved pane layouts, Sync state, and drag placement.
+- **Personalize and refine:** set local aliases and artwork, manage supported native plugins through an existing YANML setup, and use improved pane layouts, Sync state, and drag placement.
 
-Read the [16.5.1 hotfix notes](docs/releases/0.1.0-alpha.16.5.1.md) and the [full 16.5 release notes](docs/releases/0.1.0-alpha.16.5.md).
+Read the [latest 16.5.3 fixes](docs/releases/0.1.0-alpha.16.5.3.md), the [full 16.5 release notes](docs/releases/0.1.0-alpha.16.5.md), or the [changelog](docs/CHANGELOG.md) for earlier fixes.
 
 <h3 id="install-and-update" align="center">Install and update</h3>
 <hr>
@@ -51,7 +51,7 @@ approved archive, and Redux's built-in updater uses that archive for existing in
 4. Run `Redux.exe`. On first launch, review the detected game and profile paths before
    installing or syncing anything.
 
-`0.1.0-alpha.16.5.1` is the version of this build. The updater acts only when the official
+`0.1.0-alpha.16.5.3` is the version of this build. The updater acts only when the official
 public-alpha channel points to a newer, fully published package. You can also update manually by
 backing up the Redux folder and extracting the complete newer archive over it. Release archives
 exclude runtime state such as `Data`, `_Logs`, caches, downloads, retained archives, and backups.
@@ -86,11 +86,13 @@ uninstall guidance.
    move before Redux writes `modsettings.lsx`. After syncing a saved order, **Current** reflects
    the order sent to the game; the saved order itself still needs an explicit **Save** to retain edits.
 
-To check linked mods for updates, open **File > Check Mod Updates**. Redux checks enabled
-sources and shows matches in the **Mod Updates** view. A mod needs a recognized source link for
-Nexus Mods or mod.io results. To find when an installed package last changed on your computer,
-right-click a mod-list column header and enable **Last Modified**; **Last Updated** is the mod's
-known source or package-metadata date.
+To check linked mods for updates, open the toolbar's **Mod Review** status menu and choose
+**Check Mod Updates**, or use **File > Actions > Check Mod Updates**. Redux explains the possible
+Nexus API cost before a full check. For one linked Nexus mod, right-click it and choose
+**Check Nexus File Update**. Verified replacements appear in Mod Review; source details remain
+available in the **Mod Updates** view. To find when an installed package last changed on your
+computer, right-click a mod-list column header and enable **Last Modified**; **Last Updated** is
+the mod's known source or package-metadata date.
 
 <h3 id="what-redux-adds" align="center">What Redux adds</h3>
 <hr>
@@ -102,8 +104,9 @@ known source or package-metadata date.
 - Automatic and custom categories with names, descriptions, colors, icons, ordering, and filtering.
 - Up to three visible category assignments per mod.
 - Separators with persistent membership and collapse state in Active, Inactive, and Override Mods. A top-level separator can contain one
-  level of child separators, shown as smaller section headers with short elbows and aligned labels. Optional separator lines,
-  custom colors and PNG icons remain available; gradients and colored labels follow your theme preferences. Closing the parent hides the
+  level of sub-separators, indented with rounded branch connectors. Sub-separator text keeps the
+  same size as the parent but uses regular weight. Optional separator lines, custom colors, and PNG
+  icons remain available; gradients and colored labels follow your theme preferences. Closing the parent hides the
   complete branch, and children inherit their parent's persistence scope. Active separators can stay local to one saved order or share their presentation
   across every order while retaining an independent placement in each. Closed separators move with
   their contained mods and do not absorb nearby rows unexpectedly.
@@ -117,7 +120,7 @@ known source or package-metadata date.
 - Package-scoped custom preview artwork for local or linked mods, stored as a normalized Redux-owned
   image while leaving the installed package and provider artwork unchanged.
 - Configurable list columns and unified selection between Active and Inactive Mods. The # column
-  starts visible in Active and hidden in Inactive; either can be changed in the column menu.
+  starts visible in Active and hidden in Inactive; right-click a column header to show or hide it.
 - Override Mods has its own filterable, sortable pane outside the numbered order, with matching
   automatically saved visual ordering and nested separators that never enter `modsettings.lsx`, plus
   title/count treatment, headers, scrollbars, collapse motion, and a configurable collapse/expand shortcut.

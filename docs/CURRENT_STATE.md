@@ -5,7 +5,7 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: September 26, 2026. Release line: `0.1.0-alpha.16.5.1`.
+Last reviewed: September 27, 2026. Release line: `0.1.0-alpha.16.5.3`.
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -17,11 +17,13 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 Alpha.16.5 adds optional cross-order separator presentation with independent
 per-order placement, a reversible one-time upgrade prompt for existing separators, and a compact
 category/separator editor that accepts opaque or non-square images. Separators now support one
-explicit child level in both mod panes, with a shared nesting gutter that aligns parent controls, child controls, and indented names without shifting table columns, parent-wide collapse, hierarchy-aware block moves,
-undo, and persistence rules that keep every child in the same scope as its parent. Override
-Mods now uses a dedicated unnumbered grid with the same pane chrome, scrollbar
-spacing, title/count treatment, filter rhythm, animated collapse behavior, column chooser, and reorderable columns as the main lists. Its animated
-collapse/expand action defaults to `Ctrl+Alt+O` and remains editable in Keyboard Shortcuts.
+explicit sub-separator level in all three mod panes. A shared nesting gutter aligns parent and
+sub-separator controls with indented names without shifting table columns. Parent collapse,
+hierarchy-aware block moves, Undo, and persistence keep sub-separators in their parent's scope.
+Override Mods uses a dedicated unnumbered grid with the same pane chrome, scrollbar spacing,
+title/count treatment, filters, animated collapse behavior, and column-header controls as the main
+lists. Its collapse/expand shortcut defaults to `Ctrl+Alt+O` and remains editable in Keyboard
+Shortcuts.
 Linked-provider rows again honor the per-mod **Show File Name / Show Mod Display Name** action,
 and separator labels no longer inherit the category editor's 40-character limit. Long labels remain
 trimmed in the list and expose their complete value on hover.
@@ -48,6 +50,10 @@ Collection previews compare exact Nexus mod/file IDs against existing PAKs in bo
 The accumulated work shipped in the alpha.16.4 update. Dev runs build and regression
 checks but publishes no downloadable portable build or release; main owns public releases.
 The [16.5 changelog](CHANGELOG.md) records the changes after the 16.4.4 maintenance release.
+Maintenance updates through 16.5.3 improved Override activation and linked-folder handling,
+separator layout and menus, mod-update checks, selected mod positions during Sync, shutdown, and
+verified Nexus-link retention. The [16.5.3 release notes](releases/0.1.0-alpha.16.5.3.md) describe
+its new fixes; earlier fixes are summarized in the changelog.
 
 Alpha.16.4.1 fixes separator regressions reported in #121 and #123: filtered views hide separators,
 bulk collapse/expand no longer fades the whole recycled list, established sections re-anchor to their
@@ -89,7 +95,7 @@ mods, and never saves or syncs automatically.
 |:--|:--|
 | Product | Baldur's Gate 3 Mod Manager Redux |
 | Short name | Redux |
-| Latest version | `0.1.0-alpha.16.5.1` |
+| Latest version | `0.1.0-alpha.16.5.3` |
 | Lifecycle | Public alpha |
 | Supported platform | Windows 10/11 x64 |
 | Required runtime | .NET 8 Desktop Runtime |
@@ -99,7 +105,7 @@ mods, and never saves or syncs automatically.
 | Update channel | `public-alpha` |
 | Active milestone | `v0.1.0 – Public Alpha` |
 
-The release tag is `v0.1.0-alpha.16.5.1`. Always verify the live branches and releases before
+The release tag is `v0.1.0-alpha.16.5.3`. Always verify the live branches and releases before
 preparing another publication.
 
 ## What Redux is
@@ -111,7 +117,9 @@ application around organization, review, recovery, customization, and accessibil
 
 The current public alpha includes:
 
-- categories, separators, filtering, configurable columns, and a resizable mod-details drawer;
+- categories, separators and sub-separators in all three mod panes, filtering, configurable columns,
+  and a resizable mod-details drawer;
+- saved-order Override PAK selection with reviewed moves into and out of managed storage;
 - explicit working changes, saved-order comparison and history, review-before-sync, restore points,
   and bounded Undo/Redo;
 - built-in Mod Diagnostics and a separately enabled, preview-first Load Order Advisor;
@@ -163,6 +171,8 @@ belongs in `docs/` and should be linked from the documentation index.
   `C:\Modding\Redux`.
 - The built-in updater updates an existing portable folder. It is not a fresh installer and must
   never claim user-created state.
+- **Update & Back Up** can save the previous Redux installation, mod PAKs, retained previous
+  versions, saved orders, and profile load-order files before updating. It does not include saves.
 - GitHub Releases and Nexus Mods receive the same approved ZIP. The moving update-channel manifest
   is published only after the versioned package is available and verified.
 - The public executable is `Redux.exe`. `BG3ModManager.exe` is a legacy private-alpha name and must
@@ -208,6 +218,8 @@ The full publishing and recovery contract is in
 - Active separators are stored per saved load order. Loading a game-derived order is not the same
   as reopening a named Redux order containing that presentation data. Reports of unexpected startup
   selection or separator loss are tracked in #127, not treated as permission to merge Save and Sync.
+- When syncing, Redux keeps explicitly selected mods at their chosen positions, adds only missing
+  installed dependencies, and identifies conflicting dependency metadata in the review.
 
 ### Saving, syncing, diagnostics, and advice
 
@@ -231,6 +243,9 @@ The full publishing and recovery contract is in
 - Unknown or modified DLL layouts stay unverified and unmanaged.
 - Redux may adopt an exact reviewed add-only plugin without rewriting it. It never adopts an
   external replacer because Redux did not preserve the original game files.
+- An existing YANML configuration lets Redux manage reviewed native plugins in YANML's Plugins
+  folder. Redux does not install or remove YANML itself; [#155](https://github.com/circleainn/BG3ModManager-Redux/issues/155)
+  tracks potential cooperation with its developer on that workflow.
 - Layout recognition is not a malware scan or a publisher signature. Users remain responsible for
   trusting the source of native code.
 
@@ -262,29 +277,30 @@ fixes; a matching current-build recurrence is needed before reopening those comp
 
 | Issue | Current evidence and scope |
 |:--|:--|
-| [#127](https://github.com/circleainn/BG3ModManager-Redux/issues/127) Sync/restart order and separators | Alpha.16.4.3 restores the remembered named startup order. The separate Sync-specific report remains open for exact reproduction details. |
-| [#130](https://github.com/circleainn/BG3ModManager-Redux/issues/130) Missing mod thumbnails | Alpha.16.4.3 retries temporary image download/decode failures. The issue remains open to identify mods whose metadata supplies no usable image URL. |
+| [#127](https://github.com/circleainn/BG3ModManager-Redux/issues/127) Sync/restart order and separators | Alpha.16.5.3 preserves explicit positions during Sync, including the reported dependency-order case. Other reported selection or separator symptoms still need a reproducible current-build case. |
+| [#157](https://github.com/circleainn/BG3ModManager-Redux/issues/157) Nexus links appearing as Local | Alpha.16.5.3 retains a verified creator-manifest Nexus link when a refresh lacks the optional manifest. The broader report remains open for cases with another cause. |
 
 Issues #124, #125, #128, and #129 have focused alpha.16.4.3 fixes. Issue #126 is closed as the
 documented expanded-header/collapsed-section behavior. The [troubleshooting guide](TROUBLESHOOTING.md)
 provides non-destructive checks for remaining reports.
 
-### Scoped requests awaiting evaluation
+### Scoped requests and collaboration
 
-- [#131 — Assignable filename-display shortcut](https://github.com/circleainn/BG3ModManager-Redux/issues/131)
-- [#132 — Optional hover-card descriptions](https://github.com/circleainn/BG3ModManager-Redux/issues/132)
 - [#133 — Controls for automatic categories](https://github.com/circleainn/BG3ModManager-Redux/issues/133)
-- [#134 — Compact category-tag rows](https://github.com/circleainn/BG3ModManager-Redux/issues/134)
+  remains open for the distinction between disabling assignment and deleting category definitions.
+- [#155 — YANML integration](https://github.com/circleainn/BG3ModManager-Redux/issues/155)
+  is an offer from YANML's developer to coordinate a supported way to install or remove YANML itself.
+  Redux currently manages reviewed plugins only when YANML is already configured.
 
-These requests have no release commitment. #134 does not reopen the broader compact-interface
-redesign in #118. PT-BR interest and a Chinese-version offer are recorded under #56; neither
+The filename-display shortcut (#131) and optional hover descriptions (#132) shipped in 16.5.
+The redundant compact category-tag option (#134) was removed. PT-BR interest and a Chinese-version
+offer are recorded under #56; neither
 establishes an integrated upstream translation. Interest in VOLO cooperation is not a partnership
 or an accepted integration task.
 
 ### Open planned work
 
 - [#110 — Improve compatibility with Wine and Linux desktops](https://github.com/circleainn/BG3ModManager-Redux/issues/110)
-- [#109 — Manage Override mods when switching saved load orders](https://github.com/circleainn/BG3ModManager-Redux/issues/109)
 - [#98 — Add official Nexus Mods SSO account connection](https://github.com/circleainn/BG3ModManager-Redux/issues/98)
 - [#63 — Explore a docked or paged Managers workspace](https://github.com/circleainn/BG3ModManager-Redux/issues/63)
 - [#56 — Expand localization and accessibility support](https://github.com/circleainn/BG3ModManager-Redux/issues/56)
@@ -303,8 +319,8 @@ acceptance state before implementing it.
 - The limited Nexus Collection Importer shipped in 16.4. Direct collection NXM activation,
   historical-revision browsing, and automatic application of collection installer rules are not
   shipped features. Follow collection-author instructions.
-- Automatic management of inactive Override mods between orders and a new Managers workspace
-  remain planned, not shipped.
+- An optional Managers workspace remains planned, not shipped. Per-order Override PAK selection and
+  reviewed file moves shipped in 16.5; unmanaged or changed linked files can still block a switch.
 - The retired Setup project and its dedicated tests are no longer retained in the repository.
   Installer work should not be reintroduced without a new decision about distribution and signing.
 

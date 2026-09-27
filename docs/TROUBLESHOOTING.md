@@ -57,9 +57,10 @@ Redux never persists signed download URLs or temporary authorization values.
 
 ## Provider key fields are blank after restarting
 
-The September 15 report is tracked in [#129](https://github.com/circleainn/BG3ModManager-Redux/issues/129).
-A blank Preferences field does not by itself show whether an encrypted credential was lost or the
-control failed to display its saved state.
+The earlier display-state report [#129](https://github.com/circleainn/BG3ModManager-Redux/issues/129)
+was fixed in 16.4.3. If the symptom returns in a current build, a blank Preferences field does not
+by itself show whether an encrypted credential was lost or the control failed to display its saved
+state.
 
 Before re-entering a key, note whether an authenticated provider action still works after restart.
 Report that result, whether the field was empty immediately or only after reopening Preferences,
@@ -73,9 +74,9 @@ screenshot to support.
 
 ## Mod thumbnails are missing
 
-Missing thumbnails are tracked separately in
-[#130](https://github.com/circleainn/BG3ModManager-Redux/issues/130), including a report where downloads
-worked and images were still absent immediately after fresh key entry.
+The earlier missing-thumbnail report
+[#130](https://github.com/circleainn/BG3ModManager-Redux/issues/130) is closed after thumbnail
+retry and rendering fixes. A new missing image still needs its own evidence.
 
 Check whether the affected mod has the correct source association, whether optional online
 information is enabled, and which surface is missing the image. Not every package has available
@@ -143,22 +144,21 @@ separator was expanded or collapsed. The current drag policy treats expanded hea
 moves and collapsed sections as block moves. Unexpected membership absorption is a separate concern,
 not automatically explained by that distinction.
 
-An older 16.2 report is being checked in
-[#126](https://github.com/circleainn/BG3ModManager-Redux/issues/126). Report the exact version, source and
-destination pane, expanded/collapsed state, filters/sorting, and membership before/after the move.
+The earlier expanded-header behavior in
+[#126](https://github.com/circleainn/BG3ModManager-Redux/issues/126) is closed. For a new problem,
+report the exact version, source and destination pane, expanded/collapsed state, filters/sorting,
+and membership before/after the move.
 Use a backed-up or disposable order for reproduction; do not keep saving an unexpected arrangement.
 
-## A mod has the wrong source name or a link was applied to another mod
+## A mod loses its Nexus link or shows the wrong source
 
-Automatic/provider identity misidentification is tracked in
-[#125](https://github.com/circleainn/BG3ModManager-Redux/issues/125). A manual-link operation targeting a
-different mod after deactivation is tracked separately in
-[#128](https://github.com/circleainn/BG3ModManager-Redux/issues/128). A common cause has not been established.
-
-Record the intended mod's UUID and public source page, the mod that actually changed, the pane used,
-and whether a mod had just moved between Active and Inactive. If a link review identifies the wrong
-mod, cancel rather than applying it. Do not select downloads or updates based on an association you
-know is wrong, rename the package, or wipe all source data as a first response.
+Alpha.16.5.3 preserves a previously verified Nexus link when a refresh lacks an optional creator
+manifest. Other cases where a mod changes to **Local** after update or refresh remain tracked in
+[#157](https://github.com/circleainn/BG3ModManager-Redux/issues/157). Record the Redux version,
+mod UUID, expected public source page, whether the mod was replaced or refreshed, and whether the
+source integration is enabled. If a manual-link review identifies a different mod, cancel rather
+than applying it. Do not select downloads or updates based on an association you know is wrong,
+rename the package, or wipe all source data as a first response.
 
 ## A visual or interaction problem appears
 
@@ -167,9 +167,9 @@ Windows scaling, and approximate window size. Test whether the problem persists 
 Manrope, Default text size, and a normal window size; this narrows the report without erasing the
 original appearance settings.
 
-The nested-menu cursor gap is addressed in the 16.4.2 release notes. A recurrence on that version
-needs its own steps and scaling details. That hit-testing fix does not establish that the separate
-wrong-mod linking report is resolved.
+Recent releases include fixes for nested-menu hit testing and generated context-menu actions. A
+recurrence needs its own steps and scaling details; visual symptoms do not establish the cause of
+a separate source-link report.
 
 ## Prepare a useful report
 
