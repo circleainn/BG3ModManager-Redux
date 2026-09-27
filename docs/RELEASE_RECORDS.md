@@ -1,5 +1,15 @@
 # Public-alpha publication records
 
+## 0.1.0-alpha.16.5.2 — silent maintenance release
+
+- Source: `main` merge commit `79666410f12a6204ca745e8a97b8d36d1a021d8d`; annotated tag `v0.1.0-alpha.16.5.2` points to that commit.
+- Windows CI: [dev run 36255695165](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/36255695165) and [main run 36255967101](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/36255967101) passed. Local Debug and Publish builds passed with 541/541 regression checks in each configuration.
+- [GitHub portable ZIP](https://github.com/circleainn/BG3ModManager-Redux/releases/download/v0.1.0-alpha.16.5.2/BG3ModManager-Redux_v0.1.0-alpha.16.5.2.zip): `BG3ModManager-Redux_v0.1.0-alpha.16.5.2.zip`, 18,059,863 bytes, SHA-256 `7535d02169781e0e30dfdc4bd513dae844f25d076d7567daa2ef90da64ccfef1`. An anonymous download matched the staged ZIP and manifest. The archive has 76 inventoried files and exactly four `Updater/` files.
+- Public-alpha manifest: 618 bytes, SHA-256 `c723bedb6f4805164dbf3b1e19f6dc904fc402f830bed92be5e9e2e0d3daea36`. Its [fixed public URL](https://github.com/circleainn/BG3ModManager-Redux/releases/download/public-alpha/Redux-Update-Public-Alpha.json) was fetched anonymously after publication and returned display version `0.1.0-alpha.16.5.2`, internal version `0.1.16.502`, and the matching ZIP digest and length.
+- Nexus Mods: the protected [publication run 36256223436](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/36256223436) succeeded after reviewer approval. The official upload action submitted the verified GitHub ZIP to [Redux on Nexus Mods](https://www.nexusmods.com/baldursgate3/mods/23799?tab=files), file `7943154`, and returned file-version ID `14920716517763` for `0.1.0-alpha.16.5.2`. The public file page showed the matching version and carried-forward release summary; virus scanning was still in progress at that check.
+- The GitHub release contains `<!-- redux:no-announce -->` and is marked Latest. No public announcement or Nexus comment reply was sent as part of this release. [Issue #147](https://github.com/circleainn/BG3ModManager-Redux/issues/147) remains open for its separate missing Override configuration menu entry.
+- The maintainer performs live application checks separately. No clean-extraction, manual update/removal, NXM association, or gameplay load-order smoke result is claimed in this publication record.
+
 ## 0.1.0-alpha.16.5.1 — silent maintenance release
 
 - Source: `main` merge commit `946ef9d6f3182ee212cf099ad8623ecf43a782df`; annotated tag `v0.1.0-alpha.16.5.1` points to that commit.

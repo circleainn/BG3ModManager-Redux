@@ -1,6 +1,7 @@
 using DivinityModManager.AppServices;
 using DivinityModManager.Models;
 using DivinityModManager.Util;
+using DynamicData;
 
 using System;
 using System.IO;
@@ -10,6 +11,57 @@ namespace Redux.Core.Tests;
 
 internal sealed class LoadOrderWorkflowTests
 {
+	public void ExportKeepsExplicitCommunityFrameworkPlacementDespiteDependentMetadata()
+	{
+		var cleric = new DivinityModData { UUID = "cleric", Name = "Goon's Cleric Overhaul" };
+		var framework = new DivinityModData { UUID = "framework", Name = "Community Framework" };
+		cleric.Dependencies.AddOrUpdate(new ModuleShortDesc
+		{
+			UUID = framework.UUID,
+			Name = framework.Name
+		});
+		var order = new[]
+		{
+			new DivinityLoadOrderEntry { UUID = cleric.UUID, Name = cleric.Name },
+			new DivinityLoadOrderEntry { UUID = framework.UUID, Name = framework.Name }
+		};
+
+		var output = DivinityModDataLoader.BuildOutputList(order, [cleric, framework]);
+		RegressionAssert.SequenceEqual(new[] { cleric.UUID, framework.UUID }, output.Select(mod => mod.UUID));
+		var conflict = DivinityModDataLoader.FindReversedDependencies(output).Single();
+		RegressionAssert.Equal(framework.UUID, conflict.Dependency.UUID);
+		RegressionAssert.Equal(cleric.UUID, conflict.Dependent.UUID);
+	}
+
+	public void ExportAddsOnlyMissingDependenciesWithoutMovingSelectedMods()
+	{
+		var cleric = new DivinityModData { UUID = "cleric", Name = "Cleric" };
+		var framework = new DivinityModData { UUID = "framework", Name = "Framework" };
+		var missing = new DivinityModData { UUID = "missing", Name = "Missing Dependency" };
+		cleric.Dependencies.AddOrUpdate(new ModuleShortDesc { UUID = framework.UUID, Name = framework.Name });
+		cleric.Dependencies.AddOrUpdate(new ModuleShortDesc { UUID = missing.UUID, Name = missing.Name });
+		var order = new[]
+		{
+			new DivinityLoadOrderEntry { UUID = cleric.UUID, Name = cleric.Name },
+			new DivinityLoadOrderEntry { UUID = framework.UUID, Name = framework.Name }
+		};
+
+		var output = DivinityModDataLoader.BuildOutputList(order, [cleric, framework, missing]);
+		RegressionAssert.SequenceEqual(new[] { missing.UUID, cleric.UUID, framework.UUID },
+			output.Select(mod => mod.UUID));
+	}
+
+	public void CyclicMissingDependenciesDoNotRecurseForeverOrDuplicateMods()
+	{
+		var first = new DivinityModData { UUID = "first", Name = "First" };
+		var second = new DivinityModData { UUID = "second", Name = "Second" };
+		first.Dependencies.AddOrUpdate(new ModuleShortDesc { UUID = second.UUID, Name = second.Name });
+		second.Dependencies.AddOrUpdate(new ModuleShortDesc { UUID = first.UUID, Name = first.Name });
+		var output = DivinityModDataLoader.BuildOutputList(
+			[new DivinityLoadOrderEntry { UUID = first.UUID, Name = first.Name }], [first, second]);
+		RegressionAssert.SequenceEqual(new[] { second.UUID, first.UUID }, output.Select(mod => mod.UUID));
+	}
+
 	public void RefreshKeepsSelectedProfileInsteadOfForcingPublic()
 	{
 		var profiles = new[]

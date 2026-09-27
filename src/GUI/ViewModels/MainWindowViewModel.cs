@@ -490,7 +490,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public ICommand ClearModCategoryFilterCommand { get; private set; }
 	public ICommand OpenLoadOrderFolderCommand { get; private set; }
 	public ReactiveCommand<DivinityLoadOrder, Unit> DeleteOrderCommand { get; private set; }
-	public ICommand ConfigureOverrideOrderCommand { get; private set; }
 	public ReactiveCommand<object, Unit> ToggleOrderRenamingCommand { get; set; }
 	public RxCommandUnit RefreshCommand { get; private set; }
 	public RxCommandUnit RefreshModUpdatesCommand { get; private set; }
@@ -682,7 +681,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					+ (!Modules.SourceIntegrationsEnabled
 						? "In Preferences → General → Optional features, turn off ‘Disable online mod information’.\n\n" : "")
 					+ (String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey)
-						? "Add your Nexus Mods API key in Preferences → General → Metadata services. Redux needs this key to authorize Nexus downloads.\n\n" : "")
+						? "Add your Nexus Mods API key in Preferences → General → Online accounts. Redux needs this key to authorize Nexus downloads.\n\n" : "")
 					+ "Then click Mod Manager Download on Nexus again. No download has started.",
 					"Nexus Download Needs Setup", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK);
 				return;
@@ -4796,6 +4795,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				: null;
 
 			if (current.MetadataOrigin == NexusMetadataOrigin.CreatorManifest
+				&& mod.CreatorManifest?.IsValid == true
 				&& (source == null || current.ModId != source.ProjectId))
 			{
 				current.ResetSourceAssociation();
@@ -6334,6 +6334,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			var guidanceCount = relevantSnapshots.Sum(snapshot => snapshot.LoadOrderAdviceCount);
 			var missingDependencyCount = relevantSnapshots.Sum(snapshot =>
 				snapshot.Findings.Count(finding => finding.Code == ModHealthFindingCode.MissingDependency));
+			var dependencyOrderWarnings = DivinityModDataLoader.FindReversedDependencies(finalOrder)
+				.Select(pair => $"{pair.Dependency.GetDisplayName()} is after {pair.Dependent.GetDisplayName()}, which lists it as a dependency. Redux will keep your chosen order; review that mod's dependency metadata if this placement is intentional.")
+				.ToArray();
 			var review = new ReduxExportReviewData(
 				SelectedModOrder?.Name,
 				SelectedProfile?.Name ?? SelectedProfile?.ProfileName,
@@ -6341,7 +6344,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				healthErrorCount,
 				healthWarningCount,
 				guidanceCount,
-				missingDependencyCount);
+				missingDependencyCount,
+				dependencyOrderWarnings);
 			var dialog = new ReduxExportReviewWindow(Window, review);
 			dialog.ShowDialog();
 			return dialog.Accepted;
@@ -11021,17 +11025,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		.Distinct(StringComparer.OrdinalIgnoreCase)
 		.ToArray();
 
-	private void StartOverrideOrderRefresh()
-	{
-		RxApp.MainThreadScheduler.Schedule(TimeSpan.FromMilliseconds(100), () =>
-			RefreshCommand.Execute(Unit.Default).Subscribe());
-	}
-
-	private static string DescribeOverrideMoves(OverrideOrderFileService.Plan plan) =>
-		String.Join(Environment.NewLine,
-			plan.ToHold.Select(move => $"Hold: {move.FileName}")
-				.Concat(plan.ToActivate.Select(move => $"Restore: {move.FileName}")));
-
 	private IReadOnlyList<string> WantedOverrideFiles(DivinityLoadOrder order,
 		IEnumerable<string> pureOverrideSelection = null, bool useLiveActiveMods = false)
 	{
@@ -11175,103 +11168,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			order.OverrideModFiles = previous;
 			ShowAlert($"Could not {(activate ? "activate" : "disable")} Override mods: {ex.Message}", AlertType.Danger, 25);
 			return false;
-		}
-	}
-
-	private void ConfigureOverrideOrder()
-	{
-		var order = SelectedModOrder;
-		if (order == null || (SelectedProfile == null && order.IsModSettings) ||
-			(!order.IsModSettings && LoadOrderPersistencePolicy.RequiresSaveAs(order))) return;
-		var persistencePath = order.IsModSettings ? GetCurrentWorkingOrderPath() : order.FilePath;
-		if (String.IsNullOrWhiteSpace(persistencePath) ||
-			(!order.IsModSettings && !File.Exists(persistencePath))) return;
-		if (HasUnsavedLoadOrderChanges)
-		{
-			ShowAlert("Save the active load order before changing its Override mods.", AlertType.Info, 12);
-			return;
-		}
-		try
-		{
-			var service = CreateOverrideOrderFileService();
-			service.Recover();
-			var installed = CurrentOverridePaths().Select(Path.GetFileName).ToList();
-			var dialog = new OverrideOrderSelectionWindow(Window, order.Name, installed,
-				service.HeldFiles, order.OverrideModFiles);
-			if (ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(dialog, Window) != true && !dialog.Accepted) return;
-			if (!dialog.Accepted || !ReferenceEquals(order, SelectedModOrder)) return;
-			var selected = dialog.SelectedFiles;
-			var previous = order.OverrideModFiles?.ToList();
-			var originalOrderBytes = File.Exists(persistencePath) ? File.ReadAllBytes(persistencePath) : null;
-			var orderToPersist = order.IsModSettings ? CreateWorkingLoadOrderSnapshot() : order;
-			orderToPersist.FilePath = persistencePath;
-			if (order.IsModSettings) Directory.CreateDirectory(Path.GetDirectoryName(persistencePath));
-			if (selected != null)
-			{
-				var plan = service.Review(CurrentOverridePaths(), selected);
-				if (plan.Moves.Count > 0 && ReduxMessageBox.Show(Window,
-					$"Apply these Override changes to '{order.Name}'?\n\n{DescribeOverrideMoves(plan)}\n\nNo PAKs will be deleted.",
-					"Review Override Mod Changes", MessageBoxButton.YesNo,
-					MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
-				order.OverrideModFiles = selected;
-				orderToPersist.OverrideModFiles = selected;
-				if (!DivinityModDataLoader.ExportLoadOrderToFile(persistencePath, orderToPersist))
-				{
-					order.OverrideModFiles = previous;
-					throw new IOException("The saved load order could not be updated.");
-				}
-				try
-				{
-					service.Apply(plan);
-					foreach (var move in plan.ToHold) _activatedOverridePaths.Remove(move.Source);
-					foreach (var move in plan.ToActivate) _activatedOverridePaths.Add(move.Destination);
-				}
-				catch
-				{
-					order.OverrideModFiles = previous;
-					if (originalOrderBytes != null) AtomicFileWriter.WriteAllBytes(persistencePath, originalOrderBytes);
-					else File.Delete(persistencePath);
-					throw;
-				}
-				if (plan.Moves.Count > 0) StartOverrideOrderRefresh();
-				order.LastModifiedDate = File.GetLastWriteTime(persistencePath);
-			}
-			else
-			{
-				var plan = service.Review(CurrentOverridePaths(), CurrentOverridePaths()
-					.Select(Path.GetFileName).Concat(service.HeldFiles));
-				if (plan.Moves.Count > 0 && ReduxMessageBox.Show(Window,
-					$"Stop managing Overrides for '{order.Name}' and restore all held PAKs?\n\n{DescribeOverrideMoves(plan)}",
-					"Review Override Mod Changes", MessageBoxButton.YesNo,
-					MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
-				order.OverrideModFiles = null;
-				orderToPersist.OverrideModFiles = null;
-				if (!DivinityModDataLoader.ExportLoadOrderToFile(persistencePath, orderToPersist))
-				{
-					order.OverrideModFiles = previous;
-					throw new IOException("The saved load order could not be updated.");
-				}
-				try
-				{
-					service.Apply(plan);
-					foreach (var move in plan.ToActivate) _activatedOverridePaths.Add(move.Destination);
-				}
-				catch
-				{
-					order.OverrideModFiles = previous;
-					if (originalOrderBytes != null) AtomicFileWriter.WriteAllBytes(persistencePath, originalOrderBytes);
-					else File.Delete(persistencePath);
-					throw;
-				}
-				if (plan.Moves.Count > 0) StartOverrideOrderRefresh();
-				order.LastModifiedDate = File.GetLastWriteTime(persistencePath);
-			}
-			ShowAlert(selected == null ? "This order no longer manages Override mods." :
-				$"Saved {selected.Count} Override mod{(selected.Count == 1 ? String.Empty : "s")} for '{order.Name}'.", AlertType.Success, 12);
-		}
-		catch (Exception ex)
-		{
-			ShowAlert($"Could not change Override mods for this order: {ex.Message}", AlertType.Danger, 25);
 		}
 	}
 
@@ -12935,9 +12831,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		var canDeleteOrder = this.WhenAnyValue(x => x.MainProgressIsActive, x => x.SelectedModOrderIndex).Select(x => !x.Item1 && x.Item2 > 0);
 		OpenLoadOrderFolderCommand = ReactiveCommand.Create(OpenLoadOrderFolder);
 		DeleteOrderCommand = ReactiveCommand.Create<DivinityLoadOrder>(DeleteOrder, canDeleteOrder, RxApp.MainThreadScheduler);
-		ConfigureOverrideOrderCommand = ReactiveCommand.Create(ConfigureOverrideOrder,
-			this.WhenAnyValue(x => x.SelectedModOrderIndex, x => x.IsRefreshing,
-				(index, refreshing) => index >= 0 && !refreshing), RxApp.MainThreadScheduler);
 
 		modsConnection.AutoRefresh(x => x.IsSelected).Filter(x => x.IsSelected && !x.IsEditorMod && File.Exists(x.FilePath)).Bind(out selectedPakMods).Subscribe();
 
