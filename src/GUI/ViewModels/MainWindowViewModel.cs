@@ -3547,15 +3547,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Settings.VisualModListDividers.Where(divider => divider.IsActiveList && divider.IsGlobal));
 		var inactiveDividers = CloneVisualDividers(
 			Settings.VisualModListDividers.Where(divider => !divider.IsActiveList));
-		var savedActiveDividers = LoadOrderPersistencePolicy.CloneActiveVisualDividers(
-			order?.VisualDividers);
-		var positionedGlobalDividers = globalActiveDividers.Select(definition =>
-			LoadOrderPersistencePolicy.MergeGlobalDividerPlacement(
-				definition,
-				savedActiveDividers.FirstOrDefault(saved => saved.IsGlobal &&
-					saved.Id.Equals(definition.Id, StringComparison.OrdinalIgnoreCase))));
-		Settings.VisualModListDividers = positionedGlobalDividers
-			.Concat(savedActiveDividers.Where(divider => !divider.IsGlobal))
+		Settings.VisualModListDividers = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers(
+			globalActiveDividers, order?.VisualDividers)
 			.Concat(inactiveDividers)
 			.ToList();
 		CaptureVisualDividerBaseline();

@@ -354,6 +354,7 @@ internal static class Program
 			(nameof(interactionBehavior.WorkingChangesStayDetachedUntilExplicitlySaved), interactionBehavior.WorkingChangesStayDetachedUntilExplicitlySaved),
 			(nameof(interactionBehavior.SavedOrdersKeepIndependentActiveSeparators), interactionBehavior.SavedOrdersKeepIndependentActiveSeparators),
 			(nameof(interactionBehavior.GlobalSeparatorsKeepIndependentPerOrderPlacements), interactionBehavior.GlobalSeparatorsKeepIndependentPerOrderPlacements),
+			(nameof(interactionBehavior.CopiedLegacySeparatorIdsMergeIntoGlobalPlacements), interactionBehavior.CopiedLegacySeparatorIdsMergeIntoGlobalPlacements),
 			(nameof(interactionBehavior.PersistentSeparatorUpgradeOnlyTargetsExistingActiveSeparators), interactionBehavior.PersistentSeparatorUpgradeOnlyTargetsExistingActiveSeparators),
 			(nameof(interactionBehavior.SeparatorUpgradeTracksOrdersAndPreservesNewSeparators), interactionBehavior.SeparatorUpgradeTracksOrdersAndPreservesNewSeparators),
 			(nameof(separatorLayout.ParentPickerInheritsScopeAndUpgradeDialogFits), separatorLayout.ParentPickerInheritsScopeAndUpgradeDialogFits),
