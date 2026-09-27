@@ -7,8 +7,8 @@ the whole workflow before adjusting a single control's appearance.
 ## Shared rules
 
 1. **Keep the three mod panes related.** Active, Inactive, and Override use the same header,
-   scrollbar, column menu, selection, and separator components. Differences must explain real
-   behavior: Active has game load-order numbers; Inactive and Override have visual organization.
+   scrollbar, column-header controls, selection, and separator components. Differences must explain
+   real behavior: Active has game load-order numbers; Inactive and Override have visual organization.
    Override retains its semantic title color.
 2. **Align data with its heading.** Center order numbers beneath section icons and align mod names with section labels.
    Headings, numbers, names, and interaction surfaces share one 20px child-level step.
@@ -74,7 +74,7 @@ Use a disposable profile or test data. Record what was actually checked and any 
 
 - Find a mod by name/category; move it before a visible row while filtering. Clear the filter and
   check its full-order position and the relative order of hidden mods.
-- Put mods between a parent and two child separators. Collapse each child, then the parent;
+- Put mods between a parent and two sub-separators. Collapse each sub-separator, then the parent;
   expand again. Check membership, animation, selection, and responsiveness.
 - Move an expanded heading and a collapsed section. Undo and redo each operation; confirm which
   rows move and that unrelated entries retain their positions.

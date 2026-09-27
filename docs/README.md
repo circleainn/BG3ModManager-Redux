@@ -54,6 +54,7 @@ above for present-day instructions.
   conditions.
 - **Load Order Advisor** means the optional guidance layer and its user-reviewed organizer.
 - **Separator** means a Redux visual grouping marker. Separators never enter `modsettings.lsx`.
+- **Sub-separator** means one nested visual grouping level inside a separator.
 - **Redux Modlist** means the portable `.bg3redux` format. It does not contain PAKs or saves.
 - **Contribution report** means a privacy-limited `.bg3redux-report` prepared for database review.
 - **Game-directory mod** means a reviewed native or root-level package managed outside the normal
