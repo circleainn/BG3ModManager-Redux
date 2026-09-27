@@ -14,9 +14,9 @@ No. Redux is not affiliated with or endorsed by Larian Studios, Nexus Mods, or m
 3 is developed and published by Larian Studios. Redux retains and credits substantial work from the
 upstream BG3 Mod Manager project.
 
-## Is alpha.16.5 stable?
+## Is Redux stable?
 
-`0.1.0-alpha.16.5` is a public alpha, not a final stable release. Its core workflows have
+Redux is a public alpha, not a final stable release. Its core workflows have
 automated and private testing, but public use will expose more combinations of Windows versions,
 display scaling, game paths, tools, and mod sets. Keep independent backups and report reproducible
 problems.
@@ -63,6 +63,19 @@ Categories are Redux presentation labels used for color, icons, organization, an
 Separators are named visual sections with durable membership and collapse state. Neither is written
 to `modsettings.lsx`, and neither is a mod.
 
+## How do I change the columns in a mod list?
+
+Right-click the column headers in Active, Inactive, or Override Mods to show, hide, or arrange
+columns. **Last Modified** is the local file timestamp; **Last Updated** comes from known source or
+package metadata and is not necessarily the date you installed the mod.
+
+## Where do Override mods go?
+
+Pure Override PAKs belong in Override Mods, outside the numbered game load order. Move an inactive
+Override into that pane to enable it, or move it back to Inactive Mods to disable it. If the Override
+pane is hidden, dropping a held Override onto Active Mods routes it to Override Mods. Mixed packages
+that also have a normal load-order entry can move into Active Mods.
+
 ## Does the Load Order Advisor fix my load order automatically?
 
 No. Mod Diagnostics is built-in and read-only. Load Order Advisor is a separate optional,
@@ -75,6 +88,13 @@ compatibility.
 Redux chooses **Local** when it lacks strong enough evidence for a provider identity. It does not
 guess from a similar filename or title. You can link a source manually, use enabled provider
 information, or contribute a privacy-limited database report for maintainer review.
+
+## How do I check whether a mod has an update?
+
+Choose **Check Mod Updates** in the toolbar's **Mod Review** status menu, or use
+**File > Actions > Check Mod Updates**. A full check may use many Nexus API requests, so Redux explains the cost first.
+For one linked Nexus mod, right-click it and choose **Check Nexus File Update**. Redux marks only
+verified replacements; an unlinked or unverified mod is not automatically considered up to date.
 
 ## Does Redux require internet access?
 

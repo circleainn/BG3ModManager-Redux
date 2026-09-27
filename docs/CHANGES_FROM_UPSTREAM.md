@@ -19,7 +19,7 @@ claim that every visible behavior originated in Redux.
 |:--|:--|:--|
 | Mod management | PAK parsing, archives, active/inactive lists, profiles, campaigns | Structured drop review, safer staged replacement, unified selection and presentation |
 | Load orders | Editing, saved orders, `modsettings.lsx` import/export | Explicit unsaved working state, review-before-write, restore points, comparisons, Undo/Redo |
-| Organization | List ordering and filtering | Multi-category organization and persistent visual separators |
+| Organization | List ordering and filtering | Multi-category organization and persistent separators with one sub-separator level across all mod panes |
 | Mod information | Nexus metadata, package metadata, dependencies, overrides | Unified diagnostics, mod.io/manual provenance, offline recognition, richer details surfaces |
 | Guidance | Parsed dependency facts | Optional Load Order Advisor and separator-aware organization previews |
 | Portability | Existing order formats | `.bg3redux` Modlists for selected Redux presentation and public source data |
@@ -86,13 +86,17 @@ and category-aware selection. Missing or removed assets have explicit fallback b
 
 Redux separators are named visual markers with descriptions, colors, icons, durable membership,
 and persistent collapse state. They never enter `modsettings.lsx` and are never treated as mods.
+They work in Active, Inactive, and Override Mods. A separator can contain one level of
+sub-separators, and collapsing a parent hides its whole branch. Existing separators can remain
+specific to a saved order or share their appearance across orders while keeping independent
+placement and collapse state in each order.
 
 - An expanded separator moves only its marker.
 - A collapsed separator moves with its sealed contents.
 - Moving a closed group does not absorb unrelated destination rows.
 - Rows placed next to a closed separator remain visible until the group is expanded.
-- A compact Active Mods control and an assignable shortcut can collapse or expand all active
-  separators; the bulk control stays out of the header when fewer than two separators exist.
+- Pane controls and assignable shortcuts can collapse or expand separators in Active, Inactive,
+  and Override Mods.
 
 ## Deliberate load-order workflow
 
@@ -113,6 +117,10 @@ Redux Modlists add a portable `.bg3redux` format for a saved order and user-sele
 separator, custom-icon, public-source, and optional-note data. Import choices remain independent.
 Bundles are validated and never contain installed PAKs, saves, profiles, API keys, or
 `modsettings.lsx`.
+
+Redux also gives Override PAKs a separate pane and a per-saved-order enabled selection. Disabled
+Overrides move to managed storage through reviewed file operations, so a package can be inactive
+for one order without its direct file overrides remaining in BG3's Mods folder.
 
 ## Diagnostics and optional guidance
 
