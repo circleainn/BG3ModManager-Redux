@@ -121,10 +121,12 @@ known source or package-metadata date.
 - Override Mods has its own filterable, sortable pane outside the numbered order, with matching
   automatically saved visual ordering and nested separators that never enter `modsettings.lsx`, plus
   title/count treatment, headers, scrollbars, collapse motion, and a configurable collapse/expand shortcut.
-- Saved load orders can manage which Override PAKs are installed. Drag a held Override from Inactive Mods into
-  Override Mods to enable it, or move one back to disable it; the same actions are available from the mod's
-  right-click menu. Redux holds disabled PAKs in its own folder and restores them when an order needs them.
-  Orders that have not opted in continue to load all Override PAKs.
+- Each saved load order can keep its own enabled Override PAKs without a setup menu. Drag a held Override
+  from Inactive Mods into Override Mods to enable it, or move one back to disable it; the same actions are
+  available from the mod's right-click menu. If the Override pane is hidden, drop the held Override onto
+  Active Mods and Redux routes it to Override Mods. The first change records the selection for that order.
+  Redux holds disabled PAKs in its own folder and restores them when another order needs them. Existing
+  orders with no Override selection continue to load all Override PAKs until you change one.
 - Inactive ordering and separators save automatically, independently of active-order Save/Discard.
 - Category filtering applies to both panes. Click a filtered/sorted-view notice to clear that view;
   column-menu order follows your column arrangement.
