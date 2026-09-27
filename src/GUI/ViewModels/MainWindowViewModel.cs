@@ -2441,6 +2441,21 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					loaded = true;
 					migrateLegacyCredentials = !String.IsNullOrWhiteSpace(settings.NexusModsAPIKey)
 						|| !String.IsNullOrWhiteSpace(settings.ModioAPIKey);
+					var storedDividers = settings.VisualModListDividers;
+					if (storedDividers?.Where(divider => divider?.IsActiveList == true &&
+							!String.IsNullOrWhiteSpace(divider.Id))
+						.GroupBy(divider => divider.Id, StringComparer.OrdinalIgnoreCase)
+						.Any(group => group.Count() > 1) == true)
+					{
+						// A failed pre-16.5 global upgrade could persist both the shared
+						// definition and its older local copy before the next startup.
+						settings.VisualModListDividers = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers(
+							storedDividers.Where(divider => divider?.IsActiveList == true && divider.IsGlobal),
+							storedDividers.Where(divider => divider?.IsActiveList == true))
+							.Concat(storedDividers.Where(divider => divider?.IsActiveList == false))
+							.ToList();
+						DivinityApp.Log("Reconciled duplicate active separator IDs in saved settings.");
+					}
 					Settings.SetFrom<DivinityModManagerSettings, ReactiveAttribute>(settings);
 					Settings.ExtenderSettings.SetFrom(settings.ExtenderSettings);
 					Settings.ExtenderUpdaterSettings.SetFrom(settings.ExtenderUpdaterSettings);
@@ -3547,15 +3562,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Settings.VisualModListDividers.Where(divider => divider.IsActiveList && divider.IsGlobal));
 		var inactiveDividers = CloneVisualDividers(
 			Settings.VisualModListDividers.Where(divider => !divider.IsActiveList));
-		var savedActiveDividers = LoadOrderPersistencePolicy.CloneActiveVisualDividers(
-			order?.VisualDividers);
-		var positionedGlobalDividers = globalActiveDividers.Select(definition =>
-			LoadOrderPersistencePolicy.MergeGlobalDividerPlacement(
-				definition,
-				savedActiveDividers.FirstOrDefault(saved => saved.IsGlobal &&
-					saved.Id.Equals(definition.Id, StringComparison.OrdinalIgnoreCase))));
-		Settings.VisualModListDividers = positionedGlobalDividers
-			.Concat(savedActiveDividers.Where(divider => !divider.IsGlobal))
+		Settings.VisualModListDividers = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers(
+			globalActiveDividers, order?.VisualDividers)
 			.Concat(inactiveDividers)
 			.ToList();
 		CaptureVisualDividerBaseline();

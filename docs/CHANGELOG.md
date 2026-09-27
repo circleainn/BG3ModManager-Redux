@@ -5,6 +5,8 @@ source for individual implementation details.
 
 ## Unreleased
 
+- Reconcile copied pre-16.5 separators with their global definition by ID when opening another saved order or recovering saved settings after a crash, preserving the order's placement and collapsed members instead of creating duplicate rows.
+
 ## 0.1.0-alpha.16.5.3 — 2026-09-27
 
 A maintenance update for load-order sync, shutdown, menus, and source links.

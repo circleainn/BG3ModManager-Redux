@@ -136,6 +136,36 @@ public static class LoadOrderPersistencePolicy
 		};
 	}
 
+	/// <summary>
+	/// A separator copied between orders before global scope existed keeps its ID in
+	/// each order. Treat that older local copy as this order's placement of the new
+	/// global definition, rather than rendering two separators with the same ID.
+	/// </summary>
+	public static List<ModListVisualDividerData> MergeGlobalAndSavedDividers(
+		IEnumerable<ModListVisualDividerData> globalDefinitions,
+		IEnumerable<ModListVisualDividerData> savedDividers)
+	{
+		var globals = CloneActiveVisualDividers(globalDefinitions)
+			.Where(divider => divider.IsGlobal)
+			.GroupBy(divider => divider.Id, StringComparer.OrdinalIgnoreCase)
+			.Select(group => group.First())
+			.ToList();
+		var saved = CloneActiveVisualDividers(savedDividers);
+		var savedGroups = saved.GroupBy(divider => divider.Id, StringComparer.OrdinalIgnoreCase).ToList();
+		var savedById = savedGroups
+			.ToDictionary(group => group.Key,
+				group => group.FirstOrDefault(divider => !divider.IsGlobal) ?? group.First(),
+				StringComparer.OrdinalIgnoreCase);
+		var globalIds = globals.Select(divider => divider.Id)
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		return globals.Select(definition => MergeGlobalDividerPlacement(
+				definition, savedById.GetValueOrDefault(definition.Id)))
+			.Concat(savedGroups
+				.Where(group => !globalIds.Contains(group.Key))
+				.Select(group => savedById[group.Key]))
+			.ToList();
+	}
+
 	public static bool RequiresSaveAs(DivinityLoadOrder order)
 	{
 		return order?.IsModSettings == true

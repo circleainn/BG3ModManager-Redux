@@ -464,6 +464,52 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.SequenceEqual(new[] { "order-specific-mod" }, restored.MemberModUuids);
 	}
 
+	public void CopiedLegacySeparatorIdsMergeIntoGlobalPlacements()
+	{
+		var definition = new ModListVisualDividerData
+		{
+			Id = "shared", Title = "Shared styling", Color = "#123456", IsGlobal = true,
+			Position = 1, MemberModUuids = ["first-order-mod"]
+		};
+		var oldLocalCopy = new ModListVisualDividerData
+		{
+			Id = "SHARED", Title = "Old styling", Color = "#ABCDEF", IsGlobal = false,
+			Position = 8, IsCollapsed = true, MemberModUuids = ["second-order-mod"]
+		};
+		var secondOrder = new[]
+		{
+			new ModListVisualDividerData { Id = "shared", IsGlobal = true, Position = 99 },
+			oldLocalCopy,
+			new ModListVisualDividerData { Id = "other", Title = "Local only", Position = 10 }
+		};
+
+		var merged = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers([definition], secondOrder);
+		RegressionAssert.Equal(2, merged.Count);
+		var shared = merged.Single(divider => divider.Id == "shared");
+		RegressionAssert.True(shared.IsGlobal);
+		RegressionAssert.Equal("Shared styling", shared.Title);
+		RegressionAssert.Equal("#123456", shared.Color);
+		RegressionAssert.Equal(8, shared.Position);
+		RegressionAssert.True(shared.IsCollapsed);
+		RegressionAssert.SequenceEqual(new[] { "second-order-mod" }, shared.MemberModUuids);
+		RegressionAssert.False(merged.Single(divider => divider.Id == "other").IsGlobal);
+		RegressionAssert.False(oldLocalCopy.IsGlobal);
+		RegressionAssert.Equal(8, oldLocalCopy.Position);
+		RegressionAssert.False(VisualDividerHierarchyPolicy.NormalizePlacement(merged, true));
+		var recoveredSettings = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers(
+			[definition], [definition, oldLocalCopy]);
+		RegressionAssert.Equal(1, recoveredSettings.Count);
+		RegressionAssert.Equal(8, recoveredSettings.Single().Position);
+		RegressionAssert.SequenceEqual(new[] { "second-order-mod" }, recoveredSettings.Single().MemberModUuids);
+
+		var reopened = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers([definition], merged);
+		RegressionAssert.Equal(2, reopened.Count);
+		RegressionAssert.Equal(8, reopened.Single(divider => divider.Id == "shared").Position);
+		var firstOrder = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers([definition], [definition]);
+		RegressionAssert.Equal(1, firstOrder.Single().Position);
+		RegressionAssert.SequenceEqual(new[] { "first-order-mod" }, firstOrder.Single().MemberModUuids);
+	}
+
 	public void PersistentSeparatorUpgradeOnlyTargetsExistingActiveSeparators()
 	{
 		var dividers = new[]
