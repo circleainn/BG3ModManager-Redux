@@ -496,6 +496,11 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.False(oldLocalCopy.IsGlobal);
 		RegressionAssert.Equal(8, oldLocalCopy.Position);
 		RegressionAssert.False(VisualDividerHierarchyPolicy.NormalizePlacement(merged, true));
+		var recoveredSettings = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers(
+			[definition], [definition, oldLocalCopy]);
+		RegressionAssert.Equal(1, recoveredSettings.Count);
+		RegressionAssert.Equal(8, recoveredSettings.Single().Position);
+		RegressionAssert.SequenceEqual(new[] { "second-order-mod" }, recoveredSettings.Single().MemberModUuids);
 
 		var reopened = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers([definition], merged);
 		RegressionAssert.Equal(2, reopened.Count);
