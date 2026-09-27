@@ -705,7 +705,7 @@ public sealed class SourceAssociationTests
 		RegressionAssert.True(ModioCacheHandler.IsCachedAssociationCompatible(mod, cached));
 	}
 
-	public void CreatorManifestNexusCacheRequiresTheCurrentProjectClaim()
+	public void CreatorManifestNexusCacheSurvivesAbsentManifestButRejectsContradictoryClaims()
 	{
 		var mod = CreateMod();
 		mod.CreatorManifest = ValidManifestWithNexusProject(12345);
@@ -722,6 +722,9 @@ public sealed class SourceAssociationTests
 		RegressionAssert.False(NexusModsCacheHandler.IsCachedAssociationCompatible(mod, cached));
 
 		mod.CreatorManifest = ReduxCreatorManifestData.NotPresent;
+		RegressionAssert.True(NexusModsCacheHandler.IsCachedAssociationCompatible(mod, cached));
+
+		mod.CreatorManifest = new ReduxCreatorManifestData { State = ReduxCreatorManifestState.Valid };
 		RegressionAssert.False(NexusModsCacheHandler.IsCachedAssociationCompatible(mod, cached));
 	}
 

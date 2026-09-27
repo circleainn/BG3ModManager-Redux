@@ -147,7 +147,10 @@
 						</Border>
 						<StackPanel Grid.Column="1"><TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{Binding DiagnosticTitle}" />
 							<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{Binding DiagnosticSummary}" TextWrapping="Wrap" />
-							<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{Binding DependencySummary}" TextWrapping="Wrap" /></StackPanel>
+							<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{Binding DependencySummary}" TextWrapping="Wrap" />
+							<TextBlock Margin="0,5,0,0" Foreground="{DynamicResource ReduxWarningBrush}"
+								Text="{Binding DependencyOrderWarningSummary}" TextWrapping="Wrap"
+								Visibility="{Binding HasDependencyOrderWarnings, Converter={StaticResource BoolToVisibilityConverter}}" /></StackPanel>
 					</Grid>
 				</Border>
 

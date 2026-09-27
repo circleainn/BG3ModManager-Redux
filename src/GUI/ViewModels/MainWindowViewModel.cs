@@ -682,7 +682,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					+ (!Modules.SourceIntegrationsEnabled
 						? "In Preferences → General → Optional features, turn off ‘Disable online mod information’.\n\n" : "")
 					+ (String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey)
-						? "Add your Nexus Mods API key in Preferences → General → Metadata services. Redux needs this key to authorize Nexus downloads.\n\n" : "")
+						? "Add your Nexus Mods API key in Preferences → General → Online accounts. Redux needs this key to authorize Nexus downloads.\n\n" : "")
 					+ "Then click Mod Manager Download on Nexus again. No download has started.",
 					"Nexus Download Needs Setup", MessageBoxButton.OK, MessageBoxImage.Information, MessageBoxResult.OK);
 				return;
@@ -4796,6 +4796,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				: null;
 
 			if (current.MetadataOrigin == NexusMetadataOrigin.CreatorManifest
+				&& mod.CreatorManifest?.IsValid == true
 				&& (source == null || current.ModId != source.ProjectId))
 			{
 				current.ResetSourceAssociation();
@@ -6334,6 +6335,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			var guidanceCount = relevantSnapshots.Sum(snapshot => snapshot.LoadOrderAdviceCount);
 			var missingDependencyCount = relevantSnapshots.Sum(snapshot =>
 				snapshot.Findings.Count(finding => finding.Code == ModHealthFindingCode.MissingDependency));
+			var dependencyOrderWarnings = DivinityModDataLoader.FindReversedDependencies(finalOrder)
+				.Select(pair => $"{pair.Dependency.GetDisplayName()} is after {pair.Dependent.GetDisplayName()}, which lists it as a dependency. Redux will keep your chosen order; review that mod's dependency metadata if this placement is intentional.")
+				.ToArray();
 			var review = new ReduxExportReviewData(
 				SelectedModOrder?.Name,
 				SelectedProfile?.Name ?? SelectedProfile?.ProfileName,
@@ -6341,7 +6345,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				healthErrorCount,
 				healthWarningCount,
 				guidanceCount,
-				missingDependencyCount);
+				missingDependencyCount,
+				dependencyOrderWarnings);
 			var dialog = new ReduxExportReviewWindow(Window, review);
 			dialog.ShowDialog();
 			return dialog.Accepted;

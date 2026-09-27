@@ -903,7 +903,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			: listView.ItemContainerGenerator.ItemFromContainer(item) as DivinityModData;
 		var menu = item?.ContextMenu ?? listView.ContextMenu;
 		if (menu == null) return;
-		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, BulkActionsMenuTag)).ToList())
+		// Generated actions belong to the previously opened row. Remove them before
+		// hiding the fixed actions for a separator; changing their Tag would make
+		// them impossible to identify on the next right-click.
+		foreach (var generatedItem in menu.Items.OfType<FrameworkElement>()
+			.Where(IsGeneratedModContextEntry).ToList())
 		{
 			menu.Items.Remove(generatedItem);
 		}
@@ -943,7 +947,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		if (mod.IsVisualDivider)
 		{
-			foreach (var oldGenerated in menu.Items.OfType<FrameworkElement>().Where(entry => Equals(entry.Tag, VisualDividerMenuTag)).ToList()) menu.Items.Remove(oldGenerated);
 			foreach (var entry in menu.Items.OfType<FrameworkElement>().ToList())
 			{
 				entry.Tag = "ReduxHiddenForDivider";
@@ -1046,30 +1049,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			return;
 		}
 
-		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, CategoryAssignmentMenuTag)).ToList())
-		{
-			menu.Items.Remove(generatedItem);
-		}
-		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, PrivateNoteMenuTag)).ToList())
-		{
-			menu.Items.Remove(generatedItem);
-		}
-		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, ModAliasMenuTag)).ToList())
-		{
-			menu.Items.Remove(generatedItem);
-		}
-		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, ModArtworkMenuTag)).ToList())
-		{
-			menu.Items.Remove(generatedItem);
-		}
-		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, OverrideTransferMenuTag)).ToList())
-		{
-			menu.Items.Remove(generatedItem);
-		}
-		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, ModUpdateMenuTag)).ToList())
-		{
-			menu.Items.Remove(generatedItem);
-		}
 		if (mod.IsForceLoaded && !mod.IsForceLoadedMergedMod && !mod.ForceAllowInLoadOrder)
 		{
 			var activateOverride = listView == InactiveModsListView && mod.IsHeldOverride;
@@ -1292,11 +1271,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			menu.Items.Insert(Math.Min(5, menu.Items.Count), artworkMenu);
 		}
 
-		foreach (var generatedItem in menu.Items.OfType<MenuItem>().Where(entry => Equals(entry.Tag, SourceLinkMenuTag)).ToList())
-		{
-			menu.Items.Remove(generatedItem);
-		}
-
 		if (ViewModel.Modules.SourceIntegrationsEnabled)
 		{
 			var sourceMenu = new MenuItem
@@ -1400,11 +1374,6 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			}
 		}
 
-		foreach (var generatedItem in menu.Items.OfType<FrameworkElement>().Where(entry => Equals(entry.Tag, VisualDividerMenuTag)).ToList())
-		{
-			menu.Items.Remove(generatedItem);
-		}
-
 		var activeModList = listView == ActiveModsListView;
 		var overrideModList = listView == ForceLoadedModsListView;
 		var dividerMenu = new MenuItem
@@ -1432,6 +1401,17 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		AddVisualDividerStateActions(dividerMenu, activeModList, overrideList: overrideModList);
 		menu.Items.Insert(Math.Min(3, menu.Items.Count), dividerMenu);
 	}
+
+	private static bool IsGeneratedModContextEntry(FrameworkElement entry) =>
+		Equals(entry.Tag, BulkActionsMenuTag)
+		|| Equals(entry.Tag, CategoryAssignmentMenuTag)
+		|| Equals(entry.Tag, PrivateNoteMenuTag)
+		|| Equals(entry.Tag, ModAliasMenuTag)
+		|| Equals(entry.Tag, ModArtworkMenuTag)
+		|| Equals(entry.Tag, OverrideTransferMenuTag)
+		|| Equals(entry.Tag, ModUpdateMenuTag)
+		|| Equals(entry.Tag, SourceLinkMenuTag)
+		|| Equals(entry.Tag, VisualDividerMenuTag);
 
 	private void AddVisualDividerStateActions(ItemsControl parent, bool activeList, object tag = null, bool overrideList = false)
 	{

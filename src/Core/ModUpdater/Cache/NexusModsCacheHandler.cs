@@ -43,10 +43,12 @@ public class NexusModsCacheHandler : IExternalModCacheHandler<NexusModsCachedDat
 			return false;
 		}
 
-		var source = mod.CreatorManifest?.IsValid == true
-			? mod.CreatorManifest.Sources.FirstOrDefault(candidate =>
-				candidate.Service == ReduxCreatorManifestService.NexusSourceService)
-			: null;
+		// A previously verified creator link remains useful if a refreshed package
+		// no longer includes the optional manifest (or parsing temporarily fails).
+		// Only a valid, contradictory current claim may invalidate it.
+		if (mod.CreatorManifest?.IsValid != true) return true;
+		var source = mod.CreatorManifest.Sources.FirstOrDefault(candidate =>
+			candidate.Service == ReduxCreatorManifestService.NexusSourceService);
 		return source != null && source.ProjectId == data.ModId;
 	}
 
