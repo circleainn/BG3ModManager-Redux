@@ -57,7 +57,7 @@ install of `.16.3.1`. Once a maintenance-aware build is installed, later three-c
 are ordered and updated normally.
 
 Two-component releases (`.16.4`, `.16.5`, `.16.6`) are announced releases. Three-component releases
-(`.16.3.1`, `.16.3.2`, `.16.3.3`, `.16.3.4`, `.16.4.1`, `.16.4.2`, `.16.4.3`, `.16.4.4`, `.16.5.1`, `.16.5.2`, `.16.5.3`) are silent maintenance releases and must
+(`.16.3.1`, `.16.3.2`, `.16.3.3`, `.16.3.4`, `.16.4.1`, `.16.4.2`, `.16.4.3`, `.16.4.4`, `.16.5.1`, `.16.5.2`, `.16.5.3`, `.16.5.4`) are silent maintenance releases and must
 include `<!-- redux:no-announce -->` in their GitHub notes. The helper bot still records a silent
 release but does not post or ping. The release remains a normal published GitHub release, is marked
 Latest, uploads to Nexus Mods, and moves the public-alpha channel like any other release.

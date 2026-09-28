@@ -5,6 +5,8 @@ source for individual implementation details.
 
 ## Unreleased
 
+## 0.1.0-alpha.16.5.4 — 2026-09-27
+
 - Reconcile copied pre-16.5 separators with their global definition by ID when opening another saved order or recovering saved settings after a crash, preserving the order's placement and collapsed members instead of creating duplicate rows.
 - Preserve separate local separator rows when older saved data gives them the same or a missing ID, instead of silently dropping one during recovery.
 - Refresh the startup splash with a compact theme-aware layout, a clear live loading step, and progress that stays visually connected to that step.
