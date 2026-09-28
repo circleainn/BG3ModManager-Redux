@@ -1,5 +1,15 @@
 # Public-alpha publication records
 
+## 0.1.0-alpha.16.5.4 — maintenance release
+
+- Source: `main` merge commit `f108a75fa3e009c42c17ee504385dbc43f830fca`; annotated tag `v0.1.0-alpha.16.5.4` points to that commit.
+- Windows CI: [release-prep run 36364260349](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/36364260349), [main PR run 36364528247](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/36364528247), and [merged-main run 36364788782](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/36364788782) passed. Local Debug and Publish builds passed with 546/546 regression checks in each configuration; the NuGet audit found no vulnerable packages.
+- [GitHub portable ZIP](https://github.com/circleainn/BG3ModManager-Redux/releases/download/v0.1.0-alpha.16.5.4/BG3ModManager-Redux_v0.1.0-alpha.16.5.4.zip): `BG3ModManager-Redux_v0.1.0-alpha.16.5.4.zip`, 18,058,664 bytes, SHA-256 `28e0271d1c88d74b332f9a6c3e2f9645eb0d55826e3b044efd3150309292a55c`. An anonymous download matched the tested main-branch ZIP. The archive has 76 inventoried files and exactly four `Updater/` files.
+- Public-alpha manifest: 618 bytes, SHA-256 `c15aa8f61cde9cf3667a6a98cfb2e9bf314f2164fb2c08f1deb42aaafe40fce7`. Its [fixed public URL](https://github.com/circleainn/BG3ModManager-Redux/releases/download/public-alpha/Redux-Update-Public-Alpha.json) was fetched anonymously after publication and returned display version `0.1.0-alpha.16.5.4`, internal version `0.1.16.504`, and the matching ZIP digest and length. The fixed URL briefly returned the previous cached manifest immediately after replacement, then served the new version.
+- Nexus Mods: the protected [publication run 36365362287](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/36365362287) succeeded after reviewer approval. The official upload action submitted the verified GitHub ZIP to [Redux on Nexus Mods](https://www.nexusmods.com/baldursgate3/mods/23799?tab=files), file `7943154`, and returned file-version ID `14920716517923`. The workflow recorded the same version, filename, and SHA-256. The public page had not yet refreshed to 16.5.4 at the first check; no public-page availability claim is made here.
+- The GitHub release is marked Latest and uses the no-announcement marker. Its notes cover only the new separator recovery and splash changes. No public announcement or Nexus comment reply was sent as part of this release. [Issue #127](https://github.com/circleainn/BG3ModManager-Redux/issues/127) remains open because it covers broader Sync and missing-separator reports.
+- The maintainer performs live application checks separately. No clean-extraction, manual update/removal, NXM association, or gameplay load-order smoke result is claimed in this publication record.
+
 ## 0.1.0-alpha.16.5.3 — maintenance release
 
 - Source: `main` merge commit `4a4c7c38c5dfd37a09a54ba044a5f43310e8d972`; annotated tag `v0.1.0-alpha.16.5.3` points to that commit.
