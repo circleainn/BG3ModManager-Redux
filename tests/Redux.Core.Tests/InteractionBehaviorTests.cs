@@ -510,6 +510,54 @@ public sealed class InteractionBehaviorTests
 		RegressionAssert.SequenceEqual(new[] { "first-order-mod" }, firstOrder.Single().MemberModUuids);
 	}
 
+	public void DuplicateLocalSeparatorIdsPreserveBothRows()
+	{
+		var first = new ModListVisualDividerData
+		{
+			Id = "copied-local", Title = "First", Position = 1, MemberModUuids = ["mod-a"]
+		};
+		var second = new ModListVisualDividerData
+		{
+			Id = "COPIED-LOCAL", Title = "Second", Position = 4, MemberModUuids = ["mod-b"]
+		};
+		var missingId = new ModListVisualDividerData
+		{
+			Id = null!, Title = "Legacy without ID", Position = 6
+		};
+
+		var merged = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers([], [first, second, missingId]);
+		RegressionAssert.Equal(3, merged.Count);
+		RegressionAssert.SequenceEqual(new[] { "First", "Second", "Legacy without ID" },
+			merged.Select(divider => divider.Title));
+		RegressionAssert.Equal("copied-local", merged[0].Id);
+		RegressionAssert.True(!String.IsNullOrWhiteSpace(merged[1].Id));
+		RegressionAssert.True(!String.IsNullOrWhiteSpace(merged[2].Id));
+		RegressionAssert.Equal(3, merged.Select(divider => divider.Id)
+			.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+		RegressionAssert.SequenceEqual(new[] { "mod-a" }, merged[0].MemberModUuids);
+		RegressionAssert.SequenceEqual(new[] { "mod-b" }, merged[1].MemberModUuids);
+		RegressionAssert.Equal(4, merged[1].Position);
+		RegressionAssert.Equal("COPIED-LOCAL", second.Id);
+		RegressionAssert.True(missingId.Id == null);
+
+		var reopened = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers([], merged);
+		RegressionAssert.SequenceEqual(merged.Select(divider => divider.Id),
+			reopened.Select(divider => divider.Id));
+
+		var global = new ModListVisualDividerData
+		{
+			Id = "copied-local", Title = "Now global", IsGlobal = true
+		};
+		var withGlobal = LoadOrderPersistencePolicy.MergeGlobalAndSavedDividers([global], [first, second]);
+		RegressionAssert.Equal(2, withGlobal.Count);
+		RegressionAssert.Equal("Now global", withGlobal[0].Title);
+		RegressionAssert.Equal(1, withGlobal[0].Position);
+		RegressionAssert.Equal("Second", withGlobal[1].Title);
+		RegressionAssert.False(withGlobal[1].IsGlobal);
+		RegressionAssert.True(!withGlobal[1].Id.Equals(global.Id, StringComparison.OrdinalIgnoreCase));
+		RegressionAssert.SequenceEqual(new[] { "mod-b" }, withGlobal[1].MemberModUuids);
+	}
+
 	public void PersistentSeparatorUpgradeOnlyTargetsExistingActiveSeparators()
 	{
 		var dividers = new[]

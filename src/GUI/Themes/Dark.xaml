@@ -96,10 +96,7 @@
 	<SolidColorBrush x:Key="ReduxGithubIconBrush" Color="{DynamicResource ReduxGithubIconColor}" />
 	<SolidColorBrush x:Key="ReduxSplashSurfaceBrush" Color="{DynamicResource ReduxWindowColor}" />
 	<SolidColorBrush x:Key="ReduxSplashBorderBrush" Color="{DynamicResource ReduxBorderStrongColor}" />
-	<sys:Double x:Key="Redux.Splash.AccentOpacity">0.24</sys:Double>
-	<sys:Double x:Key="Redux.Splash.ErrorOpacity">0.14</sys:Double>
-	<sys:Double x:Key="Redux.Splash.WarningOpacity">0.13</sys:Double>
-	<sys:Double x:Key="Redux.Splash.SuccessOpacity">0.16</sys:Double>
+	<sys:Double x:Key="Redux.Splash.AccentOpacity">0.16</sys:Double>
 	<SolidColorBrush x:Key="ReduxIconBrush" Color="{DynamicResource ReduxAccentColor}" />
 	<!-- Keep stock Adonis controls on the Redux palette after every theme switch. -->
 	<SolidColorBrush x:Key="{x:Static adonisUi:Brushes.ForegroundBrush}" Color="{DynamicResource ReduxTextPrimaryColor}" />

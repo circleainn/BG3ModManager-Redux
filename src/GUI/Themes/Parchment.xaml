@@ -35,21 +35,14 @@
 	<Color x:Key="ReduxTextMutedColor">#6F5D4B</Color>
 	<Color x:Key="ReduxAccentForegroundColor">#FFF8EB</Color>
 	<Color x:Key="ReduxGithubIconColor">#000000</Color>
-	<!--
-		Parchment needs a distinct splash composition, not a low-contrast version of the
-		four-colour dark-theme wash. A stronger paper ramp carries the surface while one
-		burgundy field and one forest field provide intentional opposing focal points.
-	-->
+	<!-- The paper ramp carries the splash; a restrained burgundy field adds focus. -->
 	<LinearGradientBrush x:Key="ReduxSplashSurfaceBrush" StartPoint="0,0" EndPoint="1,1">
 		<GradientStop Offset="0" Color="#F5E8CE" />
 		<GradientStop Offset="0.48" Color="#E9D5B2" />
 		<GradientStop Offset="1" Color="#CFAD7F" />
 	</LinearGradientBrush>
 	<SolidColorBrush x:Key="ReduxSplashBorderBrush" Color="#876642" />
-	<sys:Double x:Key="Redux.Splash.AccentOpacity">0.18</sys:Double>
-	<sys:Double x:Key="Redux.Splash.ErrorOpacity">0</sys:Double>
-	<sys:Double x:Key="Redux.Splash.WarningOpacity">0</sys:Double>
-	<sys:Double x:Key="Redux.Splash.SuccessOpacity">0.085</sys:Double>
+	<sys:Double x:Key="Redux.Splash.AccentOpacity">0.11</sys:Double>
 	<!--
 		Light.xaml's Redux*PillBackground gradients bake in Light's own hex rather than a
 		DynamicResource Color, so they don't automatically pick up Parchment's overrides above

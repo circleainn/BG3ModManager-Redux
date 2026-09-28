@@ -66,6 +66,8 @@ public partial class ReduxStartupWindow : Window, IReduxTypographyIsolated
 	public void Attach(MainWindowViewModel viewModel)
 	{
 		DataContext = viewModel;
+		if (String.IsNullOrWhiteSpace(viewModel.MainProgressWorkText))
+			viewModel.MainProgressWorkText = "Loading settings...";
 	}
 
 	private void CloseStartup_Click(object sender, RoutedEventArgs e) => Close();
