@@ -136,6 +136,74 @@ public static class LoadOrderPersistencePolicy
 		};
 	}
 
+	/// <summary>
+	/// A separator copied between orders before global scope existed keeps its ID in
+	/// each order. Treat that older local copy as this order's placement of the new
+	/// global definition, rather than rendering two separators with the same ID.
+	/// </summary>
+	public static List<ModListVisualDividerData> MergeGlobalAndSavedDividers(
+		IEnumerable<ModListVisualDividerData> globalDefinitions,
+		IEnumerable<ModListVisualDividerData> savedDividers)
+	{
+		var globalCandidates = CloneActiveVisualDividers(globalDefinitions)
+			.Where(divider => divider.IsGlobal)
+			.ToList();
+		var saved = CloneActiveVisualDividers(savedDividers);
+		var reservedIds = globalCandidates.Concat(saved)
+			.Select(divider => divider.Id)
+			.Where(id => !String.IsNullOrWhiteSpace(id))
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		foreach (var divider in globalCandidates.Where(divider => String.IsNullOrWhiteSpace(divider.Id)))
+			divider.Id = NewUniqueDividerId(reservedIds);
+		var globals = globalCandidates
+			.GroupBy(divider => divider.Id, StringComparer.OrdinalIgnoreCase)
+			.Select(group => group.First())
+			.ToList();
+		var savedById = saved.Where(divider => !String.IsNullOrWhiteSpace(divider.Id))
+			.GroupBy(divider => divider.Id, StringComparer.OrdinalIgnoreCase)
+			.ToDictionary(group => group.Key,
+				group => group.FirstOrDefault(divider => !divider.IsGlobal) ?? group.First(),
+				StringComparer.OrdinalIgnoreCase);
+		var globalIds = globals.Select(divider => divider.Id)
+			.ToHashSet(StringComparer.OrdinalIgnoreCase);
+		var usedPlacements = new HashSet<ModListVisualDividerData>();
+		var result = new List<ModListVisualDividerData>();
+		foreach (var definition in globals)
+		{
+			var placement = savedById.GetValueOrDefault(definition.Id);
+			if (placement != null) usedPlacements.Add(placement);
+			result.Add(MergeGlobalDividerPlacement(definition, placement));
+		}
+		var resultIds = new HashSet<string>(globalIds, StringComparer.OrdinalIgnoreCase);
+		foreach (var divider in saved)
+		{
+			if (!String.IsNullOrWhiteSpace(divider.Id) && globalIds.Contains(divider.Id))
+			{
+				if (usedPlacements.Contains(divider) || divider.IsGlobal) continue;
+				// An additional local copy is another visible row, not another
+				// placement of the same global definition.
+				divider.Id = NewUniqueDividerId(reservedIds);
+			}
+			// Only a copied global definition represents the same separator. Two
+			// local rows with the same legacy ID are still two rows; keep both.
+			if (String.IsNullOrWhiteSpace(divider.Id) || !resultIds.Add(divider.Id))
+			{
+				divider.Id = NewUniqueDividerId(reservedIds);
+				resultIds.Add(divider.Id);
+			}
+			result.Add(divider);
+		}
+		return result;
+	}
+
+	private static string NewUniqueDividerId(HashSet<string> reservedIds)
+	{
+		string id;
+		do id = Guid.NewGuid().ToString("N");
+		while (!reservedIds.Add(id));
+		return id;
+	}
+
 	public static bool RequiresSaveAs(DivinityLoadOrder order)
 	{
 		return order?.IsModSettings == true

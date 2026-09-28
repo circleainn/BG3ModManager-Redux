@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:DivinityModManager.Controls"
     Width="560"
-    Height="320"
+    Height="282"
     ResizeMode="NoResize"
     ShowActivated="True"
     ShowInTaskbar="True"
@@ -29,7 +29,7 @@
 
 	<Grid x:Name="StartupContent" ClipToBounds="True">
 		<Grid.RenderTransform>
-			<ScaleTransform ScaleX="1" ScaleY="1" CenterX="280" CenterY="160" />
+			<ScaleTransform ScaleX="1" ScaleY="1" CenterX="280" CenterY="141" />
 		</Grid.RenderTransform>
 
 		<Border Background="{DynamicResource ReduxSplashSurfaceBrush}"
@@ -37,70 +37,62 @@
 		    BorderThickness="1"
 		    CornerRadius="{DynamicResource Redux.CornerRadius.Card}" />
 
-		<!-- Broad semantic-color fields replace the old bokeh/card composition. -->
-		<Ellipse Width="330" Height="230" Margin="-150,-125,0,0"
+		<!-- One quiet theme accent keeps the surface recognizable without using status colors as decoration. -->
+		<Ellipse Width="340" Height="240" Margin="-145,-145,0,0"
 		    HorizontalAlignment="Left" VerticalAlignment="Top"
 		    Fill="{DynamicResource ReduxAccentBrush}" Opacity="{DynamicResource Redux.Splash.AccentOpacity}"
 		    IsHitTestVisible="False">
 			<Ellipse.Effect><BlurEffect Radius="70" /></Ellipse.Effect>
 		</Ellipse>
-		<Ellipse Width="300" Height="220" Margin="0,-135,-130,0"
-		    HorizontalAlignment="Right" VerticalAlignment="Top"
-		    Fill="{DynamicResource ReduxErrorBrush}" Opacity="{DynamicResource Redux.Splash.ErrorOpacity}"
-		    IsHitTestVisible="False">
-			<Ellipse.Effect><BlurEffect Radius="75" /></Ellipse.Effect>
-		</Ellipse>
-		<Ellipse Width="310" Height="200" Margin="-100,0,0,-125"
-		    HorizontalAlignment="Left" VerticalAlignment="Bottom"
-		    Fill="{DynamicResource ReduxWarningBrush}" Opacity="{DynamicResource Redux.Splash.WarningOpacity}"
-		    IsHitTestVisible="False">
-			<Ellipse.Effect><BlurEffect Radius="78" /></Ellipse.Effect>
-		</Ellipse>
-		<Ellipse Width="340" Height="220" Margin="0,0,-145,-130"
-		    HorizontalAlignment="Right" VerticalAlignment="Bottom"
-		    Fill="{DynamicResource ReduxSuccessBrush}" Opacity="{DynamicResource Redux.Splash.SuccessOpacity}"
-		    IsHitTestVisible="False">
-			<Ellipse.Effect><BlurEffect Radius="80" /></Ellipse.Effect>
-		</Ellipse>
 
 		<!--
 			Only the foreground animates on entrance. The card background, border and colour
-			fields above are the splash surface itself: fading them leaves nothing but the
+			field above form the splash surface: fading them leaves nothing but the
 			opaque window background, which reads as a black window fading into the splash.
 		-->
-		<Grid x:Name="StartupForeground" Margin="28,24,28,22">
+		<Grid x:Name="StartupForeground" Margin="28,24,28,26">
 			<Grid.RenderTransform>
 				<TranslateTransform Y="0" />
 			</Grid.RenderTransform>
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
-				<RowDefinition Height="*" />
 				<RowDefinition Height="Auto" />
+				<RowDefinition Height="*" />
 			</Grid.RowDefinitions>
 
 			<Grid>
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
 					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="Auto" />
 				</Grid.ColumnDefinitions>
-				<controls:ReduxIcon Width="20" Height="20"
-				    VerticalAlignment="Center"
-				    Foreground="{DynamicResource ReduxAccentBrush}"
-				    Data="{StaticResource Redux.Icon.ReduxStar}" />
-				<TextBlock Grid.Column="1" Margin="9,0,0,0"
-				    VerticalAlignment="Center"
-				    FontSize="{DynamicResource Redux.FontSize.13}"
-				    FontWeight="{DynamicResource Redux.FontWeight.Title}"
-				    Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-				    Text="BG3 Mod Manager Redux" />
-				<TextBlock Grid.Column="2"
-				    Margin="0,0,8,0"
-				    VerticalAlignment="Center"
-				    FontSize="{DynamicResource Redux.FontSize.10}"
-				    Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-				    Text="{Binding VersionText, RelativeSource={RelativeSource AncestorType=Window}}" />
+				<Border Width="38" Height="38" CornerRadius="10"
+				    Background="{DynamicResource ReduxAccentSoftBrush}"
+				    BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
+					<controls:ReduxIcon Width="20" Height="20"
+					    HorizontalAlignment="Center" VerticalAlignment="Center"
+					    Foreground="{DynamicResource ReduxAccentBrush}"
+					    Data="{StaticResource Redux.Icon.ReduxStar}" />
+				</Border>
+				<StackPanel Grid.Column="1" Margin="11,0,0,0" VerticalAlignment="Center">
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.10}"
+					    Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+					    Text="BG3 MOD MANAGER" />
+					<TextBlock Margin="0,-2,0,0"
+					    FontSize="{DynamicResource Redux.FontSize.18}"
+					    FontWeight="{DynamicResource Redux.FontWeight.Title}"
+					    Foreground="{DynamicResource ReduxTextPrimaryBrush}"
+					    Text="Redux" />
+				</StackPanel>
+				<Border Grid.Column="2" Margin="0,0,12,0" Padding="9,4"
+				    VerticalAlignment="Center" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"
+				    Background="{DynamicResource ReduxSurfaceBrush}"
+				    BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1">
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.10}"
+					    Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+					    Text="{Binding VersionText, RelativeSource={RelativeSource AncestorType=Window}}" />
+				</Border>
 				<Button Grid.Column="3" Width="26" Height="26" Padding="0"
 				    Style="{StaticResource ReduxPaneHeaderActionButtonStyle}"
 				    Click="CloseStartup_Click" ToolTip="Close Redux"
@@ -111,43 +103,57 @@
 				</Button>
 			</Grid>
 
-			<StackPanel Grid.Row="1"
-			    HorizontalAlignment="Center"
-			    VerticalAlignment="Center"
-			    TextBlock.TextAlignment="Center">
-				<TextBlock FontSize="{DynamicResource Redux.FontSize.26}"
+			<Border Grid.Row="1" Height="1" Margin="0,17,0,0"
+			    Background="{DynamicResource ReduxBorderBrush}" Opacity="0.65" />
+
+			<StackPanel Grid.Row="2" VerticalAlignment="Center">
+				<TextBlock FontSize="{DynamicResource Redux.FontSize.20}"
 				    FontWeight="{DynamicResource Redux.FontWeight.Title}"
 				    Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-				    Text="Starting BG3 Mod Manager Redux" />
-				<TextBlock Margin="0,6,0,0"
-				    FontSize="{DynamicResource Redux.FontSize.12}"
+				    Text="Preparing your workspace" />
+				<TextBlock Margin="0,7,0,0"
+				    FontSize="{DynamicResource Redux.FontSize.13}"
 				    Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-				    Text="Loading settings" />
-			</StackPanel>
+				    Text="{Binding MainProgressWorkText, FallbackValue='Loading settings...', TargetNullValue='Loading settings...'}"
+				    TextTrimming="CharacterEllipsis"
+				    AutomationProperties.LiveSetting="Polite" />
 
-			<Grid Grid.Row="2">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
-				</Grid.RowDefinitions>
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*" />
-						<ColumnDefinition Width="Auto" />
-					</Grid.ColumnDefinitions>
-					<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-					    Text="{Binding MainProgressWorkText, FallbackValue='Loading settings...', TargetNullValue='Loading settings...'}"
-					    TextTrimming="CharacterEllipsis" />
-					<TextBlock Grid.Column="1" Margin="12,0,0,0"
-					    FontWeight="{DynamicResource Redux.FontWeight.Control}"
-					    Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-					    Text="{Binding MainProgressValue, StringFormat={}{0:P0}}" />
+				<Grid Margin="0,25,0,0">
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="Auto" />
+					</Grid.RowDefinitions>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*" />
+							<ColumnDefinition Width="Auto" />
+						</Grid.ColumnDefinitions>
+						<TextBlock FontSize="{DynamicResource Redux.FontSize.10}"
+						    FontWeight="{DynamicResource Redux.FontWeight.Control}"
+						    Foreground="{DynamicResource ReduxTextMutedBrush}"
+						    Text="STARTUP PROGRESS" />
+						<TextBlock Grid.Column="1" Margin="12,0,0,0"
+						    FontSize="{DynamicResource Redux.FontSize.11}"
+						    FontWeight="{DynamicResource Redux.FontWeight.Control}"
+						    Foreground="{DynamicResource ReduxTextSecondaryBrush}">
+							<TextBlock.Style>
+								<Style TargetType="TextBlock">
+									<Setter Property="Text" Value="{Binding MainProgressValue, StringFormat={}{0:P0}}" />
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding MainProgressValue}" Value="0">
+											<Setter Property="Text" Value="Working" />
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</TextBlock.Style>
+						</TextBlock>
+					</Grid>
+					<ProgressBar Grid.Row="1" Height="6" Margin="0,9,0,0"
+					    Maximum="1"
+					    Style="{StaticResource ReduxProgressBarStyle}"
+					    Value="{Binding MainProgressValue}" />
 				</Grid>
-				<ProgressBar Grid.Row="1" Height="4" Margin="0,8,0,0"
-				    Maximum="1"
-				    Style="{StaticResource ReduxProgressBarStyle}"
-				    Value="{Binding MainProgressValue}" />
-			</Grid>
+			</StackPanel>
 		</Grid>
 	</Grid>
 </Window>
