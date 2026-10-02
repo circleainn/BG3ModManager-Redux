@@ -28,7 +28,8 @@ source for individual implementation details.
 - Read solid 7z archives sequentially during inspection and import, avoiding repeated decompression of earlier entries.
 - Let Install All's close button cancel work, keep progress visible until cleanup finishes, and preserve unfinished downloads for retry.
 - Reuse a verified archive inspection during Download Manager review while keeping the archive protected from changes until import finishes.
-- Explain unsupported multipart PAK layouts before installation instead of failing after the files have been staged separately.
+- Install complete multipart PAK sets together, keep their backups and Override moves together, and recover interrupted replacements. Loose sets added to Download Manager retain and verify every part.
+- Stop LSLib LZ4 decoding when package inspection or extraction is canceled, including solid PAKs.
 - Save pending inactive-order and separator edits before Refresh reloads settings; keep the current organization if that save fails.
 - Restore remembered window placement and explicit gradient/font choices, including returning those appearance choices to theme defaults.
 - Publish a mod scan in one batch, avoiding repeated Override pane rebuilds while large libraries load.

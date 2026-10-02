@@ -7,7 +7,7 @@ namespace DivinityModManager.AppServices;
 
 public static class EditorModBackupService
 {
-	public static async Task WriteToZipAsync(IAsyncWriter writer, DivinityModData mod, string gameDataFolder,
+	public static async Task<int> WriteToZipAsync(IAsyncWriter writer, DivinityModData mod, string gameDataFolder,
 		string stagingDirectory, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
@@ -26,20 +26,27 @@ public static class EditorModBackupService
 			? mod.Folder : mod.Folder + "_" + mod.UUID, "pak");
 		// Metadata controls the archive label only; it never chooses a staging path.
 		Directory.CreateDirectory(stagingDirectory);
-		var outputPackage = Path.Combine(Path.GetFullPath(stagingDirectory), Guid.NewGuid().ToString("N") + ".pak");
+		var ownedStaging = Path.Combine(Path.GetFullPath(stagingDirectory), Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(ownedStaging);
+		var outputPackage = Path.Combine(ownedStaging, packageName);
 		try
 		{
 			if (!await DivinityFileUtils.CreatePackageAsync(gameDataRoot, sourceFolders, outputPackage,
 				cancellationToken, DivinityFileUtils.IgnoredPackageFiles))
 				throw new IOException($"Could not package editor mod '{mod.Name}'. The backup was not replaced.");
-			await using var input = new FileStream(outputPackage, FileMode.Open, FileAccess.Read, FileShare.Read,
-				65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
-			await writer.WriteAsync(packageName, input, File.GetLastWriteTime(outputPackage), cancellationToken);
+			var paths = PakFileSet.GetPaths(outputPackage);
+			foreach (var path in paths)
+			{
+				await using var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
+					65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
+				await writer.WriteAsync(Path.GetFileName(path), input, File.GetLastWriteTime(path), cancellationToken);
+			}
 			cancellationToken.ThrowIfCancellationRequested();
+			return paths.Count;
 		}
 		finally
 		{
-			if (File.Exists(outputPackage)) File.Delete(outputPackage);
+			if (Directory.Exists(ownedStaging)) Directory.Delete(ownedStaging, true);
 		}
 	}
 

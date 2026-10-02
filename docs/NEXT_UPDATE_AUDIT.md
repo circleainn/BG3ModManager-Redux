@@ -26,7 +26,7 @@ this audit does not close issues or establish a reporter's exact failure was rep
 The October 1 Nexus report from **irulannaba** narrows #171's symptoms: the Vivid Landscape
 AIO 4K `.7z` extracts very slowly, installation appears stuck, and the reported `(x)` control did
 not stop it; manual extraction was the workaround. Prioritize solid-archive extraction cost,
-UI responsiveness, and cancellation separately from the multipart PAK limitation below.
+UI responsiveness, and cancellation separately from multipart PAK handling below.
 
 - Startup copied only reactive settings, omitting the inactive and Override UUID sequences,
   window placement, and nullable appearance preferences. Restore these explicitly and retain
@@ -41,10 +41,12 @@ UI responsiveness, and cancellation separately from the multipart PAK limitation
 - Immediate Refresh could reload disk settings before a delayed inactive-order or separator save.
   Flush pending settings before Refresh clears the library; preserve pending work and abort Refresh
   if saving fails.
-- Archive preflight and import staged multipart PAK files independently. A synthetic two-part v18
-  package loads with its original sibling filenames but fails in the current staging layout.
-  Detect unsupported multipart packages before commit and explain the limitation. Full support
-  requires grouped staging, replacement, recovery, and sibling ownership tracking.
+- Archive preflight and import now stage multipart PAK siblings together and inspect one primary.
+  Replacements use a flushed recovery journal, preserve readable old sets, remove obsolete owned
+  siblings, and reject filename collisions with another package. Startup recovers interrupted sets.
+  Override holding, active backups, deletion, and backup retention include all header-declared parts.
+  Loose sets entering Download Manager become one deterministic ZIP, binding every part to the
+  reviewed hash and retained archive; a lone downloaded primary cannot verify external siblings.
 - A synthetic solid LZMA2 `.7z` with twelve 2 MiB entries took 107.81 ms through separate
   `OpenEntryStream` calls and 16.53 ms through one sequential reader after warmup. This isolates
   repeated decompression overhead; it does not predict timing for the 1.8 GB Vivid download.
@@ -108,11 +110,13 @@ UI responsiveness, and cancellation separately from the multipart PAK limitation
 - Manual extraction previously checked cancellation only around a complete synchronous unpack.
   Copy members with cancellation and atomically replace each destination after validating its length.
   Reject unsafe member paths before any output, retain completed members, and preserve an existing
-  destination when its replacement fails or is canceled. LSLib's initial synchronous LZ4 decode,
-  solid-package opening, and per-member editor-package compression remain non-interruptible.
+  destination when its replacement fails or is canceled. Redux's LSLib build now checks cancellation
+  inside raw LZ4 block expansion, mapped input copies, and bounded native solid-frame decoding.
+  Editor-package compression remains synchronous per member; memory allocation and operating-system
+  I/O are not preemptible. The decoding limitation has been removed without editing the submodule.
 - Editor-mod backups used metadata Folder/UUID values to choose a temporary PAK path. Relative
   traversal could truncate/delete a file outside staging. Validate these values as single components
-  and use an independently generated staging filename. Missing project sources now fail the backup;
+  and use an independently generated staging directory. Missing project sources now fail the backup;
   normal editor backups retain their archive names and contain both Mods and Public project files.
 - F5 Refresh remained enabled during extraction and backups. Refresh completion could dispose the
   other operation's cancellation source, preventing a later shutdown request from stopping its work.
@@ -125,11 +129,29 @@ is drawn from the pasted comments. View sorting alone does not demonstrate a cha
 
 ## Remaining release verification
 
-Local validation on October 2: Debug and Publish builds succeeded and **627/627 regression checks
-passed in each configuration** against the final source. Coverage includes solid-7z entry contents and compressed-input reads,
+Follow-up validation on October 2: multipart-set support and cancellable LSLib decoding now pass
+**644/644 regression checks in both Debug and Publish**. New fixtures exercise complete/missing sets,
+archive sibling ordering, stable local-intake archives, renamed replacement sets, readable recovery
+backups, locked-part rollback, restart recovery, ownership collisions, Override holding, retention,
+and malformed headers without losing the rest of the library. Decoder fixtures cover raw LZ4
+literal/repeating/random contents, invalid blocks, a real solid v18 PAK, malformed frames, and
+cancellation of 128 MiB block/frame decodes. The upstream submodule source remains unchanged;
+Redux's build uses the documented adaptations under `compat/LSLib`.
+
+The final follow-up validation ZIP has 76 files, four updater files, and 18,101,041 bytes; SHA-256
+`c42f0baecdd6d588f29ff24011904db7d493e6d3cee343d36ed5dcfb1728303b`.
+ZIP CRC, inventory, manifest identity, privacy-path checks, and clean extraction passed. Isolated
+updater replacement, locked-file rollback, and user-state preservation passed on these bytes.
+Logs and fixtures are under `.codex-artifacts/multipart-validation-20261002-final` in the outer
+workspace. This build still uses the baseline 16.5.4 version and is not published. The original local
+release ZIPs and channel manifest were restored byte-for-byte. The actual Vivid 4K archive and
+interactive checks below remain unverified.
+
+Earlier validation on October 2, before multipart and decoder support: Debug and Publish builds
+succeeded and **627/627 regression checks passed in each configuration**. Coverage includes solid-7z entry contents and compressed-input reads,
 cancellation during selected/skipped entries, stopping before unrelated archive tails, shutdown
 waiting for owned operations, partial-import source persistence, canceled local-intake cleanup,
-multipart rejection without replacing an installed file, changed-package rejection after review,
+incomplete multipart rejection without replacing an installed file, changed-package rejection after review,
 verified archive handle lifetime, and pending settings saves. Additional checks cover archived
 Current and named-order preservation, malformed order JSON, compressed PAK destination validation,
 temporary-copy cleanup, hybrid-package completion, and interrupted download finalization/retry.
@@ -145,7 +167,7 @@ safe when called directly during file work, and blocked during batch installs or
 `git diff --check` passed. The benchmark above compares synchronous traversal APIs; production uses
 the asynchronous sequential reader, and the regression asserts reduced reads rather than elapsed time.
 
-The local Publish verification ZIP contains 76 inventoried files and exactly four updater files.
+The earlier local Publish verification ZIP contains 76 inventoried files and exactly four updater files.
 ZIP CRC, complete inventory coverage, manifest size/SHA-256, and byte-for-byte clean extraction passed;
 the package checks detected no forbidden runtime-state files or private build paths. NuGet reported
 no known vulnerable direct or transitive dependencies. The archive is 18,090,315 bytes with SHA-256

@@ -828,6 +828,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			.Select(Path.GetFullPath)
 			.Distinct(StringComparer.OrdinalIgnoreCase)
 			.ToArray();
+		candidates = FilterMultipartInputs(candidates).ToArray();
 		if (candidates.Length == 0) return 0;
 		using var intakeCancellation = new CancellationTokenSource();
 		using var operationRegistration = _pendingOperations.TryRegister(intakeCancellation.Cancel);
@@ -855,12 +856,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				try
 				{
 					LocalPackageIntakeStatus = $"Checking package {current}";
-					var classification = await ClassifyAcquiredPackageAsync(path, cancellationToken);
+					using var prepared = await PreparedPakInput.OpenAsync(path, cancellationToken);
+					var classification = await ClassifyAcquiredPackageAsync(prepared.Path, cancellationToken);
 					LocalPackageIntakeStatus = $"Hashing package {current}";
-					var sha256 = await ComputeAcquiredPackageSha256Async(path, cancellationToken);
+					var sha256 = await ComputeAcquiredPackageSha256Async(prepared.Path, cancellationToken);
 					cancellationToken.ThrowIfCancellationRequested();
 					LocalPackageIntakeStatus = $"Adding package {current}";
-					await _nxmDownloadManager.AddLocalPackageAsync(path, sha256, classification.ProjectName,
+					await _nxmDownloadManager.AddLocalPackageAsync(prepared.Path, sha256, classification.ProjectName,
 						classification.ContentKind, classification.Destination, classification.Summary,
 						thumbnailUrl: classification.ThumbnailUrl, cancellationToken: cancellationToken);
 					added++;
@@ -957,7 +959,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			var unsupported = report.Findings.FirstOrDefault(finding => finding.Title == PakImportCompatibility.MultipartFindingTitle);
 			if (unsupported != null)
 				return new AcquiredPackageInspection(new AcquiredPackageClassification(Path.GetFileNameWithoutExtension(path),
-					"Unsupported multipart PAK", String.Empty, unsupported.Message, false, String.Empty), [report], null);
+					"Incomplete multipart PAK", String.Empty, unsupported.Message, false, String.Empty), [report], null);
 			var thumbnail = report.IsReadable
 				? await ResolveAcquiredPackageThumbnailAsync(path, [report.Mod], installed, cancellationToken)
 				: String.Empty;
@@ -3906,10 +3908,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private string CreatePakImportTemporaryPath(string finalPath)
 	{
-		var directory = Path.GetDirectoryName(finalPath);
-		var name = Path.GetFileNameWithoutExtension(finalPath);
-		// Keep staged imports from looking like installed mods to BG3 or BG3MM scanners.
-		return Path.Combine(directory, $".{name}.redux-import-{Guid.NewGuid():N}.pak.tmp");
+		var directory = Path.Combine(Path.GetDirectoryName(finalPath), ".redux-pak-stage-" + Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(directory);
+		return Path.Combine(directory, Path.GetFileName(finalPath));
 	}
 
 	private string ModBackupDirectory => Path.Combine(PathwayData.AppDataGameFolder, "Mods_Old_ModManager");
@@ -3949,41 +3950,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{ ReduxMessageBox.Show(owner, ex.Message, "Could not manage previous versions", MessageBoxButton.OK, MessageBoxImage.Error); }
 	}
 
-	private string GetUniqueModBackupPath(string originalPath)
-	{
-		var recoveryDirectory = Path.Combine(PathwayData.AppDataGameFolder, "Mods_Old_ModManager");
-		Directory.CreateDirectory(recoveryDirectory);
-		var candidate = Path.Combine(recoveryDirectory, Path.GetFileName(originalPath));
-		if (!File.Exists(candidate)) return candidate;
-
-		var name = Path.GetFileNameWithoutExtension(originalPath);
-		var extension = Path.GetExtension(originalPath);
-		var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
-		candidate = Path.Combine(recoveryDirectory, $"{name}_{timestamp}{extension}");
-		var suffix = 1;
-		while (File.Exists(candidate))
-		{
-			candidate = Path.Combine(recoveryDirectory, $"{name}_{timestamp}_{suffix++}{extension}");
-		}
-		return candidate;
-	}
-
-	private string BackupExistingPak(string finalPath)
-	{
-		if (!File.Exists(finalPath)) return null;
-		var backupPath = GetUniqueModBackupPath(finalPath);
-		try
-		{
-			File.Copy(finalPath, backupPath, false);
-		}
-		catch (Exception ex)
-		{
-			throw new IOException($"Could not create recovery backup '{backupPath}'. The installed mod was left unchanged.", ex);
-		}
-		DivinityApp.Log($"Backed up existing mod '{finalPath}' to '{backupPath}'.");
-		return backupPath;
-	}
-
 	private async Task<DivinityModData> ValidateAndCommitImportedPakAsync(string temporaryPath, string finalPath,
 		Dictionary<string, DivinityModData> builtinMods, CancellationToken cancellationToken,
 		Func<DivinityModData, string> resolveDestination = null)
@@ -3999,13 +3965,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 		await SetMainProgressPhaseAsync($"Backing up and installing PAK: {Path.GetFileName(finalPath)}…");
 		cancellationToken.ThrowIfCancellationRequested();
-		ModBackupRetention.CommitReplacement(() =>
-		{
-			var recoveryCopy = BackupExistingPak(finalPath);
-			if (File.Exists(finalPath)) File.Replace(temporaryPath, finalPath, null, true);
-			else File.Move(temporaryPath, finalPath);
-			if (recoveryCopy != null) PrunePreviousModVersionsAfterInstall();
-		});
+		if (await PakFileSet.InstallAsync(temporaryPath, finalPath, ModBackupDirectory, cancellationToken))
+			PrunePreviousModVersionsAfterInstall();
 		mod.FilePath = finalPath;
 		// Metadata-less file overrides derive their identity from the pak path. Validation
 		// happens against a non-pak staging filename, so normalize that transient identity
@@ -4023,7 +3984,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	{
 		try
 		{
-			if (!String.IsNullOrWhiteSpace(temporaryPath) && File.Exists(temporaryPath)) File.Delete(temporaryPath);
+			if (!String.IsNullOrWhiteSpace(temporaryPath))
+			{
+				var directory = Path.GetDirectoryName(temporaryPath);
+				if (Path.GetFileName(directory).StartsWith(".redux-pak-stage-", StringComparison.Ordinal))
+					Directory.Delete(directory, true);
+				else if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+			}
 		}
 		catch (Exception ex)
 		{
@@ -4053,11 +4020,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				{
 					await SetMainProgressPhaseAsync($"Copying PAK: {Path.GetFileName(filePath)}…");
 					temporaryPath = CreatePakImportTemporaryPath(outputFilePath);
-					if (!await DivinityFileUtils.CopyFileAsync(filePath, temporaryPath, cts))
-					{
-						cts.ThrowIfCancellationRequested();
-						throw new IOException($"Copying '{filePath}' to a temporary import file failed.");
-					}
+					await PakFileSet.CopyAsync(filePath, temporaryPath, cts);
 					mod = await ValidateAndCommitImportedPakAsync(temporaryPath, outputFilePath, builtinMods, cts);
 				}
 
@@ -4110,11 +4073,19 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		return taskResult;
 	}
 
+	private static IReadOnlyList<string> FilterMultipartInputs(IEnumerable<string> files)
+	{
+		var selected = files.ToArray();
+		var primaries = PakFileSet.GetPrimaries(selected.Where(path => Path.GetExtension(path).Equals(".pak", StringComparison.OrdinalIgnoreCase)));
+		return selected.Where(path => !Path.GetExtension(path).Equals(".pak", StringComparison.OrdinalIgnoreCase)
+			|| primaries.Contains(Path.GetFullPath(path), StringComparer.OrdinalIgnoreCase)).ToArray();
+	}
+
 	public bool ImportMods(IEnumerable<string> files, bool? toActiveList = null, NexusModManagerLink nexusSource = null,
 		Action<ImportOperationResults> completed = null, bool showCompletionFeedback = true,
 		CancellationToken cancellationToken = default)
 	{
-		var fileList = files?.ToList() ?? [];
+		var fileList = FilterMultipartInputs(files ?? []).ToList();
 		if (_nxmShuttingDown || MainProgressIsActive || fileList.Count == 0) return false;
 		{
 			var importCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -4288,6 +4259,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		if (files == null || files.Count == 0) return false;
+		files = FilterMultipartInputs(files);
 		if (MainProgressIsActive)
 		{
 			ShowAlert("Finish the current operation before installing another package.", AlertType.Warning, 20);
@@ -5933,11 +5905,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			try
 			{
+				PakFileSet.Recover(PathwayData.AppDataModsPath);
 				CreateOverrideOrderFileService().Recover();
 			}
 			catch (Exception ex)
 			{
-				ShowAlert($"An interrupted Override switch needs manual attention: {ex.Message}", AlertType.Danger, 30);
+				ShowAlert($"An interrupted package operation needs manual attention: {ex.Message}", AlertType.Danger, 30);
 			}
 			DivinityApp.Log("Loading mods...");
 			await SetMainProgressTextAsync("Loading mods...");
@@ -7572,67 +7545,57 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				IncreaseMainProgressValue(taskStepAmount);
 				using (var archive = ArchiveFactory.OpenArchive(fileStream, _importReaderOptions))
 				{
-					await ArchivePakImport.ReadEntriesAsync(archive, onlyMods,
+					using var staged = await StagedPakArchive.ReadAsync(archive, outputDirectory, onlyMods,
 						async (file, entryStream) =>
+						{
+							await SetMainProgressPhaseAsync($"Reading load order: {Path.GetFileName(file.Key)}…");
+							try
+							{
+								using var textReader = new StreamReader(entryStream, Encoding.UTF8, true, 4096, leaveOpen: true);
+								string text = await textReader.ReadToEndAsync(cts);
+								if (!String.IsNullOrWhiteSpace(text))
+								{
+									var order = ArchiveLoadOrderService.Read(file.Key, text);
+									if (order != null)
+									{
+										taskResult.Orders.Add(order);
+										DivinityApp.Log($"Read load order '{order.Name}' from archive '{archivePath}'.");
+									}
+								}
+							}
+							catch (OperationCanceledException) { throw; }
+							catch (Exception ex)
+							{
+								taskResult.AddError(file.Key, ex);
+								DivinityApp.Log($"Error reading json file '{file.Key}' from archive:\n{ex}");
+							}
+						}, cts, name => SetMainProgressPhaseAsync($"Extracting PAK: {name}…"));
+					foreach (var temporaryPath in staged.Primaries)
 					{
-							if (file.Key.EndsWith(".pak", StringComparison.OrdinalIgnoreCase))
+						var outputName = Path.GetFileName(temporaryPath);
+						var outputFilePath = Path.Combine(outputDirectory, outputName);
+						taskResult.TotalPaks++;
+						try
+						{
+							staged.RequireMatchingPartFolders(temporaryPath);
+							var mod = await ValidateAndCommitImportedPakAsync(temporaryPath, outputFilePath, builtinMods, cts);
+							success = true;
+							taskResult.Mods.Add(mod);
+							ApplyImportedNexusAssociation(mod, info, archiveDatabaseMatch);
+							await SetMainProgressPhaseAsync($"Updating mod list: {outputName}…");
+							await Observable.Start(() =>
 							{
-								var outputName = Path.GetFileName(file.Key);
-								var outputFilePath = Path.Combine(outputDirectory, outputName);
-								var temporaryPath = CreatePakImportTemporaryPath(outputFilePath);
-								taskResult.TotalPaks++;
-								try
-								{
-									await SetMainProgressPhaseAsync($"Extracting PAK: {outputName}…");
-									using (var fs = File.Create(temporaryPath, 4096, System.IO.FileOptions.Asynchronous))
-									{
-										await entryStream.CopyToAsync(fs, 4096, cts);
-									}
-
-									var mod = await ValidateAndCommitImportedPakAsync(temporaryPath, outputFilePath, builtinMods, cts);
-									success = true;
-									taskResult.Mods.Add(mod);
-									ApplyImportedNexusAssociation(mod, info, archiveDatabaseMatch);
-									await SetMainProgressPhaseAsync($"Updating mod list: {outputName}…");
-									await Observable.Start(() =>
-									{
-										AddImportedMod(mod, toActiveList);
-										return Unit.Default;
-									}, RxApp.MainThreadScheduler);
-								}
-								catch (OperationCanceledException) { throw; }
-								catch (Exception ex)
-								{
-									taskResult.AddError(outputFilePath, ex);
-									DivinityApp.Log($"Error staging or validating '{file.Key}' from archive for '{outputFilePath}':\n{ex}");
-								}
-								finally { CleanupPakImportTemporaryFile(temporaryPath); }
-							}
-							else if (file.Key.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-							{
-								await SetMainProgressPhaseAsync($"Reading load order: {Path.GetFileName(file.Key)}…");
-								try
-								{
-									using var textReader = new StreamReader(entryStream, Encoding.UTF8, true, 4096, leaveOpen: true);
-									string text = await textReader.ReadToEndAsync(cts);
-									if (!String.IsNullOrWhiteSpace(text))
-									{
-										var order = ArchiveLoadOrderService.Read(file.Key, text);
-										if (order != null)
-										{
-											taskResult.Orders.Add(order);
-											DivinityApp.Log($"Read load order '{order.Name}' from archive '{archivePath}'.");
-										}
-									}
-								}
-								catch (OperationCanceledException) { throw; }
-								catch (Exception ex)
-								{
-									taskResult.AddError(file.Key, ex);
-									DivinityApp.Log($"Error reading json file '{file.Key}' from archive:\n{ex}");
-								}
-							}
-					}, cts);
+								AddImportedMod(mod, toActiveList);
+								return Unit.Default;
+							}, RxApp.MainThreadScheduler);
+						}
+						catch (OperationCanceledException) { throw; }
+						catch (Exception ex)
+						{
+							taskResult.AddError(outputFilePath, ex);
+							DivinityApp.Log($"Could not install PAK set '{outputName}': {ex}");
+						}
+					}
 				}
 
 				IncreaseMainProgressValue(taskStepAmount);
@@ -7669,6 +7632,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		IReadOnlyList<DivinityModData> modPaks, string gameDataFolder, CancellationToken t)
 	{
 		var success = false;
+		var expectedEntries = 1;
 		if (workingOrder != null)
 		{
 			var appDir = DivinityApp.GetAppDirectory();
@@ -7701,12 +7665,15 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 						await SetMainProgressPhaseAsync($"Backing up {mod.DisplayName}…");
 						if (!mod.IsEditorMod)
 						{
-							var fileName = Path.GetFileName(mod.FilePath);
-							await WriteZipAsync(zipWriter, fileName, mod.FilePath, cancellationToken);
+							foreach (var path in PakFileSet.GetPaths(mod.FilePath))
+							{
+								await WriteZipAsync(zipWriter, Path.GetFileName(path), path, cancellationToken);
+								expectedEntries++;
+							}
 						}
 						else
 						{
-							await EditorModBackupService.WriteToZipAsync(zipWriter, mod, gameDataFolder, tempDir, cancellationToken);
+							expectedEntries += await EditorModBackupService.WriteToZipAsync(zipWriter, mod, gameDataFolder, tempDir, cancellationToken);
 						}
 
 						await IncreaseMainProgressValueAsync(incrementProgress);
@@ -7715,7 +7682,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				}, validateTemporaryFile: temporaryPath =>
 				{
 					using var archive = ZipFile.OpenRead(temporaryPath);
-					return archive.Entries.Count == modPaks.Count + 1;
+					return archive.Entries.Count == expectedEntries;
 				}, cancellationToken: t);
 
 				RxApp.MainThreadScheduler.Schedule(() =>

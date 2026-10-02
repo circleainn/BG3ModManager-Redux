@@ -197,51 +197,27 @@ public static class ArchivePackagePreflightService
 			}
 			var packages = new List<PackagePreflightReport>(pakEntries.Length);
 
-			var index = 0;
-			if (pakEntries.Length > 0) await ArchiveEntryTraversal.ReadSelectedAsync(archive,
-				entry => entry.Key.EndsWith(".pak", StringComparison.OrdinalIgnoreCase),
-				async (entry, entryStream) =>
+			using var staged = await StagedPakArchive.ReadAsync(archive, temporaryRoot, true, null, cancellationToken);
+			foreach (var stagedPath in staged.Primaries)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
-				var safeName = Path.GetFileName(entry.Key);
-				var stagingDirectory = Path.Combine(temporaryRoot, (index++).ToString("D3"));
+				var entry = staged.Entries[stagedPath];
 				try
 				{
-					Directory.CreateDirectory(stagingDirectory);
-					var stagedPath = Path.Combine(stagingDirectory, safeName);
-					await using (var output = new FileStream(
-						stagedPath,
-						FileMode.CreateNew,
-						FileAccess.Write,
-						FileShare.None,
-						4096,
-						FileOptions.Asynchronous | FileOptions.SequentialScan))
-					{
-						await entryStream.CopyToAsync(output, cancellationToken);
-					}
-
-					var report = await PackagePreflightService.AnalyzeAsync(
-						stagedPath,
-						installedMods,
-						cancellationToken);
-					var sourcePath = $"{normalizedPath}::{NormalizeEntryPath(entry.Key)}";
-					packages.Add(report.WithSource(sourcePath, Math.Max(0, entry.Size)));
-					findings.AddRange(report.Findings.Where(finding =>
-						finding.Title == PakImportCompatibility.MultipartFindingTitle));
+					staged.RequireMatchingPartFolders(stagedPath);
+					var report = await PackagePreflightService.AnalyzeAsync(stagedPath, installedMods, cancellationToken);
+					packages.Add(report.WithSource($"{normalizedPath}::{NormalizeEntryPath(entry.Key)}",
+						PakFileSet.GetPaths(stagedPath).Sum(path => new FileInfo(path).Length)));
+					findings.AddRange(report.Findings.Where(finding => finding.Title == PakImportCompatibility.MultipartFindingTitle));
 				}
-				catch (OperationCanceledException)
+				catch (OperationCanceledException) { throw; }
+				catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
 				{
-					throw;
+					var finding = new PackagePreflightFinding(ModHealthSeverity.Error, PakImportCompatibility.MultipartFindingTitle, ex.Message);
+					packages.Add(new PackagePreflightReport($"{normalizedPath}::{NormalizeEntryPath(entry.Key)}", null, 0, 0, [finding]));
+					findings.Add(finding);
 				}
-				catch (Exception ex)
-				{
-					DivinityApp.Log($"Could not stage '{entry.Key}' for package preflight:\n{ex}");
-					findings.Add(new PackagePreflightFinding(
-						ModHealthSeverity.Error,
-						$"{safeName}: Package could not be inspected",
-						"Redux could not extract this PAK from the selected archive."));
-				}
-			}, cancellationToken);
+			}
 
 			return new ArchivePackagePreflightResult(
 				normalizedPath,

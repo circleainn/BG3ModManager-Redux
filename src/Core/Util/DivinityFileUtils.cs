@@ -262,6 +262,7 @@ public static class DivinityFileUtils
 			return await Task.Run(async () =>
 			{
 				token.ThrowIfCancellationRequested();
+				using var cancellation = new PackageReadCancellation(token);
 				using var package = new PackageReader().Read(pakPath);
 				await ExtractPackageFilesAsync(package, outputDirectory, token);
 				token.ThrowIfCancellationRequested();
@@ -278,6 +279,7 @@ public static class DivinityFileUtils
 
 	internal static async Task ExtractPackageFilesAsync(Package package, string outputDirectory, CancellationToken token)
 	{
+		using var cancellation = new PackageReadCancellation(token);
 		token.ThrowIfCancellationRequested();
 		var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(outputDirectory));
 		// Check every member before publishing any output, including members later in the package.

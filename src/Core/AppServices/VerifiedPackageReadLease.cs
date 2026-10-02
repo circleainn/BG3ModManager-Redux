@@ -20,6 +20,11 @@ public sealed class VerifiedPackageReadLease : IDisposable
 		if (String.IsNullOrWhiteSpace(expectedSha256))
 			throw new InvalidDataException("The download does not have a verified SHA-256 identity. Download it again before review.");
 		var fullPath = Path.GetFullPath(path);
+		// Loose sets enter Download Manager as one deterministic ZIP. A lone downloaded
+		// primary's SHA-256 cannot authenticate separately supplied sibling files.
+		if (Path.GetExtension(fullPath).Equals(".pak", StringComparison.OrdinalIgnoreCase)
+			&& PakFileSet.GetPaths(fullPath, false).Count > 1)
+			throw new InvalidDataException("Add the complete local PAK set to Download Manager, or download its archive version, so every part can be verified together.");
 		var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read,
 			65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
 		try

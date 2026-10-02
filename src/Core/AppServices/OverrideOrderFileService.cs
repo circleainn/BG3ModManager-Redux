@@ -51,10 +51,16 @@ public sealed class OverrideOrderFileService
 		var wanted = NormalizeNames(wantedFileNames);
 		var installed = (installedOverridePaths ?? [])
 			.Where(path => !String.IsNullOrWhiteSpace(path) && File.Exists(path))
-			.Select(Path.GetFullPath)
+			.SelectMany(path => PakFileSet.GetPaths(path))
+			.Distinct(StringComparer.OrdinalIgnoreCase)
 			.Where(path => String.Equals(Path.GetDirectoryName(path), _modsFolder, StringComparison.OrdinalIgnoreCase))
 			.ToDictionary(Path.GetFileName, path => path, StringComparer.OrdinalIgnoreCase);
 		var held = HeldFiles.ToDictionary(name => name, name => Path.Combine(_holdingFolder, name), StringComparer.OrdinalIgnoreCase);
+		foreach (var name in wanted.ToArray())
+		{
+			var path = installed.GetValueOrDefault(name) ?? held.GetValueOrDefault(name);
+			if (path != null) wanted.UnionWith(PakFileSet.GetPaths(path).Select(Path.GetFileName));
+		}
 		if (installed.Keys.Intersect(held.Keys, StringComparer.OrdinalIgnoreCase).Any())
 			throw new IOException("An Override package exists in both Mods and Redux's holding folder. Resolve the duplicate before switching.");
 		var unavailable = wanted.Except(installed.Keys.Concat(held.Keys), StringComparer.OrdinalIgnoreCase).ToList();

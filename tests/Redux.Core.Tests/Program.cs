@@ -48,6 +48,7 @@ internal static class Program
 		var archivePakImport = new ArchivePakImportTests();
 		var verifiedPreflight = new VerifiedPackagePreflightTests();
 		var multipartPak = new MultipartPakImportTests();
+		var decodeCancellation = new PackageDecodeCancellationTests();
 		var compressedPak = new CompressedPakDestinationTests();
 		var tempFiles = new TempFileTests();
 		var interactionPerformance = new InteractionPerformanceTests();
@@ -123,9 +124,26 @@ internal static class Program
 			(nameof(verifiedPreflight.InvalidOrCanceledVerificationReleasesThePackageHandle), verifiedPreflight.InvalidOrCanceledVerificationReleasesThePackageHandle),
 			(nameof(verifiedPreflight.ReusedArchiveMetadataRefreshesDependenciesAndPreservesSourceDetails), verifiedPreflight.ReusedArchiveMetadataRefreshesDependenciesAndPreservesSourceDetails),
 			(nameof(verifiedPreflight.ReusedPreflightRejectsAnotherArchiveAndKeepsUnreadableFindings), verifiedPreflight.ReusedPreflightRejectsAnotherArchiveAndKeepsUnreadableFindings),
-			(nameof(multipartPak.ValidMultipartPackageGetsActionablePreflightFinding), multipartPak.ValidMultipartPackageGetsActionablePreflightFinding),
-			(nameof(multipartPak.ArchiveWithAllMultipartSiblingsReportsUnsupportedLayout), multipartPak.ArchiveWithAllMultipartSiblingsReportsUnsupportedLayout),
-			(nameof(multipartPak.StagedMultipartImportCannotReplaceInstalledPackage), multipartPak.StagedMultipartImportCannotReplaceInstalledPackage),
+			(nameof(multipartPak.InvalidPartCountCannotHideOtherLibraryPackages), multipartPak.InvalidPartCountCannotHideOtherLibraryPackages),
+			(nameof(multipartPak.IncompleteArchiveReportsTheMissingSibling), multipartPak.IncompleteArchiveReportsTheMissingSibling),
+			(nameof(multipartPak.StandaloneImportCannotReplaceAnotherPackagesSibling), multipartPak.StandaloneImportCannotReplaceAnotherPackagesSibling),
+			(nameof(multipartPak.LocalIntakePreservesAllPartsAsOneStableArchive), multipartPak.LocalIntakePreservesAllPartsAsOneStableArchive),
+			(nameof(multipartPak.InterruptedInstallRecoversOriginalSetBeforeScanning), multipartPak.InterruptedInstallRecoversOriginalSetBeforeScanning),
+			(nameof(multipartPak.ArchiveSiblingOrderDoesNotAffectSetValidation), multipartPak.ArchiveSiblingOrderDoesNotAffectSetValidation),
+			(nameof(multipartPak.InstallRenamesEveryPartAndBacksUpReadableOldSet), multipartPak.InstallRenamesEveryPartAndBacksUpReadableOldSet),
+			(nameof(multipartPak.LockedOldPartRollsBackEntireInstall), multipartPak.LockedOldPartRollsBackEntireInstall),
+			(nameof(multipartPak.ReplacingMultipartWithSingleRemovesOnlyOwnedParts), multipartPak.ReplacingMultipartWithSingleRemovesOnlyOwnedParts),
+			(nameof(multipartPak.PartCollisionNeverOverwritesStandaloneNumberedPak), multipartPak.PartCollisionNeverOverwritesStandaloneNumberedPak),
+			(nameof(multipartPak.OverrideHoldingMovesWholePakSet), multipartPak.OverrideHoldingMovesWholePakSet),
+			(nameof(multipartPak.BackupRetentionKeepsAndDeletesWholeSets), multipartPak.BackupRetentionKeepsAndDeletesWholeSets),
+			(nameof(decodeCancellation.CancellableBlockDecoderMatchesLegacyEncoder), decodeCancellation.CancellableBlockDecoderMatchesLegacyEncoder),
+			(nameof(decodeCancellation.InvalidLz4BlocksFailWithoutPublishingOutput), decodeCancellation.InvalidLz4BlocksFailWithoutPublishingOutput),
+			(nameof(decodeCancellation.CancellationInterruptsLargeRawAndSolidDecodes), decodeCancellation.CancellationInterruptsLargeRawAndSolidDecodes),
+			(nameof(decodeCancellation.RealSolidPackageExtractsAndValidatesFrameSize), decodeCancellation.RealSolidPackageExtractsAndValidatesFrameSize),
+			(nameof(decodeCancellation.PackageCancellationScopeIsRestoredAndLoaderPropagatesCancellation), decodeCancellation.PackageCancellationScopeIsRestoredAndLoaderPropagatesCancellation),
+			(nameof(multipartPak.CompleteMultipartPackagePassesPreflight), multipartPak.CompleteMultipartPackagePassesPreflight),
+			(nameof(multipartPak.ArchiveWithAllMultipartSiblingsIsOneReadablePackage), multipartPak.ArchiveWithAllMultipartSiblingsIsOneReadablePackage),
+			(nameof(multipartPak.MissingMultipartSiblingCannotReplaceInstalledPackage), multipartPak.MissingMultipartSiblingCannotReplaceInstalledPackage),
 			(nameof(multipartPak.NumberedSingleFilePackageRemainsSupported), multipartPak.NumberedSingleFilePackageRemainsSupported),
 			(nameof(deferredSettings.RefreshFlushPreservesRecentInactiveOrganizationAndAllowsLaterDiskReload), deferredSettings.RefreshFlushPreservesRecentInactiveOrganizationAndAllowsLaterDiskReload),
 			(nameof(deferredSettings.FailedRefreshFlushKeepsItsScheduledSaveRetry), deferredSettings.FailedRefreshFlushKeepsItsScheduledSaveRetry),

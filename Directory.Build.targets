@@ -41,4 +41,13 @@
 			<AdditionalOptions>/ignore:4248 %(AdditionalOptions)</AdditionalOptions>
 		</Link>
 	</ItemDefinitionGroup>
+    <ItemGroup Condition="'$(MSBuildProjectName)' == 'LSLib'">
+        <Compile Remove="LS\Compression.cs;LS\PackageReader.cs" />
+        <Compile Include="$(MSBuildThisFileDirectory)compat\LSLib\*.cs" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(MSBuildProjectName)' == 'LSLibNative'">
+        <ClCompile Include="$(MSBuildThisFileDirectory)compat\LSLib\CancellableLZ4.cpp">
+            <AdditionalIncludeDirectories>$(MSBuildProjectDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+        </ClCompile>
+    </ItemGroup>
 </Project>
