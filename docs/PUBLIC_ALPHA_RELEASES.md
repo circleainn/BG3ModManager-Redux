@@ -66,7 +66,8 @@ Latest, uploads to Nexus Mods, and moves the public-alpha channel like any other
 
 1. Make the application, assembly, tag, ZIP filename, release notes, and manifest versions agree.
    Start from the previous file in [`releases/`](releases/) and update only the final,
-   artifact-specific details.
+   artifact-specific details. For a corrective follow-up to a hotfix, retain that hotfix's full
+   changelog and prepend the new correction so users skipping the broken build see all included fixes.
 2. Run `Build-Redux.ps1 -Configuration Debug` and the complete Redux regression executable.
 3. Run `Build-Redux.ps1 -Configuration Publish` with Python 3 available. This creates the
    versioned and Latest ZIPs, release inventory, and public-alpha channel manifest.
@@ -154,3 +155,7 @@ a substitute for this human-readable release record.
 builds and tests dev, but portable artifacts are uploaded only for main. Public GitHub/Nexus
 releases are prepared from main after explicit release approval. Never publish a dev prerelease
 or repoint the public-alpha updater channel to development work.
+
+Use descriptive public branch names such as `hotfix/16.5.6` and `release/16.5.6-record`.
+PR titles and merge messages should describe the change; use the PR title as the merge commit
+subject without automatically adding the source branch name.
