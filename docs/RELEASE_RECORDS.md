@@ -1,5 +1,17 @@
 # Public-alpha publication records
 
+## 0.1.0-alpha.16.5.6 — corrective maintenance release
+
+- Source: `main` merge commit `4f944691c82eb203f88aaaeb8ada83b840823b2d`; annotated tag `v0.1.0-alpha.16.5.6` points to that commit. The tested candidate has the identical Git tree `2d2d0f7934f506a1e2ebc825d56c698fcf15a2ba`.
+- Corrects Download Manager failing to open in 16.5.5: the intake progress bar now uses one-way bindings for private-set progress properties. The new regression exercises the production progress control with that property contract and verifies initial values, subsequent progress, and visibility. The 16.5.5 channel manifest was withdrawn while the replacement was prepared; the old release notes now direct users to 16.5.6.
+- Windows CI passed for [release preparation](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/37060184466), [dev](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/37060348772), [main PR](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/37060368614), and [merged main](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/37060372819). The local Publish build passed 645/645 regression checks; the NuGet audit found no vulnerable packages. Existing local Debug files were preserved and their hashes verified unchanged for the maintainer's updater test.
+- [GitHub portable ZIP](https://github.com/circleainn/BG3ModManager-Redux/releases/download/v0.1.0-alpha.16.5.6/BG3ModManager-Redux_v0.1.0-alpha.16.5.6.zip): 18,101,075 bytes, SHA-256 `9667a53e5867a909cc490d340f4065e65455a77e34ec2aefdf02b421405b539a`. An anonymous download matched the exact tested archive. The ZIP passed CRC, privacy/path checks, clean extraction, and exact inventory verification for 76 files, including four updater files.
+- Isolated 16.5.5-to-16.5.6 updater checks passed: application-file replacement, preservation of four user-state fixtures, complete rollback after a locked-file failure, and inventory-based removal preserving user state. Interactive application launch and the public in-app update remain for the maintainer.
+- Public-alpha manifest: 618 bytes, SHA-256 `20acfefcfd0403915df09af5fec24f48f1326f64a22064c65b3c9a8e8c726a9e`. The fixed public URL was fetched anonymously after final channel publication and matched the tested bytes, display version `0.1.0-alpha.16.5.6`, internal version `0.1.16.506`, and the approved ZIP digest and length. The versioned release-notes URL returned HTTP 200.
+- Nexus Mods: the protected [publication run 37060954707](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/37060954707) succeeded after reviewer approval and submitted the verified GitHub ZIP to file `7943154`. Returned file-version ID: `14920716518245`. The workflow recorded the matching version, filename, and archive SHA-256. Public-page cache propagation was not independently confirmed.
+- Published October 2, 2026 at 20:29 UTC as a normal Latest release with the no-announcement marker. All 16.5.5 release-note bullets are retained, with the new correction first. No public announcement or Nexus comment reply was sent. Prior accepted limitations and unverified reporter-specific scenarios remain as recorded for 16.5.5.
+
+
 ## 0.1.0-alpha.16.5.5 — maintenance release
 
 - Source: `main` merge commit `30909c93c696f4fd47d5439d494a090994581741`; annotated tag `v0.1.0-alpha.16.5.5` points to that commit. The locally tested candidate has the identical Git tree `b237506c2cf2b35a970061225ed4f3a6ad58b24b`.
