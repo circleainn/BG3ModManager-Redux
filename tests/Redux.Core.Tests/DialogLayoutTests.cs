@@ -14,6 +14,46 @@ namespace Redux.Core.Tests;
 
 public sealed class DialogLayoutTests
 {
+	public void DownloadIntakeProgressBindsToReadOnlyViewModelProperties()
+	{
+		// Exercise the production progress control without profile discovery or user
+		// settings I/O, using the same private-set property contract as the main VM.
+		var viewModel = new IntakeProgressViewModel();
+		var window = new ReduxNexusDownloadsWindow();
+		try
+		{
+			var progress = (ProgressBar)window.FindName("LocalPackageIntakeProgress");
+			progress.DataContext = viewModel;
+			viewModel.SetProgress(1, 4, true);
+			window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+			RegressionAssert.Equal(4d, progress.Maximum);
+			RegressionAssert.Equal(1d, progress.Value);
+			RegressionAssert.Equal(Visibility.Visible, progress.Visibility);
+			viewModel.SetProgress(4, 4, true);
+			window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+			RegressionAssert.Equal(4d, progress.Value);
+			viewModel.SetProgress(4, 4, false);
+			window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+			RegressionAssert.Equal(Visibility.Collapsed, progress.Visibility);
+		}
+		finally { window.Close(); }
+	}
+
+	public sealed class IntakeProgressViewModel : System.ComponentModel.INotifyPropertyChanged
+	{
+		public int LocalPackageIntakeCompleted { get; private set; }
+		public int LocalPackageIntakeTotal { get; private set; }
+		public bool LocalPackageIntakeIsActive { get; private set; }
+		public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+		public void SetProgress(int completed, int total, bool active)
+		{
+			LocalPackageIntakeCompleted = completed;
+			LocalPackageIntakeTotal = total;
+			LocalPackageIntakeIsActive = active;
+			PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(String.Empty));
+		}
+	}
+
 	public void ReviewDialogsKeepActionsReachableWithLargeText()
 	{
 		foreach (var theme in new[] { ReduxThemeType.ReduxDark, ReduxThemeType.ReduxLight, ReduxThemeType.Parchment })

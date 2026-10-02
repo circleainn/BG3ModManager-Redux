@@ -15,8 +15,8 @@ namespace DivinityModManager;
 
 public static class DivinityApp
 {
-	public const string REDUX_DISPLAY_VERSION = "0.1.0-alpha.16.5.5";
-	public const string REDUX_INTERNAL_VERSION = "0.1.16.505";
+	public const string REDUX_DISPLAY_VERSION = "0.1.0-alpha.16.5.6";
+	public const string REDUX_INTERNAL_VERSION = "0.1.16.506";
 	public static readonly bool REDUX_UPDATE_CHECKS_ENABLED = true;
 
 	public const string DIR_DATA = "Data\\";

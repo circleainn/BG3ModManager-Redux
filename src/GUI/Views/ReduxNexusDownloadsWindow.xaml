@@ -367,8 +367,8 @@
 							<Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed" /></Trigger>
 						</Style.Triggers></Style></TextBlock.Style>
 					</TextBlock>
-					<ProgressBar Margin="0,5,0,0" Height="4" Minimum="0" Maximum="{Binding LocalPackageIntakeTotal}"
-						Value="{Binding LocalPackageIntakeCompleted}" AutomationProperties.Name="Packages processed"
+					<ProgressBar x:Name="LocalPackageIntakeProgress" Margin="0,5,0,0" Height="4" Minimum="0" Maximum="{Binding LocalPackageIntakeTotal, Mode=OneWay}"
+						Value="{Binding LocalPackageIntakeCompleted, Mode=OneWay}" AutomationProperties.Name="Packages processed"
 						Visibility="{Binding LocalPackageIntakeIsActive, Converter={StaticResource BoolToVisibilityConverter}}" />
 				</StackPanel>
 				<TabControl x:Name="DownloadsTabs" ClipToBounds="True" Margin="0" SelectionChanged="DownloadsTabs_SelectionChanged"

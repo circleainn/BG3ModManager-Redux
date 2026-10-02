@@ -326,6 +326,7 @@ internal static class Program
 			(nameof(extenderExport.AchievementSettingRoundTripsInBothExportModes), extenderExport.AchievementSettingRoundTripsInBothExportModes),
 			(nameof(extenderExport.ExportPreferenceSurvivesReduxRestartAndGameConfigReload), extenderExport.ExportPreferenceSurvivesReduxRestartAndGameConfigReload),
 			(nameof(dialogLayout.PreferencesAndReleaseNotesUseReadableCompactLayouts), dialogLayout.PreferencesAndReleaseNotesUseReadableCompactLayouts),
+			(nameof(dialogLayout.DownloadIntakeProgressBindsToReadOnlyViewModelProperties), dialogLayout.DownloadIntakeProgressBindsToReadOnlyViewModelProperties),
 			(nameof(dialogLayout.DownloadToolbarActionsRemainVisibleWithLargeText), dialogLayout.DownloadToolbarActionsRemainVisibleWithLargeText),
 			(nameof(dialogLayout.ReviewDialogsKeepActionsReachableWithLargeText), dialogLayout.ReviewDialogsKeepActionsReachableWithLargeText),
 			(nameof(whatsNew.ReleaseMetadataIsHiddenAndCustomBackgroundsHaveReadableText), whatsNew.ReleaseMetadataIsHiddenAndCustomBackgroundsHaveReadableText),
