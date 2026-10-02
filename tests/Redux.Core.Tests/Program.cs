@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
@@ -43,6 +43,14 @@ internal static class Program
 		var overlaps = new ModFileOverlapTests();
 		var preflight = new PackagePreflightTests();
 		var archivePreflight = new ArchivePackagePreflightTests();
+		var archiveTraversal = new ArchiveEntryTraversalTests();
+		var archiveOrders = new ArchiveLoadOrderTests();
+		var archivePakImport = new ArchivePakImportTests();
+		var verifiedPreflight = new VerifiedPackagePreflightTests();
+		var multipartPak = new MultipartPakImportTests();
+		var decodeCancellation = new PackageDecodeCancellationTests();
+		var compressedPak = new CompressedPakDestinationTests();
+		var tempFiles = new TempFileTests();
 		var interactionPerformance = new InteractionPerformanceTests();
 		var interactionBehavior = new InteractionBehaviorTests();
 		var customIcons = new CustomIconTests();
@@ -50,6 +58,17 @@ internal static class Program
 		var automaticCategories = new AutomaticModCategoryTests();
 		var visualDividerDrag = new VisualDividerDragPolicyTests();
 		var inactiveOrder = new InactiveModOrderTests();
+		var importRunner = new ImportOperationRunnerTests();
+		var hybridInstall = new HybridPackageInstallRunnerTests();
+		var pendingOperations = new PendingOperationTrackerTests();
+		var backupZip = new BackupZipTests();
+		var editorBackup = new EditorModBackupTests();
+		var packageExtraction = new PackageExtractionTests();
+		var settingsRestore = new SettingsRestoreTests();
+		var deferredSettings = new DeferredSettingsSaveTests();
+		var progressDisplay = new ProgressDisplayTests();
+		var refreshOperations = new RefreshOperationTests();
+		var markdownLinks = new MarkdownLinkTests();
 		var visualModSelection = new VisualModSelectionPolicyTests();
 		var settingsMaintenance = new SettingsMaintenanceTests();
 		var smoothLogicalScroll = new SmoothLogicalScrollPolicyTests();
@@ -66,6 +85,7 @@ internal static class Program
 		var nxmActivation = new NxmActivationTests();
 		var nxmAssociation = new NxmAssociationTests();
 		var nxmManager = new NxmDownloadManagerTests();
+		var nxmRemoval = new NxmRemovalTests();
 		var nxmScheduler = new NxmDownloadSchedulerTests();
 		var nxmStore = new NxmDownloadStoreTests();
 		var nxmTransfer = new NxmTransferTests();
@@ -82,6 +102,63 @@ internal static class Program
 		var overrideOrders = new OverrideOrderFileServiceTests();
 		var tests = new (string Name, Action Run)[]
 		{
+			(nameof(nxmManager.CancelledLocalIntakeAfterCopyRemovesUncommittedInboxFile), nxmManager.CancelledLocalIntakeAfterCopyRemovesUncommittedInboxFile),
+			(nameof(verifiedPreflight.PackageChangedBetweenReviewAndInstallationIsRejected), verifiedPreflight.PackageChangedBetweenReviewAndInstallationIsRejected),
+			(nameof(archiveTraversal.SolidTraversalStopsAfterLastSelectedEntryAcrossBlocks), archiveTraversal.SolidTraversalStopsAfterLastSelectedEntryAcrossBlocks),
+			(nameof(archiveTraversal.FailedSolidCallbackDoesNotDrainEntryDuringDisposal), archiveTraversal.FailedSolidCallbackDoesNotDrainEntryDuringDisposal),
+			(nameof(archiveTraversal.NoSelectedSolidEntriesNeverOpensContentStream), archiveTraversal.NoSelectedSolidEntriesNeverOpensContentStream),
+			(nameof(archiveTraversal.SolidArchivePreflightReadsActualPaksAcrossBlocks), archiveTraversal.SolidArchivePreflightReadsActualPaksAcrossBlocks),
+			(nameof(pendingOperations.ShutdownWaitsForImportCleanupAndOuterReviewRelease), pendingOperations.ShutdownWaitsForImportCleanupAndOuterReviewRelease),
+			(nameof(pendingOperations.RepeatedShutdownRequestsCancelEachOperationOnce), pendingOperations.RepeatedShutdownRequestsCancelEachOperationOnce),
+			(nameof(pendingOperations.DisposedCancellationSourceStillWaitsForOperationCompletion), pendingOperations.DisposedCancellationSourceStillWaitsForOperationCompletion),
+			(nameof(pendingOperations.FailedCancellationDrainsBeforeAdmissionCanResume), pendingOperations.FailedCancellationDrainsBeforeAdmissionCanResume),
+			(nameof(importRunner.CanceledImportWaitsForCommittedSourceRecordsToReachDisk), importRunner.CanceledImportWaitsForCommittedSourceRecordsToReachDisk),
+			(nameof(importRunner.ImportFailureStillPreservesCompletedRecordsBeforeRethrowing), importRunner.ImportFailureStillPreservesCompletedRecordsBeforeRethrowing),
+			(nameof(importRunner.CancellationWaitsForFileCleanupAndSkipsRemainingImports), importRunner.CancellationWaitsForFileCleanupAndSkipsRemainingImports),
+			(nameof(importRunner.CancellationBetweenFilesKeepsCompletedModsAndStopsTheNextFile), importRunner.CancellationBetweenFilesKeepsCompletedModsAndStopsTheNextFile),
+			(nameof(importRunner.PrecancelledImportStartsNoFilesAndFailuresRemainFailures), importRunner.PrecancelledImportStartsNoFilesAndFailuresRemainFailures),
+			(nameof(archiveTraversal.SolidArchiveReadsCompressedContentOnceAndPreservesEntries), archiveTraversal.SolidArchiveReadsCompressedContentOnceAndPreservesEntries),
+			(nameof(archiveTraversal.CancellationDuringSelectedEntryStopsBeforeLaterEntries), archiveTraversal.CancellationDuringSelectedEntryStopsBeforeLaterEntries),
+			(nameof(archiveTraversal.CancellationWhileSkippingEntryStopsBeforeSelectedEntry), archiveTraversal.CancellationWhileSkippingEntryStopsBeforeSelectedEntry),
+			(nameof(verifiedPreflight.VerifiedLeaseAllowsReadersAndBlocksChangesUntilDisposed), verifiedPreflight.VerifiedLeaseAllowsReadersAndBlocksChangesUntilDisposed),
+			(nameof(verifiedPreflight.InvalidOrCanceledVerificationReleasesThePackageHandle), verifiedPreflight.InvalidOrCanceledVerificationReleasesThePackageHandle),
+			(nameof(verifiedPreflight.ReusedArchiveMetadataRefreshesDependenciesAndPreservesSourceDetails), verifiedPreflight.ReusedArchiveMetadataRefreshesDependenciesAndPreservesSourceDetails),
+			(nameof(verifiedPreflight.ReusedPreflightRejectsAnotherArchiveAndKeepsUnreadableFindings), verifiedPreflight.ReusedPreflightRejectsAnotherArchiveAndKeepsUnreadableFindings),
+			(nameof(multipartPak.InvalidPartCountCannotHideOtherLibraryPackages), multipartPak.InvalidPartCountCannotHideOtherLibraryPackages),
+			(nameof(multipartPak.IncompleteArchiveReportsTheMissingSibling), multipartPak.IncompleteArchiveReportsTheMissingSibling),
+			(nameof(multipartPak.StandaloneImportCannotReplaceAnotherPackagesSibling), multipartPak.StandaloneImportCannotReplaceAnotherPackagesSibling),
+			(nameof(multipartPak.LocalIntakePreservesAllPartsAsOneStableArchive), multipartPak.LocalIntakePreservesAllPartsAsOneStableArchive),
+			(nameof(multipartPak.InterruptedInstallRecoversOriginalSetBeforeScanning), multipartPak.InterruptedInstallRecoversOriginalSetBeforeScanning),
+			(nameof(multipartPak.ArchiveSiblingOrderDoesNotAffectSetValidation), multipartPak.ArchiveSiblingOrderDoesNotAffectSetValidation),
+			(nameof(multipartPak.InstallRenamesEveryPartAndBacksUpReadableOldSet), multipartPak.InstallRenamesEveryPartAndBacksUpReadableOldSet),
+			(nameof(multipartPak.LockedOldPartRollsBackEntireInstall), multipartPak.LockedOldPartRollsBackEntireInstall),
+			(nameof(multipartPak.ReplacingMultipartWithSingleRemovesOnlyOwnedParts), multipartPak.ReplacingMultipartWithSingleRemovesOnlyOwnedParts),
+			(nameof(multipartPak.PartCollisionNeverOverwritesStandaloneNumberedPak), multipartPak.PartCollisionNeverOverwritesStandaloneNumberedPak),
+			(nameof(multipartPak.OverrideHoldingMovesWholePakSet), multipartPak.OverrideHoldingMovesWholePakSet),
+			(nameof(multipartPak.BackupRetentionKeepsAndDeletesWholeSets), multipartPak.BackupRetentionKeepsAndDeletesWholeSets),
+			(nameof(decodeCancellation.CancellableBlockDecoderMatchesLegacyEncoder), decodeCancellation.CancellableBlockDecoderMatchesLegacyEncoder),
+			(nameof(decodeCancellation.InvalidLz4BlocksFailWithoutPublishingOutput), decodeCancellation.InvalidLz4BlocksFailWithoutPublishingOutput),
+			(nameof(decodeCancellation.CancellationInterruptsLargeRawAndSolidDecodes), decodeCancellation.CancellationInterruptsLargeRawAndSolidDecodes),
+			(nameof(decodeCancellation.RealSolidPackageExtractsAndValidatesFrameSize), decodeCancellation.RealSolidPackageExtractsAndValidatesFrameSize),
+			(nameof(decodeCancellation.PackageCancellationScopeIsRestoredAndLoaderPropagatesCancellation), decodeCancellation.PackageCancellationScopeIsRestoredAndLoaderPropagatesCancellation),
+			(nameof(multipartPak.CompleteMultipartPackagePassesPreflight), multipartPak.CompleteMultipartPackagePassesPreflight),
+			(nameof(multipartPak.ArchiveWithAllMultipartSiblingsIsOneReadablePackage), multipartPak.ArchiveWithAllMultipartSiblingsIsOneReadablePackage),
+			(nameof(multipartPak.MissingMultipartSiblingCannotReplaceInstalledPackage), multipartPak.MissingMultipartSiblingCannotReplaceInstalledPackage),
+			(nameof(multipartPak.NumberedSingleFilePackageRemainsSupported), multipartPak.NumberedSingleFilePackageRemainsSupported),
+			(nameof(deferredSettings.RefreshFlushPreservesRecentInactiveOrganizationAndAllowsLaterDiskReload), deferredSettings.RefreshFlushPreservesRecentInactiveOrganizationAndAllowsLaterDiskReload),
+			(nameof(deferredSettings.FailedRefreshFlushKeepsItsScheduledSaveRetry), deferredSettings.FailedRefreshFlushKeepsItsScheduledSaveRetry),
+			(nameof(deferredSettings.FailedDelayedSaveRemainsPendingUntilExplicitRetrySucceeds), deferredSettings.FailedDelayedSaveRemainsPendingUntilExplicitRetrySucceeds),
+			(nameof(deferredSettings.CancellingAndReplacingQueuedSaveWritesOnlyTheCurrentState), deferredSettings.CancellingAndReplacingQueuedSaveWritesOnlyTheCurrentState),
+			(nameof(interactionPerformance.StartupModScanPublishesOneCompleteCacheAndKeepsNewestDuplicates), interactionPerformance.StartupModScanPublishesOneCompleteCacheAndKeepsNewestDuplicates),
+			(nameof(settingsRestore.StartupRestoresSavedWindowAndExplicitAppearanceChoices), settingsRestore.StartupRestoresSavedWindowAndExplicitAppearanceChoices),
+			(nameof(settingsRestore.ReloadClearsInheritedAppearanceOverridesAndKeepsExtenderInstances), settingsRestore.ReloadClearsInheritedAppearanceOverridesAndKeepsExtenderInstances),
+			(nameof(settingsRestore.MissingWindowPlacementRestoresUsableDefaults), settingsRestore.MissingWindowPlacementRestoresUsableDefaults),
+			(nameof(progressDisplay.UnknownDurationShowsActivityAndReturnsToMeasuredProgress), progressDisplay.UnknownDurationShowsActivityAndReturnsToMeasuredProgress),
+			(nameof(inactiveOrder.HeldOverridesKeepInterleavedInactiveOrderWhenOtherModsAreTemporarilyActive), inactiveOrder.HeldOverridesKeepInterleavedInactiveOrderWhenOtherModsAreTemporarilyActive),
+			(nameof(markdownLinks.ReleaseNotesLinkIsEnabledWithoutANavigationHost), markdownLinks.ReleaseNotesLinkIsEnabledWithoutANavigationHost),
+			(nameof(markdownLinks.MarkdownWebLinksDispatchToTheBrowserCommand), markdownLinks.MarkdownWebLinksDispatchToTheBrowserCommand),
+			(nameof(markdownLinks.MarkdownLinksRejectNonWebTargetsEvenWhenExecutedDirectly), markdownLinks.MarkdownLinksRejectNonWebTargetsEvenWhenExecutedDirectly),
+			(nameof(inactiveOrder.RestartRestoresInactiveAndOverrideOrganizationIntoLiveSettings), inactiveOrder.RestartRestoresInactiveAndOverrideOrganizationIntoLiveSettings),
 			(nameof(loadOrderWorkflow.RefreshKeepsSelectedProfileInsteadOfForcingPublic), loadOrderWorkflow.RefreshKeepsSelectedProfileInsteadOfForcingPublic),
 			(nameof(overrideOrders.OptInOrderRoundTripsIncludingAnEmptySelection), overrideOrders.OptInOrderRoundTripsIncludingAnEmptySelection),
 			(nameof(overrideOrders.PureOverridesUseSelectionWhileMixedOverridesFollowActiveMods), overrideOrders.PureOverridesUseSelectionWhileMixedOverridesFollowActiveMods),
@@ -457,6 +534,41 @@ internal static class Program
 			(nameof(fileSafety.FirstGameLoadOrderExportCanUndoBackToNoFile), fileSafety.FirstGameLoadOrderExportCanUndoBackToNoFile),
 			(nameof(fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson), fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson),
 			(nameof(loadOrderWorkflow.StartupRestoresRememberedOrderWhileRefreshKeepsCurrentSelection), loadOrderWorkflow.StartupRestoresRememberedOrderWhileRefreshKeepsCurrentSelection),
+			(nameof(archiveOrders.BundledMetadataIsNotImportedAsAnEmptyLoadOrder), archiveOrders.BundledMetadataIsNotImportedAsAnEmptyLoadOrder),
+			(nameof(refreshOperations.RefreshShortcutStaysDisabledUntilOperationCleanupCompletes), refreshOperations.RefreshShortcutStaysDisabledUntilOperationCleanupCompletes),
+			(nameof(refreshOperations.DirectRefreshDuringFileWorkPreservesProgressAndShutdownCancellation), refreshOperations.DirectRefreshDuringFileWorkPreservesProgressAndShutdownCancellation),
+			(nameof(refreshOperations.DirectRefreshCannotStartDuringBatchInstallOrShutdown), refreshOperations.DirectRefreshCannotStartDuringBatchInstallOrShutdown),
+			(nameof(backupZip.AsyncBackupZipPreservesPackageContents), backupZip.AsyncBackupZipPreservesPackageContents),
+			(nameof(backupZip.CancelingDuringZipEntryPreservesPreviousBackupAndReleasesFiles), backupZip.CancelingDuringZipEntryPreservesPreviousBackupAndReleasesFiles),
+			(nameof(backupZip.CanceledEditorPackageBuildDoesNotCreateOutput), backupZip.CanceledEditorPackageBuildDoesNotCreateOutput),
+			(nameof(editorBackup.UnsafeEditorMetadataCannotReplaceFilesOrExistingBackup), editorBackup.UnsafeEditorMetadataCannotReplaceFilesOrExistingBackup),
+			(nameof(editorBackup.ValidEditorBackupKeepsExpectedNamesAndActualPackageContents), editorBackup.ValidEditorBackupKeepsExpectedNamesAndActualPackageContents),
+			(nameof(editorBackup.MissingEditorSourcesCannotReplaceExistingBackupWithEmptyPackage), editorBackup.MissingEditorSourcesCannotReplaceExistingBackupWithEmptyPackage),
+			(nameof(packageExtraction.RealPackageExtractionPreservesNestedContentsAcrossCompressionMethods), packageExtraction.RealPackageExtractionPreservesNestedContentsAcrossCompressionMethods),
+			(nameof(packageExtraction.CancellationDuringMemberCopyPreservesExistingFileAndSkipsLaterMembers), packageExtraction.CancellationDuringMemberCopyPreservesExistingFileAndSkipsLaterMembers),
+			(nameof(packageExtraction.FailedMemberCopyPreservesExistingFileAndSkipsLaterMembers), packageExtraction.FailedMemberCopyPreservesExistingFileAndSkipsLaterMembers),
+			(nameof(packageExtraction.UnsafeMemberPathsAreRejectedBeforeAnyOutputIsPublished), packageExtraction.UnsafeMemberPathsAreRejectedBeforeAnyOutputIsPublished),
+			(nameof(packageExtraction.PreCanceledExtractionNeverCreatesOutput), packageExtraction.PreCanceledExtractionNeverCreatesOutput),
+			(nameof(packageExtraction.DeletedPackageMembersAreNotExtracted), packageExtraction.DeletedPackageMembersAreNotExtracted),
+			(nameof(archivePakImport.DuplicateDestinationsAbortBeforeAnyArchiveEntryIsImported), archivePakImport.DuplicateDestinationsAbortBeforeAnyArchiveEntryIsImported),
+			(nameof(archivePakImport.DuplicateDestinationReviewDoesNotReadOrStagePakContents), archivePakImport.DuplicateDestinationReviewDoesNotReadOrStagePakContents),
+			(nameof(archivePakImport.UniquePakDestinationsImportNormallyAndOnlyReadOrdersWhenRequested), archivePakImport.UniquePakDestinationsImportNormallyAndOnlyReadOrdersWhenRequested),
+			(nameof(nxmRemoval.FailedRemovalIntentSaveLeavesQueueAndFilesUnchanged), nxmRemoval.FailedRemovalIntentSaveLeavesQueueAndFilesUnchanged),
+			(nameof(nxmRemoval.FailedRecycleKeepsDurableRetryRecordAndBlocksDownloadActions), nxmRemoval.FailedRecycleKeepsDurableRetryRecordAndBlocksDownloadActions),
+			(nameof(nxmRemoval.PartialCleanupFailureCanRetryAfterCompletedArchiveWasRemoved), nxmRemoval.PartialCleanupFailureCanRetryAfterCompletedArchiveWasRemoved),
+			(nameof(nxmRemoval.FinalRemovalSaveFailureRemainsRetryableAfterRestart), nxmRemoval.FinalRemovalSaveFailureRemainsRetryableAfterRestart),
+			(nameof(hybridInstall.HybridCompletionWaitsForCompanionBeforeReleasingArchive), hybridInstall.HybridCompletionWaitsForCompanionBeforeReleasingArchive),
+			(nameof(hybridInstall.CompanionFailureCannotReportHybridSuccess), hybridInstall.CompanionFailureCannotReportHybridSuccess),
+			(nameof(hybridInstall.HybridCancellationWaitsForCompanionCleanupAndStopsBeforeCommit), hybridInstall.HybridCancellationWaitsForCompanionCleanupAndStopsBeforeCommit),
+			(nameof(compressedPak.UnsafeMetadataDestinationNamesAreRejected), compressedPak.UnsafeMetadataDestinationNamesAreRejected),
+			(nameof(compressedPak.ValidMetadataRenamesRemainCompatibleAndOverridesKeepSourceFilename), compressedPak.ValidMetadataRenamesRemainCompatibleAndOverridesKeepSourceFilename),
+			(nameof(compressedPak.RealPakWithParentRelativeMetadataCannotChooseOutsideDestination), compressedPak.RealPakWithParentRelativeMetadataCannotChooseOutsideDestination),
+			(nameof(tempFiles.FailedCopyClosesAndRemovesTemporaryFileBeforeReturning), tempFiles.FailedCopyClosesAndRemovesTemporaryFileBeforeReturning),
+			(nameof(tempFiles.CanceledCopyClosesAndRemovesTemporaryFileBeforeReturning), tempFiles.CanceledCopyClosesAndRemovesTemporaryFileBeforeReturning),
+			(nameof(archiveOrders.ExplicitEmptyLoadOrderAndNestedEntryNamesRemainSupported), archiveOrders.ExplicitEmptyLoadOrderAndNestedEntryNamesRemainSupported),
+			(nameof(archiveOrders.MalformedLoadOrdersCannotBecomePartiallyEmptyOrders), archiveOrders.MalformedLoadOrdersCannotBecomePartiallyEmptyOrders),
+			(nameof(archiveOrders.ArchivedCurrentUpdatesOnlyGameBackedOrderAndClonesItsContents), archiveOrders.ArchivedCurrentUpdatesOnlyGameBackedOrderAndClonesItsContents),
+			(nameof(archiveOrders.ArchivedCurrentDoesNotUseANamedOrderAsFallback), archiveOrders.ArchivedCurrentDoesNotUseANamedOrderAsFallback),
 			(nameof(loadOrderWorkflow.EmptyGameOrderRecoveryTargetsCurrentEvenWhenNamedOrderComesFirst), loadOrderWorkflow.EmptyGameOrderRecoveryTargetsCurrentEvenWhenNamedOrderComesFirst),
 			(nameof(loadOrderWorkflow.FirstSyncBackupDoesNotReplaceOrSelectTheWorkingOrder), loadOrderWorkflow.FirstSyncBackupDoesNotReplaceOrSelectTheWorkingOrder),
 			(nameof(loadOrderWorkflow.SaveSwitchRenameAndRestartPreservesEachOrder), loadOrderWorkflow.SaveSwitchRenameAndRestartPreservesEachOrder),
@@ -477,7 +589,8 @@ internal static class Program
 			(nameof(releaseFlow.InstanceGuardExcludesAnotherThreadAndReleasesItsLease), releaseFlow.InstanceGuardExcludesAnotherThreadAndReleasesItsLease),
 			(nameof(releaseFlow.PakCountIsMetadataWithoutRepeatedPlacementInstructions), releaseFlow.PakCountIsMetadataWithoutRepeatedPlacementInstructions),
 			(nameof(batchInstallUi.ToolbarPrioritizesFailuresAndClearsWhenPackagesAreInstalled), batchInstallUi.ToolbarPrioritizesFailuresAndClearsWhenPackagesAreInstalled),
-			(nameof(batchInstallUi.ProgressCannotCloseDuringWorkAndReleasesAfterFailure), batchInstallUi.ProgressCannotCloseDuringWorkAndReleasesAfterFailure),
+			(nameof(batchInstallUi.CloseRequestsCancellationAndReleasesAfterFailure), batchInstallUi.CloseRequestsCancellationAndReleasesAfterFailure),
+			(nameof(batchInstallUi.CanceledBatchWaitsForWorkerCleanupBeforeClosing), batchInstallUi.CanceledBatchWaitsForWorkerCleanupBeforeClosing),
 			(nameof(downloadNotification.NotificationsReuseTheirWindowWithoutTakingForeground), downloadNotification.NotificationsReuseTheirWindowWithoutTakingForeground),
 			(nameof(processToken.ElevationMatchesExplicitProcessHandleEvenDuringImpersonation), processToken.ElevationMatchesExplicitProcessHandleEvenDuringImpersonation),
 			(nameof(dismissal.ExitKeepsContentTransparentUntilDismissed), dismissal.ExitKeepsContentTransparentUntilDismissed),
@@ -620,6 +733,11 @@ internal static class Program
 			(nameof(downloadBatch.MissingDependencySkipsOnlyItsDependentPackage), downloadBatch.MissingDependencySkipsOnlyItsDependentPackage),
 			(nameof(downloadBatch.DependencyLossAfterAConflictCascadesSafely), downloadBatch.DependencyLossAfterAConflictCascadesSafely),
 			(nameof(nxmTransfer.MatchingRangeResponseResumesPartialFile), nxmTransfer.MatchingRangeResponseResumesPartialFile),
+			(nameof(nxmTransfer.CancelledFinalVerificationPreservesPartialAndCanBeRetried), nxmTransfer.CancelledFinalVerificationPreservesPartialAndCanBeRetried),
+			(nameof(nxmTransfer.FailedFinalVerificationDoesNotPublishUnverifiedDownload), nxmTransfer.FailedFinalVerificationDoesNotPublishUnverifiedDownload),
+			(nameof(nxmTransfer.ApproximateNexusSizeDoesNotCompleteAnUnfinishedPartial), nxmTransfer.ApproximateNexusSizeDoesNotCompleteAnUnfinishedPartial),
+			(nameof(nxmTransfer.HeaderLengthAloneDoesNotPublishAnOlderPartial), nxmTransfer.HeaderLengthAloneDoesNotPublishAnOlderPartial),
+			(nameof(nxmTransfer.ResumeMetadataCleanupFailureDoesNotRejectVerifiedDownload), nxmTransfer.ResumeMetadataCleanupFailureDoesNotRejectVerifiedDownload),
 			(nameof(nxmTransfer.FullResponseRestartsInsteadOfAppendingPartialFile), nxmTransfer.FullResponseRestartsInsteadOfAppendingPartialFile),
 			(nameof(nxmTransfer.SidecarValidatorEnablesResumeAfterRestart), nxmTransfer.SidecarValidatorEnablesResumeAfterRestart),
 			(nameof(nxmTransfer.MismatchedResumeValidatorRestartsFromZero), nxmTransfer.MismatchedResumeValidatorRestartsFromZero),

@@ -102,6 +102,7 @@
 				<Setter Property="Margin" Value="6,0,0,0" />
 				<Setter Property="MinWidth" Value="0" />
 				<Style.Triggers>
+					<DataTrigger Binding="{Binding DataContext.DownloadManagerInstallIsActive, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger>
 					<DataTrigger Binding="{Binding State}" Value="Installing"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger>
 					<DataTrigger Binding="{Binding State}" Value="Installed"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger>
 				</Style.Triggers>
@@ -112,6 +113,7 @@
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxWarningBrush}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxWarningBrush}" />
 				<Style.Triggers>
+					<DataTrigger Binding="{Binding DataContext.DownloadManagerInstallIsActive, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger>
 					<DataTrigger Binding="{Binding State}" Value="Installed"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
 				</Style.Triggers>
 			</Style>
@@ -130,6 +132,7 @@
 				<Style.Triggers>
 					<DataTrigger Binding="{Binding State}" Value="Paused"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
 					<DataTrigger Binding="{Binding State}" Value="Failed"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
+					<DataTrigger Binding="{Binding IsRemovalPending}" Value="True"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger>
 					<DataTrigger Binding="{Binding HasNexusSource}" Value="False"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger>
 				</Style.Triggers>
 			</Style>
@@ -139,6 +142,7 @@
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
 				<Style.Triggers>
+					<DataTrigger Binding="{Binding DataContext.DownloadManagerInstallIsActive, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger>
 					<DataTrigger Binding="{Binding State}" Value="Downloaded"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
 					<DataTrigger Binding="{Binding State}" Value="InstallFailed"><Setter Property="Visibility" Value="Visible" /></DataTrigger>
 					<MultiDataTrigger>
@@ -151,6 +155,9 @@
 				<Setter Property="Background" Value="{DynamicResource ReduxSuccessPillBackground}" />
 				<Setter Property="BorderBrush" Value="{DynamicResource ReduxSuccessBrush}" />
 				<Setter Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+				<Style.Triggers>
+					<DataTrigger Binding="{Binding DataContext.DownloadManagerInstallIsActive, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger>
+				</Style.Triggers>
 			</Style>
 			<DataTemplate x:Key="DownloadItemTemplate">
 				<Border Padding="{DynamicResource Redux.Manager.RowPadding}" Background="Transparent">
@@ -352,6 +359,18 @@
 
 
 				</WrapPanel>
+				<StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+					<TextBlock x:Name="PackageCountText" Foreground="{DynamicResource ReduxTextSecondaryBrush}" />
+					<TextBlock Text="{Binding LocalPackageIntakeStatus}" Margin="0,4,0,0" TextWrapping="Wrap"
+						Foreground="{DynamicResource ReduxTextSecondaryBrush}" AutomationProperties.LiveSetting="Polite">
+						<TextBlock.Style><Style TargetType="TextBlock"><Style.Triggers>
+							<Trigger Property="Text" Value=""><Setter Property="Visibility" Value="Collapsed" /></Trigger>
+						</Style.Triggers></Style></TextBlock.Style>
+					</TextBlock>
+					<ProgressBar Margin="0,5,0,0" Height="4" Minimum="0" Maximum="{Binding LocalPackageIntakeTotal}"
+						Value="{Binding LocalPackageIntakeCompleted}" AutomationProperties.Name="Packages processed"
+						Visibility="{Binding LocalPackageIntakeIsActive, Converter={StaticResource BoolToVisibilityConverter}}" />
+				</StackPanel>
 				<TabControl x:Name="DownloadsTabs" ClipToBounds="True" Margin="0" SelectionChanged="DownloadsTabs_SelectionChanged"
 					ItemContainerStyle="{StaticResource ReduxContentTabItemStyle}" Style="{StaticResource ReduxContentTabControlStyle}">
 					<TabItem Header="Downloads">

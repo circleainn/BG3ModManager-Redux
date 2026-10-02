@@ -1,6 +1,7 @@
 ﻿
 
 using DivinityModManager.Models;
+using DivinityModManager.AppServices;
 using DivinityModManager.Util;
 
 using DynamicData;
@@ -89,7 +90,17 @@ public class DeleteFilesViewData : BaseProgressViewModel
 				else
 				{
 					await UpdateProgress("", $"Deleting {f.FilePath}...");
-					var deleteReportedSuccess = RecycleBinHelper.DeleteFile(f.FilePath, false, PermanentlyDelete, out var deleteError);
+					var deleteReportedSuccess = true;
+					string deleteError = null;
+					// Delete the primary last so a failed sibling remains discoverable for retry.
+					foreach (var path in PakFileSet.GetPaths(f.FilePath, false).Where(File.Exists).Reverse())
+					{
+						if (!RecycleBinHelper.DeleteFile(path, false, PermanentlyDelete, out deleteError) || File.Exists(path))
+						{
+							deleteReportedSuccess = false;
+							break;
+						}
+					}
 					if (deleteReportedSuccess && !File.Exists(f.FilePath))
 					{
 						eventArgs.DeletedFiles.Add(f);

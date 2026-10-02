@@ -417,24 +417,6 @@ public static partial class DivinityModDataLoader
 		return projects.ToList();
 	}
 
-	private static readonly HashSet<string> _AllPaksNames = new();
-	private static readonly Regex multiPartPakPatternNoExtension = new("(_[0-9]+)$", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-
-	private static bool PakIsNotPartial(string path)
-	{
-		var baseName = Path.GetFileNameWithoutExtension(path);
-		var match = multiPartPakPatternNoExtension.Match(baseName);
-		if (match.Success)
-		{
-			var nameWithoutPartial = baseName.Replace(match.Groups[0].Value, "");
-			if (_AllPaksNames.Contains(nameWithoutPartial))
-			{
-				DivinityApp.Log($"Pak ({baseName}) is a partial pak for ({nameWithoutPartial}). Skipping.");
-				return false;
-			}
-		}
-		return true;
-	}
 
 	private static readonly Regex modMetaPattern = new("^Mods/([^/]+)/meta.lsx", RegexOptions.IgnoreCase);
 	private static bool IsModMetaFile(PackagedFileInfo f)
@@ -712,8 +694,9 @@ public static partial class DivinityModDataLoader
 		return null;
 	}
 
-	private static async Task<DivinityModData> LoadModDataFromPakReaderAsync(string pakPath, Dictionary<string, DivinityModData> builtinMods, FileStream stream = null)
+	private static async Task<DivinityModData> LoadModDataFromPakReaderAsync(string pakPath, Dictionary<string, DivinityModData> builtinMods, FileStream stream = null, CancellationToken cancellationToken = default)
 	{
+		using var cancellation = new PackageReadCancellation(cancellationToken);
 		var pr = new PackageReader();
 		using var pak = stream == null ? pr.Read(pakPath) : pr.Read(pakPath, stream);
 		return await InternalLoadModDataFromPakAsync(pak, pakPath, builtinMods);
@@ -724,7 +707,7 @@ public static partial class DivinityModDataLoader
 		try
 		{
 			if (cts.IsCancellationRequested) return;
-			var result = await LoadModDataFromPakReaderAsync(pakPath, builtinMods);
+			var result = await LoadModDataFromPakReaderAsync(pakPath, builtinMods, cancellationToken: cts);
 			if (result != null)
 			{
 				targetBag.Add(result);
@@ -742,7 +725,7 @@ public static partial class DivinityModDataLoader
 		{
 			if (cts.IsCancellationRequested) return;
 			stream.Position = 0;
-			var result = await LoadModDataFromPakReaderAsync(pakPath, builtinMods, stream);
+			var result = await LoadModDataFromPakReaderAsync(pakPath, builtinMods, stream, cts);
 			if (result != null)
 			{
 				targetBag.Add(result);
@@ -758,9 +741,10 @@ public static partial class DivinityModDataLoader
 	{
 		try
 		{
-			if (cts.IsCancellationRequested) return null;
-			return await LoadModDataFromPakReaderAsync(pakPath, builtinMods, stream);
+			cts.ThrowIfCancellationRequested();
+			return await LoadModDataFromPakReaderAsync(pakPath, builtinMods, stream, cts);
 		}
+		catch (OperationCanceledException) when (cts.IsCancellationRequested) { throw; }
 		catch (Exception ex)
 		{
 			DivinityApp.Log($"Error loading mod pak '{pakPath}':\n{ex}");
@@ -784,10 +768,10 @@ public static partial class DivinityModDataLoader
 			(f) =>
 			{
 				var name = Path.GetFileName(f);
-				return name.EndsWith(".pak", SCOMP) && !_IgnoredRecursiveFolders.Any(x => f.Contains(x));
+				return name.EndsWith(".pak", SCOMP) && !_IgnoredRecursiveFolders.Any(x => f.Contains(x))
+					&& !f.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Any(segment => segment.StartsWith(".redux-pak-", StringComparison.OrdinalIgnoreCase));
 			});
-			_AllPaksNames.UnionWith(allPaks.Select(p => Path.GetFileNameWithoutExtension(p)));
-			modPaks.AddRange(allPaks.Where(PakIsNotPartial));
+			modPaks.AddRange(PakFileSet.GetPrimaries(allPaks));
 		}
 		catch (Exception ex)
 		{

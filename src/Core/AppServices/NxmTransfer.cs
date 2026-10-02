@@ -65,13 +65,26 @@ public sealed class NxmTransfer : INxmTransfer, IDisposable
 		var metadataPath = request.PartialPath + ".meta";
 		var etag = request.ETag;
 		var lastModified = request.LastModified;
-		if (existingBytes > 0 && String.IsNullOrWhiteSpace(etag) && lastModified == null && File.Exists(metadataPath))
+		if (existingBytes > 0 && File.Exists(metadataPath))
 		{
 			try
 			{
 				var metadata = JsonConvert.DeserializeObject<PartialMetadata>(await File.ReadAllTextAsync(metadataPath, cancellationToken));
-				etag = metadata?.ETag;
-				lastModified = metadata?.LastModified;
+				if (metadata?.BodyComplete == true && metadata.ExpectedBytes == existingBytes && existingBytes <= request.MaximumBytes
+					&& (String.IsNullOrWhiteSpace(etag) || String.Equals(etag, metadata.ETag, StringComparison.Ordinal))
+					&& (lastModified == null || lastModified == metadata.LastModified))
+				{
+					// The response body was complete before a pause interrupted hashing.
+					// Do not request an invalid byte range starting at the end of the file.
+					var verified = await FinalizeDownloadAsync(request, cancellationToken);
+					return new NxmTransferResult(request.CompletedPath, verified.SizeBytes,
+						metadata.ETag, metadata.LastModified, true, verified.Sha256);
+				}
+				if (String.IsNullOrWhiteSpace(etag) && lastModified == null)
+				{
+					etag = metadata?.ETag;
+					lastModified = metadata?.LastModified;
+				}
 			}
 			catch (Newtonsoft.Json.JsonException) { }
 		}
@@ -126,7 +139,8 @@ public sealed class NxmTransfer : INxmTransfer, IDisposable
 			var responseMetadata = new PartialMetadata
 			{
 				ETag = responseEtag is { IsWeak: false } ? responseEtag.Tag : null,
-				LastModified = responseLastModified
+				LastModified = responseLastModified,
+				ExpectedBytes = existingBytes + responseLength.Value
 			};
 			await DivinityModManager.Util.AtomicFileWriter.WriteAllBytesAsync(metadataPath,
 				System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(responseMetadata)), cancellationToken: cancellationToken);
@@ -161,20 +175,44 @@ public sealed class NxmTransfer : INxmTransfer, IDisposable
 				throw new InvalidDataException("The Nexus download ended before the declared response length.");
 			if (resumed && contentRange?.Length != finalBytes)
 				throw new InvalidDataException("The resumed Nexus download did not reach the declared file length.");
-			if (File.Exists(request.CompletedPath)) throw new IOException("The completed download filename is already in use.");
-			File.Move(request.PartialPath, request.CompletedPath);
-			if (File.Exists(metadataPath)) File.Delete(metadataPath);
-			var size = new FileInfo(request.CompletedPath).Length;
-			string sha256;
-			await using (var completed = new FileStream(request.CompletedPath, FileMode.Open, FileAccess.Read,
-				FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan))
-			{
-				sha256 = Convert.ToHexString(await System.Security.Cryptography.SHA256.HashDataAsync(completed, cancellationToken))
-					.ToLowerInvariant();
-			}
+			// Persist the validated body boundary before honoring cancellation during
+			// hashing. Header metadata alone can still describe an older partial file.
+			responseMetadata.BodyComplete = true;
+			await DivinityModManager.Util.AtomicFileWriter.WriteAllBytesAsync(metadataPath,
+				System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(responseMetadata)), cancellationToken: CancellationToken.None);
+			var (size, sha256) = await FinalizeDownloadAsync(request, cancellationToken);
 			return new NxmTransferResult(request.CompletedPath, size,
 				responseEtag is { IsWeak: false } ? responseEtag.Tag : null, responseLastModified, resumed, sha256);
 		}
+	}
+
+	internal static async Task<(long SizeBytes, string Sha256)> FinalizeDownloadAsync(
+		NxmTransferRequest request, CancellationToken cancellationToken)
+	{
+		// Keep the resumable file and its validator until verification succeeds.
+		// Cancellation during hashing must not leave an untracked completed file
+		// that prevents the next transfer from publishing to the same destination.
+		long size;
+		string sha256;
+		await using (var partial = new FileStream(request.PartialPath, FileMode.Open, FileAccess.Read,
+			FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan))
+		{
+			size = partial.Length;
+			sha256 = Convert.ToHexString(await System.Security.Cryptography.SHA256.HashDataAsync(partial, cancellationToken))
+				.ToLowerInvariant();
+		}
+		cancellationToken.ThrowIfCancellationRequested();
+		if (File.Exists(request.CompletedPath)) throw new IOException("The completed download filename is already in use.");
+		File.Move(request.PartialPath, request.CompletedPath);
+		var metadataPath = request.PartialPath + ".meta";
+		try { if (File.Exists(metadataPath)) File.Delete(metadataPath); }
+		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+		{
+			// The verified archive has already been committed. A stale sidecar must
+			// not turn that success into an unrecoverable occupied-filename retry.
+			DivinityApp.Log($"Verified download completed, but its resume metadata could not be removed: {exception.GetType().Name}");
+		}
+		return (size, sha256);
 	}
 
 	public void Dispose()
@@ -190,5 +228,7 @@ public sealed class NxmTransfer : INxmTransfer, IDisposable
 	{
 		public string ETag { get; set; }
 		public DateTimeOffset? LastModified { get; set; }
+		public long ExpectedBytes { get; set; }
+		public bool BodyComplete { get; set; }
 	}
 }

@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace DivinityModManager.Controls;
 
@@ -14,7 +15,13 @@ public partial class ReduxOperationProgress : UserControl
 		nameof(Status), typeof(string), typeof(ReduxOperationProgress), new PropertyMetadata(String.Empty));
 
 	public static readonly DependencyProperty ProgressValueProperty = DependencyProperty.Register(
-		nameof(ProgressValue), typeof(double), typeof(ReduxOperationProgress), new PropertyMetadata(0d));
+		nameof(ProgressValue), typeof(double), typeof(ReduxOperationProgress), new PropertyMetadata(0d, OnProgressChanged));
+
+	public static readonly DependencyProperty IsIndeterminateProperty = DependencyProperty.Register(
+		nameof(IsIndeterminate), typeof(bool), typeof(ReduxOperationProgress), new PropertyMetadata(false, OnProgressChanged));
+
+	public static readonly DependencyProperty ReduceMotionProperty = DependencyProperty.Register(
+		nameof(ReduceMotion), typeof(bool), typeof(ReduxOperationProgress), new PropertyMetadata(false, OnProgressChanged));
 
 	public static readonly DependencyProperty CanCancelProperty = DependencyProperty.Register(
 		nameof(CanCancel), typeof(bool), typeof(ReduxOperationProgress), new PropertyMetadata(true));
@@ -52,6 +59,38 @@ public partial class ReduxOperationProgress : UserControl
 		set => SetValue(CanCancelProperty, value);
 	}
 
+	public bool IsIndeterminate
+	{
+		get => (bool)GetValue(IsIndeterminateProperty);
+		set => SetValue(IsIndeterminateProperty, value);
+	}
+
+	public bool ReduceMotion
+	{
+		get => (bool)GetValue(ReduceMotionProperty);
+		set => SetValue(ReduceMotionProperty, value);
+	}
+
+	private static void OnProgressChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e) =>
+		((ReduxOperationProgress)sender).UpdateProgressLabel();
+
+	private void UpdateProgressLabel()
+	{
+		if (ProgressLabel != null)
+			ProgressLabel.Text = IsIndeterminate ? "Working…" : ProgressValue.ToString("P0");
+		if (OperationProgressBar == null) return;
+		OperationProgressBar.BeginAnimation(OpacityProperty, null);
+		OperationProgressBar.Opacity = IsIndeterminate ? 0.55 : 1;
+		if (IsIndeterminate && IsVisible && !ReduceMotion && SystemParameters.ClientAreaAnimation)
+		{
+			OperationProgressBar.BeginAnimation(OpacityProperty, new DoubleAnimation(0.35, 1, TimeSpan.FromSeconds(0.8))
+			{
+				AutoReverse = true,
+				RepeatBehavior = RepeatBehavior.Forever
+			});
+		}
+	}
+
 	public ICommand? CancelCommand
 	{
 		get => (ICommand?)GetValue(CancelCommandProperty);
@@ -73,5 +112,8 @@ public partial class ReduxOperationProgress : UserControl
 	public ReduxOperationProgress()
 	{
 		InitializeComponent();
+		IsVisibleChanged += (_, _) => UpdateProgressLabel();
+		Unloaded += (_, _) => OperationProgressBar.BeginAnimation(OpacityProperty, null);
+		UpdateProgressLabel();
 	}
 }

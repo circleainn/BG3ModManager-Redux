@@ -71,6 +71,11 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 	public ReadOnlyObservableCollection<NxmDownloadItem> Items { get; }
 	public event Action<string> FocusRequested;
 	public event Action<NxmDownloadItem> ItemChanged;
+	internal Action<string> RecycleCompletedFile { get; set; } = path =>
+	{
+		if (!RecycleBinHelper.DeleteFile(path, false, false, out var error) || File.Exists(path))
+			throw new IOException(error ?? "The downloaded archive could not be moved to the Recycle Bin.");
+	};
 
 	public NxmDownloadManager(
 		string directory,
@@ -201,6 +206,8 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 					: item.SourceKind != AcquiredPackageSourceKind.NexusMods
 						&& String.Equals(item.ArchiveSha256, archiveSha256, StringComparison.OrdinalIgnoreCase));
 				var retainedArchive = existing == null ? null : SafePath(existing.CompletedFileName);
+				if (existing?.IsRemovalPending == true)
+					throw new InvalidOperationException("Finish deleting the previous package before adding it again.");
 				if (existing != null && retainedArchive != null && File.Exists(retainedArchive))
 				{
 					var candidate = PersistentCopy(existing);
@@ -249,17 +256,14 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 				await using (var output = new FileStream(completedPath, FileMode.CreateNew, FileAccess.Write, FileShare.None,
 					65536, FileOptions.Asynchronous | FileOptions.SequentialScan))
 					await input.CopyToAsync(output, cancellationToken);
+				if (!String.Equals(archiveSha256, await ComputeFileSha256Async(completedPath, cancellationToken),
+					StringComparison.OrdinalIgnoreCase))
+					throw new InvalidDataException("The local package changed while Redux was adding it. Try again after the file is no longer being modified.");
 			}
 			catch
 			{
 				if (File.Exists(completedPath)) File.Delete(completedPath);
 				throw;
-			}
-			if (!String.Equals(archiveSha256, await ComputeFileSha256Async(completedPath, cancellationToken),
-				StringComparison.OrdinalIgnoreCase))
-			{
-				File.Delete(completedPath);
-				throw new InvalidDataException("The local package changed while Redux was adding it. Try again after the file is no longer being modified.");
 			}
 
 			var item = new NxmDownloadItem
@@ -286,12 +290,16 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 				ErrorDetails = String.IsNullOrWhiteSpace(destination) ? inspectionSummary ?? String.Empty : String.Empty,
 				Progress = 1
 			};
-			await _stateGate.WaitAsync(cancellationToken);
+			var stateGateHeld = false;
 			try
 			{
+				await _stateGate.WaitAsync(cancellationToken);
+				stateGateHeld = true;
 				if (_shuttingDown) throw new InvalidOperationException("The download manager is shutting down.");
 				if (existing != null && _items.Contains(existing))
 				{
+					if (existing.IsRemovalPending)
+						throw new InvalidOperationException("Finish deleting the previous package before adding it again.");
 					item.Id = existing.Id;
 					item.QueuePosition = existing.QueuePosition;
 					await _store.SaveAsync(ReplaceForSave(existing, item), cancellationToken);
@@ -314,19 +322,20 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 				if (File.Exists(completedPath)) File.Delete(completedPath);
 				throw;
 			}
-			finally { _stateGate.Release(); }
+			finally { if (stateGateHeld) _stateGate.Release(); }
 			return item.Id;
 		}
 		finally { _localIntakeGate.Release(); }
 	}
 
-	public Task PauseAsync(string itemId) => StopOperationAsync(itemId, NxmDownloadState.Paused, "paused");
+	public Task PauseAsync(string itemId) => Find(itemId)?.IsRemovalPending == true
+		? Task.CompletedTask : StopOperationAsync(itemId, NxmDownloadState.Paused, "paused");
 
 	public async Task ResumeAsync(string itemId)
 	{
 		if (_shuttingDown || !_networkEnabled) return;
 		var item = Find(itemId);
-		if (item == null || item.State is not (NxmDownloadState.Paused or NxmDownloadState.Failed or NxmDownloadState.RetryWaiting)) return;
+		if (item == null || item.IsRemovalPending || item.State is not (NxmDownloadState.Paused or NxmDownloadState.Failed or NxmDownloadState.RetryWaiting)) return;
 		if (item.RequiresAuthorization && item.Authorization == null)
 		{
 			await TransitionAsync(item, NxmDownloadState.NeedsFreshLink, "fresh-link-required");
@@ -408,6 +417,7 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 
 	public async Task CancelAsync(string itemId)
 	{
+		if (Find(itemId)?.IsRemovalPending == true) return;
 		await StopOperationAsync(itemId, NxmDownloadState.Failed, "cancelled");
 		var item = Find(itemId);
 		var partialPath = item == null ? null : SafePath(item.PartialFileName);
@@ -446,16 +456,25 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 			if (!_items.Contains(item) || item.State == NxmDownloadState.Installing) return;
 			var completedPath = deleteCompletedFile ? SafePath(item.CompletedFileName) : null;
 			var partialPath = SafePath(item.PartialFileName);
-			await _store.SaveAsync(_items.Where(candidate => !ReferenceEquals(candidate, item)), cancellationToken);
-			_items.Remove(item);
-			if (deleteCompletedFile)
+			var needsCleanup = (completedPath != null && File.Exists(completedPath))
+				|| (partialPath != null && (File.Exists(partialPath) || File.Exists(partialPath + ".meta")));
+			if (needsCleanup && !item.IsRemovalPending)
 			{
-				if (completedPath != null && File.Exists(completedPath)
-					&& (!RecycleBinHelper.DeleteFile(completedPath, false, false, out var error) || File.Exists(completedPath)))
-					throw new IOException(error ?? "The downloaded archive could not be moved to the Recycle Bin.");
+				// Keep a durable retry record before changing any files. A recycle,
+				// cleanup or final manifest failure must not orphan the remaining data.
+				var pending = PersistentCopy(item);
+				pending.State = NxmDownloadState.Failed;
+				pending.ErrorCode = NxmDownloadItem.RemovalIncompleteErrorCode;
+				pending.ErrorDetails = String.Empty;
+				await _store.SaveAsync(ReplaceForSave(item, pending), cancellationToken);
+				ApplyPersistentValues(pending, item);
+				ItemChanged?.Invoke(item);
 			}
+			if (completedPath != null && File.Exists(completedPath)) RecycleCompletedFile(completedPath);
 			if (partialPath != null && File.Exists(partialPath)) File.Delete(partialPath);
 			if (partialPath != null && File.Exists(partialPath + ".meta")) File.Delete(partialPath + ".meta");
+			await _store.SaveAsync(_items.Where(candidate => !ReferenceEquals(candidate, item)), cancellationToken);
+			_items.Remove(item);
 		}
 		finally { _stateGate.Release(); }
 	}
@@ -798,7 +817,7 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 		await _stateGate.WaitAsync();
 		try
 		{
-			if (!_items.Contains(item)) return false;
+			if (!_items.Contains(item) || item.IsRemovalPending) return false;
 			var candidate = PersistentCopy(item);
 			update(candidate);
 			await _store.SaveAsync(ReplaceForSave(item, candidate));

@@ -171,6 +171,9 @@ public static class ArchivePackagePreflightService
 							: hasNativeEntries ? ArchivePackagePreflightKind.UnreviewedNative
 								: ArchivePackagePreflightKind.PakArchive;
 			var findings = AnalyzeEntryNames(entryNames, requirePak: kind == ArchivePackagePreflightKind.PakArchive).ToList();
+			if (findings.Any(finding => finding.Title == ArchivePakImport.DuplicateNamesTitle))
+				return new ArchivePackagePreflightResult(normalizedPath, entries.Length, fileStream.Length,
+					[], findings, kind, nativeInspection, entryNames: entryNames);
 			AddNativeFindings(nativeInspection, unreviewedNativeReason, dllEntries, entryNames, findings);
 			IReadOnlyList<ArchiveSavePreflightEntry> saves = [];
 			if (hasSaveEntries)
@@ -194,46 +197,25 @@ public static class ArchivePackagePreflightService
 			}
 			var packages = new List<PackagePreflightReport>(pakEntries.Length);
 
-			for (var index = 0; index < pakEntries.Length; index++)
+			using var staged = await StagedPakArchive.ReadAsync(archive, temporaryRoot, true, null, cancellationToken);
+			foreach (var stagedPath in staged.Primaries)
 			{
 				cancellationToken.ThrowIfCancellationRequested();
-				var entry = pakEntries[index];
-				var safeName = Path.GetFileName(entry.Key);
-				var stagingDirectory = Path.Combine(temporaryRoot, index.ToString("D3"));
+				var entry = staged.Entries[stagedPath];
 				try
 				{
-					Directory.CreateDirectory(stagingDirectory);
-					var stagedPath = Path.Combine(stagingDirectory, safeName);
-					await using (var entryStream = entry.OpenEntryStream())
-					await using (var output = new FileStream(
-						stagedPath,
-						FileMode.CreateNew,
-						FileAccess.Write,
-						FileShare.None,
-						4096,
-						FileOptions.Asynchronous | FileOptions.SequentialScan))
-					{
-						await entryStream.CopyToAsync(output, cancellationToken);
-					}
-
-					var report = await PackagePreflightService.AnalyzeAsync(
-						stagedPath,
-						installedMods,
-						cancellationToken);
-					var sourcePath = $"{normalizedPath}::{NormalizeEntryPath(entry.Key)}";
-					packages.Add(report.WithSource(sourcePath, Math.Max(0, entry.Size)));
+					staged.RequireMatchingPartFolders(stagedPath);
+					var report = await PackagePreflightService.AnalyzeAsync(stagedPath, installedMods, cancellationToken);
+					packages.Add(report.WithSource($"{normalizedPath}::{NormalizeEntryPath(entry.Key)}",
+						PakFileSet.GetPaths(stagedPath).Sum(path => new FileInfo(path).Length)));
+					findings.AddRange(report.Findings.Where(finding => finding.Title == PakImportCompatibility.MultipartFindingTitle));
 				}
-				catch (OperationCanceledException)
+				catch (OperationCanceledException) { throw; }
+				catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
 				{
-					throw;
-				}
-				catch (Exception ex)
-				{
-					DivinityApp.Log($"Could not stage '{entry.Key}' for package preflight:\n{ex}");
-					findings.Add(new PackagePreflightFinding(
-						ModHealthSeverity.Error,
-						$"{safeName}: Package could not be inspected",
-						"Redux could not extract this PAK from the selected archive."));
+					var finding = new PackagePreflightFinding(ModHealthSeverity.Error, PakImportCompatibility.MultipartFindingTitle, ex.Message);
+					packages.Add(new PackagePreflightReport($"{normalizedPath}::{NormalizeEntryPath(entry.Key)}", null, 0, 0, [finding]));
+					findings.Add(finding);
 				}
 			}
 
@@ -285,19 +267,8 @@ public static class ArchivePackagePreflightService
 				"The archive does not contain a Baldur's Gate 3 PAK package."));
 		}
 
-		var duplicateNames = pakEntries
-			.GroupBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
-			.Where(group => group.Count() > 1)
-			.Select(group => group.Key)
-			.Take(4)
-			.ToArray();
-		if (duplicateNames.Length > 0)
-		{
-			findings.Add(new PackagePreflightFinding(
-				ModHealthSeverity.Error,
-				"Duplicate PAK filenames",
-				$"Multiple archive entries would install with the same filename: {String.Join(", ", duplicateNames)}"));
-		}
+		var collision = ArchivePakImport.FindDestinationCollision(pakEntries);
+		if (collision != null) findings.Add(collision);
 
 		var unsafeEntries = entries
 			.Where(IsUnsafeEntryPath)

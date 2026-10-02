@@ -8,7 +8,8 @@ public struct ImportOperationError
 
 public class ImportOperationResults
 {
-	public bool Success => Mods.Count >= TotalPaks;
+	public bool Success => !WasCancelled && Mods.Count >= TotalPaks;
+	public bool WasCancelled { get; set; }
 	public int TotalFiles { get; set; }
 	public int TotalPaks { get; set; }
 	public List<DivinityModData> Mods { get; set; } = new List<DivinityModData>();

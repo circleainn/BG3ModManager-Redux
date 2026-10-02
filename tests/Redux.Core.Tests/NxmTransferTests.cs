@@ -14,6 +14,92 @@ namespace Redux.Core.Tests;
 
 internal sealed class NxmTransferTests
 {
+	public void CancelledFinalVerificationPreservesPartialAndCanBeRetried()
+	{
+		using var fixture = new TransferFixture("hello world");
+		File.WriteAllText(fixture.Partial + ".meta", "{\"ETag\":\"\\\"persisted\\\"\",\"ExpectedBytes\":11,\"BodyComplete\":true}");
+		using var cancellation = new CancellationTokenSource();
+		cancellation.Cancel();
+		RegressionAssert.Throws<OperationCanceledException>(() => NxmTransfer.FinalizeDownloadAsync(
+			fixture.Request(null!), cancellation.Token).GetAwaiter().GetResult());
+		RegressionAssert.False(File.Exists(fixture.Completed));
+		RegressionAssert.Equal("hello world", File.ReadAllText(fixture.Partial));
+		RegressionAssert.True(File.Exists(fixture.Partial + ".meta"));
+
+		using var transfer = new NxmTransfer(new HttpClient(new StubHandler(_ =>
+			throw new InvalidOperationException("A fully received partial must not request a range beyond the end of the remote file."))));
+		var result = transfer.DownloadAsync(fixture.Request(null!), null!, CancellationToken.None).GetAwaiter().GetResult();
+		RegressionAssert.True(result.Resumed);
+		RegressionAssert.Equal(11L, result.SizeBytes);
+		RegressionAssert.Equal("b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9", result.Sha256);
+		RegressionAssert.Equal("hello world", File.ReadAllText(fixture.Completed));
+		RegressionAssert.False(File.Exists(fixture.Partial));
+		RegressionAssert.False(File.Exists(fixture.Partial + ".meta"));
+	}
+
+	public void FailedFinalVerificationDoesNotPublishUnverifiedDownload()
+	{
+		using var fixture = new TransferFixture("verified later");
+		File.WriteAllText(fixture.Partial + ".meta", "resume validator");
+		// This handle permits rename but prevents hashing. Promoting the file
+		// before verification would strand it under the completed filename.
+		using (var held = new FileStream(fixture.Partial, FileMode.Open, FileAccess.Write, FileShare.Delete))
+		{
+			RegressionAssert.Throws<IOException>(() => NxmTransfer.FinalizeDownloadAsync(
+				fixture.Request(null!), CancellationToken.None).GetAwaiter().GetResult());
+			RegressionAssert.False(File.Exists(fixture.Completed));
+			RegressionAssert.True(File.Exists(fixture.Partial));
+			RegressionAssert.True(File.Exists(fixture.Partial + ".meta"));
+		}
+		RegressionAssert.Equal("verified later", File.ReadAllText(fixture.Partial));
+	}
+
+	public void ApproximateNexusSizeDoesNotCompleteAnUnfinishedPartial()
+	{
+		using var fixture = new TransferFixture("hello");
+		File.WriteAllText(fixture.Partial + ".meta", "{\"ETag\":\"\\\"persisted\\\"\",\"ExpectedBytes\":11}");
+		var handler = new StubHandler(request =>
+		{
+			RegressionAssert.Equal(5L, request.Headers.Range!.Ranges.First().From!.Value);
+			var response = new HttpResponseMessage(HttpStatusCode.PartialContent) { Content = new StringContent(" world") };
+			response.Content.Headers.ContentRange = new ContentRangeHeaderValue(5, 10, 11);
+			response.Headers.ETag = new EntityTagHeaderValue("\"persisted\"");
+			return response;
+		});
+		using var transfer = new NxmTransfer(new HttpClient(handler));
+		var result = transfer.DownloadAsync(fixture.Request(null!) with { EstimatedBytes = 5 },
+			null!, CancellationToken.None).GetAwaiter().GetResult();
+		RegressionAssert.True(result.Resumed);
+		RegressionAssert.Equal(11L, result.SizeBytes);
+		RegressionAssert.Equal("hello world", File.ReadAllText(fixture.Completed));
+	}
+
+	public void HeaderLengthAloneDoesNotPublishAnOlderPartial()
+	{
+		using var fixture = new TransferFixture("stale");
+		File.WriteAllText(fixture.Partial + ".meta", "{\"ETag\":\"\\\"new-header\\\"\",\"ExpectedBytes\":5,\"BodyComplete\":false}");
+		var requests = 0;
+		using var transfer = new NxmTransfer(new HttpClient(new StubHandler(_ =>
+		{
+			requests++;
+			return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("fresh") };
+		})));
+		transfer.DownloadAsync(fixture.Request(null!), null!, CancellationToken.None).GetAwaiter().GetResult();
+		RegressionAssert.Equal(1, requests);
+		RegressionAssert.Equal("fresh", File.ReadAllText(fixture.Completed));
+	}
+
+	public void ResumeMetadataCleanupFailureDoesNotRejectVerifiedDownload()
+	{
+		using var fixture = new TransferFixture("hello world");
+		File.WriteAllText(fixture.Partial + ".meta", "resume metadata");
+		using var held = new FileStream(fixture.Partial + ".meta", FileMode.Open, FileAccess.Read, FileShare.Read);
+		var result = NxmTransfer.FinalizeDownloadAsync(fixture.Request(null!), CancellationToken.None).GetAwaiter().GetResult();
+		RegressionAssert.Equal("b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9", result.Sha256);
+		RegressionAssert.Equal("hello world", File.ReadAllText(fixture.Completed));
+		RegressionAssert.True(File.Exists(fixture.Partial + ".meta"));
+	}
+
 	public void MatchingRangeResponseResumesPartialFile()
 	{
 		using var fixture = new TransferFixture("hello ");

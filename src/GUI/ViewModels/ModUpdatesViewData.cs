@@ -87,20 +87,6 @@ public class ModUpdatesViewData : ReactiveObject
 		return files;
 	}
 
-	private static string GetUniqueBackupPath(string backupFolder, string sourcePath)
-	{
-		var candidate = Path.Combine(backupFolder, Path.GetFileName(sourcePath));
-		if (!File.Exists(candidate)) return candidate;
-		var name = Path.GetFileNameWithoutExtension(sourcePath);
-		var extension = Path.GetExtension(sourcePath);
-		var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
-		candidate = Path.Combine(backupFolder, $"{name}_{timestamp}{extension}");
-		var suffix = 1;
-		while (File.Exists(candidate))
-			candidate = Path.Combine(backupFolder, $"{name}_{timestamp}_{suffix++}{extension}");
-		return candidate;
-	}
-
 	private void CopySelectedMods_Run()
 	{
 		string documentsFolder = _mainWindowViewModel.PathwayData.AppDataGameFolder;
@@ -223,20 +209,16 @@ public class ModUpdatesViewData : ReactiveObject
 				try
 				{
 					var destinationPath = Path.Combine(args.ModPakFolder, fileName);
-					DivinityModManager.AppServices.ModBackupRetention.CommitReplacement(() =>
+					var staging = Path.Combine(args.ModPakFolder, ".redux-pak-stage-" + Guid.NewGuid().ToString("N"));
+					Directory.CreateDirectory(staging);
+					try
 					{
-						string backupPath = null;
-						if (File.Exists(destinationPath))
-						{
-							backupPath = GetUniqueBackupPath(backupFolder, destinationPath);
-						}
-						AtomicFileWriter.CopyFile(workItem.File, destinationPath, backupPath);
-						if (backupPath != null)
-						{
-							DivinityApp.Log($"Replaced '{destinationPath}' and saved the previous file to '{backupPath}'.");
-						}
-						if (backupPath != null) _mainWindowViewModel.PrunePreviousModVersionsAfterInstall();
-					});
+						var staged = Path.Combine(staging, fileName);
+						DivinityModManager.AppServices.PakFileSet.CopyAsync(workItem.File, staged, CancellationToken.None).GetAwaiter().GetResult();
+						if (DivinityModManager.AppServices.PakFileSet.InstallAsync(staged, destinationPath, backupFolder, CancellationToken.None).GetAwaiter().GetResult())
+							_mainWindowViewModel.PrunePreviousModVersionsAfterInstall();
+					}
+					finally { Directory.Delete(staging, true); }
 					args.TotalMoved++;
 				}
 				catch (Exception ex)

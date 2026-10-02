@@ -1,7 +1,9 @@
 using DivinityModManager.Models;
 using DivinityModManager.Models.Health;
 using DivinityModManager.Util;
+using DivinityModManager.ViewModels;
 
+using DynamicData;
 using DynamicData.Binding;
 
 using System;
@@ -9,11 +11,50 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reflection;
 
 namespace Redux.Core.Tests;
 
 public sealed class InteractionPerformanceTests
 {
+	public void StartupModScanPublishesOneCompleteCacheAndKeepsNewestDuplicates()
+	{
+		using var cache = new SourceCache<DivinityModData, string>(mod => mod.UUID);
+		cache.AddOrUpdate(new DivinityModData { UUID = "stale" });
+		var loaded = Enumerable.Range(0, 1400).Select(index => new DivinityModData
+		{
+			UUID = $"override-{index:D4}", IsForceLoaded = true,
+			Version = new DivinityModVersion2(10)
+		}).ToList();
+		var newest = new DivinityModData { UUID = loaded[0].UUID, Version = new DivinityModVersion2(20) };
+		var older = new DivinityModData { UUID = loaded[1].UUID, Version = new DivinityModVersion2(5) };
+		loaded.Add(newest);
+		loaded.Add(older);
+		var snapshots = new List<DivinityModData[]>();
+		using var subscription = cache.Connect().Subscribe(_ =>
+		{
+			var published = cache.Items.ToArray();
+			if (published.Any(mod => mod.UUID == "stale")) return;
+			RegressionAssert.True(published.All(mod => mod.HasColorblindSupport));
+			snapshots.Add(published);
+		});
+		var initialized = new HashSet<DivinityModData>();
+		var populate = typeof(MainWindowViewModel).GetMethod("PopulateLoadedMods",
+			BindingFlags.NonPublic | BindingFlags.Static)!;
+		populate.Invoke(null, [cache, loaded, (Action<DivinityModData>)(mod =>
+		{
+			initialized.Add(mod);
+			mod.HasColorblindSupport = true;
+		})]);
+
+		RegressionAssert.Equal(1, snapshots.Count);
+		RegressionAssert.Equal(1400, snapshots.Single().Length);
+		RegressionAssert.Equal(loaded.Count, initialized.Count);
+		RegressionAssert.True(ReferenceEquals(newest, cache.Lookup(newest.UUID).Value));
+		RegressionAssert.True(ReferenceEquals(loaded[1], cache.Lookup(older.UUID).Value));
+		RegressionAssert.False(cache.Lookup("stale").HasValue);
+	}
+
 	public void ReorderingOneRowEmitsOneMoveInsteadOfACollectionReset()
 	{
 		var first = new object();
