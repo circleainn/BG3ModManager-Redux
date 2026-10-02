@@ -2,7 +2,7 @@
 
 Reviewed the supplied September Nexus comments and GitHub issues against published
 `v0.1.0-alpha.16.5.4` and local baseline `fd1b973`. The latest open-issue query returned
-11 issues, including the new #172 request. Changes described as local below are unreleased;
+11 issues, including the new #172 request. The fixes described as local below shipped in 16.5.5 on October 2;
 this audit does not close issues or establish a reporter's exact failure was reproduced.
 
 ## Open GitHub issues
