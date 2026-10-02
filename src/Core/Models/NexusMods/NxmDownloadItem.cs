@@ -31,6 +31,7 @@ public sealed record NxmArchiveInspection(string FileName, long Length, DateTime
 [DataContract]
 public sealed class NxmDownloadItem : ReactiveObject
 {
+	public const string RemovalIncompleteErrorCode = "removal-incomplete";
 	[DataMember(Order = 1), Reactive] public string Id { get; set; } = Guid.NewGuid().ToString("N");
 	[DataMember(Order = 2), Reactive] public long QueuePosition { get; set; }
 	[DataMember(Order = 3), Reactive] public long ModId { get; set; }
@@ -96,6 +97,8 @@ public sealed class NxmDownloadItem : ReactiveObject
 		set
 		{
 			this.RaiseAndSetIfChanged(ref _errorCode, value ?? String.Empty);
+			this.RaisePropertyChanged(nameof(IsRemovalPending));
+			this.RaisePropertyChanged(nameof(RemoveActionText));
 			this.RaisePropertyChanged(nameof(StatusText));
 			this.RaisePropertyChanged(nameof(FailureDetails));
 			this.RaisePropertyChanged(nameof(CanDownloadAgain));
@@ -177,7 +180,7 @@ public sealed class NxmDownloadItem : ReactiveObject
 		NxmDownloadState.Installing => "Installing",
 		NxmDownloadState.Installed => "Installed",
 		NxmDownloadState.NeedsFreshLink => "New link needed",
-		NxmDownloadState.Failed => "Failed",
+		NxmDownloadState.Failed => IsRemovalPending ? "Removal incomplete" : "Failed",
 		NxmDownloadState.InstallFailed => ErrorCode switch
 		{
 			"missing-dependencies" => "Blocked by dependencies",
@@ -189,7 +192,8 @@ public sealed class NxmDownloadItem : ReactiveObject
 		},
 		_ => String.Empty
 	};
-	public bool CanDownloadAgain => ErrorCode != "rollback-failed" && State is
+	public bool IsRemovalPending => ErrorCode == RemovalIncompleteErrorCode;
+	public bool CanDownloadAgain => !IsRemovalPending && ErrorCode != "rollback-failed" && State is
 		(NxmDownloadState.Downloaded or NxmDownloadState.NeedsReview or NxmDownloadState.InstallFailed or NxmDownloadState.Failed);
 	public bool CanRetryInstall => State == NxmDownloadState.InstallFailed
 		&& ErrorCode is not ("archive-unreadable" or "rollback-failed");
@@ -201,6 +205,7 @@ public sealed class NxmDownloadItem : ReactiveObject
 		"fresh-link-required" => "Open this file on Nexus Mods and choose Mod Manager Download to authorize a new download.",
 		"install-failed" => "This older failure record did not retain its cause. Open Details to inspect the archive and check its requirements without installing it.",
 		"transfer-failed" => "The transfer failed. Check the connection and available disk space, then retry the download.",
+		RemovalIncompleteErrorCode => "Package removal did not finish. Close any application using its files, then choose Retry Delete.",
 		_ => StatusText
 	};
 	public string MetadataText
@@ -255,7 +260,7 @@ public sealed class NxmDownloadItem : ReactiveObject
 	public string InstallActionToolTip => DetectedDestination == "Inactive Mods"
 		? "New mods go to Inactive Mods. Updates preserve each installed mod's active or inactive state and load-order position."
 		: String.Empty;
-	public string RemoveActionText => State == NxmDownloadState.Installed ? "Clear" : "Delete";
+	public string RemoveActionText => IsRemovalPending ? "Retry Delete" : State == NxmDownloadState.Installed ? "Clear" : "Delete";
 	public bool IsInstalledHistory => State == NxmDownloadState.Installed;
 	public string NexusActionToolTip => State == NxmDownloadState.NeedsFreshLink
 		? "Open this exact file on Nexus Mods, then choose Mod Manager Download again."

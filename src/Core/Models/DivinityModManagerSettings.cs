@@ -389,9 +389,9 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DefaultValue(true)]
 	[DataMember, Reactive] public bool CategoriesPanelExpanded { get; set; } = true;
 
-	[DataMember] public List<string> InactiveModOrder { get; set; } = new();
+	[DataMember, Reactive] public List<string> InactiveModOrder { get; set; } = new();
 	// Presentation-only ordering for always-loaded override mods. This never affects modsettings.lsx.
-	[DataMember] public List<string> OverrideModOrder { get; set; } = new();
+	[DataMember, Reactive] public List<string> OverrideModOrder { get; set; } = new();
 
 	[DefaultValue(true)]
 	[DataMember, Reactive] public bool InactiveModsPanelExpanded { get; set; } = true;
@@ -634,6 +634,20 @@ public class DivinityModManagerSettings : ReactiveObject
 		{
 			LaunchType = LaunchGameType.Steam;
 		}
+	}
+
+	/// <summary>Restores saved values without replacing the live settings or extender objects.</summary>
+	public void RestorePersistedSettings(DivinityModManagerSettings saved)
+	{
+		ArgumentNullException.ThrowIfNull(saved);
+		this.SetFrom<DivinityModManagerSettings, ReactiveAttribute>(saved);
+		// These persisted properties do not use Fody's Reactive attribute. Nullable
+		// appearance choices must also copy null to restore the inherited defaults.
+		Window = saved.Window ?? new WindowSettings();
+		UseGeneratedGradientsPreference = saved.UseGeneratedGradientsPreference;
+		UseThemeDefaultTypographyPreference = saved.UseThemeDefaultTypographyPreference;
+		if (saved.ExtenderSettings != null) ExtenderSettings.SetFrom(saved.ExtenderSettings);
+		if (saved.ExtenderUpdaterSettings != null) ExtenderUpdaterSettings.SetFrom(saved.ExtenderUpdaterSettings);
 	}
 
 	public void InitSubscriptions()

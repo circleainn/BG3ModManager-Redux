@@ -96,12 +96,16 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		Window owner,
 		MainWindowViewModel viewModel,
 		string archivePath,
-		bool preferYanml = false)
+		bool preferYanml = false,
+		NexusModManagerLink nexusSource = null,
+		CancellationToken cancellationToken = default,
+		Func<Task> installStarting = null)
 	{
 		ReduxGameDirectoryArchiveInspection inspection;
 		try
 		{
-			inspection = await Task.Run(() => ReduxGameDirectoryInstallService.TryInspectKnownArchive(archivePath));
+			inspection = await Task.Run(() => ReduxGameDirectoryInstallService.TryInspectKnownArchive(archivePath), cancellationToken);
+			cancellationToken.ThrowIfCancellationRequested();
 			if (inspection == null)
 			{
 				ReduxMessageBox.Show(owner,
@@ -121,8 +125,9 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		ReduxGameDirectoryInstallTransaction transaction;
 		try
 		{
+			ArchivePakImport.RequireUniqueDestinations(inspection.PackageEntries);
 			installer = CreateInstallerForArchive(viewModel, inspection.Definition, preferYanml);
-			transaction = await installer.StageAsync(inspection.Definition.NexusModId, archivePath);
+			transaction = await installer.StageAsync(inspection.Definition.NexusModId, archivePath, cancellationToken);
 		}
 		catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
 		{
@@ -157,7 +162,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 			reviewItems.AddRange(inspection.PackageEntries.Select(package => new ReduxInstallReviewItem(
 				Path.GetFileName(package),
 				"Companion PAK · installs through Redux's normal Mods-folder workflow",
-				"Install as inactive mod",
+				"New mods inactive · retain existing placement",
 				ReduxInstallReviewTone.Info)));
 			if (inspection.Definition.Kind == ReduxGameDirectoryModKind.NativeLoader
 				&& ReduxAlternativeNativeLoader.HasYanmlConfiguration(
@@ -183,15 +188,23 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 				ReduxInstallReviewKind.GameDirectory,
 				installer.NativePluginDestination == ReduxNativePluginDestination.YanmlPlugins
 					? installer.NativePluginDirectory : installer.GameBin, summary);
-			if (dialog.ShowDialog() != true && !dialog.Accepted) return false;
+			if (!MainWindowViewModel.ShowCancellableInstallReview(dialog, cancellationToken)) return false;
 
 			try
 			{
-				await transaction.CommitAsync();
-				if (inspection.PackageEntries.Count > 0)
-					viewModel.ImportMods([archivePath], false);
+				cancellationToken.ThrowIfCancellationRequested();
+				if (installStarting != null) await installStarting();
+				await HybridPackageInstallRunner.RunAsync(transaction.CommitAsync,
+					inspection.PackageEntries.Count > 0
+						? token => viewModel.ImportModsWithoutReviewAsync([archivePath], null, nexusSource, token)
+						: null, cancellationToken);
 				viewModel.ShowAlert($"Installed {inspection.Definition.Name}.", AlertType.Success, 20);
 				return true;
+			}
+			catch (OperationCanceledException) when (!cancellationToken.CanBeCanceled)
+			{
+				viewModel.ShowAlert("Companion PAK import canceled. Any completed game-directory files and mods remain installed; review the package to retry.", AlertType.Info, 20);
+				return false;
 			}
 			catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException)
 			{
@@ -368,16 +381,19 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 	public static async Task InstallReviewedArchiveWithoutReviewAsync(
 		MainWindowViewModel viewModel,
 		string archivePath,
-		NexusModManagerLink nexusSource = null)
+		NexusModManagerLink nexusSource = null,
+		CancellationToken cancellationToken = default)
 	{
-		var inspection = await Task.Run(() => ReduxGameDirectoryInstallService.TryInspectKnownArchive(archivePath))
+		var inspection = await Task.Run(() => ReduxGameDirectoryInstallService.TryInspectKnownArchive(archivePath), cancellationToken)
 			?? throw new InvalidDataException("This archive no longer matches a reviewed game-directory package.");
+		cancellationToken.ThrowIfCancellationRequested();
+		ArchivePakImport.RequireUniqueDestinations(inspection.PackageEntries);
 		var installer = CreateInstallerForArchive(viewModel, inspection.Definition);
-		await using var transaction = await installer.StageAsync(inspection.Definition.NexusModId, archivePath);
-		await transaction.CommitAsync();
-		if (inspection.PackageEntries.Count > 0
-			&& !await viewModel.ImportModsWithoutReviewAsync([archivePath], false, nexusSource))
-			throw new InvalidDataException("The game-directory files installed, but the companion PAK could not be installed.");
+		await using var transaction = await installer.StageAsync(inspection.Definition.NexusModId, archivePath, cancellationToken);
+		await HybridPackageInstallRunner.RunAsync(transaction.CommitAsync,
+			inspection.PackageEntries.Count > 0
+				? token => viewModel.ImportModsWithoutReviewAsync([archivePath], null, nexusSource, token)
+				: null, cancellationToken);
 	}
 
 	public static async Task<ReduxNativeLoaderStatus> PreflightReviewedArchiveWithoutReviewAsync(

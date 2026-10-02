@@ -1,4 +1,4 @@
-﻿
+
 using DivinityModManager.AppServices;
 using DivinityModManager.Controls;
 using DivinityModManager.Extensions;
@@ -117,12 +117,17 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private int _elevationWarningScheduled;
 	private bool _persistentSeparatorUpgradeScheduled;
 	private readonly SemaphoreSlim _nxmActivationGate = new(1, 1);
+	private readonly SemaphoreSlim _localPackageIntakeGate = new(1, 1);
 	private readonly HashSet<string> _acquiredPackageInspections = new(StringComparer.Ordinal);
 	private NxmDownloadManager _nxmDownloadManager;
 	private RetainedPackageArchiveService _retainedPackageArchiveService;
 	private Task _initializeNxmDownloadsTask = Task.CompletedTask;
 	private bool _nxmShuttingDown;
 	[Reactive] public ReadOnlyObservableCollection<NxmDownloadItem> NxmDownloads { get; private set; }
+	[Reactive] public string LocalPackageIntakeStatus { get; private set; } = String.Empty;
+	[Reactive] public bool LocalPackageIntakeIsActive { get; private set; }
+	[Reactive] public int LocalPackageIntakeCompleted { get; private set; }
+	[Reactive] public int LocalPackageIntakeTotal { get; private set; }
 	public string DownloadManagerStatus => GetDownloadManagerStatus(NxmDownloads ?? Enumerable.Empty<NxmDownloadItem>());
 	public static string GetDownloadManagerStatus(IEnumerable<NxmDownloadItem> items)
 	{
@@ -423,6 +428,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	[Reactive] public string MainProgressTitle { get; set; }
 	[Reactive] public string MainProgressWorkText { get; set; }
 	[Reactive] public bool MainProgressIsActive { get; set; }
+	[Reactive] public bool MainProgressIsIndeterminate { get; set; }
 	[Reactive] public double MainProgressValue { get; set; }
 	[Reactive] public bool DownloadManagerInstallIsActive { get; set; }
 
@@ -447,6 +453,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	[Reactive] public CancellationTokenSource MainProgressToken { get; set; }
 	[Reactive] public bool CanCancelProgress { get; set; }
+	private readonly PendingOperationTracker _pendingOperations = new();
 	private readonly SerialDisposable _allModUpdatesRefreshTask = new();
 	private readonly SerialDisposable _nexusMetadataRefreshTask = new();
 	private readonly SerialDisposable _modioMetadataRefreshTask = new();
@@ -821,43 +828,108 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			.Select(Path.GetFullPath)
 			.Distinct(StringComparer.OrdinalIgnoreCase)
 			.ToArray();
+		candidates = FilterMultipartInputs(candidates).ToArray();
 		if (candidates.Length == 0) return 0;
-		await EnsureNxmDownloadsInitializedAsync();
+		using var intakeCancellation = new CancellationTokenSource();
+		using var operationRegistration = _pendingOperations.TryRegister(intakeCancellation.Cancel);
+		if (operationRegistration == null) return 0;
+		var cancellationToken = intakeCancellation.Token;
+		var gateHeld = false;
 		var added = 0;
-		foreach (var path in candidates)
+		// A second drop can arrive while the first is awaiting inspection or copying.
+		// Keep each batch's progress together rather than interleaving its counters.
+		try
 		{
-			try
+			await _localPackageIntakeGate.WaitAsync(cancellationToken);
+			gateHeld = true;
+			if (_nxmShuttingDown) return 0;
+			LocalPackageIntakeCompleted = 0;
+			LocalPackageIntakeTotal = candidates.Length;
+			LocalPackageIntakeIsActive = true;
+			LocalPackageIntakeStatus = $"Preparing to add {candidates.Length} packages…";
+			await EnsureNxmDownloadsInitializedAsync();
+			var failed = 0;
+			foreach (var path in candidates)
 			{
-				var classification = await ClassifyAcquiredPackageAsync(path);
-				var sha256 = await ComputeAcquiredPackageSha256Async(path);
-				await _nxmDownloadManager.AddLocalPackageAsync(path, sha256, classification.ProjectName,
-					classification.ContentKind, classification.Destination, classification.Summary,
-					thumbnailUrl: classification.ThumbnailUrl);
-				added++;
+				cancellationToken.ThrowIfCancellationRequested();
+				var current = $"{LocalPackageIntakeCompleted + 1} of {candidates.Length}: {Path.GetFileName(path)}";
+				try
+				{
+					LocalPackageIntakeStatus = $"Checking package {current}";
+					using var prepared = await PreparedPakInput.OpenAsync(path, cancellationToken);
+					var classification = await ClassifyAcquiredPackageAsync(prepared.Path, cancellationToken);
+					LocalPackageIntakeStatus = $"Hashing package {current}";
+					var sha256 = await ComputeAcquiredPackageSha256Async(prepared.Path, cancellationToken);
+					cancellationToken.ThrowIfCancellationRequested();
+					LocalPackageIntakeStatus = $"Adding package {current}";
+					await _nxmDownloadManager.AddLocalPackageAsync(prepared.Path, sha256, classification.ProjectName,
+						classification.ContentKind, classification.Destination, classification.Summary,
+						thumbnailUrl: classification.ThumbnailUrl, cancellationToken: cancellationToken);
+					added++;
+				}
+				catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
+				{
+					failed++;
+					DivinityApp.Log($"Local package intake failed for '{Path.GetFileName(path)}': {ex.GetType().Name}");
+					ShowAlert($"Redux could not add {Path.GetFileName(path)} to Download Manager.", AlertType.Danger, 25);
+				}
+				LocalPackageIntakeCompleted++;
 			}
-			catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
+			// Existing identical packages are reused, so this is a processed-file count,
+			// not a claim that every successful input created a new download row.
+			LocalPackageIntakeStatus = $"Processed {candidates.Length} packages: {added} added or already present, {failed} failed.";
+			return added;
+		}
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+		{
+			if (gateHeld)
+				LocalPackageIntakeStatus = $"Package intake stopped after {LocalPackageIntakeCompleted} of {LocalPackageIntakeTotal} packages.";
+			return added;
+		}
+		catch
+		{
+			LocalPackageIntakeStatus = $"Package intake stopped after {LocalPackageIntakeCompleted} of {LocalPackageIntakeTotal} packages.";
+			throw;
+		}
+		finally
+		{
+			if (gateHeld)
 			{
-				DivinityApp.Log($"Local package intake failed for '{Path.GetFileName(path)}': {ex.GetType().Name}");
-				ShowAlert($"Redux could not add {Path.GetFileName(path)} to Download Manager.", AlertType.Danger, 25);
+				LocalPackageIntakeIsActive = false;
+				_localPackageIntakeGate.Release();
 			}
 		}
-		return added;
 	}
 
-	private async Task InspectAcquiredPackageAsync(NxmDownloadItem item)
+	private async Task InspectAcquiredPackageAsync(NxmDownloadItem item, CancellationToken cancellationToken = default)
 	{
 		if (!NeedsAcquiredPackageInspection(item) || _nxmDownloadManager == null) return;
+		using var inspectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+		using var operationRegistration = _pendingOperations.TryRegister(inspectionCancellation.Cancel);
+		if (operationRegistration == null)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			return;
+		}
+		var inspectionToken = inspectionCancellation.Token;
 		var hadCompletedInspection = item.InspectionCompleted;
 		lock (_acquiredPackageInspections)
 			if (!_acquiredPackageInspections.Add(item.Id)) return;
 		try
 		{
 			var path = GetNxmArchivePath(item);
-			await VerifyNxmArchiveAsync(item, path);
-			var classification = await ClassifyAcquiredPackageAsync(path);
+			await VerifyNxmArchiveAsync(item, path, inspectionToken);
+			var classification = await ClassifyAcquiredPackageAsync(path, inspectionToken);
+			inspectionToken.ThrowIfCancellationRequested();
 			await _nxmDownloadManager.SetInspectionAsync(item.Id, classification.ProjectName,
 				classification.ContentKind, classification.Destination, classification.Summary, classification.Installable,
 				classification.ThumbnailUrl);
+		}
+		catch (OperationCanceledException) when (inspectionToken.IsCancellationRequested)
+		{
+			// Automatic inspections have no awaiting caller. Explicit reviews still
+			// need their cancellation propagated to stop the rest of that workflow.
+			cancellationToken.ThrowIfCancellationRequested();
 		}
 		catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
 		{
@@ -872,26 +944,42 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 	}
 
-	private async Task<AcquiredPackageClassification> ClassifyAcquiredPackageAsync(string path)
+	private async Task<AcquiredPackageClassification> ClassifyAcquiredPackageAsync(string path, CancellationToken cancellationToken = default)
 	{
 		var installed = mods.Items.Where(mod => mod != null && !mod.IsVisualDivider).ToArray();
+		return (await InspectAcquiredPackageContentsAsync(path, installed, cancellationToken)).Classification;
+	}
+
+	private static async Task<AcquiredPackageInspection> InspectAcquiredPackageContentsAsync(string path,
+		IReadOnlyList<DivinityModData> installed, CancellationToken cancellationToken)
+	{
 		if (Path.GetExtension(path).Equals(".pak", StringComparison.OrdinalIgnoreCase))
 		{
-			var report = await PackagePreflightService.AnalyzeAsync(path, installed);
+			var report = await Task.Run(() => PackagePreflightService.AnalyzeAsync(path, installed, cancellationToken), cancellationToken);
+			var unsupported = report.Findings.FirstOrDefault(finding => finding.Title == PakImportCompatibility.MultipartFindingTitle);
+			if (unsupported != null)
+				return new AcquiredPackageInspection(new AcquiredPackageClassification(Path.GetFileNameWithoutExtension(path),
+					"Incomplete multipart PAK", String.Empty, unsupported.Message, false, String.Empty), [report], null);
 			var thumbnail = report.IsReadable
-				? await ResolveAcquiredPackageThumbnailAsync(path, [report.Mod], installed)
+				? await ResolveAcquiredPackageThumbnailAsync(path, [report.Mod], installed, cancellationToken)
 				: String.Empty;
-			return report.IsReadable
+			var classification = report.IsReadable
 				? new AcquiredPackageClassification(report.DisplayName, "PAK mod", "Inactive Mods",
 					"PAK mod", true, thumbnail)
 				: new AcquiredPackageClassification(Path.GetFileNameWithoutExtension(path), "Unreadable PAK", String.Empty,
 					"Redux could not read usable mod metadata from this PAK. No files were changed.", false, String.Empty);
+			return new AcquiredPackageInspection(classification, [report], null);
 		}
 
-		var inspection = await ArchivePackagePreflightService.AnalyzeAsync(path, installed);
+		var inspection = await Task.Run(() => ArchivePackagePreflightService.AnalyzeAsync(path, installed, cancellationToken), cancellationToken);
+		var unsupportedArchive = inspection.Findings.Concat(inspection.Packages.SelectMany(report => report.Findings))
+			.FirstOrDefault(IsUnsupportedPakLayout);
+		if (unsupportedArchive != null)
+			return new AcquiredPackageInspection(new AcquiredPackageClassification(Path.GetFileNameWithoutExtension(path),
+				"Unsupported PAK layout", String.Empty, unsupportedArchive.Message, false, String.Empty), inspection.Packages, inspection);
 		var archiveThumbnail = await ResolveAcquiredPackageThumbnailAsync(path,
-			inspection.Packages.Select(package => package.Mod), installed);
-		return inspection.Kind switch
+			inspection.Packages.Select(package => package.Mod), installed, cancellationToken);
+		var archiveClassification = inspection.Kind switch
 		{
 			ArchivePackagePreflightKind.ReviewedGameDirectory => new AcquiredPackageClassification(
 				inspection.GameDirectoryInspection?.Definition?.Name ?? Path.GetFileNameWithoutExtension(path),
@@ -917,10 +1005,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			_ => new AcquiredPackageClassification(Path.GetFileNameWithoutExtension(path), "Unsupported package", String.Empty,
 				"Redux could not find supported installable content. No files were changed.", false, archiveThumbnail)
 		};
+		return new AcquiredPackageInspection(archiveClassification, inspection.Packages, inspection);
 	}
 
 	private static async Task<string> ResolveAcquiredPackageThumbnailAsync(string path,
-		IEnumerable<DivinityModData> packageMods, IReadOnlyList<DivinityModData> installedMods)
+		IEnumerable<DivinityModData> packageMods, IReadOnlyList<DivinityModData> installedMods, CancellationToken cancellationToken = default)
 	{
 		var incoming = (packageMods ?? Enumerable.Empty<DivinityModData>()).Where(mod => mod != null).ToArray();
 		foreach (var mod in incoming)
@@ -938,25 +1027,28 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		if (Path.GetExtension(path).Equals(".pak", StringComparison.OrdinalIgnoreCase))
 		{
 			if (ReduxModDatabaseService.CouldMatchPak(path))
-				match = await ReduxModDatabaseService.TryResolvePakAsync(path, CancellationToken.None);
+				match = await ReduxModDatabaseService.TryResolvePakAsync(path, cancellationToken);
 		}
 		else if (ReduxModDatabaseService.CouldMatchArchive(path))
 		{
-			match = await ReduxModDatabaseService.TryResolveArchiveAsync(path, CancellationToken.None);
+			match = await ReduxModDatabaseService.TryResolveArchiveAsync(path, cancellationToken);
 		}
 		match ??= incoming.Select(ReduxModDatabaseService.TryResolveIdentity).FirstOrDefault(candidate => candidate != null);
 		return match?.CreateMetadata(incoming.FirstOrDefault()?.UUID ?? String.Empty)?.PreviewImageUrl ?? String.Empty;
 	}
 
-	private static async Task<string> ComputeAcquiredPackageSha256Async(string path)
+	private static async Task<string> ComputeAcquiredPackageSha256Async(string path, CancellationToken cancellationToken = default)
 	{
 		await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
 			65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
-		return Convert.ToHexString(await System.Security.Cryptography.SHA256.HashDataAsync(stream)).ToLowerInvariant();
+		return Convert.ToHexString(await System.Security.Cryptography.SHA256.HashDataAsync(stream, cancellationToken)).ToLowerInvariant();
 	}
 
 	private sealed record AcquiredPackageClassification(string ProjectName, string ContentKind,
 		string Destination, string Summary, bool Installable, string ThumbnailUrl);
+
+	private sealed record AcquiredPackageInspection(AcquiredPackageClassification Classification,
+		IReadOnlyList<PackagePreflightReport> Packages, ArchivePackagePreflightResult Archive);
 
 	private enum AcquiredPackageBatchKind
 	{
@@ -974,7 +1066,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		IReadOnlyList<string> ConflictKeys,
 		IReadOnlyList<string> ProvidedModUuids,
 		IReadOnlyList<string> RequiredModUuids,
-		ReduxInstallReviewItem ReviewItem);
+		ReduxInstallReviewItem ReviewItem,
+		string ReviewedSha256,
+		long ReviewedSize,
+		IReadOnlyList<PackagePreflightReport> Packages);
 
 	public NxmAssociationResult GetNxmAssociationStatus()
 	{
@@ -1085,13 +1180,15 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	public async Task RemoveNxmDownloadAsync(NxmDownloadItem item)
 	{
-		if (item == null || _nxmDownloadManager == null) return;
+		if (item == null || _nxmDownloadManager == null || _nxmShuttingDown
+			|| DownloadManagerInstallIsActive || item.State == NxmDownloadState.Installing) return;
 		if (item.State == NxmDownloadState.Installed)
 		{
 			if (ReduxMessageBox.Show(Window,
 				"Clear this item from installed download history? Installed content and the separate package archive library will not change.",
 				"Clear Installed Download", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
-			await _nxmDownloadManager.RemoveAsync(item.Id, false);
+			await RunDownloadManagerMutationAsync(() => _nxmDownloadManager.RemoveAsync(item.Id, false),
+				"Could Not Clear Installed Download");
 			return;
 		}
 		var hasArchive = item.State is NxmDownloadState.Downloaded or NxmDownloadState.NeedsReview
@@ -1099,60 +1196,82 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		if (ReduxMessageBox.Show(Window,
 			hasArchive ? "Delete this entry and move its downloaded archive to the Recycle Bin?" : "Cancel and delete this download?",
 			"Delete Package", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return;
-		await _nxmDownloadManager.RemoveAsync(item.Id, hasArchive);
+		await RunDownloadManagerMutationAsync(() => _nxmDownloadManager.RemoveAsync(item.Id, hasArchive), "Could Not Delete Package");
 	}
 
     public async Task DeleteAllNxmDownloadsAsync(Window owner)
     {
-        if (_nxmDownloadManager == null || DownloadManagerInstallIsActive) return;
+        if (_nxmDownloadManager == null || _nxmShuttingDown || DownloadManagerInstallIsActive) return;
         var items = NxmDownloads.Where(item => !item.IsInstalledHistory && item.State != NxmDownloadState.Installing).ToArray();
         if (items.Length == 0) return;
         if (ReduxMessageBox.Show(owner, $"Delete all {items.Length} downloads? Active downloads will be canceled and downloaded packages moved to the Recycle Bin. Installed mods and retained archives are kept.",
             "Delete All Downloads", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return;
-        var failed = 0;
-        foreach (var item in items)
+        await RunDownloadManagerMutationAsync(async () =>
         {
-            if (DownloadManagerInstallIsActive || item.IsInstalledHistory || item.State == NxmDownloadState.Installing) break;
-            try { await _nxmDownloadManager.RemoveAsync(item.Id, true); }
-            catch (Exception ex) { failed++; DivinityApp.Log($"Could not delete download: {ex.Message}"); }
-        }
-        if (failed > 0) ShowAlert($"{failed} downloads could not be fully deleted. Check their files and try again.", AlertType.Warning);
+            var failed = 0;
+            foreach (var item in items)
+            {
+                if (_nxmShuttingDown) break;
+                if (item.IsInstalledHistory || item.State == NxmDownloadState.Installing) continue;
+                try { await _nxmDownloadManager.RemoveAsync(item.Id, true); }
+                catch (Exception ex) { failed++; DivinityApp.Log($"Could not delete download: {ex.Message}"); }
+            }
+            if (failed > 0) ShowAlert($"{failed} downloads could not be fully deleted. Check their files and try again.", AlertType.Warning);
+        }, "Could Not Delete Packages", owner);
     }
 
 	public async Task ClearInstalledNxmHistoryAsync()
 	{
-		if (_nxmDownloadManager == null || !NxmDownloads.Any(item => item.State == NxmDownloadState.Installed)) return;
+		if (_nxmDownloadManager == null || _nxmShuttingDown || DownloadManagerInstallIsActive
+			|| !NxmDownloads.Any(item => item.State == NxmDownloadState.Installed)) return;
 		if (ReduxMessageBox.Show(Window,
 			"Clear every item from installed download history? Installed content and the separate package archive library will not change.",
 			"Clear Installed History", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
-		await _nxmDownloadManager.ClearInstalledHistoryAsync();
+		await RunDownloadManagerMutationAsync(_nxmDownloadManager.ClearInstalledHistoryAsync, "Could Not Clear Installed History");
 	}
 
 	public async Task ClearRetainedPackageArchivesAsync(Window owner = null)
 	{
-		if (_retainedPackageArchiveService == null || RetainedPackageArchives.Count == 0) return;
+		if (_retainedPackageArchiveService == null || _nxmShuttingDown || DownloadManagerInstallIsActive
+			|| RetainedPackageArchives.Count == 0) return;
 		if (ReduxMessageBox.Show(owner?.IsLoaded == true ? owner : Window,
 			"Delete every retained install package? Installed mods and Download Manager history will not change.",
 			"Delete Archives", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return;
-		try
+		await RunDownloadManagerMutationAsync(async () =>
 		{
 			await _retainedPackageArchiveService.ClearAsync();
 			foreach (var item in NxmDownloads.Where(item => item.State == NxmDownloadState.Installed))
 				item.HasAvailableArchive = File.Exists(Path.Combine(NxmDownloadsDirectory, item.CompletedFileName));
 			RefreshRetainedPackageArchiveUsage();
 			ShowAlert("Cleared the retained package archive library.", AlertType.Success, 15);
-		}
+		}, "Could Not Clear Archives", owner);
+	}
+
+	private async Task RunDownloadManagerMutationAsync(Func<Task> mutation, string errorTitle, Window owner = null)
+	{
+		// The confirmation dialog can yield to another review. Claim the same
+		// interaction gate before the first mutation await so the reverse race is blocked too.
+		if (_nxmShuttingDown || DownloadManagerInstallIsActive) return;
+		using var pendingOperation = _pendingOperations.TryRegister(() => { });
+		if (pendingOperation == null) return;
+		DownloadManagerInstallIsActive = true;
+		try { await mutation(); }
 		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
 		{
-			DivinityApp.Log($"Could not clear the retained package archive library: {ex}");
+			DivinityApp.Log($"{errorTitle}: {ex}");
 			ReduxMessageBox.Show(owner?.IsLoaded == true ? owner : Window, ex.Message,
-				"Could Not Clear Archives", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+				errorTitle, MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
+		finally { DownloadManagerInstallIsActive = false; }
 	}
 
 	public async Task ReinstallRetainedPackageAsync(RetainedPackageArchiveEntry entry, Window owner = null)
 	{
 		if (entry == null || _retainedPackageArchiveService == null) return;
+		using var intakeCancellation = new CancellationTokenSource();
+		using var operationRegistration = _pendingOperations.TryRegister(intakeCancellation.Cancel);
+		if (operationRegistration == null) return;
+		var cancellationToken = intakeCancellation.Token;
 		var archivePath = _retainedPackageArchiveService.GetPackagePath(entry.Sha256);
 		if (archivePath == null)
 		{
@@ -1164,13 +1283,15 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 		try
 		{
-			var classification = await ClassifyAcquiredPackageAsync(archivePath);
+			var classification = await ClassifyAcquiredPackageAsync(archivePath, cancellationToken);
+			cancellationToken.ThrowIfCancellationRequested();
 			var id = await _nxmDownloadManager.AddLocalPackageAsync(archivePath, entry.Sha256,
 				String.IsNullOrWhiteSpace(entry.ProjectName) ? classification.ProjectName : entry.ProjectName,
 				classification.ContentKind, classification.Destination, classification.Summary,
 				entry.SourceKind, String.IsNullOrWhiteSpace(entry.ThumbnailUrl) ? classification.ThumbnailUrl : entry.ThumbnailUrl,
 				sourceModId: entry.NexusModId, sourceFileId: entry.NexusFileId,
-				sourceFileName: entry.OriginalFileName, sourceVersion: entry.Version);
+				sourceFileName: entry.OriginalFileName, sourceVersion: entry.Version, cancellationToken: cancellationToken);
+			cancellationToken.ThrowIfCancellationRequested();
 			var queued = NxmDownloads.FirstOrDefault(item => item.Id == id);
 			if (queued != null)
 			{
@@ -1178,6 +1299,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				await ReviewNxmDownloadAsync(queued, owner);
 			}
 		}
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
 		catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
 		{
 			DivinityApp.Log($"Retained package reinstall failed for {entry.Sha256}: {ex}");
@@ -1188,17 +1310,42 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	public async Task ReviewNxmDownloadAsync(NxmDownloadItem item, Window owner = null)
 	{
+		if (_nxmShuttingDown || DownloadManagerInstallIsActive || MainProgressIsActive) return;
 		if (item?.State is not (NxmDownloadState.Downloaded or NxmDownloadState.NeedsReview
 			or NxmDownloadState.InstallFailed or NxmDownloadState.Installed)) return;
-		if (item.State == NxmDownloadState.Installed && item.DetectedDestination == "Inactive Mods")
-			item.PreserveExistingModPlacement = true;
-		if (!item.InspectionCompleted) await InspectAcquiredPackageAsync(item);
-		if (item.State == NxmDownloadState.NeedsReview || String.IsNullOrWhiteSpace(item.DetectedDestination)) return;
-		var archivePath = GetNxmArchivePath(item);
+		using var preparationCancellation = new CancellationTokenSource();
+		using var pendingOperation = _pendingOperations.TryRegister(preparationCancellation.Cancel);
+		if (pendingOperation == null) return;
+		// Claim the interaction before inspection can yield to a second row click.
+		DownloadManagerInstallIsActive = true;
 		var dialogOwner = owner?.IsLoaded == true ? owner : Window;
 		var previousState = item.State;
+		string archivePath = null;
+		VerifiedPackageReadLease readLease = null;
+		var preparing = false;
+		var previousCanCancel = CanCancelProgress;
+		var previousProgressToken = MainProgressToken;
 
-		async Task InstallPakAsync()
+		void FinishPreparation()
+		{
+			if (!preparing) return;
+			MainProgressIsIndeterminate = false;
+			MainProgressIsActive = false;
+			CanCancelProgress = previousCanCancel;
+			if (ReferenceEquals(MainProgressToken, preparationCancellation)) MainProgressToken = previousProgressToken;
+			preparing = false;
+		}
+
+		async Task CompleteInstallAsync(string destination)
+		{
+			// Completion may retain or delete the inbox file. Release only after the
+			// installer has finished reading it, before that archive cleanup begins.
+			readLease?.Dispose();
+			readLease = null;
+			await CompleteAcquiredPackageInstallAsync(item, destination, archivePath);
+		}
+
+		async Task InstallPakAsync(ArchivePackagePreflightResult inspection = null)
 		{
 			var installStarted = false;
 			var nexusSource = item.HasNexusSource
@@ -1207,14 +1354,14 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			// New packages still enter Inactive Mods, but updates inherit the installed
 			// mod's active state and load-order position. Passing false here used to
 			// force freshly downloaded updates into Inactive Mods.
-			var installed = await ReviewAndImportModsAsync([archivePath], null, nexusSource, dialogOwner,
+			var installed = await ReviewAndImportModsCoreAsync([archivePath], null, nexusSource, dialogOwner,
 				async () =>
 				{
 					installStarted = true;
 					await _nxmDownloadManager.SetStateAsync(item.Id, NxmDownloadState.Installing);
-				});
+				}, inspection == null ? null : new LeasedArchivePreflight(readLease, inspection), preparationCancellation.Token);
 			if (installed)
-				await CompleteAcquiredPackageInstallAsync(item, "Mod Library", archivePath);
+				await CompleteInstallAsync("Mod Library");
 			else if (installStarted)
 				await _nxmDownloadManager.SetStateAsync(item.Id, NxmDownloadState.InstallFailed,
 					"install-failed", "Redux could not finish installing this package. Review the import error and try again.");
@@ -1222,34 +1369,72 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				await _nxmDownloadManager.SetStateAsync(item.Id, previousState);
 		}
 
-		DownloadManagerInstallIsActive = true;
+		async Task InstallGameDirectoryAsync()
+		{
+			var installStarted = false;
+			var nexusSource = item.HasNexusSource
+				? new NexusModManagerLink(item.ModId, item.FileId, null, null, null) : null;
+			var installed = await ReduxGameDirectoryModManagerWindow.ReviewAndInstallAsync(dialogOwner, this, archivePath,
+				nexusSource: nexusSource, cancellationToken: preparationCancellation.Token, installStarting: async () =>
+				{
+					installStarted = true;
+					await _nxmDownloadManager.SetStateAsync(item.Id, NxmDownloadState.Installing);
+				});
+			if (installed)
+				await CompleteInstallAsync("Game-directory Mods");
+			else if (installStarted)
+				await _nxmDownloadManager.SetStateAsync(item.Id, NxmDownloadState.InstallFailed,
+					"install-failed", "Redux could not finish installing every part of this package. Completed files remain installed; review the package to retry.");
+		}
+
 		try
 		{
-			await VerifyNxmArchiveAsync(item, archivePath);
+			preparing = true;
+			MainProgressTitle = "Reviewing package";
+			MainProgressValue = 0;
+			MainProgressIsActive = true;
+			MainProgressToken = preparationCancellation;
+			CanCancelProgress = true;
+			if (item.State == NxmDownloadState.Installed && item.DetectedDestination == "Inactive Mods")
+				item.PreserveExistingModPlacement = true;
+			if (!item.InspectionCompleted)
+			{
+				await SetMainProgressPhaseAsync($"Checking package: {item.FileDisplayName}…");
+				await InspectAcquiredPackageAsync(item, preparationCancellation.Token);
+			}
+			if (item.State == NxmDownloadState.NeedsReview || String.IsNullOrWhiteSpace(item.DetectedDestination)) return;
+			archivePath = GetNxmArchivePath(item);
+			previousState = item.State;
+			await SetMainProgressPhaseAsync($"Verifying package: {Path.GetFileName(archivePath)}…");
+			readLease = await VerifiedPackageReadLease.OpenAsync(archivePath, item.SizeBytes, item.ArchiveSha256, preparationCancellation.Token);
 			var installed = mods.Items.Where(mod => mod != null && !mod.IsVisualDivider).ToArray();
 			if (Path.GetExtension(archivePath).Equals(".pak", StringComparison.OrdinalIgnoreCase))
 			{
+				FinishPreparation();
 				await InstallPakAsync();
 				return;
 			}
 
-			var inspection = await ArchivePackagePreflightService.AnalyzeAsync(archivePath, installed);
+			await SetMainProgressPhaseAsync($"Inspecting archive: {Path.GetFileName(archivePath)}…");
+			var inspection = await Task.Run(() => ArchivePackagePreflightService.AnalyzeAsync(
+				archivePath, installed, preparationCancellation.Token), preparationCancellation.Token);
+			preparationCancellation.Token.ThrowIfCancellationRequested();
+			FinishPreparation();
+			if (RejectUnsupportedPakLayout(inspection.Findings.Concat(inspection.Packages.SelectMany(report => report.Findings)), dialogOwner)) return;
 			switch (inspection.Kind)
 			{
 				case ArchivePackagePreflightKind.ReviewedGameDirectory:
-					if (await ReduxGameDirectoryModManagerWindow.ReviewAndInstallAsync(dialogOwner, this, archivePath))
-						await CompleteAcquiredPackageInstallAsync(item, "Game-directory Mods", archivePath);
+					await InstallGameDirectoryAsync();
 					break;
 				case ArchivePackagePreflightKind.SaveGame:
 					if (View?.ShowSaveManagerForImport(archivePath, dialogOwner) == true)
-						await CompleteAcquiredPackageInstallAsync(item, "Save Games", archivePath);
+						await CompleteInstallAsync("Save Games");
 					break;
 				case ArchivePackagePreflightKind.PakArchive:
-					await InstallPakAsync();
+					await InstallPakAsync(inspection);
 					break;
 				case ArchivePackagePreflightKind.Mixed when inspection.GameDirectoryInspection != null:
-					if (await ReduxGameDirectoryModManagerWindow.ReviewAndInstallAsync(dialogOwner, this, archivePath))
-						await CompleteAcquiredPackageInstallAsync(item, "Game-directory Mods", archivePath);
+					await InstallGameDirectoryAsync();
 					break;
 				default:
 					await _nxmDownloadManager.SetStateAsync(item.Id, NxmDownloadState.NeedsReview, "unsupported-layout",
@@ -1260,6 +1445,15 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					break;
 			}
 		}
+		catch (OperationCanceledException)
+		{
+			var installationStarted = item.State == NxmDownloadState.Installing;
+			if (installationStarted)
+				await _nxmDownloadManager.SetStateAsync(item.Id, previousState);
+			ShowAlert(installationStarted
+				? "Package installation canceled. Any completed mods remain installed; you can review this package again."
+				: "Package review canceled. No mods were installed.", AlertType.Info, 15);
+		}
 		catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException)
 		{
 			DivinityApp.Log($"NXM review failed for {item.Identity}: {ex.GetType().Name}");
@@ -1269,18 +1463,30 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 		finally
 		{
-			DownloadManagerInstallIsActive = false;
+			try { readLease?.Dispose(); }
+			finally
+			{
+				FinishPreparation();
+				DownloadManagerInstallIsActive = false;
+			}
 		}
 	}
 
 	public Task InstallAllNxmDownloadsAsync(Window owner = null)
 	{
-		if (_nxmDownloadManager == null || DownloadManagerInstallIsActive) return Task.CompletedTask;
+		if (_nxmDownloadManager == null || DownloadManagerInstallIsActive || MainProgressIsActive) return Task.CompletedTask;
 		DownloadManagerInstallIsActive = true;
+		IDisposable pendingOperation = null;
 		try
 		{
 			var progress = new ReduxInstallProgressWindow(owner?.IsLoaded == true ? owner : Window);
+			pendingOperation = _pendingOperations.TryRegister(progress.RequestCancellation);
+			if (pendingOperation == null) return Task.CompletedTask;
 			progress.Run(() => InstallAllNxmDownloadsCoreAsync(progress));
+		}
+		catch (OperationCanceledException)
+		{
+			ShowAlert("Installation canceled. Completed packages remain installed; unfinished packages are available in Download Manager.", AlertType.Info, 20);
 		}
 		catch (Exception ex)
 		{
@@ -1288,13 +1494,18 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			ReduxMessageBox.Show(owner ?? Window, "Redux could not finish Install All. Review Download Manager for completed and remaining packages.",
 				"Install All Interrupted", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
-		finally { DownloadManagerInstallIsActive = false; }
+		finally
+		{
+			DownloadManagerInstallIsActive = false;
+			pendingOperation?.Dispose();
+		}
 		return Task.CompletedTask;
 	}
 
 	private async Task InstallAllNxmDownloadsCoreAsync(ReduxInstallProgressWindow progress)
 	{
 		var dialogOwner = progress;
+		var cancellationToken = progress.CancellationToken;
 		var queued = NxmDownloads
 			.Where(item => item.State is NxmDownloadState.Downloaded or NxmDownloadState.NeedsReview or NxmDownloadState.InstallFailed)
 			.OrderBy(item => item.QueuePosition)
@@ -1311,14 +1522,21 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		var inspectedCount = 0;
 		foreach (var item in queued)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			var displayName = String.IsNullOrWhiteSpace(item.ProjectName)
 				? Path.GetFileNameWithoutExtension(item.CompletedFileName) : item.ProjectName;
 			await progress.ReportAsync("Checking package", displayName, ++inspectedCount, queued.Length);
 			try
 			{
 				var archivePath = GetNxmArchivePath(item);
-				await VerifyNxmArchiveAsync(item, archivePath);
-				var classification = await ClassifyAcquiredPackageAsync(archivePath);
+				var reviewedSha256 = item.ArchiveSha256;
+				var reviewedSize = item.SizeBytes;
+				// Bind this inspection to the recorded bytes, then release this package
+				// before checking the next one. Installation takes a fresh verified lease.
+				using var reviewLease = await VerifiedPackageReadLease.OpenAsync(
+					archivePath, reviewedSize, reviewedSha256, cancellationToken);
+				var parsed = await InspectAcquiredPackageContentsAsync(archivePath, installed, cancellationToken);
+				var classification = parsed.Classification;
 				await _nxmDownloadManager.SetInspectionAsync(item.Id, classification.ProjectName,
 					classification.ContentKind, classification.Destination, classification.Summary,
 					classification.Installable, classification.ThumbnailUrl);
@@ -1331,12 +1549,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 				if (Path.GetExtension(archivePath).Equals(".pak", StringComparison.OrdinalIgnoreCase))
 				{
-					var report = await PackagePreflightService.AnalyzeAsync(archivePath, installed);
-					AddPakBatchCandidate(item, archivePath, classification, [report], candidates, skipped);
+					AddPakBatchCandidate(item, archivePath, classification, parsed.Packages, candidates, skipped,
+						reviewedSha256, reviewedSize);
 					continue;
 				}
 
-				var inspection = await ArchivePackagePreflightService.AnalyzeAsync(archivePath, installed);
+				var inspection = parsed.Archive;
 				if (inspection.Findings.Any(finding => finding.Severity == ModHealthSeverity.Error
 					&& !finding.Title.Equals("Missing dependency", StringComparison.OrdinalIgnoreCase)))
 				{
@@ -1347,7 +1565,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				switch (inspection.Kind)
 				{
 					case ArchivePackagePreflightKind.PakArchive when inspection.Packages.Count > 0:
-						AddPakBatchCandidate(item, archivePath, classification, inspection.Packages, candidates, skipped);
+						AddPakBatchCandidate(item, archivePath, classification, inspection.Packages, candidates, skipped,
+							reviewedSha256, reviewedSize);
 						break;
 					case ArchivePackagePreflightKind.SaveGame when inspection.SaveGames.Count > 0:
 						if (SelectedProfile?.Folder == null)
@@ -1367,7 +1586,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 							"Save Games", 10, saveNames.Select(name => $"save:{name}").ToArray(), [], [],
 							new ReduxInstallReviewItem(displayName, $"Save Games · {Path.GetFileName(archivePath)}",
 								replacements > 0 ? $"Ready · replace {replacements} existing save{(replacements == 1 ? String.Empty : "s")}" : "Ready to install",
-								replacements > 0 ? ReduxInstallReviewTone.Warning : ReduxInstallReviewTone.Success)));
+								replacements > 0 ? ReduxInstallReviewTone.Warning : ReduxInstallReviewTone.Success),
+							reviewedSha256, reviewedSize, inspection.Packages));
 						break;
 					case ArchivePackagePreflightKind.ReviewedGameDirectory:
 					case ArchivePackagePreflightKind.Mixed when inspection.GameDirectoryInspection != null:
@@ -1411,7 +1631,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 								loaderStatus.IsAlternativeLoader
 									? "Reviewed plugin · verify YANML starts with BG3"
 									: "Reviewed native package · ready",
-								loaderStatus.IsAlternativeLoader ? ReduxInstallReviewTone.Warning : ReduxInstallReviewTone.Info)));
+								loaderStatus.IsAlternativeLoader ? ReduxInstallReviewTone.Warning : ReduxInstallReviewTone.Info),
+							reviewedSha256, reviewedSize, inspection.Packages));
 						break;
 					default:
 						skipped.Add(BatchSkipped(displayName, Path.GetFileName(archivePath), "Mixed, ambiguous, or unreviewed package layout."));
@@ -1425,8 +1646,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			}
 		}
 
+		cancellationToken.ThrowIfCancellationRequested();
 		var safetyPlan = DownloadBatchSafetyPlanner.Create(candidates.Select(candidate =>
-			new DownloadBatchSafetyCandidate(candidate.Item.Id, candidate.Item.ArchiveSha256,
+			new DownloadBatchSafetyCandidate(candidate.Item.Id, candidate.ReviewedSha256,
 				candidate.ConflictKeys, candidate.ProvidedModUuids, candidate.RequiredModUuids)), installedUuids);
 		var acceptedIds = safetyPlan.AcceptedIds.ToHashSet(StringComparer.Ordinal);
 		var accepted = candidates.Where(candidate => acceptedIds.Contains(candidate.Item.Id))
@@ -1444,37 +1666,55 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				.Where(value => !String.IsNullOrWhiteSpace(value)));
 		if (accepted.Count == 0)
 		{
-			new ReduxInstallReviewWindow(dialogOwner, skipped, ReduxInstallReviewKind.Batch,
-				"Reviewed destinations", $"Installed: 0 · Failed: 0 · Skipped: {skipped.Count}", resultsOnly: true).ShowDialog();
+			ShowCancellableInstallReview(new ReduxInstallReviewWindow(dialogOwner, skipped, ReduxInstallReviewKind.Batch,
+				"Reviewed destinations", $"Installed: 0 · Failed: 0 · Skipped: {skipped.Count}", resultsOnly: true), cancellationToken);
 			return;
 		}
 		var preview = new ReduxInstallReviewWindow(dialogOwner, reviewItems, ReduxInstallReviewKind.Batch,
 			"Reviewed destinations", destinationSummary);
-		if (preview.ShowDialog() != true && !preview.Accepted) return;
+		if (!ShowCancellableInstallReview(preview, cancellationToken)) return;
+		cancellationToken.ThrowIfCancellationRequested();
 
 		var installingCount = 0;
 		var results = new List<ReduxInstallReviewItem>(skipped);
+		var remaining = accepted.ToList();
 		try
 		{
 			foreach (var candidate in accepted)
 			{
-				await progress.ReportAsync("Extracting and installing", candidate.ReviewItem.Name, ++installingCount, accepted.Count);
+				cancellationToken.ThrowIfCancellationRequested();
+				await progress.ReportAsync("Verifying package", candidate.ReviewItem.Name, ++installingCount, accepted.Count);
 				try
 				{
-					await _nxmDownloadManager.SetStateAsync(candidate.Item.Id, NxmDownloadState.Installing);
-					var nexusSource = candidate.Item.HasNexusSource
-						? new NexusModManagerLink(candidate.Item.ModId, candidate.Item.FileId, null, null, null) : null;
-					var installedOk = candidate.Kind switch
+					using (var installLease = await VerifiedPackageReadLease.OpenAsync(candidate.ArchivePath,
+						candidate.ReviewedSize, candidate.ReviewedSha256, cancellationToken))
 					{
-						AcquiredPackageBatchKind.Pak => await ImportModsWithoutReviewAsync([candidate.ArchivePath], null, nexusSource),
-						AcquiredPackageBatchKind.Save => await ImportSaveBatchPackageAsync(candidate.ArchivePath),
-						AcquiredPackageBatchKind.GameDirectory => await InstallGameDirectoryBatchPackageAsync(candidate.ArchivePath, nexusSource),
-						_ => false
-					};
-					if (!installedOk) throw new InvalidOperationException("Redux could not finish this installation.");
+						await progress.ReportAsync("Extracting and installing", candidate.ReviewItem.Name, installingCount, accepted.Count);
+						await _nxmDownloadManager.SetStateAsync(candidate.Item.Id, NxmDownloadState.Installing);
+						cancellationToken.ThrowIfCancellationRequested();
+						ValidateCurrentBatchReview(candidate, installLease, remaining, installedUuids.Contains("native-loader"));
+						var nexusSource = candidate.Item.HasNexusSource
+							? new NexusModManagerLink(candidate.Item.ModId, candidate.Item.FileId, null, null, null) : null;
+						var installedOk = candidate.Kind switch
+						{
+							AcquiredPackageBatchKind.Pak => await ImportModsWithoutReviewAsync([candidate.ArchivePath], null, nexusSource, cancellationToken),
+							AcquiredPackageBatchKind.Save => await ImportSaveBatchPackageAsync(candidate.ArchivePath),
+							AcquiredPackageBatchKind.GameDirectory => await InstallGameDirectoryBatchPackageAsync(candidate.ArchivePath, nexusSource, cancellationToken),
+							_ => false
+						};
+						if (!installedOk) throw new InvalidOperationException("Redux could not finish this installation.");
+						if (candidate.ProvidedModUuids.Contains("native-loader")) installedUuids.Add("native-loader");
+					}
+					// Retention can move or delete the source only after all installer reads finish.
 					await CompleteAcquiredPackageInstallAsync(candidate.Item, candidate.Destination, candidate.ArchivePath);
 					results.Add(new ReduxInstallReviewItem(candidate.ReviewItem.Name,
 						Path.GetFileName(candidate.ArchivePath), $"Installed to {candidate.Destination}", ReduxInstallReviewTone.Success));
+				}
+				catch (OperationCanceledException)
+				{
+					await _nxmDownloadManager.SetStateAsync(candidate.Item.Id, NxmDownloadState.Downloaded,
+						"install-canceled", "Installation canceled. Any completed mods remain installed. The archive is available to review and retry.");
+					throw;
 				}
 				catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException
 					or UnauthorizedAccessException or ArgumentException or NotSupportedException)
@@ -1485,15 +1725,30 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					results.Add(new ReduxInstallReviewItem(candidate.ReviewItem.Name,
 						Path.GetFileName(candidate.ArchivePath), $"Failed · {error}", ReduxInstallReviewTone.Error));
 				}
+				finally { remaining.Remove(candidate); }
 			}
 		}
 		finally { await progress.ReportAsync("Finishing", "Preparing installation results…", 1, 1); }
+		cancellationToken.ThrowIfCancellationRequested();
 
 		var successful = results.Count(result => result.Tone == ReduxInstallReviewTone.Success);
 		var failed = results.Count(result => result.Tone == ReduxInstallReviewTone.Error);
 		var resultSummary = $"Installed: {successful} · Failed: {failed} · Skipped: {skipped.Count}";
-		new ReduxInstallReviewWindow(dialogOwner, results, ReduxInstallReviewKind.Batch,
-			"Reviewed destinations", resultSummary, resultsOnly: true).ShowDialog();
+		ShowCancellableInstallReview(new ReduxInstallReviewWindow(dialogOwner, results, ReduxInstallReviewKind.Batch,
+			"Reviewed destinations", resultSummary, resultsOnly: true), cancellationToken);
+	}
+
+	internal static bool ShowCancellableInstallReview(ReduxInstallReviewWindow dialog, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
+		using var cancellation = cancellationToken.Register(() =>
+		{
+			if (!dialog.Dispatcher.HasShutdownStarted && !dialog.Dispatcher.HasShutdownFinished)
+				dialog.Dispatcher.BeginInvoke(new Action(() => { if (dialog.IsVisible) dialog.Close(); }));
+		});
+		var accepted = dialog.ShowDialog() == true || dialog.Accepted;
+		cancellationToken.ThrowIfCancellationRequested();
+		return accepted;
 	}
 
 	private static ReduxInstallReviewItem BatchSkipped(string name, string detail, string reason) =>
@@ -1504,9 +1759,40 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			finding.Severity == ModHealthSeverity.Error
 			&& !finding.Title.Equals("Missing dependency", StringComparison.OrdinalIgnoreCase)));
 
+	private void ValidateCurrentBatchReview(AcquiredPackageBatchCandidate candidate, VerifiedPackageReadLease lease,
+		IReadOnlyList<AcquiredPackageBatchCandidate> remaining, bool nativeLoaderAvailable)
+	{
+		var currentInstalled = mods.Items.Where(mod => mod != null && !mod.IsVisualDivider).ToArray();
+		var currentReports = new LeasedArchivePreflight(lease, candidate.ArchivePath, candidate.Packages)
+			.RecheckPackages(currentInstalled);
+		static bool IsMaterialFinding(PackagePreflightFinding finding) => finding.Severity != ModHealthSeverity.Info
+			&& !finding.Title.Equals("Missing dependency", StringComparison.OrdinalIgnoreCase);
+		var reviewedFindings = candidate.Packages.SelectMany(report => report.Findings).Where(IsMaterialFinding);
+		if (HasBlockingPackageFinding(currentReports)
+			|| currentReports.SelectMany(report => report.Findings).Where(IsMaterialFinding).Except(reviewedFindings).Any())
+			throw new InvalidOperationException("The mod library changed after review. Review this package again before installing.");
+		if (candidate.Kind == AcquiredPackageBatchKind.Pak)
+		{
+			var currentActions = currentReports.Select(report => GetInstallActionSummary(report.Mod,
+				currentInstalled.FirstOrDefault(mod => String.Equals(mod.UUID, report.Mod.UUID, StringComparison.OrdinalIgnoreCase)))).Distinct();
+			if (candidate.ReviewItem.Detail != String.Join(" · ", currentActions))
+				throw new InvalidOperationException("The installed version of this mod changed after review. Review this package again before installing.");
+		}
+		var available = currentInstalled.Concat(DivinityApp.IgnoredMods.Items)
+			.Where(mod => mod != null && !String.IsNullOrWhiteSpace(mod.UUID)).Select(mod => mod.UUID).ToList();
+		if (nativeLoaderAvailable) available.Add("native-loader");
+		var currentPlan = DownloadBatchSafetyPlanner.Create(remaining.Select(item =>
+			new DownloadBatchSafetyCandidate(item.Item.Id, item.ReviewedSha256,
+				item.ConflictKeys, item.ProvidedModUuids, item.RequiredModUuids)), available);
+		if (!currentPlan.AcceptedIds.Contains(candidate.Item.Id))
+			throw new InvalidOperationException(currentPlan.SkippedReasons[candidate.Item.Id]
+				+ " Review this package again before installing.");
+	}
+
 	private void AddPakBatchCandidate(NxmDownloadItem item, string archivePath,
 		AcquiredPackageClassification classification, IReadOnlyList<PackagePreflightReport> reports,
-		ICollection<AcquiredPackageBatchCandidate> candidates, ICollection<ReduxInstallReviewItem> skipped)
+		ICollection<AcquiredPackageBatchCandidate> candidates, ICollection<ReduxInstallReviewItem> skipped,
+		string reviewedSha256, long reviewedSize)
 	{
 		var name = String.IsNullOrWhiteSpace(classification.ProjectName)
 			? Path.GetFileNameWithoutExtension(archivePath) : classification.ProjectName;
@@ -1527,7 +1813,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		candidates.Add(new AcquiredPackageBatchCandidate(item, archivePath, AcquiredPackageBatchKind.Pak,
 			"Mod Library", 10, provided.Select(uuid => $"pak:{uuid}").ToArray(), provided, required,
 			new ReduxInstallReviewItem(name, String.Join(" · ", actions),
-				$"Ready · {reports.Count} PAK mod{(reports.Count == 1 ? String.Empty : "s")}", ReduxInstallReviewTone.Success)));
+				$"Ready · {reports.Count} PAK mod{(reports.Count == 1 ? String.Empty : "s")}", ReduxInstallReviewTone.Success),
+			reviewedSha256, reviewedSize, reports));
 	}
 
 	private async Task<bool> ImportSaveBatchPackageAsync(string archivePath)
@@ -1538,9 +1825,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		return imported.Count > 0;
 	}
 
-	private async Task<bool> InstallGameDirectoryBatchPackageAsync(string archivePath, NexusModManagerLink nexusSource)
+	private async Task<bool> InstallGameDirectoryBatchPackageAsync(string archivePath, NexusModManagerLink nexusSource,
+		CancellationToken cancellationToken)
 	{
-		await ReduxGameDirectoryModManagerWindow.InstallReviewedArchiveWithoutReviewAsync(this, archivePath, nexusSource);
+		await ReduxGameDirectoryModManagerWindow.InstallReviewedArchiveWithoutReviewAsync(this, archivePath, nexusSource, cancellationToken);
 		return true;
 	}
 
@@ -1600,7 +1888,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		return _retainedPackageArchiveService?.GetPackagePath(item.ArchiveSha256) ?? downloadPath;
 	}
 
-	private static async Task VerifyNxmArchiveAsync(NxmDownloadItem item, string path)
+	private static async Task VerifyNxmArchiveAsync(NxmDownloadItem item, string path, CancellationToken cancellationToken = default)
 	{
 		if (!File.Exists(path)) throw new FileNotFoundException("The downloaded archive is missing.", path);
 		var info = new FileInfo(path);
@@ -1610,7 +1898,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			throw new InvalidDataException("The download does not have a verified SHA-256 identity. Download it again before review.");
 		await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read,
 			65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
-		var digest = Convert.ToHexString(await System.Security.Cryptography.SHA256.HashDataAsync(stream)).ToLowerInvariant();
+		var digest = Convert.ToHexString(await System.Security.Cryptography.SHA256.HashDataAsync(stream, cancellationToken)).ToLowerInvariant();
 		if (!String.Equals(digest, item.ArchiveSha256, StringComparison.OrdinalIgnoreCase))
 			throw new InvalidDataException("The downloaded archive changed after inspection. Download it again before review.");
 	}
@@ -1618,7 +1906,24 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public async Task ShutdownNxmDownloadsAsync()
 	{
 		_nxmShuttingDown = true;
-		if (_nxmDownloadManager != null) await _nxmDownloadManager.ShutdownAsync();
+		try
+		{
+			if (MainProgressIsActive)
+			{
+				CanCancelProgress = false;
+				MainProgressWorkText = "Closing Redux… Waiting for the current operation to stop safely.";
+			}
+			await _pendingOperations.StopAsync();
+			if (_nxmDownloadManager != null) await _nxmDownloadManager.ShutdownAsync();
+		}
+		catch
+		{
+			// StopAsync drains registrations even when a cancellation callback fails.
+			// If queue shutdown fails, the still-open application can accept work again.
+			_pendingOperations.ResumeAfterFailedShutdown();
+			_nxmShuttingDown = false;
+			throw;
+		}
 	}
 
 	private void ShowWhenMainWindowReady(string key, Action showNotification) =>
@@ -2456,9 +2761,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 							.ToList();
 						DivinityApp.Log("Reconciled duplicate active separator IDs in saved settings.");
 					}
-					Settings.SetFrom<DivinityModManagerSettings, ReactiveAttribute>(settings);
-					Settings.ExtenderSettings.SetFrom(settings.ExtenderSettings);
-					Settings.ExtenderUpdaterSettings.SetFrom(settings.ExtenderUpdaterSettings);
+					Settings.RestorePersistedSettings(settings);
 				}
 			}
 		}
@@ -2660,6 +2963,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			{
 				ShowAlert(errorMsg, AlertType.Danger);
 			}
+			_deferredSettingsSave?.Cancel();
 			return true;
 		}
 		catch (Exception ex)
@@ -2669,15 +2973,25 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		return false;
 	}
 
-	private IDisposable _deferSave;
+	private DeferredSettingsSave _deferredSettingsSave;
 
 	public void QueueSave(int delayMilliseconds = 250)
 	{
-		_deferSave?.Dispose();
-		if (!IsInitialized && IsRefreshing) return;
-		_deferSave = RxApp.MainThreadScheduler.Schedule(
-			TimeSpan.FromMilliseconds(Math.Max(0, delayMilliseconds)),
-			() => SaveSettings());
+		if (!IsInitialized && IsRefreshing)
+		{
+			_deferredSettingsSave?.Cancel();
+			return;
+		}
+		_deferredSettingsSave ??= new DeferredSettingsSave(RxApp.MainThreadScheduler, SaveSettings);
+		_deferredSettingsSave.Queue(TimeSpan.FromMilliseconds(Math.Max(0, delayMilliseconds)));
+	}
+
+	private bool FlushPendingSettingsBeforeRefresh()
+	{
+		if (_deferredSettingsSave == null || _deferredSettingsSave.TryFlush()) return true;
+		ShowAlert("Refresh cancelled because recent settings could not be saved. Your current mod organization is still in memory; fix the save error and try again.",
+			AlertType.Danger, 30);
+		return false;
 	}
 
 	private string GetLarianStudiosAppDataFolder()
@@ -3042,9 +3356,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private void SetLoadedMods(IEnumerable<DivinityModData> loadedMods)
 	{
 		_modAnnotationStore = ReduxModAnnotationService.Load(GetModAnnotationsPath());
-		var uuids = loadedMods.Select(x => x.UUID).ToHashSet();
-		mods.Clear();
-		foreach (var mod in loadedMods)
+		var loadedModList = loadedMods.ToList();
+		var uuids = loadedModList.Select(x => x.UUID).ToHashSet();
+		PopulateLoadedMods(mods, loadedModList, mod =>
 		{
 			ApplySourceLinkingMode(mod);
 			ApplyModAnnotation(mod);
@@ -3060,19 +3374,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				DivinityApp.IgnoredMods.AddOrUpdate(mod);
 			}
 
-			if (TryGetMod(mod.UUID, out var existingMod))
-			{
-				if (mod.Version.VersionInt > existingMod.Version.VersionInt)
-				{
-					mods.AddOrUpdate(mod);
-					DivinityApp.Log($"Updated mod data from pak: Name({mod.Name}) UUID({mod.UUID}) Type({mod.ModType}) Version({mod.Version.VersionInt})");
-				}
-			}
-			else
-			{
-				mods.AddOrUpdate(mod);
-			}
-
 			mod.MissingDependencies.Clear();
 			foreach (var dep in mod.Dependencies.Items)
 			{
@@ -3081,7 +3382,35 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					mod.MissingDependencies.AddOrUpdate(dep);
 				}
 			}
-		}
+		});
+	}
+
+	private static void PopulateLoadedMods(SourceCache<DivinityModData, string> cache,
+		IEnumerable<DivinityModData> loadedMods, Action<DivinityModData> initializeMod)
+	{
+		// Publish one complete scan. Per-mod cache notifications repeatedly rebuild
+		// the Override projection while startup is still setting up the mod lists.
+		cache.Edit(updater =>
+		{
+			updater.Clear();
+			foreach (var mod in loadedMods)
+			{
+				initializeMod(mod);
+				var existingMod = updater.Lookup(mod.UUID);
+				if (existingMod.HasValue)
+				{
+					if (mod.Version.VersionInt > existingMod.Value.Version.VersionInt)
+					{
+						updater.AddOrUpdate(mod);
+						DivinityApp.Log($"Updated mod data from pak: Name({mod.Name}) UUID({mod.UUID}) Type({mod.ModType}) Version({mod.Version.VersionInt})");
+					}
+				}
+				else
+				{
+					updater.AddOrUpdate(mod);
+				}
+			}
+		});
 	}
 
 	private void MergeModLists(List<DivinityModData> finalMods, List<DivinityModData> newMods)
@@ -3261,13 +3590,14 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			{
 				var message = string.Join(Environment.NewLine, duplicateProjects);
 				RxApp.MainThreadScheduler.Schedule(() =>
-				{
-					var result = ReduxMessageBox.Show(Window,
-					$"Duplicate toolkit projects were found in the Data folder:\n\n{message}",
-					"Duplicate Toolkit Projects",
-					MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-					ShowAlert("Duplicate Toolkit projects were found in the BG3 Data folder.", AlertType.Danger, 60);
-				});
+					ShowWhenMainWindowReady("startup-duplicate-toolkit-projects", () =>
+					{
+						ReduxMessageBox.Show(Window,
+							$"Duplicate toolkit projects were found in the Data folder:\n\n{message}",
+							"Duplicate Toolkit Projects",
+							MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+						ShowAlert("Duplicate Toolkit projects were found in the BG3 Data folder.", AlertType.Danger, 60);
+					}));
 			}
 			var baseModsDict = baseMods.DistinctBy(x => x.UUID).ToDictionary(x => x.UUID, x => x);
 			foreach (var pakMod in modLoadingResults.Mods)
@@ -3281,10 +3611,17 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			_lastDetectedDuplicateMods = modLoadingResults.Duplicates.ToArray();
 			if (dupeCount > 0)
 			{
+				// Startup keeps the main window off-screen until mod loading completes.
+				// Retain this scan's results and let its duplicate review wait for reveal.
+				var duplicateMods = modLoadingResults.Duplicates.ToList();
+				var retainedMods = modLoadingResults.Mods.ToList();
 				await Observable.Start(() =>
 				{
-					ShowAlert($"{dupeCount} duplicate mod{(dupeCount == 1 ? String.Empty : "s")} found.", AlertType.Danger, 30);
-					DeleteMods(modLoadingResults.Duplicates, true, modLoadingResults.Mods);
+					ShowWhenMainWindowReady("startup-duplicate-mods", () =>
+					{
+						ShowAlert($"{dupeCount} duplicate mod{(dupeCount == 1 ? String.Empty : "s")} found.", AlertType.Danger, 30);
+						DeleteMods(duplicateMods, true, retainedMods);
+					});
 				}, RxApp.MainThreadScheduler);
 			}
 			MergeModLists(finalMods, modLoadingResults.Mods);
@@ -3571,10 +3908,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private string CreatePakImportTemporaryPath(string finalPath)
 	{
-		var directory = Path.GetDirectoryName(finalPath);
-		var name = Path.GetFileNameWithoutExtension(finalPath);
-		// Keep staged imports from looking like installed mods to BG3 or BG3MM scanners.
-		return Path.Combine(directory, $".{name}.redux-import-{Guid.NewGuid():N}.pak.tmp");
+		var directory = Path.Combine(Path.GetDirectoryName(finalPath), ".redux-pak-stage-" + Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(directory);
+		return Path.Combine(directory, Path.GetFileName(finalPath));
 	}
 
 	private string ModBackupDirectory => Path.Combine(PathwayData.AppDataGameFolder, "Mods_Old_ModManager");
@@ -3614,57 +3950,23 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{ ReduxMessageBox.Show(owner, ex.Message, "Could not manage previous versions", MessageBoxButton.OK, MessageBoxImage.Error); }
 	}
 
-	private string GetUniqueModBackupPath(string originalPath)
-	{
-		var recoveryDirectory = Path.Combine(PathwayData.AppDataGameFolder, "Mods_Old_ModManager");
-		Directory.CreateDirectory(recoveryDirectory);
-		var candidate = Path.Combine(recoveryDirectory, Path.GetFileName(originalPath));
-		if (!File.Exists(candidate)) return candidate;
-
-		var name = Path.GetFileNameWithoutExtension(originalPath);
-		var extension = Path.GetExtension(originalPath);
-		var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
-		candidate = Path.Combine(recoveryDirectory, $"{name}_{timestamp}{extension}");
-		var suffix = 1;
-		while (File.Exists(candidate))
-		{
-			candidate = Path.Combine(recoveryDirectory, $"{name}_{timestamp}_{suffix++}{extension}");
-		}
-		return candidate;
-	}
-
-	private string BackupExistingPak(string finalPath)
-	{
-		if (!File.Exists(finalPath)) return null;
-		var backupPath = GetUniqueModBackupPath(finalPath);
-		try
-		{
-			File.Copy(finalPath, backupPath, false);
-		}
-		catch (Exception ex)
-		{
-			throw new IOException($"Could not create recovery backup '{backupPath}'. The installed mod was left unchanged.", ex);
-		}
-		DivinityApp.Log($"Backed up existing mod '{finalPath}' to '{backupPath}'.");
-		return backupPath;
-	}
-
 	private async Task<DivinityModData> ValidateAndCommitImportedPakAsync(string temporaryPath, string finalPath,
-		Dictionary<string, DivinityModData> builtinMods, CancellationToken cancellationToken)
+		Dictionary<string, DivinityModData> builtinMods, CancellationToken cancellationToken,
+		Func<DivinityModData, string> resolveDestination = null)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
+		PakImportCompatibility.RequireSupportedLayout(temporaryPath, Path.GetFileName(finalPath));
+		await SetMainProgressPhaseAsync($"Validating PAK: {Path.GetFileName(finalPath)}…");
 		var mod = await DivinityModDataLoader.LoadModDataFromPakAsync(temporaryPath, builtinMods, cancellationToken);
+		cancellationToken.ThrowIfCancellationRequested();
 		if (mod == null)
 			throw new InvalidDataException($"The imported package '{Path.GetFileName(finalPath)}' could not be validated.");
+		if (resolveDestination != null) finalPath = resolveDestination(mod);
 
+		await SetMainProgressPhaseAsync($"Backing up and installing PAK: {Path.GetFileName(finalPath)}…");
 		cancellationToken.ThrowIfCancellationRequested();
-		ModBackupRetention.CommitReplacement(() =>
-		{
-			var recoveryCopy = BackupExistingPak(finalPath);
-			if (File.Exists(finalPath)) File.Replace(temporaryPath, finalPath, null, true);
-			else File.Move(temporaryPath, finalPath);
-			if (recoveryCopy != null) PrunePreviousModVersionsAfterInstall();
-		});
+		if (await PakFileSet.InstallAsync(temporaryPath, finalPath, ModBackupDirectory, cancellationToken))
+			PrunePreviousModVersionsAfterInstall();
 		mod.FilePath = finalPath;
 		// Metadata-less file overrides derive their identity from the pak path. Validation
 		// happens against a non-pak staging filename, so normalize that transient identity
@@ -3682,7 +3984,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	{
 		try
 		{
-			if (!String.IsNullOrWhiteSpace(temporaryPath) && File.Exists(temporaryPath)) File.Delete(temporaryPath);
+			if (!String.IsNullOrWhiteSpace(temporaryPath))
+			{
+				var directory = Path.GetDirectoryName(temporaryPath);
+				if (Path.GetFileName(directory).StartsWith(".redux-pak-stage-", StringComparison.Ordinal))
+					Directory.Delete(directory, true);
+				else if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+			}
 		}
 		catch (Exception ex)
 		{
@@ -3700,27 +4008,36 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			try
 			{
 				taskResult.TotalPaks++;
+				cts.ThrowIfCancellationRequested();
+				PakImportCompatibility.RequireSupportedLayout(filePath);
 				DivinityModData mod;
 				if (Path.GetFullPath(filePath).Equals(Path.GetFullPath(outputFilePath), StringComparison.OrdinalIgnoreCase))
 				{
+					await SetMainProgressPhaseAsync($"Reading installed PAK: {Path.GetFileName(filePath)}…");
 					mod = await DivinityModDataLoader.LoadModDataFromPakAsync(outputFilePath, builtinMods, cts);
 				}
 				else
 				{
+					await SetMainProgressPhaseAsync($"Copying PAK: {Path.GetFileName(filePath)}…");
 					temporaryPath = CreatePakImportTemporaryPath(outputFilePath);
-					if (!await DivinityFileUtils.CopyFileAsync(filePath, temporaryPath, cts))
-						throw new IOException($"Copying '{filePath}' to a temporary import file failed.");
+					await PakFileSet.CopyAsync(filePath, temporaryPath, cts);
 					mod = await ValidateAndCommitImportedPakAsync(temporaryPath, outputFilePath, builtinMods, cts);
 				}
 
-				if (mod == null) throw new InvalidDataException($"The package '{filePath}' could not be validated.");
+				if (mod == null)
+				{
+					cts.ThrowIfCancellationRequested();
+					throw new InvalidDataException($"The package '{filePath}' could not be validated.");
+				}
 				taskResult.Mods.Add(mod);
+				await SetMainProgressPhaseAsync($"Updating mod list: {Path.GetFileName(outputFilePath)}…");
 				await Observable.Start(() =>
 				{
 					AddImportedMod(mod, toActiveList);
 					return Unit.Default;
 				}, RxApp.MainThreadScheduler);
-				}
+			}
+			catch (OperationCanceledException) when (cts.IsCancellationRequested) { throw; }
 			catch (IOException ex)
 			{
 				DivinityApp.Log($"File may be in use by another process:\n{ex}");
@@ -3734,8 +4051,15 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			}
 			finally
 			{
-				CleanupPakImportTemporaryFile(temporaryPath);
-				IncreaseMainProgressValue(ProgressMath.CalculatePhaseStep(taskResult.TotalFiles, 1));
+				try
+				{
+					CleanupPakImportTemporaryFile(temporaryPath);
+					IncreaseMainProgressValue(ProgressMath.CalculatePhaseStep(taskResult.TotalFiles, 1));
+				}
+				finally
+				{
+					await SetMainProgressPhaseAsync(null, false);
+				}
 			}
 		}
 		else if (_archiveFormats.Contains(ext, StringComparer.OrdinalIgnoreCase))
@@ -3749,14 +4073,33 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		return taskResult;
 	}
 
-	public bool ImportMods(IEnumerable<string> files, bool? toActiveList = null, NexusModManagerLink nexusSource = null,
-		Action<ImportOperationResults> completed = null, bool showCompletionFeedback = true)
+	private static IReadOnlyList<string> FilterMultipartInputs(IEnumerable<string> files)
 	{
-		var fileList = files?.ToList() ?? [];
-		if (MainProgressIsActive || fileList.Count == 0) return false;
+		var selected = files.ToArray();
+		var primaries = PakFileSet.GetPrimaries(selected.Where(path => Path.GetExtension(path).Equals(".pak", StringComparison.OrdinalIgnoreCase)));
+		return selected.Where(path => !Path.GetExtension(path).Equals(".pak", StringComparison.OrdinalIgnoreCase)
+			|| primaries.Contains(Path.GetFullPath(path), StringComparer.OrdinalIgnoreCase)).ToArray();
+	}
+
+	public bool ImportMods(IEnumerable<string> files, bool? toActiveList = null, NexusModManagerLink nexusSource = null,
+		Action<ImportOperationResults> completed = null, bool showCompletionFeedback = true,
+		CancellationToken cancellationToken = default)
+	{
+		var fileList = FilterMultipartInputs(files ?? []).ToList();
+		if (_nxmShuttingDown || MainProgressIsActive || fileList.Count == 0) return false;
 		{
+			var importCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+			var operationRegistration = _pendingOperations.TryRegister(importCancellation.Cancel);
+			if (operationRegistration == null)
+			{
+				importCancellation.Dispose();
+				return false;
+			}
+			MainProgressToken = importCancellation;
+			CanCancelProgress = true;
 			MainProgressTitle = "Importing mods";
 			MainProgressWorkText = "Preparing selected files…";
+			MainProgressIsIndeterminate = false;
 			MainProgressValue = 0d;
 			MainProgressIsActive = true;
 			IsRefreshing = true;
@@ -3770,37 +4113,37 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				try
 				{
 					var builtinMods = DivinityApp.IgnoredMods.Items.SafeToDictionary(x => x.Folder, x => x);
-					MainProgressToken = new CancellationTokenSource();
-					foreach (var f in fileList)
+					await ImportOperationRunner.RunAsync(fileList, result, async (f, token) =>
 					{
 						var previousCount = result.Mods.Count;
-						await AddModFromFile(builtinMods, result, f, MainProgressToken.Token, toActiveList);
-						if (nexusSource != null)
+						try { await AddModFromFile(builtinMods, result, f, token, toActiveList); }
+						finally
 						{
-							var exactSource = new NexusModFileVersionData
+							if (nexusSource != null)
 							{
-								ModId = nexusSource.ModId,
-								FileId = nexusSource.FileId,
-								Success = true
-							};
-							foreach (var imported in result.Mods.Skip(previousCount))
-								ApplyImportedNexusAssociation(imported, exactSource, null);
-						}
-					}
-
-					if (Modules.SourceIntegrationsEnabled && UpdateHandler.Nexus.IsEnabled && result.Mods.Count > 0 && result.Mods.Any(x => x.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
-					{
-						var cacheChanged = await UpdateHandler.Nexus.Update(result.Mods, MainProgressToken.Token);
-						cacheChanged |= await NexusModsDataLoader.LoadChangelogsAsync(result.Mods, MainProgressToken.Token);
-						if (cacheChanged)
-						{
-							foreach (var mod in result.Mods.Where(mod => mod.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
-							{
-								UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
+								var exactSource = new NexusModFileVersionData
+								{
+									ModId = nexusSource.ModId, FileId = nexusSource.FileId, Success = true
+								};
+								foreach (var imported in result.Mods.Skip(previousCount))
+									ApplyImportedNexusAssociation(imported, exactSource, null);
 							}
-							await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), MainProgressToken.Token);
 						}
-					}
+					}, async token =>
+					{
+						if (Modules.SourceIntegrationsEnabled && UpdateHandler.Nexus.IsEnabled && result.Mods.Count > 0 && result.Mods.Any(x => x.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
+						{
+							var cacheChanged = await UpdateHandler.Nexus.Update(result.Mods, token);
+							cacheChanged |= await NexusModsDataLoader.LoadChangelogsAsync(result.Mods, token);
+							if (cacheChanged)
+							{
+								foreach (var mod in result.Mods.Where(mod => mod.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
+								{
+									UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
+								}
+							}
+						}
+					}, importCancellation.Token, () => PreserveImportedSourceLinksAsync(result));
 				}
 				catch (Exception ex)
 				{
@@ -3811,10 +4154,15 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				await ctrl.Yield();
 				RxApp.MainThreadScheduler.Schedule(_ =>
 				{
+					using var completedOperation = operationRegistration;
 					try
 					{
-						IsRefreshing = false;
-						OnMainProgressComplete();
+						if (ReferenceEquals(MainProgressToken, importCancellation))
+						{
+							IsRefreshing = false;
+							OnMainProgressComplete();
+						}
+						else importCancellation.Dispose();
 
 						if (result.Errors.Count > 0)
 						{
@@ -3829,7 +4177,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 						}
 
 						var total = result.Mods.Count;
-						if (result.Success && showCompletionFeedback)
+						if (result.WasCancelled && showCompletionFeedback)
+						{
+							ShowAlert(total > 0
+								? $"Import canceled. {total} mods finished installing before cancellation."
+								: "Import canceled.", AlertType.Info, 20);
+						}
+						else if (result.Success && showCompletionFeedback)
 						{
 							if (result.Mods.Count > 1)
 							{
@@ -3881,28 +4235,92 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		Window owner = null,
 		Func<Task> installStarting = null)
 	{
+		using var cancellation = new CancellationTokenSource();
+		using var pendingOperation = _pendingOperations.TryRegister(cancellation.Cancel);
+		if (pendingOperation == null) return false;
+		try
+		{
+			return await ReviewAndImportModsCoreAsync(files, toActiveList, nexusSource, owner, installStarting, null, cancellation.Token);
+		}
+		catch (OperationCanceledException)
+		{
+			return false;
+		}
+	}
+
+	private async Task<bool> ReviewAndImportModsCoreAsync(
+		IReadOnlyList<string> files,
+		bool? toActiveList,
+		NexusModManagerLink nexusSource,
+		Window owner,
+		Func<Task> installStarting,
+		LeasedArchivePreflight preparedArchive,
+		CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
 		if (files == null || files.Count == 0) return false;
+		files = FilterMultipartInputs(files);
+		if (MainProgressIsActive)
+		{
+			ShowAlert("Finish the current operation before installing another package.", AlertType.Warning, 20);
+			return false;
+		}
 		var destination = toActiveList == true ? "Active Mods" : toActiveList == false
 			? "Inactive Mods" : "existing placement (new mods go to Inactive Mods)";
-		var installed = mods.Items
+		DivinityModData[] CurrentInstalled() => mods.Items
 			.Where(mod => mod != null && !mod.IsVisualDivider)
 			.DistinctBy(mod => mod.UUID, StringComparer.OrdinalIgnoreCase)
 			.ToArray();
+		var installed = CurrentInstalled();
 		var reviewItems = new List<ReduxInstallReviewItem>();
+		IReadOnlyList<PackagePreflightReport> preparedReports = null;
+		var unsupportedLayouts = new List<PackagePreflightFinding>();
+		using var preparationCancellation = preparedArchive == null ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken) : null;
+		var previousProgressToken = MainProgressToken;
+		var previousCanCancel = CanCancelProgress;
 		try
 		{
+			if (preparationCancellation != null)
+			{
+				MainProgressToken = preparationCancellation;
+				MainProgressTitle = "Reviewing packages";
+				MainProgressValue = 0;
+				MainProgressIsActive = true;
+				CanCancelProgress = true;
+			}
+			if (preparedArchive != null && files.Count != 1)
+				throw new ArgumentException("A prepared archive review applies to one locked package.", nameof(files));
 			foreach (var file in files)
 			{
+				if (preparedArchive != null)
+				{
+					preparedArchive.RequirePath(file);
+					preparedReports = preparedArchive.RecheckPackages(installed);
+					unsupportedLayouts.AddRange(preparedReports.SelectMany(report => report.Findings));
+					if (preparedReports.Count > 0)
+						reviewItems.AddRange(preparedReports.Select(report => CreateModInstallReviewItem(report, installed)));
+					else
+						reviewItems.Add(CreateUninspectedModReviewItem(file));
+					continue;
+				}
+
 				if (Path.GetExtension(file).Equals(".pak", StringComparison.OrdinalIgnoreCase))
 				{
-					var report = await PackagePreflightService.AnalyzeAsync(file, installed);
+					await SetMainProgressPhaseAsync($"Inspecting PAK: {Path.GetFileName(file)}…");
+					var report = await Task.Run(() => PackagePreflightService.AnalyzeAsync(
+						file, installed, preparationCancellation.Token), preparationCancellation.Token);
+					unsupportedLayouts.AddRange(report.Findings);
 					reviewItems.Add(CreateModInstallReviewItem(report, installed));
 					continue;
 				}
 
 				if (ArchivePackagePreflightService.IsSupportedArchive(file))
 				{
-					var archive = await ArchivePackagePreflightService.AnalyzeAsync(file, installed);
+					await SetMainProgressPhaseAsync($"Inspecting archive: {Path.GetFileName(file)}…");
+					var archive = await Task.Run(() => ArchivePackagePreflightService.AnalyzeAsync(
+						file, installed, preparationCancellation.Token), preparationCancellation.Token);
+					unsupportedLayouts.AddRange(archive.Findings);
+					unsupportedLayouts.AddRange(archive.Packages.SelectMany(report => report.Findings));
 					if (archive.Packages.Count > 0)
 						reviewItems.AddRange(archive.Packages.Select(report => CreateModInstallReviewItem(report, installed)));
 					else
@@ -3912,12 +4330,45 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 				reviewItems.Add(CreateUninspectedModReviewItem(file));
 			}
+			preparationCancellation?.Token.ThrowIfCancellationRequested();
+		}
+		catch (OperationCanceledException) when (preparationCancellation?.IsCancellationRequested == true)
+		{
+			ShowAlert("Package review canceled. No mods were installed.", AlertType.Info, 15);
+			return false;
 		}
 		catch (Exception ex)
 		{
 			DivinityApp.Log($"Mod-install review failed:\n{ex}");
 			ReduxMessageBox.Show(owner ?? Window, "Redux could not inspect the selected packages. No mods were installed.",
 				"Could Not Review Mods", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+			return false;
+		}
+		finally
+		{
+			if (preparationCancellation != null)
+			{
+				MainProgressIsIndeterminate = false;
+				MainProgressIsActive = false;
+				CanCancelProgress = previousCanCancel;
+				if (ReferenceEquals(MainProgressToken, preparationCancellation)) MainProgressToken = previousProgressToken;
+			}
+		}
+		if (RejectUnsupportedPakLayout(unsupportedLayouts, owner ?? Window)) return false;
+
+		bool ReviewStillCurrent()
+		{
+			if (preparedArchive == null) return true;
+			var currentInstalled = CurrentInstalled();
+			var currentReports = preparedArchive.RecheckPackages(currentInstalled);
+			var currentItems = currentReports.Count > 0
+				? currentReports.Select(report => CreateModInstallReviewItem(report, currentInstalled)).ToArray()
+				: new[] { CreateUninspectedModReviewItem(files[0]) };
+			if (reviewItems.SequenceEqual(currentItems)
+				&& preparedReports.SelectMany(report => report.Findings)
+					.SequenceEqual(currentReports.SelectMany(report => report.Findings))) return true;
+			ShowAlert("The mod library changed while this package was being reviewed. Review the package again before installing.",
+				AlertType.Warning, 25);
 			return false;
 		}
 
@@ -3934,17 +4385,38 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			var dialog = new ReduxInstallReviewWindow(owner ?? Window, reviewItems, false, destination,
 				$"Destination: {destination} · {String.Join(" · ", summaryParts)}", isEntirelyCleanNewInstall);
-			if (dialog.ShowDialog() != true && !dialog.Accepted) return false;
+			if (!ShowCancellableInstallReview(dialog, cancellationToken)) return false;
 		}
+		cancellationToken.ThrowIfCancellationRequested();
+		if (!ReviewStillCurrent()) return false;
 		if (installStarting != null) await installStarting();
+		cancellationToken.ThrowIfCancellationRequested();
+		// The state callback can yield while another library refresh completes.
+		if (!ReviewStillCurrent()) return false;
 		var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 		if (!ImportMods(files.ToList(), toActiveList, nexusSource,
-			result => completion.TrySetResult(result.Errors.Count == 0 && result.Mods.Count > 0)))
+			result =>
+			{
+				if (result.WasCancelled) completion.TrySetCanceled(new CancellationToken(true));
+				else completion.TrySetResult(result.Errors.Count == 0 && result.Mods.Count > 0);
+			}, cancellationToken: cancellationToken))
 		{
 			ShowAlert("Finish the current operation before installing another package.", AlertType.Warning, 20);
 			return false;
 		}
 		return await completion.Task;
+	}
+
+	private static bool IsUnsupportedPakLayout(PackagePreflightFinding finding) =>
+		finding.Title is PakImportCompatibility.MultipartFindingTitle or ArchivePakImport.DuplicateNamesTitle;
+
+	private bool RejectUnsupportedPakLayout(IEnumerable<PackagePreflightFinding> findings, Window owner)
+	{
+		var unsupported = findings.FirstOrDefault(IsUnsupportedPakLayout);
+		if (unsupported == null) return false;
+		ReduxMessageBox.Show(owner ?? Window, unsupported.Message, unsupported.Title,
+			MessageBoxButton.OK, MessageBoxImage.Warning, MessageBoxResult.OK);
+		return true;
 	}
 
 	public static string GetInstallActionSummary(DivinityModData incoming, DivinityModData existing)
@@ -4232,10 +4704,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			ActiveMods.AddRange(addonMods.Where(x => x.CanAddToLoadOrder && x.IsActive).OrderBy(x => x.Index));
 			InactiveMods.Clear();
 			InactiveMods.AddRange(InactiveModOrderPolicy.Restore(
-				addonMods.Where(x => x.CanAddToLoadOrder && !x.IsActive), Settings.InactiveModOrder));
-			InactiveMods.AddRange(mods.Items.Where(mod =>
-				mod.IsForceLoaded && !mod.IsForceLoadedMergedMod && IsHeldOverridePath(mod.FilePath)
-				&& !InactiveMods.Contains(mod)));
+				addonMods.Where(x => x.CanAddToLoadOrder && !x.IsActive)
+					.Concat(mods.Items.Where(mod => mod.IsForceLoaded && !mod.IsForceLoadedMergedMod
+						&& IsHeldOverridePath(mod.FilePath)))
+					.Distinct(),
+				Settings.InactiveModOrder));
 
 			ApplyActiveVisualDividers(order);
 
@@ -4326,6 +4799,34 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			MainProgressWorkText = text;
 			return Unit.Default;
 		}, RxApp.MainThreadScheduler);
+	}
+
+	public async Task<Unit> SetMainProgressPhaseAsync(string text, bool isIndeterminate = true)
+	{
+		if (!String.IsNullOrWhiteSpace(text)) DivinityApp.Log($"Import phase: {text}");
+		void Update()
+		{
+			if (MainProgressToken?.IsCancellationRequested == true)
+				MainProgressWorkText = "Canceling… Waiting for the current step to stop safely.";
+			else if (!String.IsNullOrWhiteSpace(text)) MainProgressWorkText = text;
+			MainProgressIsIndeterminate = isIndeterminate;
+		}
+		var dispatcher = Application.Current?.Dispatcher;
+		if (dispatcher == null)
+		{
+			Update();
+			return Unit.Default;
+		}
+		if (dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished) return Unit.Default;
+		try
+		{
+			await dispatcher.InvokeAsync(Update);
+			// Let bindings and painting finish before archive work can occupy the caller.
+			await dispatcher.InvokeAsync(() => { }, System.Windows.Threading.DispatcherPriority.Background);
+		}
+		catch (OperationCanceledException) when (dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished) { }
+		catch (InvalidOperationException) when (dispatcher.HasShutdownStarted || dispatcher.HasShutdownFinished) { }
+		return Unit.Default;
 	}
 
 	private readonly List<string> ignoredModProjectNames = new() { "Test", "Debug" };
@@ -5328,6 +5829,48 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private bool _firstRun = true;
 
+	private bool RefreshIsBlocked => _nxmShuttingDown || IsRefreshing || MainProgressIsActive || DownloadManagerInstallIsActive;
+
+	private RxCommandUnit CreateRefreshCommand()
+	{
+		var canRefresh = this.WhenAnyValue(x => x.IsRefreshing, x => x.MainProgressIsActive,
+			x => x.DownloadManagerInstallIsActive, (refreshing, progress, installing) => !refreshing && !progress && !installing);
+		return ReactiveCommand.Create(() =>
+		{
+			// Execute can be invoked directly or queued before CanExecute changes.
+			// Refresh must never take over another operation's progress/cancellation state.
+			if (RefreshIsBlocked) return;
+			if (HasUnsavedLoadOrderChanges)
+			{
+				var result = ReduxMessageBox.Show(Window,
+					"You have unsaved changes to your active mod order. Refreshing will discard them and reload the saved order.\n\nContinue anyway?",
+					"Discard Unsaved Changes?",
+					MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+				if (result != MessageBoxResult.Yes) return;
+			}
+			// The modal confirmation pumps UI events, including operation and shutdown requests.
+			if (RefreshIsBlocked) return;
+
+			// Complete pending saves before clearing live state so a failed save can abort.
+			if (!FlushPendingSettingsBeforeRefresh()) return;
+			var profileUuidBeforeRefresh = SelectedProfile?.UUID;
+			ModUpdatesViewData?.Clear();
+			ModUpdatesViewVisible = ModUpdatesAvailable = false;
+			MainProgressTitle = !IsInitialized ? "Loading..." : "Refreshing...";
+			MainProgressValue = 0d;
+			CanCancelProgress = false;
+			MainProgressIsActive = true;
+			IsRefreshing = true;
+			// SetLoadedMods publishes the replacement cache after discovery. Clearing it
+			// here would let an empty Override projection overwrite separator membership.
+			Profiles.Clear();
+			Window.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
+			Window.TaskbarItemInfo.ProgressValue = 0;
+			RxApp.TaskpoolScheduler.ScheduleAsync((sch, token) =>
+				RefreshAsync(sch, token, profileUuidBeforeRefresh));
+		}, canRefresh, RxApp.MainThreadScheduler);
+	}
+
 	private async Task<Unit> RefreshAsync(IScheduler ctrl, CancellationToken t, string profileUuidBeforeRefresh = null)
 	{
 		DivinityApp.Log($"Refreshing data asynchronously...");
@@ -5362,11 +5905,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			try
 			{
+				PakFileSet.Recover(PathwayData.AppDataModsPath);
 				CreateOverrideOrderFileService().Recover();
 			}
 			catch (Exception ex)
 			{
-				ShowAlert($"An interrupted Override switch needs manual attention: {ex.Message}", AlertType.Danger, 30);
+				ShowAlert($"An interrupted package operation needs manual attention: {ex.Message}", AlertType.Danger, 30);
 			}
 			DivinityApp.Log("Loading mods...");
 			await SetMainProgressTextAsync("Loading mods...");
@@ -6536,6 +7080,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	{
 		DivinityApp.Log($"Main progress is complete.");
 
+		MainProgressIsIndeterminate = false;
 		MainProgressValue = 1d;
 		MainProgressWorkText = "Finished.";
 
@@ -6558,6 +7103,55 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			MainProgressIsActive = false;
 			CanCancelProgress = true;
 		}
+	}
+
+	private void StartTrackedProgressOperation(string title, Func<CancellationToken, Task> operation,
+		Action<bool, Exception> completed = null)
+	{
+		if (_nxmShuttingDown || MainProgressIsActive) return;
+		var cancellation = new CancellationTokenSource();
+		var registration = _pendingOperations.TryRegister(cancellation.Cancel);
+		if (registration == null)
+		{
+			cancellation.Dispose();
+			return;
+		}
+		MainProgressToken = cancellation;
+		MainProgressTitle = title;
+		MainProgressWorkText = "Preparing…";
+		MainProgressValue = 0;
+		MainProgressIsIndeterminate = false;
+		CanCancelProgress = true;
+		MainProgressIsActive = true;
+		RxApp.TaskpoolScheduler.ScheduleAsync(async (_, _) =>
+		{
+			var wasCanceled = false;
+			Exception failure = null;
+			try { await operation(cancellation.Token); }
+			catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { wasCanceled = true; }
+			catch (Exception ex)
+			{
+				failure = ex;
+				DivinityApp.Log($"{title} failed: {ex}");
+			}
+			finally
+			{
+				await Observable.Start(() =>
+				{
+					using var completedOperation = registration;
+					if (ReferenceEquals(MainProgressToken, cancellation)) OnMainProgressComplete();
+					else cancellation.Dispose();
+					if (!_nxmShuttingDown)
+					{
+						if (completed != null) completed(wasCanceled, failure);
+						else if (wasCanceled) ShowAlert($"{title} canceled.", AlertType.Info, 20);
+						else if (failure != null) ShowAlert($"{title} failed: {failure.Message}", AlertType.Danger, 30);
+					}
+					return Unit.Default;
+				}, RxApp.MainThreadScheduler);
+			}
+			return Disposable.Empty;
+		});
 	}
 
 	private static readonly ArchiveEncoding _archiveEncoding = new()
@@ -6597,7 +7191,17 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			//	return;
 			//}
 			MainProgressTitle = "Importing mod archive";
+			var importCancellation = new CancellationTokenSource();
+			var operationRegistration = _pendingOperations.TryRegister(importCancellation.Cancel);
+			if (operationRegistration == null)
+			{
+				importCancellation.Dispose();
+				return;
+			}
+			MainProgressToken = importCancellation;
+			CanCancelProgress = true;
 			MainProgressWorkText = $"Preparing {Path.GetFileName(dialog.FileName)}…";
+			MainProgressIsIndeterminate = false;
 			MainProgressValue = 0d;
 			MainProgressIsActive = true;
 			var result = new ImportOperationResults()
@@ -6606,26 +7210,38 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			};
 			RxApp.TaskpoolScheduler.ScheduleAsync(async (ctrl, t) =>
 			{
-				var builtinMods = DivinityApp.IgnoredMods.Items.SafeToDictionary(x => x.Folder, x => x);
-				MainProgressToken = new CancellationTokenSource();
-				await ImportArchiveAsync(builtinMods, result, dialog.FileName, false, MainProgressToken.Token);
-				if (Modules.SourceIntegrationsEnabled && UpdateHandler.Nexus.IsEnabled && result.Mods.Count > 0 && result.Mods.Any(x => x.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
+				try
 				{
-					var cacheChanged = await UpdateHandler.Nexus.Update(result.Mods, MainProgressToken.Token);
-					cacheChanged |= await NexusModsDataLoader.LoadChangelogsAsync(result.Mods, MainProgressToken.Token);
-					if (cacheChanged)
+					var builtinMods = DivinityApp.IgnoredMods.Items.SafeToDictionary(x => x.Folder, x => x);
+					await ImportOperationRunner.RunAsync([dialog.FileName], result,
+						async (file, token) => { await ImportArchiveAsync(builtinMods, result, file, false, token); },
+						async token =>
 					{
-						foreach (var mod in result.Mods.Where(mod => mod.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
+						if (Modules.SourceIntegrationsEnabled && UpdateHandler.Nexus.IsEnabled && result.Mods.Count > 0 && result.Mods.Any(x => x.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
 						{
-							UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
+							var cacheChanged = await UpdateHandler.Nexus.Update(result.Mods, token);
+							cacheChanged |= await NexusModsDataLoader.LoadChangelogsAsync(result.Mods, token);
+							if (cacheChanged)
+							{
+								foreach (var mod in result.Mods.Where(mod => mod.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START))
+								{
+									UpdateHandler.Nexus.CacheData.Mods[mod.UUID] = mod.NexusModsData;
+								}
+							}
 						}
-						await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), MainProgressToken.Token);
-					}
+					}, importCancellation.Token, () => PreserveImportedSourceLinksAsync(result));
 				}
-				await ctrl.Yield(t);
+				catch (Exception ex)
+				{
+					DivinityApp.Log($"Archive import operation failed:\n{ex}");
+					result.AddError(dialog.FileName, ex);
+				}
+				await ctrl.Yield();
 				RxApp.MainThreadScheduler.Schedule(_ =>
 				{
-					OnMainProgressComplete();
+					using var completedOperation = operationRegistration;
+					if (ReferenceEquals(MainProgressToken, importCancellation)) OnMainProgressComplete();
+					else importCancellation.Dispose();
 
 					if (result.Errors.Count > 0)
 					{
@@ -6647,24 +7263,20 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 							foreach (var order in result.Orders)
 							{
-								if (order.Name == "Current")
+								var currentOrder = ArchiveLoadOrderService.ApplyCurrent(ModOrderList, order);
+								if (currentOrder != null)
 								{
-									if (SelectedModOrder?.IsModSettings == true)
+									if (ReferenceEquals(SelectedModOrder, currentOrder))
 									{
-										SelectedModOrder.SetFrom(order);
-										LoadModOrder(SelectedModOrder);
-									}
-									else
-									{
-										var currentOrder = ModOrderList.FirstOrDefault(x => x.IsModSettings);
-										if (currentOrder != null)
-										{
-											SelectedModOrder.SetFrom(currentOrder);
-										}
+										LoadModOrder(currentOrder);
+										HasUnsavedLoadOrderChanges = true;
 									}
 								}
 								else
 								{
+									order.Name = GetUniqueImportedOrderName(DivinityModDataLoader.MakeSafeFilename(order.Name, '_'));
+									order.FilePath = Path.Combine(GetOrdersDirectory(),
+										DivinityModDataLoader.MakeSafeFilename(order.Name + ".json", '_'));
 									AddNewModOrder(order);
 								}
 							}
@@ -6683,11 +7295,17 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 							});
 						}
 						var msg = String.Join(", ", messages);
-						ShowAlert($"Imported {msg}", AlertType.Success, 20);
+						ShowAlert(result.WasCancelled ? $"Import canceled. Imported {msg} before cancellation."
+							: result.Errors.Count > 0 ? $"Imported {msg}, but some files failed. Check the log for details."
+							: $"Imported {msg}",
+							result.WasCancelled ? AlertType.Info : result.Errors.Count > 0 ? AlertType.Warning : AlertType.Success, 20);
 					}
+					else if (result.WasCancelled) ShowAlert("Import canceled.", AlertType.Info, 20);
 					else
 					{
-						ShowAlert($"Successfully extracted archive, but no mods or load orders were found", AlertType.Warning, 20);
+						ShowAlert(result.Errors.Count > 0
+							? "No mods or load orders were imported. Check the log for details."
+							: "The archive contained no mods or load orders to import.", AlertType.Warning, 20);
 					}
 				});
 				return Disposable.Empty;
@@ -6796,6 +7414,18 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		return false;
 	}
 
+	private async Task PreserveImportedSourceLinksAsync(ImportOperationResults result)
+	{
+		if (!Modules.SourceIntegrationsEnabled || result.Mods.Count == 0
+			|| !result.Mods.Any(mod => UpdateHandler.Nexus.CacheData.Mods.ContainsKey(mod.UUID))) return;
+		// The package files are already committed. Persist their provenance even when the
+		// user cancels later extraction or optional online metadata requests.
+		if (await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), CancellationToken.None)) return;
+		const string message = "Mods were installed, but their source links could not be saved. Check the log before closing Redux.";
+		result.AddError("Mod source links", new IOException(message));
+		RxApp.MainThreadScheduler.Schedule(() => ShowAlert(message, AlertType.Warning, 30));
+	}
+
 	private async Task<ReduxModDatabaseMatch> TryResolveImportedArchiveAsync(string filePath, CancellationToken cancellationToken)
 	{
 		if (!Modules.SourceIntegrationsEnabled)
@@ -6822,165 +7452,71 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private async Task<bool> ImportCompressedFileAsync(Dictionary<string, DivinityModData> builtinMods, ImportOperationResults taskResult, string filePath, string extension, bool onlyMods, CancellationToken cts, bool? toActiveList = null)
 	{
-		FileStream fileStream = null;
-		string outputDirectory = PathwayData.AppDataModsPath;
-		double taskStepAmount = ProgressMath.CalculatePhaseStep(taskResult.TotalFiles, 4);
-		bool success = false;
-		bool nexusAssociationChanged = false;
-		var jsonFiles = new Dictionary<string, string>();
+		var outputDirectory = PathwayData.AppDataModsPath;
+		var taskStepAmount = ProgressMath.CalculatePhaseStep(taskResult.TotalFiles, 4);
+		string temporaryPath = null;
+		taskResult.TotalPaks++;
 		try
 		{
+			cts.ThrowIfCancellationRequested();
+			var outputFilePath = CompressedPakDestination.Resolve(outputDirectory, filePath);
+			var outputName = Path.GetFileName(outputFilePath);
+			await SetMainProgressPhaseAsync($"Checking archive identity: {Path.GetFileName(filePath)}…");
 			var archiveDatabaseMatch = await TryResolveImportedArchiveAsync(filePath, cts);
-			fileStream = File.Open(filePath, new FileStreamOptions
+			await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read,
+				65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
+			using Stream decompressionStream = extension switch
 			{
-				Options = FileOptions.Asynchronous,
-				Mode = FileMode.Open,
-				Access = FileAccess.Read,
-				Share = FileShare.Read,
-				BufferSize = 4096
-			});
-
-			if (fileStream != null)
+				".bz2" => BZip2Stream.Create(fileStream, SharpCompress.Compressors.CompressionMode.Decompress, true),
+				".xz" => new XZStream(fileStream),
+				".zst" => new DecompressionStream(fileStream),
+				_ => throw new NotSupportedException($"Unsupported compressed package format '{extension}'.")
+			};
+			IncreaseMainProgressValue(taskStepAmount);
+			await SetMainProgressPhaseAsync($"Decompressing PAK: {outputName}…");
+			temporaryPath = CreatePakImportTemporaryPath(outputFilePath);
+			await using (var output = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write,
+				FileShare.None, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan))
 			{
-				var info = NexusModFileVersionData.FromFilePath(filePath);
-
-				await fileStream.ReadAsync(new byte[fileStream.Length], 0, (int)fileStream.Length);
-				fileStream.Position = 0;
-				IncreaseMainProgressValue(taskStepAmount);
-				System.IO.Stream decompressionStream = null;
-				TempFile tempFile = null;
-
-				try
-				{
-					switch (extension)
-					{
-						case ".bz2":
-							decompressionStream = BZip2Stream.Create(fileStream, SharpCompress.Compressors.CompressionMode.Decompress, true);
-							break;
-						case ".xz":
-							decompressionStream = new XZStream(fileStream);
-							break;
-						case ".zst":
-							decompressionStream = new DecompressionStream(fileStream);
-							break;
-					}
-					if (decompressionStream != null)
-					{
-						DivinityApp.Log($"Checking if compressed file ({filePath} => {extension}) is a pak.");
-						var outputName = Path.GetFileNameWithoutExtension(filePath);
-						if (!outputName.EndsWith(".pak", StringComparison.OrdinalIgnoreCase)) outputName += ".pak";
-						var outputFilePath = Path.Combine(outputDirectory, outputName);
-
-						tempFile = await TempFile.CreateAsync(filePath, decompressionStream, cts);
-
-						var temporaryPath = CreatePakImportTemporaryPath(outputFilePath);
-						try
-						{
-							tempFile.Stream.Position = 0;
-							using (var fs = File.Create(temporaryPath, 4096, System.IO.FileOptions.Asynchronous))
-							{
-								await tempFile.Stream.CopyToAsync(fs, 4096, cts);
-							}
-
-							var mod = await DivinityModDataLoader.LoadModDataFromPakAsync(temporaryPath, builtinMods, cts);
-							if (mod != null)
-							{
-								if (!outputName.Contains(mod.Name))
-								{
-									var nameFromMeta = $"{mod.Folder}.pak";
-									outputFilePath = Path.Combine(outputDirectory, nameFromMeta);
-								}
-
-								cts.ThrowIfCancellationRequested();
-								BackupExistingPak(outputFilePath);
-								if (File.Exists(outputFilePath))
-									File.Replace(temporaryPath, outputFilePath, null, true);
-								else
-									File.Move(temporaryPath, outputFilePath);
-								mod.FilePath = outputFilePath;
-
-								try
-								{
-									mod.LastModified = File.GetLastWriteTime(filePath);
-									mod.LastUpdated = mod.LastModified;
-								}
-								catch (Exception ex)
-								{
-									DivinityApp.Log($"Error getting pak last modified date for '{filePath}': {ex}");
-								}
-
-								success = true;
-								taskResult.TotalPaks++;
-								taskResult.Mods.Add(mod);
-								nexusAssociationChanged |= ApplyImportedNexusAssociation(mod, info, archiveDatabaseMatch);
-								await Observable.Start(() =>
-								{
-									AddImportedMod(mod, toActiveList);
-									return Unit.Default;
-								}, RxApp.MainThreadScheduler);
-							}
-						}
-						catch (Exception ex)
-						{
-							DivinityApp.Log($"Error reading decompressed file '{filePath}' as pak:\n{ex}");
-						}
-						finally { CleanupPakImportTemporaryFile(temporaryPath); }
-					}
-				}
-				catch (Exception ex)
-				{
-					DivinityApp.Log($"Error reading file '{filePath}':\n{ex}");
-				}
-				finally
-				{
-					decompressionStream?.Dispose();
-					tempFile?.Dispose();
-				}
-
-				if (nexusAssociationChanged && success)
-				{
-					//Still save cache from imported zips, even if we aren't updating
-					await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), MainProgressToken.Token);
-				}
-
-				IncreaseMainProgressValue(taskStepAmount);
+				await decompressionStream.CopyToAsync(output, 65536, cts);
 			}
+			IncreaseMainProgressValue(taskStepAmount);
+			var mod = await ValidateAndCommitImportedPakAsync(temporaryPath, outputFilePath, builtinMods, cts,
+				metadata => CompressedPakDestination.Resolve(outputDirectory, filePath, metadata));
+			try
+			{
+				mod.LastModified = File.GetLastWriteTime(filePath);
+				mod.LastUpdated = mod.LastModified;
+			}
+			catch (Exception ex)
+			{
+				DivinityApp.Log($"Error getting pak last modified date for '{filePath}': {ex}");
+			}
+			taskResult.Mods.Add(mod);
+			ApplyImportedNexusAssociation(mod, NexusModFileVersionData.FromFilePath(filePath), archiveDatabaseMatch);
+			await SetMainProgressPhaseAsync($"Updating mod list: {Path.GetFileName(mod.FilePath)}…");
+			await Observable.Start(() =>
+			{
+				AddImportedMod(mod, toActiveList);
+				return Unit.Default;
+			}, RxApp.MainThreadScheduler);
+			return true;
 		}
+		catch (OperationCanceledException) when (cts.IsCancellationRequested) { throw; }
 		catch (Exception ex)
 		{
-			DivinityApp.Log($"Error extracting package: {ex}");
-			RxApp.MainThreadScheduler.Schedule(_ =>
-			{
-				taskResult.AddError(filePath, ex);
-				ShowAlert($"Error extracting archive (check the log): {ex.Message}", AlertType.Danger, 0);
-			});
+			taskResult.AddError(filePath, ex);
+			DivinityApp.Log($"Error importing compressed package '{filePath}': {ex}");
+			RxApp.MainThreadScheduler.Schedule(() =>
+				ShowAlert($"Error extracting compressed package: {ex.Message}", AlertType.Danger, 0));
+			return false;
 		}
 		finally
 		{
-			RxApp.MainThreadScheduler.Schedule(_ => MainProgressWorkText = $"Cleaning up...");
-			fileStream?.Close();
-			IncreaseMainProgressValue(taskStepAmount);
-
-			if (!onlyMods && jsonFiles.Count > 0)
-			{
-				RxApp.MainThreadScheduler.Schedule(_ =>
-				{
-					foreach (var kvp in jsonFiles)
-					{
-						DivinityLoadOrder order = DivinityJsonUtils.SafeDeserialize<DivinityLoadOrder>(kvp.Value);
-						if (order != null)
-						{
-							taskResult.Orders.Add(order);
-							order.Name = kvp.Key;
-							DivinityApp.Log($"Imported mod order from archive: {String.Join(@"\n\t", order.Order.Select(x => x.Name))}");
-							AddNewModOrder(order);
-						}
-					}
-				});
-			}
-			IncreaseMainProgressValue(taskStepAmount);
+			CleanupPakImportTemporaryFile(temporaryPath);
+			IncreaseMainProgressValue(taskStepAmount * 2);
+			await SetMainProgressPhaseAsync(null, false);
 		}
-		return success;
 	}
 
 	private async Task<bool> ImportArchiveAsync(Dictionary<string, DivinityModData> builtinMods, ImportOperationResults taskResult, string archivePath, bool onlyMods, CancellationToken cts, bool? toActiveList = null)
@@ -6989,10 +7525,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		string outputDirectory = PathwayData.AppDataModsPath;
 		double taskStepAmount = ProgressMath.CalculatePhaseStep(taskResult.TotalFiles, 4);
 		bool success = false;
-		bool nexusAssociationChanged = false;
-		var jsonFiles = new Dictionary<string, string>();
 		try
 		{
+			await SetMainProgressPhaseAsync($"Checking archive identity: {Path.GetFileName(archivePath)}…");
 			var archiveDatabaseMatch = await TryResolveImportedArchiveAsync(archivePath, cts);
 			fileStream = File.Open(archivePath, new FileStreamOptions
 			{
@@ -7006,138 +7541,114 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			{
 				var info = NexusModFileVersionData.FromFilePath(archivePath);
 
+				await SetMainProgressPhaseAsync($"Reading archive index: {Path.GetFileName(archivePath)}…");
 				IncreaseMainProgressValue(taskStepAmount);
 				using (var archive = ArchiveFactory.OpenArchive(fileStream, _importReaderOptions))
 				{
-					foreach (var file in archive.Entries)
-					{
-						if (cts.IsCancellationRequested) return false;
-						if (!file.IsDirectory)
+					using var staged = await StagedPakArchive.ReadAsync(archive, outputDirectory, onlyMods,
+						async (file, entryStream) =>
 						{
-							if (file.Key.EndsWith(".pak", StringComparison.OrdinalIgnoreCase))
+							await SetMainProgressPhaseAsync($"Reading load order: {Path.GetFileName(file.Key)}…");
+							try
 							{
-								var outputName = Path.GetFileName(file.Key);
-								var outputFilePath = Path.Combine(outputDirectory, outputName);
-								var temporaryPath = CreatePakImportTemporaryPath(outputFilePath);
-								taskResult.TotalPaks++;
-								try
+								using var textReader = new StreamReader(entryStream, Encoding.UTF8, true, 4096, leaveOpen: true);
+								string text = await textReader.ReadToEndAsync(cts);
+								if (!String.IsNullOrWhiteSpace(text))
 								{
-									using (var entryStream = file.OpenEntryStream())
-									using (var fs = File.Create(temporaryPath, 4096, System.IO.FileOptions.Asynchronous))
+									var order = ArchiveLoadOrderService.Read(file.Key, text);
+									if (order != null)
 									{
-										await entryStream.CopyToAsync(fs, 4096, cts);
-									}
-
-									var mod = await ValidateAndCommitImportedPakAsync(temporaryPath, outputFilePath, builtinMods, cts);
-									success = true;
-									taskResult.Mods.Add(mod);
-									nexusAssociationChanged |= ApplyImportedNexusAssociation(mod, info, archiveDatabaseMatch);
-									await Observable.Start(() =>
-									{
-										AddImportedMod(mod, toActiveList);
-										return Unit.Default;
-									}, RxApp.MainThreadScheduler);
-								}
-								catch (Exception ex)
-								{
-									taskResult.AddError(outputFilePath, ex);
-									DivinityApp.Log($"Error staging or validating '{file.Key}' from archive for '{outputFilePath}':\n{ex}");
-								}
-								finally { CleanupPakImportTemporaryFile(temporaryPath); }
-							}
-							else if (file.Key.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-							{
-								using var entryStream = file.OpenEntryStream();
-								try
-								{
-									int length = (int)file.Size;
-									var result = new byte[length];
-									await entryStream.ReadAsync(result, 0, length);
-									string text = Encoding.UTF8.GetString(result);
-									if (!String.IsNullOrWhiteSpace(text))
-									{
-										jsonFiles.Add(Path.GetFileNameWithoutExtension(file.Key), text);
+										taskResult.Orders.Add(order);
+										DivinityApp.Log($"Read load order '{order.Name}' from archive '{archivePath}'.");
 									}
 								}
-								catch (Exception ex)
-								{
-									taskResult.AddError(file.Key, ex);
-									DivinityApp.Log($"Error reading json file '{file.Key}' from archive:\n{ex}");
-								}
 							}
+							catch (OperationCanceledException) { throw; }
+							catch (Exception ex)
+							{
+								taskResult.AddError(file.Key, ex);
+								DivinityApp.Log($"Error reading json file '{file.Key}' from archive:\n{ex}");
+							}
+						}, cts, name => SetMainProgressPhaseAsync($"Extracting PAK: {name}…"));
+					foreach (var temporaryPath in staged.Primaries)
+					{
+						var outputName = Path.GetFileName(temporaryPath);
+						var outputFilePath = Path.Combine(outputDirectory, outputName);
+						taskResult.TotalPaks++;
+						try
+						{
+							staged.RequireMatchingPartFolders(temporaryPath);
+							var mod = await ValidateAndCommitImportedPakAsync(temporaryPath, outputFilePath, builtinMods, cts);
+							success = true;
+							taskResult.Mods.Add(mod);
+							ApplyImportedNexusAssociation(mod, info, archiveDatabaseMatch);
+							await SetMainProgressPhaseAsync($"Updating mod list: {outputName}…");
+							await Observable.Start(() =>
+							{
+								AddImportedMod(mod, toActiveList);
+								return Unit.Default;
+							}, RxApp.MainThreadScheduler);
+						}
+						catch (OperationCanceledException) { throw; }
+						catch (Exception ex)
+						{
+							taskResult.AddError(outputFilePath, ex);
+							DivinityApp.Log($"Could not install PAK set '{outputName}': {ex}");
 						}
 					}
-				}
-
-				if (nexusAssociationChanged && success)
-				{
-					//Still save cache from imported zips, even if we aren't updating
-					await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), MainProgressToken.Token);
 				}
 
 				IncreaseMainProgressValue(taskStepAmount);
 			}
 		}
+		catch (OperationCanceledException) { throw; }
 		catch (Exception ex)
 		{
 			DivinityApp.Log($"Error extracting package: {ex}");
+			taskResult.AddError(archivePath, ex);
 			RxApp.MainThreadScheduler.Schedule(_ =>
 			{
-				taskResult.AddError(archivePath, ex);
 				ShowAlert($"Error extracting archive (check the log): {ex.Message}", AlertType.Danger, 0);
 			});
 		}
 		finally
 		{
-			RxApp.MainThreadScheduler.Schedule(_ => MainProgressWorkText = $"Cleaning up...");
-			fileStream?.Close();
-			IncreaseMainProgressValue(taskStepAmount);
-
-			if (!onlyMods && jsonFiles.Count > 0)
+			try
 			{
-				RxApp.MainThreadScheduler.Schedule(_ =>
-				{
-					foreach (var kvp in jsonFiles)
-					{
-						DivinityLoadOrder order = DivinityJsonUtils.SafeDeserialize<DivinityLoadOrder>(kvp.Value);
-						if (order != null)
-						{
-							taskResult.Orders.Add(order);
-							order.Name = kvp.Key;
-							DivinityApp.Log($"Imported mod order from archive: {String.Join(@"\n\t", order.Order.Select(x => x.Name))}");
-						}
-					}
-				});
+				fileStream?.Close();
+				IncreaseMainProgressValue(taskStepAmount);
+
+				IncreaseMainProgressValue(taskStepAmount);
 			}
-			IncreaseMainProgressValue(taskStepAmount);
+			finally
+			{
+				await SetMainProgressPhaseAsync(null, false);
+			}
 		}
 		return success;
 	}
 
-	private async Task<bool> ExportLoadOrderToArchiveAsync(string outputPath, CancellationToken t)
+	private async Task<bool> ExportLoadOrderToArchiveAsync(string outputPath, DivinityLoadOrder workingOrder,
+		IReadOnlyList<DivinityModData> modPaks, string gameDataFolder, CancellationToken t)
 	{
 		var success = false;
-		if (SelectedProfile != null && SelectedModOrder != null)
+		var expectedEntries = 1;
+		if (workingOrder != null)
 		{
-			var gameDataFolder = Path.GetFullPath(Settings.GameDataPath);
 			var appDir = DivinityApp.GetAppDirectory();
 			var tempDir = Path.Combine(appDir, "_Temp_ActiveModBackup_" + Guid.NewGuid().ToString("N"));
 			Directory.CreateDirectory(tempDir);
 
-			var workingOrder = CreateWorkingLoadOrderSnapshot();
-			var modPaks = new List<DivinityModData>(ActiveMods);
-			modPaks.AddRange(ForceLoadedMods.Where(x => !x.IsForceLoadedMergedMod));
-
-			var incrementProgress = 1d / modPaks.Count;
+			var incrementProgress = ProgressMath.CalculatePhaseStep(modPaks.Count, 1);
 
 			try
 			{
 				await AtomicFileWriter.WriteFileAsync(outputPath, async (temporaryPath, cancellationToken) =>
 				{
 				using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
-				using (var zipWriter = WriterFactory.OpenWriter(stream, ArchiveType.Zip, _exportWriterOptions))
+				await using (var zipWriter = await WriterFactory.OpenAsyncWriter(stream, ArchiveType.Zip, _exportWriterOptions, cancellationToken))
 				{
-					var orderFileName = DivinityModDataLoader.MakeSafeFilename(Path.Combine(SelectedModOrder.Name + ".json"), '_');
+					var orderFileName = DivinityModDataLoader.MakeSafeFilename(workingOrder.Name + ".json", '_');
 					var contents = JsonConvert.SerializeObject(workingOrder, Newtonsoft.Json.Formatting.Indented);
 					using (var ms = new System.IO.MemoryStream())
 					{
@@ -7145,58 +7656,42 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 						await swriter.WriteAsync(contents);
 						swriter.Flush();
 						ms.Position = 0;
-						zipWriter.Write(orderFileName, ms);
+						await zipWriter.WriteAsync(orderFileName, ms, cancellationToken: cancellationToken);
 					}
 
 					foreach (var mod in modPaks)
 					{
 						cancellationToken.ThrowIfCancellationRequested();
+						await SetMainProgressPhaseAsync($"Backing up {mod.DisplayName}…");
 						if (!mod.IsEditorMod)
 						{
-							var fileName = Path.GetFileName(mod.FilePath);
-							await WriteZipAsync(zipWriter, fileName, mod.FilePath, cancellationToken);
+							foreach (var path in PakFileSet.GetPaths(mod.FilePath))
+							{
+								await WriteZipAsync(zipWriter, Path.GetFileName(path), path, cancellationToken);
+								expectedEntries++;
+							}
 						}
 						else
 						{
-							var outputPackage = Path.ChangeExtension(Path.Combine(tempDir, mod.Folder), "pak");
-							//Imported Classic Projects
-							if (!mod.Folder.Contains(mod.UUID))
-							{
-								outputPackage = Path.ChangeExtension(Path.Combine(tempDir, mod.Folder + "_" + mod.UUID), "pak");
-							}
-
-							var sourceFolders = new List<string>();
-
-							var modsFolder = Path.Combine(gameDataFolder, $"Mods/{mod.Folder}");
-							var publicFolder = Path.Combine(gameDataFolder, $"Public/{mod.Folder}");
-
-							if (Directory.Exists(modsFolder)) sourceFolders.Add(modsFolder);
-							if (Directory.Exists(publicFolder)) sourceFolders.Add(publicFolder);
-
-							DivinityApp.Log($"Creating package for editor mod '{mod.Name}' - '{outputPackage}'.");
-
-							if (await DivinityFileUtils.CreatePackageAsync(gameDataFolder, sourceFolders, outputPackage, cancellationToken, DivinityFileUtils.IgnoredPackageFiles))
-							{
-								var fileName = Path.GetFileName(outputPackage);
-								await WriteZipAsync(zipWriter, fileName, outputPackage, cancellationToken);
-								File.Delete(outputPackage);
-							}
+							expectedEntries += await EditorModBackupService.WriteToZipAsync(zipWriter, mod, gameDataFolder, tempDir, cancellationToken);
 						}
 
-						RxApp.MainThreadScheduler.Schedule(_ =>
-							MainProgressValue = ProgressMath.AddClamped(MainProgressValue, incrementProgress));
+						await IncreaseMainProgressValueAsync(incrementProgress);
 					}
 				}
 				}, validateTemporaryFile: temporaryPath =>
 				{
 					using var archive = ZipFile.OpenRead(temporaryPath);
-					return archive.Entries.Count > 0;
+					return archive.Entries.Count == expectedEntries;
 				}, cancellationToken: t);
 
 				RxApp.MainThreadScheduler.Schedule(() =>
 				{
-					ShowAlert($"Saved active mod backup to '{outputPath}'", AlertType.Success, 15);
-					ProcessHelper.TryOpenPath(Path.GetDirectoryName(outputPath));
+					if (!_nxmShuttingDown)
+					{
+						ShowAlert($"Saved active mod backup to '{outputPath}'", AlertType.Success, 15);
+						ProcessHelper.TryOpenPath(Path.GetDirectoryName(outputPath));
+					}
 				});
 
 				success = true;
@@ -7204,24 +7699,20 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			catch (OperationCanceledException)
 			{
 				DivinityApp.Log($"Active mod backup to '{outputPath}' was cancelled.");
+				throw;
 			}
 			catch (Exception ex)
 			{
-				RxApp.MainThreadScheduler.Schedule(() =>
+				DivinityApp.Log($"Error writing active mod backup '{outputPath}': {ex}");
+				throw;
+			}
+			finally
+			{
+				try { if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true); }
+				catch (Exception ex)
 				{
-					string msg = $"Error writing active mod backup '{outputPath}': {ex}";
-					DivinityApp.Log(msg);
-					ShowAlert(msg, AlertType.Danger);
-				});
-			}
-
-			try
-			{
-				if (Directory.Exists(tempDir)) Directory.Delete(tempDir, true);
-			}
-			catch (Exception ex)
-			{
-				DivinityApp.Log($"Could not clean active-mod backup staging folder '{tempDir}': {ex}");
+					DivinityApp.Log($"Could not clean active-mod backup staging folder '{tempDir}': {ex}");
+				}
 			}
 		}
 		else
@@ -7235,18 +7726,18 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		return success;
 	}
 
-	private static Task WriteZipAsync(IWriter writer, string entryName, string source, CancellationToken token)
+	private static async Task WriteZipAsync(IAsyncWriter writer, string entryName, string source, CancellationToken token)
 	{
-		// The complete archive operation already runs on Redux's worker scheduler.
-		// Avoid dispatching every individual entry through another thread-pool task.
 		token.ThrowIfCancellationRequested();
-		writer.Write(entryName, source);
+		await using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read,
+			65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
+		await writer.WriteAsync(entryName, input, File.GetLastWriteTime(source), token);
 		token.ThrowIfCancellationRequested();
-		return Task.CompletedTask;
 	}
 
 	private void ExportLoadOrderToArchiveAs()
 	{
+		if (_nxmShuttingDown || MainProgressIsActive) return;
 		if (SelectedProfile != null && SelectedModOrder != null)
 		{
 			if (!ConfirmActiveModBackup()) return;
@@ -7275,19 +7766,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 			if (dialog.ShowDialog(Window) == true)
 			{
-				MainProgressTitle = "Backing up active mods...";
-				MainProgressWorkText = "";
-				MainProgressValue = 0d;
-				MainProgressIsActive = true;
-
-				RxApp.TaskpoolScheduler.ScheduleAsync(async (ctrl, t) =>
-				{
-					MainProgressToken = new CancellationTokenSource();
-					await ExportLoadOrderToArchiveAsync(dialog.FileName, MainProgressToken.Token);
-					await ctrl.Yield();
-					RxApp.MainThreadScheduler.Schedule(_ => OnMainProgressComplete());
-					return Disposable.Empty;
-				});
+				var workingOrder = CreateWorkingLoadOrderSnapshot();
+				var modPaks = ActiveMods.Concat(ForceLoadedMods.Where(mod => !mod.IsForceLoadedMergedMod)).ToArray();
+				var gameDataFolder = Settings.GameDataPath;
+				StartTrackedProgressOperation("Backing up active mods",
+					token => ExportLoadOrderToArchiveAsync(dialog.FileName, workingOrder, modPaks, gameDataFolder, token));
 			}
 		}
 		else
@@ -9911,8 +10394,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	public void DiscardUnsavedLoadOrderPresentationChanges()
 	{
-		_deferSave?.Dispose();
-		_deferSave = null;
+		_deferredSettingsSave?.Cancel();
 		if (_savedVisualDividerBaseline != null)
 		{
             // Inactive organization is autosaved independently of the active load order.
@@ -11233,13 +11715,17 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public async Task<bool> ImportModsWithoutReviewAsync(
 		IReadOnlyList<string> files,
 		bool? toActiveList,
-		NexusModManagerLink nexusSource = null)
+		NexusModManagerLink nexusSource = null,
+		CancellationToken cancellationToken = default)
 	{
 		if (files == null || files.Count == 0) return false;
 		var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 		if (!ImportMods(files, toActiveList, nexusSource,
-			result => completion.TrySetResult(result.Errors.Count == 0 && result.Mods.Count > 0),
-			showCompletionFeedback: false)) return false;
+			result =>
+			{
+				if (result.WasCancelled) completion.TrySetCanceled(new CancellationToken(true));
+				else completion.TrySetResult(result.Errors.Count == 0 && result.Mods.Count > 0);
+			}, showCompletionFeedback: false, cancellationToken: cancellationToken)) return false;
 		return await completion.Task;
 	}
 
@@ -11356,6 +11842,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private void ExtractSelectedMods_ChooseFolder()
 	{
+		if (_nxmShuttingDown || MainProgressIsActive) return;
 		var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog
 		{
 			ShowNewFolderButton = true,
@@ -11363,108 +11850,67 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Description = "Select folder to extract mod(s) to...",
 			SelectedPath = GetInitialStartingDirectory(Settings.LastExtractOutputPath)
 		};
+		if (dialog.ShowDialog(Window) != true) return;
+		Settings.LastExtractOutputPath = dialog.SelectedPath;
+		SaveSettings();
+		var paths = SelectedPakMods.Select(mod => mod.FilePath).ToArray();
+		StartPakExtraction(paths, dialog.SelectedPath, $"Extracting {paths.Length} mods");
+	}
 
-		if (dialog.ShowDialog(Window) == true)
+	private void StartPakExtraction(IReadOnlyList<string> paths, string outputDirectory, string title)
+	{
+		if (paths.Count == 0) return;
+		var successes = 0;
+		var openOutputPath = outputDirectory;
+		StartTrackedProgressOperation(title, async token =>
 		{
-			Settings.LastExtractOutputPath = dialog.SelectedPath;
-			SaveSettings();
-
-			string outputDirectory = dialog.SelectedPath;
-			DivinityApp.Log($"Extracting selected mods to '{outputDirectory}'.");
-
-			int totalWork = SelectedPakMods.Count;
-			double taskStepAmount = 1.0 / totalWork;
-			MainProgressTitle = $"Extracting {totalWork} mods...";
-			MainProgressValue = 0d;
-			MainProgressToken = new CancellationTokenSource();
-			CanCancelProgress = true;
-			MainProgressIsActive = true;
-
-			var openOutputPath = dialog.SelectedPath;
-
-			RxApp.TaskpoolScheduler.ScheduleAsync(async (ctrl, t) =>
+			foreach (var path in paths)
 			{
-				int successes = 0;
-				foreach (var path in SelectedPakMods.Select(x => x.FilePath))
+				token.ThrowIfCancellationRequested();
+				var pakName = Path.GetFileNameWithoutExtension(path);
+				await SetMainProgressPhaseAsync($"Extracting {pakName}…");
+				var destination = paths.Count == 1 && String.Equals(
+					Path.GetFileName(Path.TrimEndingDirectorySeparator(outputDirectory)), pakName, StringComparison.OrdinalIgnoreCase)
+					? outputDirectory : Path.Combine(outputDirectory, pakName);
+				if (await DivinityFileUtils.ExtractPackageAsync(path, destination, token))
 				{
-					if (MainProgressToken.IsCancellationRequested) break;
-					try
-					{
-						//Put each pak into its own folder
-						string pakName = Path.GetFileNameWithoutExtension(path);
-						RxApp.MainThreadScheduler.Schedule(_ => MainProgressWorkText = $"Extracting {pakName}...");
-						string destination = Path.Combine(outputDirectory, pakName);
-
-						//In case the foldername == the pak name and we're only extracting one pak
-						if (totalWork == 1 && Path.GetDirectoryName(outputDirectory).Equals(pakName))
-						{
-							destination = outputDirectory;
-						}
-						var success = await DivinityFileUtils.ExtractPackageAsync(path, destination, MainProgressToken.Token);
-						if (success)
-						{
-							successes += 1;
-							if (totalWork == 1)
-							{
-								openOutputPath = destination;
-							}
-						}
-					}
-					catch (Exception ex)
-					{
-						DivinityApp.Log($"Error extracting package: {ex}");
-					}
-					IncreaseMainProgressValue(taskStepAmount);
+					successes++;
+					if (paths.Count == 1) openOutputPath = destination;
 				}
-
-				await ctrl.Yield();
-				RxApp.MainThreadScheduler.Schedule(_ => OnMainProgressComplete());
-
-				RxApp.MainThreadScheduler.Schedule(() =>
-				{
-					if (successes >= totalWork)
-					{
-						ShowAlert($"Successfully extracted all selected mods to '{dialog.SelectedPath}'", AlertType.Success, 20);
-						ProcessHelper.TryOpenPath(openOutputPath);
-					}
-					else
-					{
-						ShowAlert($"Error occurred when extracting selected mods to '{dialog.SelectedPath}'", AlertType.Danger, 30);
-					}
-				});
-
-				return Disposable.Empty;
-			});
-		}
+				IncreaseMainProgressValue(ProgressMath.CalculatePhaseStep(paths.Count, 1));
+			}
+		}, (wasCanceled, failure) =>
+		{
+			if (wasCanceled)
+				ShowAlert($"Extraction canceled. {successes} of {paths.Count} packages completed; files already extracted remain in the output folder.", AlertType.Info, 25);
+			else if (failure != null || successes != paths.Count)
+				ShowAlert($"Extracted {successes} of {paths.Count} packages. Check the log for failures.", AlertType.Warning, 30);
+			else
+			{
+				ShowAlert($"Extracted {successes} packages to '{openOutputPath}'.", AlertType.Success, 20);
+				ProcessHelper.TryOpenPath(openOutputPath);
+			}
+		});
 	}
 
 	private void ExtractSelectedMods_Start()
 	{
-
-		if (SelectedPakMods.Count == 1)
-		{
+		if (_nxmShuttingDown || MainProgressIsActive || SelectedPakMods.Count == 0) return;
+		if (SelectedPakMods.Count == 1
+			|| ReduxMessageBox.Show(Window, $"Extract the following mods?\n'{String.Join("\n", SelectedPakMods.Select(mod => mod.DisplayName))}'", "Extract Mods?",
+				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)
 			ExtractSelectedMods_ChooseFolder();
-		}
-		else
-		{
-			MessageBoxResult result = ReduxMessageBox.Show(Window, $"Extract the following mods?\n'{String.Join("\n", SelectedPakMods.Select(x => $"{x.DisplayName}"))}", "Extract Mods?",
-			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
-			if (result == MessageBoxResult.Yes)
-			{
-				ExtractSelectedMods_ChooseFolder();
-			}
-		}
 	}
 
 	private void ExtractSelectedAdventure()
 	{
-		if (SelectedAdventureMod == null || SelectedAdventureMod.IsEditorMod || SelectedAdventureMod.IsLarianMod || !File.Exists(SelectedAdventureMod.FilePath))
+		if (_nxmShuttingDown || MainProgressIsActive) return;
+		var adventure = SelectedAdventureMod;
+		if (adventure == null || adventure.IsEditorMod || adventure.IsLarianMod || !File.Exists(adventure.FilePath))
 		{
-			var displayName = SelectedAdventureMod != null ? SelectedAdventureMod.DisplayName : "";
-			ShowAlert($"Current adventure mod '{displayName}' is not extractable", AlertType.Warning, 30);
+			ShowAlert($"Current adventure mod '{adventure?.DisplayName}' is not extractable", AlertType.Warning, 30);
 			return;
 		}
-
 		var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog
 		{
 			ShowNewFolderButton = true,
@@ -11472,65 +11918,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Description = "Select folder to extract mod to...",
 			SelectedPath = GetInitialStartingDirectory(Settings.LastExtractOutputPath)
 		};
-
-		if (dialog.ShowDialog(Window) == true)
-		{
-			Settings.LastExtractOutputPath = dialog.SelectedPath;
-			SaveSettings();
-
-			string outputDirectory = dialog.SelectedPath;
-			DivinityApp.Log($"Extracting adventure mod to '{outputDirectory}'.");
-
-			MainProgressTitle = $"Extracting {SelectedAdventureMod.DisplayName}...";
-			MainProgressValue = 0d;
-			MainProgressToken = new CancellationTokenSource();
-			CanCancelProgress = true;
-			MainProgressIsActive = true;
-
-			var openOutputPath = dialog.SelectedPath;
-
-			RxApp.TaskpoolScheduler.ScheduleAsync(async (ctrl, t) =>
-			{
-				if (MainProgressToken.IsCancellationRequested) return Disposable.Empty;
-				var path = SelectedAdventureMod.FilePath;
-				var success = false;
-				try
-				{
-					string pakName = Path.GetFileNameWithoutExtension(path);
-					RxApp.MainThreadScheduler.Schedule(_ => MainProgressWorkText = $"Extracting {pakName}...");
-					string destination = Path.Combine(outputDirectory, pakName);
-					if (Path.GetDirectoryName(outputDirectory).Equals(pakName))
-					{
-						destination = outputDirectory;
-					}
-					openOutputPath = destination;
-					success = await DivinityFileUtils.ExtractPackageAsync(path, destination, MainProgressToken.Token);
-				}
-				catch (Exception ex)
-				{
-					DivinityApp.Log($"Error extracting package: {ex}");
-				}
-				IncreaseMainProgressValue(1);
-
-				await ctrl.Yield();
-				RxApp.MainThreadScheduler.Schedule(_ => OnMainProgressComplete());
-
-				RxApp.MainThreadScheduler.Schedule(() =>
-				{
-					if (success)
-					{
-						ShowAlert($"Successfully extracted adventure mod to '{dialog.SelectedPath}'", AlertType.Success, 20);
-						ProcessHelper.TryOpenPath(openOutputPath);
-					}
-					else
-					{
-						ShowAlert($"Error occurred when extracting adventure mod to '{dialog.SelectedPath}'", AlertType.Danger, 30);
-					}
-				});
-
-				return Disposable.Empty;
-			});
-		}
+		if (dialog.ShowDialog(Window) != true) return;
+		Settings.LastExtractOutputPath = dialog.SelectedPath;
+		SaveSettings();
+		StartPakExtraction([adventure.FilePath], dialog.SelectedPath, $"Extracting {adventure.DisplayName}");
 	}
 
 	private int SortModOrder(DivinityLoadOrderEntry a, DivinityLoadOrderEntry b)
@@ -12359,38 +12750,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			canRenameOrder);
 		Keys.ImportMod.AddAction(OpenModImportDialog);
 
-		var canRefreshObservable = this.WhenAnyValue(x => x.IsRefreshing, b => !b).StartWith(true);
-		RefreshCommand = ReactiveCommand.Create(() =>
-		{
-			// Refreshing rebuilds Active/Inactive purely from what's saved on disk (modsettings.lsx),
-			// so any drag-and-drop changes the user hasn't saved/exported yet would otherwise be
-			// silently discarded with no warning.
-			if (HasUnsavedLoadOrderChanges)
-			{
-				var result = ReduxMessageBox.Show(Window,
-					"You have unsaved changes to your active mod order. Refreshing will discard them and reload the saved order.\n\nContinue anyway?",
-					"Discard Unsaved Changes?",
-					MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
-				if (result != MessageBoxResult.Yes) return;
-			}
-
-			var profileUuidBeforeRefresh = SelectedProfile?.UUID;
-			ModUpdatesViewData?.Clear();
-			ModUpdatesViewVisible = ModUpdatesAvailable = false;
-			MainProgressTitle = !IsInitialized ? "Loading..." : "Refreshing...";
-			MainProgressValue = 0d;
-			CanCancelProgress = false;
-			MainProgressIsActive = true;
-			mods.Clear();
-			Profiles.Clear();
-			Window.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
-			Window.TaskbarItemInfo.ProgressValue = 0;
-			IsRefreshing = true;
-			RxApp.TaskpoolScheduler.ScheduleAsync((sch, token) =>
-				RefreshAsync(sch, token, profileUuidBeforeRefresh));
-		}, canRefreshObservable, RxApp.MainThreadScheduler);
-
-		Keys.Refresh.AddAction(() => RefreshCommand.Execute(Unit.Default).Subscribe(), canRefreshObservable);
+		RefreshCommand = CreateRefreshCommand();
+		Keys.Refresh.AddAction(() => RefreshCommand.Execute(Unit.Default).Subscribe(), RefreshCommand.CanExecute);
 
 		var canRefreshModUpdates = this.WhenAnyValue(x => x.IsRefreshing, x => x.IsRefreshingModUpdates, x => x.AppSettingsLoaded, (b1, b2, b3) => !b1 && !b2 && b3).StartWith(false);
 
@@ -12500,9 +12861,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		IObservable<bool> canCancelProgress = this.WhenAnyValue(x => x.CanCancelProgress).StartWith(true);
 		CancelMainProgressCommand = ReactiveCommand.Create(() =>
 		{
-			if (MainProgressToken != null && MainProgressToken.Token.CanBeCanceled)
+			if (MainProgressToken != null && !MainProgressToken.IsCancellationRequested)
 			{
-				MainProgressToken.Token.Register(() => { MainProgressIsActive = false; });
+				CanCancelProgress = false;
+				MainProgressWorkText = "Canceling… Waiting for the current step to stop safely.";
 				MainProgressToken.Cancel();
 			}
 		}, canCancelProgress);

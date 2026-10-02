@@ -11,6 +11,47 @@ namespace Redux.Core.Tests;
 
 internal sealed class NxmDownloadManagerTests
 {
+	public void CancelledLocalIntakeAfterCopyRemovesUncommittedInboxFile()
+	{
+		var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "ReduxLocalIntakeTests", Guid.NewGuid().ToString("N"));
+		var downloads = System.IO.Path.Combine(root, "Downloads");
+		System.IO.Directory.CreateDirectory(downloads);
+		var source = System.IO.Path.Combine(root, "Example.pak");
+		System.IO.File.WriteAllBytes(source, [1, 2, 3, 4]);
+		const string sha256 = "9f64a747e1b97f131fabb6b447296c9b6f0201e79fb3c5356e6c77e89b6a806a";
+		using var cancellation = new CancellationTokenSource();
+		var store = new ControllableStore();
+		var manager = new NxmDownloadManager(downloads, store, new ResolverFactory(),
+			new FakeTransfer(), 4, () => false, (_, _) => Task.FromResult(true));
+		var copiedBeforeCancellation = false;
+		store.BeforeWrite = token =>
+		{
+			var copied = System.IO.Directory.GetFiles(downloads).Single();
+			RegressionAssert.SequenceEqual(new byte[] { 1, 2, 3, 4 }, System.IO.File.ReadAllBytes(copied));
+			copiedBeforeCancellation = true;
+			cancellation.Cancel();
+			token.ThrowIfCancellationRequested();
+		};
+		try
+		{
+			RegressionAssert.Throws<OperationCanceledException>(() => manager.AddLocalPackageAsync(
+				source, sha256, "Example", "PAK mod", "Inactive Mods", "Ready",
+				cancellationToken: cancellation.Token).GetAwaiter().GetResult());
+			RegressionAssert.True(copiedBeforeCancellation);
+			RegressionAssert.Equal(0, manager.Items.Count);
+			RegressionAssert.Equal(0, System.IO.Directory.GetFiles(downloads).Length);
+			RegressionAssert.SequenceEqual(new byte[] { 1, 2, 3, 4 }, System.IO.File.ReadAllBytes(source));
+
+			// Cancellation releases both intake/state gates so a later attempt works.
+			store.BeforeWrite = null;
+			manager.AddLocalPackageAsync(source, sha256, "Example", "PAK mod", "Inactive Mods", "Ready")
+				.WaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+			RegressionAssert.Equal(1, manager.Items.Count);
+			RegressionAssert.Equal(1, System.IO.Directory.GetFiles(downloads).Length);
+		}
+		finally { System.IO.Directory.Delete(root, true); }
+	}
+
 	public void RetainedNexusPackageReentersInboxWithPublicSourceIdentity()
 	{
 		var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "ReduxLocalIntakeTests", Guid.NewGuid().ToString("N"));
@@ -781,12 +822,14 @@ internal sealed class NxmDownloadManagerTests
 		public ControllableStore() { }
 		public ControllableStore(IEnumerable<NxmDownloadItem> items) => _items = items.ToList();
 		public bool FailWrites { get; set; }
+		public Action<CancellationToken>? BeforeWrite { get; set; }
 		public Task<IReadOnlyList<NxmDownloadItem>> LoadAsync(CancellationToken cancellationToken = default) =>
 			Task.FromResult<IReadOnlyList<NxmDownloadItem>>(_items);
 		public Task<IReadOnlyList<NxmDownloadItem>> ReconcileAsync(CancellationToken cancellationToken = default) => LoadAsync(cancellationToken);
 		public Task SaveAsync(IEnumerable<NxmDownloadItem> items, CancellationToken cancellationToken = default)
 		{
 			if (FailWrites) return Task.FromException(new System.IO.IOException("simulated manifest failure"));
+			BeforeWrite?.Invoke(cancellationToken);
 			_items = items.ToList();
 			return Task.CompletedTask;
 		}

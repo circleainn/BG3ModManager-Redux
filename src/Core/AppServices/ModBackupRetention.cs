@@ -31,11 +31,15 @@ public static class ModBackupRetention
 			var files = Snapshot(directory);
 			var remaining = files.Sum(file => file.Bytes);
 			var candidates = new List<Backup>();
-			foreach (var file in files)
+			var groups = PakFileSet.GetPrimaries(files.Select(file => file.Path))
+				.Select(primary => PakFileSet.GetPaths(primary, false).Select(path => files.FirstOrDefault(file => file.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
+					.Where(file => file != null).ToArray())
+				.OrderBy(group => group.Min(file => file.CreatedUtc));
+			foreach (var group in groups)
 			{
 				if (maximumBytes > 0 && remaining <= maximumBytes) break;
-				candidates.Add(file);
-				remaining -= file.Bytes;
+				candidates.AddRange(group);
+				remaining -= group.Sum(file => file.Bytes);
 			}
 			return DeleteReviewed(directory, candidates);
 		}
@@ -47,10 +51,18 @@ public static class ModBackupRetention
 		{
 			var current = Snapshot(directory).ToDictionary(file => file.Path, StringComparer.OrdinalIgnoreCase);
 			var deleted = 0; long freed = 0; var failed = 0;
-			foreach (var file in reviewed.DistinctBy(file => file.Path, StringComparer.OrdinalIgnoreCase))
+			var selected = reviewed.DistinctBy(file => file.Path, StringComparer.OrdinalIgnoreCase).ToDictionary(file => file.Path, StringComparer.OrdinalIgnoreCase);
+			var blocked = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+			foreach (var primary in PakFileSet.GetPrimaries(current.Keys))
+			{
+				var group = PakFileSet.GetPaths(primary, false).Where(current.ContainsKey).ToArray();
+				if (group.Any(path => !selected.TryGetValue(path, out var item) || item != current[path]))
+					blocked.UnionWith(group);
+			}
+			foreach (var file in selected.Values)
 			{
 				// Delete only the same top-level files that were reviewed, never newly created replacements.
-				if (!current.TryGetValue(file.Path, out var actual) || actual != file) continue;
+				if (blocked.Contains(file.Path) || !current.TryGetValue(file.Path, out var actual) || actual != file) continue;
 				try { File.Delete(file.Path); deleted++; freed += file.Bytes; }
 				catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { failed++; }
 			}

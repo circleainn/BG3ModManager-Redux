@@ -485,6 +485,8 @@
 					IconBrush="{DynamicResource ReduxAccentHoverBrush}"
 					IconKey="package"
 					ProgressValue="{Binding MainProgressValue}"
+					IsIndeterminate="{Binding MainProgressIsIndeterminate}"
+					ReduceMotion="{Binding Settings.ReduceMotion}"
 					Status="{Binding MainProgressWorkText}"
 					Title="{Binding MainProgressTitle}" />
 			</xc:BusyIndicator.BusyContent>

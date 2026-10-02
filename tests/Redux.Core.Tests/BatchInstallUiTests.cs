@@ -20,7 +20,7 @@ public sealed class BatchInstallUiTests
 		RegressionAssert.Equal("Normal", MainWindowViewModel.GetDownloadManagerStatus([ready]));
 	}
 
-	public void ProgressCannotCloseDuringWorkAndReleasesAfterFailure()
+	public void CloseRequestsCancellationAndReleasesAfterFailure()
 	{
 		var progress = new ReduxInstallProgressWindow(null!);
 		var ran = false;
@@ -29,8 +29,11 @@ public sealed class BatchInstallUiTests
 			progress.Run(async () =>
 			{
 				ran = true;
+				RegressionAssert.False(progress.CancellationToken.IsCancellationRequested);
 				progress.Close();
+				RegressionAssert.True(progress.CancellationToken.IsCancellationRequested);
 				RegressionAssert.True(progress.IsVisible);
+				progress.Close();
 				await progress.ReportAsync("Checking package", "Example mod", 1, 2);
 				throw new InvalidOperationException("fixture failure");
 			});
@@ -38,6 +41,30 @@ public sealed class BatchInstallUiTests
 		}
 		catch (InvalidOperationException ex) when (ex.Message == "fixture failure") { }
 		RegressionAssert.True(ran);
+		RegressionAssert.False(progress.IsVisible);
+	}
+
+	public void CanceledBatchWaitsForWorkerCleanupBeforeClosing()
+	{
+		var progress = new ReduxInstallProgressWindow(null!);
+		var cleanedUp = false;
+		try
+		{
+			progress.Run(async () =>
+			{
+				try
+				{
+					progress.Close();
+					await Task.Delay(1);
+					RegressionAssert.True(progress.IsVisible);
+					progress.CancellationToken.ThrowIfCancellationRequested();
+				}
+				finally { cleanedUp = true; }
+			});
+			throw new Exception("Expected cancellation");
+		}
+		catch (OperationCanceledException) { }
+		RegressionAssert.True(cleanedUp);
 		RegressionAssert.False(progress.IsVisible);
 	}
 }

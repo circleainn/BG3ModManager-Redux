@@ -48,6 +48,10 @@ public static class PackagePreflightService
 		}
 
 		cancellationToken.ThrowIfCancellationRequested();
+		var unsupportedLayout = PakImportCompatibility.GetUnsupportedLayoutFinding(normalizedPath);
+		if (unsupportedLayout != null)
+			return new PackagePreflightReport(normalizedPath, null, 0, 0, [unsupportedLayout]);
+
 		var builtins = DivinityApp.IgnoredMods.Items
 			.Where(mod => mod != null && !String.IsNullOrWhiteSpace(mod.Folder))
 			.GroupBy(mod => mod.Folder, StringComparer.OrdinalIgnoreCase)

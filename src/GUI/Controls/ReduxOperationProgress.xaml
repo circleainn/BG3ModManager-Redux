@@ -42,6 +42,7 @@
 				<TextBlock Margin="0,3,0,0"
 					Style="{DynamicResource Redux.Text.Metadata}"
 					Text="{Binding Status, ElementName=Root}"
+					ToolTip="{Binding Status, ElementName=Root}"
 					TextTrimming="CharacterEllipsis" />
 			</StackPanel>
 		</Grid>
@@ -51,17 +52,17 @@
 				<ColumnDefinition Width="*" />
 				<ColumnDefinition Width="Auto" />
 			</Grid.ColumnDefinitions>
-			<ProgressBar Height="8"
+			<ProgressBar x:Name="OperationProgressBar" Height="8"
 				Margin="0,0,12,0"
 				VerticalAlignment="Center"
 				Maximum="1"
+				IsIndeterminate="{Binding IsIndeterminate, ElementName=Root}"
 				Style="{DynamicResource ReduxProgressBarStyle}"
 				Value="{Binding ProgressValue, ElementName=Root}" />
-			<TextBlock Grid.Column="1"
+			<TextBlock x:Name="ProgressLabel" Grid.Column="1"
 				MinWidth="34"
 				VerticalAlignment="Center"
 				Style="{DynamicResource Redux.Text.Metadata}"
-				Text="{Binding ProgressValue, ElementName=Root, StringFormat={}{0:P0}}"
 				TextAlignment="Right" />
 		</Grid>
 

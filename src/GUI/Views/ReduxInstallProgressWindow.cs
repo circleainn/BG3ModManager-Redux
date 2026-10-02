@@ -15,6 +15,7 @@ public sealed class ReduxInstallProgressWindow : Window
 	private readonly TextBlock _status = new() { TextWrapping = TextWrapping.Wrap };
 	private readonly ProgressBar _progress = new() { Height = 6, Margin = new Thickness(0, 16, 0, 12), IsIndeterminate = true };
 	private bool _finished;
+    private readonly Button _cancel = new() { Content = "Cancel", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 12, 0, 0) };
     private readonly CancellationTokenSource _cancellation = new();
     public CancellationToken CancellationToken => _cancellation.Token;
 
@@ -51,21 +52,31 @@ public sealed class ReduxInstallProgressWindow : Window
 		AutomationProperties.SetName(activity, exportingSaves ? "Exporting save files" : "Current package is being processed");
 		body.Children.Add(activity);
 		body.Children.Add(new TextBlock { Text = exportingSaves ? "Your saves remain in place." : "Please wait while Redux checks and installs your packages.", TextWrapping = TextWrapping.Wrap });
-		if (exportingSaves)
-        {
-            var cancel = new Button { Content = "Cancel", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 12, 0, 0) };
-            cancel.SetResourceReference(StyleProperty, "ReduxSecondaryActionButtonStyle");
-            cancel.Click += (_, _) => { _cancellation.Cancel(); cancel.IsEnabled = false; _status.Text = "Canceling…"; };
-            body.Children.Add(cancel);
-        }
+        _cancel.SetResourceReference(StyleProperty, "ReduxSecondaryActionButtonStyle");
+        _cancel.Click += (_, _) => RequestCancellation();
+        body.Children.Add(_cancel);
         root.Children.Add(body);
 		Content = root;
-		Closing += (_, e) => { if (!_finished) { e.Cancel = true; if (exportingSaves) _cancellation.Cancel(); } };
+		Closing += (_, e) => { if (!_finished) { e.Cancel = true; RequestCancellation(); } };
 	}
+
+    public void RequestCancellation()
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.BeginInvoke(new Action(RequestCancellation));
+            return;
+        }
+        if (_finished || _cancellation.IsCancellationRequested) return;
+        _cancel.IsEnabled = false;
+        _status.Text = "Canceling… Waiting for the current step to stop safely.";
+        _cancellation.Cancel();
+    }
 
 	public async Task ReportAsync(string phase, string name, int current, int total)
 	{
-		_status.Text = $"{phase} {current} of {total}\n{name}";
+		if (!_cancellation.IsCancellationRequested)
+			_status.Text = $"{phase} {current} of {total}\n{name}";
 		_progress.IsIndeterminate = false;
 		_progress.Maximum = Math.Max(1, total);
 		_progress.Value = Math.Max(0, current - 1);

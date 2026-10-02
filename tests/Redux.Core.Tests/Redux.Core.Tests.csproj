@@ -8,6 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Fixtures\SolidPakWithTrailingData.7z" />
 		<ProjectReference Include="..\..\src\Core\DivinityModManagerCore.csproj" />
 		<ProjectReference Include="..\..\src\GUI\GUI.csproj" />
 		<ProjectReference Include="..\..\src\Updater\ReduxUpdater.csproj" />

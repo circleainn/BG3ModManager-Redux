@@ -1,9 +1,45 @@
-﻿# Changelog
+# Changelog
 
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
 ## Unreleased
+
+## 0.1.0-alpha.16.5.5 — 2026-10-02
+
+- Disable Refresh during file operations and batch installs, preserving cancellation and shutdown cleanup even if a refresh command was already queued.
+- Let manual PAK extraction and active-mod backups cancel safely, and wait for their cleanup before closing Redux.
+- Preserve existing extracted files when a member fails or is canceled; reject unsafe package paths before writing output.
+- Cancel ZIP backups during package copying, preserve the previous backup on failure, and reject incomplete editor-mod backups.
+- Validate editor-mod backup paths and keep temporary PAKs inside staging; report missing project folders instead of backing up an empty package.
+- Reject archives containing PAK variants with the same destination filename before installing any entries.
+- Preserve companion PAK placement when updating or retrying a hybrid native package.
+- Keep failed package deletions visible as Removal incomplete, with Retry Delete available after restart.
+- Wait for companion PAKs before marking hybrid native packages installed or removing their archives; keep partially installed packages available for retry.
+- Prevent Download Manager removal and clear actions from racing with package review and installation.
+- Validate compressed PAK destination names and use the shared backup/install path, preserving Override identity and reporting failed imports.
+- Decompress directly to the staging file and release temporary files immediately after failed or canceled copies.
+- Keep completed download data available for retry when cancellation interrupts checksum verification, without downloading it again.
+- Import archived Current load orders into the correct workspace entry without overwriting another named order, and ignore unrelated JSON metadata.
+- Reject malformed archived load orders within the import result and report partial failures instead of treating them as successful extraction.
+- Wait for canceled imports, archive reviews, and local package intake to finish cleanup before closing Redux.
+- Preserve Nexus source links for mods already installed when a later archive entry fails or an import is canceled.
+- Stop solid-7z extraction after the last needed entry and stop draining data after a failed extraction callback. Normal mod imports skip bundled load-order JSON.
+- Inspect each package once during Install All review, then verify its recorded bytes again before installation and protect the archive until installation finishes.
+- Stream compressed single-file packages without allocating an unused buffer the size of the archive.
+- Read solid 7z archives sequentially during inspection and import, avoiding repeated decompression of earlier entries.
+- Let Install All's close button cancel work, keep progress visible until cleanup finishes, and preserve unfinished downloads for retry.
+- Reuse a verified archive inspection during Download Manager review while keeping the archive protected from changes until import finishes.
+- Install complete multipart PAK sets together, keep their backups and Override moves together, and recover interrupted replacements. Loose sets added to Download Manager retain and verify every part.
+- Stop LSLib LZ4 decoding when package inspection or extraction is canceled, including solid PAKs.
+- Save pending inactive-order and separator edits before Refresh reloads settings; keep the current organization if that save fails.
+- Restore remembered window placement and explicit gradient/font choices, including returning those appearance choices to theme defaults.
+- Publish a mod scan in one batch, avoiding repeated Override pane rebuilds while large libraries load.
+- Show and log the current import phase during hashing, extraction, validation, and backup/install work; use activity status when a percentage is unavailable.
+- Restore saved Inactive and Override mod ordering on startup, including held Overrides placed between other inactive mods.
+- Open web links in update notes, Help, and What's New in the default browser.
+- Show Download Manager package counts, local intake progress, and the number of inputs that failed or were added or already present. Main-window package drops open Download Manager before intake begins.
+- Wait until the main window is visible before showing duplicate Toolkit project warnings or duplicate PAK review during startup.
 
 ## 0.1.0-alpha.16.5.4 — 2026-09-27
 

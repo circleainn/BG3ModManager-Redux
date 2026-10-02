@@ -424,8 +424,9 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 						System.Windows.MessageBoxImage.Warning, System.Windows.MessageBoxResult.OK);
 					return;
 				}
-				await ViewModel.AddLocalPackagesToDownloadManagerAsync(packageFiles);
 				await OpenNexusDownloadsAsync();
+				await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
+				await ViewModel.AddLocalPackagesToDownloadManagerAsync(packageFiles);
 				return;
 			}
 
@@ -590,11 +591,6 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		}
 	}
 
-	private static System.Windows.Shell.TaskbarItemProgressState BoolToTaskbarItemProgressState(bool b)
-	{
-		return b ? System.Windows.Shell.TaskbarItemProgressState.Normal : System.Windows.Shell.TaskbarItemProgressState.None;
-	}
-
 	protected override System.Windows.Automation.Peers.AutomationPeer OnCreateAutomationPeer()
 	{
 		return new CachedAutomationPeer(this);
@@ -687,6 +683,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		// Closing. Cancel this first attempt before opening it so choosing No
 		// cannot leave a hidden main window with a live Redux process.
 		e.Cancel = true;
+		if (_nxmShutdownInProgress) return;
 		if (!ConfirmDiscardUnsavedLoadOrder())
 		{
 			if (_updateRestartRequested)
@@ -698,7 +695,6 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 			}
 			return;
 		}
-		if (_nxmShutdownInProgress) return;
 		_nxmShutdownInProgress = true;
 		// Always leave the original WPF closing event before pausing the queue or
 		// opening any failure UI. A synchronously completed shutdown must not call
@@ -723,9 +719,9 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 					"The update was not applied because Redux could not safely finish closing. Try again after the download queue is saved.");
 				_updateRestartRequested = false;
 			}
-			DivinityApp.Log($"Could not stop Nexus downloads during shutdown:\n{ex}");
+			DivinityApp.Log($"Could not finish active operations and save downloads during shutdown:\n{ex}");
 			ReduxMessageBox.Show(this,
-				"Redux could not safely pause and save the download queue. The window will remain open so you can try again.",
+				"Redux could not safely finish its active operations and save the download queue. The window will remain open so you can try again.",
 				"Shutdown Paused", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning, System.Windows.MessageBoxResult.OK);
 		}
 		finally
@@ -845,7 +841,11 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		{
 			ViewModel.OnViewActivated(this, MainView);
 			this.WhenAnyValue(x => x.ViewModel.Title).BindTo(this, view => view.Title);
-			this.OneWayBind(ViewModel, vm => vm.MainProgressIsActive, view => view.TaskbarItemInfo.ProgressState, BoolToTaskbarItemProgressState);
+			d(ViewModel.WhenAnyValue(vm => vm.MainProgressIsActive, vm => vm.MainProgressIsIndeterminate,
+				(active, indeterminate) => !active ? System.Windows.Shell.TaskbarItemProgressState.None
+					: indeterminate ? System.Windows.Shell.TaskbarItemProgressState.Indeterminate
+					: System.Windows.Shell.TaskbarItemProgressState.Normal)
+				.BindTo(this, view => view.TaskbarItemInfo.ProgressState));
 
 			ViewModel.Keys.OpenPreferences.AddAction(() => OpenPreferences(false));
 			ViewModel.Keys.OpenThemeAppearance.AddAction(() => OpenPreferences(SettingsWindowTab.Appearance));
