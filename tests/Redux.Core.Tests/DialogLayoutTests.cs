@@ -14,6 +14,35 @@ namespace Redux.Core.Tests;
 
 public sealed class DialogLayoutTests
 {
+	public void DownloadIntakeProgressBindsToReadOnlyViewModelProperties()
+	{
+		// Avoid starting profile discovery or accessing user settings while exercising
+		// the production window bindings against the real private-set properties.
+		var viewModel = (DivinityModManager.ViewModels.MainWindowViewModel)
+			System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(DivinityModManager.ViewModels.MainWindowViewModel));
+		var window = new ReduxNexusDownloadsWindow();
+		try
+		{
+			window.DataContext = viewModel;
+			var progress = (ProgressBar)window.FindName("LocalPackageIntakeProgress");
+			void SetProgress(string property, object value) => viewModel.GetType().GetProperty(property)!.SetValue(viewModel, value);
+			SetProgress(nameof(viewModel.LocalPackageIntakeTotal), 4);
+			SetProgress(nameof(viewModel.LocalPackageIntakeCompleted), 1);
+			SetProgress(nameof(viewModel.LocalPackageIntakeIsActive), true);
+			window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+			RegressionAssert.Equal(4d, progress.Maximum);
+			RegressionAssert.Equal(1d, progress.Value);
+			RegressionAssert.Equal(Visibility.Visible, progress.Visibility);
+			SetProgress(nameof(viewModel.LocalPackageIntakeCompleted), 4);
+			window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+			RegressionAssert.Equal(4d, progress.Value);
+			SetProgress(nameof(viewModel.LocalPackageIntakeIsActive), false);
+			window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
+			RegressionAssert.Equal(Visibility.Collapsed, progress.Visibility);
+		}
+		finally { window.Close(); }
+	}
+
 	public void ReviewDialogsKeepActionsReachableWithLargeText()
 	{
 		foreach (var theme in new[] { ReduxThemeType.ReduxDark, ReduxThemeType.ReduxLight, ReduxThemeType.Parchment })
