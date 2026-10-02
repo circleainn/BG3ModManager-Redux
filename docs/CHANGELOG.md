@@ -1,9 +1,11 @@
-﻿# Changelog
+# Changelog
 
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
 ## Unreleased
+
+## 0.1.0-alpha.16.5.5 — 2026-10-02
 
 - Disable Refresh during file operations and batch installs, preserving cancellation and shutdown cleanup even if a refresh command was already queued.
 - Let manual PAK extraction and active-mod backups cancel safely, and wait for their cleanup before closing Redux.
