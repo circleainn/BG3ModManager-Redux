@@ -1,4 +1,4 @@
-﻿namespace DivinityModManager.Util;
+namespace DivinityModManager.Util;
 
 public sealed class TempFile : IDisposable
 {
@@ -19,9 +19,18 @@ public sealed class TempFile : IDisposable
 
 	public static async Task<TempFile> CreateAsync(string sourcePath, Stream sourceStream, CancellationToken token)
 	{
+		token.ThrowIfCancellationRequested();
 		var temp = new TempFile(sourcePath);
-		await temp.CopyAsync(sourceStream, token);
-		return temp;
+		try
+		{
+			await temp.CopyAsync(sourceStream, token);
+			return temp;
+		}
+		catch
+		{
+			temp.Dispose();
+			throw;
+		}
 	}
 
 	private async Task CopyAsync(Stream sourceStream, CancellationToken token)

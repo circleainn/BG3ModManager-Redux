@@ -183,7 +183,7 @@ public class Markdown : DependencyObject
 
 	public Markdown()
 	{
-		HyperlinkCommand = NavigationCommands.GoToPage;
+		HyperlinkCommand = new MarkdownLinkCommand();
 	}
 
 	public FlowDocument Transform(string text)

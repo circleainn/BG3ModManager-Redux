@@ -135,7 +135,7 @@ public static class DivinityFileUtils
 		{
 			ignoredFiles ??= IgnoredPackageFiles;
 
-			if (token.IsCancellationRequested) return false;
+			token.ThrowIfCancellationRequested();
 
 			if (!rootPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
 			{
@@ -154,15 +154,19 @@ public static class DivinityFileUtils
 
 			foreach (var f in inputPaths)
 			{
-				if (token.IsCancellationRequested) break;
+				token.ThrowIfCancellationRequested();
 				AddFilesToPackage(f, build, rootPath, ignoredFiles, token);
 			}
 
 			DivinityApp.Log($"Writing package '{outputPath}'.");
+			token.ThrowIfCancellationRequested();
 			using var writer = PackageWriterFactory.Create(build, outputPath);
+			writer.WriteProgress += (_, _, _) => token.ThrowIfCancellationRequested();
 			writer.Write();
+			token.ThrowIfCancellationRequested();
 			return true;
 		}
+		catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
 		catch (Exception ex)
 		{
 			if (!token.IsCancellationRequested)
@@ -191,13 +195,10 @@ public static class DivinityFileUtils
 				filePath += Path.DirectorySeparatorChar;
 			}
 
-			var files = EnumerateFiles(filePath, RecursiveOptions, (f) => !ignoredFiles.Any(x => IgnoreFile(f, x)))
-				.ToDictionary(k => k.Replace(rootPath, String.Empty), v => v);
-
-			foreach (var file in files)
+			foreach (var file in EnumerateFiles(filePath, RecursiveOptions, f => !ignoredFiles.Any(x => IgnoreFile(f, x))))
 			{
-				if (token.IsCancellationRequested) break;
-				var fileInfo = PackageBuildInputFile.CreateFromFilesystem(file.Value, file.Key);
+				token.ThrowIfCancellationRequested();
+				var fileInfo = PackageBuildInputFile.CreateFromFilesystem(file, Path.GetRelativePath(rootPath, file));
 				build.Files.Add(fileInfo);
 			}
 		}
@@ -258,11 +259,11 @@ public static class DivinityFileUtils
 	{
 		try
 		{
-			return await Task.Run(() =>
+			return await Task.Run(async () =>
 			{
 				token.ThrowIfCancellationRequested();
-				var packager = new Packager();
-				packager.UncompressPackage(pakPath, outputDirectory, null);
+				using var package = new PackageReader().Read(pakPath);
+				await ExtractPackageFilesAsync(package, outputDirectory, token);
 				token.ThrowIfCancellationRequested();
 				return true;
 			}, token);
@@ -273,6 +274,55 @@ public static class DivinityFileUtils
 			DivinityApp.Log($"Error extracting package '{pakPath}': {ex}");
 			return false;
 		}
+	}
+
+	internal static async Task ExtractPackageFilesAsync(Package package, string outputDirectory, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+		var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(outputDirectory));
+		// Check every member before publishing any output, including members later in the package.
+		var files = new List<(PackagedFileInfo File, string Destination)>();
+		foreach (var file in package.Files)
+		{
+			token.ThrowIfCancellationRequested();
+			if (!file.IsDeletion()) files.Add((file, GetPackageExtractionPath(root, file.Name)));
+		}
+		foreach (var (file, destination) in files)
+		{
+			token.ThrowIfCancellationRequested();
+			// Recheck existing directory links immediately before opening the destination.
+			GetPackageExtractionPath(root, file.Name);
+			await AtomicFileWriter.WriteFileAsync(destination, async (temporaryPath, cancellationToken) =>
+			{
+				using var source = file.CreateContentReader();
+				await using var output = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write,
+					FileShare.None, 128000, FileOptions.Asynchronous | FileOptions.SequentialScan);
+				await source.CopyToAsync(output, 128000, cancellationToken);
+				await output.FlushAsync(cancellationToken);
+			}, validateTemporaryFile: temporaryPath => (ulong)new FileInfo(temporaryPath).Length == file.Size(),
+				cancellationToken: token);
+		}
+	}
+
+	private static string GetPackageExtractionPath(string root, string memberName)
+	{
+		var components = (memberName ?? String.Empty).Replace('\\', '/').Split('/');
+		if (components.Any(component => String.IsNullOrWhiteSpace(component) || component is "." or ".."
+			|| component.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0
+			|| component != component.TrimEnd(' ', '.')))
+			throw new InvalidDataException($"The package contains an unsafe extraction path: '{memberName}'.");
+		var destination = Path.GetFullPath(Path.Combine(root, Path.Combine(components)));
+		var rootPrefix = Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar;
+		if (!destination.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+			throw new InvalidDataException($"The package contains an unsafe extraction path: '{memberName}'.");
+		var directory = Path.GetDirectoryName(destination);
+		while (directory != null && !String.Equals(directory, root, StringComparison.OrdinalIgnoreCase))
+		{
+			if (Directory.Exists(directory) && (File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
+				throw new InvalidDataException($"The package extraction path uses a linked directory: '{memberName}'.");
+			directory = Path.GetDirectoryName(directory);
+		}
+		return destination;
 	}
 
 	public static bool WriteTextFile(string path, string contents)

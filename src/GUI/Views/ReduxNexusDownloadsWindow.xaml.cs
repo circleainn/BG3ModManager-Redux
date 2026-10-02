@@ -87,14 +87,17 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 	private void UpdateEmptyState()
 	{
 		IEnumerable<NxmDownloadItem> downloads = _viewModel.NxmDownloads ?? Enumerable.Empty<NxmDownloadItem>();
-		var hasPending = downloads.Any(item => !item.IsInstalledHistory);
-		var hasInstalled = downloads.Any(item => item.IsInstalledHistory);
+		var pendingCount = downloads.Count(item => !item.IsInstalledHistory);
+		var installedCount = downloads.Count(item => item.IsInstalledHistory);
+		var hasPending = pendingCount > 0;
+		var hasInstalled = installedCount > 0;
+		PackageCountText.Text = $"{pendingCount} in Downloads · {installedCount} installed · {_viewModel.RetainedPackageArchives.Count} retained archives";
 		EmptyText.Visibility = hasPending ? Visibility.Collapsed : Visibility.Visible;
 		InstalledEmptyText.Visibility = hasInstalled ? Visibility.Collapsed : Visibility.Visible;
 		ArchivesEmptyText.Visibility = _viewModel.RetainedPackageArchives.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
-		ClearInstalledButton.IsEnabled = hasInstalled;
+		ClearInstalledButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && hasInstalled;
         DeleteAllButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && hasPending;
-		ClearArchivesButton.IsEnabled = _viewModel.RetainedPackageArchives.Count > 0;
+		ClearArchivesButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && _viewModel.RetainedPackageArchives.Count > 0;
 		OpenFolderText.Text = "Open Folder";
 		InstallAllButton.Visibility = DownloadsTabs.SelectedIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
 		InstallAllButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && downloads.Any(item =>

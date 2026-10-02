@@ -171,6 +171,9 @@ public static class ArchivePackagePreflightService
 							: hasNativeEntries ? ArchivePackagePreflightKind.UnreviewedNative
 								: ArchivePackagePreflightKind.PakArchive;
 			var findings = AnalyzeEntryNames(entryNames, requirePak: kind == ArchivePackagePreflightKind.PakArchive).ToList();
+			if (findings.Any(finding => finding.Title == ArchivePakImport.DuplicateNamesTitle))
+				return new ArchivePackagePreflightResult(normalizedPath, entries.Length, fileStream.Length,
+					[], findings, kind, nativeInspection, entryNames: entryNames);
 			AddNativeFindings(nativeInspection, unreviewedNativeReason, dllEntries, entryNames, findings);
 			IReadOnlyList<ArchiveSavePreflightEntry> saves = [];
 			if (hasSaveEntries)
@@ -194,17 +197,18 @@ public static class ArchivePackagePreflightService
 			}
 			var packages = new List<PackagePreflightReport>(pakEntries.Length);
 
-			for (var index = 0; index < pakEntries.Length; index++)
+			var index = 0;
+			if (pakEntries.Length > 0) await ArchiveEntryTraversal.ReadSelectedAsync(archive,
+				entry => entry.Key.EndsWith(".pak", StringComparison.OrdinalIgnoreCase),
+				async (entry, entryStream) =>
 			{
 				cancellationToken.ThrowIfCancellationRequested();
-				var entry = pakEntries[index];
 				var safeName = Path.GetFileName(entry.Key);
-				var stagingDirectory = Path.Combine(temporaryRoot, index.ToString("D3"));
+				var stagingDirectory = Path.Combine(temporaryRoot, (index++).ToString("D3"));
 				try
 				{
 					Directory.CreateDirectory(stagingDirectory);
 					var stagedPath = Path.Combine(stagingDirectory, safeName);
-					await using (var entryStream = entry.OpenEntryStream())
 					await using (var output = new FileStream(
 						stagedPath,
 						FileMode.CreateNew,
@@ -222,6 +226,8 @@ public static class ArchivePackagePreflightService
 						cancellationToken);
 					var sourcePath = $"{normalizedPath}::{NormalizeEntryPath(entry.Key)}";
 					packages.Add(report.WithSource(sourcePath, Math.Max(0, entry.Size)));
+					findings.AddRange(report.Findings.Where(finding =>
+						finding.Title == PakImportCompatibility.MultipartFindingTitle));
 				}
 				catch (OperationCanceledException)
 				{
@@ -235,7 +241,7 @@ public static class ArchivePackagePreflightService
 						$"{safeName}: Package could not be inspected",
 						"Redux could not extract this PAK from the selected archive."));
 				}
-			}
+			}, cancellationToken);
 
 			return new ArchivePackagePreflightResult(
 				normalizedPath,
@@ -285,19 +291,8 @@ public static class ArchivePackagePreflightService
 				"The archive does not contain a Baldur's Gate 3 PAK package."));
 		}
 
-		var duplicateNames = pakEntries
-			.GroupBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
-			.Where(group => group.Count() > 1)
-			.Select(group => group.Key)
-			.Take(4)
-			.ToArray();
-		if (duplicateNames.Length > 0)
-		{
-			findings.Add(new PackagePreflightFinding(
-				ModHealthSeverity.Error,
-				"Duplicate PAK filenames",
-				$"Multiple archive entries would install with the same filename: {String.Join(", ", duplicateNames)}"));
-		}
+		var collision = ArchivePakImport.FindDestinationCollision(pakEntries);
+		if (collision != null) findings.Add(collision);
 
 		var unsafeEntries = entries
 			.Where(IsUnsafeEntryPath)

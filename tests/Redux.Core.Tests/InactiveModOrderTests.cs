@@ -9,6 +9,65 @@ namespace Redux.Core.Tests;
 
 internal sealed class InactiveModOrderTests
 {
+	public void RestartRestoresInactiveAndOverrideOrganizationIntoLiveSettings()
+	{
+		var first = new DivinityModData { UUID = "first", Name = "Zebra" };
+		var second = new DivinityModData { UUID = "second", Name = "Alpha" };
+		var overrideFirst = new DivinityModData { UUID = "override-first", IsForceLoaded = true };
+		var overrideSecond = new DivinityModData { UUID = "override-second", IsForceLoaded = true };
+		var saved = new DivinityModManagerSettings {
+			InactiveModOrder = [first.UUID, second.UUID],
+			OverrideModOrder = [overrideFirst.UUID, overrideSecond.UUID],
+			VisualModListDividers = [new ModListVisualDividerData {
+				Id = "inactive-section", IsActiveList = false, Position = 0,
+				MemberModUuids = [first.UUID, second.UUID]
+			}],
+			OverrideVisualModListDividers = [new ModListVisualDividerData {
+				Id = "override-section", IsActiveList = false, Position = 0, IsCollapsed = true,
+				MemberModUuids = [overrideFirst.UUID, overrideSecond.UUID]
+			}]
+		};
+		var deserialized = JsonConvert.DeserializeObject<DivinityModManagerSettings>(JsonConvert.SerializeObject(saved))!;
+		var live = new DivinityModManagerSettings();
+		// LoadSettings copies persisted values into the existing reactive settings
+		// instance; a JSON roundtrip alone does not exercise this startup boundary.
+		live.RestorePersistedSettings(deserialized);
+
+		var inactive = InactiveModOrderPolicy.Restore([second, first], live.InactiveModOrder);
+		var overrides = InactiveModOrderPolicy.Restore([overrideSecond, overrideFirst], live.OverrideModOrder);
+		RegressionAssert.SequenceEqual([first, second], inactive);
+		RegressionAssert.SequenceEqual([overrideFirst, overrideSecond], overrides);
+		RegressionAssert.SequenceEqual([first.UUID, second.UUID], live.VisualModListDividers.Single().MemberModUuids);
+		RegressionAssert.SequenceEqual([overrideFirst.UUID, overrideSecond.UUID], live.OverrideVisualModListDividers.Single().MemberModUuids);
+		RegressionAssert.True(live.OverrideVisualModListDividers.Single().IsCollapsed);
+
+		// Startup immediately saves the live instance again, before mod discovery.
+		var savedAgain = JsonConvert.DeserializeObject<DivinityModManagerSettings>(JsonConvert.SerializeObject(live))!;
+		RegressionAssert.SequenceEqual(saved.InactiveModOrder, savedAgain.InactiveModOrder);
+		RegressionAssert.SequenceEqual(saved.OverrideModOrder, savedAgain.OverrideModOrder);
+	}
+
+	public void HeldOverridesKeepInterleavedInactiveOrderWhenOtherModsAreTemporarilyActive()
+	{
+		var first = new DivinityModData { UUID = "first" };
+		var second = new DivinityModData { UUID = "second" };
+		var held = new DivinityModData { UUID = "held", IsForceLoaded = true, IsHeldOverride = true };
+		var temporarilyActive = new DivinityModData { UUID = "temporarily-active", IsActive = true };
+		var added = new DivinityModData { UUID = "new" };
+		var savedOrder = InactiveModOrderPolicy.Capture([first, held, temporarilyActive, second], []);
+
+		// Discovery supplies ordinary mods before held Override packages. Restoring
+		// the whole inactive pane places the held package back between its neighbors.
+		RegressionAssert.SequenceEqual([first, held, second, added],
+			InactiveModOrderPolicy.Restore([second, first, added, held], savedOrder));
+		RegressionAssert.True(temporarilyActive.IsActive);
+
+		temporarilyActive.IsActive = false;
+		RegressionAssert.SequenceEqual([first, held, temporarilyActive, second, added],
+			InactiveModOrderPolicy.Restore([second, temporarilyActive, first, added, held], savedOrder));
+		RegressionAssert.SequenceEqual(["first", "held", "temporarily-active", "second"], savedOrder);
+	}
+
 	public void SavedInactiveOrderSurvivesRestartAndDiscoveryChanges()
 	{
 		var first = new DivinityModData { UUID = "first", Name = "Zebra" };

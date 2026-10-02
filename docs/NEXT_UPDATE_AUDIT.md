@@ -1,4 +1,170 @@
-# Historical post-16.4.4 issue audit
+# Issue audit — October 1, 2026
+
+Reviewed the supplied September Nexus comments and GitHub issues against published
+`v0.1.0-alpha.16.5.4` and local baseline `fd1b973`. The latest open-issue query returned
+11 issues, including the new #172 request. Changes described as local below are unreleased;
+this audit does not close issues or establish a reporter's exact failure was reproduced.
+
+## Open GitHub issues
+
+| Issue | Evidence and disposition |
+|:--|:--|
+| [#171](https://github.com/circleainn/BG3ModManager-Redux/issues/171) Vivid Landscape install stays at 0% | The reporter identifies 16.5.4 and the 4K download. Import has long operations without measured progress and repeated archive inspection. Local work adds phase feedback and reduces duplicate inspection. A separate tiny, valid multipart PAK fixture exposes unsupported staging behavior; it is not the reporter's archive. Keep open until the actual package completes or produces actionable diagnostics. |
+| [#170](https://github.com/circleainn/BG3ModManager-Redux/issues/170) Release-note links do nothing | Markdown used a navigation command without a navigation host. The local fix opens HTTP(S) links through the browser command, with regression coverage. Verify in the packaged update window before closing after release. |
+| [#157](https://github.com/circleainn/BG3ModManager-Redux/issues/157) Nexus sources become Local | The creator-manifest association correction shipped in 16.5.3. The issue's claim that it is unreleased is stale. Keep the remaining scope open for an affected current-version package and association origin. |
+| [#127](https://github.com/circleainn/BG3ModManager-Redux/issues/127) Order changes and separators | Explicit active-order positions were preserved by the Sync correction shipped in 16.5.3; the issue's unreleased wording is stale. Local fixes address skipped inactive/Override settings restoration and pending saves lost on immediate Refresh. These do not establish every activation or separator report has the same cause. |
+| [#110](https://github.com/circleainn/BG3ModManager-Redux/issues/110) Wine/Linux compatibility | A later discussion reports a working native-browser-to-Wine NXM prototype. The body should no longer imply this has no working route, but cold-start behavior, status feedback, paths, and Script Extender detection still need real Wine validation. |
+| [#155](https://github.com/circleainn/BG3ModManager-Redux/issues/155) YANML integration | The author offers integration/API support. Prepare a concrete install/uninstall and ownership contract before replying; no agreement or new integration is implied. |
+| [#133](https://github.com/circleainn/BG3ModManager-Redux/issues/133) Automatic category controls | Disabling automatic assignment is already available. Definition deletion, clearing assignments, and hiding defaults remain distinct requested actions; the broader request is only partially covered. |
+| [#172](https://github.com/circleainn/BG3ModManager-Redux/issues/172) Move to a separator from the context menu | New, low-priority convenience request. Existing bulk actions move between Active and Inactive panes, but do not provide the requested separator destination submenu. Any implementation must preserve selection order, collapsed membership, and Undo/Redo. |
+| [#98](https://github.com/circleainn/BG3ModManager-Redux/issues/98) Nexus SSO | Planned; official application registration remains a prerequisite. |
+| [#56](https://github.com/circleainn/BG3ModManager-Redux/issues/56) Localization/accessibility | Planned broader work. Existing font, motion, and Read Load Order features are not completion of this scope. |
+| [#63](https://github.com/circleainn/BG3ModManager-Redux/issues/63) Docked managers | Planned workspace change; keep separate from current bug fixes. |
+
+## Local maintenance findings
+
+The October 1 Nexus report from **irulannaba** narrows #171's symptoms: the Vivid Landscape
+AIO 4K `.7z` extracts very slowly, installation appears stuck, and the reported `(x)` control did
+not stop it; manual extraction was the workaround. Prioritize solid-archive extraction cost,
+UI responsiveness, and cancellation separately from the multipart PAK limitation below.
+
+- Startup copied only reactive settings, omitting the inactive and Override UUID sequences,
+  window placement, and nullable appearance preferences. Restore these explicitly and retain
+  the live nested settings instances.
+- A single mod scan published each cache insertion separately, repeatedly rebuilding projections.
+  Publish the fully initialized scan in one cache edit. A 1,400-mod regression checks one complete
+  publication, duplicate version selection, and stale-entry removal; it is not a whole-app timing test.
+- Startup duplicate-package prompts could run before the main window was visible. Defer them until
+  it can own the dialog. Neither this nor batching proves the exact reported 70% stall is resolved.
+- Local package intake lacked clear counts and progress. Show input processing, managed package
+  counts, and the final added/already-present versus failed totals.
+- Immediate Refresh could reload disk settings before a delayed inactive-order or separator save.
+  Flush pending settings before Refresh clears the library; preserve pending work and abort Refresh
+  if saving fails.
+- Archive preflight and import staged multipart PAK files independently. A synthetic two-part v18
+  package loads with its original sibling filenames but fails in the current staging layout.
+  Detect unsupported multipart packages before commit and explain the limitation. Full support
+  requires grouped staging, replacement, recovery, and sibling ownership tracking.
+- A synthetic solid LZMA2 `.7z` with twelve 2 MiB entries took 107.81 ms through separate
+  `OpenEntryStream` calls and 16.53 ms through one sequential reader after warmup. This isolates
+  repeated decompression overhead; it does not predict timing for the 1.8 GB Vivid download.
+  Use sequential traversal for solid 7z archives and cancel its reader before disposing an
+  interrupted entry, avoiding the archive library's default drain of unread compressed content.
+- Install All's close control previously rejected closure without requesting cancellation.
+  Treat close as Cancel, keep the progress window until cleanup completes, and leave unfinished
+  downloads available for retry. Preserve already completed package installations.
+- Further solid-7z testing found unnecessary decompression after the last required entry and after
+  a callback failure. Stop the reader in both cases, and avoid opening it when no entries match.
+  A fixture with real PAKs across two solid blocks verifies the full archive-preflight path; skipping
+  its unrelated tail reduced compressed reads from 330,219 to 197,798 bytes. Normal mod import
+  no longer selects load-order JSON that it will not apply. Compressed single-file import also no
+  longer allocates and discards a buffer the size of the entire compressed input.
+- Closing the application previously waited only for the download queue. Track owned archive
+  work, request cancellation, and await file cleanup, source persistence, and final UI callbacks
+  before closing. Reject new operations while shutdown is pending; reopen admission after a
+  failed shutdown once existing operations have finished.
+- A canceled archive could leave completed PAKs installed while skipping their exact Nexus source
+  assignment and cache save. Apply provenance to committed results even on failure/cancellation,
+  and persist local records without reusing the canceled extraction token. This is a separate
+  confirmed code path relevant to #157, not verification of the original reporter's package.
+- Install All now classifies and reviews one parsed inspection per package. It captures the reviewed
+  identity, verifies those bytes again just before installation, and holds that package open through
+  import before releasing it for retention. Recheck current findings and remaining dependencies
+  so a failed earlier dependency is not still counted as available.
+- Importing an archive's `Current.json` while a named order was selected copied the existing
+  Current order over the named order and discarded the imported contents. Apply the imported
+  data to the game-backed Current entry while preserving both entries' identities. Recognize
+  only JSON documents with a valid load-order array; unrelated metadata no longer becomes an
+  empty order, and malformed orders are reported within the import instead of a detached UI callback.
+- Download finalization previously renamed the partial file before cancellable checksum verification.
+  A cancellation could strand the archive under its final filename and block retry. Verify before
+  promotion, record when the response body is fully received, and let retry finish hashing that file
+  without requesting a byte range past its end. A leftover resume sidecar after promotion no longer
+  invalidates a successfully verified download.
+- Compressed single-PAK import used module Folder metadata directly as an output path. A valid
+  synthetic PAK with `../escaped` metadata demonstrated that this could choose a path outside Mods.
+  Validate destination filenames before commit and use the shared backup/install path, which also
+  preserves Override identity and backup retention. Decompress directly into staging to eliminate
+  the redundant temporary copy; the remaining TempFile helper now disposes its file after a failed copy.
+- Hybrid native-plus-PAK review previously returned success after starting the PAK import without
+  awaiting it. Completion could release/delete the source archive before the companion worker read it.
+  Await both stages, forward cancellation and Nexus identity, and retain the package on partial failure.
+  Download Manager removal and clear actions now share the review/install interaction guard in both
+  directions, including after confirmation dialogs yield to other work.
+- Archive import flattened PAK paths into Mods without enforcing its duplicate-filename finding.
+  Two variants with the same basename could overwrite each other while both appeared imported.
+  Check every PAK destination before reading any import entry, reject collisions during review,
+  and apply the same check before a hybrid native package commits its other files.
+- Hybrid companion imports still explicitly targeted Inactive after the completion fix. Use the
+  existing placement-preserving import mode so updating an active companion retains its position.
+- Package removal dropped its durable queue row before recycling/deleting files. A locked file
+  could leave untracked data. Persist a Removal incomplete record before cleanup and remove the row
+  only after cleanup succeeds. Failed cleanup or final manifest saves remain retryable after restart;
+  pending removals cannot resume downloads or be overwritten by late inspection callbacks.
+- Manual PAK extraction and active-mod backups were absent from the shutdown operation tracker.
+  Register them before scheduling work, capture their input selection, and wait for cancellation,
+  staging cleanup, and UI completion before closing. Backup ZIP writes now pass cancellation through
+  asynchronous copying; a failed editor-mod package build aborts instead of silently omitting a mod.
+- Manual extraction previously checked cancellation only around a complete synchronous unpack.
+  Copy members with cancellation and atomically replace each destination after validating its length.
+  Reject unsafe member paths before any output, retain completed members, and preserve an existing
+  destination when its replacement fails or is canceled. LSLib's initial synchronous LZ4 decode,
+  solid-package opening, and per-member editor-package compression remain non-interruptible.
+- Editor-mod backups used metadata Folder/UUID values to choose a temporary PAK path. Relative
+  traversal could truncate/delete a file outside staging. Validate these values as single components
+  and use an independently generated staging filename. Missing project sources now fail the backup;
+  normal editor backups retain their archive names and contain both Mods and Public project files.
+- F5 Refresh remained enabled during extraction and backups. Refresh completion could dispose the
+  other operation's cancellation source, preventing a later shutdown request from stopping its work.
+  Disable the command during main-progress operations and batch installs; recheck admission on direct
+  execution and after modal confirmation, including shutdown. Keep Refresh disabled until cleanup ends.
+
+The duplicate-menu, declined-shutdown, and explicit dependency-ordering reports overlap fixes
+already shipped in 16.5.3. Defender reports do not establish a false positive; no security conclusion
+is drawn from the pasted comments. View sorting alone does not demonstrate a changed game load order.
+
+## Remaining release verification
+
+Local validation on October 2: Debug and Publish builds succeeded and **627/627 regression checks
+passed in each configuration** against the final source. Coverage includes solid-7z entry contents and compressed-input reads,
+cancellation during selected/skipped entries, stopping before unrelated archive tails, shutdown
+waiting for owned operations, partial-import source persistence, canceled local-intake cleanup,
+multipart rejection without replacing an installed file, changed-package rejection after review,
+verified archive handle lifetime, and pending settings saves. Additional checks cover archived
+Current and named-order preservation, malformed order JSON, compressed PAK destination validation,
+temporary-copy cleanup, hybrid-package completion, and interrupted download finalization/retry.
+Additional checks cover duplicate destination rejection before any import callback and durable
+removal recovery after recycle, file-cleanup, and manifest-save failures, including restart.
+New extraction/backup checks exercise real None/Zlib/LZ4 PAK contents, cancellation and read failure
+after copying begins, preservation of prior files/backups, skipped later members, invalid member paths,
+deletion markers, and a canceled editor-package build. ZIP cancellation is injected during output writes.
+Editor-backup fixtures verify unsafe metadata cannot alter an unrelated file or a prior ZIP, missing
+sources cannot replace a prior ZIP, and valid projects preserve real package contents and entry names.
+Refresh regressions exercise the real command and F5 binding: disabled through cancellation cleanup,
+safe when called directly during file work, and blocked during batch installs or shutdown.
+`git diff --check` passed. The benchmark above compares synchronous traversal APIs; production uses
+the asynchronous sequential reader, and the regression asserts reduced reads rather than elapsed time.
+
+The local Publish verification ZIP contains 76 inventoried files and exactly four updater files.
+ZIP CRC, complete inventory coverage, manifest size/SHA-256, and byte-for-byte clean extraction passed;
+the package checks detected no forbidden runtime-state files or private build paths. NuGet reported
+no known vulnerable direct or transitive dependencies. The archive is 18,090,315 bytes with SHA-256
+`cede5f5b784d3447ebd947e6c347fdeeaf07108f40823f1c98e78df1560e3491`.
+This is a local validation build retaining the baseline 16.5.4 version, not a published hotfix.
+The prior local release ZIPs and channel manifest were preserved and restored byte-for-byte.
+Isolated updater transactions using the prior ZIP and verification ZIP replaced all 76 application
+files while preserving settings, an order, a retained download, and native-install ownership data.
+A locked-file failure restored every prior package file byte-for-byte. Inventory-based portable
+removal preserved the same user-state fixtures. These checks do not verify public version discovery
+or an interactive application launch.
+Release preparation must assign the final version and repeat artifact checks on the resulting bytes.
+
+Use the actual #171 package for installation/cancellation and retained-inbox cleanup checks. Test
+immediate Refresh and restart after inactive and Override moves, separator edits, and appearance
+changes in a packaged build. Verify update links, progress with Reduce Motion, and a large-library
+startup. Automated fixtures do not replace those reporter-specific and interactive checks.
+
+## Historical post-16.4.4 issue audit
 
 This audit records the pre-16.5 triage. The [16.5 changelog](CHANGELOG.md) supersedes rows for
 features and fixes that were subsequently implemented.
