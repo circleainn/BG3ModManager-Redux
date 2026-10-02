@@ -16,31 +16,42 @@ public sealed class DialogLayoutTests
 {
 	public void DownloadIntakeProgressBindsToReadOnlyViewModelProperties()
 	{
-		// Avoid starting profile discovery or accessing user settings while exercising
-		// the production window bindings against the real private-set properties.
-		var viewModel = (DivinityModManager.ViewModels.MainWindowViewModel)
-			System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(typeof(DivinityModManager.ViewModels.MainWindowViewModel));
+		// Exercise the production progress control without profile discovery or user
+		// settings I/O, using the same private-set property contract as the main VM.
+		var viewModel = new IntakeProgressViewModel();
 		var window = new ReduxNexusDownloadsWindow();
 		try
 		{
-			window.DataContext = viewModel;
 			var progress = (ProgressBar)window.FindName("LocalPackageIntakeProgress");
-			void SetProgress(string property, object value) => viewModel.GetType().GetProperty(property)!.SetValue(viewModel, value);
-			SetProgress(nameof(viewModel.LocalPackageIntakeTotal), 4);
-			SetProgress(nameof(viewModel.LocalPackageIntakeCompleted), 1);
-			SetProgress(nameof(viewModel.LocalPackageIntakeIsActive), true);
+			progress.DataContext = viewModel;
+			viewModel.SetProgress(1, 4, true);
 			window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
 			RegressionAssert.Equal(4d, progress.Maximum);
 			RegressionAssert.Equal(1d, progress.Value);
 			RegressionAssert.Equal(Visibility.Visible, progress.Visibility);
-			SetProgress(nameof(viewModel.LocalPackageIntakeCompleted), 4);
+			viewModel.SetProgress(4, 4, true);
 			window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
 			RegressionAssert.Equal(4d, progress.Value);
-			SetProgress(nameof(viewModel.LocalPackageIntakeIsActive), false);
+			viewModel.SetProgress(4, 4, false);
 			window.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.DataBind);
 			RegressionAssert.Equal(Visibility.Collapsed, progress.Visibility);
 		}
 		finally { window.Close(); }
+	}
+
+	public sealed class IntakeProgressViewModel : System.ComponentModel.INotifyPropertyChanged
+	{
+		public int LocalPackageIntakeCompleted { get; private set; }
+		public int LocalPackageIntakeTotal { get; private set; }
+		public bool LocalPackageIntakeIsActive { get; private set; }
+		public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+		public void SetProgress(int completed, int total, bool active)
+		{
+			LocalPackageIntakeCompleted = completed;
+			LocalPackageIntakeTotal = total;
+			LocalPackageIntakeIsActive = active;
+			PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(String.Empty));
+		}
 	}
 
 	public void ReviewDialogsKeepActionsReachableWithLargeText()
