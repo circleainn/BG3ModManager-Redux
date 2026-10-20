@@ -105,6 +105,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			[nameof(AppKeys.ToggleModFileNames)] = ("Redux.Icon.DocumentText", true, null),
 			[nameof(AppKeys.ToggleOverrideMods)] = ("Redux.Icon.ChevronUpStroke", true, null),
 			[nameof(AppKeys.OpenPreferences)] = ("Redux.Icon.Settings", true, null),
+			[nameof(AppKeys.OpenBackups)] = ("Redux.Icon.Save", true, null),
 			[nameof(AppKeys.OpenThemeAppearance)] = ("Redux.Icon.ColorPalette", true, null),
 			[nameof(AppKeys.OpenKeybindings)] = ("Redux.Icon.Key", true, null),
 			[nameof(AppKeys.ToggleViewTheme)] = ("Redux.Icon.ColorPalette", true, null),

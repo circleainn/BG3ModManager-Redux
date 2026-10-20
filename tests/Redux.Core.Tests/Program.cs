@@ -34,6 +34,7 @@ internal static class Program
 		var preUpdateBackup = new ReduxPreUpdateBackupTests();
 		var snapshots = new ReduxSnapshotTests();
 		var snapshotUi = new ReduxSnapshotUiTests();
+		var snapshotProgress = new SnapshotProgressPresentationTests();
 		var advisorKnowledge = new LoadOrderAdvisorKnowledgeTests();
 		var advisorEvidence = new AdvisorEvidenceTests();
 		var modules = new ReduxModuleStateTests();
@@ -356,6 +357,8 @@ internal static class Program
 			(nameof(snapshots.InterruptedSnapshotRestoreRecoversFromDurableReturnSnapshot), snapshots.InterruptedSnapshotRestoreRecoversFromDurableReturnSnapshot),
 			(nameof(snapshots.SnapshotRejectsMovedModRootsAndLinkedFiles), snapshots.SnapshotRejectsMovedModRootsAndLinkedFiles),
 			(nameof(snapshotUi.BackupPreferencesRemainUsableAcrossThemesAndLargeText), snapshotUi.BackupPreferencesRemainUsableAcrossThemesAndLargeText),
+			(nameof(snapshotProgress.SnapshotRunnerUsesCapturedThemeAndKeepsActionsReachable), snapshotProgress.SnapshotRunnerUsesCapturedThemeAndKeepsActionsReachable),
+			(nameof(snapshotProgress.SnapshotRunnerPreservesCancellationAndRecoveryLocks), snapshotProgress.SnapshotRunnerPreservesCancellationAndRecoveryLocks),
 			(nameof(health.LoadOrderGuidanceFindingsAreAbsentUntilEnabled), health.LoadOrderGuidanceFindingsAreAbsentUntilEnabled),
 			(nameof(health.CorrectDependencyPlacementDoesNotProduceGuidanceNoise), health.CorrectDependencyPlacementDoesNotProduceGuidanceNoise),
 			(nameof(health.LoadOrderGuidanceAppliesOnlyToNormalActiveEntries), health.LoadOrderGuidanceAppliesOnlyToNormalActiveEntries),

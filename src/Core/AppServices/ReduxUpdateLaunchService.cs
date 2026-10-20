@@ -134,7 +134,7 @@ public sealed class ReduxUpdateLaunchService
 		ReduxLaunchTarget.ForExecutable(Path.Combine(runnerDirectory, "ReduxUpdater.exe"), _currentLaunch.DotNetHostPath)
 			.CreateStartInfo(["--snapshot-request", Path.GetFullPath(requestPath)]);
 
-	public void QueueSnapshot(ReduxSnapshotStore.Request request)
+	public void QueueSnapshot(ReduxSnapshotStore.Request request, ReduxSnapshotAppearance appearance = null)
 	{
 		if (request.SchemaVersion != 1 || request.ParentProcessId <= 0 || request.Operation is not ("create" or "restore" or "recover")
 			|| !String.Equals(Path.GetFullPath(request.ApplicationDirectory), _currentLaunch.ApplicationDirectory, StringComparison.OrdinalIgnoreCase))
@@ -151,6 +151,7 @@ public sealed class ReduxUpdateLaunchService
 					File.Copy(Path.Combine(_currentLaunch.ApplicationDirectory, "Updater", name), Path.Combine(transaction, name));
 				var path = Path.Combine(transaction, "request.json");
 				ReduxSnapshotStore.WriteRequest(path, request);
+				(appearance ?? new ReduxSnapshotAppearance()).Write(Path.Combine(transaction, "appearance.json"));
 				File.WriteAllText(Path.Combine(transaction, "RECOVERY.txt"),
 					"If a snapshot restore is interrupted, keep this folder. Run ReduxUpdater.exe --snapshot-request request.json from this folder to recover. "
 					+ "If Redux opens, Preferences > Backups > Recover interrupted restore performs the same recovery. Snapshots are kept in Redux/Backups/Snapshots.");

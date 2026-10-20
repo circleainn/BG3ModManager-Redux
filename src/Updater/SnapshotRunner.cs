@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace ReduxUpdater;
 
@@ -9,18 +8,10 @@ internal static class SnapshotRunner
 	public static int Run(string requestPath)
 	{
 		var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
-		var title = new TextBlock { Text = "Preparing snapshot…", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 16) };
-		var bar = new ProgressBar { Height = 8, IsIndeterminate = true, Margin = new Thickness(0, 0, 0, 16) };
-		var cancel = new Button { Content = "Cancel", MinWidth = 100, Padding = new Thickness(12, 6, 12, 6), HorizontalAlignment = HorizontalAlignment.Right };
-		var panel = new StackPanel { Margin = new Thickness(24) };
-		panel.Children.Add(title); panel.Children.Add(bar); panel.Children.Add(cancel);
-		var window = new Window { Title = "Redux Backups", Width = 520, SizeToContent = SizeToContent.Height,
-			ResizeMode = ResizeMode.NoResize, WindowStartupLocation = WindowStartupLocation.CenterScreen, Content = panel };
+		var appearance = ReduxSnapshotAppearance.Read(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(requestPath))!, "appearance.json"));
+		var window = new SnapshotProgressWindow(appearance);
 		using var cancellation = new CancellationTokenSource();
-		var finished = false;
-		var canCancel = true;
-		cancel.Click += (_, _) => { cancellation.Cancel(); cancel.IsEnabled = false; title.Text = "Canceling safely…"; };
-		window.Closing += (_, e) => { if (!finished) { e.Cancel = true; if (canCancel) cancellation.Cancel(); } };
+		window.CancelRequested += cancellation.Cancel;
 		window.Loaded += async (_, _) =>
 		{
 			ReduxSnapshotStore.Request? request = null;
@@ -32,6 +23,7 @@ internal static class SnapshotRunner
 				request = ReduxSnapshotStore.ReadRequest(Path.GetFullPath(requestPath));
 				if (request.SchemaVersion != 1 || request.ParentProcessId <= 0 || request.ParentProcessId == Environment.ProcessId
 					|| request.Operation is not ("create" or "restore" or "recover")) throw new InvalidDataException("Invalid snapshot request.");
+				window.SetOperation(request.Operation);
 				store = new ReduxSnapshotStore(request.ApplicationDirectory);
 				await Task.Run(() => Program.WaitForReduxToExit(request.ParentProcessId));
 				// Hold the same per-user instance mutex on the UI thread across awaits.
@@ -39,14 +31,7 @@ internal static class SnapshotRunner
 				using var instanceGuard = new ReduxInstanceGuard();
 				if (!instanceGuard.TryAcquire() || ReduxInstanceGuard.HasOlderRunningInstance())
 					throw new IOException("Another Redux instance is open. Close it before retrying the snapshot.");
-				var progress = new Progress<ReduxSnapshotStore.Progress>(p =>
-				{
-					canCancel = p.CanCancel;
-					cancel.IsEnabled = canCancel && !cancellation.IsCancellationRequested;
-					title.Text = p.Message;
-					bar.IsIndeterminate = p.Total <= 0;
-					if (p.Total > 0) bar.Value = Math.Clamp(100d * p.Current / p.Total, 0, 100);
-				});
+				var progress = new Progress<ReduxSnapshotStore.Progress>(window.Report);
 				await Task.Run(async () =>
 				{
 					foreach (var name in new[] { "bg3", "bg3_dx11" })
@@ -57,6 +42,7 @@ internal static class SnapshotRunner
 					}
 					if (store.NeedsRecovery)
 					{
+						window.Dispatcher.Invoke(() => window.SetOperation("recover"));
 						await store.RecoverAsync(request.Scopes, progress);
 						message = "The interrupted snapshot restore was rolled back. Review Backups before trying again.";
 					}
@@ -87,17 +73,16 @@ internal static class SnapshotRunner
 				}
 				catch { }
 			}
-			if (!success) MessageBox.Show(window, message, "Redux Backups", MessageBoxButton.OK, MessageBoxImage.Warning);
-			finished = true;
-			window.Close();
+			if (!success) await window.ShowResultAsync(cancellation.IsCancellationRequested ? "Snapshot canceled" : "Snapshot needs attention", message);
 			if (request != null && !pendingRecovery)
 			{
 				try
 				{
 					Process.Start(Program.CreateRelaunchStartInfo(new ReduxUpdateRequest { TargetDirectory = request.ApplicationDirectory }, Environment.ProcessPath));
 				}
-				catch (Exception ex) { MessageBox.Show("Start Redux manually. " + ex.Message, "Redux Backups"); }
+				catch (Exception ex) { await window.ShowResultAsync("Start Redux manually", ex.Message); }
 			}
+			window.Finish();
 			application.Shutdown(success ? 0 : 1);
 		};
 		return application.Run(window);

@@ -1,6 +1,8 @@
 # Backups and snapshots
 
 Open **Preferences > Backups** to create a named snapshot, browse saved versions, or restore one.
+**Tools > Backups and snapshots** opens the same tab. In **Quick Access**, search for backup,
+snapshot, restore, or rollback to find it.
 Snapshots live in `Backups/Snapshots` inside the Redux installation. **Open backup folder** opens
 that location. Keep an independent copy on another drive if you need protection against disk loss.
 These local archives contain private settings and original folder paths; do not upload them as
@@ -13,6 +15,11 @@ support attachments.
 3. Choose **Create snapshot and restart** and review the confirmation. Redux saves its settings,
    stops downloads safely, and closes. The external runner creates and verifies the archive, then
    restarts Redux. Preparation has progress and cancellation; incomplete archives are not listed.
+
+The backup, restore, and recovery windows use your current palette, text size, and icon preference.
+Bundled font choices carry over; custom font files use Manrope in the external runner so a restore
+can replace the installation's files. Failure details and cancellation results appear in the same
+styled window.
 
 | Scope | Included |
 | --- | --- |

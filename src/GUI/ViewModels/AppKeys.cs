@@ -171,6 +171,10 @@ public class AppKeys : ReactiveObject
 	[MenuSettings("Settings", "Preferences...")]
 	public Hotkey OpenPreferences { get; private set; } = new Hotkey(Key.P, ModifierKeys.Control);
 
+	[MenuSettings("Tools", "Backups and snapshots...", false,
+		"Open Preferences to create snapshots, browse saved versions, or restore a backup.")]
+	public Hotkey OpenBackups { get; private set; } = new Hotkey(Key.None);
+
 	[MenuSettings("Settings", "Theme & Appearance...", false,
 		"Open Preferences directly to theme, typography, and interface appearance settings.")]
 	public Hotkey OpenThemeAppearance { get; private set; } = new Hotkey(Key.None);

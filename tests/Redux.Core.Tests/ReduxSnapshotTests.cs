@@ -21,11 +21,15 @@ public sealed class ReduxSnapshotTests
 		string? requestPath = null;
 		try
 		{
-			launch.QueueSnapshot(new(1, "create", 123, f.PathFor("Redux"), f.Scopes(false), "", "test", "version", false, f.PathFor("result.json")));
+			launch.QueueSnapshot(new(1, "create", 123, f.PathFor("Redux"), f.Scopes(false), "", "test", "version", false, f.PathFor("result.json")),
+				new ReduxSnapshotAppearance { Colors = new() { ["ReduxAccentBrush"] = "#FF123456" }, TextScale = 1.15 });
 			RegressionAssert.True(launch.HasPendingUpdate && launch.PendingIsSnapshot);
 			var pending = typeof(ReduxUpdateLaunchService).GetField("_pending", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(launch)!;
 			requestPath = (string)pending.GetType().GetProperty("RequestPath")!.GetValue(pending)!;
 			var request = ReduxSnapshotStore.ReadRequest(requestPath);
+			var appearance = ReduxUpdater.ReduxSnapshotAppearance.Read(Path.Combine(Path.GetDirectoryName(requestPath)!, "appearance.json"));
+			RegressionAssert.Equal("#FF123456", appearance.Colors["ReduxAccentBrush"]);
+			RegressionAssert.Equal(1.15, appearance.TextScale);
 			RegressionAssert.Equal("create", request.Operation);
 			RegressionAssert.Equal(f.PathFor("Redux"), request.ApplicationDirectory);
 			var start = launch.CreateSnapshotRunnerStartInfo(Path.GetDirectoryName(requestPath)!, requestPath);

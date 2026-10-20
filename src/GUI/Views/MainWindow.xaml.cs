@@ -848,6 +848,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 				.BindTo(this, view => view.TaskbarItemInfo.ProgressState));
 
 			ViewModel.Keys.OpenPreferences.AddAction(() => OpenPreferences(false));
+			ViewModel.Keys.OpenBackups.AddAction(() => OpenPreferences(SettingsWindowTab.Backups));
 			ViewModel.Keys.OpenThemeAppearance.AddAction(() => OpenPreferences(SettingsWindowTab.Appearance));
 			ViewModel.Keys.OpenKeybindings.AddAction(() => OpenPreferences(SettingsWindowTab.Keybindings));
 			ViewModel.Keys.OpenCommandPalette.AddAction(OpenCommandPalette);

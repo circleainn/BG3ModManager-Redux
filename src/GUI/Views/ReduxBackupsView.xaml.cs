@@ -114,7 +114,7 @@ public partial class ReduxBackupsView : UserControl
 			if (!_main.SaveSettings()) throw new IOException("Settings could not be saved. Snapshot operation canceled.");
 			var launcher = Services.Get<ReduxUpdateLaunchService>() ?? throw new IOException("The external backup runner is unavailable.");
 			launcher.QueueSnapshot(new(1, operation, Environment.ProcessId, _store.ApplicationDirectory, scopes, filename, name,
-				DivinityApp.REDUX_DISPLAY_VERSION, include, ReduxUpdateResultService.DefaultResultPath));
+				DivinityApp.REDUX_DISPLAY_VERSION, include, ReduxUpdateResultService.DefaultResultPath), ReduxSnapshotPresentation.Capture(this));
 			SnapshotStatus.Text = "Waiting for Redux to close safely…";
 			MainWindow.Self.RequestExitForUpdate();
 		}

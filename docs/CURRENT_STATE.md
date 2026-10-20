@@ -23,6 +23,9 @@ recovery reuse the existing backup writer and external updater runner. See the
 [backup workflow and scope](BACKUPS.md); saved games and game-directory mods remain excluded.
 The Backups layout regression now runs inside the actual Preferences window: inherited horizontal
 panel styling previously hid its controls, and its tab label used inconsistent resting colors.
+Tools and Quick Access now open the Backups tab directly. External backup, restore, and recovery
+windows carry over the active palette, text size, bundled font, and icon preference without loading
+files from the installation being restored.
 
 The recovery update is being prepared as `0.1.0-alpha.16.6`, with internal version `0.1.16.600`.
 It retains the existing updater-compatible versioning scheme. The
@@ -42,17 +45,18 @@ the recovered work. No release tag, public archive, or channel update has been p
 - Improve experimental Wine forwarding and host-preserving launches; honor extender cache paths
   and discard stale updater pins when the selected game's configuration is absent.
 
-The October 20 snapshot-enabled candidate passed Debug and Publish builds and all 732 regression
+The October 20 snapshot-enabled candidate passed Debug and Publish builds and all 734 regression
 checks in each configuration. Snapshot tests cover cancellation, corrupt/path-invalid archives,
 rollback, return snapshots, interrupted recovery, shared instance locking, and theme/text-size layout.
-An existing notification foreground assertion failed once in Publish; isolated and full reruns passed
-without source changes. The unchanged experimental forwarding helper's five tests passed earlier.
+External progress-window checks cover palette transfer, enlarged text, cancellation, and result
+acknowledgement. The unchanged experimental forwarding helper's five tests passed earlier.
 NuGet audits found no known vulnerable packages in the app, Core, or updater dependency graphs.
 The 77-file portable archive passed integrity, inventory, version, notice, and clean-extraction
 checks. Its exact identity is recorded in the candidate notes. These are candidate results,
 not a public-release acceptance record.
-Interactive app-control acceptance, including the real snapshot close/restart flow, was not completed
-and is currently deferred. Real Wine testing
+The maintainer reported that backup and restore work in the running development build. A complete
+snapshot → restore → roll-forward cycle on the final packaged candidate is still outstanding.
+Interactive app-control acceptance is deferred. Real Wine testing
 and the original Vivid PAK archive reproduction remain outstanding. Before publication, complete
 the exact-artifact release gate for 16.6 with all limitations recorded.
 
