@@ -15,7 +15,7 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 
 ## Development status
 
-### Unreleased 16.6 candidate
+### 16.6 release preparation
 
 The Preferences backup manager was absent from the recovered source and has been rebuilt for
 16.6. Named snapshots, optional PAK/profile-order capture, return snapshots, and interrupted-restore
@@ -52,10 +52,10 @@ External progress-window checks cover palette transfer, enlarged text, cancellat
 acknowledgement. The unchanged experimental forwarding helper's five tests passed earlier.
 NuGet audits found no known vulnerable packages in the app, Core, or updater dependency graphs.
 The 77-file portable archive passed integrity, inventory, version, notice, and clean-extraction
-checks. Its exact identity is recorded in the candidate notes. These are candidate results,
+checks. The final archive identity and publication results belong in [release records](RELEASE_RECORDS.md). These are candidate results,
 not a public-release acceptance record.
-The maintainer reported that backup and restore work in the running development build. A complete
-snapshot → restore → roll-forward cycle on the final packaged candidate is still outstanding.
+The maintainer confirmed the backup workflow works and accepted the release after the final-check
+discussion. This is maintainer-reported acceptance, not an independent app-control recording.
 Interactive app-control acceptance is deferred. Real Wine testing
 and the original Vivid PAK archive reproduction remain outstanding. Before publication, complete
 the exact-artifact release gate for 16.6 with all limitations recorded.
