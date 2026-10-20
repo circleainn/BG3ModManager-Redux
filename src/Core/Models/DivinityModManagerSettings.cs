@@ -59,6 +59,7 @@ public enum ReduxTextSize
 [DataContract]
 public class DivinityModManagerSettings : ReactiveObject
 {
+	[DataMember, Reactive] public bool SnapshotIncludeMods { get; set; }
 	[DefaultValue(true), DataMember, Reactive] public bool ShowActiveModIndex { get; set; } = true;
     [DataMember, Reactive] public bool ShowInactiveModIndex { get; set; } = false;
 

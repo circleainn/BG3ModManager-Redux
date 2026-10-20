@@ -33,7 +33,7 @@ stronger organization, safer review workflows, and optional offline-assisted gui
 - **Clearer updates and storage:** find verified Nexus replacements through Mod Review, choose the managed Downloads folder, limit previous PAK versions, and back up the existing installation and mod-list data before updating Redux.
 - **Personalize and refine:** set local aliases and artwork, manage supported native plugins through an existing YANML setup, and use improved pane layouts, Sync state, and drag placement.
 
-The upcoming 16.6 update adds Override-copy recovery, Move to Separator, automatic-category
+The upcoming 16.6 update adds Preferences backups and snapshots, Override-copy recovery, Move to Separator, automatic-category
 controls, and fixes for order reads and Script Extender detection. Read the
 [16.6 candidate notes](docs/releases/0.1.0-alpha.16.6.md), the
 [full 16.5 release notes](docs/releases/0.1.0-alpha.16.5.md), or the

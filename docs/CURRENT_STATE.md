@@ -17,6 +17,11 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 
 ### Unreleased 16.6 candidate
 
+The Preferences backup manager was absent from the recovered source and has been rebuilt for
+16.6. Named snapshots, optional PAK/profile-order capture, return snapshots, and interrupted-restore
+recovery reuse the existing backup writer and external updater runner. See the
+[backup workflow and scope](BACKUPS.md); saved games and game-directory mods remain excluded.
+
 The recovery update is being prepared as `0.1.0-alpha.16.6`, with internal version `0.1.16.600`.
 It retains the existing updater-compatible versioning scheme. The
 [candidate notes](releases/0.1.0-alpha.16.6.md) explain the loss of local development history and
@@ -35,13 +40,17 @@ the recovered work. No release tag, public archive, or channel update has been p
 - Improve experimental Wine forwarding and host-preserving launches; honor extender cache paths
   and discard stale updater pins when the selected game's configuration is absent.
 
-The October 20 candidate validation passed Debug and Publish rebuilds and all 721 regression
-checks in each configuration; the experimental forwarding helper's five tests also passed.
+The October 20 snapshot-enabled candidate passed Debug and Publish rebuilds and all 732 regression
+checks in each configuration. Snapshot tests cover cancellation, corrupt/path-invalid archives,
+rollback, return snapshots, interrupted recovery, shared instance locking, and theme/text-size layout.
+An existing notification foreground assertion failed once in Publish; isolated and full reruns passed
+without source changes. The unchanged experimental forwarding helper's five tests passed earlier.
 NuGet audits found no known vulnerable packages in the app, Core, or updater dependency graphs.
 The 77-file portable archive passed integrity, inventory, version, notice, and clean-extraction
 checks. Its exact identity is recorded in the candidate notes. These are candidate results,
 not a public-release acceptance record.
-Interactive app-control acceptance was not completed and is currently deferred. Real Wine testing
+Interactive app-control acceptance, including the real snapshot close/restart flow, was not completed
+and is currently deferred. Real Wine testing
 and the original Vivid PAK archive reproduction remain outstanding. Before publication, complete
 the exact-artifact release gate for 16.6 with all limitations recorded.
 

@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
+		<UseWPF>true</UseWPF>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<AssemblyName>ReduxUpdater</AssemblyName>
 		<RootNamespace>ReduxUpdater</RootNamespace>
@@ -20,7 +21,11 @@
 		<Optimize>false</Optimize>
 	</PropertyGroup>
 	<ItemGroup>
+		<Using Include="System.IO" />
 		<InternalsVisibleTo Include="Redux.Core.Tests" />
 		<Compile Include="..\Core\AppServices\ReduxLaunchTarget.cs" Link="ReduxLaunchTarget.cs" />
+		<Compile Include="..\Core\AppServices\ReduxPreUpdateBackupService.cs" Link="ReduxPreUpdateBackupService.cs" />
+		<Compile Include="..\Core\AppServices\ReduxSnapshotStore.cs" Link="ReduxSnapshotStore.cs" />
+		<Compile Include="..\Core\AppServices\ReduxInstanceGuard.cs" Link="ReduxInstanceGuard.cs" />
 	</ItemGroup>
 </Project>

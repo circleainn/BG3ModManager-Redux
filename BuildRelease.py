@@ -43,6 +43,7 @@ USER_STATE_DIRECTORIES = {
 	"_cache",
 	"backup",
 	"_backup",
+	"backups",
 	"gamedirectoryinstalls",
 	"restorepoints",
 	"temp",

@@ -11,6 +11,7 @@ Development resumed after a loss of local development history. This update bring
 recovered work, reviewed fixes, and maintenance improvements. Thank you for your patience during
 the gap between updates.
 
+- Rebuild **Preferences > Backups** with named snapshots stored in Redux's `Backups/Snapshots` folder, version browsing, and restore in either direction. Optionally include BG3 PAK mods, held Overrides, and profile load orders. Create a return snapshot before restoring, verify file hashes, and retain interrupted-restore recovery. Snapshot operations close Redux and restart it when complete.
 - Clear stale Script Extender version pins and cache settings when the selected game's updater configuration is removed; preserve valid pins and retain prior settings when the file cannot be read.
 - Preserve the saved workspace and last verified game order when `modsettings.lsx` is locked, damaged, or incomplete. Recheck the reviewed file before Sync or empty-order recovery, and show an unavailable sync status until a complete read succeeds.
 - Add **Tools > Resolve Override Copies** with exact file paths, content comparisons, explicit choices for different versions, retained backups, and interrupted-operation recovery. Refresh can finish while duplicates await review.

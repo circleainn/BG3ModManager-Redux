@@ -15,6 +15,7 @@ internal static class Program
 	[STAThread]
 	private static int Main(string[] args)
 	{
+		if (args.Length == 2 && args[0] == "--snapshot-request") return SnapshotRunner.Run(args[1]);
 		ReduxUpdateRequest? request = null;
 		ReduxUpdateResult? completedUpdate = null;
 		try
@@ -115,7 +116,7 @@ internal static class Program
 		}
 	}
 
-	private static void WaitForReduxToExit(int processId)
+	internal static void WaitForReduxToExit(int processId)
 	{
 		try
 		{

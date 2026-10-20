@@ -124,6 +124,7 @@ internal class Program
 			return;
 		}
 
+		if (HandleInterruptedSnapshot(launchTarget)) return;
 		var pendingActivations = new ConcurrentQueue<string>();
 		if (initialNxmLink != null) pendingActivations.Enqueue(initialNxmLink);
 		App app = null;
@@ -146,5 +147,29 @@ internal class Program
 		app.Exit += OnAppExit;
 		app.InitializeComponent();
 		app.Run();
+	}
+
+	private static bool HandleInterruptedSnapshot(ReduxLaunchTarget launchTarget)
+	{
+		// Do not load or save application state over a half-restored installation.
+		var journal = Path.Combine(launchTarget.ApplicationDirectory, "Backups", "Snapshots", "pending-restore.json");
+		if (!File.Exists(journal)) return false;
+		try
+		{
+			var choice = System.Windows.MessageBox.Show("An interrupted snapshot restore must be recovered before Redux opens. Recover now?",
+				"Redux Backup Recovery", System.Windows.MessageBoxButton.YesNo, System.Windows.MessageBoxImage.Warning, System.Windows.MessageBoxResult.Yes);
+			if (choice != System.Windows.MessageBoxResult.Yes) return true;
+			var store = new ReduxSnapshotStore(launchTarget.ApplicationDirectory);
+			var launcher = new ReduxUpdateLaunchService(launchTarget);
+			launcher.QueueSnapshot(new(1, "recover", Environment.ProcessId, launchTarget.ApplicationDirectory, store.RecoveryScopes(), "", "Recovery",
+				DivinityApp.REDUX_DISPLAY_VERSION, false, ReduxUpdateResultService.DefaultResultPath));
+			if (!launcher.StartPending(out var error)) throw new IOException(error);
+		}
+		catch (Exception ex)
+		{
+			System.Windows.MessageBox.Show("Redux stayed closed to preserve recovery data. Retry the retained runner under AppData/Local/BG3ModManager-Redux/SnapshotOperations.\n\n" + ex.Message,
+				"Redux Backup Recovery", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+		}
+		return true;
 	}
 }

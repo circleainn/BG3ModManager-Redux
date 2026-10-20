@@ -32,6 +32,8 @@ internal static class Program
 		var manifest = new CreatorManifestValidationTests();
 		var health = new ModHealthTests();
 		var preUpdateBackup = new ReduxPreUpdateBackupTests();
+		var snapshots = new ReduxSnapshotTests();
+		var snapshotUi = new ReduxSnapshotUiTests();
 		var advisorKnowledge = new LoadOrderAdvisorKnowledgeTests();
 		var advisorEvidence = new AdvisorEvidenceTests();
 		var modules = new ReduxModuleStateTests();
@@ -343,6 +345,17 @@ internal static class Program
 			(nameof(health.MissingAndInactiveDependenciesRemainIndependentOfLoadOrderGuidance), health.MissingAndInactiveDependenciesRemainIndependentOfLoadOrderGuidance),
 			(nameof(health.VerifiedSourceUpdateAppearsInReviewForAnInactiveMod), health.VerifiedSourceUpdateAppearsInReviewForAnInactiveMod),
 			(nameof(preUpdateBackup.BackupIncludesInstallModsAndOrdersWithoutSaveGames), preUpdateBackup.BackupIncludesInstallModsAndOrdersWithoutSaveGames),
+			(nameof(snapshots.FullSnapshotRestoresModsAndOrdersAndCanRollForward), snapshots.FullSnapshotRestoresModsAndOrdersAndCanRollForward),
+			(nameof(snapshots.SnapshotQueueCopiesCurrentRunnerAndCancellationPreservesInstall), snapshots.SnapshotQueueCopiesCurrentRunnerAndCancellationPreservesInstall),
+			(nameof(snapshots.SnapshotRunnerAndReduxShareTheSameInstanceGuard), snapshots.SnapshotRunnerAndReduxShareTheSameInstanceGuard),
+			(nameof(snapshots.ReduxOnlySnapshotExcludesModsLogsAndRecursiveBackups), snapshots.ReduxOnlySnapshotExcludesModsLogsAndRecursiveBackups),
+			(nameof(snapshots.CanceledSnapshotNeverPublishesOrOverwritesAnArchive), snapshots.CanceledSnapshotNeverPublishesOrOverwritesAnArchive),
+			(nameof(snapshots.CorruptSnapshotIsRejectedBeforeCreatingReturnSnapshotOrWritingTargets), snapshots.CorruptSnapshotIsRejectedBeforeCreatingReturnSnapshotOrWritingTargets),
+			(nameof(snapshots.SnapshotTraversalAndExcludedDestinationsCannotBeRestored), snapshots.SnapshotTraversalAndExcludedDestinationsCannotBeRestored),
+			(nameof(snapshots.SnapshotRestoreRollsBackOnReadOnlyDestinationFailure), snapshots.SnapshotRestoreRollsBackOnReadOnlyDestinationFailure),
+			(nameof(snapshots.InterruptedSnapshotRestoreRecoversFromDurableReturnSnapshot), snapshots.InterruptedSnapshotRestoreRecoversFromDurableReturnSnapshot),
+			(nameof(snapshots.SnapshotRejectsMovedModRootsAndLinkedFiles), snapshots.SnapshotRejectsMovedModRootsAndLinkedFiles),
+			(nameof(snapshotUi.BackupPreferencesRemainUsableAcrossThemesAndLargeText), snapshotUi.BackupPreferencesRemainUsableAcrossThemesAndLargeText),
 			(nameof(health.LoadOrderGuidanceFindingsAreAbsentUntilEnabled), health.LoadOrderGuidanceFindingsAreAbsentUntilEnabled),
 			(nameof(health.CorrectDependencyPlacementDoesNotProduceGuidanceNoise), health.CorrectDependencyPlacementDoesNotProduceGuidanceNoise),
 			(nameof(health.LoadOrderGuidanceAppliesOnlyToNormalActiveEntries), health.LoadOrderGuidanceAppliesOnlyToNormalActiveEntries),

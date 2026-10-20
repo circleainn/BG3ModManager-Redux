@@ -29,7 +29,9 @@ public enum SettingsWindowTab
 	[Description("Keybindings")]
 	Keybindings = 4,
 	[Description("Advanced Settings")]
-	Advanced = 5
+	Advanced = 5,
+	[Description("Backups and snapshots")]
+	Backups = 6
 }
 
 public class GameLaunchParamEntry : ReactiveObject
@@ -494,7 +496,7 @@ public class SettingsWindowViewModel : ReactiveObject
 						break;
 				}
 			}
-		});
+		}, whenTab.Select(tab => tab != SettingsWindowTab.Backups));
 
 		ClearCacheCommand = ReactiveCommand.Create(() =>
 		{

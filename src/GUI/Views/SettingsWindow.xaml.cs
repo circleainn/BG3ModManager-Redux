@@ -1000,6 +1000,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	public void Init(MainWindowViewModel main)
 	{
 		ViewModel = new SettingsWindowViewModel(this, main);
+		BackupsView.Init(main, this);
 		Services.RegisterSingleton(ViewModel);
 
 		var settingsFilePath = DivinityApp.GetAppDirectory("Data", "settings.json");

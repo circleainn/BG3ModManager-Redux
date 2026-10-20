@@ -1,0 +1,73 @@
+<UserControl x:Class="DivinityModManager.Views.ReduxBackupsView"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:controls="clr-namespace:DivinityModManager.Controls"
+ Foreground="{DynamicResource ReduxTextPrimaryBrush}">
+ <UserControl.Resources>
+  <ResourceDictionary>
+   <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="../Themes/MainResourceDictionary.xaml" />
+   </ResourceDictionary.MergedDictionaries>
+  <DataTemplate x:Key="SnapshotActionContent">
+   <StackPanel Orientation="Horizontal">
+    <controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center"
+     Style="{StaticResource ReduxOptionalInterfaceIconStyle}"
+     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+     StrokeData="{Binding Tag, RelativeSource={RelativeSource AncestorType=Button}}" />
+    <TextBlock Text="{Binding}" VerticalAlignment="Center" />
+   </StackPanel>
+  </DataTemplate>
+  </ResourceDictionary>
+ </UserControl.Resources>
+ <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+  <StackPanel Margin="18,14">
+   <TextBlock Text="Backups and snapshots" FontSize="{DynamicResource Redux.FontSize.20}" FontWeight="SemiBold" />
+   <TextBlock Margin="0,8,0,8" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+    Text="Keep a version of Redux and its saved settings, orders, and artwork. Redux closes while a snapshot is created or restored, then restarts. Save unfinished order edits first." />
+   <TextBlock x:Name="SnapshotFolderText" TextWrapping="Wrap" Margin="0,0,0,12" />
+   <TextBlock Text="Snapshot name" Margin="0,0,0,4" />
+   <TextBox x:Name="SnapshotName" MaxLength="100" AutomationProperties.Name="Snapshot name" />
+   <CheckBox x:Name="IncludeMods" Content="Include mods and mod lists" Style="{StaticResource ReduxCheckBoxStyle}" Margin="0,12,0,6" />
+   <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+    Text="Includes BG3's Mods folder, held Overrides, and profile load orders. Saved games, game-directory DLL/loose-texture mods, caches, logs, and the snapshot library are excluded. Snapshots contain private settings; keep them private." />
+   <WrapPanel Margin="0,14,0,14">
+    <Button x:Name="CreateSnapshotButton" Content="Create snapshot and restart" Click="Create_Click" Margin="0,0,8,8"
+     Style="{StaticResource ReduxPrimaryActionButtonStyle}" ContentTemplate="{StaticResource SnapshotActionContent}" Tag="{DynamicResource Redux.Icon.Save}" />
+    <Button Content="Open backup folder" Click="OpenFolder_Click" Margin="0,0,8,8"
+     Style="{StaticResource ReduxSecondaryActionButtonStyle}" ContentTemplate="{StaticResource SnapshotActionContent}" Tag="{DynamicResource Redux.Icon.FolderOpen}" />
+    <Button Content="Refresh" Click="Refresh_Click" Margin="0,0,0,8"
+     Style="{StaticResource ReduxSecondaryActionButtonStyle}" ContentTemplate="{StaticResource SnapshotActionContent}" Tag="{DynamicResource Redux.Icon.RefreshStroke}" />
+   </WrapPanel>
+   <TextBlock Text="Saved snapshots" FontWeight="SemiBold" Margin="0,0,0,6" />
+   <ListBox x:Name="Snapshots" MinHeight="120" MaxHeight="240" SelectionChanged="Selection_Changed"
+    Background="{DynamicResource ReduxSurfaceElevatedBrush}" Foreground="{DynamicResource ReduxTextPrimaryBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}"
+    ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="Saved snapshots">
+    <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem">
+     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+     <Setter Property="Foreground" Value="{DynamicResource ReduxTextPrimaryBrush}" />
+     <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ListBoxItem">
+      <Border x:Name="Row" BorderThickness="1" BorderBrush="Transparent" Padding="3" Background="Transparent"><ContentPresenter /></Border>
+      <ControlTemplate.Triggers>
+       <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Row" Property="Background" Value="{DynamicResource ReduxAccentSoftBrush}" /></Trigger>
+       <Trigger Property="IsSelected" Value="True"><Setter TargetName="Row" Property="Background" Value="{DynamicResource ReduxSelectionBrush}" /><Setter TargetName="Row" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" /></Trigger>
+       <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="Row" Property="BorderBrush" Value="{DynamicResource ReduxAccentBrush}" /></Trigger>
+      </ControlTemplate.Triggers>
+     </ControlTemplate></Setter.Value></Setter>
+    </Style></ListBox.ItemContainerStyle>
+    <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="6">
+     <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
+     <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" />
+    </StackPanel></DataTemplate></ListBox.ItemTemplate>
+   </ListBox>
+   <TextBlock Margin="0,8,0,12" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
+    Text="Restore any saved snapshot to roll backward or forward. Before restoring, Redux saves a return snapshot of the folders being replaced. Files added since the selected snapshot are removed from those folders; the return snapshot keeps them recoverable." />
+   <WrapPanel>
+    <Button x:Name="RestoreSnapshotButton" Content="Restore selected and restart" Click="Restore_Click" Margin="0,0,8,8" IsEnabled="False"
+     Style="{StaticResource ReduxMinorWarningActionButtonStyle}" ContentTemplate="{StaticResource SnapshotActionContent}" Tag="{DynamicResource Redux.Icon.Undo}" />
+    <Button x:Name="RecoverSnapshotButton" Content="Recover interrupted restore" Click="Recover_Click" Margin="0,0,0,8" Visibility="Collapsed"
+     Style="{StaticResource ReduxMinorWarningActionButtonStyle}" ContentTemplate="{StaticResource SnapshotActionContent}" Tag="{DynamicResource Redux.Icon.Undo}" />
+   </WrapPanel>
+   <TextBlock x:Name="SnapshotStatus" TextWrapping="Wrap" Margin="0,8,0,0" AutomationProperties.LiveSetting="Polite" />
+  </StackPanel>
+ </ScrollViewer>
+</UserControl>

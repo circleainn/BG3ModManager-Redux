@@ -27,7 +27,7 @@ public sealed class ReduxUpdatePackageService
 	private static readonly HashSet<string> ProtectedRootDirectories = new(StringComparer.OrdinalIgnoreCase)
 	{
 		"Data", "Orders", "CurrentOrders", "_Logs", "Logs", "Cache", "_Cache", "Backup", "_Backup",
-		"GameDirectoryInstalls", "RestorePoints", "Temp"
+		"GameDirectoryInstalls", "RestorePoints", "Temp", "Backups"
 	};
 	private static readonly HashSet<string> ProtectedFileNames = new(StringComparer.OrdinalIgnoreCase)
 	{

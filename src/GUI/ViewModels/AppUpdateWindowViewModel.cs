@@ -249,7 +249,7 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 					new("Previous Mod Versions", previousVersions),
 					new("Saved Orders", orders),
 					new("Profile Load Orders", main.PathwayData.AppDataProfilesPath, true)
-				], backupProgress, _backupCancellation.Token));
+				], backupProgress, _backupCancellation.Token, [Path.Combine(applicationDirectory, "Backups")]));
 				backingUp = false;
 				IsBackingUp = false;
 				CanSkip = false;
