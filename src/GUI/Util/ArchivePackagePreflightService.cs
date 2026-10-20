@@ -195,27 +195,31 @@ public static class ArchivePackagePreflightService
 						ex.Message));
 				}
 			}
+			cancellationToken.ThrowIfCancellationRequested();
 			var packages = new List<PackagePreflightReport>(pakEntries.Length);
 
-			using var staged = await StagedPakArchive.ReadAsync(archive, temporaryRoot, true, null, cancellationToken);
-			foreach (var stagedPath in staged.Primaries)
+			if (pakEntries.Length > 0)
 			{
-				cancellationToken.ThrowIfCancellationRequested();
-				var entry = staged.Entries[stagedPath];
-				try
+				using var staged = await StagedPakArchive.ReadAsync(archive, temporaryRoot, true, null, cancellationToken);
+				foreach (var stagedPath in staged.Primaries)
 				{
-					staged.RequireMatchingPartFolders(stagedPath);
-					var report = await PackagePreflightService.AnalyzeAsync(stagedPath, installedMods, cancellationToken);
-					packages.Add(report.WithSource($"{normalizedPath}::{NormalizeEntryPath(entry.Key)}",
-						PakFileSet.GetPaths(stagedPath).Sum(path => new FileInfo(path).Length)));
-					findings.AddRange(report.Findings.Where(finding => finding.Title == PakImportCompatibility.MultipartFindingTitle));
-				}
-				catch (OperationCanceledException) { throw; }
-				catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
-				{
-					var finding = new PackagePreflightFinding(ModHealthSeverity.Error, PakImportCompatibility.MultipartFindingTitle, ex.Message);
-					packages.Add(new PackagePreflightReport($"{normalizedPath}::{NormalizeEntryPath(entry.Key)}", null, 0, 0, [finding]));
-					findings.Add(finding);
+					cancellationToken.ThrowIfCancellationRequested();
+					var entry = staged.Entries[stagedPath];
+					try
+					{
+						staged.RequireMatchingPartFolders(stagedPath);
+						var report = await PackagePreflightService.AnalyzeAsync(stagedPath, installedMods, cancellationToken);
+						packages.Add(report.WithSource($"{normalizedPath}::{NormalizeEntryPath(entry.Key)}",
+							PakFileSet.GetPaths(stagedPath).Sum(path => new FileInfo(path).Length)));
+						findings.AddRange(report.Findings.Where(finding => finding.Title == PakImportCompatibility.MultipartFindingTitle));
+					}
+					catch (OperationCanceledException) { throw; }
+					catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
+					{
+						var finding = new PackagePreflightFinding(ModHealthSeverity.Error, PakImportCompatibility.MultipartFindingTitle, ex.Message);
+						packages.Add(new PackagePreflightReport($"{normalizedPath}::{NormalizeEntryPath(entry.Key)}", null, 0, 0, [finding]));
+						findings.Add(finding);
+					}
 				}
 			}
 
@@ -263,8 +267,8 @@ public static class ArchivePackagePreflightService
 		{
 			findings.Add(new PackagePreflightFinding(
 				ModHealthSeverity.Error,
-				"No PAK files found",
-				"The archive does not contain a Baldur's Gate 3 PAK package."));
+				ArchivePakImport.NoPakFilesTitle,
+				ArchivePakImport.GetMissingPakMessage(entries)));
 		}
 
 		var collision = ArchivePakImport.FindDestinationCollision(pakEntries);

@@ -88,6 +88,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			nameof(DivinityModManagerSettings.GameExecutablePath),
 			nameof(DivinityModManagerSettings.GameDataPath),
 			nameof(DivinityModManagerSettings.DocumentsFolderPathOverride),
+			nameof(DivinityModManagerSettings.ScriptExtenderDetectionPathOverride),
 			nameof(DivinityModManagerSettings.LoadOrderPath)),
 		new("Downloads and archives",
 			"Choose a download workspace and optionally keep verified install packages for later reinstall. Retained archives are stored separately.",
@@ -999,6 +1000,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	public void Init(MainWindowViewModel main)
 	{
 		ViewModel = new SettingsWindowViewModel(this, main);
+		BackupsView.Init(main, this);
 		Services.RegisterSingleton(ViewModel);
 
 		var settingsFilePath = DivinityApp.GetAppDirectory("Data", "settings.json");

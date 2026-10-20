@@ -324,16 +324,26 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		AutomaticCategoriesMenuItem.IsChecked = ViewModel.Settings.EnableAutomaticModCategories;
 		RestoreAutomaticCategoriesMenuItem.IsEnabled = ViewModel.Settings.EnableAutomaticModCategories &&
 			((ViewModel.Settings.ModCategoryAssignments?.Count ?? 0) > 0 ||
-			 (ViewModel.Settings.ModCategoryOverrides?.Count ?? 0) > 0);
+			 (ViewModel.Settings.ModCategoryOverrides?.Count ?? 0) > 0 ||
+			 (ViewModel.Settings.ClearedAutomaticCategoryModIds?.Count ?? 0) > 0);
+		ClearAutomaticAssignmentsMenuItem.IsEnabled = ViewModel.Settings.EnableAutomaticModCategories &&
+			ViewModel.ActiveMods.Concat(ViewModel.InactiveMods).Concat(ViewModel.ForceLoadedMods).Any(mod => !mod.IsVisualDivider);
+		RestoreClearedAutomaticAssignmentsMenuItem.IsEnabled = ViewModel.Settings.ClearedAutomaticCategoryModIds.Count > 0;
+		HideBuiltInCategoryFiltersMenuItem.IsEnabled = ViewModel.GetBuiltInCategoryFilters().Any(ViewModel.IsModCategoryEnabled);
+		ShowBuiltInCategoryFiltersMenuItem.IsEnabled = ViewModel.GetBuiltInCategoryFilters().Any(category => !ViewModel.IsModCategoryEnabled(category));
 		EditCategoryMenuItem.IsEnabled = !String.IsNullOrWhiteSpace(ViewModel.SelectedModCategory) &&
 			!ViewModel.SelectedModCategory.Equals(MainWindowViewModel.AllModsCategory, StringComparison.OrdinalIgnoreCase);
 
 		EnableCategoriesMenuItem.Items.Clear();
-		foreach (var category in ViewModel.GetAllModCategories())
+		foreach (var category in ViewModel.GetAllModCategories().Concat(ViewModel.GetBuiltInCategoryFilters()).Distinct(StringComparer.OrdinalIgnoreCase))
 		{
-			var item = new MenuItem { Header = category, IsCheckable = true, IsChecked = ViewModel.IsModCategoryEnabled(category), Icon = CreateCategoryAssignmentIcon(category) };
+			var item = new MenuItem { Header = category, IsCheckable = true, IsChecked = ViewModel.IsModCategoryEnabled(category), Icon = CreateCategoryAssignmentIcon(category), ToolTip = "Show this category filter in the sidebar." };
 			ReduxMenuItemExtension.SetCheckOnRight(item, true);
-			item.Click += (_, _) => ViewModel.SetModCategoryEnabled(category, item.IsChecked);
+			item.Click += (_, _) =>
+			{
+				ApplyCategoryPreference(() => ViewModel.SetModCategoryEnabled(category, item.IsChecked));
+				item.IsChecked = ViewModel.IsModCategoryEnabled(category);
+			};
 			EnableCategoriesMenuItem.Items.Add(item);
 		}
 
@@ -355,6 +365,36 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private void DisableNewModIndicatorsMenuItem_Click(object sender, RoutedEventArgs e) =>
 		ViewModel.SetNewModCategoryIndicatorsDisabled(DisableNewModIndicatorsMenuItem.IsChecked);
+
+	private void ApplyCategoryPreference(Action action)
+	{
+		try { action(); }
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Could not save category choices: {ex}");
+			ShowCategoryMessage("Your previous category choices were kept because the changes could not be saved.",
+				"Category Choices", MessageBoxButton.OK, MessageBoxImage.Error);
+		}
+	}
+
+	private void ClearAutomaticAssignmentsMenuItem_Click(object sender, RoutedEventArgs e) => ApplyCategoryPreference(() =>
+	{
+		var cleared = ViewModel.ClearAutomaticAssignmentsForCurrentMods();
+		ViewModel.ShowAlert($"Cleared automatic assignments for {cleared} mod{(cleared == 1 ? "" : "s")}. Use Restore cleared automatic assignments to undo this choice.", AlertType.Info, 15);
+	});
+
+	private void RestoreClearedAutomaticAssignmentsMenuItem_Click(object sender, RoutedEventArgs e) => ApplyCategoryPreference(() =>
+	{
+		var restored = ViewModel.RestoreClearedAutomaticAssignments();
+		ViewModel.ShowAlert($"Restored automatic assignments for {restored} mod{(restored == 1 ? "" : "s")}." +
+			(ViewModel.Settings.EnableAutomaticModCategories ? "" : " Assign categories automatically is still off."), AlertType.Info, 15);
+	});
+
+	private void HideBuiltInCategoryFiltersMenuItem_Click(object sender, RoutedEventArgs e) =>
+		ApplyCategoryPreference(() => ViewModel.SetBuiltInCategoryFiltersVisible(false));
+
+	private void ShowBuiltInCategoryFiltersMenuItem_Click(object sender, RoutedEventArgs e) =>
+		ApplyCategoryPreference(() => ViewModel.SetBuiltInCategoryFiltersVisible(true));
 
 	private void AutomaticCategoriesMenuItem_Click(object sender, RoutedEventArgs e)
 	{
@@ -393,7 +433,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		const string message =
 			"Reset every mod to automatic categories?\n\n"
 			+ "All manual category assignments, including custom-category assignments and explicit No Category choices, will be cleared. "
-			+ "Redux will immediately classify each mod again using its current automatic rules and already-linked source metadata.\n\n"
+			+ "Previously cleared automatic assignments will also be restored. Redux will classify each mod again using its current automatic rules and already-linked source metadata.\n\n"
 			+ "Custom category definitions, colors, icons, descriptions, sidebar order, separators, notes, sources, installed mods, and load order will not change.";
 		if (ShowCategoryMessage(message, "Reset to Automatic Categories?", MessageBoxButton.YesNo,
 			MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
@@ -1099,7 +1139,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			Header = "Automatic",
 			IsCheckable = true,
-			IsChecked = categoryTargets.All(target => !ViewModel.HasModCategoryOverride(target))
+			IsChecked = categoryTargets.All(ViewModel.UsesAutomaticCategoryAssignment)
 		};
 		automaticItem.Click += (_, _) => ViewModel.SetModCategoryAssignments(categoryTargets, null);
 		categoryMenu.Items.Add(automaticItem);
@@ -1376,6 +1416,10 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		var activeModList = listView == ActiveModsListView;
 		var overrideModList = listView == ForceLoadedModsListView;
+		var sourcePane = overrideModList ? VisualModListPane.Override
+			: activeModList ? VisualModListPane.Active : VisualModListPane.Inactive;
+		var separatorTargets = categoryTargets.Any(target => ReferenceEquals(target, mod)) ? categoryTargets : [mod];
+		menu.Items.Insert(Math.Min(2, menu.Items.Count), CreateMoveToSeparatorMenu(separatorTargets, sourcePane));
 		var dividerMenu = new MenuItem
 		{
 			Header = "Separator",
@@ -1400,6 +1444,43 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		dividerMenu.Items.Add(new Separator());
 		AddVisualDividerStateActions(dividerMenu, activeModList, overrideList: overrideModList);
 		menu.Items.Insert(Math.Min(3, menu.Items.Count), dividerMenu);
+	}
+
+	private MenuItem CreateMoveToSeparatorMenu(IReadOnlyList<DivinityModData> targets, VisualModListPane pane)
+	{
+		var destinations = ViewModel.GetMoveToSeparatorTargets(pane);
+		var menu = new MenuItem
+		{
+			Header = targets.Count > 1 ? $"Move {targets.Count} Mods to Separator" : "Move to Separator",
+			Tag = VisualDividerMenuTag,
+			Icon = ReduxIcon.FromResource("Redux.Icon.ListStroke", true),
+			IsEnabled = destinations.Count > 0 && ViewModel.IsInitialized && !ViewModel.IsLocked,
+			ToolTip = destinations.Count == 0 ? "Add a separator in this pane first."
+				: "Append to a separator in this pane, keeping the selected mods in their current order."
+		};
+		foreach (var destination in destinations)
+		{
+			var parent = destinations.FirstOrDefault(candidate => String.Equals(
+				candidate.Id, destination.ParentDividerId, StringComparison.OrdinalIgnoreCase));
+			var title = String.IsNullOrWhiteSpace(destination.Title) ? "Untitled separator" : destination.Title;
+			var label = parent == null ? title
+				: $"{(String.IsNullOrWhiteSpace(parent.Title) ? "Untitled separator" : parent.Title)} › {title}";
+			var destinationItem = new MenuItem
+			{
+				Header = label,
+				Icon = ReduxIcon.FromResource("Redux.Icon.ChevronRightStroke", true),
+				ToolTip = "Append after this separator's own mods, before any sub-separator."
+			};
+			destinationItem.Click += (_, _) =>
+			{
+				if (!ViewModel.MoveModsToSeparator(targets, pane, destination.Id)) return;
+				var hidden = destination.IsCollapsed || parent?.IsCollapsed == true;
+				ViewModel.ShowAlert($"Moved {targets.Count} {(targets.Count == 1 ? "mod" : "mods")} to {label}."
+					+ (hidden ? " Expand the separator to see them." : String.Empty), AlertType.Info, 7);
+			};
+			menu.Items.Add(destinationItem);
+		}
+		return menu;
 	}
 
 	private static bool IsGeneratedModContextEntry(FrameworkElement entry) =>

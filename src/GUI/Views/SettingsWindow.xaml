@@ -1551,6 +1551,10 @@
 					</Grid>
 				</ScrollViewer>
 			</TabItem>
+			<TabItem x:Name="BackupsSettingsTab">
+				<TabItem.Header><TextBlock Text="Backups" /></TabItem.Header>
+				<local:ReduxBackupsView x:Name="BackupsView" />
+			</TabItem>
 		</TabControl>
 		<StatusBar Grid.Row="2"
 			MinHeight="16"

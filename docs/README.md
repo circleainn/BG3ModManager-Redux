@@ -9,7 +9,9 @@ detail.
 | Guide | What it covers |
 |:--|:--|
 | [Current project state](CURRENT_STATE.md) | Current release, settled decisions, known limits, and planned work |
+| [October 2026 issue audit](ISSUE_AUDIT_2026-10-19.md) | GitHub and recent Nexus reports, implemented scope, and remaining verification |
 | [Installation and updates](INSTALLATION.md) | Install, update, move, roll back, or remove the portable app |
+| [Backups and snapshots](BACKUPS.md) | Save Redux versions and optional PAK/mod-list state, restore, and recover interrupted operations |
 | [Frequently asked questions](FAQ.md) | Short answers about everyday Redux behavior |
 | [Troubleshooting](TROUBLESHOOTING.md) | Startup, paths, downloads, NXM links, packages, and game sync |
 | [Privacy and local data](PRIVACY_AND_DATA.md) | Stored data, network requests, credentials, logs, and safe sharing |
@@ -43,6 +45,7 @@ detail.
 | [Security policy](SECURITY.md) | Supported versions, reporting, and security boundaries |
 | [Third-party notices](../licenses/Third-Party-Notices.md) | Bundled dependencies, licenses, and attribution |
 | [Database tools](../tools/ReduxModDatabaseTool/README.md) | Preview-first database maintenance tools |
+| [Experimental Wine forwarding](../tools/linux/README.md) | Native browser forwarding setup, prefix boundaries, and remaining Linux validation |
 
 Release notes in [`releases/`](releases/) are historical records for specific versions. They may
 describe older distribution methods or limitations that no longer apply. Use the current guides

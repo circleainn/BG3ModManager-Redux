@@ -445,7 +445,7 @@
 												<ColumnDefinition Width="*"/>
 											</Grid.ColumnDefinitions>
 											<ContentControl Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-											<TextBlock Text="Open Nexus download links in Redux" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+											<TextBlock x:Name="NxmLinksLabel" Text="Open Nexus download links in Redux" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
 										</Grid>
 									</CheckBox>
 									<TextBlock Text="A Nexus API key is required for downloads." Style="{StaticResource WelcomeCaptionStyle}"/>

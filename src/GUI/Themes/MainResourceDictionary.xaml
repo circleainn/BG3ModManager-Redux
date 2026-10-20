@@ -25,6 +25,7 @@
 
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="DefaultStyles/ComboBox.xaml" />
+		<ResourceDictionary Source="StandaloneOperationResources.xaml" />
 	</ResourceDictionary.MergedDictionaries>
     <sys:Double x:Key="Redux.Manager.ThumbnailWidth">128</sys:Double>
     <sys:Double x:Key="Redux.Manager.ThumbnailHeight">72</sys:Double>
@@ -1129,15 +1130,6 @@
 		<LineGeometry StartPoint="7,17" EndPoint="4,20" />
 		<LineGeometry StartPoint="3,19" EndPoint="5,21" />
 	</GeometryGroup>
-	<GeometryGroup x:Key="Redux.Icon.Save">
-		<PathGeometry Figures="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
-		<PathGeometry Figures="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
-		<PathGeometry Figures="M7 3v4a1 1 0 0 0 1 1h7" />
-	</GeometryGroup>
-	<GeometryGroup x:Key="Redux.Icon.Undo">
-		<PathGeometry Figures="M9,7 L4,12 L9,17" />
-		<PathGeometry Figures="M4,12 L14,12 C17.314,12 20,14.686 20,18" />
-	</GeometryGroup>
 	<GeometryGroup x:Key="Redux.Icon.Redo">
 		<PathGeometry Figures="M15,7 L20,12 L15,17" />
 		<PathGeometry Figures="M20,12 L10,12 C6.686,12 4,14.686 4,18" />
@@ -1176,13 +1168,6 @@
 		<PathGeometry Figures="M10 9H8" />
 		<PathGeometry Figures="M16 13H8" />
 		<PathGeometry Figures="M16 17H8" />
-	</GeometryGroup>
-	<GeometryGroup x:Key="Redux.Icon.Close">
-		<PathGeometry Figures="M18 6 6 18" />
-		<PathGeometry Figures="m6 6 12 12" />
-	</GeometryGroup>
-	<GeometryGroup x:Key="Redux.Icon.WindowMinimize">
-		<PathGeometry Figures="M5 12h14" />
 	</GeometryGroup>
 	<GeometryGroup x:Key="Redux.Icon.WindowMaximize">
 		<RectangleGeometry Rect="4,4,16,16" RadiusX="2" RadiusY="2" />
@@ -2340,22 +2325,6 @@
 	<conv:FilePathToBitmapImageConverter x:Key="FilePathToBitmapImageConverter" />
 	<conv:ModToDisplayNameConverter x:Key="ModToDisplayNameConverter" />
 	<conv:AvailableWidthConverter x:Key="AvailableWidthConverter" />
-	<Style x:Key="ReduxProgressBarStyle" TargetType="{x:Type ProgressBar}">
-		<Setter Property="Height" Value="8" />
-		<Setter Property="Background" Value="{DynamicResource ReduxSurfaceMutedBrush}" />
-		<Setter Property="Foreground" Value="{DynamicResource ReduxAccentBrush}" />
-		<Setter Property="BorderBrush" Value="{DynamicResource ReduxBorderStrongBrush}" />
-		<Setter Property="BorderThickness" Value="1" />
-		<Setter Property="Template">
-			<Setter.Value>
-				<ControlTemplate TargetType="{x:Type ProgressBar}">
-					<Border x:Name="PART_Track" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}" ClipToBounds="True">
-						<Border x:Name="PART_Indicator" HorizontalAlignment="Left" Background="{TemplateBinding Foreground}" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}" />
-					</Border>
-				</ControlTemplate>
-			</Setter.Value>
-		</Setter>
-	</Style>
 	<BitmapImage x:Key="AlertBar_Close" UriSource="pack://application:,,,/Resources/Icons/AlertBar_Close.png" />
 	<BitmapImage x:Key="AlertBar_Close_Hover" UriSource="pack://application:,,,/Resources/Icons/AlertBar_Close_Hover.png" />
 	<BitmapImage x:Key="AlertBar_Danger" UriSource="pack://application:,,,/Resources/Icons/AlertBar_Danger_16x.png" />

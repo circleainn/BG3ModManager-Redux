@@ -29,7 +29,8 @@ THIRD_PARTY_LICENSE_FILES = (
 	Path("ArchivoBlack-OFL-1.1.txt"),
 	Path("IBMPlexMono-OFL-1.1.txt"),
 	Path("NewtonsoftJson-MIT.txt"),
-	Path("ImageSharp-Split-License.txt"),
+	Path("SkiaSharp-MIT.txt"),
+	Path("SkiaSharp-Native-Third-Party-Notices.txt"),
 )
 
 USER_STATE_DIRECTORIES = {
@@ -42,6 +43,7 @@ USER_STATE_DIRECTORIES = {
 	"_cache",
 	"backup",
 	"_backup",
+	"backups",
 	"gamedirectoryinstalls",
 	"restorepoints",
 	"temp",
@@ -82,6 +84,8 @@ REQUIRED_FILES = {
 	Path("_Lib/LSLib.dll"),
 	Path("_Lib/LSLibNative.dll"),
 	Path("_Lib/Ijwhost.dll"),
+	Path("_Lib/SkiaSharp.dll"),
+	Path("libSkiaSharp.dll"),
 	Path("LICENSE"),
 	Path("README.md"),
 	Path("THIRD-PARTY-NOTICES.md"),

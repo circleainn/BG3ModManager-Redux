@@ -21,7 +21,12 @@ public sealed class ReduxUpdateLaunchService
 	};
 
 	private readonly object _gate = new();
+	private readonly ReduxLaunchTarget _currentLaunch;
 	private PendingUpdate _pending;
+	public bool PendingIsSnapshot { get { lock (_gate) return _pending?.IsSnapshot == true; } }
+
+	public ReduxUpdateLaunchService(ReduxLaunchTarget currentLaunch = null) =>
+		_currentLaunch = currentLaunch ?? ReduxLaunchTarget.Current();
 
 	public bool HasPendingUpdate
 	{
@@ -77,7 +82,6 @@ public sealed class ReduxUpdateLaunchService
 			{
 				if (_pending != null) throw new InvalidOperationException("A Redux update is already queued.");
 				_pending = new PendingUpdate(
-					Path.Combine(runnerDirectory, "ReduxUpdater.exe"),
 					requestPath,
 					runnerDirectory,
 					transactionRoot);
@@ -106,13 +110,9 @@ public sealed class ReduxUpdateLaunchService
 
 		try
 		{
-			var start = new ProcessStartInfo(pending.ExecutablePath)
-			{
-				UseShellExecute = false,
-				WorkingDirectory = pending.WorkingDirectory
-			};
-			start.ArgumentList.Add("--request");
-			start.ArgumentList.Add(pending.RequestPath);
+			var start = pending.IsSnapshot
+				? CreateSnapshotRunnerStartInfo(pending.WorkingDirectory, pending.RequestPath)
+				: CreateRunnerStartInfo(pending.WorkingDirectory, pending.RequestPath);
 			Process.Start(start);
 			error = String.Empty;
 			return true;
@@ -123,6 +123,41 @@ public sealed class ReduxUpdateLaunchService
 			TryDeleteDirectory(pending.TransactionDirectory);
 			error = "Redux could not start the updater. The current installation was not changed.";
 			return false;
+		}
+	}
+
+	internal ProcessStartInfo CreateRunnerStartInfo(string runnerDirectory, string requestPath) =>
+		ReduxLaunchTarget.ForExecutable(Path.Combine(runnerDirectory, "ReduxUpdater.exe"), _currentLaunch.DotNetHostPath)
+			.CreateStartInfo(["--request", Path.GetFullPath(requestPath)]);
+
+	internal ProcessStartInfo CreateSnapshotRunnerStartInfo(string runnerDirectory, string requestPath) =>
+		ReduxLaunchTarget.ForExecutable(Path.Combine(runnerDirectory, "ReduxUpdater.exe"), _currentLaunch.DotNetHostPath)
+			.CreateStartInfo(["--snapshot-request", Path.GetFullPath(requestPath)]);
+
+	public void QueueSnapshot(ReduxSnapshotStore.Request request, ReduxSnapshotAppearance appearance = null)
+	{
+		if (request.SchemaVersion != 1 || request.ParentProcessId <= 0 || request.Operation is not ("create" or "restore" or "recover")
+			|| !String.Equals(Path.GetFullPath(request.ApplicationDirectory), _currentLaunch.ApplicationDirectory, StringComparison.OrdinalIgnoreCase))
+			throw new InvalidDataException("The snapshot request does not match this Redux installation.");
+		lock (_gate)
+		{
+			if (_pending != null) throw new InvalidOperationException("Another update or snapshot is already queued.");
+			var transaction = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+				"BG3ModManager-Redux", "SnapshotOperations", Guid.NewGuid().ToString("N"));
+			try
+			{
+				Directory.CreateDirectory(transaction);
+				foreach (var name in RunnerFiles)
+					File.Copy(Path.Combine(_currentLaunch.ApplicationDirectory, "Updater", name), Path.Combine(transaction, name));
+				var path = Path.Combine(transaction, "request.json");
+				ReduxSnapshotStore.WriteRequest(path, request);
+				(appearance ?? new ReduxSnapshotAppearance()).Write(Path.Combine(transaction, "appearance.json"));
+				File.WriteAllText(Path.Combine(transaction, "RECOVERY.txt"),
+					"If a snapshot restore is interrupted, keep this folder. Run ReduxUpdater.exe --snapshot-request request.json from this folder to recover. "
+					+ "If Redux opens, Preferences > Backups > Recover interrupted restore performs the same recovery. Snapshots are kept in Redux/Backups/Snapshots.");
+				_pending = new PendingUpdate(path, transaction, transaction, true);
+			}
+			catch { TryDeleteDirectory(transaction); throw; }
 		}
 	}
 
@@ -151,8 +186,8 @@ public sealed class ReduxUpdateLaunchService
 	}
 
 	private sealed record PendingUpdate(
-		string ExecutablePath,
 		string RequestPath,
 		string WorkingDirectory,
-		string TransactionDirectory);
+		string TransactionDirectory,
+		bool IsSnapshot = false);
 }

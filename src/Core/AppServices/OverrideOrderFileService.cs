@@ -5,6 +5,13 @@ namespace DivinityModManager.AppServices;
 /// <summary>Moves only reviewed Override PAKs between BG3's Mods folder and Redux's holding folder.</summary>
 public sealed class OverrideOrderFileService
 {
+	public sealed record DuplicateConflict(string FileName, string ModsPath, string HeldPath);
+	public sealed class DuplicateConflictException(IReadOnlyList<DuplicateConflict> conflicts)
+		: IOException("Override copies exist in both folders: " + String.Join(", ", conflicts.Select(item => item.FileName))
+			+ ". Review the copies before switching.")
+	{
+		public IReadOnlyList<DuplicateConflict> Conflicts { get; } = conflicts;
+	}
 	public sealed record Move(string FileName, string Source, string Destination, long Length, DateTime ModifiedUtc, bool Activate);
 	private sealed record SwitchJournal(string ModsFolderTarget, IReadOnlyList<Move> Moves);
 	public sealed record Plan(IReadOnlyList<Move> Moves)
@@ -46,6 +53,7 @@ public sealed class OverrideOrderFileService
 	public Plan Review(IEnumerable<string> installedOverridePaths, IEnumerable<string> wantedFileNames)
 	{
 		EnsureFoldersSafe();
+		EnsureNoDuplicateRecovery();
 		if (File.Exists(_journalPath))
 			throw new IOException("An interrupted Override switch must be recovered before reviewing another one.");
 		var wanted = NormalizeNames(wantedFileNames);
@@ -56,13 +64,16 @@ public sealed class OverrideOrderFileService
 			.Where(path => String.Equals(Path.GetDirectoryName(path), _modsFolder, StringComparison.OrdinalIgnoreCase))
 			.ToDictionary(Path.GetFileName, path => path, StringComparer.OrdinalIgnoreCase);
 		var held = HeldFiles.ToDictionary(name => name, name => Path.Combine(_holdingFolder, name), StringComparer.OrdinalIgnoreCase);
+		// Include collisions with any installed PAK, even one not classified as an Override.
+		// Recovery must never silently replace or activate such an unknown package.
+		var duplicates = held.Keys.Where(name => File.Exists(Path.Combine(_modsFolder, name)))
+			.Select(name => new DuplicateConflict(name, Path.Combine(_modsFolder, name), held[name])).ToArray();
+		if (duplicates.Length > 0) throw new DuplicateConflictException(duplicates);
 		foreach (var name in wanted.ToArray())
 		{
 			var path = installed.GetValueOrDefault(name) ?? held.GetValueOrDefault(name);
 			if (path != null) wanted.UnionWith(PakFileSet.GetPaths(path).Select(Path.GetFileName));
 		}
-		if (installed.Keys.Intersect(held.Keys, StringComparer.OrdinalIgnoreCase).Any())
-			throw new IOException("An Override package exists in both Mods and Redux's holding folder. Resolve the duplicate before switching.");
 		var unavailable = wanted.Except(installed.Keys.Concat(held.Keys), StringComparer.OrdinalIgnoreCase).ToList();
 		if (unavailable.Count > 0)
 			throw new FileNotFoundException("These saved Override packages are unavailable: " + String.Join(", ", unavailable));
@@ -79,6 +90,7 @@ public sealed class OverrideOrderFileService
 		ArgumentNullException.ThrowIfNull(plan);
 		if (plan.Moves.Count == 0) return;
 		EnsureFoldersSafe();
+		EnsureNoDuplicateRecovery();
 		if (File.Exists(_journalPath)) throw new IOException("An interrupted Override switch must be recovered first.");
 		foreach (var move in plan.Moves) Validate(move);
 		Directory.CreateDirectory(_modsFolder);
@@ -106,6 +118,7 @@ public sealed class OverrideOrderFileService
 	{
 		if (!File.Exists(_journalPath)) return;
 		EnsureFoldersSafe();
+		EnsureNoDuplicateRecovery();
 		Directory.CreateDirectory(_modsFolder);
 		var journalText = File.ReadAllText(_journalPath);
 		var legacyJournal = journalText.TrimStart().StartsWith('[');
@@ -142,6 +155,17 @@ public sealed class OverrideOrderFileService
 			result.Add(name);
 		}
 		return result;
+	}
+
+	public OverrideDuplicateRecoveryService CreateDuplicateRecoveryService() => new(_modsFolder, _holdingFolder,
+		Path.Combine(Path.GetDirectoryName(_holdingFolder), "OverrideDuplicateBackups"));
+
+	private void EnsureNoDuplicateRecovery()
+	{
+		var backups = Path.Combine(Path.GetDirectoryName(_holdingFolder), "OverrideDuplicateBackups");
+		if (Directory.Exists(backups) && Directory.EnumerateDirectories(backups)
+			.Any(path => Guid.TryParseExact(Path.GetFileName(path), "N", out _) && File.Exists(Path.Combine(path, "pending.json"))))
+			throw new IOException("An interrupted Override copy resolution must be recovered before switching orders.");
 	}
 
 	private void EnsureFoldersSafe()

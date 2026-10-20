@@ -128,38 +128,26 @@ public static partial class ProcessHelper
 		return false;
 	}
 
-	//Source: https://stackoverflow.com/a/43232486
-	public static void TryOpenUrl(string url, string args = "")
+	/// <summary>Prepares a URI for the platform handler without interpreting it as shell command text.</summary>
+	public static ProcessStartInfo CreateUrlStartInfo(string url, string args = "")
 	{
-		try
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
+			|| RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
 		{
-			Process.Start(url, args);
+			var start = new ProcessStartInfo(RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" : "xdg-open")
+			{
+				UseShellExecute = false
+			};
+			start.ArgumentList.Add(url);
+			return start;
 		}
-		catch
-		{
-			// Older runtimes require shell execution to open URLs on Windows.
-			// See https://github.com/dotnet/corefx/issues/10361.
-			if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-			{
-				url = url.Replace("&", "^&");
-				var info = new ProcessStartInfo(url, args);
-				TrySetUseShellExecute(info);
-				Process.Start(info);
-			}
-			else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-			{
-				Process.Start("xdg-open", url);
-			}
-			else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-			{
-				Process.Start("open", url);
-			}
-			else
-			{
-				throw;
-			}
-		}
+
+		// ShellExecute opens the registered URI handler directly, not cmd.exe.
+		// Keep query separators and percent escapes exactly as supplied.
+		return new ProcessStartInfo(url, args ?? String.Empty) { UseShellExecute = true };
 	}
+
+	public static void TryOpenUrl(string url, string args = "") => Process.Start(CreateUrlStartInfo(url, args));
 
 	/// <summary>
 	/// Reads the elevation flag from the current process token. This distinguishes

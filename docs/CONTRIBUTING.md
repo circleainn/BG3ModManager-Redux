@@ -26,6 +26,15 @@ Desktop C++, and C++/CLI components. Clone with submodules. The supported local 
 git diff --check
 ```
 
+`Test-Redux.ps1` uses the same solution build as `Build-Redux.ps1`, including native dependencies,
+then runs every regression check. For focused diagnostics after a Debug build, pass exact check
+names from the failure log to `tests\Redux.Core.Tests\bin\x64\Debug\net8.0-windows10.0.22621.0\Redux.Core.Tests.exe`.
+Unknown names fail instead of reporting an empty run as successful.
+
+Changes to the experimental native Linux forwarding helper also require
+`python -m unittest discover -s tests/linux -v`. These tests simulate dispatch; they do not replace
+real Wine desktop, browser, and restart checks.
+
 Changes affecting release packaging should also build the Publish configuration. Filesystem,
 archive, download, native-mod, and load-order changes need tests for failure, cancellation, and
 recovery—not only the success path. Visual changes require inspection across built-in themes,

@@ -64,6 +64,10 @@ jobs:
             exit $LASTEXITCODE
           }
 
+      - name: Test experimental Linux forwarding helper
+        shell: pwsh
+        run: python -m unittest discover -s tests/linux -v
+
       - name: Build and validate Publish package
         shell: pwsh
         run: |

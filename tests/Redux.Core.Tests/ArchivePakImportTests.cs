@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Redux.Core.Tests;
@@ -49,7 +50,7 @@ public sealed class ArchivePakImportTests
 
 	public void UniquePakDestinationsImportNormallyAndOnlyReadOrdersWhenRequested()
 	{
-		WithArchive(["a/First.pak", "b/Second.pak", "Current.json", "README.md"], (path, _) =>
+		WithArchive(["a/First.pak", "b/Second.pak", "Current.json", "README.md", "Generated/Public/Shared/preview.dds"], (path, _) =>
 		{
 			foreach (var onlyMods in new[] { true, false })
 			{
@@ -64,6 +65,61 @@ public sealed class ArchivePakImportTests
 				RegressionAssert.SequenceEqual(onlyMods ? new[] { "a/First.pak", "b/Second.pak" }
 					: new[] { "a/First.pak", "b/Second.pak", "Current.json" }, readNames);
 			}
+		});
+	}
+
+	public void LooseTextureArchiveIsRejectedBeforeAnyEntryIsImported()
+	{
+		WithArchive(["Generated/Public/Shared/Assets/ground.DDS", "README.md"], (path, directory) =>
+		{
+			var before = File.ReadAllBytes(path);
+			foreach (var onlyMods in new[] { true, false })
+			{
+				using var archive = ArchiveFactory.OpenArchive(path);
+				var imported = 0;
+				var error = RegressionAssert.Throws<InvalidDataException>(() => ArchivePakImport.ReadEntriesAsync(
+					archive, onlyMods, (_, _) => { imported++; return Task.CompletedTask; }).GetAwaiter().GetResult());
+				RegressionAssert.Equal(0, imported);
+				RegressionAssert.True(error.Message.Contains("Generated/Public", StringComparison.Ordinal));
+				RegressionAssert.True(error.Message.Contains("Data folder", StringComparison.Ordinal));
+				RegressionAssert.True(error.Message.Contains("no PAK package", StringComparison.Ordinal));
+			}
+			RegressionAssert.SequenceEqual(before, File.ReadAllBytes(path));
+			RegressionAssert.SequenceEqual(new[] { path }, Directory.GetFiles(directory));
+			RegressionAssert.Equal(0, Directory.GetDirectories(directory).Length);
+		});
+	}
+
+	public void OrderOnlyArchiveRemainsSupportedWhenOrdersAreRequested()
+	{
+		WithArchive(["Current.json", "README.md"], (path, _) =>
+		{
+			using (var archive = ArchiveFactory.OpenArchive(path))
+			{
+				var imported = new System.Collections.Generic.List<string>();
+				ArchivePakImport.ReadEntriesAsync(archive, false, async (entry, stream) =>
+				{
+					using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true);
+					RegressionAssert.Equal("Current.json", await reader.ReadToEndAsync());
+					imported.Add(entry.Key);
+				}).GetAwaiter().GetResult();
+				RegressionAssert.SequenceEqual(new[] { "Current.json" }, imported);
+			}
+			using var modsOnlyArchive = ArchiveFactory.OpenArchive(path);
+			RegressionAssert.Throws<InvalidDataException>(() => ArchivePakImport.ReadEntriesAsync(
+				modsOnlyArchive, true, (_, _) => throw new InvalidOperationException("Nothing should be read."))
+				.GetAwaiter().GetResult());
+		});
+	}
+
+	public void CanceledUnsupportedImportPreservesCancellation()
+	{
+		WithArchive(["Generated/Public/Shared/ground.dds"], (path, _) =>
+		{
+			using var archive = ArchiveFactory.OpenArchive(path);
+			RegressionAssert.Throws<OperationCanceledException>(() => ArchivePakImport.ReadEntriesAsync(
+				archive, true, (_, _) => throw new InvalidOperationException("Nothing should be read."),
+				new CancellationToken(canceled: true)).GetAwaiter().GetResult());
 		});
 	}
 
