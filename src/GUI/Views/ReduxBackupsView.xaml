@@ -20,7 +20,7 @@
   </ResourceDictionary>
  </UserControl.Resources>
  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-  <StackPanel Margin="18,14">
+  <StackPanel Margin="18,14" Orientation="Vertical" VerticalAlignment="Top">
    <TextBlock Text="Backups and snapshots" FontSize="{DynamicResource Redux.FontSize.20}" FontWeight="SemiBold" />
    <TextBlock Margin="0,8,0,8" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
     Text="Keep a version of Redux and its saved settings, orders, and artwork. Redux closes while a snapshot is created or restored, then restarts. Save unfinished order edits first." />
@@ -54,7 +54,7 @@
       </ControlTemplate.Triggers>
      </ControlTemplate></Setter.Value></Setter>
     </Style></ListBox.ItemContainerStyle>
-    <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="6">
+    <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="6" Orientation="Vertical" VerticalAlignment="Top">
      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
      <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" />
     </StackPanel></DataTemplate></ListBox.ItemTemplate>

@@ -21,6 +21,8 @@ The Preferences backup manager was absent from the recovered source and has been
 16.6. Named snapshots, optional PAK/profile-order capture, return snapshots, and interrupted-restore
 recovery reuse the existing backup writer and external updater runner. See the
 [backup workflow and scope](BACKUPS.md); saved games and game-directory mods remain excluded.
+The Backups layout regression now runs inside the actual Preferences window: inherited horizontal
+panel styling previously hid its controls, and its tab label used inconsistent resting colors.
 
 The recovery update is being prepared as `0.1.0-alpha.16.6`, with internal version `0.1.16.600`.
 It retains the existing updater-compatible versioning scheme. The
@@ -40,7 +42,7 @@ the recovered work. No release tag, public archive, or channel update has been p
 - Improve experimental Wine forwarding and host-preserving launches; honor extender cache paths
   and discard stale updater pins when the selected game's configuration is absent.
 
-The October 20 snapshot-enabled candidate passed Debug and Publish rebuilds and all 732 regression
+The October 20 snapshot-enabled candidate passed Debug and Publish builds and all 732 regression
 checks in each configuration. Snapshot tests cover cancellation, corrupt/path-invalid archives,
 rollback, return snapshots, interrupted recovery, shared instance locking, and theme/text-size layout.
 An existing notification foreground assertion failed once in Publish; isolated and full reruns passed
