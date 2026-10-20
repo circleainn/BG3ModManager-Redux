@@ -5,8 +5,8 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: October 20, 2026. Published release line: `0.1.0-alpha.16.5.6`
-(verified October 19). Development changes below remain unreleased.
+Last reviewed: October 20, 2026. Published release line: `0.1.0-alpha.16.6`
+(verified October 20).
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -15,7 +15,7 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 
 ## Development status
 
-### 16.6 release preparation
+### 16.6 recovery update
 
 The Preferences backup manager was absent from the recovered source and has been rebuilt for
 16.6. Named snapshots, optional PAK/profile-order capture, return snapshots, and interrupted-restore
@@ -27,10 +27,11 @@ Tools and Quick Access now open the Backups tab directly. External backup, resto
 windows carry over the active palette, text size, bundled font, and icon preference without loading
 files from the installation being restored.
 
-The recovery update is being prepared as `0.1.0-alpha.16.6`, with internal version `0.1.16.600`.
+The recovery update is published as `0.1.0-alpha.16.6`, with internal version `0.1.16.600`.
 It retains the existing updater-compatible versioning scheme. The
-[candidate notes](releases/0.1.0-alpha.16.6.md) explain the loss of local development history and
-the recovered work. No release tag, public archive, or channel update has been published.
+[release notes](releases/0.1.0-alpha.16.6.md) explain the loss of local development history and
+the recovered work. Exact artifacts and distribution verification are recorded in
+[release records](RELEASE_RECORDS.md).
 
 - Preserve the last verified game order and saved Current workspace when `modsettings.lsx`
   cannot be read completely; recheck the reviewed file before Sync or empty-order recovery.
@@ -45,20 +46,20 @@ the recovered work. No release tag, public archive, or channel update has been p
 - Improve experimental Wine forwarding and host-preserving launches; honor extender cache paths
   and discard stale updater pins when the selected game's configuration is absent.
 
-The October 20 snapshot-enabled candidate passed Debug and Publish builds and all 734 regression
+The October 20 release passed Debug and Publish builds and all 734 regression
 checks in each configuration. Snapshot tests cover cancellation, corrupt/path-invalid archives,
 rollback, return snapshots, interrupted recovery, shared instance locking, and theme/text-size layout.
 External progress-window checks cover palette transfer, enlarged text, cancellation, and result
-acknowledgement. The unchanged experimental forwarding helper's five tests passed earlier.
+acknowledgement. The five experimental forwarding-helper tests also passed in release CI.
 NuGet audits found no known vulnerable packages in the app, Core, or updater dependency graphs.
 The 77-file portable archive passed integrity, inventory, version, notice, and clean-extraction
-checks. The final archive identity and publication results belong in [release records](RELEASE_RECORDS.md). These are candidate results,
-not a public-release acceptance record.
+checks. Exact 16.5.6-to-16.6 update, manual replacement, locked-file rollback, application-file
+removal, and snapshot restore/roll-forward checks passed in disposable folders while preserving
+user-state fixtures. Main and development CI both passed.
 The maintainer confirmed the backup workflow works and accepted the release after the final-check
 discussion. This is maintainer-reported acceptance, not an independent app-control recording.
-Interactive app-control acceptance is deferred. Real Wine testing
-and the original Vivid PAK archive reproduction remain outstanding. Before publication, complete
-the exact-artifact release gate for 16.6 with all limitations recorded.
+Real Wine testing, the original Vivid PAK archive reproduction, and an observed public in-app
+update remain outstanding. These limitations are retained in the release record.
 
 See the [October issue audit](ISSUE_AUDIT_2026-10-19.md) for shipped fixes, unreleased changes,
 new reports, and remaining verification. Do not infer that an open issue means its entire feature
