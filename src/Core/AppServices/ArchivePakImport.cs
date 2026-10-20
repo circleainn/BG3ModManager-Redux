@@ -9,6 +9,24 @@ namespace DivinityModManager.AppServices;
 public static class ArchivePakImport
 {
 	public const string DuplicateNamesTitle = "Duplicate PAK filenames";
+	public const string NoPakFilesTitle = "No PAK files found";
+
+	public static string GetMissingPakMessage(IEnumerable<string> entryNames)
+	{
+		var hasLooseTextures = entryNames.Any(name =>
+		{
+			var normalized = name.Replace('\\', '/');
+			return normalized.EndsWith(".dds", StringComparison.OrdinalIgnoreCase)
+				&& (normalized.StartsWith("Generated/Public/", StringComparison.OrdinalIgnoreCase)
+					|| normalized.Contains("/Generated/Public/", StringComparison.OrdinalIgnoreCase));
+		});
+		return hasLooseTextures
+			? "This archive contains loose texture files under Generated/Public, but no PAK package. "
+				+ "Normal mod import does not install these files into the game's Data folder. "
+				+ "Follow the mod author's installation instructions, or choose a PAK version if one is provided."
+			: "The archive does not contain a Baldur's Gate 3 PAK package. "
+				+ "Choose an archive containing a PAK, or follow the mod author's installation instructions.";
+	}
 
 	public static PackagePreflightFinding? FindDestinationCollision(IEnumerable<string> entryNames)
 	{
@@ -26,7 +44,12 @@ public static class ArchivePakImport
 		Func<IEntry, Stream, Task> readEntry, CancellationToken cancellationToken = default)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-		RequireUniqueDestinations(archive.Entries.Where(entry => !entry.IsDirectory).Select(entry => entry.Key));
+		var entryNames = archive.Entries.Where(entry => !entry.IsDirectory).Select(entry => entry.Key).ToArray();
+		cancellationToken.ThrowIfCancellationRequested();
+		RequireUniqueDestinations(entryNames);
+		if (!entryNames.Any(name => name.EndsWith(".pak", StringComparison.OrdinalIgnoreCase)
+			|| (!onlyMods && name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))))
+			throw new InvalidDataException(GetMissingPakMessage(entryNames));
 		return ArchiveEntryTraversal.ReadSelectedAsync(archive,
 			entry => entry.Key.EndsWith(".pak", StringComparison.OrdinalIgnoreCase)
 				|| (!onlyMods && entry.Key.EndsWith(".json", StringComparison.OrdinalIgnoreCase)),

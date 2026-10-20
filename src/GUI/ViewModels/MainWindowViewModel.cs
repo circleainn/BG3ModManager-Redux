@@ -255,6 +255,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private string _lastOptionalModuleDiagnosticSignature;
 	private IReadOnlyList<string> _lastKnownGameOrderUuids = Array.Empty<string>();
 	private bool _hasKnownGameOrder;
+	private string _lastKnownGameOrderPath;
+	private bool _gameOrderReadFailed;
 	private IDisposable _exportStatusRefreshTask;
 	public ReadOnlyObservableCollection<ModHealthSnapshot> ModHealthSnapshots { get; }
 	public ReadOnlyObservableCollection<ModHealthSnapshot> ActiveDiagnosticAttentionSnapshots { get; }
@@ -496,6 +498,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public ICommand SelectModCategoryCommand { get; private set; }
 	public ICommand ClearModCategoryFilterCommand { get; private set; }
 	public ICommand OpenLoadOrderFolderCommand { get; private set; }
+	public ICommand ResolveOverrideDuplicatesCommand { get; private set; }
 	public ReactiveCommand<DivinityLoadOrder, Unit> DeleteOrderCommand { get; private set; }
 	public ReactiveCommand<object, Unit> ToggleOrderRenamingCommand { get; set; }
 	public RxCommandUnit RefreshCommand { get; private set; }
@@ -567,11 +570,36 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	public int RestoreAutomaticModCategories()
 	{
-		var affectedModCount = ModCategoryAssignmentReset.ClearManualAssignments(Settings);
-		var settingsSaved = affectedModCount == 0 || SaveSettings();
+		var affectedModCount = ModCategoryAssignmentReset.ClearManualAssignments(Settings, SaveSettings);
 		RefreshModCategories();
-		if (!settingsSaved) throw new IOException("The automatic category reset could not be saved.");
 		return affectedModCount;
+	}
+
+	public int ClearAutomaticAssignmentsForCurrentMods()
+	{
+		var affected = ModCategoryAssignmentReset.ClearAutomaticAssignments(Settings,
+			ActiveMods.Concat(InactiveMods).Concat(ForceLoadedMods), SaveSettings);
+		RefreshModCategories();
+		return affected;
+	}
+
+	public int RestoreClearedAutomaticAssignments()
+	{
+		var affected = ModCategoryAssignmentReset.RestoreClearedAutomaticAssignments(Settings, SaveSettings);
+		RefreshModCategories();
+		return affected;
+	}
+
+	public IReadOnlyList<string> GetBuiltInCategoryFilters() => ReduxDefaultCategoryDisplayOrder
+		.Concat(AutomaticModCategoryClassifier.CategoryNames)
+		.Where(category => !category.Equals(UncategorizedModsCategory, StringComparison.OrdinalIgnoreCase)
+			&& !IsCustomModCategory(category))
+		.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+	public void SetBuiltInCategoryFiltersVisible(bool visible)
+	{
+		if (ModCategoryAssignmentReset.SetFiltersVisible(Settings, GetBuiltInCategoryFilters(), visible, SaveSettings))
+			RefreshModCategories();
 	}
 
 	public bool SetAutomaticModCategoriesEnabled(bool enabled)
@@ -1082,6 +1110,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public void ConfigureNxmAssociation()
 	{
 		var status = GetNxmAssociationStatus();
+		var isWine = ReduxRuntimeEnvironment.IsWine;
 		if (!status.Success)
 		{
 			ShowAlert(status.Message, AlertType.Danger, 25);
@@ -1089,8 +1118,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 		if (status.Status == NxmAssociationStatus.OwnedByAnotherHandler)
 		{
-			var takeoverPrompt = $"Use this Redux installation for Nexus Mod Manager links instead?\n\nCurrent handler: {status.CurrentHandler ?? "Unknown"}\n\nThe current handler will be saved so Redux can restore it later.";
-			if (ReduxMessageBox.Show(Window, takeoverPrompt, "Use Redux for NXM Links", MessageBoxButton.YesNo,
+			var takeoverPrompt = NxmAssociationPresentation.GetConfigurePrompt(status, isWine);
+			if (ReduxMessageBox.Show(Window, takeoverPrompt, isWine ? "Wine-Prefix NXM Links" : "Use Redux for NXM Links", MessageBoxButton.YesNo,
 				MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return;
 
 			if (!Guid.TryParseExact(Settings.NxmAssociationOwnerId, "D", out _))
@@ -1110,12 +1139,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 		var disable = status.Status == NxmAssociationStatus.Owned;
 		var repair = status.Status == NxmAssociationStatus.NeedsRepair;
-		var prompt = disable
-			? "Stop Redux from handling NXM links and restore the previous per-user handler?"
-			: repair
-				? "Repair this Redux installation's NXM link registration?"
-				: $"Let Redux handle Nexus Mod Manager links for this Windows account?\n\nCurrent handler: {status.CurrentHandler ?? "None"}\n\nNon-BG3 links are forwarded to the previous handler when it can be invoked safely.";
-		if (ReduxMessageBox.Show(Window, prompt, "Nexus Mod Manager Links", MessageBoxButton.YesNo,
+		var prompt = NxmAssociationPresentation.GetConfigurePrompt(status, isWine);
+		if (ReduxMessageBox.Show(Window, prompt, isWine ? "Wine-Prefix NXM Links" : "Nexus Mod Manager Links", MessageBoxButton.YesNo,
 			MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes) return;
 
 		if (!Guid.TryParseExact(Settings.NxmAssociationOwnerId, "D", out _))
@@ -1169,7 +1194,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private INxmAssociationService CreateNxmAssociationService(string ownerId = null) => new NxmAssociationService(
 		new NxmRegistryStore(), ownerId ?? Settings.NxmAssociationOwnerId,
-		Environment.ProcessPath ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Redux.exe"));
+		ReduxLaunchTarget.Current());
 
 	public Task PauseNxmDownloadAsync(NxmDownloadItem item) => item == null || _nxmDownloadManager == null
 		? Task.CompletedTask : _nxmDownloadManager.PauseAsync(item.Id);
@@ -2110,18 +2135,31 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 	}
 
+	private string _lastScriptExtenderDetectionWarning;
+
 	public bool CheckExtenderInstalledVersion(CancellationToken? t)
 	{
-		var appDataDirectory = GetLarianStudiosAppDataFolder();
-		string extenderAppDataDir = "";
-		if (Directory.GetParent(appDataDirectory) is DirectoryInfo localAppDataDir)
+		if (t?.IsCancellationRequested == true) return false;
+		Settings.ExtenderSettings.ExtenderIsAvailable = false;
+		Settings.ExtenderSettings.ExtenderVersion = String.Empty;
+		Settings.ExtenderSettings.ExtenderMajorVersion = -1;
+		var detection = ScriptExtenderDetectionPathResolver.Resolve(
+			Settings.ScriptExtenderDetectionPathOverride, Settings.ExtenderUpdaterSettings.CachePath,
+			GetLarianStudiosAppDataFolder(),
+			Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify));
+		if (detection.Error != null)
 		{
-			extenderAppDataDir = Path.Join(localAppDataDir.FullName, DivinityApp.EXTENDER_APPDATA_DIRECTORY);
+			DivinityApp.Log(detection.Error);
+			if (_lastScriptExtenderDetectionWarning != detection.Error)
+			{
+				_lastScriptExtenderDetectionWarning = detection.Error;
+				RxApp.MainThreadScheduler.Schedule(() => ShowAlert(detection.Error, AlertType.Warning, 30));
+			}
+			return false;
 		}
-		if(string.IsNullOrEmpty(extenderAppDataDir))
-		{
-			extenderAppDataDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify), DivinityApp.EXTENDER_APPDATA_DIRECTORY);
-		}
+		_lastScriptExtenderDetectionWarning = null;
+		var extenderAppDataDir = detection.Folder;
+		DivinityApp.Log($"Checking Script Extender at '{extenderAppDataDir}' ({detection.Source}).");
 		if (extenderAppDataDir.IsExistingDirectory())
 		{
 			var files = DivinityFileUtils.EnumerateFiles(extenderAppDataDir, DivinityFileUtils.RecursiveOptions, f =>
@@ -2177,7 +2215,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 		else
 		{
-			DivinityApp.Log($"Extender Local AppData folder not found at '{extenderAppDataDir}'. Skipping.");
+			DivinityApp.Log($"Script Extender detection folder not found at '{extenderAppDataDir}' ({detection.Source}). Skipping.");
 		}
 		return false;
 	}
@@ -2258,13 +2296,23 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			var updaterSettingsFilePath = PathwayData.ScriptExtenderUpdaterConfigFile(Settings);
 			try
 			{
-				if (updaterSettingsFilePath.IsExistingFile())
+				if (!String.IsNullOrWhiteSpace(updaterSettingsFilePath))
 				{
-					if (DivinityJsonUtils.TrySafeDeserializeFromPath<ScriptExtenderUpdateConfig>(updaterSettingsFilePath, out var data))
+					ScriptExtenderUpdateConfig data;
+					try
 					{
-						Settings.ExtenderUpdaterSettings.SetFrom(data);
-						DivinityApp.Log($"Loaded {updaterSettingsFilePath}");
+						data = JsonConvert.DeserializeObject<ScriptExtenderUpdateConfig>(File.ReadAllText(updaterSettingsFilePath))
+							?? throw new InvalidDataException("The Script Extender updater configuration is empty or null.");
 					}
+					catch (FileNotFoundException)
+					{
+						// No config means updater defaults. Do not retain a pin or cache path from
+						// a removed file or another game installation. Other read failures retain
+						// the last settings through the outer catch; File.Exists would hide them.
+						data = new ScriptExtenderUpdateConfig();
+					}
+					Settings.ExtenderUpdaterSettings.SetFrom(data);
+					DivinityApp.Log($"Reloaded updater settings from '{updaterSettingsFilePath}' (defaults when absent).");
 				}
 			}
 			catch (Exception ex)
@@ -3690,7 +3738,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		var orderNames = new List<string>();
 		var nextOrders = new List<DivinityLoadOrder>();
 		var profileMods = SelectedProfile.ActiveMods.ToList();
-		SetKnownGameOrder(profileMods.Select(mod => mod.UUID), File.Exists(currentOrder.FilePath));
+		var gameOrderRead = SelectedProfile.ModSettingsReadResult;
+		if (gameOrderRead.Status == ModSettingsReadStatus.Failed && _hasKnownGameOrder &&
+			String.Equals(_lastKnownGameOrderPath, currentOrder.FilePath, StringComparison.OrdinalIgnoreCase))
+			profileMods = _lastKnownGameOrderUuids.Select(ProfileActiveModDataFromUUID).ToList();
+		RecordGameOrderRead(SelectedProfile, gameOrderRead);
 		var savedOrders = SavedModOrderList.ToList();
 
 		foreach (var activeMod in profileMods)
@@ -3728,9 +3780,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		persistedCurrentOrder ??= legacyCurrentOrder;
 		// A later game export or external change supersedes an older saved Current
 		// workspace order. Its separator presentation remains Redux-owned and reusable.
-		var gameOrderIsNewer = File.Exists(currentOrder.FilePath)
-			&& File.Exists(currentWorkingOrderPath)
-			&& File.GetLastWriteTimeUtc(currentOrder.FilePath) >= File.GetLastWriteTimeUtc(currentWorkingOrderPath);
+		var gameOrderIsNewer = LoadOrderPersistencePolicy.GameOrderSupersedesSavedCurrent(gameOrderRead,
+			gameOrderRead.Succeeded && File.Exists(currentOrder.FilePath) ? File.GetLastWriteTimeUtc(currentOrder.FilePath) : null,
+			File.Exists(currentWorkingOrderPath) ? File.GetLastWriteTimeUtc(currentWorkingOrderPath) : null);
 		LoadOrderPersistencePolicy.RestoreSavedCurrentState(currentOrder, persistedCurrentOrder,
 			restoreOrder: !gameOrderIsNewer);
 		if (gameOrderIsNewer) currentOrder.LastModifiedDate = File.GetLastWriteTime(currentOrder.FilePath);
@@ -4408,7 +4460,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	}
 
 	private static bool IsUnsupportedPakLayout(PackagePreflightFinding finding) =>
-		finding.Title is PakImportCompatibility.MultipartFindingTitle or ArchivePakImport.DuplicateNamesTitle;
+		finding.Title is PakImportCompatibility.MultipartFindingTitle or ArchivePakImport.DuplicateNamesTitle or ArchivePakImport.NoPakFilesTitle;
 
 	private bool RejectUnsupportedPakLayout(IEnumerable<PackagePreflightFinding> findings, Window owner)
 	{
@@ -5392,9 +5444,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			return false;
 		}
 
-		var value = linkOrId?.Trim();
-		var match = Regex.Match(value ?? String.Empty, @"(?:nexusmods\.com/(?:baldursgate3/)?mods/)?(?<id>\d+)(?:[/?#].*)?$", RegexOptions.IgnoreCase);
-		if (!match.Success || !Int64.TryParse(match.Groups["id"].Value, out var modId) || modId < DivinityApp.NEXUSMODS_MOD_ID_START)
+		if (!NexusModLinkParser.TryParseProjectId(linkOrId, out var modId))
 		{
 			error = "Paste a Baldur's Gate 3 Nexus Mods page URL, for example https://www.nexusmods.com/baldursgate3/mods/125.";
 			return false;
@@ -5764,8 +5814,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		var profile = SelectedProfile;
 		var modSettingsPath = Path.Combine(profile.Folder, "modsettings.lsx");
 		var modSettingsData = await DivinityModDataLoader.LoadModSettingsFileAsync(modSettingsPath);
+		if (token.IsCancellationRequested || !ReferenceEquals(profile, SelectedProfile)) return;
+		await Observable.Start(() => RecordGameOrderRead(profile, modSettingsData), RxApp.MainThreadScheduler);
 
-		if (modSettingsData.CountActive() <= 0)
+		if (modSettingsData.Succeeded && modSettingsData.CountActive() <= 0)
 		{
 			var modSettingsOrder = LoadOrderPersistencePolicy.FindGameBackedCurrentOrder(ModOrderList);
 			var lastExported = ModOrderList.Concat(SavedModOrderList).FirstOrDefault(x =>
@@ -5802,7 +5854,25 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 				if (doReset && ReferenceEquals(profile, SelectedProfile))
 				{
+					// The prompt may remain open while BG3 finishes writing or another tool updates the file.
+					var latestRead = await DivinityModDataLoader.LoadModSettingsFileAsync(modSettingsPath);
+					if (token.IsCancellationRequested || !ReferenceEquals(profile, SelectedProfile)) return;
+					if (!latestRead.Succeeded || latestRead.CountActive() > 0 ||
+						!String.Equals(latestRead.SourceSha256, modSettingsData.SourceSha256, StringComparison.OrdinalIgnoreCase))
+					{
+						await Observable.Start(() =>
+						{
+							RecordGameOrderRead(profile, latestRead);
+							ShowAlert("The game load order changed or could not be read. Refresh before restoring it.", AlertType.Warning, 18);
+						}, RxApp.MainThreadScheduler);
+						return;
+					}
 					var finalOrder = DivinityModDataLoader.BuildOutputList(lastExported.Order, mods.Items, Settings.AutoAddDependenciesWhenExporting, SelectedAdventureMod);
+					if (!ModSettingsReadGuard.MatchesCurrentFile(latestRead, modSettingsPath))
+					{
+						await Observable.Start(() => ShowAlert("The game load order changed or became unavailable. Refresh before restoring it.", AlertType.Warning, 18), RxApp.MainThreadScheduler);
+						return;
+					}
 					if (!await DivinityModDataLoader.ExportModSettingsToFileAsync(profile.Folder, finalOrder))
 					{
 						DivinityApp.Log($"Could not restore the game load order at '{modSettingsPath}'.");
@@ -5813,10 +5883,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 					await Observable.Start(() =>
 					{
-						if (!ReferenceEquals(profile, SelectedProfile)) return Unit.Default;
-						modSettingsOrder.SetOrder(finalOrder.Select(mod => mod.ToOrderEntry()));
 						profile.ActiveMods.Clear();
 						profile.ActiveMods.AddRange(finalOrder.Select(mod => ProfileActiveModDataFromUUID(mod.UUID)));
+						profile.ModSettingsReadResult = ModSettingsParseResults.Success(profile.ActiveMods);
+						if (!ReferenceEquals(profile, SelectedProfile)) return Unit.Default;
+						modSettingsOrder.SetOrder(finalOrder.Select(mod => mod.ToOrderEntry()));
 						SetKnownGameOrder(finalOrder.Select(mod => mod.UUID), hasGameOrder: true);
 						if (ReferenceEquals(SelectedModOrder, modSettingsOrder) && !HasUnsavedLoadOrderChanges)
 							LoadModOrder(modSettingsOrder);
@@ -5876,6 +5947,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		DivinityApp.Log($"Refreshing data asynchronously...");
 
 		double taskStepAmount = 1.0 / 10;
+		bool replacedModCache = false;
 
 		List<DivinityLoadOrderEntry> lastActiveOrder = null;
 		string lastOrderName = "";
@@ -5906,7 +5978,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			try
 			{
 				PakFileSet.Recover(PathwayData.AppDataModsPath);
-				CreateOverrideOrderFileService().Recover();
+				var overrideService = CreateOverrideOrderFileService();
+				await overrideService.CreateDuplicateRecoveryService().RecoverPendingAsync();
+				overrideService.Recover();
 			}
 			catch (Exception ex)
 			{
@@ -5964,6 +6038,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			{
 				LoadAppConfig();
 				SetLoadedMods(loadedMods);
+				replacedModCache = true;
 
 				Profiles.AddRange(loadedProfiles);
 
@@ -6058,12 +6133,16 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			IsLoadingOrder = false;
 			IsInitialized = true;
 			_lastAcceptedOrderIndex = SelectedModOrderIndex;
+			var skipOverrideReconciliation = _overrideRecoveryNeedsRefresh;
+			if (replacedModCache) _overrideRecoveryNeedsRefresh = false;
 			if (SelectedModOrder != null)
 			{
 				ShowWhenMainWindowReady("startup-override-order", () =>
 				{
 					if (IsRefreshing || SelectedModOrder == null) return;
-					if (!ReviewAndApplyOverrideOrder(SelectedModOrder, CreateOverrideOrderFileService()))
+					if (skipOverrideReconciliation) return;
+					if (!ReviewAndApplyOverrideOrder(SelectedModOrder, CreateOverrideOrderFileService(), offerRecovery: false)
+						&& !HasOverrideDuplicateConflicts)
 					{
 						if (SelectedModOrderIndex != 0)
 						{
@@ -6908,13 +6987,24 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	{
 		if (SelectedProfile != null && SelectedModOrder != null)
 		{
-			var outputPath = Path.Combine(SelectedProfile.Folder, "modsettings.lsx");
+			var profile = SelectedProfile;
+			var outputPath = Path.Combine(profile.Folder, "modsettings.lsx");
 			ReversibleFileChangeService.Snapshot previousFileSnapshot = null;
 			var hasPreviousExport = File.Exists(outputPath);
 			IReadOnlyList<DivinityLoadOrderEntry> previouslyExportedOrder = Array.Empty<DivinityLoadOrderEntry>();
+			var diskExport = await DivinityModDataLoader.LoadModSettingsFileAsync(outputPath);
+			if (diskExport.Status == ModSettingsReadStatus.Failed || hasPreviousExport && !diskExport.Succeeded)
+			{
+				await Observable.Start(() =>
+				{
+					RecordGameOrderRead(profile, diskExport);
+					ShowAlert("Sync stopped because the existing game load order could not be read. Close anything using modsettings.lsx, then refresh and try again.", AlertType.Warning, 25);
+				}, RxApp.MainThreadScheduler);
+				return false;
+			}
+			hasPreviousExport = diskExport.Succeeded;
 			if (hasPreviousExport)
 			{
-				var diskExport = await DivinityModDataLoader.LoadModSettingsFileAsync(outputPath);
 				previouslyExportedOrder = diskExport.ActiveMods
 					.Where(entry => entry != null && !String.IsNullOrWhiteSpace(entry.UUID))
 					.Select(entry => new DivinityLoadOrderEntry
@@ -6938,10 +7028,18 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			try
 			{
 				previousFileSnapshot = ReversibleFileChangeService.Capture(outputPath);
+				if (!ReferenceEquals(profile, SelectedProfile) ||
+					previousFileSnapshot.Exists != hasPreviousExport ||
+					previousFileSnapshot.Exists && !String.Equals(diskExport.SourceSha256,
+						Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(previousFileSnapshot.Contents)),
+						StringComparison.OrdinalIgnoreCase))
+					throw new IOException("The game load order changed during review. Refresh and review Sync again.");
 			}
 			catch (Exception ex)
 			{
-				DivinityApp.Log($"Could not capture game load order for undo history: {ex}");
+				DivinityApp.Log($"Sync stopped before replacing an unreadable or changed game load order: {ex}");
+				await Observable.Start(() => ShowAlert("The game load order changed or could not be read during review. Refresh and review Sync again.", AlertType.Warning, 25), RxApp.MainThreadScheduler);
+				return false;
 			}
 
 			if (hasPreviousExport)
@@ -6979,8 +7077,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				}
 			}
 
+			if (!ReferenceEquals(profile, SelectedProfile) || !ModSettingsReadGuard.MatchesCurrentFile(diskExport, outputPath))
+			{
+				await Observable.Start(() => ShowAlert("The game load order changed or became unavailable. Refresh and review Sync again.", AlertType.Warning, 25), RxApp.MainThreadScheduler);
+				return false;
+			}
 			DeleteModCrashSanityCheck();
-			var result = await DivinityModDataLoader.ExportModSettingsToFileAsync(SelectedProfile.Folder, finalOrder);
+			var result = await DivinityModDataLoader.ExportModSettingsToFileAsync(profile.Folder, finalOrder);
 			ReversibleFileChangeService.Snapshot exportedFileSnapshot = null;
 			if (result && previousFileSnapshot != null)
 			{
@@ -7019,7 +7122,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					if (previousFileSnapshot != null && exportedFileSnapshot != null)
 					{
 						RecordGameLoadOrderFileChange(
-							SelectedProfile.UUID,
+							profile.UUID,
 							outputPath,
 							previousFileSnapshot,
 							exportedFileSnapshot,
@@ -7028,17 +7131,19 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					}
 					ShowAlert($"Applied load-order changes to '{outputPath}'", AlertType.Success, 15);
 
-					if (DivinityModDataLoader.ExportedSelectedProfile(PathwayData.AppDataProfilesPath, SelectedProfile.UUID))
+					if (DivinityModDataLoader.ExportedSelectedProfile(PathwayData.AppDataProfilesPath, profile.UUID))
 					{
-						DivinityApp.Log($"Set active profile to '{SelectedProfile.Name}'");
+						DivinityApp.Log($"Set active profile to '{profile.Name}'");
 					}
 					else
 					{
-						DivinityApp.Log($"Could not set active profile to '{SelectedProfile.Name}'");
+						DivinityApp.Log($"Could not set active profile to '{profile.Name}'");
 					}
 
-					SelectedProfile.ActiveMods.Clear();
-					SelectedProfile.ActiveMods.AddRange(finalOrder.Select(mod => ProfileActiveModDataFromUUID(mod.UUID)));
+					profile.ActiveMods.Clear();
+					profile.ActiveMods.AddRange(finalOrder.Select(mod => ProfileActiveModDataFromUUID(mod.UUID)));
+					profile.ModSettingsReadResult = ModSettingsParseResults.Success(profile.ActiveMods);
+					if (!ReferenceEquals(profile, SelectedProfile)) return Unit.Default;
 					// Current represents the order just written to modsettings.lsx, even when
 					// the source was a different saved order. Do not save that source order here.
 					currentExport?.SetOrder(finalOrder.Select(mod => mod.ToOrderEntry()));
@@ -9264,8 +9369,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	}
 
 	private IReadOnlyList<string> GetAutomaticModCategories(DivinityModData mod)
-		=> Settings.EnableAutomaticModCategories
-			? AutomaticModCategoryClassifier.ClassifyCategories(mod, IsModCategoryEnabled, UncategorizedModsCategory)
+		=> Settings.EnableAutomaticModCategories &&
+			!ModCategoryAssignmentReset.IsAutomaticAssignmentCleared(Settings, mod?.UUID)
+			? AutomaticModCategoryClassifier.ClassifyCategories(mod, _ => true, UncategorizedModsCategory)
 			: Array.Empty<string>();
 
 	private IReadOnlyList<string> GetEffectiveModCategories(DivinityModData mod)
@@ -9275,7 +9381,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			if (categories.Contains(NoCategoryAssignment, StringComparer.OrdinalIgnoreCase))
 				return Array.Empty<string>();
-			var enabledCategories = categories.Where(category => !String.IsNullOrWhiteSpace(category) && IsModCategoryEnabled(category))
+			var enabledCategories = categories.Where(category => !String.IsNullOrWhiteSpace(category))
 				.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 			if (enabledCategories.Count > 0) return enabledCategories;
 		}
@@ -10408,6 +10514,57 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		QueueSave();
 	}
 
+	public IReadOnlyList<ModListVisualDividerData> GetMoveToSeparatorTargets(VisualModListPane pane) =>
+		((pane == VisualModListPane.Override ? Settings.OverrideVisualModListDividers : Settings.VisualModListDividers) ?? [])
+			.Where(divider => divider != null && divider.IsActiveList == (pane == VisualModListPane.Active))
+			.OrderBy(divider => divider.Position).ToList();
+
+	public bool MoveModsToSeparator(IEnumerable<DivinityModData> modsToMove, VisualModListPane pane, string destinationId)
+	{
+		if (!IsInitialized || IsLocked || IsRefreshing || IsLoadingOrder || MainProgressIsActive ||
+			DownloadManagerInstallIsActive || _nxmShuttingDown || !Enum.IsDefined(pane)) return false;
+		var targets = modsToMove?.ToList() ?? [];
+		var overridePane = pane == VisualModListPane.Override;
+		var activePane = pane == VisualModListPane.Active;
+		if (overridePane) EnsureOverrideVisualDividerMemberships();
+		else EnsureVisualDividerMemberships();
+		var dividers = overridePane ? Settings.OverrideVisualModListDividers : Settings.VisualModListDividers;
+		var sequence = overridePane ? BuildOverrideVisualDividerSequence() : BuildVisualDividerSequence(activePane);
+		var plan = VisualDividerMovePolicy.Plan(sequence, dividers, targets, destinationId, activePane);
+		if (plan?.Changed != true) return false;
+		if (activePane) EnsureVisualDividerBaseline();
+		var historyBefore = CaptureLoadOrderEditState();
+		foreach (var divider in dividers)
+			if (plan.MembersByDividerId.TryGetValue(divider.Id, out var members)) divider.MemberModUuids = members.ToList();
+		if (overridePane) SaveOverrideVisualDividerPositions(plan.Items);
+		else
+		{
+			SaveVisualDividerPositions(plan.Items, activePane);
+			_updatingVisualModLists = true;
+			try
+			{
+				var collection = activePane ? ActiveMods : InactiveMods;
+				ObservableCollectionSynchronizer.Synchronize(collection,
+					plan.Items.Where(item => !item.IsVisualDivider).ToList(), ReferenceEquals);
+				if (activePane)
+					for (var index = 0; index < ActiveMods.Count; index++) ActiveMods[index].Index = index;
+			}
+			finally { _updatingVisualModLists = false; }
+		}
+		// This is presentation within one pane. In particular, no Override package
+		// transfer, activation, or game-order write belongs to this action.
+		if (overridePane) RefreshOverrideVisualDividers();
+		else RefreshVisualDividers(activePane);
+		if (activePane)
+		{
+			HasUnsavedLoadOrderChanges = true;
+			ScheduleModHealthRefresh();
+		}
+		QueueSave();
+		RecordLoadOrderEdit(historyBefore);
+		return true;
+	}
+
 	public void ApplyVisualModListDrop(IEnumerable<DivinityModData> draggedItems, bool destinationActive, int insertIndex)
 	{
 		var dragged = draggedItems?.Distinct().ToList() ?? new List<DivinityModData>();
@@ -10527,12 +10684,19 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			try
 			{
+				RequireCurrentOverrideLibrary();
 				var service = CreateOverrideOrderFileService();
 				service.Recover();
 				var plan = service.Review(CurrentOverridePaths(),
 					WantedOverrideFiles(SelectedModOrder, useLiveActiveMods: true));
 				service.Apply(plan);
 				UpdateOverrideModLocations(plan);
+			}
+			catch (OverrideOrderFileService.DuplicateConflictException ex)
+			{
+				RestoreLoadOrderEditState(historyBefore);
+				ReportOverrideDuplicates(ex, offerRecovery: true);
+				return;
 			}
 			catch (Exception ex)
 			{
@@ -10948,11 +11112,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	public void SetModCategoryEnabled(string category, bool enabled)
 	{
 		if (String.IsNullOrWhiteSpace(category)) return;
-		var existing = Settings.DisabledModCategories.FirstOrDefault(item => item.Equals(category, StringComparison.OrdinalIgnoreCase));
-		if (enabled && existing != null) Settings.DisabledModCategories.Remove(existing);
-		else if (!enabled && existing == null) Settings.DisabledModCategories.Add(category);
-		SaveSettings();
-		RefreshModCategories();
+		if (ModCategoryAssignmentReset.SetFiltersVisible(Settings, [category], enabled, SaveSettings))
+			RefreshModCategories();
 	}
 
 	public bool DeleteCustomModCategory(string category)
@@ -11141,6 +11302,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			{
 				Settings.ModCategoryAssignments.Remove(mod.UUID);
 				Settings.ModCategoryOverrides.Remove(mod.UUID);
+				Settings.ClearedAutomaticCategoryModIds.RemoveAll(id => id.Equals(mod.UUID, StringComparison.OrdinalIgnoreCase));
 			}
 		}
 		else if (category.Equals(NoCategoryAssignment, StringComparison.OrdinalIgnoreCase))
@@ -11207,6 +11369,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		!String.IsNullOrWhiteSpace(mod.UUID) &&
 		Settings.ModCategoryAssignments.TryGetValue(mod.UUID, out var categories) &&
 		categories?.Contains(NoCategoryAssignment, StringComparer.OrdinalIgnoreCase) == true;
+
+	public bool UsesAutomaticCategoryAssignment(DivinityModData mod) => mod != null &&
+		!HasModCategoryOverride(mod) && !ModCategoryAssignmentReset.IsAutomaticAssignmentCleared(Settings, mod.UUID);
 
 	private IDisposable _refreshModCategoriesTask;
 	private bool _categoryFilterRestoreAttempted;
@@ -11493,6 +11658,55 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	private readonly HashSet<string> _activatedOverridePaths = new(StringComparer.OrdinalIgnoreCase);
 	private int _lastAcceptedOrderIndex;
 	private bool _revertingOverrideOrderSelection;
+	private bool _overrideRecoveryNeedsRefresh;
+	private bool _overrideRecoveryDialogOpen;
+	[Reactive] public bool HasOverrideDuplicateConflicts { get; private set; }
+	private string _lastOverrideConflictNotice;
+
+	private void ReportOverrideDuplicates(OverrideOrderFileService.DuplicateConflictException conflict, bool offerRecovery)
+	{
+		HasOverrideDuplicateConflicts = true;
+		var names = String.Join(", ", conflict.Conflicts.Select(item => item.FileName));
+		if (offerRecovery || !String.Equals(names, _lastOverrideConflictNotice, StringComparison.Ordinal))
+		{
+			_lastOverrideConflictNotice = names;
+			ShowAlert($"Override copies need review: {names}. Open Tools > Resolve Override Copies to compare both folders and keep backups.", AlertType.Warning, 30);
+		}
+		if (offerRecovery) OpenOverrideDuplicateRecovery();
+	}
+
+	private void OpenOverrideDuplicateRecovery()
+	{
+		if (_nxmShuttingDown || _overrideRecoveryDialogOpen || IsRefreshing || MainProgressIsActive || IsSyncingLoadOrder || DownloadManagerInstallIsActive) return;
+		_overrideRecoveryDialogOpen = true;
+		try
+		{
+			var dialog = new ReduxOverrideDuplicateWindow(Window, CreateOverrideOrderFileService().CreateDuplicateRecoveryService());
+			ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(dialog, Window);
+			if (!dialog.Resolved) return;
+			HasOverrideDuplicateConflicts = false;
+			_lastOverrideConflictNotice = null;
+			_activatedOverridePaths.Clear();
+			// Refresh metadata before another order operation. Retaining a held copy
+			// does not authorize activating it as part of this recovery.
+			_overrideRecoveryNeedsRefresh = true;
+			ShowAlert($"Override copies resolved. Backups: {dialog.BackupDirectory}. After Refresh finishes, retry your order change if needed.", AlertType.Success, 30);
+			RxApp.MainThreadScheduler.Schedule(() => RefreshCommand.Execute(Unit.Default).Subscribe());
+		}
+		catch (Exception ex)
+		{
+			ShowAlert($"Could not review Override copies: {ex.Message}", AlertType.Danger, 30);
+		}
+		finally { _overrideRecoveryDialogOpen = false; }
+	}
+
+	private void RequireCurrentOverrideLibrary()
+	{
+		if (_overrideRecoveryDialogOpen)
+			throw new IOException("Finish reviewing Override copies before changing their placement.");
+		if (_overrideRecoveryNeedsRefresh)
+			throw new IOException("Refresh the mod library after resolving Override copies, then retry this action.");
+	}
 
 	private OverrideOrderFileService CreateOverrideOrderFileService() => new(
 		PathwayData.AppDataModsPath,
@@ -11545,13 +11759,21 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		RefreshOverrideVisualDividers();
 	}
 
-	private bool ReviewAndApplyOverrideOrder(DivinityLoadOrder order, OverrideOrderFileService service)
+	private bool ReviewAndApplyOverrideOrder(DivinityLoadOrder order, OverrideOrderFileService service, bool offerRecovery = true)
 	{
 		OverrideOrderFileService.Plan plan;
 		try
 		{
+			RequireCurrentOverrideLibrary();
 			service.Recover();
 			plan = service.Review(CurrentOverridePaths(), WantedOverrideFiles(order));
+			HasOverrideDuplicateConflicts = false;
+			_lastOverrideConflictNotice = null;
+		}
+		catch (OverrideOrderFileService.DuplicateConflictException ex)
+		{
+			ReportOverrideDuplicates(ex, offerRecovery);
+			return false;
 		}
 		catch (Exception ex)
 		{
@@ -11601,6 +11823,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		var originalBytes = File.Exists(path) ? File.ReadAllBytes(path) : null;
 		try
 		{
+			RequireCurrentOverrideLibrary();
 			var service = CreateOverrideOrderFileService();
 			service.Recover();
 			var plan = service.Review(CurrentOverridePaths(),
@@ -11652,6 +11875,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			}
 			QueueSave();
 			return true;
+		}
+		catch (OverrideOrderFileService.DuplicateConflictException ex)
+		{
+			order.OverrideModFiles = previous;
+			ReportOverrideDuplicates(ex, offerRecovery: true);
+			return false;
 		}
 		catch (Exception ex)
 		{
@@ -12246,6 +12475,35 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	{
 		_lastKnownGameOrderUuids = NormalizeGameOrderUuids(uuids);
 		_hasKnownGameOrder = hasGameOrder;
+		_lastKnownGameOrderPath = SelectedProfile?.ModSettingsFile;
+		_gameOrderReadFailed = false;
+		if (SelectedProfile != null)
+			SelectedProfile.ModSettingsReadResult = hasGameOrder
+				? ModSettingsParseResults.Success(_lastKnownGameOrderUuids.Select(ProfileActiveModDataFromUUID))
+				: ModSettingsParseResults.Missing();
+		ScheduleExportStatusRefresh(immediate: true);
+	}
+
+	private void RecordGameOrderRead(DivinityProfileData profile, ModSettingsParseResults result)
+	{
+		if (!ReferenceEquals(profile, SelectedProfile)) return;
+		profile.ModSettingsReadResult = result;
+		if (result.Status != ModSettingsReadStatus.Failed)
+		{
+			SetKnownGameOrder(result.ActiveMods.Select(mod => mod.UUID), result.Succeeded);
+			profile.ActiveMods.Clear();
+			profile.ActiveMods.AddRange(result.ActiveMods);
+			profile.ModSettingsReadResult = result;
+			return;
+		}
+		// Retain this profile's last verified sequence, but never present it as a fresh read.
+		if (!String.Equals(_lastKnownGameOrderPath, profile.ModSettingsFile, StringComparison.OrdinalIgnoreCase))
+		{
+			_lastKnownGameOrderUuids = Array.Empty<string>();
+			_hasKnownGameOrder = false;
+			_lastKnownGameOrderPath = profile.ModSettingsFile;
+		}
+		_gameOrderReadFailed = true;
 		ScheduleExportStatusRefresh(immediate: true);
 	}
 
@@ -12268,6 +12526,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			IsCurrentOrderExportedToGame = false;
 			ExportToGameStatusText = "Select a profile before syncing a load order to the game.";
+			return;
+		}
+
+		if (_gameOrderReadFailed)
+		{
+			IsCurrentOrderExportedToGame = false;
+			ExportToGameStatusText = "Sync status unavailable — Redux could not read modsettings.lsx. Refresh to try again.";
 			return;
 		}
 
@@ -13200,6 +13465,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 		var canDeleteOrder = this.WhenAnyValue(x => x.MainProgressIsActive, x => x.SelectedModOrderIndex).Select(x => !x.Item1 && x.Item2 > 0);
 		OpenLoadOrderFolderCommand = ReactiveCommand.Create(OpenLoadOrderFolder);
+		ResolveOverrideDuplicatesCommand = ReactiveCommand.Create(OpenOverrideDuplicateRecovery,
+			this.WhenAnyValue(x => x.MainProgressIsActive, x => x.IsRefreshing, x => x.IsSyncingLoadOrder,
+				x => x.DownloadManagerInstallIsActive, (progress, refreshing, syncing, installing) =>
+					!progress && !refreshing && !syncing && !installing), RxApp.MainThreadScheduler);
 		DeleteOrderCommand = ReactiveCommand.Create<DivinityLoadOrder>(DeleteOrder, canDeleteOrder, RxApp.MainThreadScheduler);
 
 		modsConnection.AutoRefresh(x => x.IsSelected).Filter(x => x.IsSelected && !x.IsEditorMod && File.Exists(x.FilePath)).Bind(out selectedPakMods).Subscribe();
@@ -13305,24 +13574,28 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 		_modSettingsWatcher.FileChanged.Subscribe(e =>
 		{
-			if (SelectedModOrder == null) return;
+			var profile = SelectedProfile;
+			if (SelectedModOrder == null || profile == null ||
+				!String.Equals(e.FullPath, profile.ModSettingsFile, StringComparison.OrdinalIgnoreCase)) return;
 			var wasExportedByRedux = HasExported;
 			var activeCount = ActiveMods.Count;
 			checkModSettingsTask?.Dispose();
 			checkModSettingsTask = RxApp.TaskpoolScheduler.ScheduleAsync(TimeSpan.FromSeconds(2), async (sch, cts) =>
 			{
-				var hasGameOrder = File.Exists(e.FullPath);
-				var modSettingsData = hasGameOrder
-					? await DivinityModDataLoader.LoadModSettingsFileAsync(e.FullPath)
-					: null;
-				var gameOrderUuids = (modSettingsData?.ActiveMods ?? [])
-					.Where(mod => mod != null && !String.IsNullOrWhiteSpace(mod.UUID))
-					.Select(mod => mod.UUID)
-					.ToArray();
+				var modSettingsData = await DivinityModDataLoader.LoadModSettingsFileAsync(e.FullPath);
+				// A watcher notification can arrive before the writer releases the file.
+				for (var retry = 0; retry < 2 && modSettingsData.Status == ModSettingsReadStatus.Failed; retry++)
+				{
+					await Task.Delay(250, cts);
+					modSettingsData = await DivinityModDataLoader.LoadModSettingsFileAsync(e.FullPath);
+				}
+				if (cts.IsCancellationRequested) return;
 				await Observable.Start(() =>
 				{
-					SetKnownGameOrder(gameOrderUuids, hasGameOrder);
-					if (wasExportedByRedux && activeCount > 0 && (modSettingsData?.CountActive() ?? 0) <= 0)
+					if (cts.IsCancellationRequested || !ReferenceEquals(profile, SelectedProfile)) return;
+					RecordGameOrderRead(profile, modSettingsData);
+					if (modSettingsData.Status == ModSettingsReadStatus.Failed) return;
+					if (modSettingsData.Succeeded && wasExportedByRedux && activeCount > 0 && modSettingsData.CountActive() <= 0)
 					{
 						ShowAlert("The active load order (modsettings.lsx) has been reset externally", AlertType.Danger);
 						Window.FlashTaskbar();

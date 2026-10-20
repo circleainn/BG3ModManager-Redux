@@ -15,19 +15,23 @@ public sealed class NxmAssociationService : INxmAssociationService
 {
 	public const string OwnerValueName = "BG3ModManagerReduxOwner";
 	public const string ExecutableValueName = "BG3ModManagerReduxExecutable";
+	public const string DotNetHostValueName = "BG3ModManagerReduxDotNetHost";
 	private const string CommandSubkey = @"shell\open\command";
 
 	private readonly INxmRegistryStore _store;
 	private readonly string _ownerId;
-	private readonly string _executablePath;
+	private readonly ReduxLaunchTarget _launchTarget;
 
 	public NxmAssociationService(INxmRegistryStore store, string ownerId, string executablePath)
+		: this(store, ownerId, ReduxLaunchTarget.ForExecutable(executablePath)) { }
+
+	public NxmAssociationService(INxmRegistryStore store, string ownerId, ReduxLaunchTarget launchTarget)
 	{
 		_store = store ?? throw new ArgumentNullException(nameof(store));
 		_ownerId = Guid.TryParseExact(ownerId, "D", out var parsedOwner)
 			? parsedOwner.ToString("D")
 			: throw new ArgumentException("A canonical association owner GUID is required.", nameof(ownerId));
-		_executablePath = Path.GetFullPath(executablePath ?? throw new ArgumentNullException(nameof(executablePath)));
+		_launchTarget = launchTarget ?? throw new ArgumentNullException(nameof(launchTarget));
 	}
 
 	public NxmAssociationResult GetStatus()
@@ -44,20 +48,15 @@ public sealed class NxmAssociationService : INxmAssociationService
 				return new NxmAssociationResult(true, status, "Redux does not own the current NXM association.", currentCommand);
 			}
 
-			if (!TryGetOwnedExecutable(currentCommand, out var registeredExecutable))
-			{
-				return new NxmAssociationResult(true, NxmAssociationStatus.OwnedByAnotherHandler,
-					"The NXM command changed after Redux registered it.", currentCommand);
-			}
-			var recordedExecutable = userKey?.GetString("", ExecutableValueName);
-			if (String.IsNullOrWhiteSpace(recordedExecutable) || !Path.IsPathFullyQualified(recordedExecutable)
-				|| !PathsEqual(registeredExecutable, recordedExecutable))
+			if (!TryGetOwnedLaunch(userKey, currentCommand, out var registered))
 			{
 				return new NxmAssociationResult(true, NxmAssociationStatus.OwnedByAnotherHandler,
 					"The NXM command changed after Redux registered it.", currentCommand);
 			}
 
-			var healthy = PathsEqual(registeredExecutable, _executablePath);
+			var healthy = PathsEqual(registered.ApplicationPath, _launchTarget.ApplicationPath)
+				&& PathsEqual(registered.ExecutablePath, _launchTarget.ExecutablePath)
+				&& registered.IsDotNetHosted == _launchTarget.IsDotNetHosted;
 			return new NxmAssociationResult(true,
 				healthy ? NxmAssociationStatus.Owned : NxmAssociationStatus.NeedsRepair,
 				healthy ? "Redux handles Nexus Mod Manager links." : "The Redux NXM association points to a previous executable location.",
@@ -102,7 +101,7 @@ public sealed class NxmAssociationService : INxmAssociationService
 		try
 		{
 			_store.WriteBackup(_ownerId, backup);
-			_store.WriteUserKey(CreateOwnedKey(_ownerId, _executablePath));
+			_store.WriteUserKey(CreateOwnedKey(_ownerId, _launchTarget));
 			return GetStatus();
 		}
 		catch (Exception ex) when (IsRegistryFailure(ex))
@@ -128,7 +127,7 @@ public sealed class NxmAssociationService : INxmAssociationService
 		var current = _store.ReadUserKey();
 		try
 		{
-			_store.WriteUserKey(CreateOwnedKey(_ownerId, _executablePath));
+			_store.WriteUserKey(CreateOwnedKey(_ownerId, _launchTarget));
 			return GetStatus();
 		}
 		catch (Exception ex) when (IsRegistryFailure(ex))
@@ -175,27 +174,41 @@ public sealed class NxmAssociationService : INxmAssociationService
 		}
 	}
 
-	public static string BuildCommand(string executablePath) => $"\"{Path.GetFullPath(executablePath)}\" --nxm \"%1\"";
+	public static string BuildCommand(string executablePath) => BuildCommand(ReduxLaunchTarget.ForExecutable(executablePath));
+	public static string BuildCommand(ReduxLaunchTarget launchTarget) => $"{launchTarget.CommandPrefix} --nxm \"%1\"";
 
-	public static NxmRegistryKeySnapshot CreateOwnedKey(string ownerId, string executablePath)
+	public static NxmRegistryKeySnapshot CreateOwnedKey(string ownerId, string executablePath) =>
+		CreateOwnedKey(ownerId, ReduxLaunchTarget.ForExecutable(executablePath));
+
+	public static NxmRegistryKeySnapshot CreateOwnedKey(string ownerId, ReduxLaunchTarget launchTarget)
 	{
 		var key = new NxmRegistryKeySnapshot();
 		key.SetValue("", "", "URL:Nexus Mods Protocol", RegistryValueKind.String);
 		key.SetValue("", "URL Protocol", String.Empty, RegistryValueKind.String);
 		key.SetValue("", OwnerValueName, ownerId, RegistryValueKind.String);
-		key.SetValue("", ExecutableValueName, Path.GetFullPath(executablePath), RegistryValueKind.String);
-		key.SetValue(CommandSubkey, "", BuildCommand(executablePath), RegistryValueKind.String);
+		key.SetValue("", ExecutableValueName, launchTarget.ApplicationPath, RegistryValueKind.String);
+		if (launchTarget.IsDotNetHosted)
+			key.SetValue("", DotNetHostValueName, launchTarget.DotNetHostPath, RegistryValueKind.String);
+		key.SetValue(CommandSubkey, "", BuildCommand(launchTarget), RegistryValueKind.String);
 		return key;
 	}
 
-	private static bool TryGetOwnedExecutable(string command, out string executable)
+	private static bool TryGetOwnedLaunch(NxmRegistryKeySnapshot key, string command, out ReduxLaunchTarget launchTarget)
 	{
-		executable = null;
-		if (String.IsNullOrWhiteSpace(command) || !command.EndsWith(" --nxm \"%1\"", StringComparison.Ordinal)) return false;
-		var suffixStart = command.Length - " --nxm \"%1\"".Length;
-		if (suffixStart < 3 || command[0] != '"' || command[suffixStart - 1] != '"') return false;
-		executable = command[1..(suffixStart - 1)];
-		return Path.IsPathFullyQualified(executable);
+		launchTarget = null;
+		var application = key?.GetString("", ExecutableValueName);
+		var host = key?.GetString("", DotNetHostValueName);
+		try
+		{
+			if (String.IsNullOrWhiteSpace(application)) return false;
+			launchTarget = String.IsNullOrEmpty(host) ? ReduxLaunchTarget.ForExecutable(application)
+				: ReduxLaunchTarget.ForManagedApplication(application, host);
+			return String.Equals(command, BuildCommand(launchTarget), StringComparison.Ordinal);
+		}
+		catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+		{
+			return false;
+		}
 	}
 
 	private static bool PathsEqual(string left, string right) =>

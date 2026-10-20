@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -840,49 +841,50 @@ public static partial class DivinityModDataLoader
 
 	public static async Task<ModSettingsParseResults> LoadModSettingsFileAsync(string path)
 	{
-		var activeMods = new List<DivinityProfileActiveModData>();
-
-		if (File.Exists(path))
+		return await Task.Run(() =>
 		{
-			Resource modSettingsRes = null;
 			try
 			{
-				modSettingsRes = await LoadResourceAsync(path, LSLib.LS.Enums.ResourceFormat.LSX, _modSettingsParams);
+				// Do not use the generic resource loader here: it maps read errors to null.
+				// Deny writes/replacement for this short read so a concurrent game save is
+				// reported as unavailable rather than accepted as a partially written order.
+				using var input = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+				// ResourceUtils disposes the input before returning. Keep this reader alive
+				// until the same protected bytes have also been fingerprinted for Sync review.
+				using var reader = new LSXReader(input);
+				_modSettingsParams.ToSerializationSettings(reader.SerializationSettings);
+				var resource = reader.Read();
+				if (resource == null || !resource.Regions.TryGetValue("ModuleSettings", out var region)
+					|| !region.Children.TryGetValue("Mods", out var modRoots) || modRoots.Count != 1)
+					return ModSettingsParseResults.Failed("The game load-order file is missing its ModuleSettings or Mods structure.");
+
+				var modsRoot = modRoots[0];
+				if (modsRoot.Children.Keys.Any(name => name != "ModuleShortDesc"))
+					return ModSettingsParseResults.Failed("The game load-order file contains an unrecognized mod entry.");
+
+				var activeMods = new List<DivinityProfileActiveModData>();
+				if (modsRoot.Children.TryGetValue("ModuleShortDesc", out var modNodes))
+				{
+					foreach (var node in modNodes)
+					{
+						var activeMod = new DivinityProfileActiveModData();
+						activeMod.LoadFromAttributes(node.Attributes);
+						if (!Guid.TryParse(activeMod.UUID, out _))
+							return ModSettingsParseResults.Failed("The game load-order file contains a mod without a valid UUID.");
+						if (!IgnoreMod(activeMod.UUID)) activeMods.Add(activeMod);
+					}
+				}
+				input.Position = 0;
+				return ModSettingsParseResults.Success(activeMods, Convert.ToHexString(SHA256.HashData(input)));
 			}
+			catch (FileNotFoundException) { return ModSettingsParseResults.Missing(); }
+			catch (DirectoryNotFoundException) { return ModSettingsParseResults.Missing(); }
 			catch (Exception ex)
 			{
 				DivinityApp.Log($"Error reading '{path}':\n{ex}");
+				return ModSettingsParseResults.Failed("Redux could not read the game load-order file. It may be locked, damaged, or incomplete.");
 			}
-
-			if (modSettingsRes != null && modSettingsRes.Regions.ContainsKey("ModuleSettings") && modSettingsRes.Regions.TryGetValue("ModuleSettings", out var region))
-			{
-				if (region.Children.TryGetValue("Mods", out var modListRootNode))
-				{
-					var modListChildrenRoot = modListRootNode.FirstOrDefault();
-					if (modListChildrenRoot != null)
-					{
-						var modList = modListChildrenRoot.Children.Values.FirstOrDefault();
-						if (modList != null)
-						{
-							foreach (var c in modList)
-							{
-								var activeModData = new DivinityProfileActiveModData();
-								activeModData.LoadFromAttributes(c.Attributes);
-								if (!DivinityModDataLoader.IgnoreMod(activeModData.UUID))
-								{
-									activeMods.Add(activeModData);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return new ModSettingsParseResults()
-		{
-			ActiveMods = activeMods,
-		};
+		}).ConfigureAwait(false);
 	}
 
 	public static async Task<List<DivinityProfileData>> LoadProfileDataAsync(string profilePath)
@@ -941,7 +943,8 @@ public static partial class DivinityModDataLoader
 					var modSettings = await LoadModSettingsFileAsync(modSettingsFile);
 					await Observable.Start(() =>
 					{
-						profileData.ActiveMods.AddRange(modSettings.ActiveMods);
+						profileData.ModSettingsReadResult = modSettings;
+						if (modSettings.Succeeded) profileData.ActiveMods.AddRange(modSettings.ActiveMods);
 						profiles.Add(profileData);
 					}, RxApp.MainThreadScheduler);
 				}

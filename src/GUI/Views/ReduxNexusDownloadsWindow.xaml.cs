@@ -106,16 +106,14 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 	private void UpdateAssociationButton()
 	{
 		var status = _viewModel.GetNxmAssociationStatus();
-        AssociationText.Text = !status.Success ? "NXM status unavailable" : status.Status switch
-        {
-            NxmAssociationStatus.Owned => "NXM links open in Redux",
-            NxmAssociationStatus.NeedsRepair => "NXM links need repair",
-            NxmAssociationStatus.OwnedByAnotherHandler => "NXM links use another app",
-            _ => "NXM links are off"
-        };
+		var isWine = ReduxRuntimeEnvironment.IsWine;
+		AssociationText.Text = NxmAssociationPresentation.GetStatusText(status, isWine);
+		AssociationCheckBox.Content = NxmAssociationPresentation.GetToggleLabel(isWine);
+		AssociationScopeText.Text = isWine ? NxmAssociationPresentation.WineScopeNote : String.Empty;
+		AssociationScopeText.Visibility = isWine ? Visibility.Visible : Visibility.Collapsed;
         AssociationCheckBox.IsChecked = status.Status == NxmAssociationStatus.Owned;
         AssociationCheckBox.IsEnabled = status.Success;
-        AssociationCheckBox.ToolTip = status.Message;
+		AssociationCheckBox.ToolTip = NxmAssociationPresentation.GetDetail(status, isWine);
 
 	}
 

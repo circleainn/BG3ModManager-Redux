@@ -64,6 +64,11 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 	public ReduxOnboardingWindow(Window owner, DivinityModManagerSettings settings)
 	{
 		InitializeComponent();
+		if (ReduxRuntimeEnvironment.IsWine)
+		{
+			NxmLinksLabel.Text = NxmAssociationPresentation.GetToggleLabel(isWine: true);
+			NxmLinksCheckBox.ToolTip = NxmAssociationPresentation.WineScopeNote;
+		}
 		foreach (var title in ReduxOnboardingPolicy.StarterSeparatorTitles)
         {
             var choice = new CheckBox { Tag = title, IsChecked = true, Margin = new Thickness(0, 8, 12, 8),
@@ -113,6 +118,10 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 					? "Choose Redux, then confirm replacing the current Nexus link handler."
 					: nxmStatus?.Message
 				: nxmStatus?.Message;
+			if (ReduxRuntimeEnvironment.IsWine)
+				NxmLinksCheckBox.ToolTip = nxmStatus == null
+					? NxmAssociationPresentation.WineScopeNote
+					: NxmAssociationPresentation.GetDetail(nxmStatus, isWine: true);
 		}
 		else
 		{

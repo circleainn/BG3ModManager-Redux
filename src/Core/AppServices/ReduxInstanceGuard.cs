@@ -1,7 +1,13 @@
 using System.Security.Principal;
 using System.Diagnostics;
+using System;
+using System.Threading;
 
+#if REDUX_UPDATER
+namespace ReduxUpdater;
+#else
 namespace DivinityModManager.AppServices;
+#endif
 
 public sealed class ReduxInstanceGuard : IDisposable
 {

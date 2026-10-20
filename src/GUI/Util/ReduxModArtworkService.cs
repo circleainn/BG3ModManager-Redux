@@ -1,9 +1,3 @@
-using DivinityModManager.Util;
-
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.Processing;
-
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -19,8 +13,6 @@ public static partial class ReduxModArtworkService
 {
 	public const string ReferencePrefix = "custom-artwork:";
 	private const int MaximumSourceBytes = 20 * 1024 * 1024;
-	private const int MaximumSourceDimension = 16384;
-	private const long MaximumSourcePixels = 64L * 1024 * 1024;
 	private const int MaximumStoredDimension = 2048;
 
 	[GeneratedRegex("^[0-9a-f]{16}-[0-9a-f]{32}\\.png$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
@@ -54,39 +46,9 @@ public static partial class ReduxModArtworkService
 				return false;
 			}
 
-			using (var identifyStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read,
-				FileShare.ReadWrite | FileShare.Delete))
-			{
-				var info = Image.Identify(identifyStream);
-				if (info == null || info.Width <= 0 || info.Height <= 0 ||
-					info.Width > MaximumSourceDimension || info.Height > MaximumSourceDimension ||
-					(long)info.Width * info.Height > MaximumSourcePixels)
-				{
-					error = "That image is too large for a mod preview.";
-					return false;
-				}
-			}
-
 			using var input = new FileStream(sourcePath, FileMode.Open, FileAccess.Read,
 				FileShare.ReadWrite | FileShare.Delete);
-			using var image = Image.Load(input);
-			while (image.Frames.Count > 1) image.Frames.RemoveFrame(image.Frames.Count - 1);
-			image.Mutate(context =>
-			{
-				context.AutoOrient();
-				if (image.Width > MaximumStoredDimension || image.Height > MaximumStoredDimension)
-				{
-					context.Resize(new ResizeOptions
-					{
-						Mode = ResizeMode.Max,
-						Size = new Size(MaximumStoredDimension, MaximumStoredDimension)
-					});
-				}
-			});
-
-			using var output = new MemoryStream();
-			image.Save(output, new PngEncoder());
-			var normalizedBytes = output.ToArray();
+			var normalizedBytes = ReduxArtworkDecoder.NormalizeToPng(input, MaximumStoredDimension);
 			var packageHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(modUuid.Trim().ToLowerInvariant())))
 				.ToLowerInvariant()[..16];
 			var contentHash = Convert.ToHexString(SHA256.HashData(normalizedBytes)).ToLowerInvariant()[..32];
@@ -99,9 +61,14 @@ public static partial class ReduxModArtworkService
 			artworkReference = ReferencePrefix + fileName;
 			return true;
 		}
-		catch (UnknownImageFormatException)
+		catch (NotSupportedException)
 		{
 			error = "That file is not a supported image.";
+			return false;
+		}
+		catch (InvalidDataException exception)
+		{
+			error = exception.Message;
 			return false;
 		}
 		catch (Exception exception)

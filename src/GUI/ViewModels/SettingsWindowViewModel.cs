@@ -29,7 +29,9 @@ public enum SettingsWindowTab
 	[Description("Keybindings")]
 	Keybindings = 4,
 	[Description("Advanced Settings")]
-	Advanced = 5
+	Advanced = 5,
+	[Description("Backups and snapshots")]
+	Backups = 6
 }
 
 public class GameLaunchParamEntry : ReactiveObject
@@ -494,7 +496,7 @@ public class SettingsWindowViewModel : ReactiveObject
 						break;
 				}
 			}
-		});
+		}, whenTab.Select(tab => tab != SettingsWindowTab.Backups));
 
 		ClearCacheCommand = ReactiveCommand.Create(() =>
 		{
@@ -560,7 +562,7 @@ public class SettingsWindowViewModel : ReactiveObject
 			const string message =
 				"Restore automatic categories for every mod?\n\n"
 				+ "All manual category assignments, including explicit No Category choices, will be cleared. "
-				+ "Redux will immediately classify each mod again using its current automatic rules and linked source metadata.\n\n"
+				+ "Previously cleared automatic assignments will also be restored. Redux will classify each mod again using its current automatic rules and linked source metadata.\n\n"
 				+ "Custom category definitions, colors, icons, descriptions, sidebar order, separators, notes, sources, installed mods, and load order will not change.";
 			var result = ReduxMessageBox.Show(
 				View,

@@ -1,20 +1,35 @@
 using System.IO.Compression;
 using System.Text;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Security.Cryptography;
 
+#if REDUX_UPDATER
+namespace ReduxUpdater;
+#else
 namespace DivinityModManager.AppServices;
+#endif
 
 /// <summary>Creates a user-kept snapshot before the external updater changes Redux files.</summary>
 public static class ReduxPreUpdateBackupService
 {
 	public sealed record Source(string ArchiveFolder, string Directory, bool ProfileLoadOrdersOnly = false);
 	public sealed record Progress(string CurrentFile, long CopiedBytes, long TotalBytes);
+	public sealed record CopiedFile(string SourcePath, string ArchivePath, long Length, string Sha256);
 	private sealed record Entry(string Path, string ArchivePath, long Length);
 
 	public static async Task CreateAsync(string archivePath, IEnumerable<Source> sources,
-		IProgress<Progress> progress = null, CancellationToken cancellationToken = default)
+		IProgress<Progress> progress = null, CancellationToken cancellationToken = default,
+		IReadOnlyCollection<string> excludedDirectories = null,
+		Func<IReadOnlyList<CopiedFile>, CancellationToken, Task<byte[]>> createSnapshotManifest = null)
 	{
 		if (String.IsNullOrWhiteSpace(archivePath)) throw new ArgumentException("A backup file is required.", nameof(archivePath));
 		var target = Path.GetFullPath(archivePath);
+		var excluded = (excludedDirectories ?? Array.Empty<string>()).Select(Path.GetFullPath).ToArray();
 		var roots = (sources ?? throw new ArgumentNullException(nameof(sources)))
 			.Where(source => source != null && Directory.Exists(source.Directory))
 			.Select(source => (source.ArchiveFolder, Path: Path.GetFullPath(source.Directory), source.ProfileLoadOrdersOnly))
@@ -27,7 +42,7 @@ public static class ReduxPreUpdateBackupService
 			if (String.IsNullOrWhiteSpace(root.ArchiveFolder) || root.ArchiveFolder.Contains('/') || root.ArchiveFolder.Contains('\\')
 				|| root.ArchiveFolder is "." or "..")
 				throw new ArgumentException("Invalid backup folder name.", nameof(sources));
-			if (IsWithin(target, root.Path))
+			if (IsWithin(target, root.Path) && !excluded.Any(path => IsWithin(target, path)))
 				throw new IOException("Save the backup outside the Redux installation and mod folders.");
 		}
 
@@ -36,7 +51,7 @@ public static class ReduxPreUpdateBackupService
 		{
 			var files = root.ProfileLoadOrdersOnly
 				? EnumerateProfileLoadOrders(root.Path)
-				: EnumerateFilesWithoutLinks(root.Path);
+				: EnumerateFilesWithoutLinks(root.Path, excluded);
 			foreach (var file in files)
 			{
 				var relative = Path.GetRelativePath(root.Path, file.FullName);
@@ -47,6 +62,7 @@ public static class ReduxPreUpdateBackupService
 		if (entries.Count == 0) throw new IOException("The selected backup sources contain no files.");
 		var total = entries.Sum(entry => entry.Length);
 		var copied = 0L;
+		var copiedFiles = new List<CopiedFile>();
 		var partial = target + ".partial";
 		if (File.Exists(partial)) throw new IOException("A partial backup already exists at the chosen location.");
 		Directory.CreateDirectory(Path.GetDirectoryName(target)!);
@@ -73,11 +89,28 @@ public static class ReduxPreUpdateBackupService
 						|| extension.Equals(".7z", StringComparison.OrdinalIgnoreCase)
 						? CompressionLevel.NoCompression : CompressionLevel.Fastest;
 					var zipEntry = archive.CreateEntry(entry.ArchivePath, compression);
-					await using var input = new FileStream(entry.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite,
+					await using var input = new FileStream(entry.Path, FileMode.Open, FileAccess.Read, FileShare.Read,
 						1024 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
 					await using var destination = zipEntry.Open();
-					await input.CopyToAsync(destination, 1024 * 1024, cancellationToken);
-					copied += entry.Length;
+					using var hash = createSnapshotManifest != null ? IncrementalHash.CreateHash(HashAlgorithmName.SHA256) : null;
+					var buffer = new byte[1024 * 1024];
+					long fileBytes = 0;
+					int count;
+					while ((count = await input.ReadAsync(buffer, cancellationToken)) > 0)
+					{
+						await destination.WriteAsync(buffer.AsMemory(0, count), cancellationToken);
+						hash?.AppendData(buffer, 0, count);
+						fileBytes += count; copied += count;
+						progress?.Report(new Progress(entry.ArchivePath, copied, total));
+					}
+					if (fileBytes != entry.Length) throw new IOException("A backup source changed size. Retry after file operations finish.");
+					if (hash != null) copiedFiles.Add(new(entry.Path, entry.ArchivePath, fileBytes, Convert.ToHexString(hash.GetHashAndReset())));
+				}
+				if (createSnapshotManifest != null)
+				{
+					var manifest = await createSnapshotManifest(copiedFiles, cancellationToken);
+					await using var metadata = archive.CreateEntry("Redux-Snapshot.json", CompressionLevel.Fastest).Open();
+					await metadata.WriteAsync(manifest, cancellationToken);
 				}
 			}
 			File.Move(partial, target, overwrite: true);
@@ -94,13 +127,15 @@ public static class ReduxPreUpdateBackupService
 		path.StartsWith(root.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
 			+ Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
 
-	private static IEnumerable<FileInfo> EnumerateFilesWithoutLinks(string root)
+	private static IEnumerable<FileInfo> EnumerateFilesWithoutLinks(string root, IReadOnlyCollection<string> excluded)
 	{
 		var pending = new Stack<DirectoryInfo>();
 		pending.Push(new DirectoryInfo(root));
 		while (pending.Count > 0)
 		{
 			var directory = pending.Pop();
+			if (excluded.Any(path => String.Equals(directory.FullName, path, StringComparison.OrdinalIgnoreCase)
+				|| IsWithin(directory.FullName, path))) continue;
 			if (directory.Attributes.HasFlag(FileAttributes.ReparsePoint))
 				throw new IOException($"Backup source contains a linked directory: {directory.FullName}");
 			foreach (var child in directory.EnumerateDirectories()) pending.Push(child);

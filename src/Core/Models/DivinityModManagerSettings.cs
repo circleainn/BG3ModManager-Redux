@@ -59,6 +59,7 @@ public enum ReduxTextSize
 [DataContract]
 public class DivinityModManagerSettings : ReactiveObject
 {
+	[DataMember, Reactive] public bool SnapshotIncludeMods { get; set; }
 	[DefaultValue(true), DataMember, Reactive] public bool ShowActiveModIndex { get; set; } = true;
     [DataMember, Reactive] public bool ShowInactiveModIndex { get; set; } = false;
 
@@ -144,6 +145,10 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DefaultValue("")]
 	[SettingsEntry("BG3 AppData folder override", "Override %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 for profiles, installed mods, and exported load orders.")]
 	[DataMember, Reactive] public string DocumentsFolderPathOverride { get; set; }
+
+	[DefaultValue("")]
+	[SettingsEntry("Script Extender detection folder", "Optional absolute folder containing the installed BG3ScriptExtender.dll or its version subfolders. Leave empty to use the updater's CachePath or the BG3 profile's default cache. This only changes Redux's detection; it does not move or reconfigure Script Extender. Use a Windows path visible to Redux, including under Wine, then refresh.")]
+	[DataMember, Reactive] public string ScriptExtenderDetectionPathOverride { get; set; } = String.Empty;
 
 	[DefaultValue(false)]
 	[SettingsEntry("Show Toolkit project markers", "Show a build icon beside mods detected as Toolkit or editor projects.")]
@@ -365,12 +370,15 @@ public class DivinityModManagerSettings : ReactiveObject
 	// Legacy single-category assignments are retained for migration from early Redux builds.
 	[DataMember, Reactive] public Dictionary<string, string> ModCategoryOverrides { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	[DataMember, Reactive] public Dictionary<string, List<string>> ModCategoryAssignments { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+	// Per-mod opt-outs from automatic assignment, independent of manual category choices.
+	[DataMember, Reactive] public List<string> ClearedAutomaticCategoryModIds { get; set; } = new();
 	[DataMember, Reactive] public Dictionary<string, string> ModCategoryColors { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	// Optional Redux presentation icon per category. Empty values explicitly retain the dot fallback.
 	[DataMember, Reactive] public Dictionary<string, string> ModCategoryIcons { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	// Optional user-authored sidebar tooltip. Blank values intentionally produce no tooltip.
 	[DataMember, Reactive] public Dictionary<string, string> ModCategoryDescriptions { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	[DataMember, Reactive] public List<string> SavedCategoryColors { get; set; } = new();
+	// Hidden sidebar filters; hiding a filter never changes a mod's categories.
 	[DataMember, Reactive] public List<string> DisabledModCategories { get; set; } = new();
 	[DefaultValue(true)]
 	[SettingsEntry("Assign categories automatically", "Classify mods into Redux's built-in categories. Turn this off to hide automatic categories while preserving custom categories and every manual assignment.")]
@@ -604,6 +612,10 @@ public class DivinityModManagerSettings : ReactiveObject
 			: new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
 		SavedCategoryColors ??= new List<string>();
 		DisabledModCategories ??= new List<string>();
+		ClearedAutomaticCategoryModIds = (ClearedAutomaticCategoryModIds ?? [])
+			.Where(id => !String.IsNullOrWhiteSpace(id))
+			.Distinct(StringComparer.OrdinalIgnoreCase)
+			.ToList();
 		KnownCategorizedModIds ??= new List<string>();
 		UnseenCategoryModIds = UnseenCategoryModIds != null
 			? new Dictionary<string, List<string>>(UnseenCategoryModIds, StringComparer.OrdinalIgnoreCase)

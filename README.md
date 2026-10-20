@@ -3,7 +3,7 @@
 <img src="docs/assets/nexus-description/00-redux-header.png#gh-dark-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 <img src="docs/assets/nexus-description/00-redux-header-light.png#gh-light-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 
-[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.5.6-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
+[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.6-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-4F86F7?style=flat-square)](#requirements-and-alpha-status)
 [![License](https://img.shields.io/badge/license-MIT-42A66F?style=flat-square)](LICENSE)
 [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/circleain)
@@ -25,15 +25,19 @@ Redux is a Windows mod manager built on
 BG3MM's proven package, profile, and load-order foundation while adding a cohesive interface,
 stronger organization, safer review workflows, and optional offline-assisted guidance.
 
-<h3 id="new-in-16-5" align="center">New in 16.5</h3>
+<h3 id="new-in-16-6" align="center">New in 16.6</h3>
 <hr>
 
-- **Organize every mod pane:** separators and one level of sub-separators in Active, Inactive, and Override Mods, with collapse, grouped moves, and a choice for existing separators.
-- **Overrides per saved order:** opt in to a reviewed PAK selection for each order, with managed storage for disabled Overrides and recovery for interrupted moves.
-- **Clearer updates and storage:** find verified Nexus replacements through Mod Review, choose the managed Downloads folder, limit previous PAK versions, and back up the existing installation and mod-list data before updating Redux.
-- **Personalize and refine:** set local aliases and artwork, manage supported native plugins through an existing YANML setup, and use improved pane layouts, Sync state, and drag placement.
+- **Backups and snapshots:** save Redux versions, settings, and orders, optionally include PAK mods and profile load orders, and restore with a return snapshot for rolling forward again. Open Backups from Preferences, Tools, or Quick Access.
+- **Override-copy recovery:** review duplicate copies, compare their contents, choose which to keep, and retain recovery backups.
+- **Quicker organization:** move mods to nested or collapsed separators and clear or restore automatic categories while preserving manual choices.
+- **Maintenance fixes:** preserve orders when game files cannot be read, correct stale Script Extender settings and status indicators, and retain artwork previews through SkiaSharp.
 
-Read the [latest 16.5.6 fixes](docs/releases/0.1.0-alpha.16.5.6.md), the [full 16.5 release notes](docs/releases/0.1.0-alpha.16.5.md), or the [changelog](docs/CHANGELOG.md) for earlier fixes.
+Development resumed after a loss of local development history. This update brings together recovered
+work, reviewed fixes, and the rebuilt backup manager. Read the
+[16.6 release notes](docs/releases/0.1.0-alpha.16.6.md), the
+[full 16.5 release notes](docs/releases/0.1.0-alpha.16.5.md), or the
+[changelog](docs/CHANGELOG.md) for earlier fixes.
 
 <h3 id="install-and-update" align="center">Install and update</h3>
 <hr>
@@ -51,7 +55,7 @@ approved archive, and Redux's built-in updater uses that archive for existing in
 4. Run `Redux.exe`. On first launch, review the detected game and profile paths before
    installing or syncing anything.
 
-`0.1.0-alpha.16.5.6` is the version of this build. The updater acts only when the official
+This build is `0.1.0-alpha.16.6`. The updater acts only when the official
 public-alpha channel points to a newer, fully published package. You can also update manually by
 backing up the Redux folder and extracting the complete newer archive over it. Release archives
 exclude runtime state such as `Data`, `_Logs`, caches, downloads, retained archives, and backups.
