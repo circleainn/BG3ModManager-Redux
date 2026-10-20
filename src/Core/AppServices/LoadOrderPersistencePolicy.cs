@@ -1,4 +1,5 @@
 using DivinityModManager.Models;
+using DivinityModManager.Models.App;
 
 namespace DivinityModManager.AppServices;
 
@@ -7,6 +8,12 @@ namespace DivinityModManager.AppServices;
 /// </summary>
 public static class LoadOrderPersistencePolicy
 {
+	/// <summary>Only a verified game order can replace Redux's saved Current workspace.</summary>
+	public static bool GameOrderSupersedesSavedCurrent(ModSettingsParseResults read,
+		DateTime? gameModifiedUtc, DateTime? workspaceModifiedUtc) =>
+		read?.Succeeded == true && gameModifiedUtc.HasValue && workspaceModifiedUtc.HasValue
+		&& gameModifiedUtc.Value >= workspaceModifiedUtc.Value;
+
 	/// <summary>Keep the selected profile on refresh; on startup use the game's selected profile before falling back to Public.</summary>
 	public static int FindPreferredProfileIndex(IReadOnlyList<DivinityProfileData> profiles, string? selectedProfileUuid)
 	{

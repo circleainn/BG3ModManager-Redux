@@ -5,6 +5,18 @@ source for individual implementation details.
 
 ## Unreleased
 
+- Clear stale Script Extender version pins and cache settings when the selected game's updater configuration is removed; preserve valid pins and retain prior settings when the file cannot be read.
+- Preserve the saved workspace and last verified game order when `modsettings.lsx` is locked, damaged, or incomplete. Recheck the reviewed file before Sync or empty-order recovery, and show an unavailable sync status until a complete read succeeds.
+- Add **Tools > Resolve Override Copies** with exact file paths, content comparisons, explicit choices for different versions, retained backups, and interrupted-operation recovery. Refresh can finish while duplicates await review.
+- Correct the Status menu's clear, checking, warning, and error presentation so its text, icon, and color follow the current diagnostic state.
+- Match Resolve Override Copies action buttons to the shared dialog icons and icon-visibility preference.
+- Add **Move to Separator** to mod context menus in Active, Inactive, and Override. Move a row or selection into a nested or collapsed separator without changing panes; preserve full-order placement and Undo/Redo.
+- Add reversible controls to clear automatic category assignments for current mods and restore them. Hide or show built-in sidebar filters independently of assignments; preserve manual choices, custom categories, and preferences when saving fails.
+- Reject archives with no PAK before mod-install review proceeds. Explain loose `Generated/Public` texture archives and direct users to the author's installation instructions; keep load-order-only imports supported through the order workflow.
+- Validate manual Nexus links as BG3 project pages or numeric IDs, and preserve query parameters when opening browser links.
+- Restore experimental Wine compatibility work: honor Script Extender's configured cache path with a separate detection-folder override, preserve the Windows dotnet host during NXM and updater/restart launches, distinguish Wine-prefix link registration from Linux browser setup, and provide a native forwarding helper and guide. Real Wine/Wayland validation remains required.
+- Replace ImageSharp with SkiaSharp for mod artwork, removing the vulnerable dependency and its new build-time license-key requirement. Preserve PNG, JPEG, WebP, BMP, and GIF previews, custom artwork sizing, transparency, and photo orientation; reject oversized or incomplete images.
+
 ## 0.1.0-alpha.16.5.6 — 2026-10-02
 
 - Fix Download Manager failing to open in 16.5.5 because its package-intake progress bar tried to write to a read-only view-model property.

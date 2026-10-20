@@ -9,6 +9,9 @@ public static class NxmPreviousHandlerForwarder
 	private const string ForwardDepthVariable = "BG3MM_REDUX_NXM_FORWARD_DEPTH";
 
 	public static bool TryForward(INxmRegistryStore store, string value, string currentExecutable, out string error)
+		=> TryForward(store, value, ReduxLaunchTarget.ForExecutable(currentExecutable), out error);
+
+	public static bool TryForward(INxmRegistryStore store, string value, ReduxLaunchTarget currentLaunch, out string error)
 	{
 		error = null;
 		if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable(ForwardDepthVariable)))
@@ -19,7 +22,7 @@ public static class NxmPreviousHandlerForwarder
 
 		var ownerId = store.ReadUserKey()?.GetString("", NxmAssociationService.OwnerValueName);
 		var command = String.IsNullOrWhiteSpace(ownerId) ? null : store.ReadBackup(ownerId)?.PreviousCommand;
-		if (!TryCreateStartInfo(command, value, currentExecutable, out var startInfo, out error)) return false;
+		if (!TryCreateStartInfo(command, value, currentLaunch, out var startInfo, out error)) return false;
 		startInfo.Environment[ForwardDepthVariable] = "1";
 		try
 		{
@@ -33,6 +36,10 @@ public static class NxmPreviousHandlerForwarder
 	}
 
 	public static bool TryCreateStartInfo(string command, string value, string currentExecutable,
+		out ProcessStartInfo startInfo, out string error)
+		=> TryCreateStartInfo(command, value, ReduxLaunchTarget.ForExecutable(currentExecutable), out startInfo, out error);
+
+	public static bool TryCreateStartInfo(string command, string value, ReduxLaunchTarget currentLaunch,
 		out ProcessStartInfo startInfo, out string error)
 	{
 		startInfo = null;
@@ -49,7 +56,7 @@ public static class NxmPreviousHandlerForwarder
 			return false;
 		}
 		var executable = Environment.ExpandEnvironmentVariables(arguments[0]);
-		if (!Path.IsPathFullyQualified(executable) || !File.Exists(executable) || PathsEqual(executable, currentExecutable))
+		if (!Path.IsPathFullyQualified(executable) || !File.Exists(executable) || IsCurrentApplication(executable, arguments, currentLaunch))
 		{
 			error = "The previous Nexus link handler executable is unavailable.";
 			return false;
@@ -70,6 +77,15 @@ public static class NxmPreviousHandlerForwarder
 		};
 		foreach (var argument in arguments.Skip(1)) startInfo.ArgumentList.Add(argument == "%1" ? value : argument);
 		return true;
+	}
+
+	private static bool IsCurrentApplication(string executable, IReadOnlyList<string> arguments, ReduxLaunchTarget currentLaunch)
+	{
+		if (PathsEqual(executable, Path.ChangeExtension(currentLaunch.ApplicationPath, ".exe"))) return true;
+		if (!ReduxLaunchTarget.IsWindowsDotNetHost(executable) || arguments.Count < 2) return false;
+		var application = Environment.ExpandEnvironmentVariables(arguments[1]);
+		return Path.IsPathFullyQualified(application)
+			&& PathsEqual(application, Path.ChangeExtension(currentLaunch.ApplicationPath, ".dll"));
 	}
 
 	private static bool TrySplitCommandLine(string command, out IReadOnlyList<string> arguments)

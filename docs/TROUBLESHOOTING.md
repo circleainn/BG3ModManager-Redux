@@ -97,12 +97,39 @@ Clearing installed history does not uninstall content. Clearing the Package Arch
 not uninstall content or clear download history. Removing an unfinished item and deleting its
 partial file are explicit, separate choices.
 
+## Script Extender version appears older than expected
+
+Redux detects version metadata from the Script Extender cache. A downloaded updater release and
+the extender actually loaded by the game are different evidence. Check the game's extender version,
+the selected game executable, the updater's Target Version and CachePath, and any Redux detection-folder
+override before changing files. An explicit target version can intentionally select an older cached DLL.
+
+The maintenance build clears stale updater pins/cache settings when the selected game's updater
+configuration file has been removed. A locked or unreadable configuration retains the previous settings
+and logs the read failure. This fixes a confirmed stale-settings path; it does not establish the cause of
+every version mismatch. For a persistent mismatch, report the Redux version, warning text, cached DLL
+version, and whether it changes after Refresh or restart. Do not delete caches or disable warnings as
+a substitute for identifying the selected installation and version.
+
+For experimental Wine setup, see the [native browser forwarding guide](../tools/linux/README.md).
+Wine-prefix registration and Linux desktop registration are separate. Script Extender detection
+honors its configured cache path; **Preferences > General > Paths and storage > Script Extender
+detection folder** overrides detection without changing the updater's actual configuration.
+Use an absolute path visible inside Redux's prefix. Wine, native browser forwarding, and restart
+still need real-environment validation; Windows regression results do not establish Linux support.
+
 ## A package will not install
 
 Read the install review rather than bypassing it. Redux blocks unknown game-directory DLL layouts,
 unsafe archive paths, ambiguous mixed packages, invalid saves, and packages that changed after
 review. Clean new PAK installs enter Inactive Mods; updates/reinstalls preserve existing placement
 as documented. Intake never silently activates, reorders, or syncs.
+
+An archive can contain loose game assets rather than a PAK. **No PAK files found** explains when
+`Generated/Public` textures require the author's Data-folder instructions; normal mod import does
+not install those files. For example, [Vivid Landscapes (6473)](https://www.nexusmods.com/baldursgate3/mods/6473)
+uses loose textures, while [Vivid Landscapes All in One (20021)](https://www.nexusmods.com/baldursgate3/mods/20021)
+is a separate PAK release. They are different inputs when investigating an installation report.
 
 For a native replacer installed outside Redux, remove the replacer, verify BG3 through Steam or GOG,
 then install the reviewed package through Redux. Redux must never preserve a modded DLL as the clean
@@ -137,7 +164,38 @@ Do not repeatedly sync an unexpected result into the game.
 separator fixes do not prove that every sync/startup symptom is resolved. Do not delete settings,
 reinstall mods, or merge Save and Sync as a workaround.
 
+If Redux reports that sync status is unavailable, it could not read a complete `modsettings.lsx`.
+The saved workspace and last verified order are retained. Let any game or other manager finish
+writing the file, then Refresh. A failed read does not establish that the game reset the order.
+Before Sync or empty-order recovery writes, Redux rechecks the reviewed file and stops if it has
+changed or become unavailable.
+
+## Override copies exist in both Mods and the holding folder
+
+Open **Tools > Resolve Override Copies**. The review shows both full paths, package parts, sizes,
+dates, and whether the contents match. Use **Open Mods**, **Open Holding**, or **Copy Details** to
+inspect the conflict. Different copies require an explicit choice; identical copies recommend
+keeping the copy already in Mods.
+
+Applying the review retains the chosen package in its current folder and moves the displaced
+package out of discovery only after creating verified backups. Backups are retained under
+`Data/OverrideDuplicateBackups` beside Redux's `Data/OverrideOrderHolding` folder; the result shows
+the exact backup directory. Keeping a held copy does not activate it. After the automatic Refresh,
+retry the order switch or activation you intended. If Refresh was canceled or could not run, finish
+Refresh before changing Override placement. Refresh itself can finish with a conflict pending.
+
+If interrupted recovery reports that a file changed or its original location is occupied, preserve
+the files and recovery records for inspection. Do not delete the holding folder or overwrite a
+different package to dismiss the warning.
+
 ## Dragging a separator does not carry the expected mods
+
+To place ordinary mods directly in a section, select the mods and use **Move to Separator** from
+their right-click menu. Destinations belong to the same pane, including nested and collapsed
+separators. The selection keeps its underlying order and is appended after the section's own mods,
+before its first sub-separator. A collapsed destination stays collapsed; expand it to see the result.
+Undo/Redo restores placement and membership. Active-order edits still require Save and Sync;
+Inactive and Override organization follows their existing automatic-save behavior.
 
 Distinguish category assignments from a collapsible separator header, and record whether the
 separator was expanded or collapsed. The current drag policy treats expanded headers as marker-only
@@ -149,6 +207,23 @@ The earlier expanded-header behavior in
 report the exact version, source and destination pane, expanded/collapsed state, filters/sorting,
 and membership before/after the move.
 Use a backed-up or disposable order for reproduction; do not keep saving an unexpected arrangement.
+
+## Automatic categories or sidebar filters are unwanted
+
+Open the Categories menu to choose the scope:
+
+- **Clear automatic assignments for current mods** keeps those mods under **No Category** across
+  Refresh and restart. Manual assignments and custom categories stay intact, and new mods can still
+  receive automatic categories. **Restore cleared automatic assignments** reverses that choice.
+- **Hide built-in category filters** and **Show built-in category filters** change sidebar visibility
+  without changing assignments. They preserve custom filters and **No Category**. Showing filters
+  still respects the automatic-category and empty-category preferences. **Visible category filters**
+  controls individual filters.
+- **Assign categories automatically** controls automatic classification globally.
+- **Reset all mods to automatic categories** also clears explicit manual assignments and **No Category**
+  choices. Its confirmation explains this broader scope.
+
+Clearing, restoring, and visibility changes retain the previous choices if settings cannot be saved.
 
 ## A mod loses its Nexus link or shows the wrong source
 

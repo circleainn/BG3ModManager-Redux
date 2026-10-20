@@ -5,7 +5,8 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: September 27, 2026. Release line: `0.1.0-alpha.16.5.3`.
+Last reviewed: October 20, 2026. Published release line: `0.1.0-alpha.16.5.6`
+(verified October 19). Development changes below remain unreleased.
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -13,6 +14,34 @@ with progress and cancellation. Export retains the import limits: 32 saves, 1 GB
 regressions pass; real campaign export/restore and cancellation still need a live check.
 
 ## Development status
+
+### Unreleased maintenance work
+
+- Preserve the last verified game order and saved Current workspace when `modsettings.lsx`
+  cannot be read completely; recheck the reviewed file before Sync or empty-order recovery.
+- Resolve duplicate Override copies through explicit choices, verified backups, and interrupted
+  operation recovery. Keep the status menu's text, icon, and color consistent.
+- Move one or multiple mods to nested or collapsed separators within the same pane, with Undo/Redo.
+- Clear/restore automatic category assignments and hide/show built-in filters independently,
+  preserving manual assignments and custom categories.
+- Reject no-PAK archives with useful loose-texture guidance; validate manual Nexus links and
+  preserve browser-link query parameters.
+- Replace ImageSharp with SkiaSharp and retain the required managed/native notices and packaging.
+- Improve experimental Wine forwarding and host-preserving launches; honor extender cache paths
+  and discard stale updater pins when the selected game's configuration is absent.
+
+The most recent Debug regression run passed 721 checks; the experimental forwarding helper's
+five tests passed in the earlier validation. Debug and Publish builds passed after the extender
+reload correction. These are development results, not a public-release acceptance record.
+Interactive app-control acceptance was not completed and is currently deferred. Real Wine testing
+and the original Vivid PAK archive reproduction remain outstanding. Before publication, assign a
+new version and complete the exact-artifact release gate with all limitations recorded.
+
+See the [October issue audit](ISSUE_AUDIT_2026-10-19.md) for shipped fixes, unreleased changes,
+new reports, and remaining verification. Do not infer that an open issue means its entire feature
+is missing; YANML plugin management, for example, already shipped in 16.5.
+
+### Published feature baseline
 
 Alpha.16.5 adds optional cross-order separator presentation with independent
 per-order placement, a reversible one-time upgrade prompt for existing separators, and a compact
@@ -50,10 +79,11 @@ Collection previews compare exact Nexus mod/file IDs against existing PAKs in bo
 The accumulated work shipped in the alpha.16.4 update. Dev runs build and regression
 checks but publishes no downloadable portable build or release; main owns public releases.
 The [16.5 changelog](CHANGELOG.md) records the changes after the 16.4.4 maintenance release.
-Maintenance updates through 16.5.3 improved Override activation and linked-folder handling,
+Maintenance updates through 16.5.6 improved Override activation and linked-folder handling,
 separator layout and menus, mod-update checks, selected mod positions during Sync, shutdown, and
-verified Nexus-link retention. The [16.5.3 release notes](releases/0.1.0-alpha.16.5.3.md) describe
-its new fixes; earlier fixes are summarized in the changelog.
+verified Nexus-link retention. The [16.5.6 release notes](releases/0.1.0-alpha.16.5.6.md) include
+the cumulative archive, cancellation, persistence, and browser-link fixes from 16.5.5 and its
+Download Manager opening correction. Publication evidence is in [release records](RELEASE_RECORDS.md).
 
 Alpha.16.4.1 fixes separator regressions reported in #121 and #123: filtered views hide separators,
 bulk collapse/expand no longer fades the whole recycled list, established sections re-anchor to their
@@ -95,7 +125,7 @@ mods, and never saves or syncs automatically.
 |:--|:--|
 | Product | Baldur's Gate 3 Mod Manager Redux |
 | Short name | Redux |
-| Latest version | `0.1.0-alpha.16.5.3` |
+| Latest verified published version | `0.1.0-alpha.16.5.6` |
 | Lifecycle | Public alpha |
 | Supported platform | Windows 10/11 x64 |
 | Required runtime | .NET 8 Desktop Runtime |
@@ -105,7 +135,7 @@ mods, and never saves or syncs automatically.
 | Update channel | `public-alpha` |
 | Active milestone | `v0.1.0 – Public Alpha` |
 
-The release tag is `v0.1.0-alpha.16.5.3`. Always verify the live branches and releases before
+The release tag is `v0.1.0-alpha.16.5.6`. Always verify the live branches and releases before
 preparing another publication.
 
 ## What Redux is
@@ -287,7 +317,10 @@ provides non-destructive checks for remaining reports.
 ### Scoped requests and collaboration
 
 - [#133 — Controls for automatic categories](https://github.com/circleainn/BG3ModManager-Redux/issues/133)
-  remains open for the distinction between disabling assignment and deleting category definitions.
+  has unreleased clear/restore assignment and hide/show filter controls. Deleting built-in category
+  definitions remains separate, undecided scope.
+- [#172 — Move to Separator](https://github.com/circleainn/BG3ModManager-Redux/issues/172)
+  is implemented in development for same-pane destinations; cross-pane targeting is additional scope.
 - [#155 — YANML integration](https://github.com/circleainn/BG3ModManager-Redux/issues/155)
   is an offer from YANML's developer to coordinate a supported way to install or remove YANML itself.
   Redux currently manages reviewed plugins only when YANML is already configured.

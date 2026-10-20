@@ -219,8 +219,7 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 				UpdateProgress = Math.Clamp(value.Fraction, 0, 1);
 			});
 			var prepared = await _packages.DownloadAndStageAsync(_availableUpdate, progress);
-			var processPath = Environment.ProcessPath
-				?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Redux.exe");
+			var applicationDirectory = ReduxLaunchTarget.Current().ApplicationDirectory;
 			var mainWindow = MainWindow.Self
 				?? throw new InvalidOperationException("The Redux main window is not available for restart.");
 			if (backupPath != null)
@@ -245,7 +244,7 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 				});
 				await Task.Run(() => ReduxPreUpdateBackupService.CreateAsync(backupPath,
 				[
-					new("Redux", Path.GetDirectoryName(processPath)!),
+					new("Redux", applicationDirectory),
 					new("BG3 Mods", main.PathwayData.AppDataModsPath),
 					new("Previous Mod Versions", previousVersions),
 					new("Saved Orders", orders),
@@ -256,7 +255,7 @@ public partial class AppUpdateWindowViewModel : ReactiveObject
 				CanSkip = false;
 				SkipButtonText = "Later";
 			}
-			_launcher.Queue(prepared, Path.GetDirectoryName(processPath)!, Environment.ProcessId);
+			_launcher.Queue(prepared, applicationDirectory, Environment.ProcessId);
 			UpdateDescription = backupPath == null ? "Redux will finish the update after it closes."
 				: "Backup saved. Redux will finish the update after it closes.";
 			mainWindow.RequestExitForUpdate();

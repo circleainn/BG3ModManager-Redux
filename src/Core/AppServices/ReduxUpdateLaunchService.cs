@@ -21,7 +21,11 @@ public sealed class ReduxUpdateLaunchService
 	};
 
 	private readonly object _gate = new();
+	private readonly ReduxLaunchTarget _currentLaunch;
 	private PendingUpdate _pending;
+
+	public ReduxUpdateLaunchService(ReduxLaunchTarget currentLaunch = null) =>
+		_currentLaunch = currentLaunch ?? ReduxLaunchTarget.Current();
 
 	public bool HasPendingUpdate
 	{
@@ -77,7 +81,6 @@ public sealed class ReduxUpdateLaunchService
 			{
 				if (_pending != null) throw new InvalidOperationException("A Redux update is already queued.");
 				_pending = new PendingUpdate(
-					Path.Combine(runnerDirectory, "ReduxUpdater.exe"),
 					requestPath,
 					runnerDirectory,
 					transactionRoot);
@@ -106,13 +109,7 @@ public sealed class ReduxUpdateLaunchService
 
 		try
 		{
-			var start = new ProcessStartInfo(pending.ExecutablePath)
-			{
-				UseShellExecute = false,
-				WorkingDirectory = pending.WorkingDirectory
-			};
-			start.ArgumentList.Add("--request");
-			start.ArgumentList.Add(pending.RequestPath);
+			var start = CreateRunnerStartInfo(pending.WorkingDirectory, pending.RequestPath);
 			Process.Start(start);
 			error = String.Empty;
 			return true;
@@ -125,6 +122,10 @@ public sealed class ReduxUpdateLaunchService
 			return false;
 		}
 	}
+
+	internal ProcessStartInfo CreateRunnerStartInfo(string runnerDirectory, string requestPath) =>
+		ReduxLaunchTarget.ForExecutable(Path.Combine(runnerDirectory, "ReduxUpdater.exe"), _currentLaunch.DotNetHostPath)
+			.CreateStartInfo(["--request", Path.GetFullPath(requestPath)]);
 
 	public void CancelPending()
 	{
@@ -151,7 +152,6 @@ public sealed class ReduxUpdateLaunchService
 	}
 
 	private sealed record PendingUpdate(
-		string ExecutablePath,
 		string RequestPath,
 		string WorkingDirectory,
 		string TransactionDirectory);

@@ -1,6 +1,7 @@
 ﻿
 
 using DivinityModManager.Util;
+using DivinityModManager.Models.App;
 
 using DynamicData;
 
@@ -23,6 +24,8 @@ public class DivinityProfileData : ReactiveObject
 	/// The mod data under the Mods node, from modsettings.lsx.
 	/// </summary>
 	public List<DivinityProfileActiveModData> ActiveMods { get; set; }
+	public ModSettingsParseResults ModSettingsReadResult { get; set; } =
+		ModSettingsParseResults.Failed("The game load order has not been read yet.");
 
 	public DivinityLoadOrder GetLoadOrder(SourceCache<DivinityModData, string> mods)
 	{

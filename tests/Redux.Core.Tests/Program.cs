@@ -10,7 +10,7 @@ namespace Redux.Core.Tests;
 internal static class Program
 {
 	[STAThread]
-	private static int Main()
+	private static int Main(string[] args)
 	{
 		// Register WPF's pack URI support before exercising GUI-owned, nonvisual
 		// services such as the portable Redux bundle reader/writer.
@@ -71,6 +71,13 @@ internal static class Program
 		var markdownLinks = new MarkdownLinkTests();
 		var visualModSelection = new VisualModSelectionPolicyTests();
 		var settingsMaintenance = new SettingsMaintenanceTests();
+		var categoryPreferences = new CategoryPreferenceTests();
+		var moveToSeparator = new MoveToSeparatorTests();
+		var sourceLinkValidation = new SourceLinkValidationTests();
+		var extenderDetectionPaths = new ScriptExtenderDetectionPathTests();
+		var extenderConfigReload = new ExtenderConfigReloadTests();
+		var nxmPresentation = new NxmAssociationPresentationTests();
+		var launchTarget = new ReduxLaunchTargetTests();
 		var smoothLogicalScroll = new SmoothLogicalScrollPolicyTests();
 		var startupNotifications = new StartupNotificationQueueTests();
 		var commandPaletteSearch = new CommandPaletteSearchTests();
@@ -100,8 +107,41 @@ internal static class Program
 		var releaseVersions = new ReleaseVersionContractTests();
 		var storage = new StorageWorkflowTests();
 		var overrideOrders = new OverrideOrderFileServiceTests();
+		var modSettingsReads = new ModSettingsReadTests();
+		var diagnosticStatus = new DiagnosticStatusMenuTests();
+		var modSettingsIntegration = new ModSettingsReadIntegrationTests();
+		var overrideDuplicates = new OverrideDuplicateRecoveryTests();
+		var overrideDuplicateDialog = new OverrideDuplicateDialogTests();
 		var tests = new (string Name, Action Run)[]
 		{
+			(nameof(overrideDuplicates.CompletedBackupsDoNotBlockChangedFolderTargets), overrideDuplicates.CompletedBackupsDoNotBlockChangedFolderTargets),
+			(nameof(overrideDuplicateDialog.CancelWithAnOccupiedRollbackTargetKeepsTheRecoveryErrorAvailable), overrideDuplicateDialog.CancelWithAnOccupiedRollbackTargetKeepsTheRecoveryErrorAvailable),
+			(nameof(overrideDuplicateDialog.RecoveryReviewRequiresExplicitChoicesAndKeepsActionsReachableInEveryTheme), overrideDuplicateDialog.RecoveryReviewRequiresExplicitChoicesAndKeepsActionsReachableInEveryTheme),
+			(nameof(overrideDuplicates.CancellationAfterStagingRestoresBothCopies), overrideDuplicates.CancellationAfterStagingRestoresBothCopies),
+			(nameof(modSettingsReads.FingerprintGuardRejectsChangedDeletedAndUnverifiedOrders), modSettingsReads.FingerprintGuardRejectsChangedDeletedAndUnverifiedOrders),
+			(nameof(modSettingsReads.FingerprintGuardOnlyAcceptsMissingWhenTheFileIsStillMissing), modSettingsReads.FingerprintGuardOnlyAcceptsMissingWhenTheFileIsStillMissing),
+			(nameof(modSettingsReads.FingerprintGuardBlocksALockedFileUntilTheWriterCloses), modSettingsReads.FingerprintGuardBlocksALockedFileUntilTheWriterCloses),
+			(nameof(modSettingsIntegration.FailedGameOrderReadPreservesVerifiedStateUntilACompleteReadSucceeds), modSettingsIntegration.FailedGameOrderReadPreservesVerifiedStateUntilACompleteReadSucceeds),
+			(nameof(modSettingsIntegration.FailedReadForAnotherProfileCannotReuseOrOverwriteThePreviousProfileState), modSettingsIntegration.FailedReadForAnotherProfileCannotReuseOrOverwriteThePreviousProfileState),
+			(nameof(overrideDuplicates.IdenticalCopiesRequireReviewAndRetainTheDisplacedBytes), overrideDuplicates.IdenticalCopiesRequireReviewAndRetainTheDisplacedBytes),
+			(nameof(overrideDuplicates.DifferentCopiesWithEqualMetadataNeedAnExplicitChoiceAndNeverActivateHeld), overrideDuplicates.DifferentCopiesWithEqualMetadataNeedAnExplicitChoiceAndNeverActivateHeld),
+			(nameof(overrideDuplicates.SameLengthAndTimestampReplacementAfterReviewIsRejected), overrideDuplicates.SameLengthAndTimestampReplacementAfterReviewIsRejected),
+			(nameof(overrideDuplicates.FailureAfterStagingRollsBackWithoutDeletingBackups), overrideDuplicates.FailureAfterStagingRollsBackWithoutDeletingBackups),
+			(nameof(overrideDuplicates.FailedRollbackRetainsBothCopiesAndRestartRecoveryRetriesSafely), overrideDuplicates.FailedRollbackRetainsBothCopiesAndRestartRecoveryRetriesSafely),
+			(nameof(overrideDuplicates.RestartRestoresAnInterruptedStagedMoveWithoutOverwriting), overrideDuplicates.RestartRestoresAnInterruptedStagedMoveWithoutOverwriting),
+			(nameof(overrideDuplicates.MultipartConflictMovesTheCompleteDisplacedSetAndRejectsMissingParts), overrideDuplicates.MultipartConflictMovesTheCompleteDisplacedSetAndRejectsMissingParts),
+			(nameof(overrideDuplicates.UnknownInstalledCollisionIsReportedWithoutTreatingItAsAnOverride), overrideDuplicates.UnknownInstalledCollisionIsReportedWithoutTreatingItAsAnOverride),
+			(nameof(overrideDuplicates.RetargetedModsJunctionAndLinkedBackupFoldersAreRejected), overrideDuplicates.RetargetedModsJunctionAndLinkedBackupFoldersAreRejected),
+			(nameof(modSettingsReads.MissingModSettingsIsDistinctFromASuccessfulEmptyOrder), modSettingsReads.MissingModSettingsIsDistinctFromASuccessfulEmptyOrder),
+			(nameof(modSettingsReads.FailedModSettingsNeverExposesAnEmptyOrPartialSuccessfulOrder), modSettingsReads.FailedModSettingsNeverExposesAnEmptyOrPartialSuccessfulOrder),
+			(nameof(modSettingsReads.GenuineEmptyModSettingsReadsSuccessfully), modSettingsReads.GenuineEmptyModSettingsReadsSuccessfully),
+			(nameof(modSettingsReads.SuccessfulModSettingsPreservesTheCompleteOrder), modSettingsReads.SuccessfulModSettingsPreservesTheCompleteOrder),
+			(nameof(modSettingsReads.LockedModSettingsCanBeReadAfterTheWriterCloses), modSettingsReads.LockedModSettingsCanBeReadAfterTheWriterCloses),
+			(nameof(modSettingsReads.ProfileDiscoveryPreservesModSettingsReadOutcomes), modSettingsReads.ProfileDiscoveryPreservesModSettingsReadOutcomes),
+			(nameof(modSettingsReads.OnlyAVerifiedNewerGameOrderSupersedesTheSavedWorkspace), modSettingsReads.OnlyAVerifiedNewerGameOrderSupersedesTheSavedWorkspace),
+			(nameof(modSettingsReads.ReadFingerprintDetectsRewrittenBytesEvenWhenTheOrderAndTimestampMatch), modSettingsReads.ReadFingerprintDetectsRewrittenBytesEvenWhenTheOrderAndTimestampMatch),
+			(nameof(diagnosticStatus.DiagnosticStatusMenusFollowReviewAndUpdateTransitions), diagnosticStatus.DiagnosticStatusMenusFollowReviewAndUpdateTransitions),
+			(nameof(diagnosticStatus.DiagnosticStatusMenusRemainReadableAcrossThemesAndLargeText), diagnosticStatus.DiagnosticStatusMenusRemainReadableAcrossThemesAndLargeText),
 			(nameof(nxmManager.CancelledLocalIntakeAfterCopyRemovesUncommittedInboxFile), nxmManager.CancelledLocalIntakeAfterCopyRemovesUncommittedInboxFile),
 			(nameof(verifiedPreflight.PackageChangedBetweenReviewAndInstallationIsRejected), verifiedPreflight.PackageChangedBetweenReviewAndInstallationIsRejected),
 			(nameof(archiveTraversal.SolidTraversalStopsAfterLastSelectedEntryAcrossBlocks), archiveTraversal.SolidTraversalStopsAfterLastSelectedEntryAcrossBlocks),
@@ -393,6 +433,12 @@ internal static class Program
 			(nameof(annotations.AliasesRemainIndependentForPackagesThatShareProviderMetadata), annotations.AliasesRemainIndependentForPackagesThatShareProviderMetadata),
 			(nameof(annotations.CustomArtworkPersistsWithoutReplacingAliasesOrNotes), annotations.CustomArtworkPersistsWithoutReplacingAliasesOrNotes),
 			(nameof(customArtwork.JpegArtworkIsCopiedAsAPathSafePackageScopedPng), customArtwork.JpegArtworkIsCopiedAsAPathSafePackageScopedPng),
+			(nameof(customArtwork.CustomArtworkHonorsAllEightExifOrientations), customArtwork.CustomArtworkHonorsAllEightExifOrientations),
+			(nameof(customArtwork.AnimatedCustomArtworkStoresOnlyTheFirstFrame), customArtwork.AnimatedCustomArtworkStoresOnlyTheFirstFrame),
+			(nameof(customArtwork.LargeCustomArtworkFitsWithin2048PixelsWithoutChangingItsAspectRatio), customArtwork.LargeCustomArtworkFitsWithin2048PixelsWithoutChangingItsAspectRatio),
+			(nameof(customArtwork.CustomArtworkPreservesTransparencyAndDoesNotUpscaleSmallImages), customArtwork.CustomArtworkPreservesTransparencyAndDoesNotUpscaleSmallImages),
+			(nameof(customArtwork.CorruptAndTruncatedCustomArtworkDoesNotPublishAReference), customArtwork.CorruptAndTruncatedCustomArtworkDoesNotPublishAReference),
+			(nameof(customArtwork.CustomArtworkRejectsOversizedDimensionsBeforePixelDecoding), customArtwork.CustomArtworkRejectsOversizedDimensionsBeforePixelDecoding),
 			(nameof(customArtwork.CustomArtworkOverridesAndThenFallsBackToProviderArtwork), customArtwork.CustomArtworkOverridesAndThenFallsBackToProviderArtwork),
 			(nameof(customArtwork.HoverDescriptionsUseBoundedPlainTextFromCachedMetadata), customArtwork.HoverDescriptionsUseBoundedPlainTextFromCachedMetadata),
 			(nameof(customArtwork.MissingDescriptionsDoNotCreatePlaceholderHoverText), customArtwork.MissingDescriptionsDoNotCreatePlaceholderHoverText),
@@ -509,6 +555,43 @@ internal static class Program
 			(nameof(settingsMaintenance.RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly), settingsMaintenance.RestoringAutomaticCategoriesClearsCurrentAndLegacyAssignmentsOnly),
 			(nameof(settingsMaintenance.AutomaticCategoryPreferencePreservesManualAndCustomOrganization), settingsMaintenance.AutomaticCategoryPreferencePreservesManualAndCustomOrganization),
 			(nameof(settingsMaintenance.RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain), settingsMaintenance.RestoringAutomaticCategoriesMakesTheClassifierAuthoritativeAgain),
+			(nameof(categoryPreferences.ClearedAutomaticAssignmentsPersistWithoutReplacingManualChoicesOrNewMods), categoryPreferences.ClearedAutomaticAssignmentsPersistWithoutReplacingManualChoicesOrNewMods),
+			(nameof(categoryPreferences.HiddenCategoryFiltersDoNotChangeClassificationOrManualAssignments), categoryPreferences.HiddenCategoryFiltersDoNotChangeClassificationOrManualAssignments),
+			(nameof(categoryPreferences.CategoryPreferenceSaveFailuresRestoreEveryPreviousChoice), categoryPreferences.CategoryPreferenceSaveFailuresRestoreEveryPreviousChoice),
+			(nameof(categoryPreferences.RestoringClearedAssignmentsHonorsGlobalDisableAndExplicitChoices), categoryPreferences.RestoringClearedAssignmentsHonorsGlobalDisableAndExplicitChoices),
+			(nameof(categoryPreferences.FullCategoryResetRestoresClearedAssignmentsAndNormalizesPersistedIds), categoryPreferences.FullCategoryResetRestoresClearedAssignmentsAndNormalizesPersistedIds),
+			(nameof(moveToSeparator.MoveToSeparatorUsesFullOrderAndPreservesBulkSelectionOrder), moveToSeparator.MoveToSeparatorUsesFullOrderAndPreservesBulkSelectionOrder),
+			(nameof(moveToSeparator.MoveToCollapsedParentAppendsBeforeChildrenAndLeavesLooseRowsUnowned), moveToSeparator.MoveToCollapsedParentAppendsBeforeChildrenAndLeavesLooseRowsUnowned),
+			(nameof(moveToSeparator.MoveToNestedClosedSeparatorTransfersOnlyChosenMembers), moveToSeparator.MoveToNestedClosedSeparatorTransfersOnlyChosenMembers),
+			(nameof(moveToSeparator.MoveToSeparatorRejectsStaleMixedPaneAndSeparatorSelections), moveToSeparator.MoveToSeparatorRejectsStaleMixedPaneAndSeparatorSelections),
+			(nameof(moveToSeparator.MoveToSeparatorAlreadyAtSectionEndDoesNotCreateAnEdit), moveToSeparator.MoveToSeparatorAlreadyAtSectionEndDoesNotCreateAnEdit),
+			(nameof(moveToSeparator.MoveToSeparatorActiveEditRestoresOrderMembershipAndDirtyStateThroughHistory), moveToSeparator.MoveToSeparatorActiveEditRestoresOrderMembershipAndDirtyStateThroughHistory),
+			(nameof(moveToSeparator.MoveToSeparatorInactiveAndOverrideStayInPaneAndUndoWithoutActivation), moveToSeparator.MoveToSeparatorInactiveAndOverrideStayInPaneAndUndoWithoutActivation),
+			(nameof(moveToSeparator.MoveToSeparatorBusyAndStaleRequestsLeaveHistoryAndStateUntouched), moveToSeparator.MoveToSeparatorBusyAndStaleRequestsLeaveHistoryAndStateUntouched),
+			(nameof(moveToSeparator.MoveToSeparatorHistoryRemainsBoundedAndNewMovesClearRedo), moveToSeparator.MoveToSeparatorHistoryRemainsBoundedAndNewMovesClearRedo),
+			(nameof(sourceLinkValidation.NexusProjectReferencesAcceptBg3PagesAndPositiveIds), sourceLinkValidation.NexusProjectReferencesAcceptBg3PagesAndPositiveIds),
+			(nameof(sourceLinkValidation.NexusProjectReferencesRejectOtherHostsGamesAndMalformedIds), sourceLinkValidation.NexusProjectReferencesRejectOtherHostsGamesAndMalformedIds),
+			(nameof(sourceLinkValidation.BrowserLaunchPreparationPreservesQueriesFragmentsAndEscapes), sourceLinkValidation.BrowserLaunchPreparationPreservesQueriesFragmentsAndEscapes),
+			(nameof(sourceLinkValidation.BrowserLaunchPreparationRetainsProtocolTargetsAndSeparateArguments), sourceLinkValidation.BrowserLaunchPreparationRetainsProtocolTargetsAndSeparateArguments),
+			(nameof(extenderDetectionPaths.DefaultExtenderDetectionFollowsTheBg3Profile), extenderDetectionPaths.DefaultExtenderDetectionFollowsTheBg3Profile),
+			(nameof(extenderConfigReload.RemovedExtenderUpdaterConfigClearsStaleVersionPinAndCache), extenderConfigReload.RemovedExtenderUpdaterConfigClearsStaleVersionPinAndCache),
+			(nameof(extenderConfigReload.SwitchingGameInstallationsDoesNotReuseAnOldExtenderPin), extenderConfigReload.SwitchingGameInstallationsDoesNotReuseAnOldExtenderPin),
+			(nameof(extenderConfigReload.ExistingExtenderVersionPinIsRespectedAndUnreadableConfigIsPreserved), extenderConfigReload.ExistingExtenderVersionPinIsRespectedAndUnreadableConfigIsPreserved),
+			(nameof(extenderDetectionPaths.ConfiguredExtenderCacheIsUsedWithoutAppendingAnotherCacheFolder), extenderDetectionPaths.ConfiguredExtenderCacheIsUsedWithoutAppendingAnotherCacheFolder),
+			(nameof(extenderDetectionPaths.DetectionOverrideIsPersistedSeparatelyFromTheUpdaterCache), extenderDetectionPaths.DetectionOverrideIsPersistedSeparatelyFromTheUpdaterCache),
+			(nameof(extenderDetectionPaths.InvalidExplicitExtenderPathsDoNotFallBackToAnotherInstallation), extenderDetectionPaths.InvalidExplicitExtenderPathsDoNotFallBackToAnotherInstallation),
+			(nameof(extenderDetectionPaths.ExtenderPathResolutionDoesNotRequireAnExistingFolder), extenderDetectionPaths.ExtenderPathResolutionDoesNotRequireAnExistingFolder),
+			(nameof(nxmPresentation.WineNxmStatusDescribesOnlyPrefixRegistryFacts), nxmPresentation.WineNxmStatusDescribesOnlyPrefixRegistryFacts),
+			(nameof(nxmPresentation.WindowsNxmPresentationRetainsExistingText), nxmPresentation.WindowsNxmPresentationRetainsExistingText),
+			(nameof(nxmPresentation.WineNxmPromptsKeepDesktopForwardingSeparate), nxmPresentation.WineNxmPromptsKeepDesktopForwardingSeparate),
+			(nameof(launchTarget.NativeAndHostedLaunchesKeepAppDirectoryAndExactArgumentBoundaries), launchTarget.NativeAndHostedLaunchesKeepAppDirectoryAndExactArgumentBoundaries),
+			(nameof(launchTarget.HostedLaunchRejectsRelativeUnsafeOrNonWindowsHostPaths), launchTarget.HostedLaunchRejectsRelativeUnsafeOrNonWindowsHostPaths),
+			(nameof(launchTarget.UpdateRunnerAndRestartPreserveWindowsDotNetHostWithoutChangingRequestSchema), launchTarget.UpdateRunnerAndRestartPreserveWindowsDotNetHostWithoutChangingRequestSchema),
+			(nameof(launchTarget.HostedUpdaterCannotReportRestartWithMissingManagedApplication), launchTarget.HostedUpdaterCannotReportRestartWithMissingManagedApplication),
+			(nameof(nxmAssociation.DotNetHostedAssociationRecordsAppAndHostAndRepairsMovedHosts), nxmAssociation.DotNetHostedAssociationRecordsAppAndHostAndRepairsMovedHosts),
+			(nameof(nxmAssociation.HostedAssociationNeverClaimsChangedApplicationHostOrArguments), nxmAssociation.HostedAssociationNeverClaimsChangedApplicationHostOrArguments),
+			(nameof(nxmAssociation.OldHostOnlyRegistrationCanBeRepairedWithoutReplacingItsBackup), nxmAssociation.OldHostOnlyRegistrationCanBeRepairedWithoutReplacingItsBackup),
+			(nameof(nxmAssociation.HostedPreviousHandlerPreservesSignedLinkAndRejectsOnlyApplicationRecursion), nxmAssociation.HostedPreviousHandlerPreservesSignedLinkAndRejectsOnlyApplicationRecursion),
 			(nameof(settingsMaintenance.ElevationWarningRequiresAnElevatedUnsuppressedProcessAndSchedulesOnce), settingsMaintenance.ElevationWarningRequiresAnElevatedUnsuppressedProcessAndSchedulesOnce),
 			(nameof(settingsMaintenance.FailedElevationWarningSuppressionRestoresThePreviousPreference), settingsMaintenance.FailedElevationWarningSuppressionRestoresThePreviousPreference),
 			(nameof(settingsMaintenance.ElevationWarningSuppressionIsRestoredIntoLiveSettings), settingsMaintenance.ElevationWarningSuppressionIsRestoredIntoLiveSettings),
@@ -554,6 +637,11 @@ internal static class Program
 			(nameof(archivePakImport.DuplicateDestinationsAbortBeforeAnyArchiveEntryIsImported), archivePakImport.DuplicateDestinationsAbortBeforeAnyArchiveEntryIsImported),
 			(nameof(archivePakImport.DuplicateDestinationReviewDoesNotReadOrStagePakContents), archivePakImport.DuplicateDestinationReviewDoesNotReadOrStagePakContents),
 			(nameof(archivePakImport.UniquePakDestinationsImportNormallyAndOnlyReadOrdersWhenRequested), archivePakImport.UniquePakDestinationsImportNormallyAndOnlyReadOrdersWhenRequested),
+			(nameof(archivePakImport.LooseTextureArchiveIsRejectedBeforeAnyEntryIsImported), archivePakImport.LooseTextureArchiveIsRejectedBeforeAnyEntryIsImported),
+			(nameof(archivePakImport.OrderOnlyArchiveRemainsSupportedWhenOrdersAreRequested), archivePakImport.OrderOnlyArchiveRemainsSupportedWhenOrdersAreRequested),
+			(nameof(archivePakImport.CanceledUnsupportedImportPreservesCancellation), archivePakImport.CanceledUnsupportedImportPreservesCancellation),
+			(nameof(archivePreflight.LooseTextureArchiveExplainsTheUnsupportedInstallWithoutChangingTheArchive), archivePreflight.LooseTextureArchiveExplainsTheUnsupportedInstallWithoutChangingTheArchive),
+			(nameof(archivePreflight.MissingPakTextureHintRequiresAGameAssetPath), archivePreflight.MissingPakTextureHintRequiresAGameAssetPath),
 			(nameof(nxmRemoval.FailedRemovalIntentSaveLeavesQueueAndFilesUnchanged), nxmRemoval.FailedRemovalIntentSaveLeavesQueueAndFilesUnchanged),
 			(nameof(nxmRemoval.FailedRecycleKeepsDurableRetryRecordAndBlocksDownloadActions), nxmRemoval.FailedRecycleKeepsDurableRetryRecordAndBlocksDownloadActions),
 			(nameof(nxmRemoval.PartialCleanupFailureCanRetryAfterCompletedArchiveWasRemoved), nxmRemoval.PartialCleanupFailureCanRetryAfterCompletedArchiveWasRemoved),
@@ -749,6 +837,19 @@ internal static class Program
 			(nameof(nxmTransfer.StalledResponseBodyTimesOutWithoutPublishing), nxmTransfer.StalledResponseBodyTimesOutWithoutPublishing)
 		};
 
+		// Exact names allow focused diagnostics through this same STA/application
+		// setup. With no arguments the supported test script still runs everything.
+		if (args.Length > 0)
+		{
+			var names = args.ToHashSet(StringComparer.Ordinal);
+			var selected = tests.Where(test => names.Contains(test.Name)).ToArray();
+			if (selected.Length != names.Count)
+			{
+				Console.Error.WriteLine("Unknown regression check name. No checks were run.");
+				return 2;
+			}
+			tests = selected;
+		}
 		var failures = 0;
 		foreach (var test in tests)
 		{

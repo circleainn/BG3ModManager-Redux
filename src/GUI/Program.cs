@@ -90,8 +90,7 @@ internal class Program
 
 	private static void RunApplication(string[] args)
 	{
-		var executablePath = Environment.ProcessPath
-			?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Redux.exe");
+		var launchTarget = ReduxLaunchTarget.Current();
 		string initialNxmLink = null;
 		if (args.Length >= 2 && args[0].Equals("--nxm", StringComparison.OrdinalIgnoreCase))
 		{
@@ -104,7 +103,7 @@ internal class Program
 			initialNxmLink = args[1];
 			if (!game.Equals(DivinityApp.NEXUSMODS_GAME_DOMAIN, StringComparison.OrdinalIgnoreCase))
 			{
-				if (!NxmPreviousHandlerForwarder.TryForward(new NxmRegistryStore(), initialNxmLink, executablePath, out var error))
+				if (!NxmPreviousHandlerForwarder.TryForward(new NxmRegistryStore(), initialNxmLink, launchTarget, out var error))
 					System.Windows.MessageBox.Show(error, "Unsupported Nexus Game",
 						System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
 				return;

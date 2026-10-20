@@ -1493,6 +1493,18 @@
 						ToolTip="Clear every per-mod manual category choice, including No Category. Category definitions and styles are kept.">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
 					</MenuItem>
+					<MenuItem x:Name="ClearAutomaticAssignmentsMenuItem"
+						Header="Clear automatic assignments for current mods"
+						Click="ClearAutomaticAssignmentsMenuItem_Click"
+						ToolTip="Keep current mods under No Category across Refresh and restart. Manual choices are preserved; new mods can still be categorized automatically.">
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.RemoveCircle}" /></MenuItem.Icon>
+					</MenuItem>
+					<MenuItem x:Name="RestoreClearedAutomaticAssignmentsMenuItem"
+						Header="Restore cleared automatic assignments"
+						Click="RestoreClearedAutomaticAssignmentsMenuItem_Click"
+						ToolTip="Allow cleared mods to use automatic categories again. Manual choices and the global automatic-category preference are preserved.">
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
+					</MenuItem>
 					<Separator />
 					<MenuItem Header="Create Custom Category..." Click="AddCustomCategoryMenuItem_Click">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.AddCircle}" /></MenuItem.Icon>
@@ -1501,7 +1513,18 @@
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.ColorPalette}" /></MenuItem.Icon>
 					</MenuItem>
 					<Separator />
-					<MenuItem x:Name="EnableCategoriesMenuItem" Header="Enable / Disable Categories">
+					<MenuItem x:Name="HideBuiltInCategoryFiltersMenuItem" Header="Hide built-in category filters"
+						Click="HideBuiltInCategoryFiltersMenuItem_Click"
+						ToolTip="Hide built-in sidebar filters. Assignments, custom filters, and No Category are preserved.">
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Funnel}" /></MenuItem.Icon>
+					</MenuItem>
+					<MenuItem x:Name="ShowBuiltInCategoryFiltersMenuItem" Header="Show built-in category filters"
+						Click="ShowBuiltInCategoryFiltersMenuItem_Click"
+						ToolTip="Show built-in sidebar filters according to your automatic-category and empty-category preferences.">
+						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Eye}" /></MenuItem.Icon>
+					</MenuItem>
+					<MenuItem x:Name="EnableCategoriesMenuItem" Header="Visible category filters"
+						ToolTip="Choose sidebar filters to show. Hiding a filter does not change category assignments.">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Pricetag}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem x:Name="DeleteCustomCategoryMenuItem"

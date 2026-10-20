@@ -128,9 +128,11 @@ public sealed class InteractionBehaviorTests
 	public void RemoteImageLoaderDecodesWebpReturnedForNexusArtwork()
 	{
 		using var encoded = new System.IO.MemoryStream();
-		using (var image = new SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(2, 2))
+		using (var image = new SkiaSharp.SKBitmap(2, 2))
 		{
-			SixLabors.ImageSharp.ImageExtensions.SaveAsWebp(image, encoded);
+			image.Erase(SkiaSharp.SKColors.CornflowerBlue);
+			using var webp = image.Encode(SkiaSharp.SKEncodedImageFormat.Webp, 100);
+			webp.SaveTo(encoded);
 		}
 		encoded.Position = 0;
 

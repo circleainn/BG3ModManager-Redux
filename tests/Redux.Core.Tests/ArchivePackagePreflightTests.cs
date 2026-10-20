@@ -1,3 +1,4 @@
+using DivinityModManager.AppServices;
 using DivinityModManager.Models.Health;
 using DivinityModManager.Util;
 
@@ -47,6 +48,43 @@ public sealed class ArchivePackagePreflightTests
 		RegressionAssert.True(findings.Any(finding =>
 			finding.Severity == ModHealthSeverity.Error
 			&& finding.Title == "No PAK files found"));
+	}
+
+	public void LooseTextureArchiveExplainsTheUnsupportedInstallWithoutChangingTheArchive()
+	{
+		var directory = Path.Combine(Path.GetTempPath(), "ReduxArchivePreflightTests", Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(directory);
+		var archivePath = Path.Combine(directory, "LooseTextures.zip");
+		try
+		{
+			CreateArchive(archivePath, ("Generated/Public/Shared/Assets/ground.DDS", new byte[] { 1, 2, 3, 4 }));
+			var before = File.ReadAllBytes(archivePath);
+			var report = ArchivePackagePreflightService.AnalyzeAsync(archivePath, []).GetAwaiter().GetResult();
+			RegressionAssert.Equal(ArchivePackagePreflightKind.PakArchive, report.Kind);
+			RegressionAssert.Equal(1, report.EntryCount);
+			RegressionAssert.Equal(0, report.Packages.Count);
+			var finding = report.Findings.Single(item => item.Title == ArchivePakImport.NoPakFilesTitle);
+			RegressionAssert.Equal(ModHealthSeverity.Error, finding.Severity);
+			RegressionAssert.True(finding.Message.Contains("Generated/Public", StringComparison.Ordinal));
+			RegressionAssert.True(finding.Message.Contains("Data folder", StringComparison.Ordinal));
+			RegressionAssert.SequenceEqual(before, File.ReadAllBytes(archivePath));
+			RegressionAssert.SequenceEqual(new[] { archivePath }, Directory.GetFiles(directory));
+			RegressionAssert.Equal(0, Directory.GetDirectories(directory).Length);
+		}
+		finally { Directory.Delete(directory, true); }
+	}
+
+	public void MissingPakTextureHintRequiresAGameAssetPath()
+	{
+		foreach (var entry in new[] { "Preview.dds", "Generated/Other/ground.dds", "Generated/Public/readme.txt" })
+		{
+			var finding = ArchivePackagePreflightService.AnalyzeEntryNames([entry])
+				.Single(item => item.Title == ArchivePakImport.NoPakFilesTitle);
+			RegressionAssert.False(finding.Message.Contains("loose texture", StringComparison.Ordinal));
+		}
+		var wrapped = ArchivePackagePreflightService.AnalyzeEntryNames([@"Release\Data\GENERATED\PUBLIC\Shared\ground.DDS"])
+			.Single(item => item.Title == ArchivePakImport.NoPakFilesTitle);
+		RegressionAssert.True(wrapped.Message.Contains("loose texture", StringComparison.Ordinal));
 	}
 
 	public void ZipPakIsStagedForInspectionWithoutChangingTheArchive()

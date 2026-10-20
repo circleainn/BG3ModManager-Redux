@@ -72,6 +72,18 @@ contributors, under the MIT License. A copy is included in the distribution in
 
 - Project: https://github.com/JamesNK/Newtonsoft.Json
 
+## SkiaSharp
+
+Redux uses SkiaSharp 4.153.1 and its Windows x64 native library for artwork decoding and resizing.
+SkiaSharp is licensed under MIT. Its native library also includes components with their own
+license and attribution requirements. The complete license and native third-party notices from
+`SkiaSharp.NativeAssets.Win32` 4.153.1 are retained as `SkiaSharp-MIT.txt` and
+`SkiaSharp-Native-Third-Party-Notices.txt`, and included in the distribution's
+`THIRD-PARTY-NOTICES.md`.
+
+- Project: https://github.com/mono/SkiaSharp/tree/v4.153.1
+- Source package: https://www.nuget.org/packages/SkiaSharp.NativeAssets.Win32/4.153.1
+
 ## GitHub branding
 
 Redux uses the official GitHub Invertocat image to identify links to GitHub repositories and
@@ -105,7 +117,7 @@ project files and resolved dependency graph.
 | ReactiveProperty and ReactiveProperty.Core | MIT | [ReactiveProperty](https://github.com/runceel/ReactiveProperty) |
 | ReactiveUI, ReactiveUI.Fody, and ReactiveUI.Wpf | MIT | [ReactiveUI](https://github.com/reactiveui/ReactiveUI) |
 | SharpCompress | MIT | [SharpCompress](https://github.com/adamhathcock/sharpcompress) |
-| SixLabors.ImageSharp | Apache-2.0 under the Six Labors qualifying open-source grant | [ImageSharp](https://github.com/SixLabors/ImageSharp) |
+| SkiaSharp and SkiaSharp.NativeAssets.Win32 | MIT; bundled native components have the additional terms retained below | [SkiaSharp](https://github.com/mono/SkiaSharp) |
 | SharpGLTF Core, Runtime, and Toolkit | MIT | [SharpGLTF](https://github.com/vpenades/SharpGLTF) |
 | Splat | MIT | [Splat](https://github.com/reactiveui/splat) |
 | System.Drawing.Common, System.IO.Hashing, System.Reactive, and related .NET runtime assemblies | MIT | [.NET runtime](https://github.com/dotnet/runtime) |

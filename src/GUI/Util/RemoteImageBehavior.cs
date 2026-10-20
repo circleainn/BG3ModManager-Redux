@@ -1,5 +1,3 @@
-using SixLabors.ImageSharp.Formats.Png;
-
 using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Windows;
@@ -9,7 +7,7 @@ using System.Windows.Media.Imaging;
 namespace DivinityModManager.Util;
 
 /// <summary>
-/// Loads remote artwork through ImageSharp before handing it to WPF. Nexus's CDN
+/// Normalizes remote artwork into PNG before handing it to WPF. Nexus's CDN
 /// currently serves WebP bytes for many URLs whose path ends in .png or .jpeg;
 /// BitmapImage trusts neither the response MIME type nor that format on every
 /// supported Windows installation and otherwise leaves a blank image surface.
@@ -100,10 +98,9 @@ public static class RemoteImageBehavior
 
 	private static async Task<BitmapSource> DecodeAsync(Stream encoded)
 	{
-		using var decoded = await SixLabors.ImageSharp.Image.LoadAsync(encoded).ConfigureAwait(false);
-		await using var png = new MemoryStream();
-		await decoded.SaveAsync(png, new PngEncoder()).ConfigureAwait(false);
-		png.Position = 0;
+		// File artwork can arrive on the UI thread; keep native decoding off that thread.
+		var normalizedBytes = await Task.Run(() => ReduxArtworkDecoder.NormalizeToPng(encoded)).ConfigureAwait(false);
+		using var png = new MemoryStream(normalizedBytes, writable: false);
 
 		var bitmap = new BitmapImage();
 		bitmap.BeginInit();

@@ -13,6 +13,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<DebugType>none</DebugType>
 		<Optimize>true</Optimize>
+		<DefineConstants>$(DefineConstants);REDUX_UPDATER</DefineConstants>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)' == 'Debug'">
 		<DebugType>full</DebugType>
@@ -20,5 +21,6 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<InternalsVisibleTo Include="Redux.Core.Tests" />
+		<Compile Include="..\Core\AppServices\ReduxLaunchTarget.cs" Link="ReduxLaunchTarget.cs" />
 	</ItemGroup>
 </Project>

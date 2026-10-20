@@ -27,14 +27,9 @@ internal static class Program
 			TryWriteResult(request.ResultPath, completedUpdate);
 			CleanupSuccessfulTransaction(request);
 
-			var executable = Path.Combine(request.TargetDirectory, request.RelaunchRelativePath);
 			try
 			{
-				Process.Start(new ProcessStartInfo(executable)
-				{
-					UseShellExecute = true,
-					WorkingDirectory = request.TargetDirectory
-				});
+				Process.Start(CreateRelaunchStartInfo(request, Environment.ProcessPath));
 			}
 			catch (Exception ex)
 			{
@@ -71,6 +66,19 @@ internal static class Program
 				MessageBoxOk | MessageBoxIconError);
 			return 1;
 		}
+	}
+
+	internal static ProcessStartInfo CreateRelaunchStartInfo(ReduxUpdateRequest request, string? updaterProcessPath)
+	{
+		// The updater itself was launched through the parent's Windows host, so the
+		// same host can restart the updated DLL without accepting an executable path
+		// from the update request. Native apphost launches retain their normal path.
+		var target = ReduxLaunchTarget.ForExecutable(
+			Path.Combine(request.TargetDirectory, request.RelaunchRelativePath),
+			ReduxLaunchTarget.IsWindowsDotNetHost(updaterProcessPath) ? updaterProcessPath : null);
+		if (target.IsDotNetHosted && !File.Exists(target.ApplicationPath))
+			throw new FileNotFoundException("The updated Redux managed application is missing.", target.ApplicationPath);
+		return target.CreateStartInfo();
 	}
 
 	private static void TryWriteResult(string resultPath, ReduxUpdateResult result)

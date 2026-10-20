@@ -225,6 +225,92 @@ internal sealed class NxmAssociationTests
 		RegressionAssert.SequenceEqual(new[] { "--from-nexus", link }, startInfo.ArgumentList);
 	}
 
+	public void DotNetHostedAssociationRecordsAppAndHostAndRepairsMovedHosts()
+	{
+		var prior = Handler(@"C:\Tools\MO2\nxmhandler.exe", "prior");
+		var store = new MemoryNxmRegistryStore { UserKey = prior };
+		var launch = ReduxLaunchTarget.Resolve(@"C:\Program Files\dotnet\dotnet.exe", @"D:\Mod Tools & Games\Redux\Redux.dll", @"D:\Mod Tools & Games\Redux");
+		var service = new NxmAssociationService(store, Owner, launch);
+		RegressionAssert.True(service.Enable().Success);
+		RegressionAssert.Equal(NxmAssociationStatus.Owned, service.GetStatus().Status);
+		RegressionAssert.Equal(launch.ApplicationPath, store.UserKey.GetString("", NxmAssociationService.ExecutableValueName));
+		RegressionAssert.Equal(launch.ExecutablePath, store.UserKey.GetString("", NxmAssociationService.DotNetHostValueName));
+		RegressionAssert.Equal("\"C:\\Program Files\\dotnet\\dotnet.exe\" \"D:\\Mod Tools & Games\\Redux\\Redux.dll\" --nxm \"%1\"",
+			store.UserKey.GetString(@"shell\open\command", ""));
+		var moved = ReduxLaunchTarget.ForManagedApplication(launch.ApplicationPath, @"E:\Windows Runtime\dotnet.exe");
+		var newService = new NxmAssociationService(store, Owner, moved);
+		RegressionAssert.Equal(NxmAssociationStatus.NeedsRepair, newService.GetStatus().Status);
+		RegressionAssert.True(newService.Repair().Success);
+		RegressionAssert.Equal(NxmAssociationService.BuildCommand(moved), store.UserKey.GetString(@"shell\open\command", ""));
+		RegressionAssert.True(newService.Disable().Success);
+		RegressionAssert.Equal("prior", store.UserKey.GetString("", "CustomValue"));
+	}
+
+	public void HostedAssociationNeverClaimsChangedApplicationHostOrArguments()
+	{
+		var launch = ReduxLaunchTarget.ForManagedApplication(@"C:\Redux\Redux.dll", @"C:\Runtime\dotnet.exe");
+		foreach (var changedCommand in new[]
+		{
+			NxmAssociationService.BuildCommand(ReduxLaunchTarget.ForManagedApplication(@"C:\Other\Redux.dll", launch.ExecutablePath)),
+			NxmAssociationService.BuildCommand(ReduxLaunchTarget.ForManagedApplication(launch.ApplicationPath, @"C:\Other Runtime\dotnet.exe")),
+			NxmAssociationService.BuildCommand(launch) + " --changed"
+		})
+		{
+			var store = new MemoryNxmRegistryStore();
+			var service = new NxmAssociationService(store, Owner, launch);
+			RegressionAssert.True(service.Enable().Success);
+			store.UserKey.SetValue(@"shell\open\command", "", changedCommand, RegistryValueKind.String);
+			RegressionAssert.Equal(NxmAssociationStatus.OwnedByAnotherHandler, service.GetStatus().Status);
+			RegressionAssert.False(service.Disable().Success);
+			RegressionAssert.False(service.Repair().Success);
+			RegressionAssert.Equal(changedCommand, store.UserKey.GetString(@"shell\open\command", ""));
+		}
+		var missingHost = new MemoryNxmRegistryStore { UserKey = NxmAssociationService.CreateOwnedKey(Owner, launch) };
+		missingHost.UserKey.Values.Remove(NxmAssociationService.DotNetHostValueName);
+		RegressionAssert.Equal(NxmAssociationStatus.OwnedByAnotherHandler, new NxmAssociationService(missingHost, Owner, launch).GetStatus().Status);
+	}
+
+	public void OldHostOnlyRegistrationCanBeRepairedWithoutReplacingItsBackup()
+	{
+		var launch = ReduxLaunchTarget.ForManagedApplication(@"C:\Redux\Redux.dll", @"C:\Runtime\dotnet.exe");
+		var store = new MemoryNxmRegistryStore
+		{
+			UserKey = NxmAssociationService.CreateOwnedKey(Owner, launch.ExecutablePath),
+			Backup = new NxmAssociationBackup(false, null, "original handler")
+		};
+		var service = new NxmAssociationService(store, Owner, launch);
+		RegressionAssert.Equal(NxmAssociationStatus.NeedsRepair, service.GetStatus().Status);
+		RegressionAssert.True(service.Repair().Success);
+		RegressionAssert.Equal("original handler", store.Backup.PreviousCommand);
+		RegressionAssert.Equal(NxmAssociationService.BuildCommand(launch), store.UserKey.GetString(@"shell\open\command", ""));
+	}
+
+	public void HostedPreviousHandlerPreservesSignedLinkAndRejectsOnlyApplicationRecursion()
+	{
+		var root = Path.Combine(Path.GetTempPath(), "Redux host & quoting " + Guid.NewGuid().ToString("N"));
+		Directory.CreateDirectory(root);
+		try
+		{
+			var host = Path.Combine(root, "dotnet.exe");
+			File.WriteAllText(host, "fake host; never executed");
+			var current = ReduxLaunchTarget.ForManagedApplication(Path.Combine(root, "Redux.dll"), host);
+			var previous = ReduxLaunchTarget.ForManagedApplication(Path.Combine(root, "Other Handler.dll"), host);
+			const string signed = "nxm://skyrim/mods/42/files/99?key=secret%2Bvalue%3D&expires=123&user_id=456";
+			RegressionAssert.True(NxmPreviousHandlerForwarder.TryCreateStartInfo(NxmAssociationService.BuildCommand(previous), signed,
+				current, out var start, out _));
+			RegressionAssert.Equal(host, start.FileName);
+			RegressionAssert.False(start.UseShellExecute);
+			RegressionAssert.SequenceEqual(new[] { previous.ApplicationPath, "--nxm", signed }, start.ArgumentList);
+			RegressionAssert.False(NxmPreviousHandlerForwarder.TryCreateStartInfo(NxmAssociationService.BuildCommand(current), signed,
+				current, out _, out _));
+			var native = Path.Combine(root, "Redux.exe");
+			File.WriteAllText(native, "fake apphost; never executed");
+			RegressionAssert.False(NxmPreviousHandlerForwarder.TryCreateStartInfo(NxmAssociationService.BuildCommand(native), signed,
+				current, out _, out _));
+		}
+		finally { Directory.Delete(root, recursive: true); }
+	}
+
 	public void PreviousHandlerRejectsEmbeddedPlaceholderAndReduxRecursion()
 	{
 		var executable = Path.Combine(Environment.SystemDirectory, "notepad.exe");

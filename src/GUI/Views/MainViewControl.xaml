@@ -393,6 +393,7 @@
 											</Border>
 											<StackPanel Grid.Column="1" VerticalAlignment="Center">
 												<TextBlock x:Name="DiagnosticMenuTitle"
+												Foreground="{DynamicResource ReduxWarningBrush}"
 													Style="{StaticResource ReduxStatusCardTitleStyle}"
 													Text="Review recommended" />
 												<TextBlock x:Name="DiagnosticMenuSubtitle" Style="{StaticResource ReduxStatusCardSubtitleStyle}"
@@ -407,7 +408,7 @@
 											VerticalScrollBarVisibility="Auto">
 											<ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle" />
 										</ScrollViewer>
-										<Button Grid.Row="3" Margin="0,8,0,0"
+									<Button x:Name="DiagnosticMenuCheckUpdatesButton" Grid.Row="3" Margin="0,8,0,0"
 											Click="ToolbarCheckModUpdates_Click"
 											Command="{Binding PlacementTarget.DataContext.Keys.RefreshModUpdates.Command, RelativeSource={RelativeSource TemplatedParent}}"
 											Style="{StaticResource ReduxSecondaryActionButtonStyle}"
@@ -422,15 +423,23 @@
 								</Border>
 							</Grid>
 							<ControlTemplate.Triggers>
-								<DataTrigger Binding="{Binding PlacementTarget.DataContext.HasActiveDiagnosticErrors, RelativeSource={RelativeSource TemplatedParent}}" Value="True">
-									<Setter TargetName="DiagnosticMenuIcon" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
-									<Setter TargetName="DiagnosticMenuIcon" Property="IconKey" Value="warning" />
-									<Setter TargetName="DiagnosticMenuTitle" Property="Text" Value="Action recommended" />
-								</DataTrigger>
-								<DataTrigger Binding="{Binding PlacementTarget.DataContext.HasActiveDiagnosticAttention, RelativeSource={RelativeSource TemplatedParent}}" Value="False">
+								<!-- Trigger conditions bind on the ContextMenu itself; template children bind to their TemplatedParent. -->
+								<DataTrigger Binding="{Binding PlacementTarget.DataContext.HasActiveDiagnosticAttention, RelativeSource={RelativeSource Self}}" Value="False">
+									<Setter TargetName="DiagnosticMenuIcon" Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
+									<Setter TargetName="DiagnosticMenuIcon" Property="IconKey" Value="shield-check" />
+									<Setter TargetName="DiagnosticMenuTitle" Property="Foreground" Value="{DynamicResource ReduxSuccessBrush}" />
 									<Setter TargetName="DiagnosticMenuTitle" Property="Text" Value="No review items" />
 								</DataTrigger>
-								<DataTrigger Binding="{Binding PlacementTarget.DataContext.IsRefreshingModUpdates, RelativeSource={RelativeSource TemplatedParent}}" Value="True">
+								<DataTrigger Binding="{Binding PlacementTarget.DataContext.HasActiveDiagnosticErrors, RelativeSource={RelativeSource Self}}" Value="True">
+									<Setter TargetName="DiagnosticMenuIcon" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+									<Setter TargetName="DiagnosticMenuIcon" Property="IconKey" Value="warning" />
+									<Setter TargetName="DiagnosticMenuTitle" Property="Foreground" Value="{DynamicResource ReduxErrorBrush}" />
+									<Setter TargetName="DiagnosticMenuTitle" Property="Text" Value="Action recommended" />
+								</DataTrigger>
+								<DataTrigger Binding="{Binding PlacementTarget.DataContext.IsRefreshingModUpdates, RelativeSource={RelativeSource Self}}" Value="True">
+									<Setter TargetName="DiagnosticMenuIcon" Property="Foreground" Value="{DynamicResource ReduxAccentBrush}" />
+									<Setter TargetName="DiagnosticMenuIcon" Property="IconKey" Value="refresh" />
+									<Setter TargetName="DiagnosticMenuTitle" Property="Foreground" Value="{DynamicResource ReduxAccentBrush}" />
 									<Setter TargetName="DiagnosticMenuTitle" Property="Text" Value="Checking mod updates" />
 									<Setter TargetName="DiagnosticMenuSubtitle" Property="Text" Value="{Binding PlacementTarget.DataContext.ModUpdateCheckStatus, RelativeSource={RelativeSource TemplatedParent}}" />
 								</DataTrigger>
@@ -588,6 +597,10 @@
 						<MenuItem x:Name="SettingsMenuItem" Header="Settings" />
 						<MenuItem x:Name="AccessibilityMenuItem" Header="Accessibility" />
 						<MenuItem x:Name="ToolsMenuItem" Header="Tools" Style="{StaticResource ReduxMenuItemStyle}">
+							<MenuItem Command="{Binding ResolveOverrideDuplicatesCommand}" Header="Resolve Override Copies..."
+								ToolTip="Compare conflicting packages in Mods and Redux's holding folder, then retain backups of the displaced copies.">
+								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
+							</MenuItem>
 							<MenuItem Command="{Binding Keys.OpenCommandPalette.Command}"
 								Header="Quick Access..."
 								InputGestureText="{Binding Keys.OpenCommandPalette.MenuDisplayBindingText}"
