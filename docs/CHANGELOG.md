@@ -5,6 +5,12 @@ source for individual implementation details.
 
 ## Unreleased
 
+### Planned for 0.1.0-alpha.16.6
+
+Development resumed after a loss of local development history. This update brings together
+recovered work, reviewed fixes, and maintenance improvements. Thank you for your patience during
+the gap between updates.
+
 - Clear stale Script Extender version pins and cache settings when the selected game's updater configuration is removed; preserve valid pins and retain prior settings when the file cannot be read.
 - Preserve the saved workspace and last verified game order when `modsettings.lsx` is locked, damaged, or incomplete. Recheck the reviewed file before Sync or empty-order recovery, and show an unavailable sync status until a complete read succeeds.
 - Add **Tools > Resolve Override Copies** with exact file paths, content comparisons, explicit choices for different versions, retained backups, and interrupted-operation recovery. Refresh can finish while duplicates await review.

@@ -15,7 +15,12 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 
 ## Development status
 
-### Unreleased maintenance work
+### Unreleased 16.6 candidate
+
+The recovery update is being prepared as `0.1.0-alpha.16.6`, with internal version `0.1.16.600`.
+It retains the existing updater-compatible versioning scheme. The
+[candidate notes](releases/0.1.0-alpha.16.6.md) explain the loss of local development history and
+the recovered work. No release tag, public archive, or channel update has been published.
 
 - Preserve the last verified game order and saved Current workspace when `modsettings.lsx`
   cannot be read completely; recheck the reviewed file before Sync or empty-order recovery.
@@ -30,12 +35,15 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 - Improve experimental Wine forwarding and host-preserving launches; honor extender cache paths
   and discard stale updater pins when the selected game's configuration is absent.
 
-The most recent Debug regression run passed 721 checks; the experimental forwarding helper's
-five tests passed in the earlier validation. Debug and Publish builds passed after the extender
-reload correction. These are development results, not a public-release acceptance record.
+The October 20 candidate validation passed Debug and Publish rebuilds and all 721 regression
+checks in each configuration; the experimental forwarding helper's five tests also passed.
+NuGet audits found no known vulnerable packages in the app, Core, or updater dependency graphs.
+The 77-file portable archive passed integrity, inventory, version, notice, and clean-extraction
+checks. Its exact identity is recorded in the candidate notes. These are candidate results,
+not a public-release acceptance record.
 Interactive app-control acceptance was not completed and is currently deferred. Real Wine testing
-and the original Vivid PAK archive reproduction remain outstanding. Before publication, assign a
-new version and complete the exact-artifact release gate with all limitations recorded.
+and the original Vivid PAK archive reproduction remain outstanding. Before publication, complete
+the exact-artifact release gate for 16.6 with all limitations recorded.
 
 See the [October issue audit](ISSUE_AUDIT_2026-10-19.md) for shipped fixes, unreleased changes,
 new reports, and remaining verification. Do not infer that an open issue means its entire feature
