@@ -61,13 +61,6 @@ discussion. This is maintainer-reported acceptance, not an independent app-contr
 Real Wine testing, the original Vivid PAK archive reproduction, and an observed public in-app
 update remain outstanding. These limitations are retained in the release record.
 
-The [post-16.6 GitHub issue audit](ISSUE_AUDIT_2026-10-20.md) records the completed triage:
-Move to Separator (#172) is closed, four maintainer reports now identify their shipped scope,
-and Vivid PAK installation (#171) is marked as needing reproduction details. Eleven issues remain
-open, including partial fixes and planned features. The [October 19 audit](ISSUE_AUDIT_2026-10-19.md)
-retains the earlier Nexus evidence. Do not infer that an open issue means its entire feature is
-missing; YANML plugin management, for example, already shipped in 16.5.
-
 ### Published feature baseline
 
 Alpha.16.5 adds optional cross-order separator presentation with independent
@@ -139,8 +132,7 @@ local to each Redux installation; changing to another folder does not migrate th
 The September 15 reports cover separate causes rather than one common regression. Alpha.16.4.3
 addresses the reproducible load-order action, startup selection, source-link targeting, credential,
 and thumbnail retry paths. Remaining sync-specific and missing-source-image reports still require
-their own evidence. See the [historical post-16.4.4 audit](NEXT_UPDATE_AUDIT.md) for the earlier triage;
-the 16.5 changelog records the newer candidate fixes.
+their own evidence. The issue tracker records remaining reports; the changelog records shipped fixes.
 
 ## Current release
 
@@ -324,46 +316,9 @@ The full publishing and recovery contract is in
 
 ## Current reports and planned work
 
-The issue tracker is the live source. The 16.4 audit closed #108, #111, #113, #119, and #120 for the
-shipped scope. #95 is resolved for now based on the maintainer’s assessment, and #118 is not planned.
-Earlier fixes for window placement and save archive/discovery defects (#112, #114–116) remain closed.
-The separator and updater scopes in #121–123 also remain closed for their documented maintenance
-fixes; a matching current-build recurrence is needed before reopening those completed scopes.
-
-### Open bug investigations
-
-| Issue | Current evidence and scope |
-|:--|:--|
-| [#127](https://github.com/circleainn/BG3ModManager-Redux/issues/127) Sync/restart order and separators | Alpha.16.5.3 preserves explicit positions during Sync, including the reported dependency-order case. Other reported selection or separator symptoms still need a reproducible current-build case. |
-| [#157](https://github.com/circleainn/BG3ModManager-Redux/issues/157) Nexus links appearing as Local | Alpha.16.5.3 retains a verified creator-manifest Nexus link when a refresh lacks the optional manifest. The broader report remains open for cases with another cause. |
-
-Issues #124, #125, #128, and #129 have focused alpha.16.4.3 fixes. Issue #126 is closed as the
-documented expanded-header/collapsed-section behavior. The [troubleshooting guide](TROUBLESHOOTING.md)
-provides non-destructive checks for remaining reports.
-
-### Scoped requests and collaboration
-
-- [#133 — Controls for automatic categories](https://github.com/circleainn/BG3ModManager-Redux/issues/133)
-  has unreleased clear/restore assignment and hide/show filter controls. Deleting built-in category
-  definitions remains separate, undecided scope.
-- [#172 — Move to Separator](https://github.com/circleainn/BG3ModManager-Redux/issues/172)
-  is implemented in development for same-pane destinations; cross-pane targeting is additional scope.
-- [#155 — YANML integration](https://github.com/circleainn/BG3ModManager-Redux/issues/155)
-  is an offer from YANML's developer to coordinate a supported way to install or remove YANML itself.
-  Redux currently manages reviewed plugins only when YANML is already configured.
-
-The filename-display shortcut (#131) and optional hover descriptions (#132) shipped in 16.5.
-The redundant compact category-tag option (#134) was removed. PT-BR interest and a Chinese-version
-offer are recorded under #56; neither
-establishes an integrated upstream translation. Interest in VOLO cooperation is not a partnership
-or an accepted integration task.
-
-### Open planned work
-
-- [#110 — Improve compatibility with Wine and Linux desktops](https://github.com/circleainn/BG3ModManager-Redux/issues/110)
-- [#98 — Add official Nexus Mods SSO account connection](https://github.com/circleainn/BG3ModManager-Redux/issues/98)
-- [#63 — Explore a docked or paged Managers workspace](https://github.com/circleainn/BG3ModManager-Redux/issues/63)
-- [#56 — Expand localization and accessibility support](https://github.com/circleainn/BG3ModManager-Redux/issues/56)
+Use the [GitHub issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) for current
+bug reports, reproduction details, and planned features. An open issue can cover remaining work on
+an already-shipped feature; it does not imply that the whole feature is missing.
 
 An open issue is not permission to broaden its scope. Confirm its current discussion, labels, and
 acceptance state before implementing it.
