@@ -9,7 +9,6 @@ detail.
 | Guide | What it covers |
 |:--|:--|
 | [Current project state](CURRENT_STATE.md) | Current release, settled decisions, known limits, and planned work |
-| [October 2026 issue audit](ISSUE_AUDIT_2026-10-19.md) | GitHub and recent Nexus reports, implemented scope, and remaining verification |
 | [Installation and updates](INSTALLATION.md) | Install, update, move, roll back, or remove the portable app |
 | [Backups and snapshots](BACKUPS.md) | Save Redux versions and optional PAK/mod-list state, restore, and recover interrupted operations |
 | [Frequently asked questions](FAQ.md) | Short answers about everyday Redux behavior |
