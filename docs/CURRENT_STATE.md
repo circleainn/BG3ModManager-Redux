@@ -61,9 +61,12 @@ discussion. This is maintainer-reported acceptance, not an independent app-contr
 Real Wine testing, the original Vivid PAK archive reproduction, and an observed public in-app
 update remain outstanding. These limitations are retained in the release record.
 
-See the [October issue audit](ISSUE_AUDIT_2026-10-19.md) for shipped fixes, unreleased changes,
-new reports, and remaining verification. Do not infer that an open issue means its entire feature
-is missing; YANML plugin management, for example, already shipped in 16.5.
+The [post-16.6 GitHub issue audit](ISSUE_AUDIT_2026-10-20.md) records the completed triage:
+Move to Separator (#172) is closed, four maintainer reports now identify their shipped scope,
+and Vivid PAK installation (#171) is marked as needing reproduction details. Eleven issues remain
+open, including partial fixes and planned features. The [October 19 audit](ISSUE_AUDIT_2026-10-19.md)
+retains the earlier Nexus evidence. Do not infer that an open issue means its entire feature is
+missing; YANML plugin management, for example, already shipped in 16.5.
 
 ### Published feature baseline
 
