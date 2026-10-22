@@ -5,8 +5,8 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: October 20, 2026. Published release line: `0.1.0-alpha.16.5.6`
-(verified October 19). Development changes below remain unreleased.
+Last reviewed: October 20, 2026. Published release line: `0.1.0-alpha.16.6`
+(verified October 20).
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -15,7 +15,7 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 
 ## Development status
 
-### 16.6 release preparation
+### 16.6 recovery update
 
 The Preferences backup manager was absent from the recovered source and has been rebuilt for
 16.6. Named snapshots, optional PAK/profile-order capture, return snapshots, and interrupted-restore
@@ -27,10 +27,11 @@ Tools and Quick Access now open the Backups tab directly. External backup, resto
 windows carry over the active palette, text size, bundled font, and icon preference without loading
 files from the installation being restored.
 
-The recovery update is being prepared as `0.1.0-alpha.16.6`, with internal version `0.1.16.600`.
+The recovery update is published as `0.1.0-alpha.16.6`, with internal version `0.1.16.600`.
 It retains the existing updater-compatible versioning scheme. The
-[candidate notes](releases/0.1.0-alpha.16.6.md) explain the loss of local development history and
-the recovered work. No release tag, public archive, or channel update has been published.
+[release notes](releases/0.1.0-alpha.16.6.md) explain the loss of local development history and
+the recovered work. Exact artifacts and distribution verification are recorded in
+[release records](RELEASE_RECORDS.md).
 
 - Preserve the last verified game order and saved Current workspace when `modsettings.lsx`
   cannot be read completely; recheck the reviewed file before Sync or empty-order recovery.
@@ -45,24 +46,20 @@ the recovered work. No release tag, public archive, or channel update has been p
 - Improve experimental Wine forwarding and host-preserving launches; honor extender cache paths
   and discard stale updater pins when the selected game's configuration is absent.
 
-The October 20 snapshot-enabled candidate passed Debug and Publish builds and all 734 regression
+The October 20 release passed Debug and Publish builds and all 734 regression
 checks in each configuration. Snapshot tests cover cancellation, corrupt/path-invalid archives,
 rollback, return snapshots, interrupted recovery, shared instance locking, and theme/text-size layout.
 External progress-window checks cover palette transfer, enlarged text, cancellation, and result
-acknowledgement. The unchanged experimental forwarding helper's five tests passed earlier.
+acknowledgement. The five experimental forwarding-helper tests also passed in release CI.
 NuGet audits found no known vulnerable packages in the app, Core, or updater dependency graphs.
 The 77-file portable archive passed integrity, inventory, version, notice, and clean-extraction
-checks. The final archive identity and publication results belong in [release records](RELEASE_RECORDS.md). These are candidate results,
-not a public-release acceptance record.
+checks. Exact 16.5.6-to-16.6 update, manual replacement, locked-file rollback, application-file
+removal, and snapshot restore/roll-forward checks passed in disposable folders while preserving
+user-state fixtures. Main and development CI both passed.
 The maintainer confirmed the backup workflow works and accepted the release after the final-check
 discussion. This is maintainer-reported acceptance, not an independent app-control recording.
-Interactive app-control acceptance is deferred. Real Wine testing
-and the original Vivid PAK archive reproduction remain outstanding. Before publication, complete
-the exact-artifact release gate for 16.6 with all limitations recorded.
-
-See the [October issue audit](ISSUE_AUDIT_2026-10-19.md) for shipped fixes, unreleased changes,
-new reports, and remaining verification. Do not infer that an open issue means its entire feature
-is missing; YANML plugin management, for example, already shipped in 16.5.
+Real Wine testing, the original Vivid PAK archive reproduction, and an observed public in-app
+update remain outstanding. These limitations are retained in the release record.
 
 ### Published feature baseline
 
@@ -135,8 +132,7 @@ local to each Redux installation; changing to another folder does not migrate th
 The September 15 reports cover separate causes rather than one common regression. Alpha.16.4.3
 addresses the reproducible load-order action, startup selection, source-link targeting, credential,
 and thumbnail retry paths. Remaining sync-specific and missing-source-image reports still require
-their own evidence. See the [historical post-16.4.4 audit](NEXT_UPDATE_AUDIT.md) for the earlier triage;
-the 16.5 changelog records the newer candidate fixes.
+their own evidence. The issue tracker records remaining reports; the changelog records shipped fixes.
 
 ## Current release
 
@@ -320,46 +316,9 @@ The full publishing and recovery contract is in
 
 ## Current reports and planned work
 
-The issue tracker is the live source. The 16.4 audit closed #108, #111, #113, #119, and #120 for the
-shipped scope. #95 is resolved for now based on the maintainer’s assessment, and #118 is not planned.
-Earlier fixes for window placement and save archive/discovery defects (#112, #114–116) remain closed.
-The separator and updater scopes in #121–123 also remain closed for their documented maintenance
-fixes; a matching current-build recurrence is needed before reopening those completed scopes.
-
-### Open bug investigations
-
-| Issue | Current evidence and scope |
-|:--|:--|
-| [#127](https://github.com/circleainn/BG3ModManager-Redux/issues/127) Sync/restart order and separators | Alpha.16.5.3 preserves explicit positions during Sync, including the reported dependency-order case. Other reported selection or separator symptoms still need a reproducible current-build case. |
-| [#157](https://github.com/circleainn/BG3ModManager-Redux/issues/157) Nexus links appearing as Local | Alpha.16.5.3 retains a verified creator-manifest Nexus link when a refresh lacks the optional manifest. The broader report remains open for cases with another cause. |
-
-Issues #124, #125, #128, and #129 have focused alpha.16.4.3 fixes. Issue #126 is closed as the
-documented expanded-header/collapsed-section behavior. The [troubleshooting guide](TROUBLESHOOTING.md)
-provides non-destructive checks for remaining reports.
-
-### Scoped requests and collaboration
-
-- [#133 — Controls for automatic categories](https://github.com/circleainn/BG3ModManager-Redux/issues/133)
-  has unreleased clear/restore assignment and hide/show filter controls. Deleting built-in category
-  definitions remains separate, undecided scope.
-- [#172 — Move to Separator](https://github.com/circleainn/BG3ModManager-Redux/issues/172)
-  is implemented in development for same-pane destinations; cross-pane targeting is additional scope.
-- [#155 — YANML integration](https://github.com/circleainn/BG3ModManager-Redux/issues/155)
-  is an offer from YANML's developer to coordinate a supported way to install or remove YANML itself.
-  Redux currently manages reviewed plugins only when YANML is already configured.
-
-The filename-display shortcut (#131) and optional hover descriptions (#132) shipped in 16.5.
-The redundant compact category-tag option (#134) was removed. PT-BR interest and a Chinese-version
-offer are recorded under #56; neither
-establishes an integrated upstream translation. Interest in VOLO cooperation is not a partnership
-or an accepted integration task.
-
-### Open planned work
-
-- [#110 — Improve compatibility with Wine and Linux desktops](https://github.com/circleainn/BG3ModManager-Redux/issues/110)
-- [#98 — Add official Nexus Mods SSO account connection](https://github.com/circleainn/BG3ModManager-Redux/issues/98)
-- [#63 — Explore a docked or paged Managers workspace](https://github.com/circleainn/BG3ModManager-Redux/issues/63)
-- [#56 — Expand localization and accessibility support](https://github.com/circleainn/BG3ModManager-Redux/issues/56)
+Use the [GitHub issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) for current
+bug reports, reproduction details, and planned features. An open issue can cover remaining work on
+an already-shipped feature; it does not imply that the whole feature is missing.
 
 An open issue is not permission to broaden its scope. Confirm its current discussion, labels, and
 acceptance state before implementing it.

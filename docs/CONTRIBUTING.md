@@ -60,6 +60,9 @@ remaining manual-testing requirement. Do not combine an unrelated refactor with 
 
 Update durable documentation when behavior, action names, settings, public formats, trust rules, or
 support boundaries change. Keep chronological release details in [CHANGELOG.md](CHANGELOG.md).
+Keep issue triage in GitHub and work summaries in the conversation. Do not add dated audit reports,
+session logs, or duplicate issue inventories to the repository documentation. Update existing guides
+only when the findings change lasting product or development guidance.
 
 ## Mod database contributions
 
