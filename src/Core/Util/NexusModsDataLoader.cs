@@ -22,7 +22,7 @@ public delegate void NexusModsRateLimitsUpdatedEventHandler(object sender, Nexus
 
 public sealed record NexusFileUpdateCheckResult(
 	Dictionary<string, (long ProjectId, long FileId)> CheckedModFiles,
-	HashSet<string> AvailableModUuids,
+	Dictionary<string, long[]> AvailableModFiles,
 	int FailedProjects,
 	int SkippedProjects = 0);
 
@@ -95,9 +95,13 @@ public static class NexusModsDataLoader
 	}
 
 	public static bool HasAvailableFileReplacement(long installedFileId,
+		IEnumerable<NexusModFileUpdate> updates, IEnumerable<NexusModFile> files) =>
+		GetAvailableFileReplacements(installedFileId, updates, files).Length > 0;
+
+	public static long[] GetAvailableFileReplacements(long installedFileId,
 		IEnumerable<NexusModFileUpdate> updates, IEnumerable<NexusModFile> files)
 	{
-		if (installedFileId <= 0 || updates == null || files == null) return false;
+		if (installedFileId <= 0 || updates == null || files == null) return [];
 
 		// History also contains withdrawn releases. Only files still offered in a
 		// current category qualify; unknown categories (including ARCHIVED in this
@@ -110,6 +114,7 @@ public static class NexusModsDataLoader
 			&& update.OldFileId > 0 && update.NewFileId > 0
 			&& update.NewFileId != update.OldFileId).ToLookup(update => update.OldFileId, update => update.NewFileId);
 		var visited = new HashSet<long> { installedFileId };
+		var offered = new HashSet<long>();
 		var pending = new Queue<long>();
 		pending.Enqueue(installedFileId);
 		while (pending.TryDequeue(out var fileId))
@@ -117,12 +122,12 @@ public static class NexusModsDataLoader
 			foreach (var replacement in replacements[fileId])
 			{
 				if (!visited.Add(replacement)) continue;
-				if (availableIds.Contains(replacement)) return true;
+				if (availableIds.Contains(replacement)) offered.Add(replacement);
 				// An intermediate version may have been archived after a later update.
 				pending.Enqueue(replacement);
 			}
 		}
-		return false;
+		return offered.Order().ToArray();
 	}
 
 	/// <summary>
@@ -131,7 +136,7 @@ public static class NexusModsDataLoader
 	/// </summary>
 	public static async Task<NexusFileUpdateCheckResult> GetAvailableFileUpdatesAsync(IEnumerable<DivinityModData> mods, CancellationToken token)
 	{
-		var available = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+		var available = new Dictionary<string, long[]>(StringComparer.OrdinalIgnoreCase);
 		var checkedMods = new Dictionary<string, (long ProjectId, long FileId)>(StringComparer.OrdinalIgnoreCase);
 		var failedProjects = 0;
 		var linked = mods.Where(mod => mod.NexusModsData.ModId >= DivinityApp.NEXUSMODS_MOD_ID_START
@@ -160,17 +165,17 @@ public static class NexusModsDataLoader
 				{
 					var inquirer = new InfosInquirer(_client);
 					var files = await inquirer.ModFiles.GetModFilesAsync(DivinityApp.NEXUSMODS_GAME_DOMAIN, project.Key, token);
-					if (files?.ModFileUpdates == null || files.ModFiles == null) return (Failed: true, Checked: new List<(string Uuid, long ProjectId, long FileId, bool Available)>());
+					if (files?.ModFileUpdates == null || files.ModFiles == null) return (Failed: true, Checked: new List<(string Uuid, long ProjectId, long FileId, long[] Available)>());
 					var checkedFiles = project.Select(mod => (Uuid: mod.UUID, ProjectId: project.Key,
 						FileId: mod.NexusModsData.LastFileId,
-						Available: HasAvailableFileReplacement(mod.NexusModsData.LastFileId, files.ModFileUpdates, files.ModFiles))).ToList();
+						Available: GetAvailableFileReplacements(mod.NexusModsData.LastFileId, files.ModFileUpdates, files.ModFiles))).ToList();
 					return (Failed: false, Checked: checkedFiles);
 				}
 				catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
 				catch (Exception ex)
 				{
 					DivinityApp.Log($"Could not check Nexus file replacements for project {project.Key}: {ex}");
-					return (Failed: true, Checked: new List<(string Uuid, long ProjectId, long FileId, bool Available)>());
+					return (Failed: true, Checked: new List<(string Uuid, long ProjectId, long FileId, long[] Available)>());
 				}
 				finally { slots.Release(); }
 			}));
@@ -180,7 +185,7 @@ public static class NexusModsDataLoader
 				foreach (var file in result.Checked)
 				{
 					checkedMods[file.Uuid] = (file.ProjectId, file.FileId);
-					if (file.Available) available.Add(file.Uuid);
+					if (file.Available.Length > 0) available[file.Uuid] = file.Available;
 				}
 			}
 		}

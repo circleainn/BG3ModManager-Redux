@@ -96,6 +96,12 @@ Choose **Check Mod Updates** in the toolbar's **Mod Review** status menu, or use
 For one linked Nexus mod, right-click it and choose **Check Nexus File Update**. Redux marks only
 verified replacements; an unlinked or unverified mod is not automatically considered up to date.
 
+In development builds after 16.6, a verified Nexus update also offers **Skip this update** in the
+mod's right-click menu (**Skip these updates** when several replacement files are offered).
+This remembers those specific replacements for that installed mod; later updates can still notify.
+Use **Show skipped updates** in the same menu to restore notifications. Rechecking does not clear
+your skip choices, and skipping does not unlink, install, activate, or reorder anything.
+
 ## Does Redux require internet access?
 
 Core local package discovery, load-order editing, Mod Diagnostics, saved orders, and save browsing

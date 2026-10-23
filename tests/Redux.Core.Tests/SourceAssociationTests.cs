@@ -33,6 +33,7 @@ public sealed class SourceAssociationTests
 		{
 			ProjectId = 123,
 			FileId = 456,
+			ReplacementFileIds = [789],
 			EligibilityVersion = NexusVerifiedFileUpdate.CurrentEligibilityVersion,
 			CheckedAt = now.ToUnixTimeSeconds()
 		};
@@ -100,11 +101,11 @@ public sealed class SourceAssociationTests
 	{
 		var now = DateTimeOffset.UtcNow;
 		var cache = new NexusModsCachedData();
-		cache.RecordFileUpdateCheck("withdrawn", 507, 95344, true, now);
-		cache.RecordFileUpdateCheck("unchecked", 123, 456, true, now);
+		cache.RecordFileUpdateCheck("withdrawn", 507, 95344, [118749], now);
+		cache.RecordFileUpdateCheck("unchecked", 123, 456, [789], now);
 		cache = RoundTrip(cache);
 		RegressionAssert.True(cache.HasVerifiedUpdate("withdrawn", 507, 95344, now));
-		var available = NexusModsDataLoader.HasAvailableFileReplacement(95344,
+		var available = NexusModsDataLoader.GetAvailableFileReplacements(95344,
 			[new() { OldFileId = 95344, NewFileId = 118749 }],
 			[new() { FileId = 118749, Category = (NexusModFileCategory)7 }]);
 		cache.RecordFileUpdateCheck("withdrawn", 507, 95344, available, now);
@@ -122,7 +123,7 @@ public sealed class SourceAssociationTests
 			{ ProjectId = 123, FileId = 456, CheckedAt = now.ToUnixTimeSeconds() };
 		cache = RoundTrip(cache);
 		RegressionAssert.False(cache.HasVerifiedUpdate("module", 123, 456, now));
-		cache.RecordFileUpdateCheck("module", 123, 456, true, now);
+		cache.RecordFileUpdateCheck("module", 123, 456, [789], now);
 		RegressionAssert.True(RoundTrip(cache).HasVerifiedUpdate("module", 123, 456, now));
 	}
 
