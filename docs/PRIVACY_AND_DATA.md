@@ -14,8 +14,8 @@ before posting them publicly.
 
 Depending on enabled features and normal use, the Redux folder may contain:
 
-- preferences, keybindings, window state, categories, themes, custom asset references, and saved
-  load orders;
+- preferences (including per-file Nexus update skip choices), keybindings, window state, categories,
+  themes, custom asset references, and saved load orders;
 - provider metadata caches and public source associations;
 - Download Manager queue/history state and partial or completed managed downloads;
 - the optional Package Archive Library and its content-addressed index;

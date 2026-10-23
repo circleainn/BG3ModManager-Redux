@@ -4944,6 +4944,52 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		RefreshModUpdatesBackground([mod], refreshSourceDetails: false);
 	}
 
+	public long[] GetNotifiableNexusUpdates(DivinityModData mod) => mod == null ? [] :
+		NexusUpdateSkipPolicy.GetNotifiableFiles(Settings, mod.UUID, mod.NexusModsData.ModId,
+			mod.NexusModsData.LastFileId, UpdateHandler.Nexus.CacheData.GetVerifiedReplacements(mod.UUID,
+				mod.NexusModsData.ModId, mod.NexusModsData.LastFileId, DateTimeOffset.UtcNow));
+
+	public long[] GetSkippedNexusUpdates(DivinityModData mod) => mod == null ? [] :
+		NexusUpdateSkipPolicy.GetSkippedFiles(Settings, mod.UUID, mod.NexusModsData.ModId, mod.NexusModsData.LastFileId);
+
+	public void SetNexusUpdateSkipped(DivinityModData mod, long projectId, long installedFileId, long[] replacements, bool skipped)
+	{
+		if (mod == null || !AppSettingsLoaded || !UserMods.Contains(mod)) return;
+		if (IsRefreshing || IsRefreshingModUpdates || mod.NexusModsData.ModId != projectId
+			|| mod.NexusModsData.LastFileId != installedFileId)
+		{
+			ShowAlert("The mod or its update check changed. Reopen the mod menu when the check finishes.", AlertType.Info, 12);
+			return;
+		}
+		// A menu opened before a refresh must never skip a newly offered file.
+		var eligible = skipped ? GetNotifiableNexusUpdates(mod) : GetSkippedNexusUpdates(mod);
+		if (replacements == null || replacements.Length == 0 || replacements.Except(eligible).Any())
+		{
+			ShowAlert("This update choice is no longer current. Check Nexus File Update and reopen the mod menu.", AlertType.Info, 12);
+			return;
+		}
+		try
+		{
+			if (!NexusUpdateSkipPolicy.SetSkipped(Settings, mod.UUID, projectId, installedFileId, replacements, skipped, SaveSettings))
+			{
+				ShowAlert("Could not save the update choice. The previous notification settings were kept.", AlertType.Danger, 15);
+				return;
+			}
+		}
+		catch (Exception ex)
+		{
+			DivinityApp.Log($"Could not save Nexus update choice: {ex}");
+			ShowAlert("Could not save the update choice. The previous notification settings were kept.", AlertType.Danger, 15);
+			return;
+		}
+		mod.HasAvailableSourceUpdate = Modules.SourceIntegrationsEnabled && GetNotifiableNexusUpdates(mod).Length > 0;
+		ModUpdateCheckStatus = skipped
+			? $"Update skipped for {mod.DisplayName}. Later replacement files will still notify you."
+			: $"Skipped updates restored for {mod.DisplayName}. Check Nexus File Update to refresh availability.";
+		ShowAlert(ModUpdateCheckStatus, AlertType.Info, 12);
+		ScheduleModHealthRefresh();
+	}
+
 	private void RefreshModUpdatesBackground(IReadOnlyList<DivinityModData> targetMods, bool refreshSourceDetails)
 	{
 		if (targetMods.Count == 0)
@@ -4993,15 +5039,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					fileUpdateCheck = await NexusModsDataLoader.GetAvailableFileUpdatesAsync(targetMods, cancellationToken);
 					if (fileUpdateCheck?.CheckedModFiles.Count > 0)
 					{
-						var verified = UpdateHandler.Nexus.CacheData.VerifiedFileUpdates
-							??= new Dictionary<string, NexusVerifiedFileUpdate>(StringComparer.OrdinalIgnoreCase);
-						var checkedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+						var checkedAt = DateTimeOffset.UtcNow;
 						foreach (var (uuid, file) in fileUpdateCheck.CheckedModFiles)
 						{
-							if (fileUpdateCheck.AvailableModUuids.Contains(uuid))
-								verified[uuid] = new NexusVerifiedFileUpdate { ProjectId = file.ProjectId, FileId = file.FileId, CheckedAt = checkedAt };
-							else
-								verified.Remove(uuid);
+							UpdateHandler.Nexus.CacheData.RecordFileUpdateCheck(uuid, file.ProjectId, file.FileId,
+								fileUpdateCheck.AvailableModFiles.GetValueOrDefault(uuid, []), checkedAt);
 						}
 						await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), cancellationToken);
 					}
@@ -5047,13 +5089,17 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 									if (fileUpdateCheck.CheckedModFiles.TryGetValue(mod.UUID, out var checkedFile)
 										&& mod.NexusModsData.ModId == checkedFile.ProjectId
 										&& mod.NexusModsData.LastFileId == checkedFile.FileId)
-										mod.HasAvailableSourceUpdate = fileUpdateCheck.AvailableModUuids.Contains(mod.UUID);
+										mod.HasAvailableSourceUpdate = GetNotifiableNexusUpdates(mod).Length > 0;
 							}
 							List<DivinityModData> availableSourceUpdateMods = fileUpdateCheck == null ? [] : targetMods
-								.Where(mod => fileUpdateCheck.AvailableModUuids.Contains(mod.UUID) && mod.HasAvailableSourceUpdate)
+								.Where(mod => fileUpdateCheck.AvailableModFiles.ContainsKey(mod.UUID) && mod.HasAvailableSourceUpdate)
 								.OrderBy(mod => mod.DisplayName, StringComparer.CurrentCultureIgnoreCase)
 								.ToList();
 							var updateCount = availableSourceUpdateMods.Count;
+							var ignoredCount = fileUpdateCheck == null ? 0 : targetMods.Count(mod =>
+								fileUpdateCheck.CheckedModFiles.TryGetValue(mod.UUID, out var checkedFile)
+								&& mod.NexusModsData.ModId == checkedFile.ProjectId && mod.NexusModsData.LastFileId == checkedFile.FileId
+								&& fileUpdateCheck.AvailableModFiles.GetValueOrDefault(mod.UUID, []).Intersect(GetSkippedNexusUpdates(mod)).Any());
 							var updateNames = String.Join(", ", availableSourceUpdateMods.Take(3).Select(mod => mod.DisplayName));
 							if (updateCount > 3) updateNames += $" and {updateCount - 3} more";
 							var verificationIncomplete = fileUpdateCheck == null
@@ -5064,7 +5110,10 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 									? $"Source refresh finished for {checkedCount} mod{(checkedCount == 1 ? String.Empty : "s")}."
 									: verificationIncomplete
 										? $"Could not verify a Nexus file update for {targetMods[0].DisplayName}."
-										: $"No verified Nexus file update for {targetMods[0].DisplayName}.";
+										: ignoredCount > 0 ? $"Update skipped for {targetMods[0].DisplayName}."
+											: $"No verified Nexus file update for {targetMods[0].DisplayName}.";
+							if (ignoredCount > 0 && (refreshSourceDetails || updateCount > 0 || verificationIncomplete))
+								ModUpdateCheckStatus += $" Skipped updates for {ignoredCount} mod{(ignoredCount == 1 ? String.Empty : "s")}.";
 							if (UpdateHandler.Nexus.IsEnabled && fileUpdateCheck == null)
 								ModUpdateCheckStatus += String.IsNullOrWhiteSpace(Settings.NexusModsAPIKey)
 									? " Add a Nexus Mods API key in Preferences to check installed file updates."
@@ -5287,11 +5336,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				}
 				await Observable.Start(() =>
 				{
-					var cache = UpdateHandler.Nexus.CacheData;
-					var now = DateTimeOffset.UtcNow;
 					foreach (var mod in loadedUserMods)
-						mod.HasAvailableSourceUpdate = cache.HasVerifiedUpdate(mod.UUID,
-							mod.NexusModsData.ModId, mod.NexusModsData.LastFileId, now);
+						mod.HasAvailableSourceUpdate = GetNotifiableNexusUpdates(mod).Length > 0;
 					return Unit.Default;
 				}, RxApp.MainThreadScheduler);
 			}

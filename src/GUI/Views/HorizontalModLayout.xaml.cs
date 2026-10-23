@@ -1411,6 +1411,16 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				};
 				checkUpdate.Click += (_, _) => ViewModel.CheckNexusFileUpdate(mod);
 				menu.Items.Insert(Math.Min(4, menu.Items.Count), checkUpdate);
+				if (!hasBulkCategoryTargets)
+				{
+					var projectId = mod.NexusModsData.ModId;
+					var installedFileId = mod.NexusModsData.LastFileId;
+					var insertionIndex = Math.Min(5, menu.Items.Count);
+					foreach (var action in CreateNexusUpdateChoiceActions(ViewModel.GetNotifiableNexusUpdates(mod),
+						ViewModel.GetSkippedNexusUpdates(mod), !ViewModel.IsRefreshing && !ViewModel.IsRefreshingModUpdates,
+						(files, skipped) => ViewModel.SetNexusUpdateSkipped(mod, projectId, installedFileId, files, skipped)))
+						menu.Items.Insert(insertionIndex++, action);
+				}
 			}
 		}
 
@@ -1444,6 +1454,34 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		dividerMenu.Items.Add(new Separator());
 		AddVisualDividerStateActions(dividerMenu, activeModList, overrideList: overrideModList);
 		menu.Items.Insert(Math.Min(3, menu.Items.Count), dividerMenu);
+	}
+
+	private static IEnumerable<MenuItem> CreateNexusUpdateChoiceActions(long[] offered, long[] skipped,
+		bool enabled, Action<long[], bool> apply)
+	{
+		if (offered.Length > 0)
+		{
+			var skip = new MenuItem
+			{
+				Header = offered.Length == 1 ? "Skip this update" : "Skip these updates",
+				Tag = ModUpdateMenuTag, IsEnabled = enabled,
+				Icon = ReduxIcon.FromResource("Redux.Icon.RemoveCircle", true),
+				ToolTip = "Skip the currently offered replacement files for this installed mod. Later updates can still notify you."
+			};
+			skip.Click += (_, _) => apply(offered, true);
+			yield return skip;
+		}
+		if (skipped.Length > 0)
+		{
+			var restore = new MenuItem
+			{
+				Header = "Show skipped updates", Tag = ModUpdateMenuTag, IsEnabled = enabled,
+				Icon = ReduxIcon.FromResource("Redux.Icon.Undo", true),
+				ToolTip = "This installed mod has skipped updates. Restore their notifications; a fresh check may be needed."
+			};
+			restore.Click += (_, _) => apply(skipped, false);
+			yield return restore;
+		}
 	}
 
 	private MenuItem CreateMoveToSeparatorMenu(IReadOnlyList<DivinityModData> targets, VisualModListPane pane)

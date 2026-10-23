@@ -29,6 +29,7 @@ internal static class Program
 		var dismissal = new WindowDismissalTests();
 		var placement = new WindowPlacementPolicyTests();
 		var source = new SourceAssociationTests();
+		var skippedUpdates = new NexusUpdateSkipTests();
 		var manifest = new CreatorManifestValidationTests();
 		var health = new ModHealthTests();
 		var preUpdateBackup = new ReduxPreUpdateBackupTests();
@@ -212,6 +213,17 @@ internal static class Program
 			(nameof(overrideOrders.HoldingFolderCannotBeInsideTheModsTargetEvenWhenItIsADriveRoot), overrideOrders.HoldingFolderCannotBeInsideTheModsTargetEvenWhenItIsADriveRoot),
 			(nameof(source.VerifiedNexusUpdateDotSurvivesOnlyForTheSameRecentInstalledFile), source.VerifiedNexusUpdateDotSurvivesOnlyForTheSameRecentInstalledFile),
 			(nameof(source.NexusUpdateDotRequiresAnExplicitReplacementForTheInstalledFile), source.NexusUpdateDotRequiresAnExplicitReplacementForTheInstalledFile),
+			(nameof(source.NexusUpdatesRejectWithdrawnFilesButKeepCurrentOptionalReplacements), source.NexusUpdatesRejectWithdrawnFilesButKeepCurrentOptionalReplacements),
+			(nameof(source.NexusReplacementChainsTraverseArchivedFilesAndTerminateOnCycles), source.NexusReplacementChainsTraverseArchivedFilesAndTerminateOnCycles),
+			(nameof(source.NexusFreshChecksClearWithdrawnWarningsWithoutDiscardingUncheckedResults), source.NexusFreshChecksClearWithdrawnWarningsWithoutDiscardingUncheckedResults),
+			(nameof(source.NexusLegacyHistoryOnlyWarningsRequireFreshVerification), source.NexusLegacyHistoryOnlyWarningsRequireFreshVerification),
+			(nameof(skippedUpdates.SkippedNexusUpdateSurvivesRestartAndLaterReplacementStillNotifies), skippedUpdates.SkippedNexusUpdateSurvivesRestartAndLaterReplacementStillNotifies),
+			(nameof(skippedUpdates.SkippingNexusFilesPreservesOtherModsVariantsAndSourceLinks), skippedUpdates.SkippingNexusFilesPreservesOtherModsVariantsAndSourceLinks),
+			(nameof(skippedUpdates.FailedSkipAndRestoreSaveKeepPreviousNexusChoices), skippedUpdates.FailedSkipAndRestoreSaveKeepPreviousNexusChoices),
+			(nameof(skippedUpdates.NexusSkipChoicesSurviveCacheExpiryAndIgnoreMalformedIdentities), skippedUpdates.NexusSkipChoicesSurviveCacheExpiryAndIgnoreMalformedIdentities),
+			(nameof(skippedUpdates.ReplacementIdentityIncludesLaterFilesBeyondSkippedIntermediateVersions), skippedUpdates.ReplacementIdentityIncludesLaterFilesBeyondSkippedIntermediateVersions),
+			(nameof(skippedUpdates.NexusSkipMenusExposeSpecificReversibleActionsAndBusyState), skippedUpdates.NexusSkipMenusExposeSpecificReversibleActionsAndBusyState),
+			(nameof(skippedUpdates.NexusSkipMenusRemainReadableAcrossThemesAndTextSizes), skippedUpdates.NexusSkipMenusRemainReadableAcrossThemesAndTextSizes),
 			(nameof(source.LinkedModFileNameToggleUpdatesTheVisibleTitle), source.LinkedModFileNameToggleUpdatesTheVisibleTitle),
 			(nameof(source.DisplayTitleDoesNotRebroadcastPackageMetadata), source.DisplayTitleDoesNotRebroadcastPackageMetadata),
 			(nameof(storage.BackupQuotaPrunesOldestAndLeavesOtherFilesAlone), storage.BackupQuotaPrunesOldestAndLeavesOtherFilesAlone),
@@ -526,6 +538,7 @@ internal static class Program
 			(nameof(inactiveOrder.SavedInactiveOrderSurvivesRestartAndDiscoveryChanges), inactiveOrder.SavedInactiveOrderSurvivesRestartAndDiscoveryChanges),
 			(nameof(inactiveOrder.InactiveBlockMoveDoesNotChangeActiveOrder), inactiveOrder.InactiveBlockMoveDoesNotChangeActiveOrder),
 			(nameof(inactiveOrder.InactiveControlsLoadAndColumnSortKeepsUnderlyingOrder), inactiveOrder.InactiveControlsLoadAndColumnSortKeepsUnderlyingOrder),
+			(nameof(inactiveOrder.EveryModPaneFilterRetainsItsWorkingClearMenu), inactiveOrder.EveryModPaneFilterRetainsItsWorkingClearMenu),
 			(nameof(storage.OverrideSortingPreservesSearchAndUnderlyingOrder), storage.OverrideSortingPreservesSearchAndUnderlyingOrder),
 			(nameof(storage.DeferredCollapseCompletionCanBeCancelledOrFlushed), storage.DeferredCollapseCompletionCanBeCancelledOrFlushed),
 			(nameof(inactiveOrder.AdvisorIgnoresInactiveOrganization), inactiveOrder.AdvisorIgnoresInactiveOrganization),

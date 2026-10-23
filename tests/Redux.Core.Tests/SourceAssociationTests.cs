@@ -33,6 +33,8 @@ public sealed class SourceAssociationTests
 		{
 			ProjectId = 123,
 			FileId = 456,
+			ReplacementFileIds = [789],
+			EligibilityVersion = NexusVerifiedFileUpdate.CurrentEligibilityVersion,
 			CheckedAt = now.ToUnixTimeSeconds()
 		};
 		var restored = RoundTrip(cache);
@@ -49,11 +51,80 @@ public sealed class SourceAssociationTests
 			new NexusModFileUpdate { OldFileId = 101, NewFileId = 202 },
 			new NexusModFileUpdate { OldFileId = 303, NewFileId = 404 }
 		};
-		RegressionAssert.True(NexusModsDataLoader.HasExplicitFileReplacement(101, replacements));
-		RegressionAssert.False(NexusModsDataLoader.HasExplicitFileReplacement(0, replacements));
-		RegressionAssert.False(NexusModsDataLoader.HasExplicitFileReplacement(202, replacements));
-		RegressionAssert.False(NexusModsDataLoader.HasExplicitFileReplacement(999, replacements));
-		RegressionAssert.False(NexusModsDataLoader.HasExplicitFileReplacement(101, null));
+		var files = new[] { new NexusModFile { FileId = 202, Category = NexusModFileCategory.Main } };
+		RegressionAssert.True(NexusModsDataLoader.HasAvailableFileReplacement(101, replacements, files));
+		RegressionAssert.False(NexusModsDataLoader.HasAvailableFileReplacement(0, replacements, files));
+		RegressionAssert.False(NexusModsDataLoader.HasAvailableFileReplacement(202, replacements, files));
+		RegressionAssert.False(NexusModsDataLoader.HasAvailableFileReplacement(999, replacements, files));
+		RegressionAssert.False(NexusModsDataLoader.HasAvailableFileReplacement(101, null!, files));
+		RegressionAssert.False(NexusModsDataLoader.HasAvailableFileReplacement(101, replacements, null!));
+	}
+
+	public void NexusUpdatesRejectWithdrawnFilesButKeepCurrentOptionalReplacements()
+	{
+		NexusModFileUpdate[] history = [new() { OldFileId = 95344, NewFileId = 118749 }];
+		foreach (var category in new[] { NexusModFileCategory.Old, NexusModFileCategory.Deleted,
+			(NexusModFileCategory)7, (NexusModFileCategory)0, (NexusModFileCategory)999 })
+		{
+			RegressionAssert.False(NexusModsDataLoader.HasAvailableFileReplacement(95344, history,
+				[new() { FileId = 118749, Category = category }]));
+		}
+		RegressionAssert.False(NexusModsDataLoader.HasAvailableFileReplacement(95344, history, []));
+		foreach (var category in new[] { NexusModFileCategory.Main, NexusModFileCategory.Update,
+			NexusModFileCategory.Optional, NexusModFileCategory.Miscellaneous })
+		{
+			RegressionAssert.True(NexusModsDataLoader.HasAvailableFileReplacement(95344, history,
+				[new() { FileId = 118749, Category = category }]));
+		}
+		// A newer primary or optional file without a replacement link is unrelated.
+		RegressionAssert.False(NexusModsDataLoader.HasAvailableFileReplacement(95344, history,
+			[new() { FileId = 999999, Category = NexusModFileCategory.Optional, IsPrimary = true }]));
+	}
+
+	public void NexusReplacementChainsTraverseArchivedFilesAndTerminateOnCycles()
+	{
+		NexusModFileUpdate[] history = [
+			new() { OldFileId = 101, NewFileId = 202 },
+			new() { OldFileId = 202, NewFileId = 303 },
+			new() { OldFileId = 303, NewFileId = 101 },
+			new() { OldFileId = 202, NewFileId = 202 },
+			new() { OldFileId = 101, NewFileId = 0 }, null!];
+		NexusModFile[] files = [new() { FileId = 101, Category = NexusModFileCategory.Main },
+			new() { FileId = 202, Category = (NexusModFileCategory)7 }, null!];
+		// Returning to the installed file cannot count as an update.
+		RegressionAssert.False(NexusModsDataLoader.HasAvailableFileReplacement(101, history, files));
+		RegressionAssert.True(NexusModsDataLoader.HasAvailableFileReplacement(101, history,
+			[.. files, new() { FileId = 303, Category = NexusModFileCategory.Optional }]));
+	}
+
+	public void NexusFreshChecksClearWithdrawnWarningsWithoutDiscardingUncheckedResults()
+	{
+		var now = DateTimeOffset.UtcNow;
+		var cache = new NexusModsCachedData();
+		cache.RecordFileUpdateCheck("withdrawn", 507, 95344, [118749], now);
+		cache.RecordFileUpdateCheck("unchecked", 123, 456, [789], now);
+		cache = RoundTrip(cache);
+		RegressionAssert.True(cache.HasVerifiedUpdate("withdrawn", 507, 95344, now));
+		var available = NexusModsDataLoader.GetAvailableFileReplacements(95344,
+			[new() { OldFileId = 95344, NewFileId = 118749 }],
+			[new() { FileId = 118749, Category = (NexusModFileCategory)7 }]);
+		cache.RecordFileUpdateCheck("withdrawn", 507, 95344, available, now);
+		cache = RoundTrip(cache);
+		RegressionAssert.False(cache.HasVerifiedUpdate("withdrawn", 507, 95344, now));
+		RegressionAssert.False(cache.VerifiedFileUpdates.ContainsKey("withdrawn"));
+		RegressionAssert.True(cache.HasVerifiedUpdate("unchecked", 123, 456, now));
+	}
+
+	public void NexusLegacyHistoryOnlyWarningsRequireFreshVerification()
+	{
+		var now = DateTimeOffset.UtcNow;
+		var cache = new NexusModsCachedData();
+		cache.VerifiedFileUpdates["module"] = new NexusVerifiedFileUpdate
+			{ ProjectId = 123, FileId = 456, CheckedAt = now.ToUnixTimeSeconds() };
+		cache = RoundTrip(cache);
+		RegressionAssert.False(cache.HasVerifiedUpdate("module", 123, 456, now));
+		cache.RecordFileUpdateCheck("module", 123, 456, [789], now);
+		RegressionAssert.True(RoundTrip(cache).HasVerifiedUpdate("module", 123, 456, now));
 	}
 
 	private const string ReviewedModuleUuid = "069e5871-efe8-44bb-b02a-fe957df5ae0e";

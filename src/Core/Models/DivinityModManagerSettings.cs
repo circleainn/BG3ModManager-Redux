@@ -100,6 +100,8 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("Disable online mod information", "Do not contact Nexus Mods or mod.io. Existing links and API keys are kept for later.")]
 	[DataMember, Reactive] public bool LocalOnlyMode { get; set; }
 
+	[DataMember] public List<NexusSkippedFileUpdate> SkippedNexusFileUpdates { get; set; } = [];
+
 	[DefaultValue(false)]
 	[SettingsEntry("Enable story logging", "Enable the Osiris story log (osiris.log) when launching the game.")]
 	[DataMember, Reactive] public bool GameStoryLogEnabled { get; set; }

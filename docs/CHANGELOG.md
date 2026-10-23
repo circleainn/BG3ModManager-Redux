@@ -3,9 +3,11 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
-## Unreleased
+## 0.1.0-alpha.16.6.1 — 2026-10-22
 
-No additional changes queued.
+- Add **Skip this update** to linked Nexus mods in Active, Inactive, and Override. Remember the specific installed file and offered replacements across restart; later replacement files can still notify. Use **Show skipped updates** in the same menu to restore notifications. Failed saves preserve the previous choice.
+- Stop flagging archived, deleted, old, or unavailable Nexus files as mod updates. Follow explicit replacement history to currently offered files, including valid optional-file updates, and require a fresh check for older cached warnings.
+- Restore the right-click **Clear** action in the Active, Inactive, and Override text filters.
 
 ## 0.1.0-alpha.16.6 — 2026-10-20
 
