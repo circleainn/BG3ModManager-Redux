@@ -206,6 +206,14 @@ public partial class SettingsWindow : SettingsWindowBase
 	public SettingsWindow()
 	{
 		InitializeComponent();
+		PropertyChangedEventManager.AddHandler(ReduxLanguageService.Current, InterfaceLanguageChanged, nameof(ReduxLanguageService.Language));
+	}
+
+	private void InterfaceLanguageChanged(object sender, PropertyChangedEventArgs e)
+	{
+		_keybindingsView?.Refresh();
+		RefreshCustomThemeControls();
+		UpdateShortcutGroupToggleButton();
 	}
 
 	public void ApplyAdaptiveDefaultSize(Window owner)
@@ -221,7 +229,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		if(sender is ComboBox combo && combo.SelectedItem is EnumEntry enumEntry && !string.IsNullOrWhiteSpace(enumEntry.Description))
 		{
-			ToolTipService.SetToolTip(combo, enumEntry.Description);
+			LocalizationBindings.Set(combo, ToolTipService.ToolTipProperty, enumEntry.Description);
 		}
 	}
 
@@ -386,7 +394,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		CustomThemeComboBox.ItemsSource = ViewModel.Settings.CustomThemes;
 		var activeTheme = ReduxThemeService.GetActiveTheme(ViewModel.Settings);
 		CustomThemeComboBox.SelectedItem = activeTheme;
-		CurrentThemeNameText.Text = activeTheme?.Name ?? ViewModel.Settings.ColorTheme.GetDescription();
+		CurrentThemeNameText.Text = activeTheme?.Name ?? ReduxLanguageService.Current.Translate(ViewModel.Settings.ColorTheme.GetDescription());
 		GeneratedGradientsCheckBox.IsChecked = activeTheme?.UsesGeneratedGradients
 			?? ViewModel.Settings.UsesGeneratedGradients;
 		var hasSelection = CustomThemeComboBox.SelectedItem is ReduxCustomTheme;
@@ -395,7 +403,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		DuplicateCustomThemeButton.IsEnabled = hasSelection;
 		ExportCustomThemeButton.IsEnabled = hasSelection;
 		CustomThemeStatusText.Text = activeTheme != null
-			? $"Active custom theme · {activeTheme.Name} · {ReduxCustomFontService.GetDisplayName(activeTheme.TypographyFont, activeTheme.CustomTypographyFont)} · {activeTheme.TextSize.GetDescription()} text"
+			? ReduxLanguageService.Current.Format($"Active custom theme · {activeTheme.Name} · {ReduxCustomFontService.GetDisplayName(activeTheme.TypographyFont, activeTheme.CustomTypographyFont)} · {ReduxLanguageService.Current.Translate(activeTheme.TextSize.GetDescription())} text")
 			: ViewModel.Settings.CustomThemes.Count == 0
 				? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No custom themes yet. Create one from the current built-in palette.")
 				: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Choose a custom theme above, or keep using a built-in theme.");
@@ -1102,7 +1110,8 @@ public partial class SettingsWindow : SettingsWindowBase
 
 		this.Bind(ViewModel, vm => vm.SelectedTabIndex, view => view.PreferencesTabControl.SelectedIndex, TabToIndex, IndexToTab);
 		this.OneWayBind(ViewModel, vm => vm.ExtenderUpdaterVisibility, view => view.ScriptExtenderUpdaterTab.Visibility);
-		this.OneWayBind(ViewModel, vm => vm.ResetSettingsCommandToolTip, view => view.ResetSettingsButton.ToolTip);
+		ViewModel.WhenAnyValue(vm => vm.ResetSettingsCommandToolTip)
+			.Subscribe(text => LocalizationBindings.Set(ResetSettingsButton, ToolTipService.ToolTipProperty, text));
 
 		this.BindCommand(ViewModel, vm => vm.SaveSettingsCommand, view => view.SaveSettingsButton);
 		this.BindCommand(ViewModel, vm => vm.OpenSettingsFolderCommand, view => view.OpenSettingsFolderButton);
@@ -1129,7 +1138,10 @@ public partial class SettingsWindow : SettingsWindowBase
 		if (String.IsNullOrWhiteSpace(query))
 			return true;
 
-		return hotkey.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+		return hotkey.LocalizedDisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+			hotkey.LocalizedCategory.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+			hotkey.LocalizedDescription.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+			hotkey.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
 			hotkey.Category.Contains(query, StringComparison.OrdinalIgnoreCase) ||
 			hotkey.Description.Contains(query, StringComparison.OrdinalIgnoreCase) ||
 			hotkey.DisplayBindingText.Contains(query, StringComparison.OrdinalIgnoreCase);
@@ -1219,7 +1231,7 @@ public partial class SettingsWindow : SettingsWindowBase
 
 		var expanders = KeybindingsListView.FindVisualChildren<Expander>().ToList();
 		var collapse = expanders.Count == 0 || expanders.Any(expander => expander.IsExpanded);
-		var action = collapse ? "Collapse all shortcut groups" : "Expand all shortcut groups";
+		var action = ReduxLanguageService.Current.Translate(collapse ? "Collapse all shortcut groups" : "Expand all shortcut groups");
 		ShortcutGroupsToggleButton.IsEnabled = !HasShortcutFilter && expanders.Count > 0;
 		ShortcutGroupsToggleButton.ToolTip = HasShortcutFilter
 			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Clear the shortcut filter to expand or collapse all groups")

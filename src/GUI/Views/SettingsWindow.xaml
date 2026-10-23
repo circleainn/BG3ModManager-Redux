@@ -1118,7 +1118,7 @@
 															<DataTemplate>
 																<TextBlock Foreground="{DynamicResource ReduxAccentHoverBrush}"
 																	FontWeight="{DynamicResource Redux.FontWeight.Control}"
-																	Text="{Binding Name}" />
+																	Text="{loc:BoundText Path=Name}" />
 															</DataTemplate>
 																</Expander.HeaderTemplate>
 																<ItemsPresenter />
@@ -1278,7 +1278,7 @@
 													Text="{Binding ModifiedText, Mode=OneWay}" />
 												<TextBlock VerticalAlignment="Center"
 													Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-													Text="{Binding DisplayName, Mode=OneWay}"
+													Text="{Binding LocalizedDisplayName, Mode=OneWay}"
 													TextTrimming="CharacterEllipsis" />
 											</StackPanel>
 											<controls:HotkeyEditorControl Grid.Column="1"
@@ -1437,7 +1437,7 @@
 								<ContextMenu.ItemContainerStyle>
 									<Style BasedOn="{StaticResource LaunchParameterMenuItemStyle}" TargetType="MenuItem">
 										<Setter Property="Header" Value="{Binding Name}" />
-										<Setter Property="ToolTip" Value="{Binding Description}" />
+										<Setter Property="ToolTip" Value="{loc:BoundText Path=Description}" />
 										<Setter Property="ToolTipService.IsEnabled" Value="{Binding HasToolTip, FallbackValue=False}" />
 										<Setter Property="ToolTipService.InitialShowDelay" Value="250" />
 										<Setter Property="Command" Value="{Binding Path=DataContext.AddLaunchParamCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type local:SettingsWindow}}}" />

@@ -9805,5 +9805,1986 @@
     "es": "Compacto",
     "ru": "Компактный",
     "zh-Hans": "紧凑"
+  },
+  "A_tool_for_mod_authors_to_generate_version_numbers_for_a_mod_51f9a7bf": {
+    "en": "A tool for mod authors to generate version numbers for a mod's meta.lsx",
+    "fr": "Outil destiné aux auteurs de mods pour générer les numéros de version de meta.lsx.",
+    "es": "Herramienta para autores de mods que genera números de versión para meta.lsx.",
+    "ru": "Инструмент для авторов модов, создающий номера версий для meta.lsx.",
+    "zh-Hans": "供模组作者为 meta.lsx 生成版本号的工具。"
+  },
+  "Add_experimental_placement_checks_and_the_optional_load_orde_eca2483a": {
+    "en": "Add experimental placement checks and the optional load-order organizer. Redux never reorders mods automatically.",
+    "fr": "Ajouter des vérifications expérimentales de placement et l’organiseur facultatif. Redux ne réordonne jamais les mods automatiquement.",
+    "es": "Añadir comprobaciones experimentales de posición y el organizador opcional. Redux nunca reordena mods automáticamente.",
+    "ru": "Добавить экспериментальные проверки расположения и необязательный организатор. Redux никогда не меняет порядок модов автоматически.",
+    "zh-Hans": "添加实验性的排序检查和可选的加载顺序整理功能。Redux 不会自动重新排列模组。"
+  },
+  "Add_installed_dependency_mods_above_their_dependents_when_th_af075b26": {
+    "en": "Add installed dependency mods above their dependents when they were omitted from the active order.",
+    "fr": "Ajouter les dépendances installées au-dessus des mods qui en dépendent lorsqu’elles manquent dans l’ordre actif.",
+    "es": "Añadir las dependencias instaladas antes de los mods que las necesitan si faltan en el orden activo.",
+    "ru": "Добавлять установленные зависимости перед зависящими от них модами, если они отсутствуют в активном порядке.",
+    "zh-Hans": "若已安装的依赖模组未包含在启用顺序中，将其添加到依赖它们的模组之前。"
+  },
+  "Advanced_debugger_flags_passed_to_the_Osiris_debugger_Defaul_6ada3095": {
+    "en": "Advanced debugger flags passed to the Osiris debugger. Default: 0.",
+    "fr": "Options avancées transmises au débogueur Osiris. Valeur par défaut : 0.",
+    "es": "Opciones avanzadas enviadas al depurador Osiris. Valor predeterminado: 0.",
+    "ru": "Дополнительные флаги отладчика Osiris. По умолчанию: 0.",
+    "zh-Hans": "传递给 Osiris 调试器的高级标志。默认值：0。"
+  },
+  "Advanced_Settings_22d4f608": {
+    "en": "Advanced Settings",
+    "fr": "Paramètres avancés",
+    "es": "Ajustes avanzados",
+    "ru": "Расширенные настройки",
+    "zh-Hans": "高级设置"
+  },
+  "After_launching_the_game_dbf4e5f6": {
+    "en": "After launching the game",
+    "fr": "Après le lancement du jeu",
+    "es": "Después de iniciar el juego",
+    "ru": "После запуска игры",
+    "zh-Hans": "启动游戏后"
+  },
+  "Allow_achievements_while_playing_with_mods_12551ec3": {
+    "en": "Allow achievements while playing with mods.",
+    "fr": "Autoriser les succès en jouant avec des mods.",
+    "es": "Permitir logros al jugar con mods.",
+    "ru": "Разрешить достижения при игре с модами.",
+    "zh-Hans": "使用模组时允许获得成就。"
+  },
+  "An_additional_directory_where_the_Script_Extender_will_check_603d7cf2": {
+    "en": "An additional directory where the Script Extender will check for builtin scripts\nThis setting is meant for developers, to make it easier to test builtin script changes",
+    "fr": "Dossier supplémentaire où Script Extender recherche les scripts intégrés.\nDestiné aux développeurs pour faciliter les tests de modifications de ces scripts.",
+    "es": "Carpeta adicional donde Script Extender busca scripts integrados.\nEstá destinada a desarrolladores para facilitar las pruebas de cambios en esos scripts.",
+    "ru": "Дополнительная папка для поиска встроенных скриптов Script Extender.\nПредназначена для разработчиков, тестирующих изменения встроенных скриптов.",
+    "zh-Hans": "Script Extender 查找内置脚本的额外目录。\n供开发者测试内置脚本的修改。"
+  },
+  "App_font_cad0292d": {
+    "en": "App font",
+    "fr": "Police de l’application",
+    "es": "Fuente de la aplicación",
+    "ru": "Шрифт приложения",
+    "zh-Hans": "应用字体"
+  },
+  "Ask_Script_Extender_to_prevent_BG3_s_ModCrashSanityCheck_fro_0fbdb7bd": {
+    "en": "Ask Script Extender to prevent BG3's ModCrashSanityCheck from disabling mods on the next launch.",
+    "fr": "Demander à Script Extender d’empêcher ModCrashSanityCheck de désactiver les mods au prochain lancement de BG3.",
+    "es": "Pedir a Script Extender que impida que ModCrashSanityCheck desactive los mods en el siguiente inicio de BG3.",
+    "ru": "Попросить Script Extender не позволять ModCrashSanityCheck отключать моды при следующем запуске BG3.",
+    "zh-Hans": "让 Script Extender 阻止 BG3 的 ModCrashSanityCheck 在下次启动时禁用模组。"
+  },
+  "Bring_Download_Manager_forward_when_a_Nexus_download_starts__1f65aec2": {
+    "en": "Bring Download Manager forward when a Nexus download starts. When off, show a quiet notification.",
+    "fr": "Mettre le gestionnaire de téléchargements au premier plan au début d’un téléchargement Nexus. Sinon, afficher une notification discrète.",
+    "es": "Mostrar el gestor de descargas al iniciar una descarga de Nexus. Si se desactiva, mostrar una notificación discreta.",
+    "ru": "Выводить менеджер загрузок на передний план при начале загрузки Nexus. Иначе показывать ненавязчивое уведомление.",
+    "zh-Hans": "Nexus 下载开始时将下载管理器置于前台。关闭时仅显示轻量通知。"
+  },
+  "Browse_install_and_safely_remove_story_saves_for_the_selecte_7e40ff87": {
+    "en": "Browse, install, and safely remove story saves for the selected profile.",
+    "fr": "Parcourir, installer et supprimer en sécurité les sauvegardes de campagne du profil sélectionné.",
+    "es": "Explorar, instalar y eliminar de forma segura partidas de campaña del perfil seleccionado.",
+    "ru": "Просматривать, устанавливать и безопасно удалять сохранения кампании выбранного профиля.",
+    "zh-Hans": "浏览、安装和安全删除所选配置文件的剧情存档。"
+  },
+  "CachePath_7e62dece": {
+    "en": "CachePath",
+    "fr": "Dossier du cache",
+    "es": "Carpeta de caché",
+    "ru": "Папка кэша",
+    "zh-Hans": "缓存文件夹"
+  },
+  "Check_linked_mods_against_enabled_sources_Available_updates__0f1feacc": {
+    "en": "Check linked mods against enabled sources. Available updates appear in the Mod Updates view.",
+    "fr": "Rechercher les mises à jour des mods liés auprès des sources activées. Les résultats apparaissent dans Mises à jour des mods.",
+    "es": "Comprobar los mods vinculados en las fuentes activadas. Las actualizaciones disponibles aparecen en Actualizaciones de mods.",
+    "ru": "Проверять связанные моды в разрешённых источниках. Доступные обновления появятся в разделе обновлений модов.",
+    "zh-Hans": "通过已启用的来源检查已关联的模组。可用更新显示在模组更新视图中。"
+  },
+  "Check_the_public_alpha_channel_in_the_background_after_start_fd533318": {
+    "en": "Check the public-alpha channel in the background after startup and notify me when a newer release is available.",
+    "fr": "Vérifier le canal public-alpha en arrière-plan après le démarrage et signaler les nouvelles versions.",
+    "es": "Comprobar el canal public-alpha en segundo plano al iniciar y avisar de nuevas versiones.",
+    "ru": "Проверять канал public-alpha в фоне после запуска и сообщать о новых версиях.",
+    "zh-Hans": "启动后在后台检查 public-alpha 渠道，并在有新版本时通知我。"
+  },
+  "Choose_an_interface_text_size_fa5530dd": {
+    "en": "Choose an interface text size.",
+    "fr": "Choisir la taille du texte de l’interface.",
+    "es": "Elegir el tamaño del texto de la interfaz.",
+    "ru": "Выбрать размер текста интерфейса.",
+    "zh-Hans": "选择界面文字大小。"
+  },
+  "Choose_the_app_s_colors_dfd54757": {
+    "en": "Choose the app's colors.",
+    "fr": "Choisir les couleurs de l’application.",
+    "es": "Elegir los colores de la aplicación.",
+    "ru": "Выбрать цвета приложения.",
+    "zh-Hans": "选择应用配色。"
+  },
+  "Choose_the_font_used_throughout_the_app_ac7c8890": {
+    "en": "Choose the font used throughout the app.",
+    "fr": "Choisir la police utilisée dans l’application.",
+    "es": "Elegir la fuente usada en toda la aplicación.",
+    "ru": "Выбрать шрифт для всего приложения.",
+    "zh-Hans": "选择整个应用使用的字体。"
+  },
+  "Choose_where_new_download_packages_and_their_queue_history_a_5cd1a133": {
+    "en": "Choose where new download packages and their queue/history are stored. Each location keeps its own queue. The change takes effect after restarting Redux; existing files are not moved or deleted.",
+    "fr": "Choisir où stocker les nouveaux paquets téléchargés et leur file/historique. Chaque emplacement a sa propre file. Le changement prend effet au redémarrage de Redux ; les fichiers existants ne sont ni déplacés ni supprimés.",
+    "es": "Elegir dónde guardar nuevos paquetes y su cola/historial. Cada ubicación mantiene su propia cola. El cambio se aplica al reiniciar Redux; no se mueven ni eliminan archivos existentes.",
+    "ru": "Выбрать место хранения новых пакетов, очереди и истории загрузок. У каждого расположения своя очередь. Изменение вступит в силу после перезапуска Redux; существующие файлы не перемещаются и не удаляются.",
+    "zh-Hans": "选择新下载包及其队列和历史记录的存储位置。每个位置保留独立队列。重启 Redux 后生效；不会移动或删除现有文件。"
+  },
+  "Choose_whether_the_manager_launches_the_game_directly_throug_a10f1ee4": {
+    "en": "Choose whether the manager launches the game directly, through Steam, or with a custom target.",
+    "fr": "Choisir un lancement direct, via Steam ou avec une cible personnalisée.",
+    "es": "Elegir si el gestor inicia el juego directamente, mediante Steam o con un destino personalizado.",
+    "ru": "Выбрать запуск игры напрямую, через Steam или с пользовательской целью запуска.",
+    "zh-Hans": "选择直接启动游戏、通过 Steam 启动，或使用自定义启动目标。"
+  },
+  "Choose_whether_the_manager_stays_open_minimizes_or_closes_ce8f31ca": {
+    "en": "Choose whether the manager stays open, minimizes, or closes.",
+    "fr": "Choisir si le gestionnaire reste ouvert, se réduit ou se ferme.",
+    "es": "Elegir si el gestor permanece abierto, se minimiza o se cierra.",
+    "ru": "Выбрать, останется ли менеджер открытым, свернётся или закроется.",
+    "zh-Hans": "选择管理器保持打开、最小化或关闭。"
+  },
+  "Classify_mods_into_Redux_s_built_in_categories_Turn_this_off_7edaae69": {
+    "en": "Classify mods into Redux's built-in categories. Turn this off to hide automatic categories while preserving custom categories and every manual assignment.",
+    "fr": "Classer les mods dans les catégories intégrées de Redux. Désactiver pour masquer les catégories automatiques tout en conservant les catégories personnalisées et toutes les affectations manuelles.",
+    "es": "Clasificar mods en las categorías integradas de Redux. Desactívalo para ocultar categorías automáticas conservando las personalizadas y todas las asignaciones manuales.",
+    "ru": "Распределять моды по встроенным категориям Redux. При отключении автоматические категории скрываются, но пользовательские категории и ручные назначения сохраняются.",
+    "zh-Hans": "将模组归入 Redux 内置分类。关闭后隐藏自动分类，同时保留自定义分类和所有手动分配。"
+  },
+  "Clear_Console_On_Reset_26d174bb": {
+    "en": "Clear Console On Reset",
+    "fr": "Effacer la console lors d’une réinitialisation",
+    "es": "Limpiar consola al restablecer",
+    "ru": "Очищать консоль при сбросе",
+    "zh-Hans": "重置时清空控制台"
+  },
+  "Clear_ModCrashSanityCheck_010f0790": {
+    "en": "Clear ModCrashSanityCheck",
+    "fr": "Effacer ModCrashSanityCheck",
+    "es": "Eliminar ModCrashSanityCheck",
+    "ru": "Удалять ModCrashSanityCheck",
+    "zh-Hans": "清除 ModCrashSanityCheck"
+  },
+  "Clears_the_extender_console_when_the_reset_command_is_used_59827669": {
+    "en": "Clears the extender console when the reset command is used",
+    "fr": "Effacer la console de l’extender lors de la commande de réinitialisation.",
+    "es": "Limpiar la consola del extender al usar el comando de restablecimiento.",
+    "ru": "Очищать консоль расширителя при выполнении команды сброса.",
+    "zh-Hans": "使用重置命令时清空扩展器控制台。"
+  },
+  "Close_Manager_e7eaa66e": {
+    "en": "Close Manager",
+    "fr": "Fermer le gestionnaire",
+    "es": "Cerrar gestor",
+    "ru": "Закрыть менеджер",
+    "zh-Hans": "关闭管理器"
+  },
+  "Collapse_or_Expand_Override_Mods_fbad350a": {
+    "en": "Collapse or Expand Override Mods",
+    "fr": "Réduire ou développer les mods Override",
+    "es": "Contraer o expandir mods Override",
+    "ru": "Свернуть или развернуть моды Override",
+    "zh-Hans": "折叠或展开 Override 模组"
+  },
+  "Collapse_or_expand_the_Override_Mods_pane_when_override_pack_7926e112": {
+    "en": "Collapse or expand the Override Mods pane when override packages are installed.",
+    "fr": "Réduire ou développer le volet des mods Override lorsque des paquets Override sont installés.",
+    "es": "Contraer o expandir el panel de mods Override cuando hay paquetes Override instalados.",
+    "ru": "Сворачивать или разворачивать панель модов Override при наличии установленных пакетов Override.",
+    "zh-Hans": "已安装 Override 包时，折叠或展开 Override 模组面板。"
+  },
+  "Color_category_names_7e6bfe67": {
+    "en": "Color category names",
+    "fr": "Colorer les noms de catégories",
+    "es": "Colorear nombres de categorías",
+    "ru": "Цветные названия категорий",
+    "zh-Hans": "分类名称着色"
+  },
+  "Compare_Load_Orders_f0005955": {
+    "en": "Compare Load Orders...",
+    "fr": "Comparer les ordres de chargement…",
+    "es": "Comparar órdenes de carga…",
+    "ru": "Сравнить порядки загрузки…",
+    "zh-Hans": "比较加载顺序…"
+  },
+  "Compare_two_available_load_orders_without_changing_either_on_442595b8": {
+    "en": "Compare two available load orders without changing either one.",
+    "fr": "Comparer deux ordres de chargement disponibles sans les modifier.",
+    "es": "Comparar dos órdenes de carga disponibles sin modificarlos.",
+    "ru": "Сравнить два доступных порядка загрузки, не изменяя их.",
+    "zh-Hans": "比较两个可用的加载顺序，不修改任何一个。"
+  },
+  "Compatibility_setting_retained_for_older_Redux_preferences_6509d447": {
+    "en": "Compatibility setting retained for older Redux preferences.",
+    "fr": "Réglage conservé pour la compatibilité avec d’anciennes préférences Redux.",
+    "es": "Ajuste conservado por compatibilidad con preferencias antiguas de Redux.",
+    "ru": "Настройка сохранена для совместимости со старыми настройками Redux.",
+    "zh-Hans": "为兼容旧版 Redux 偏好设置而保留的设置。"
+  },
+  "Confirm_Nexus_downloads_713db131": {
+    "en": "Confirm Nexus downloads",
+    "fr": "Confirmer les téléchargements Nexus",
+    "es": "Confirmar descargas de Nexus",
+    "ru": "Подтверждать загрузки Nexus",
+    "zh-Hans": "确认 Nexus 下载"
+  },
+  "Custom_494ca78f": {
+    "en": "Custom",
+    "fr": "Personnalisé",
+    "es": "Personalizado",
+    "ru": "Пользовательский",
+    "zh-Hans": "自定义"
+  },
+  "Custom_profile_folder_6e99f8be": {
+    "en": "Custom profile folder",
+    "fr": "Dossier de profil personnalisé",
+    "es": "Carpeta de perfil personalizada",
+    "ru": "Пользовательская папка профиля",
+    "zh-Hans": "自定义配置文件夹"
+  },
+  "Debug_Mode_5f753682": {
+    "en": "Debug Mode",
+    "fr": "Mode débogage",
+    "es": "Modo de depuración",
+    "ru": "Режим отладки",
+    "zh-Hans": "调试模式"
+  },
+  "Default_Exe_239406d6": {
+    "en": "Default (Exe)",
+    "fr": "Par défaut (Exe)",
+    "es": "Predeterminado (Exe)",
+    "ru": "По умолчанию (Exe)",
+    "zh-Hans": "默认（Exe）"
+  },
+  "Default_to_Client_Side_ef52eeee": {
+    "en": "Default to Client Side",
+    "fr": "Utiliser le côté client par défaut",
+    "es": "Usar lado cliente por defecto",
+    "ru": "Клиентская сторона по умолчанию",
+    "zh-Hans": "默认使用客户端"
+  },
+  "Defaults_the_extender_console_to_the_client_side_This_is_set_bf468968": {
+    "en": "Defaults the extender console to the client-side\nThis is setting is intended for developers",
+    "fr": "Utiliser le côté client par défaut dans la console de l’extender.\nCe réglage est destiné aux développeurs.",
+    "es": "Usar el lado cliente por defecto en la consola del extender.\nEste ajuste está destinado a desarrolladores.",
+    "ru": "По умолчанию использовать клиентскую сторону в консоли расширителя.\nНастройка предназначена для разработчиков.",
+    "zh-Hans": "扩展器控制台默认使用客户端。\n此设置供开发者使用。"
+  },
+  "Delete_BG3_s_ModCrashSanityCheck_folder_when_needed_so_it_ca_bd5c6165": {
+    "en": "Delete BG3's ModCrashSanityCheck folder when needed so it cannot silently deactivate installed mods.",
+    "fr": "Supprimer au besoin le dossier ModCrashSanityCheck de BG3 pour empêcher la désactivation silencieuse des mods installés.",
+    "es": "Eliminar la carpeta ModCrashSanityCheck de BG3 cuando sea necesario para evitar que desactive mods instalados sin avisar.",
+    "ru": "При необходимости удалять папку ModCrashSanityCheck BG3, чтобы предотвратить отключение установленных модов без уведомления.",
+    "zh-Hans": "必要时删除 BG3 的 ModCrashSanityCheck 文件夹，防止它在不提示的情况下停用已安装模组。"
+  },
+  "Delete_Selected_Mods_d93e7178": {
+    "en": "Delete Selected Mods...",
+    "fr": "Supprimer les mods sélectionnés…",
+    "es": "Eliminar mods seleccionados…",
+    "ru": "Удалить выбранные моды…",
+    "zh-Hans": "删除所选模组…"
+  },
+  "Devel_3f7f3baf": {
+    "en": "Devel",
+    "fr": "Développement",
+    "es": "Desarrollo",
+    "ru": "Разработка",
+    "zh-Hans": "开发版"
+  },
+  "Disable_automatic_updating_to_the_latest_extender_version_52bbd857": {
+    "en": "Disable automatic updating to the latest extender version",
+    "fr": "Désactiver la mise à jour automatique vers la dernière version de l’extender.",
+    "es": "Desactivar la actualización automática a la última versión del extender.",
+    "ru": "Отключить автоматическое обновление расширителя до последней версии.",
+    "zh-Hans": "禁用自动更新到扩展器最新版本。"
+  },
+  "Disable_Launcher_55c207f5": {
+    "en": "Disable Launcher",
+    "fr": "Désactiver le lanceur",
+    "es": "Desactivar lanzador",
+    "ru": "Отключить лаунчер",
+    "zh-Hans": "禁用启动器"
+  },
+  "Disable_launcher_mod_warnings_68835dfe": {
+    "en": "Disable launcher mod warnings",
+    "fr": "Désactiver les avertissements de mods du lanceur",
+    "es": "Desactivar avisos de mods del lanzador",
+    "ru": "Отключить предупреждения лаунчера о модах",
+    "zh-Hans": "禁用启动器模组警告"
+  },
+  "Disable_launcher_telemetry_ad97feae": {
+    "en": "Disable launcher telemetry",
+    "fr": "Désactiver la télémétrie du lanceur",
+    "es": "Desactivar telemetría del lanzador",
+    "ru": "Отключить телеметрию лаунчера",
+    "zh-Hans": "禁用启动器遥测"
+  },
+  "Disable_mod_and_data_mismatch_warnings_in_the_Larian_launche_3edc2be8": {
+    "en": "Disable mod and data-mismatch warnings in the Larian launcher.",
+    "fr": "Désactiver les avertissements de mods et d’incohérence des données du lanceur Larian.",
+    "es": "Desactivar avisos de mods y discrepancias de datos en el lanzador de Larian.",
+    "ru": "Отключить предупреждения о модах и несоответствии данных в лаунчере Larian.",
+    "zh-Hans": "禁用 Larian 启动器的模组和数据不匹配警告。"
+  },
+  "Disable_Story_Merge_86233ce2": {
+    "en": "Disable Story Merge",
+    "fr": "Désactiver la fusion de l’histoire",
+    "es": "Desactivar fusión de historia",
+    "ru": "Отключить объединение истории",
+    "zh-Hans": "禁用剧情脚本合并"
+  },
+  "Disable_Story_Patching_4ef479e5": {
+    "en": "Disable Story Patching",
+    "fr": "Désactiver la mise à jour de l’histoire",
+    "es": "Desactivar parcheado de historia",
+    "ru": "Отключить исправление истории",
+    "zh-Hans": "禁用剧情脚本修补"
+  },
+  "Disable_telemetry_options_in_the_Larian_launcher_Telemetry_i_c9de9a54": {
+    "en": "Disable telemetry options in the Larian launcher. Telemetry is already disabled when mods are active.",
+    "fr": "Désactiver les options de télémétrie du lanceur Larian. La télémétrie est déjà désactivée lorsque des mods sont actifs.",
+    "es": "Desactivar opciones de telemetría del lanzador de Larian. Ya están desactivadas cuando hay mods activos.",
+    "ru": "Отключить телеметрию лаунчера Larian. Она уже отключена при активных модах.",
+    "zh-Hans": "禁用 Larian 启动器遥测选项。启用模组时遥测已被禁用。"
+  },
+  "Disable_Updates_1e7bc889": {
+    "en": "Disable Updates",
+    "fr": "Désactiver les mises à jour",
+    "es": "Desactivar actualizaciones",
+    "ru": "Отключить обновления",
+    "zh-Hans": "禁用更新"
+  },
+  "Do_not_contact_Nexus_Mods_or_mod_io_Existing_links_and_API_k_f7485ec6": {
+    "en": "Do not contact Nexus Mods or mod.io. Existing links and API keys are kept for later.",
+    "fr": "Ne pas contacter Nexus Mods ni mod.io. Conserver les liens et clés API existants pour plus tard.",
+    "es": "No contactar con Nexus Mods ni mod.io. Se conservan los enlaces y claves API existentes.",
+    "ru": "Не обращаться к Nexus Mods и mod.io. Существующие ссылки и ключи API сохраняются.",
+    "zh-Hans": "不连接 Nexus Mods 或 mod.io。保留现有链接和 API 密钥以便以后使用。"
+  },
+  "Do_not_display_a_warning_when_the_selected_load_order_refere_8c0f295f": {
+    "en": "Do not display a warning when the selected load order references mods that are not installed.",
+    "fr": "Ne pas avertir lorsque l’ordre sélectionné référence des mods non installés.",
+    "es": "No avisar cuando el orden seleccionado incluye mods no instalados.",
+    "ru": "Не предупреждать о неустановленных модах в выбранном порядке загрузки.",
+    "zh-Hans": "所选加载顺序引用未安装模组时不显示警告。"
+  },
+  "Download_Manager_af695b45": {
+    "en": "Download Manager...",
+    "fr": "Gestionnaire de téléchargements…",
+    "es": "Gestor de descargas…",
+    "ru": "Менеджер загрузок…",
+    "zh-Hans": "下载管理器…"
+  },
+  "Dump_Network_Strings_375407ac": {
+    "en": "Dump Network Strings",
+    "fr": "Exporter les chaînes réseau",
+    "es": "Volcar cadenas de red",
+    "ru": "Выгружать сетевые строки",
+    "zh-Hans": "转储网络字符串"
+  },
+  "Dumps_the_NetworkFixedString_table_to_LogDirectory_Mainly_us_e3faae40": {
+    "en": "Dumps the NetworkFixedString table to LogDirectory\nMainly useful for debugging desync issues",
+    "fr": "Exporter la table NetworkFixedString dans LogDirectory.\nPrincipalement utile pour diagnostiquer les problèmes de désynchronisation.",
+    "es": "Volcar la tabla NetworkFixedString en LogDirectory.\nÚtil sobre todo para depurar desincronizaciones.",
+    "ru": "Выгружать таблицу NetworkFixedString в LogDirectory.\nВ основном полезно для отладки рассинхронизации.",
+    "zh-Hans": "将 NetworkFixedString 表转储到 LogDirectory。\n主要用于调试不同步问题。"
+  },
+  "Enable_achievements_81cb9bea": {
+    "en": "Enable achievements",
+    "fr": "Activer les succès",
+    "es": "Activar logros",
+    "ru": "Включить достижения",
+    "zh-Hans": "启用成就"
+  },
+  "Enable_debug_mode_in_the_extender_updater_which_prints_more__5e5b57fa": {
+    "en": "Enable debug mode in the extender updater, which prints more messages to the console window",
+    "fr": "Activer le débogage dans le programme de mise à jour de l’extender pour afficher davantage de messages dans la console.",
+    "es": "Activar la depuración del actualizador del extender para mostrar más mensajes en la consola.",
+    "ru": "Включить отладку обновлятора расширителя для вывода дополнительных сообщений в консоль.",
+    "zh-Hans": "启用扩展器更新程序的调试模式，在控制台显示更多消息。"
+  },
+  "Enable_developer_mode_71b6ead3": {
+    "en": "Enable developer mode",
+    "fr": "Activer le mode développeur",
+    "es": "Activar modo de desarrollador",
+    "ru": "Включить режим разработчика",
+    "zh-Hans": "启用开发者模式"
+  },
+  "Enable_Extensions_e40bded6": {
+    "en": "Enable Extensions",
+    "fr": "Activer les extensions",
+    "es": "Activar extensiones",
+    "ru": "Включить расширения",
+    "zh-Hans": "启用扩展"
+  },
+  "Enable_Load_Order_Advisor_d338ba92": {
+    "en": "Enable Load Order Advisor",
+    "fr": "Activer le conseiller d’ordre de chargement",
+    "es": "Activar asesor del orden de carga",
+    "ru": "Включить помощник порядка загрузки",
+    "zh-Hans": "启用加载顺序建议"
+  },
+  "Enable_Lua_Debugger_afcc7309": {
+    "en": "Enable Lua Debugger",
+    "fr": "Activer le débogueur Lua",
+    "es": "Activar depurador Lua",
+    "ru": "Включить отладчик Lua",
+    "zh-Hans": "启用 Lua 调试器"
+  },
+  "Enable_Osiris_Debugger_527a2637": {
+    "en": "Enable Osiris Debugger",
+    "fr": "Activer le débogueur Osiris",
+    "es": "Activar depurador Osiris",
+    "ru": "Включить отладчик Osiris",
+    "zh-Hans": "启用 Osiris 调试器"
+  },
+  "Enable_Script_Extender_debugging_features_Mods_can_also_dete_d24b5692": {
+    "en": "Enable Script Extender debugging features. Mods can also detect this setting and produce additional diagnostic output.",
+    "fr": "Activer le débogage de Script Extender. Les mods peuvent détecter ce réglage et produire des diagnostics supplémentaires.",
+    "es": "Activar funciones de depuración de Script Extender. Los mods también pueden detectar este ajuste y generar diagnósticos adicionales.",
+    "ru": "Включить функции отладки Script Extender. Моды могут определять эту настройку и выводить дополнительные диагностические данные.",
+    "zh-Hans": "启用 Script Extender 调试功能。模组也可能检测此设置并输出更多诊断信息。"
+  },
+  "Enable_story_logging_78c40f50": {
+    "en": "Enable story logging",
+    "fr": "Activer le journal de l’histoire",
+    "es": "Activar registro de historia",
+    "ru": "Включить журнал истории",
+    "zh-Hans": "启用剧情日志"
+  },
+  "Enable_the_log_for_the_mod_manager_0bd6e5ce": {
+    "en": "Enable the log for the mod manager",
+    "fr": "Activer le journal du gestionnaire de mods.",
+    "es": "Activar el registro del gestor de mods.",
+    "ru": "Включить журнал менеджера модов.",
+    "zh-Hans": "启用模组管理器日志。"
+  },
+  "Enable_the_Osiris_story_log_osiris_log_when_launching_the_ga_34193b3c": {
+    "en": "Enable the Osiris story log (osiris.log) when launching the game.",
+    "fr": "Activer le journal d’histoire Osiris (osiris.log) au lancement du jeu.",
+    "es": "Activar el registro de historia de Osiris (osiris.log) al iniciar el juego.",
+    "ru": "Включать журнал истории Osiris (osiris.log) при запуске игры.",
+    "zh-Hans": "启动游戏时启用 Osiris 剧情日志（osiris.log）。"
+  },
+  "Enables_or_disables_extender_API_functionality_56bdd194": {
+    "en": "Enables or disables extender API functionality",
+    "fr": "Activer ou désactiver les fonctions de l’API de l’extender.",
+    "es": "Activar o desactivar las funciones de la API del extender.",
+    "ru": "Включить или отключить функции API расширителя.",
+    "zh-Hans": "启用或禁用扩展器 API 功能。"
+  },
+  "Enables_the_Lua_debugger_interface_vscode_extension_9f328d0f": {
+    "en": "Enables the Lua debugger interface (vscode extension)",
+    "fr": "Activer l’interface du débogueur Lua (extension VS Code).",
+    "es": "Activar la interfaz del depurador Lua (extensión de VS Code).",
+    "ru": "Включить интерфейс отладчика Lua (расширение VS Code).",
+    "zh-Hans": "启用 Lua 调试器接口（VS Code 扩展）。"
+  },
+  "Enables_the_Osiris_debugger_interface_vscode_extension_df12c4a7": {
+    "en": "Enables the Osiris debugger interface (vscode extension)",
+    "fr": "Activer l’interface du débogueur Osiris (extension VS Code).",
+    "es": "Activar la interfaz del depurador Osiris (extensión de VS Code).",
+    "ru": "Включить интерфейс отладчика Osiris (расширение VS Code).",
+    "zh-Hans": "启用 Osiris 调试器接口（VS Code 扩展）。"
+  },
+  "Expand_or_Collapse_All_Active_Separators_ac299f83": {
+    "en": "Expand or Collapse All Active Separators",
+    "fr": "Développer ou réduire tous les séparateurs actifs",
+    "es": "Expandir o contraer todos los separadores activos",
+    "ru": "Развернуть или свернуть все активные разделители",
+    "zh-Hans": "展开或折叠所有启用分隔符"
+  },
+  "Export_settings_with_default_values_bd99a96d": {
+    "en": "Export settings with default values",
+    "fr": "Exporter les réglages avec les valeurs par défaut",
+    "es": "Exportar ajustes con valores predeterminados",
+    "ru": "Экспортировать настройки со значениями по умолчанию",
+    "zh-Hans": "导出包含默认值的设置"
+  },
+  "Extract_Active_Adventure_Mod_to_4cc8224b": {
+    "en": "Extract Active Adventure Mod to...",
+    "fr": "Extraire le mod d’aventure actif vers…",
+    "es": "Extraer mod de aventura activo en…",
+    "ru": "Извлечь активный мод приключения в…",
+    "zh-Hans": "将当前冒险模组解压到…"
+  },
+  "Extract_Selected_Mods_to_c1cd53db": {
+    "en": "Extract Selected Mods to...",
+    "fr": "Extraire les mods sélectionnés vers…",
+    "es": "Extraer mods seleccionados en…",
+    "ru": "Извлечь выбранные моды в…",
+    "zh-Hans": "将所选模组解压到…"
+  },
+  "File_path_protocol_or_shell_command_to_run_when_the_launch_m_b570f005": {
+    "en": "File path, protocol, or shell command to run when the launch method is Custom.",
+    "fr": "Chemin de fichier, protocole ou commande à exécuter avec la méthode de lancement personnalisée.",
+    "es": "Ruta, protocolo o comando que ejecutar con el método de inicio personalizado.",
+    "ru": "Путь к файлу, протокол или команда для пользовательского способа запуска.",
+    "zh-Hans": "自定义启动方式要运行的文件路径、协议或命令。"
+  },
+  "Focus_Active_Mods_List_db0de3e8": {
+    "en": "Focus Active Mods List",
+    "fr": "Activer la liste des mods actifs",
+    "es": "Enfocar lista de mods activos",
+    "ru": "Перейти к списку активных модов",
+    "zh-Hans": "聚焦已启用模组列表"
+  },
+  "Focus_Current_Mod_List_Filter_4e899931": {
+    "en": "Focus Current Mod-List Filter",
+    "fr": "Activer le filtre de la liste courante",
+    "es": "Enfocar filtro de la lista actual",
+    "ru": "Перейти к фильтру текущего списка",
+    "zh-Hans": "聚焦当前模组列表筛选框"
+  },
+  "Focus_Inactive_Mods_List_47559703": {
+    "en": "Focus Inactive Mods List",
+    "fr": "Activer la liste des mods inactifs",
+    "es": "Enfocar lista de mods inactivos",
+    "ru": "Перейти к списку неактивных модов",
+    "zh-Hans": "聚焦未启用模组列表"
+  },
+  "Folder_where_Script_Extender_and_Osiris_logs_are_written_Def_f4b042e8": {
+    "en": "Folder where Script Extender and Osiris logs are written. Default: Documents\\OsirisLogs.",
+    "fr": "Dossier des journaux Script Extender et Osiris. Par défaut : Documents\\OsirisLogs.",
+    "es": "Carpeta de registros de Script Extender y Osiris. Por defecto: Documents\\OsirisLogs.",
+    "ru": "Папка журналов Script Extender и Osiris. По умолчанию: Documents\\OsirisLogs.",
+    "zh-Hans": "Script Extender 和 Osiris 日志的存放文件夹。默认：Documents\\OsirisLogs。"
+  },
+  "Github_1720d8ea": {
+    "en": "Github",
+    "fr": "GitHub",
+    "es": "GitHub",
+    "ru": "GitHub",
+    "zh-Hans": "GitHub"
+  },
+  "Go_6cc8519b": {
+    "en": "Go",
+    "fr": "Aller",
+    "es": "Ir",
+    "ru": "Перейти",
+    "zh-Hans": "前往"
+  },
+  "Hide_categories_with_no_matching_installed_mods_from_the_Cat_26f57c9f": {
+    "en": "Hide categories with no matching installed mods from the Categories sidebar.",
+    "fr": "Masquer dans la barre latérale les catégories sans mod installé correspondant.",
+    "es": "Ocultar en la barra lateral las categorías sin mods instalados coincidentes.",
+    "ru": "Скрывать на боковой панели категории без подходящих установленных модов.",
+    "zh-Hans": "在分类侧边栏隐藏没有匹配已安装模组的分类。"
+  },
+  "Hide_empty_categories_f59f5150": {
+    "en": "Hide empty categories",
+    "fr": "Masquer les catégories vides",
+    "es": "Ocultar categorías vacías",
+    "ru": "Скрывать пустые категории",
+    "zh-Hans": "隐藏空分类"
+  },
+  "Hide_the_main_command_toolbar_Restore_it_with_Ctrl_Shift_B_o_0e563322": {
+    "en": "Hide the main command toolbar. Restore it with Ctrl+Shift+B or the Toolbar menu.",
+    "fr": "Masquer la barre de commandes principale. La rétablir avec Ctrl+Maj+B ou le menu Barre d’outils.",
+    "es": "Ocultar la barra principal. Restaurarla con Ctrl+Mayús+B o el menú Barra de herramientas.",
+    "ru": "Скрыть главную панель команд. Вернуть её можно через Ctrl+Shift+B или меню панели инструментов.",
+    "zh-Hans": "隐藏主工具栏。可使用 Ctrl+Shift+B 或工具栏菜单恢复。"
+  },
+  "Hide_toolbar_435b5107": {
+    "en": "Hide toolbar",
+    "fr": "Masquer la barre d’outils",
+    "es": "Ocultar barra de herramientas",
+    "ru": "Скрыть панель инструментов",
+    "zh-Hans": "隐藏工具栏"
+  },
+  "Import_a_bg3redux_modlist_with_optional_categories_separator_7c44a83f": {
+    "en": "Import a .bg3redux modlist with optional categories, separators, icons, and notes.",
+    "fr": "Importer une liste .bg3redux avec, au choix, catégories, séparateurs, icônes et notes.",
+    "es": "Importar una lista .bg3redux con categorías, separadores, iconos y notas opcionales.",
+    "ru": "Импортировать список .bg3redux с необязательными категориями, разделителями, значками и заметками.",
+    "zh-Hans": "导入 .bg3redux 模组列表，可包含分类、分隔符、图标和备注。"
+  },
+  "Include_every_setting_when_writing_ScriptExtenderSettings_js_04a9736f": {
+    "en": "Include every setting when writing ScriptExtenderSettings.json, even when its value matches the extender default.",
+    "fr": "Inclure tous les réglages lors de l’écriture de ScriptExtenderSettings.json, même ceux correspondant aux valeurs par défaut.",
+    "es": "Incluir todos los ajustes al escribir ScriptExtenderSettings.json, aunque coincidan con los valores predeterminados.",
+    "ru": "Включать все настройки в ScriptExtenderSettings.json, даже совпадающие со значениями по умолчанию.",
+    "zh-Hans": "写入 ScriptExtenderSettings.json 时包含所有设置，即使其值与扩展器默认值相同。"
+  },
+  "Inspect_Active_File_Overlaps_ca3da3a3": {
+    "en": "Inspect Active File Overlaps...",
+    "fr": "Inspecter les fichiers actifs partagés…",
+    "es": "Inspeccionar archivos activos compartidos…",
+    "ru": "Проверить пересечения активных файлов…",
+    "zh-Hans": "检查启用文件重叠…"
+  },
+  "Inspect_and_install_local_packages_or_files_received_through_ada076d9": {
+    "en": "Inspect and install local packages or files received through Nexus Mod Manager Download links.",
+    "fr": "Inspecter et installer des paquets locaux ou reçus via les liens de téléchargement Nexus Mod Manager.",
+    "es": "Inspeccionar e instalar paquetes locales o recibidos mediante enlaces de descarga de Nexus Mod Manager.",
+    "ru": "Проверять и устанавливать локальные пакеты или файлы, полученные через ссылки загрузки Nexus Mod Manager.",
+    "zh-Hans": "检查并安装本地包或通过 Nexus 模组管理器下载链接接收的文件。"
+  },
+  "Install_a_mod_from_a_supported_package_or_archive_33b5d51b": {
+    "en": "Install a mod from a supported package or archive.",
+    "fr": "Installer un mod depuis un paquet ou une archive pris en charge.",
+    "es": "Instalar un mod desde un paquete o archivo compatible.",
+    "ru": "Установить мод из поддерживаемого пакета или архива.",
+    "zh-Hans": "从支持的包或归档安装模组。"
+  },
+  "Install_review_and_safely_remove_supported_native_or_root_le_405a1db5": {
+    "en": "Install, review, and safely remove supported native or root-level BG3 mods outside the PAK load order.",
+    "fr": "Installer, examiner et supprimer en sécurité les mods BG3 natifs ou racine pris en charge, en dehors de l’ordre des PAK.",
+    "es": "Instalar, revisar y eliminar de forma segura mods nativos o de raíz de BG3 compatibles, fuera del orden de carga PAK.",
+    "ru": "Устанавливать, проверять и безопасно удалять поддерживаемые нативные и корневые моды BG3 вне порядка загрузки PAK.",
+    "zh-Hans": "安装、检查和安全删除支持的 BG3 原生模组或根目录模组，它们不属于 PAK 加载顺序。"
+  },
+  "Internal_Logging_c494745f": {
+    "en": "Internal Logging",
+    "fr": "Journalisation interne",
+    "es": "Registro interno",
+    "ru": "Внутренний журнал",
+    "zh-Hans": "内部日志"
+  },
+  "IPv4Only_57eed1ef": {
+    "en": "IPv4Only",
+    "fr": "IPv4 uniquement",
+    "es": "Solo IPv4",
+    "ru": "Только IPv4",
+    "zh-Hans": "仅使用 IPv4"
+  },
+  "Keep_a_deduplicated_copy_of_successfully_installed_packages__e42073c8": {
+    "en": "Keep a deduplicated copy of successfully installed packages for later reinstall. Disabled by default and may use significant disk space.",
+    "fr": "Conserver une copie dédupliquée des paquets installés pour les réinstaller plus tard. Désactivé par défaut ; peut occuper beaucoup d’espace.",
+    "es": "Conservar una copia sin duplicados de los paquetes instalados para reinstalarlos después. Desactivado por defecto; puede ocupar mucho espacio.",
+    "ru": "Сохранять копии установленных пакетов без дубликатов для последующей переустановки. По умолчанию отключено; может занимать много места.",
+    "zh-Hans": "保留成功安装包的去重副本，以便以后重新安装。默认关闭，可能占用大量磁盘空间。"
+  },
+  "Keep_previous_mod_versions_cee4827a": {
+    "en": "Keep previous mod versions",
+    "fr": "Conserver les versions précédentes des mods",
+    "es": "Conservar versiones anteriores de mods",
+    "ru": "Хранить предыдущие версии модов",
+    "zh-Hans": "保留模组旧版本"
+  },
+  "Keep_recovery_copies_after_successful_replacements_When_disa_0490e0f8": {
+    "en": "Keep recovery copies after successful replacements. When disabled, backups are removed after the next successful replacement. Existing backups can also be reviewed in Download Manager.",
+    "fr": "Conserver les copies de récupération après les remplacements réussis. Si désactivé, elles sont supprimées après le prochain remplacement réussi. Les copies existantes sont consultables dans le gestionnaire de téléchargements.",
+    "es": "Conservar copias de recuperación tras reemplazos correctos. Si se desactiva, se eliminan tras el siguiente reemplazo correcto. Las copias existentes se pueden revisar en el gestor de descargas.",
+    "ru": "Хранить копии для восстановления после успешной замены. При отключении они удаляются после следующей успешной замены. Существующие копии доступны в менеджере загрузок.",
+    "zh-Hans": "成功替换后保留恢复副本。关闭后，会在下一次成功替换后删除备份。现有备份也可在下载管理器中查看。"
+  },
+  "Keybindings_f6c42866": {
+    "en": "Keybindings",
+    "fr": "Raccourcis clavier",
+    "es": "Atajos de teclado",
+    "ru": "Сочетания клавиш",
+    "zh-Hans": "快捷键"
+  },
+  "Launch_Baldur_s_Gate_3_using_the_configured_launch_method_7bc7c1d8": {
+    "en": "Launch Baldur's Gate 3 using the configured launch method.",
+    "fr": "Lancer Baldur’s Gate 3 avec la méthode configurée.",
+    "es": "Iniciar Baldur’s Gate 3 con el método configurado.",
+    "ru": "Запустить Baldur’s Gate 3 выбранным способом.",
+    "zh-Hans": "使用已配置的方式启动 Baldur’s Gate 3。"
+  },
+  "Launch_bg3_dx11_exe_instead_of_the_default_Vulkan_executable_d212c573": {
+    "en": "Launch bg3_dx11.exe instead of the default Vulkan executable.",
+    "fr": "Lancer bg3_dx11.exe au lieu de l’exécutable Vulkan par défaut.",
+    "es": "Iniciar bg3_dx11.exe en lugar del ejecutable Vulkan predeterminado.",
+    "ru": "Запускать bg3_dx11.exe вместо стандартного исполняемого файла Vulkan.",
+    "zh-Hans": "启动 bg3_dx11.exe，而不是默认的 Vulkan 可执行文件。"
+  },
+  "Legacy_category_selection_colors_0167cebd": {
+    "en": "Legacy category selection colors",
+    "fr": "Anciennes couleurs de sélection des catégories",
+    "es": "Colores de selección de categorías heredados",
+    "ru": "Прежние цвета выбора категорий",
+    "zh-Hans": "旧版分类选中颜色"
+  },
+  "Legacy_preference_Downloads_no_longer_require_a_routine_conf_361cac0e": {
+    "en": "Legacy preference. Downloads no longer require a routine confirmation.",
+    "fr": "Ancien réglage. Les téléchargements ne nécessitent plus de confirmation systématique.",
+    "es": "Ajuste heredado. Las descargas ya no requieren confirmación rutinaria.",
+    "ru": "Устаревшая настройка. Обычные загрузки больше не требуют подтверждения.",
+    "zh-Hans": "旧版设置。下载不再需要例行确认。"
+  },
+  "Legacy_preference_Updates_replacements_and_packages_with_war_fa05ccee": {
+    "en": "Legacy preference. Updates, replacements, and packages with warnings are always reviewed.",
+    "fr": "Ancien réglage. Les mises à jour, remplacements et paquets avec avertissements sont toujours examinés.",
+    "es": "Ajuste heredado. Las actualizaciones, reemplazos y paquetes con advertencias siempre se revisan.",
+    "ru": "Устаревшая настройка. Обновления, замены и пакеты с предупреждениями всегда проверяются.",
+    "zh-Hans": "旧版设置。更新、替换和带警告的包始终需要审核。"
+  },
+  "Legacy_source_icons_only_ecc23a5e": {
+    "en": "Legacy source icons only",
+    "fr": "Anciennes icônes de source uniquement",
+    "es": "Solo iconos de origen heredados",
+    "ru": "Только прежние значки источников",
+    "zh-Hans": "仅使用旧版来源图标"
+  },
+  "Load_Order_History_ba8324ac": {
+    "en": "Load Order History...",
+    "fr": "Historique des ordres de chargement…",
+    "es": "Historial del orden de carga…",
+    "ru": "История порядка загрузки…",
+    "zh-Hans": "加载顺序历史…"
+  },
+  "Log_console_and_script_output_e3d3af25": {
+    "en": "Log console and script output",
+    "fr": "Journaliser la console et les scripts",
+    "es": "Registrar salida de consola y scripts",
+    "ru": "Записывать вывод консоли и скриптов",
+    "zh-Hans": "记录控制台和脚本输出"
+  },
+  "Log_Osiris_activity_3881703e": {
+    "en": "Log Osiris activity",
+    "fr": "Journaliser l’activité Osiris",
+    "es": "Registrar actividad de Osiris",
+    "ru": "Записывать действия Osiris",
+    "zh-Hans": "记录 Osiris 活动"
+  },
+  "Log_Osiris_rule_evaluation_queries_and_related_activity_ccdc35f7": {
+    "en": "Log Osiris rule evaluation, queries, and related activity.",
+    "fr": "Journaliser l’évaluation des règles Osiris, les requêtes et les activités associées.",
+    "es": "Registrar evaluación de reglas de Osiris, consultas y actividad relacionada.",
+    "ru": "Записывать вычисление правил Osiris, запросы и связанные действия.",
+    "zh-Hans": "记录 Osiris 规则求值、查询及相关活动。"
+  },
+  "Log_output_folder_be2d81c9": {
+    "en": "Log output folder",
+    "fr": "Dossier des journaux",
+    "es": "Carpeta de registros",
+    "ru": "Папка журналов",
+    "zh-Hans": "日志输出文件夹"
+  },
+  "Log_story_compilation_780cfc34": {
+    "en": "Log story compilation",
+    "fr": "Journaliser la compilation de l’histoire",
+    "es": "Registrar compilación de historia",
+    "ru": "Записывать компиляцию истории",
+    "zh-Hans": "记录剧情编译"
+  },
+  "Log_story_compilation_errors_2a0f1a02": {
+    "en": "Log story compilation errors",
+    "fr": "Journaliser les erreurs de compilation",
+    "es": "Registrar errores de compilación de historia",
+    "ru": "Записывать ошибки компиляции истории",
+    "zh-Hans": "记录剧情编译错误"
+  },
+  "Lua_Builtin_Directory_8c2a3f88": {
+    "en": "Lua Builtin Directory",
+    "fr": "Dossier des scripts Lua intégrés",
+    "es": "Carpeta de scripts Lua integrados",
+    "ru": "Папка встроенных скриптов Lua",
+    "zh-Hans": "Lua 内置脚本目录"
+  },
+  "Manage_Script_Extender_40187d7b": {
+    "en": "Manage Script Extender...",
+    "fr": "Gérer Script Extender…",
+    "es": "Gestionar Script Extender…",
+    "ru": "Управление Script Extender…",
+    "zh-Hans": "管理 Script Extender…"
+  },
+  "Manifest_Name_1d83b6e8": {
+    "en": "Manifest Name",
+    "fr": "Nom du manifeste",
+    "es": "Nombre del manifiesto",
+    "ru": "Имя манифеста",
+    "zh-Hans": "清单名称"
+  },
+  "Manifest_URL_b2e2812a": {
+    "en": "Manifest URL",
+    "fr": "URL du manifeste",
+    "es": "URL del manifiesto",
+    "ru": "URL манифеста",
+    "zh-Hans": "清单 URL"
+  },
+  "Maximum_disk_space_for_retained_install_packages_Redux_prune_101f96ae": {
+    "en": "Maximum disk space for retained install packages. Redux prunes the least recently used packages when this limit is reached.",
+    "fr": "Espace maximal des paquets conservés. Redux supprime les paquets utilisés le moins récemment lorsque cette limite est atteinte.",
+    "es": "Espacio máximo para paquetes conservados. Redux elimina los usados hace más tiempo al alcanzar este límite.",
+    "ru": "Максимальное место для сохранённых установочных пакетов. При достижении лимита Redux удаляет пакеты, которые дольше всего не использовались.",
+    "zh-Hans": "保留的安装包可占用的最大磁盘空间。达到限制时，Redux 会优先清理最久未使用的包。"
+  },
+  "Maximum_simultaneous_Nexus_file_transfers_from_1_through_6_5594a614": {
+    "en": "Maximum simultaneous Nexus file transfers, from 1 through 6.",
+    "fr": "Nombre maximal de transferts Nexus simultanés, de 1 à 6.",
+    "es": "Máximo de transferencias simultáneas de Nexus, de 1 a 6.",
+    "ru": "Максимум одновременных загрузок файлов Nexus: от 1 до 6.",
+    "zh-Hans": "同时传输的 Nexus 文件数量上限，范围为 1–6。"
+  },
+  "Mod_diagnostics_3f9d71cb": {
+    "en": "Mod diagnostics",
+    "fr": "Diagnostic des mods",
+    "es": "Diagnóstico de mods",
+    "ru": "Диагностика модов",
+    "zh-Hans": "模组诊断"
+  },
+  "Mod_Manager_Settings_a8616553": {
+    "en": "Mod Manager Settings",
+    "fr": "Réglages du gestionnaire de mods",
+    "es": "Ajustes del gestor de mods",
+    "ru": "Настройки менеджера модов",
+    "zh-Hans": "模组管理器设置"
+  },
+  "mod_io_8431c64c": {
+    "en": "mod.io",
+    "fr": "mod.io",
+    "es": "mod.io",
+    "ru": "mod.io",
+    "zh-Hans": "mod.io"
+  },
+  "Move_focus_when_transferring_mods_95813af5": {
+    "en": "Move focus when transferring mods",
+    "fr": "Déplacer le focus lors du transfert des mods",
+    "es": "Mover el foco al transferir mods",
+    "ru": "Переносить фокус при перемещении модов",
+    "zh-Hans": "移动模组时转移焦点"
+  },
+  "Move_Selected_Mods_to_Other_List_76486f31": {
+    "en": "Move Selected Mods to Other List",
+    "fr": "Déplacer les mods sélectionnés vers l’autre liste",
+    "es": "Mover mods seleccionados a la otra lista",
+    "ru": "Переместить выбранные моды в другой список",
+    "zh-Hans": "将所选模组移到另一列表"
+  },
+  "Move_to_Bottom_of_Active_List_c7dd9717": {
+    "en": "Move to Bottom of Active List",
+    "fr": "Déplacer à la fin de la liste active",
+    "es": "Mover al final de la lista activa",
+    "ru": "Переместить в конец активного списка",
+    "zh-Hans": "移到启用列表底部"
+  },
+  "Move_to_Top_of_Active_List_e766386d": {
+    "en": "Move to Top of Active List",
+    "fr": "Déplacer au début de la liste active",
+    "es": "Mover al inicio de la lista activa",
+    "ru": "Переместить в начало активного списка",
+    "zh-Hans": "移到启用列表顶部"
+  },
+  "Nexus_link_registration_owner_69dd2604": {
+    "en": "Nexus link registration owner",
+    "fr": "Propriétaire de l’enregistrement des liens Nexus",
+    "es": "Propietario del registro de enlaces Nexus",
+    "ru": "Владелец регистрации ссылок Nexus",
+    "zh-Hans": "Nexus 链接注册所有者"
+  },
+  "Nexus_Mods_e15b0298": {
+    "en": "Nexus Mods",
+    "fr": "Nexus Mods",
+    "es": "Nexus Mods",
+    "ru": "Nexus Mods",
+    "zh-Hans": "Nexus Mods"
+  },
+  "Nightly_ab6b5a4d": {
+    "en": "Nightly",
+    "fr": "Version nocturne",
+    "es": "Versión nocturna",
+    "ru": "Ночная сборка",
+    "zh-Hans": "每日构建版"
+  },
+  "None_dc937b59": {
+    "en": "None",
+    "fr": "Aucun",
+    "es": "Ninguno",
+    "ru": "Нет",
+    "zh-Hans": "无"
+  },
+  "Open_a_console_window_that_displays_Script_Extender_diagnost_30e9a6eb": {
+    "en": "Open a console window that displays Script Extender diagnostic output while the game runs.",
+    "fr": "Ouvrir une console affichant les diagnostics Script Extender pendant le jeu.",
+    "es": "Abrir una consola con diagnósticos de Script Extender mientras se ejecuta el juego.",
+    "ru": "Открывать консоль с диагностикой Script Extender во время игры.",
+    "zh-Hans": "游戏运行时打开控制台，显示 Script Extender 诊断输出。"
+  },
+  "Open_extender_console_8132ba54": {
+    "en": "Open extender console",
+    "fr": "Ouvrir la console de l’extender",
+    "es": "Abrir consola del extender",
+    "ru": "Открывать консоль расширителя",
+    "zh-Hans": "打开扩展器控制台"
+  },
+  "Open_Preferences_directly_to_theme_typography_and_interface__d896e28b": {
+    "en": "Open Preferences directly to theme, typography, and interface appearance settings.",
+    "fr": "Ouvrir directement les réglages de thème, police et apparence dans Préférences.",
+    "es": "Abrir Preferencias directamente en los ajustes de tema, fuente y apariencia.",
+    "ru": "Открыть настройки сразу на разделе темы, шрифтов и оформления.",
+    "zh-Hans": "直接打开偏好设置中的主题、字体和界面外观设置。"
+  },
+  "Open_Preferences_to_create_snapshots_browse_saved_versions_o_5a95860d": {
+    "en": "Open Preferences to create snapshots, browse saved versions, or restore a backup.",
+    "fr": "Ouvrir Préférences pour créer des instantanés, parcourir les versions ou restaurer une sauvegarde.",
+    "es": "Abrir Preferencias para crear instantáneas, explorar versiones o restaurar una copia.",
+    "ru": "Открыть настройки для создания снимков, просмотра версий или восстановления резервной копии.",
+    "zh-Hans": "打开偏好设置以创建快照、浏览已保存版本或恢复备份。"
+  },
+  "Open_Redux_on_GitHub_e3d1a9fe": {
+    "en": "Open Redux on GitHub...",
+    "fr": "Ouvrir Redux sur GitHub…",
+    "es": "Abrir Redux en GitHub…",
+    "ru": "Открыть Redux на GitHub…",
+    "zh-Hans": "在 GitHub 打开 Redux…"
+  },
+  "Open_release_notes_after_Redux_updates_Turn_this_off_to_skip_d824e046": {
+    "en": "Open release notes after Redux updates. Turn this off to skip future popups.",
+    "fr": "Ouvrir les notes après une mise à jour de Redux. Désactiver pour ne plus afficher ces fenêtres.",
+    "es": "Abrir notas tras actualizar Redux. Desactívalo para omitir futuras ventanas emergentes.",
+    "ru": "Открывать список изменений после обновления Redux. Отключите, чтобы больше не показывать эти окна.",
+    "zh-Hans": "Redux 更新后打开更新说明。关闭后不再弹出。"
+  },
+  "Open_Script_Extender_in_the_Game_directory_Mod_Manager_04908703": {
+    "en": "Open Script Extender in the Game-directory Mod Manager.",
+    "fr": "Ouvrir Script Extender dans le gestionnaire des mods du dossier du jeu.",
+    "es": "Abrir Script Extender en el gestor de mods del directorio del juego.",
+    "ru": "Открыть Script Extender в менеджере модов папки игры.",
+    "zh-Hans": "在游戏目录模组管理器中打开 Script Extender。"
+  },
+  "Open_Script_Extender_Logs_Folder_6583a524": {
+    "en": "Open Script Extender Logs Folder",
+    "fr": "Ouvrir le dossier des journaux Script Extender",
+    "es": "Abrir carpeta de registros de Script Extender",
+    "ru": "Открыть папку журналов Script Extender",
+    "zh-Hans": "打开 Script Extender 日志文件夹"
+  },
+  "Open_the_configured_Baldur_s_Gate_3_Mods_folder_0a44b00b": {
+    "en": "Open the configured Baldur's Gate 3 Mods folder.",
+    "fr": "Ouvrir le dossier Mods configuré pour Baldur’s Gate 3.",
+    "es": "Abrir la carpeta Mods configurada de Baldur’s Gate 3.",
+    "ru": "Открыть настроенную папку Mods Baldur’s Gate 3.",
+    "zh-Hans": "打开已配置的 Baldur’s Gate 3 Mods 文件夹。"
+  },
+  "Open_the_folder_containing_Script_Extender_logs_82a7f630": {
+    "en": "Open the folder containing Script Extender logs.",
+    "fr": "Ouvrir le dossier contenant les journaux Script Extender.",
+    "es": "Abrir la carpeta de registros de Script Extender.",
+    "ru": "Открыть папку с журналами Script Extender.",
+    "zh-Hans": "打开存放 Script Extender 日志的文件夹。"
+  },
+  "Open_the_game_by_opening_a_different_file_or_protocol_ex_a_b_c8574a1e": {
+    "en": "Open the game by opening a different file or protocol (ex. a batch file or protocol handler like playnite://playnite/start/id)",
+    "fr": "Lancer le jeu via un autre fichier ou protocole, par exemple un fichier batch ou playnite://playnite/start/id.",
+    "es": "Iniciar el juego mediante otro archivo o protocolo, como un archivo por lotes o playnite://playnite/start/id.",
+    "ru": "Запускать игру через другой файл или протокол, например пакетный файл или playnite://playnite/start/id.",
+    "zh-Hans": "通过其他文件或协议启动游戏，例如批处理文件或 playnite://playnite/start/id。"
+  },
+  "Open_the_game_by_running_the_Steam_launch_protocol_steam_run_b27562d2": {
+    "en": "Open the game by running the Steam launch protocol ('steam://run/1086940')",
+    "fr": "Lancer le jeu avec le protocole Steam (« steam://run/1086940 »).",
+    "es": "Iniciar el juego con el protocolo Steam («steam://run/1086940»).",
+    "ru": "Запускать игру через протокол Steam («steam://run/1086940»).",
+    "zh-Hans": "通过 Steam 启动协议（steam://run/1086940）打开游戏。"
+  },
+  "Open_the_game_exe_directly_and_create_a_steam_appid_txt_in_t_29b3ed5c": {
+    "en": "Open the game exe directly,\nand create a steam_appid.txt in the bin folder if it doesn't exist,\nallowing you to bypassing the launcher",
+    "fr": "Lancer directement l’exécutable du jeu\net créer steam_appid.txt dans le dossier bin s’il est absent,\npour contourner le lanceur.",
+    "es": "Abrir el ejecutable del juego directamente\ny crear steam_appid.txt en la carpeta bin si no existe,\npara omitir el lanzador.",
+    "ru": "Запускать исполняемый файл игры напрямую\nи создавать steam_appid.txt в папке bin, если его нет,\nчтобы обходить лаунчер.",
+    "zh-Hans": "直接打开游戏可执行文件，\n并在 bin 文件夹中创建 steam_appid.txt（若不存在），\n以跳过启动器。"
+  },
+  "Open_the_selected_player_profile_s_save_games_folder_472d054c": {
+    "en": "Open the selected player profile’s save games folder.",
+    "fr": "Ouvrir le dossier des sauvegardes du profil sélectionné.",
+    "es": "Abrir la carpeta de partidas del perfil seleccionado.",
+    "ru": "Открыть папку сохранений выбранного профиля игрока.",
+    "zh-Hans": "打开所选玩家配置文件的游戏存档文件夹。"
+  },
+  "Open_Version_Generator_39038880": {
+    "en": "Open Version Generator",
+    "fr": "Ouvrir le générateur de versions",
+    "es": "Abrir generador de versiones",
+    "ru": "Открыть генератор версий",
+    "zh-Hans": "打开版本号生成器"
+  },
+  "Optional_absolute_folder_containing_the_installed_BG3ScriptE_b31b59c0": {
+    "en": "Optional absolute folder containing the installed BG3ScriptExtender.dll or its version subfolders. Leave empty to use the updater's CachePath or the BG3 profile's default cache. This only changes Redux's detection; it does not move or reconfigure Script Extender. Use a Windows path visible to Redux, including under Wine, then refresh.",
+    "fr": "Dossier absolu facultatif contenant BG3ScriptExtender.dll ou ses sous-dossiers de versions. Laisser vide pour utiliser CachePath du programme de mise à jour ou le cache par défaut du profil BG3. Modifie uniquement la détection de Redux, sans déplacer ni reconfigurer Script Extender. Utiliser un chemin Windows accessible à Redux, y compris sous Wine, puis actualiser.",
+    "es": "Carpeta absoluta opcional con BG3ScriptExtender.dll o sus subcarpetas de versiones. Déjala vacía para usar CachePath del actualizador o la caché predeterminada del perfil BG3. Solo cambia la detección de Redux; no mueve ni reconfigura Script Extender. Usa una ruta Windows accesible para Redux, también bajo Wine, y actualiza.",
+    "ru": "Необязательный абсолютный путь к папке с BG3ScriptExtender.dll или подпапками версий. Оставьте пустым для использования CachePath обновлятора или стандартного кэша профиля BG3. Меняет только обнаружение в Redux, не перемещая и не перенастраивая Script Extender. Укажите доступный Redux путь Windows, в том числе под Wine, и обновите список.",
+    "zh-Hans": "可选的绝对文件夹路径，包含已安装的 BG3ScriptExtender.dll 或版本子文件夹。留空则使用更新程序的 CachePath 或 BG3 配置文件的默认缓存。此项仅改变 Redux 的检测方式，不会移动或重新配置 Script Extender。请使用 Redux 可访问的 Windows 路径（包括 Wine 环境），然后刷新。"
+  },
+  "Optional_arguments_passed_to_the_custom_launch_target_fa712a43": {
+    "en": "Optional arguments passed to the custom launch target.",
+    "fr": "Arguments facultatifs transmis à la cible de lancement personnalisée.",
+    "es": "Argumentos opcionales enviados al destino de inicio personalizado.",
+    "ru": "Необязательные аргументы для пользовательской цели запуска.",
+    "zh-Hans": "传递给自定义启动目标的可选参数。"
+  },
+  "Osiris_debugger_flags_3ab835f5": {
+    "en": "Osiris debugger flags",
+    "fr": "Options du débogueur Osiris",
+    "es": "Opciones del depurador Osiris",
+    "ru": "Флаги отладчика Osiris",
+    "zh-Hans": "Osiris 调试器标志"
+  },
+  "Osiris_Debugger_Port_50765ddb": {
+    "en": "Osiris Debugger Port",
+    "fr": "Port du débogueur Osiris",
+    "es": "Puerto del depurador Osiris",
+    "ru": "Порт отладчика Osiris",
+    "zh-Hans": "Osiris 调试器端口"
+  },
+  "Override_LOCALAPPDATA_Larian_Studios_Baldur_s_Gate_3_for_pro_3de6fcef": {
+    "en": "Override %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 for profiles, installed mods, and exported load orders.",
+    "fr": "Remplacer %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 pour les profils, mods installés et ordres exportés.",
+    "es": "Sustituir %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 para perfiles, mods instalados y órdenes exportados.",
+    "ru": "Переопределить %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 для профилей, установленных модов и экспортированных порядков загрузки.",
+    "zh-Hans": "覆盖配置文件、已安装模组和导出加载顺序使用的 %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 路径。"
+  },
+  "Package_archive_quota_GB_37501208": {
+    "en": "Package archive quota (GB)",
+    "fr": "Quota des archives de paquets (Go)",
+    "es": "Cuota de archivos de paquetes (GB)",
+    "ru": "Лимит архива пакетов (ГБ)",
+    "zh-Hans": "安装包归档配额（GB）"
+  },
+  "Personal_key_used_for_mod_information_and_update_checks_It_i_ff078a5e": {
+    "en": "Personal key used for mod information and update checks. It is protected for your current Windows account.",
+    "fr": "Clé personnelle utilisée pour les informations et mises à jour des mods. Protégée pour votre compte Windows actuel.",
+    "es": "Clave personal para información y actualizaciones de mods. Está protegida para tu cuenta Windows actual.",
+    "ru": "Личный ключ для сведений о модах и проверки обновлений. Защищён для текущей учётной записи Windows.",
+    "zh-Hans": "用于模组信息和更新检查的个人密钥。受当前 Windows 账户保护。"
+  },
+  "Port_number_the_Osiris_debugger_will_listen_on_Default_9999_320c157b": {
+    "en": "Port number the Osiris debugger will listen on\nDefault: 9999",
+    "fr": "Port d’écoute du débogueur Osiris.\nPar défaut : 9999.",
+    "es": "Puerto de escucha del depurador Osiris.\nPredeterminado: 9999.",
+    "ru": "Порт прослушивания отладчика Osiris.\nПо умолчанию: 9999.",
+    "zh-Hans": "Osiris 调试器监听的端口号。\n默认值：9999。"
+  },
+  "Prevent_ModCrashSanityCheck_331d1e1b": {
+    "en": "Prevent ModCrashSanityCheck",
+    "fr": "Empêcher ModCrashSanityCheck",
+    "es": "Impedir ModCrashSanityCheck",
+    "ru": "Блокировать ModCrashSanityCheck",
+    "zh-Hans": "阻止 ModCrashSanityCheck"
+  },
+  "Prevents_patching_story_bin_with_story_div_osi_when_loading__b30b4612": {
+    "en": "Prevents patching story.bin with story.div.osi when loading saves, effectively preventing the Osiris scripts in the save from updating",
+    "fr": "Empêcher la modification de story.bin par story.div.osi au chargement d’une sauvegarde, ce qui empêche la mise à jour de ses scripts Osiris.",
+    "es": "Impedir que story.div.osi modifique story.bin al cargar partidas, evitando que se actualicen los scripts Osiris de la partida.",
+    "ru": "Запретить исправление story.bin с помощью story.div.osi при загрузке сохранений, предотвращая обновление скриптов Osiris в сохранении.",
+    "zh-Hans": "加载存档时阻止用 story.div.osi 修补 story.bin，从而防止存档中的 Osiris 脚本更新。"
+  },
+  "Prevents_story_div_osi_merging_which_automatically_happens_w_b3099273": {
+    "en": "Prevents story.div.osi merging, which automatically happens when mods are present\nMay only occur when loading a save",
+    "fr": "Empêcher la fusion de story.div.osi effectuée automatiquement lorsque des mods sont présents.\nPeut se produire uniquement au chargement d’une sauvegarde.",
+    "es": "Impedir la fusión de story.div.osi que ocurre automáticamente cuando hay mods.\nPuede ocurrir solo al cargar una partida.",
+    "ru": "Запретить автоматическое объединение story.div.osi при наличии модов.\nМожет происходить только при загрузке сохранения.",
+    "zh-Hans": "阻止存在模组时自动执行的 story.div.osi 合并。\n可能仅在加载存档时发生。"
+  },
+  "Prevents_the_exe_from_force_opening_the_launcher_May_not_wor_697b32ea": {
+    "en": "Prevents the exe from force-opening the launcher\nMay not work correctly if extender auto-updating is enabled, or the --skip-launcher launch param is set",
+    "fr": "Empêcher l’exécutable d’ouvrir le lanceur de force.\nPeut mal fonctionner si la mise à jour automatique de l’extender est activée ou si --skip-launcher est défini.",
+    "es": "Impedir que el ejecutable fuerce la apertura del lanzador.\nPuede no funcionar correctamente si el extender se actualiza automáticamente o se usa --skip-launcher.",
+    "ru": "Запретить принудительное открытие лаунчера.\nМожет работать неправильно при автообновлении расширителя или параметре --skip-launcher.",
+    "zh-Hans": "阻止可执行文件强制打开启动器。\n启用扩展器自动更新或设置 --skip-launcher 参数时可能无法正常工作。"
+  },
+  "Preview_advisor_guided_ordering_while_preserving_replacing_o_5a52e1f4": {
+    "en": "Preview advisor-guided ordering while preserving, replacing, or removing separators.",
+    "fr": "Prévisualiser l’ordre proposé par le conseiller en conservant, remplaçant ou supprimant les séparateurs.",
+    "es": "Previsualizar el orden sugerido conservando, reemplazando o eliminando separadores.",
+    "ru": "Просмотреть порядок, предложенный помощником, с сохранением, заменой или удалением разделителей.",
+    "zh-Hans": "预览建议的排序，可保留、替换或移除分隔符。"
+  },
+  "Previous_mod_versions_limit_GB_394e77ca": {
+    "en": "Previous mod versions limit (GB)",
+    "fr": "Limite des anciennes versions de mods (Go)",
+    "es": "Límite de versiones anteriores de mods (GB)",
+    "ru": "Лимит предыдущих версий модов (ГБ)",
+    "zh-Hans": "模组旧版本容量上限（GB）"
+  },
+  "Print_warnings_to_the_extender_console_window_which_indicate_4c28afbf": {
+    "en": "Print warnings to the extender console window, which indicates when the server-side part of the game lags behind (a.k.a. warnings about ticks taking too long).",
+    "fr": "Afficher dans la console de l’extender des avertissements lorsque le serveur du jeu prend du retard, notamment lorsque les ticks durent trop longtemps.",
+    "es": "Mostrar avisos en la consola del extender cuando el servidor del juego se retrasa, por ejemplo si los ticks tardan demasiado.",
+    "ru": "Выводить в консоль расширителя предупреждения об отставании серверной части игры, например о слишком долгих тактах.",
+    "zh-Hans": "当游戏服务器端运行落后时，在扩展器控制台显示警告（例如单次更新耗时过长）。"
+  },
+  "Private_ownership_marker_used_to_restore_the_previous_Window_889c2dd9": {
+    "en": "Private ownership marker used to restore the previous Windows NXM handler.",
+    "fr": "Marqueur privé de propriété permettant de restaurer l’ancien gestionnaire NXM de Windows.",
+    "es": "Marcador privado de propiedad para restaurar el gestor NXM anterior de Windows.",
+    "ru": "Личная метка владения для восстановления предыдущего обработчика NXM Windows.",
+    "zh-Hans": "用于恢复先前 Windows NXM 处理程序的私有归属标记。"
+  },
+  "Read_active_and_override_PAK_file_tables_to_find_shared_inte_84feee13": {
+    "en": "Read active and override PAK file tables to find shared internal paths. Overlaps are not necessarily conflicts.",
+    "fr": "Lire les tables de fichiers des PAK actifs et Override pour trouver les chemins internes partagés. Un chevauchement n’est pas forcément un conflit.",
+    "es": "Leer las tablas de archivos PAK activos y Override para encontrar rutas internas compartidas. Compartir rutas no implica necesariamente un conflicto.",
+    "ru": "Читать таблицы файлов активных и Override PAK для поиска общих внутренних путей. Пересечения не обязательно означают конфликт.",
+    "zh-Hans": "读取启用和 Override PAK 的文件表，查找共享内部路径。重叠不一定代表冲突。"
+  },
+  "Read_Active_Load_Order_Aloud_0a5b5eec": {
+    "en": "Read Active Load Order Aloud",
+    "fr": "Lire l’ordre actif à voix haute",
+    "es": "Leer orden activo en voz alta",
+    "ru": "Прочитать активный порядок вслух",
+    "zh-Hans": "朗读启用加载顺序"
+  },
+  "Read_only_key_used_for_mod_information_It_is_protected_for_y_5753d4e1": {
+    "en": "Read-only key used for mod information. It is protected for your current Windows account.",
+    "fr": "Clé en lecture seule pour les informations de mods. Protégée pour votre compte Windows actuel.",
+    "es": "Clave de solo lectura para información de mods. Está protegida para tu cuenta Windows actual.",
+    "ru": "Ключ только для чтения сведений о модах. Защищён для текущей учётной записи Windows.",
+    "zh-Hans": "用于模组信息的只读密钥。受当前 Windows 账户保护。"
+  },
+  "Redo_the_last_activation_deactivation_reorder_separator_or_a_fa51daed": {
+    "en": "Redo the last activation, deactivation, reorder, separator, or advisor organization change.",
+    "fr": "Rétablir la dernière activation, désactivation, réorganisation ou modification de séparateur ou du conseiller.",
+    "es": "Rehacer el último cambio de activación, desactivación, orden, separadores u organización del asesor.",
+    "ru": "Повторить последнее изменение активации, деактивации, порядка, разделителей или организации помощником.",
+    "zh-Hans": "重做上一次启用、停用、排序、分隔符或建议整理更改。"
+  },
+  "Release_e020e3c6": {
+    "en": "Release",
+    "fr": "Version stable",
+    "es": "Versión estable",
+    "ru": "Стабильная версия",
+    "zh-Hans": "正式版"
+  },
+  "Remember_window_position_c755ddf3": {
+    "en": "Remember window position",
+    "fr": "Mémoriser la position de la fenêtre",
+    "es": "Recordar posición de la ventana",
+    "ru": "Запоминать положение окна",
+    "zh-Hans": "记住窗口位置"
+  },
+  "Rescan_the_configured_Mods_folder_and_refresh_the_mod_lists_32bd7928": {
+    "en": "Rescan the configured Mods folder and refresh the mod lists.",
+    "fr": "Analyser de nouveau le dossier Mods configuré et actualiser les listes de mods.",
+    "es": "Volver a analizar la carpeta Mods configurada y actualizar las listas.",
+    "ru": "Повторно просканировать настроенную папку Mods и обновить списки модов.",
+    "zh-Hans": "重新扫描已配置的 Mods 文件夹并刷新模组列表。"
+  },
+  "Restore_the_main_window_to_its_previous_screen_position_at_s_f975df7a": {
+    "en": "Restore the main window to its previous screen position at startup.",
+    "fr": "Restaurer la position précédente de la fenêtre principale au démarrage.",
+    "es": "Restaurar la posición anterior de la ventana principal al iniciar.",
+    "ru": "Восстанавливать предыдущее положение главного окна при запуске.",
+    "zh-Hans": "启动时恢复主窗口先前的屏幕位置。"
+  },
+  "Retained_for_compatibility_with_earlier_Redux_settings_fdff23c9": {
+    "en": "Retained for compatibility with earlier Redux settings.",
+    "fr": "Conservé pour la compatibilité avec les anciens réglages Redux.",
+    "es": "Conservado por compatibilidad con ajustes anteriores de Redux.",
+    "ru": "Сохранено для совместимости с прежними настройками Redux.",
+    "zh-Hans": "为兼容旧版 Redux 设置而保留。"
+  },
+  "Review_clean_mod_installs_72391e38": {
+    "en": "Review clean mod installs",
+    "fr": "Examiner les installations sans avertissement",
+    "es": "Revisar instalaciones sin advertencias",
+    "ru": "Проверять установки без предупреждений",
+    "zh-Hans": "审核无警告的模组安装"
+  },
+  "Review_compare_capture_or_load_snapshots_for_the_current_pro_c5cb7e4c": {
+    "en": "Review, compare, capture, or load snapshots for the current profile.",
+    "fr": "Examiner, comparer, créer ou charger des instantanés du profil actuel.",
+    "es": "Revisar, comparar, capturar o cargar instantáneas del perfil actual.",
+    "ru": "Просматривать, сравнивать, создавать или загружать снимки текущего профиля.",
+    "zh-Hans": "查看、比较、创建或加载当前配置文件的快照。"
+  },
+  "Save_changes_to_the_selected_load_order_6c1d1413": {
+    "en": "Save changes to the selected load order.",
+    "fr": "Enregistrer les modifications de l’ordre sélectionné.",
+    "es": "Guardar cambios en el orden seleccionado.",
+    "ru": "Сохранить изменения выбранного порядка загрузки.",
+    "zh-Hans": "保存所选加载顺序的更改。"
+  },
+  "Save_the_active_load_order_and_optional_categories_separator_c8c66024": {
+    "en": "Save the active load order and optional categories, separators, icons, and notes to a .bg3redux file.",
+    "fr": "Enregistrer l’ordre actif et, au choix, les catégories, séparateurs, icônes et notes dans un fichier .bg3redux.",
+    "es": "Guardar el orden activo y categorías, separadores, iconos y notas opcionales en un archivo .bg3redux.",
+    "ru": "Сохранить активный порядок и необязательные категории, разделители, значки и заметки в файл .bg3redux.",
+    "zh-Hans": "将启用加载顺序及可选的分类、分隔符、图标和备注保存到 .bg3redux 文件。"
+  },
+  "Save_the_current_order_as_a_separate_load_order_file_7a9c4f69": {
+    "en": "Save the current order as a separate load-order file.",
+    "fr": "Enregistrer l’ordre actuel dans un fichier d’ordre distinct.",
+    "es": "Guardar el orden actual como un archivo independiente.",
+    "ru": "Сохранить текущий порядок в отдельный файл порядка загрузки.",
+    "zh-Hans": "将当前顺序另存为独立的加载顺序文件。"
+  },
+  "Script_Extender_Settings_23bc97cc": {
+    "en": "Script Extender Settings",
+    "fr": "Réglages de Script Extender",
+    "es": "Ajustes de Script Extender",
+    "ru": "Настройки Script Extender",
+    "zh-Hans": "Script Extender 设置"
+  },
+  "Script_Extender_Updater_Settings_93db6d21": {
+    "en": "Script Extender Updater Settings",
+    "fr": "Réglages du programme de mise à jour Script Extender",
+    "es": "Ajustes del actualizador de Script Extender",
+    "ru": "Настройки обновлятора Script Extender",
+    "zh-Hans": "Script Extender 更新程序设置"
+  },
+  "Send_Script_Extender_crash_reports_fb28866a": {
+    "en": "Send Script Extender crash reports",
+    "fr": "Envoyer les rapports de plantage Script Extender",
+    "es": "Enviar informes de fallos de Script Extender",
+    "ru": "Отправлять отчёты о сбоях Script Extender",
+    "zh-Hans": "发送 Script Extender 崩溃报告"
+  },
+  "Show_a_build_icon_beside_mods_detected_as_Toolkit_or_editor__d4e20533": {
+    "en": "Show a build icon beside mods detected as Toolkit or editor projects.",
+    "fr": "Afficher une icône de compilation près des mods détectés comme projets Toolkit ou éditeur.",
+    "es": "Mostrar un icono de compilación junto a mods detectados como proyectos Toolkit o del editor.",
+    "ru": "Показывать значок сборки рядом с модами, определёнными как проекты Toolkit или редактора.",
+    "zh-Hans": "在检测为 Toolkit 或编辑器项目的模组旁显示构建图标。"
+  },
+  "Show_a_short_excerpt_from_already_loaded_local_or_provider_m_26eaa9ad": {
+    "en": "Show a short excerpt from already-loaded local or provider metadata when hovering over a mod. Redux does not fetch descriptions on hover.",
+    "fr": "Afficher au survol un extrait de métadonnées locales ou de fournisseur déjà chargées. Redux ne récupère pas de descriptions au survol.",
+    "es": "Mostrar al pasar el cursor un extracto de metadatos locales o del proveedor ya cargados. Redux no descarga descripciones al pasar el cursor.",
+    "ru": "Показывать при наведении отрывок уже загруженных локальных данных или данных источника. Redux не загружает описания при наведении.",
+    "zh-Hans": "悬停时显示已加载的本地或来源元数据摘要。Redux 不会因悬停而获取描述。"
+  },
+  "Show_additional_read_only_technical_details_and_write_more_d_72c814df": {
+    "en": "Show additional read-only technical details and write more diagnostic logging while troubleshooting Redux.",
+    "fr": "Afficher des détails techniques supplémentaires en lecture seule et écrire plus de journaux pour le dépannage de Redux.",
+    "es": "Mostrar más detalles técnicos de solo lectura y generar más registros al diagnosticar Redux.",
+    "ru": "Показывать дополнительные технические сведения только для чтения и вести подробный журнал для диагностики Redux.",
+    "zh-Hans": "排查 Redux 问题时，显示更多只读技术详情并记录更多诊断日志。"
+  },
+  "Show_mod_descriptions_in_hover_cards_c538c386": {
+    "en": "Show mod descriptions in hover cards",
+    "fr": "Afficher les descriptions au survol des mods",
+    "es": "Mostrar descripciones al pasar el cursor",
+    "ru": "Показывать описания модов при наведении",
+    "zh-Hans": "在悬停卡片中显示模组描述"
+  },
+  "Show_or_Hide_Mod_File_Names_9566b36a": {
+    "en": "Show or Hide Mod File Names",
+    "fr": "Afficher ou masquer les noms de fichiers des mods",
+    "es": "Mostrar u ocultar nombres de archivos de mods",
+    "ru": "Показать или скрыть имена файлов модов",
+    "zh-Hans": "显示或隐藏模组文件名"
+  },
+  "Show_or_Hide_Mod_Updates_02ff25ff": {
+    "en": "Show or Hide Mod Updates",
+    "fr": "Afficher ou masquer les mises à jour de mods",
+    "es": "Mostrar u ocultar actualizaciones de mods",
+    "ru": "Показать или скрыть обновления модов",
+    "zh-Hans": "显示或隐藏模组更新"
+  },
+  "Show_Performance_Warnings_fc8981ed": {
+    "en": "Show Performance Warnings",
+    "fr": "Afficher les avertissements de performances",
+    "es": "Mostrar avisos de rendimiento",
+    "ru": "Показывать предупреждения о производительности",
+    "zh-Hans": "显示性能警告"
+  },
+  "Show_Toolkit_project_markers_daf2d325": {
+    "en": "Show Toolkit project markers",
+    "fr": "Afficher les marqueurs de projets Toolkit",
+    "es": "Mostrar marcadores de proyectos Toolkit",
+    "ru": "Показывать метки проектов Toolkit",
+    "zh-Hans": "显示 Toolkit 项目标记"
+  },
+  "Skip_mod_validation_8861095e": {
+    "en": "Skip mod validation",
+    "fr": "Ignorer la validation des mods",
+    "es": "Omitir validación de mods",
+    "ru": "Пропускать проверку модов",
+    "zh-Hans": "跳过模组验证"
+  },
+  "Skip_module_hashing_when_loading_mods_This_reduces_loading_t_991296ae": {
+    "en": "Skip module hashing when loading mods. This reduces loading time without changing the load order.",
+    "fr": "Ignorer le calcul des empreintes des modules au chargement. Réduit le temps de chargement sans modifier l’ordre.",
+    "es": "Omitir el cálculo de hashes de módulos al cargar mods. Reduce el tiempo de carga sin cambiar el orden.",
+    "ru": "Пропускать вычисление хешей модулей при загрузке модов. Уменьшает время загрузки, не меняя порядок.",
+    "zh-Hans": "加载模组时跳过模块哈希计算。缩短加载时间，不改变加载顺序。"
+  },
+  "Stay_Open_c023eba5": {
+    "en": "Stay Open",
+    "fr": "Rester ouvert",
+    "es": "Permanecer abierto",
+    "ru": "Оставить открытым",
+    "zh-Hans": "保持打开"
+  },
+  "Steam_f71a8503": {
+    "en": "Steam",
+    "fr": "Steam",
+    "es": "Steam",
+    "ru": "Steam",
+    "zh-Hans": "Steam"
+  },
+  "Steam_Workshop_5d79db3d": {
+    "en": "Steam Workshop",
+    "fr": "Steam Workshop",
+    "es": "Steam Workshop",
+    "ru": "Мастерская Steam",
+    "zh-Hans": "Steam 创意工坊"
+  },
+  "Stop_Reading_Load_Order_b7c77f61": {
+    "en": "Stop Reading Load Order",
+    "fr": "Arrêter la lecture de l’ordre",
+    "es": "Detener lectura del orden",
+    "ru": "Остановить чтение порядка",
+    "zh-Hans": "停止朗读加载顺序"
+  },
+  "Support_BG3_Mod_Manager_Redux_at_https_ko_fi_com_circleain_1bd0dab1": {
+    "en": "Support BG3 Mod Manager Redux at https://ko-fi.com/circleain",
+    "fr": "Soutenir BG3 Mod Manager Redux sur https://ko-fi.com/circleain",
+    "es": "Apoyar BG3 Mod Manager Redux en https://ko-fi.com/circleain",
+    "ru": "Поддержать BG3 Mod Manager Redux на https://ko-fi.com/circleain",
+    "zh-Hans": "在 https://ko-fi.com/circleain 支持 BG3 Mod Manager Redux"
+  },
+  "Support_circleain_on_Ko_fi_90dd7f29": {
+    "en": "Support circleain on Ko-fi...",
+    "fr": "Soutenir circleain sur Ko-fi…",
+    "es": "Apoyar a circleain en Ko-fi…",
+    "ru": "Поддержать circleain на Ko-fi…",
+    "zh-Hans": "在 Ko-fi 支持 circleain…"
+  },
+  "Support_LaughingLeader_on_Ko_fi_ddfbcbdc": {
+    "en": "Support LaughingLeader on Ko-fi...",
+    "fr": "Soutenir LaughingLeader sur Ko-fi…",
+    "es": "Apoyar a LaughingLeader en Ko-fi…",
+    "ru": "Поддержать LaughingLeader на Ko-fi…",
+    "zh-Hans": "在 Ko-fi 支持 LaughingLeader…"
+  },
+  "Support_the_original_BG3_Mod_Manager_developer_at_https_ko_f_5e4a9bfe": {
+    "en": "Support the original BG3 Mod Manager developer at https://ko-fi.com/laughingleader",
+    "fr": "Soutenir le développeur de BG3 Mod Manager original sur https://ko-fi.com/laughingleader",
+    "es": "Apoyar al desarrollador original de BG3 Mod Manager en https://ko-fi.com/laughingleader",
+    "ru": "Поддержать автора оригинального BG3 Mod Manager на https://ko-fi.com/laughingleader",
+    "zh-Hans": "在 https://ko-fi.com/laughingleader 支持原版 BG3 Mod Manager 开发者"
+  },
+  "Suppress_missing_mod_warnings_ea127104": {
+    "en": "Suppress missing-mod warnings",
+    "fr": "Masquer les avertissements de mods manquants",
+    "es": "Ocultar avisos de mods ausentes",
+    "ru": "Скрывать предупреждения об отсутствующих модах",
+    "zh-Hans": "不显示模组缺失警告"
+  },
+  "Switch_Between_Mod_Lists_9b0bd8a2": {
+    "en": "Switch Between Mod Lists",
+    "fr": "Basculer entre les listes de mods",
+    "es": "Cambiar entre listas de mods",
+    "ru": "Переключиться между списками модов",
+    "zh-Hans": "切换模组列表"
+  },
+  "Switch_to_the_next_built_in_or_custom_theme_1af234e0": {
+    "en": "Switch to the next built-in or custom theme.",
+    "fr": "Passer au thème intégré ou personnalisé suivant.",
+    "es": "Cambiar al siguiente tema integrado o personalizado.",
+    "ru": "Переключиться на следующую встроенную или пользовательскую тему.",
+    "zh-Hans": "切换到下一个内置或自定义主题。"
+  },
+  "Target_Resource_Digest_17107331": {
+    "en": "Target Resource Digest",
+    "fr": "Empreinte de ressource cible",
+    "es": "Resumen de recurso de destino",
+    "ru": "Дайджест целевого ресурса",
+    "zh-Hans": "目标资源摘要"
+  },
+  "Target_Version_edf8f064": {
+    "en": "Target Version",
+    "fr": "Version cible",
+    "es": "Versión de destino",
+    "ru": "Целевая версия",
+    "zh-Hans": "目标版本"
+  },
+  "The_folder_used_for_saved_load_order_json_files_6f1a9209": {
+    "en": "The folder used for saved load-order .json files.",
+    "fr": "Dossier des fichiers .json des ordres enregistrés.",
+    "es": "Carpeta de archivos .json de órdenes guardados.",
+    "ru": "Папка файлов .json сохранённых порядков загрузки.",
+    "zh-Hans": "用于保存加载顺序 .json 文件的文件夹。"
+  },
+  "The_game_s_Data_folder_used_when_loading_editor_projects_Exa_3fa14d31": {
+    "en": "The game's Data folder, used when loading editor projects. Example: Baldur's Gate 3/Data.",
+    "fr": "Dossier Data du jeu, utilisé pour charger les projets éditeur. Exemple : Baldur’s Gate 3/Data.",
+    "es": "Carpeta Data del juego, usada para cargar proyectos del editor. Ejemplo: Baldur’s Gate 3/Data.",
+    "ru": "Папка Data игры для загрузки проектов редактора. Пример: Baldur’s Gate 3/Data.",
+    "zh-Hans": "加载编辑器项目时使用的游戏 Data 文件夹。例如：Baldur’s Gate 3/Data。"
+  },
+  "The_path_to_bg3_exe_or_bg3_dx11_exe_in_the_game_s_bin_folder_1961aed6": {
+    "en": "The path to bg3.exe or bg3_dx11.exe in the game's bin folder.",
+    "fr": "Chemin de bg3.exe ou bg3_dx11.exe dans le dossier bin du jeu.",
+    "es": "Ruta de bg3.exe o bg3_dx11.exe en la carpeta bin del juego.",
+    "ru": "Путь к bg3.exe или bg3_dx11.exe в папке bin игры.",
+    "zh-Hans": "游戏 bin 文件夹中 bg3.exe 或 bg3_dx11.exe 的路径。"
+  },
+  "Theme_and_Appearance_807f3eb8": {
+    "en": "Theme and Appearance",
+    "fr": "Thème et apparence",
+    "es": "Tema y apariencia",
+    "ru": "Тема и оформление",
+    "zh-Hans": "主题与外观"
+  },
+  "Toggle_every_separator_in_the_active_load_order_between_expa_b919c62a": {
+    "en": "Toggle every separator in the active load order between expanded and collapsed.",
+    "fr": "Développer ou réduire tous les séparateurs de l’ordre actif.",
+    "es": "Expandir o contraer todos los separadores del orden activo.",
+    "ru": "Развернуть или свернуть все разделители активного порядка.",
+    "zh-Hans": "展开或折叠启用加载顺序中的所有分隔符。"
+  },
+  "Toggle_the_File_Name_column_in_both_the_active_and_inactive__4e20d9e3": {
+    "en": "Toggle the File Name column in both the active and inactive mod lists.",
+    "fr": "Afficher ou masquer la colonne Nom du fichier dans les listes active et inactive.",
+    "es": "Mostrar u ocultar la columna Nombre de archivo en las listas activa e inactiva.",
+    "ru": "Показать или скрыть столбец имени файла в активном и неактивном списках.",
+    "zh-Hans": "在已启用和未启用模组列表中显示或隐藏文件名列。"
+  },
+  "Total_storage_for_replaced_PAKs_After_successful_replacement_ec17a2f6": {
+    "en": "Total storage for replaced PAKs. After successful replacements, remove oldest backups first to stay within this limit. Separate from downloaded package archives.",
+    "fr": "Espace total pour les PAK remplacés. Après un remplacement réussi, supprimer les plus anciennes copies pour respecter cette limite. Séparé des archives de paquets téléchargés.",
+    "es": "Espacio total para PAK reemplazados. Tras reemplazos correctos, eliminar las copias más antiguas para respetar el límite. Independiente de los archivos descargados.",
+    "ru": "Общий объём заменённых PAK. После успешной замены удалять самые старые копии, чтобы не превышать лимит. Отдельно от архивов загруженных пакетов.",
+    "zh-Hans": "用于被替换 PAK 的总存储空间。成功替换后优先删除最旧备份以保持在限制内。与下载包归档独立计算。"
+  },
+  "Tracks_whether_the_compact_Redux_welcome_and_initial_setup_w_b616ad91": {
+    "en": "Tracks whether the compact Redux welcome and initial setup window has been shown.",
+    "fr": "Indique si la fenêtre d’accueil et de configuration initiale de Redux a déjà été affichée.",
+    "es": "Indica si ya se ha mostrado la ventana de bienvenida y configuración inicial de Redux.",
+    "ru": "Отмечает, показывалось ли окно приветствия и начальной настройки Redux.",
+    "zh-Hans": "记录是否已显示 Redux 欢迎和初始设置窗口。"
+  },
+  "Undo_the_last_activation_deactivation_reorder_separator_or_a_32e34b32": {
+    "en": "Undo the last activation, deactivation, reorder, separator, or advisor organization change.",
+    "fr": "Annuler la dernière activation, désactivation, réorganisation ou modification de séparateur ou du conseiller.",
+    "es": "Deshacer el último cambio de activación, desactivación, orden, separadores u organización del asesor.",
+    "ru": "Отменить последнее изменение активации, деактивации, порядка, разделителей или организации помощником.",
+    "zh-Hans": "撤销上一次启用、停用、排序、分隔符或建议整理更改。"
+  },
+  "Update_to_a_specific_version_of_the_script_extender_ex_5_0_0_355b493d": {
+    "en": "Update to a specific version of the script extender (ex. '5.0.0.0')",
+    "fr": "Mettre à jour vers une version précise de Script Extender, par exemple « 5.0.0.0 ».",
+    "es": "Actualizar a una versión concreta de Script Extender, por ejemplo «5.0.0.0».",
+    "ru": "Обновить Script Extender до указанной версии, например «5.0.0.0».",
+    "zh-Hans": "更新到指定的 Script Extender 版本，例如“5.0.0.0”。"
+  },
+  "Upload_Script_Extender_minidumps_to_its_crash_report_server__cf8b2c26": {
+    "en": "Upload Script Extender minidumps to its crash-report server after a game crash.",
+    "fr": "Envoyer les minidumps de Script Extender à son serveur de rapports après un plantage du jeu.",
+    "es": "Enviar minivolcados de Script Extender a su servidor de informes tras un fallo del juego.",
+    "ru": "Отправлять минидампы Script Extender на сервер отчётов после сбоя игры.",
+    "zh-Hans": "游戏崩溃后，将 Script Extender 小型转储上传到其崩溃报告服务器。"
+  },
+  "Use_a_profile_other_than_Public_Enter_the_profile_folder_nam_72ab8c66": {
+    "en": "Use a profile other than Public. Enter the profile folder name, not a full path.",
+    "fr": "Utiliser un profil autre que Public. Saisir le nom du dossier de profil, pas un chemin complet.",
+    "es": "Usar un perfil distinto de Public. Introduce el nombre de la carpeta del perfil, no una ruta completa.",
+    "ru": "Использовать профиль, отличный от Public. Введите имя папки профиля, а не полный путь.",
+    "zh-Hans": "使用 Public 之外的配置文件。输入配置文件夹名称，而不是完整路径。"
+  },
+  "Use_a_specific_Digest_for_the_target_update_148ef690": {
+    "en": "Use a specific Digest for the target update",
+    "fr": "Utiliser une empreinte précise pour la mise à jour cible.",
+    "es": "Usar un resumen específico para la actualización de destino.",
+    "ru": "Использовать указанный дайджест для целевого обновления.",
+    "zh-Hans": "对目标更新使用指定摘要。"
+  },
+  "Use_a_specific_update_channel_33c8f9a6": {
+    "en": "Use a specific update channel",
+    "fr": "Utiliser un canal de mise à jour précis.",
+    "es": "Usar un canal de actualización concreto.",
+    "ru": "Использовать указанный канал обновлений.",
+    "zh-Hans": "使用指定更新渠道。"
+  },
+  "Use_each_category_s_color_for_its_name_in_the_Categories_pan_77c15077": {
+    "en": "Use each category's color for its name in the Categories pane.",
+    "fr": "Utiliser la couleur de chaque catégorie pour son nom dans le volet Catégories.",
+    "es": "Usar el color de cada categoría en su nombre dentro del panel Categorías.",
+    "ru": "Отображать название каждой категории её цветом на панели категорий.",
+    "zh-Hans": "在分类面板中使用各分类的颜色显示其名称。"
+  },
+  "Use_only_IPv4_when_fetching_the_latest_update_7dfa3f3c": {
+    "en": "Use only IPv4 when fetching the latest update",
+    "fr": "Utiliser uniquement IPv4 pour récupérer la dernière mise à jour.",
+    "es": "Usar solo IPv4 al obtener la última actualización.",
+    "ru": "Использовать только IPv4 для получения последнего обновления.",
+    "zh-Hans": "获取最新更新时仅使用 IPv4。"
+  },
+  "Validate_Signature_b76d7553": {
+    "en": "Validate Signature",
+    "fr": "Vérifier la signature",
+    "es": "Validar firma",
+    "ru": "Проверять подпись",
+    "zh-Hans": "验证签名"
+  },
+  "Welcome_setup_completed_1c1f0e3b": {
+    "en": "Welcome setup completed",
+    "fr": "Configuration initiale terminée",
+    "es": "Configuración inicial completada",
+    "ru": "Начальная настройка завершена",
+    "zh-Hans": "初始设置已完成"
+  },
+  "When_Enter_moves_selected_mods_to_the_other_list_move_keyboa_6817f508": {
+    "en": "When Enter moves selected mods to the other list, move keyboard focus to that list too.",
+    "fr": "Lorsque Entrée déplace les mods sélectionnés vers l’autre liste, y déplacer aussi le focus clavier.",
+    "es": "Al mover mods seleccionados a la otra lista con Intro, mover también el foco del teclado.",
+    "ru": "При перемещении выбранных модов в другой список клавишей Enter переносить туда и фокус клавиатуры.",
+    "zh-Hans": "使用 Enter 将所选模组移到另一列表时，同时将键盘焦点移到该列表。"
+  },
+  "Write_Osiris_story_compilation_activity_to_a_log_file_2f056805": {
+    "en": "Write Osiris story compilation activity to a log file.",
+    "fr": "Écrire l’activité de compilation de l’histoire Osiris dans un journal.",
+    "es": "Escribir la actividad de compilación de historia de Osiris en un registro.",
+    "ru": "Записывать действия компиляции истории Osiris в журнал.",
+    "zh-Hans": "将 Osiris 剧情编译活动写入日志文件。"
+  },
+  "Write_Osiris_story_compilation_errors_to_the_LogFailedCompil_daaeb49a": {
+    "en": "Write Osiris story compilation errors to the LogFailedCompile file.",
+    "fr": "Écrire les erreurs de compilation de l’histoire Osiris dans LogFailedCompile.",
+    "es": "Escribir errores de compilación de historia de Osiris en LogFailedCompile.",
+    "ru": "Записывать ошибки компиляции истории Osiris в LogFailedCompile.",
+    "zh-Hans": "将 Osiris 剧情编译错误写入 LogFailedCompile 文件。"
+  },
+  "Write_Script_Extender_console_and_script_output_to_a_log_fil_c037443e": {
+    "en": "Write Script Extender console and script output to a log file.",
+    "fr": "Écrire les sorties de console et de scripts Script Extender dans un journal.",
+    "es": "Escribir la salida de consola y scripts de Script Extender en un registro.",
+    "ru": "Записывать вывод консоли и скриптов Script Extender в журнал.",
+    "zh-Hans": "将 Script Extender 控制台和脚本输出写入日志文件。"
+  },
+  "A_directory_to_write_story_logs_to_95faf385": {
+    "en": "A directory to write story logs to",
+    "fr": "Dossier où écrire les journaux du scénario",
+    "es": "Carpeta donde guardar los registros de historia",
+    "ru": "Папка для журналов сценария",
+    "zh-Hans": "剧情日志的保存文件夹"
+  },
+  "Active_custom_theme_0_1_2_text_20f83cac": {
+    "en": "Active custom theme · {0} · {1} · {2} text",
+    "fr": "Thème personnalisé actif · {0} · {1} · Taille du texte : {2}",
+    "es": "Tema personalizado activo · {0} · {1} · Tamaño del texto: {2}",
+    "ru": "Активная пользовательская тема · {0} · {1} · Размер текста: {2}",
+    "zh-Hans": "当前自定义主题 · {0} · {1} · 文字大小：{2}"
+  },
+  "Add_optional_provider_keys_for_source_details_and_update_inf_4eb40091": {
+    "en": "Add optional provider keys for source details and update information.",
+    "fr": "Ajoutez des clés facultatives pour obtenir les détails des sources et les informations de mise à jour.",
+    "es": "Añade claves opcionales para obtener detalles de las fuentes e información de actualizaciones.",
+    "ru": "Добавьте необязательные ключи сервисов для получения сведений об источниках и обновлениях.",
+    "zh-Hans": "添加可选的服务密钥，以获取来源详情和更新信息。"
+  },
+  "Adjust_load_order_editing_dependency_handling_categories_and_9804936a": {
+    "en": "Adjust load-order editing, dependency handling, categories, and workspace behavior.",
+    "fr": "Réglez l’édition des ordres de chargement, la gestion des dépendances, les catégories et l’espace de travail.",
+    "es": "Ajusta la edición del orden de carga, las dependencias, las categorías y el espacio de trabajo.",
+    "ru": "Настройте редактирование порядка загрузки, обработку зависимостей, категории и рабочее пространство.",
+    "zh-Hans": "调整加载顺序编辑、依赖处理、分类和工作区行为。"
+  },
+  "Advanced_Script_Extender_debugging_patching_console_and_perf_a34a0e64": {
+    "en": "Advanced Script Extender debugging, patching, console, and performance options.",
+    "fr": "Options avancées de débogage, de correctifs, de console et de performances de Script Extender.",
+    "es": "Opciones avanzadas de depuración, parches, consola y rendimiento de Script Extender.",
+    "ru": "Расширенные параметры отладки, исправлений, консоли и производительности Script Extender.",
+    "zh-Hans": "Script Extender 的高级调试、补丁、控制台和性能选项。"
+  },
+  "Archive_unreadable_e519a4f6": {
+    "en": "Archive unreadable",
+    "fr": "Archive illisible",
+    "es": "Archivo ilegible",
+    "ru": "Архив не читается",
+    "zh-Hans": "无法读取压缩文件"
+  },
+  "Automatically_load_the_last_save_when_loading_into_the_main__1c2a44ba": {
+    "en": "Automatically load the last save when loading into the main menu",
+    "fr": "Charger automatiquement la dernière sauvegarde à l’ouverture du menu principal",
+    "es": "Cargar automáticamente la última partida al abrir el menú principal",
+    "ru": "Автоматически загружать последнее сохранение при открытии главного меню",
+    "zh-Hans": "进入主菜单时自动加载最近的存档"
+  },
+  "Blocked_by_dependencies_766f8024": {
+    "en": "Blocked by dependencies",
+    "fr": "Bloqué par des dépendances",
+    "es": "Bloqueado por dependencias",
+    "ru": "Заблокировано зависимостями",
+    "zh-Hans": "因依赖问题而受阻"
+  },
+  "Choose_a_download_workspace_and_optionally_keep_verified_ins_f8d5d537": {
+    "en": "Choose a download workspace and optionally keep verified install packages for later reinstall. Retained archives are stored separately.",
+    "fr": "Choisissez un dossier de téléchargement et conservez, si vous le souhaitez, les paquets vérifiés pour les réinstaller. Les archives conservées sont stockées séparément.",
+    "es": "Elige una carpeta de descargas y conserva, si quieres, los paquetes verificados para reinstalarlos. Los archivos conservados se almacenan por separado.",
+    "ru": "Выберите папку для загрузок и при желании сохраняйте проверенные пакеты для повторной установки. Сохранённые архивы хранятся отдельно.",
+    "zh-Hans": "选择下载工作区，并可选择保留已验证的安装包以供重新安装。保留的压缩文件会单独存放。"
+  },
+  "Choose_what_Script_Extender_records_and_where_its_logs_are_s_4194a16b": {
+    "en": "Choose what Script Extender records and where its logs are stored.",
+    "fr": "Choisissez ce que Script Extender enregistre et où stocker ses journaux.",
+    "es": "Elige qué registra Script Extender y dónde se guardan sus registros.",
+    "ru": "Выберите, что записывать в журналы Script Extender и где их хранить.",
+    "zh-Hans": "选择 Script Extender 的日志内容和保存位置。"
+  },
+  "Choose_when_Redux_checks_for_updates_and_displays_release_no_c386e4b4": {
+    "en": "Choose when Redux checks for updates and displays release notes.",
+    "fr": "Choisissez quand Redux recherche des mises à jour et affiche les notes de version.",
+    "es": "Elige cuándo Redux busca actualizaciones y muestra las notas de la versión.",
+    "ru": "Выберите, когда Redux проверяет обновления и показывает примечания к выпуску.",
+    "zh-Hans": "选择 Redux 检查更新和显示版本说明的时机。"
+  },
+  "Choose_where_Redux_finds_the_game_profiles_and_saved_load_or_6c2e058b": {
+    "en": "Choose where Redux finds the game, profiles, and saved load orders.",
+    "fr": "Indiquez où Redux doit chercher le jeu, les profils et les ordres de chargement enregistrés.",
+    "es": "Indica dónde debe buscar Redux el juego, los perfiles y los órdenes de carga guardados.",
+    "ru": "Укажите, где Redux искать игру, профили и сохранённые порядки загрузки.",
+    "zh-Hans": "选择 Redux 查找游戏、配置文件和已保存加载顺序的位置。"
+  },
+  "Choose_which_update_and_safety_notices_Redux_keeps_active_14941d46": {
+    "en": "Choose which update and safety notices Redux keeps active.",
+    "fr": "Choisissez les avertissements de mise à jour et de sécurité à conserver.",
+    "es": "Elige qué avisos de actualizaciones y seguridad debe mantener Redux.",
+    "ru": "Выберите, какие уведомления об обновлениях и безопасности показывать в Redux.",
+    "zh-Hans": "选择 Redux 保持启用的更新和安全提醒。"
+  },
+  "Configure_Script_Extender_validation_achievements_crash_repo_fed520dd": {
+    "en": "Configure Script Extender validation, achievements, crash reporting, and saved settings.",
+    "fr": "Configurez la validation, les succès, les rapports de plantage et les paramètres enregistrés de Script Extender.",
+    "es": "Configura la validación, los logros, los informes de fallos y los ajustes guardados de Script Extender.",
+    "ru": "Настройте проверки, достижения, отчёты о сбоях и сохранение параметров Script Extender.",
+    "zh-Hans": "配置 Script Extender 的验证、成就、崩溃报告和设置保存。"
+  },
+  "Control_how_Redux_starts_Baldur_s_Gate_3_and_what_happens_af_417adb6d": {
+    "en": "Control how Redux starts Baldur's Gate 3 and what happens after launch.",
+    "fr": "Réglez le lancement de Baldur’s Gate 3 par Redux et le comportement après lancement.",
+    "es": "Configura cómo Redux inicia Baldur’s Gate 3 y qué ocurre después.",
+    "ru": "Настройте запуск Baldur’s Gate 3 через Redux и действия после запуска.",
+    "zh-Hans": "设置 Redux 启动《博德之门3》的方式及启动后的行为。"
+  },
+  "Control_source_linking_and_experimental_load_order_guidance__8da0b255": {
+    "en": "Control source linking and experimental load-order guidance. Core diagnostics remain active.",
+    "fr": "Configurez les liens vers les sources et les conseils expérimentaux d’ordre de chargement. Les diagnostics de base restent actifs.",
+    "es": "Configura los enlaces a fuentes y las recomendaciones experimentales de orden de carga. Los diagnósticos básicos siguen activos.",
+    "ru": "Настройте привязку источников и экспериментальные рекомендации по порядку загрузки. Основная диагностика остаётся включённой.",
+    "zh-Hans": "控制来源关联和实验性加载顺序建议。核心诊断会保持启用。"
+  },
+  "Developer_and_diagnostics_025d95f9": {
+    "en": "Developer and diagnostics",
+    "fr": "Développement et diagnostic",
+    "es": "Desarrollo y diagnóstico",
+    "ru": "Разработка и диагностика",
+    "zh-Hans": "开发与诊断"
+  },
+  "Downloading_37b34555": {
+    "en": "Downloading",
+    "fr": "Téléchargement",
+    "es": "Descargando",
+    "ru": "Загрузка",
+    "zh-Hans": "正在下载"
+  },
+  "Enables_the_story_log_14260a20": {
+    "en": "Enables the story log",
+    "fr": "Activer le journal du scénario",
+    "es": "Activar el registro de historia",
+    "ru": "Включить журнал сценария",
+    "zh-Hans": "启用剧情日志"
+  },
+  "Failed_031a8f0f": {
+    "en": "Failed",
+    "fr": "Échec",
+    "es": "Error",
+    "ru": "Ошибка",
+    "zh-Hans": "失败"
+  },
+  "Folders_and_launch_7c3fd428": {
+    "en": "Folders and launch",
+    "fr": "Dossiers et lancement",
+    "es": "Carpetas e inicio",
+    "ru": "Папки и запуск",
+    "zh-Hans": "文件夹与启动"
+  },
+  "Game_directory_Mods_26001678": {
+    "en": "Game-directory Mods",
+    "fr": "Mods du dossier du jeu",
+    "es": "Mods de la carpeta del juego",
+    "ru": "Моды в папке игры",
+    "zh-Hans": "游戏目录模组"
+  },
+  "Get_New_Link_ff91a4e1": {
+    "en": "Get New Link",
+    "fr": "Obtenir un nouveau lien",
+    "es": "Obtener nuevo enlace",
+    "ru": "Получить новую ссылку",
+    "zh-Hans": "获取新链接"
+  },
+  "Getting_file_details_e492a281": {
+    "en": "Getting file details",
+    "fr": "Récupération des détails du fichier",
+    "es": "Obteniendo detalles del archivo",
+    "ru": "Получение сведений о файле",
+    "zh-Hans": "正在获取文件详情"
+  },
+  "Help_and_updates_59453c45": {
+    "en": "Help and updates",
+    "fr": "Aide et mises à jour",
+    "es": "Ayuda y actualizaciones",
+    "ru": "Справка и обновления",
+    "zh-Hans": "帮助与更新"
+  },
+  "Install_569ca49f": {
+    "en": "Install",
+    "fr": "Installer",
+    "es": "Instalar",
+    "ru": "Установить",
+    "zh-Hans": "安装"
+  },
+  "Install_with_Game_directory_Manager_a713d8bf": {
+    "en": "Install with Game-directory Manager",
+    "fr": "Installer avec le gestionnaire du dossier du jeu",
+    "es": "Instalar con el gestor de la carpeta del juego",
+    "ru": "Установить через менеджер папки игры",
+    "zh-Hans": "使用游戏目录管理器安装"
+  },
+  "Install_with_Save_Manager_5b882a9f": {
+    "en": "Install with Save Manager",
+    "fr": "Installer avec le gestionnaire de sauvegardes",
+    "es": "Instalar con el gestor de partidas guardadas",
+    "ru": "Установить через менеджер сохранений",
+    "zh-Hans": "使用存档管理器安装"
+  },
+  "Installation_failed_d472ecf6": {
+    "en": "Installation failed",
+    "fr": "Échec de l’installation",
+    "es": "Error de instalación",
+    "ru": "Ошибка установки",
+    "zh-Hans": "安装失败"
+  },
+  "Installing_8749b169": {
+    "en": "Installing",
+    "fr": "Installation",
+    "es": "Instalando",
+    "ru": "Установка",
+    "zh-Hans": "正在安装"
+  },
+  "Limit_the_cpu_to_x_amount_of_threads_unknown_if_this_works_deeff060": {
+    "en": "Limit the cpu to x amount of threads (unknown if this works)",
+    "fr": "Limiter le processeur à x threads (fonctionnement non confirmé)",
+    "es": "Limitar la CPU a x hilos (funcionamiento sin confirmar)",
+    "ru": "Ограничить процессор x потоками (работоспособность не подтверждена)",
+    "zh-Hans": "将 CPU 限制为 x 个线程（效果尚未确认）"
+  },
+  "Load_orders_and_files_23c60e30": {
+    "en": "Load orders and files",
+    "fr": "Ordres de chargement et fichiers",
+    "es": "Órdenes de carga y archivos",
+    "ru": "Порядки загрузки и файлы",
+    "zh-Hans": "加载顺序与文件"
+  },
+  "Logging_d3ef01b4": {
+    "en": "Logging",
+    "fr": "Journalisation",
+    "es": "Registros",
+    "ru": "Журналирование",
+    "zh-Hans": "日志"
+  },
+  "Manual_recovery_required_5da0f237": {
+    "en": "Manual recovery required",
+    "fr": "Récupération manuelle nécessaire",
+    "es": "Se requiere recuperación manual",
+    "ru": "Требуется ручное восстановление",
+    "zh-Hans": "需要手动恢复"
+  },
+  "Mod_lists_f8911e22": {
+    "en": "Mod lists",
+    "fr": "Listes de mods",
+    "es": "Listas de mods",
+    "ru": "Списки модов",
+    "zh-Hans": "模组列表"
+  },
+  "New_link_needed_eb74a8c2": {
+    "en": "New link needed",
+    "fr": "Nouveau lien nécessaire",
+    "es": "Se necesita un nuevo enlace",
+    "ru": "Нужна новая ссылка",
+    "zh-Hans": "需要新链接"
+  },
+  "New_mods_go_to_Inactive_Mods_Updates_preserve_each_installed_d25bc518": {
+    "en": "New mods go to Inactive Mods. Updates preserve each installed mod's active or inactive state and load-order position.",
+    "fr": "Les nouveaux mods vont dans les mods inactifs. Les mises à jour conservent l’état actif ou inactif et la position de chaque mod installé dans l’ordre de chargement.",
+    "es": "Los mods nuevos van a Mods inactivos. Las actualizaciones conservan el estado activo o inactivo y la posición en el orden de carga de cada mod instalado.",
+    "ru": "Новые моды помещаются в неактивные. При обновлении сохраняются активность и позиция каждого установленного мода в порядке загрузки.",
+    "zh-Hans": "新模组会放入未启用模组列表。更新会保留每个已安装模组的启用状态和加载顺序位置。"
+  },
+  "Open_this_exact_file_on_Nexus_Mods_then_choose_Mod_Manager_D_7f201ab9": {
+    "en": "Open this exact file on Nexus Mods, then choose Mod Manager Download again.",
+    "fr": "Ouvrez ce fichier précis sur Nexus Mods, puis choisissez à nouveau Mod Manager Download.",
+    "es": "Abre este archivo concreto en Nexus Mods y vuelve a elegir Mod Manager Download.",
+    "ru": "Откройте именно этот файл на Nexus Mods и снова выберите Mod Manager Download.",
+    "zh-Hans": "在 Nexus Mods 上打开此文件，然后再次选择 Mod Manager Download。"
+  },
+  "Open_this_file_on_Nexus_Mods_c3457944": {
+    "en": "Open this file on Nexus Mods.",
+    "fr": "Ouvrir ce fichier sur Nexus Mods.",
+    "es": "Abrir este archivo en Nexus Mods.",
+    "ru": "Открыть этот файл на Nexus Mods.",
+    "zh-Hans": "在 Nexus Mods 上打开此文件。"
+  },
+  "Package_validation_failed_70a553b1": {
+    "en": "Package validation failed",
+    "fr": "Échec de la validation du paquet",
+    "es": "Error de validación del paquete",
+    "ru": "Ошибка проверки пакета",
+    "zh-Hans": "安装包验证失败"
+  },
+  "Paused_e159b061": {
+    "en": "Paused",
+    "fr": "En pause",
+    "es": "En pausa",
+    "ru": "Приостановлено",
+    "zh-Hans": "已暂停"
+  },
+  "Queued_661ff40a": {
+    "en": "Queued",
+    "fr": "En attente",
+    "es": "En cola",
+    "ru": "В очереди",
+    "zh-Hans": "排队中"
+  },
+  "Ready_to_install_bda18b9e": {
+    "en": "Ready to install",
+    "fr": "Prêt à installer",
+    "es": "Listo para instalar",
+    "ru": "Готово к установке",
+    "zh-Hans": "可安装"
+  },
+  "Reduce_motion_or_background_effects_for_a_quieter_interface_9aabaa85": {
+    "en": "Reduce motion or background effects for a quieter interface.",
+    "fr": "Réduisez les animations ou les effets d’arrière-plan pour une interface plus calme.",
+    "es": "Reduce el movimiento o los efectos de fondo para una interfaz más tranquila.",
+    "ru": "Уменьшите анимацию и фоновые эффекты для более спокойного интерфейса.",
+    "zh-Hans": "减少动画或背景特效，让界面更平静。"
+  },
+  "Reinstall_with_Game_directory_Manager_f3437b9c": {
+    "en": "Reinstall with Game-directory Manager",
+    "fr": "Réinstaller avec le gestionnaire du dossier du jeu",
+    "es": "Reinstalar con el gestor de la carpeta del juego",
+    "ru": "Переустановить через менеджер папки игры",
+    "zh-Hans": "使用游戏目录管理器重新安装"
+  },
+  "Reinstall_with_Save_Manager_c76a990a": {
+    "en": "Reinstall with Save Manager",
+    "fr": "Réinstaller avec le gestionnaire de sauvegardes",
+    "es": "Reinstalar con el gestor de partidas guardadas",
+    "ru": "Переустановить через менеджер сохранений",
+    "zh-Hans": "使用存档管理器重新安装"
+  },
+  "Removal_incomplete_10375d1d": {
+    "en": "Removal incomplete",
+    "fr": "Suppression incomplète",
+    "es": "Eliminación incompleta",
+    "ru": "Удаление не завершено",
+    "zh-Hans": "删除未完成"
+  },
+  "Reset_Advanced_Settings_0af1a610": {
+    "en": "Reset Advanced Settings",
+    "fr": "Réinitialiser les paramètres avancés",
+    "es": "Restablecer ajustes avanzados",
+    "ru": "Сбросить расширенные настройки",
+    "zh-Hans": "重置高级设置"
+  },
+  "Reset_Backups_and_snapshots_6bc5d2c4": {
+    "en": "Reset Backups and snapshots",
+    "fr": "Réinitialiser les sauvegardes et instantanés",
+    "es": "Restablecer copias de seguridad e instantáneas",
+    "ru": "Сбросить настройки резервных копий и снимков",
+    "zh-Hans": "重置备份与快照设置"
+  },
+  "Reset_Keybindings_768f2c1f": {
+    "en": "Reset Keybindings",
+    "fr": "Réinitialiser les raccourcis clavier",
+    "es": "Restablecer atajos de teclado",
+    "ru": "Сбросить сочетания клавиш",
+    "zh-Hans": "重置键盘快捷键"
+  },
+  "Reset_Mod_Manager_Settings_7a9a4fee": {
+    "en": "Reset Mod Manager Settings",
+    "fr": "Réinitialiser les paramètres du gestionnaire de mods",
+    "es": "Restablecer ajustes del gestor de mods",
+    "ru": "Сбросить настройки менеджера модов",
+    "zh-Hans": "重置模组管理器设置"
+  },
+  "Reset_Script_Extender_Settings_825c5a33": {
+    "en": "Reset Script Extender Settings",
+    "fr": "Réinitialiser les paramètres de Script Extender",
+    "es": "Restablecer ajustes de Script Extender",
+    "ru": "Сбросить настройки Script Extender",
+    "zh-Hans": "重置 Script Extender 设置"
+  },
+  "Reset_Script_Extender_Updater_Settings_582c9405": {
+    "en": "Reset Script Extender Updater Settings",
+    "fr": "Réinitialiser les paramètres de mise à jour de Script Extender",
+    "es": "Restablecer ajustes del actualizador de Script Extender",
+    "ru": "Сбросить настройки обновления Script Extender",
+    "zh-Hans": "重置 Script Extender 更新器设置"
+  },
+  "Reset_Theme_and_Appearance_fbdd6052": {
+    "en": "Reset Theme and Appearance",
+    "fr": "Réinitialiser le thème et l’apparence",
+    "es": "Restablecer tema y apariencia",
+    "ru": "Сбросить тему и оформление",
+    "zh-Hans": "重置主题与外观"
+  },
+  "Retry_Delete_e22259eb": {
+    "en": "Retry Delete",
+    "fr": "Réessayer la suppression",
+    "es": "Reintentar eliminación",
+    "ru": "Повторить удаление",
+    "zh-Hans": "重试删除"
+  },
+  "Save_Games_5189aaf1": {
+    "en": "Save Games",
+    "fr": "Sauvegardes de jeu",
+    "es": "Partidas guardadas",
+    "ru": "Сохранения игры",
+    "zh-Hans": "游戏存档"
+  },
+  "Settings_and_appearance_dca140b0": {
+    "en": "Settings and appearance",
+    "fr": "Paramètres et apparence",
+    "es": "Ajustes y apariencia",
+    "ru": "Настройки и оформление",
+    "zh-Hans": "设置与外观"
+  },
+  "Try_Again_df0fe9e0": {
+    "en": "Try Again",
+    "fr": "Réessayer",
+    "es": "Reintentar",
+    "ru": "Повторить",
+    "zh-Hans": "重试"
+  },
+  "Try_Again_with_Game_directory_Manager_6912b487": {
+    "en": "Try Again with Game-directory Manager",
+    "fr": "Réessayer avec le gestionnaire du dossier du jeu",
+    "es": "Reintentar con el gestor de la carpeta del juego",
+    "ru": "Повторить через менеджер папки игры",
+    "zh-Hans": "使用游戏目录管理器重试"
+  },
+  "Try_Again_with_Save_Manager_cf417015": {
+    "en": "Try Again with Save Manager",
+    "fr": "Réessayer avec le gestionnaire de sauvegardes",
+    "es": "Reintentar con el gestor de partidas guardadas",
+    "ru": "Повторить через менеджер сохранений",
+    "zh-Hans": "使用存档管理器重试"
+  },
+  "Unsupported_archive_layout_7467c6ba": {
+    "en": "Unsupported archive layout",
+    "fr": "Structure d’archive non prise en charge",
+    "es": "Estructura de archivo no compatible",
+    "ru": "Неподдерживаемая структура архива",
+    "zh-Hans": "不支持的压缩文件结构"
+  },
+  "Waiting_to_retry_e8d51f72": {
+    "en": "Waiting to retry",
+    "fr": "En attente d’une nouvelle tentative",
+    "es": "Esperando para reintentar",
+    "ru": "Ожидание повторной попытки",
+    "zh-Hans": "等待重试"
+  },
+  "0_Modified_21ad9310": {
+    "en": "{0} (Modified)",
+    "fr": "{0} (modifié)",
+    "es": "{0} (modificado)",
+    "ru": "{0} (изменено)",
+    "zh-Hans": "{0}（已修改）"
   }
 }

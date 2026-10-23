@@ -21,6 +21,184 @@ namespace Redux.Core.Tests;
 
 internal sealed class InterfaceLanguageTests
 {
+	public void SettingsAndCommandMetadataHaveTranslationsInEveryLanguage()
+	{
+		using var stream = typeof(ReduxLanguageService).Assembly.GetManifestResourceStream("Redux.InterfaceStrings.json")!;
+		var catalog = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(stream)!;
+		var byEnglish = catalog.Values.ToDictionary(values => values["en"], StringComparer.Ordinal);
+		var required = new HashSet<string>(StringComparer.Ordinal);
+		void Add(string? text) { if (!String.IsNullOrWhiteSpace(text)) required.Add(text); }
+		foreach (var assembly in new[] { typeof(DivinityModManagerSettings).Assembly, typeof(SettingsWindow).Assembly })
+		foreach (var type in assembly.GetTypes())
+		{
+			if (type == typeof(ReduxTypographyFont)) continue; // Font family names are proper names.
+			foreach (var member in type.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+			{
+				if (member.GetCustomAttribute<DivinityModManager.SettingsEntryAttribute>() is { } setting)
+				{
+					Add(setting.DisplayName); Add(setting.Tooltip);
+				}
+				if (member.GetCustomAttribute<DivinityModManager.MenuSettingsAttribute>() is { } command)
+				{
+					Add(command.DisplayName); Add(command.Tooltip); Add(command.Parent);
+				}
+				if (member.GetCustomAttribute<System.ComponentModel.DataAnnotations.DisplayAttribute>() is { } display)
+				{
+					Add(display.Name); Add(display.Description);
+				}
+				if (type.IsEnum && member.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>() is { } description)
+					Add(description.Description);
+			}
+		}
+		foreach (var name in new[] { "GeneralSettingsGroups", "ExtenderSettingsGroups" })
+		foreach (var group in (System.Collections.IEnumerable)typeof(SettingsWindow).GetField(name, BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!)
+		{
+			Add((string)group.GetType().GetProperty("Title")!.GetValue(group)!);
+			Add((string)group.GetType().GetProperty("Description")!.GetValue(group)!);
+		}
+		var categories = (IReadOnlyDictionary<string, string>)typeof(DivinityModManager.ViewModels.AppKeys)
+			.GetField("ShortcutCategoryNames", BindingFlags.NonPublic | BindingFlags.Static)!.GetValue(null)!;
+		foreach (var category in categories.Values) Add(category);
+		// Inspect actual entries: GetTranslation would silently hide missing locales with English fallback.
+		var missing = required.Where(text => !byEnglish.TryGetValue(text, out var values)
+			|| ReduxLanguageService.Languages.Any(language => !values.TryGetValue(language.Code, out var translated) || String.IsNullOrWhiteSpace(translated))).ToList();
+		if (missing.Count > 0) throw new InvalidOperationException("Missing metadata translations:\n" + String.Join("\n", missing));
+		foreach (var entry in catalog)
+		foreach (var language in ReduxLanguageService.Languages)
+			if (!entry.Value.TryGetValue(language.Code, out var translated) || String.IsNullOrWhiteSpace(translated)) throw new InvalidOperationException(entry.Key + ": " + language.Code);
+	}
+
+	public void GeneratedSettingsAndShortcutsSwitchLanguageWithoutChangingValues()
+	{
+		WithResources(resources =>
+		{
+			var window = new SettingsWindow();
+			try
+			{
+				var settings = new DivinityModManagerSettings();
+				var models = new (ReactiveUI.ReactiveObject Model, string Grid)[]
+				{
+					(settings, "SettingsAutoGrid"),
+					(new DivinityModManager.Models.Extender.ScriptExtenderSettings(), "ExtenderSettingsAutoGrid"),
+					(new DivinityModManager.Models.Extender.ScriptExtenderUpdateConfig(), "ExtenderUpdaterSettingsAutoGrid")
+				};
+				foreach (var (model, gridName) in models)
+				{
+					var grid = (AutoGrid)window.FindName(gridName);
+					typeof(SettingsWindow).GetMethod("CreateSettingsElements", BindingFlags.NonPublic | BindingFlags.Instance)!
+						.Invoke(window, [model, model.GetType(), grid]);
+				}
+				var general = (AutoGrid)window.FindName("SettingsAutoGrid");
+				var screenshotLabels = new[] { "Package archive quota (GB)", "Keep previous mod versions", "Previous mod versions limit (GB)", "After launching the game" };
+				foreach (var english in screenshotLabels)
+					if (!general.Children.OfType<TextBlock>().Any(label => LocalizationBindings.SourceText(label, TextBlock.TextProperty, "") == english)) throw new InvalidOperationException(english);
+				var hotkey = new DivinityModManager.Models.App.Hotkey(System.Windows.Input.Key.S, System.Windows.Input.ModifierKeys.Control)
+				{
+					ID = "Save", DisplayName = "Save Current Order", Category = "Load orders and files", Description = "Save changes to the selected load order."
+				};
+				hotkey.Key = System.Windows.Input.Key.T;
+				hotkey.UpdateDisplayBindingText();
+				var persistedHotkey = JsonConvert.SerializeObject(hotkey);
+				var shortcutLabel = new TextBlock();
+				shortcutLabel.SetBinding(TextBlock.TextProperty, new Binding(nameof(hotkey.LocalizedDisplayName)) { Source = hotkey });
+				var dropdown = general.Children.OfType<ComboBox>().First(combo => combo.ItemsSource is IEnumerable<DivinityModManager.Models.View.EnumEntry>);
+				var entry = (DivinityModManager.Models.View.EnumEntry)dropdown.Items[0];
+				dropdown.SelectedItem = entry;
+				typeof(SettingsWindow).GetMethod("SetComboBoxMainToolTip", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, [dropdown, null!]);
+				foreach (var language in ReduxLanguageService.Languages.Concat(ReduxLanguageService.Languages.Reverse()))
+				{
+					ReduxLanguageService.Current.SetLanguage(language.Code);
+					Layout((FrameworkElement)window.Content, 860, 720);
+					Layout(shortcutLabel, 400, 40);
+					foreach (var (_, gridName) in models)
+					foreach (var label in ((AutoGrid)window.FindName(gridName)).Children.OfType<TextBlock>())
+					{
+						var original = LocalizationBindings.SourceText(label, TextBlock.TextProperty, "");
+						if (original.Length > 0) RegressionAssert.Equal(ReduxLanguageService.Current.Translate(original), label.Text);
+					}
+					foreach (var english in screenshotLabels)
+					{
+						var label = general.Children.OfType<TextBlock>().Single(t => LocalizationBindings.SourceText(t, TextBlock.TextProperty, "") == english);
+						if (language.Code != "en") RegressionAssert.False(label.Text == english);
+					}
+					RegressionAssert.Equal(ReduxLanguageService.Current.Translate(hotkey.DisplayName), shortcutLabel.Text);
+					RegressionAssert.Contains(hotkey.CommandToolTip, ReduxLanguageService.Current.Translate(hotkey.Description));
+					RegressionAssert.Contains(hotkey.CommandToolTip, hotkey.DisplayBindingText);
+					RegressionAssert.Equal(ReduxLanguageService.Current.FormatEnglish("{0} (Modified)", hotkey.LocalizedDisplayName), hotkey.ToolTip);
+					RegressionAssert.Equal(persistedHotkey, JsonConvert.SerializeObject(hotkey));
+					RegressionAssert.Equal(entry, dropdown.SelectedItem);
+					if (!String.IsNullOrWhiteSpace(entry.Description)) RegressionAssert.Equal(ReduxLanguageService.Current.Translate(entry.Description), dropdown.ToolTip);
+					((TextBox)window.FindName("KeybindingsSearchTextBox")).Text = hotkey.LocalizedDisplayName;
+					RegressionAssert.True((bool)typeof(SettingsWindow).GetMethod("FilterHotkey", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(window, [hotkey])!);
+				}
+				var preview = Environment.GetEnvironmentVariable("REDUX_LAYOUT_PREVIEW");
+				var content = (FrameworkElement)window.Content;
+				content.Opacity = 1; content.RenderTransform = Transform.Identity;
+				foreach (var theme in new[] { ReduxThemeType.ReduxDark, ReduxThemeType.ReduxLight, ReduxThemeType.Parchment })
+				foreach (var language in new[] { "fr", "ru", "zh-Hans" })
+				{
+					ReduxThemeService.Apply(window.Resources, theme);
+					// Complete a theme change before switching language, as separate user actions do.
+					Layout((FrameworkElement)window.Content, 860, 960);
+					ReduxTypographyService.ApplyTextSize(resources, ReduxTextSize.Large);
+					ReduxLanguageService.Current.SetLanguage(language);
+					Layout(content, 860, 960);
+					var scroll = (ScrollViewer)((TabItem)window.FindName("GeneralSettingssTab")).Content;
+					scroll.ScrollToVerticalOffset(180);
+					Layout(content, 860, 960);
+					foreach (var name in new[] { "SaveSettingsButton", "OpenSettingsFolderButton", "ResetSettingsButton" })
+					{
+						var button = (Button)window.FindName(name);
+						var caption = ((Panel)button.Content).Children.OfType<TextBlock>().Single();
+						var bounds = caption.TransformToAncestor(button).TransformBounds(new Rect(caption.RenderSize));
+						if (bounds.Right > button.ActualWidth + 1) throw new InvalidOperationException($"Clipped {name}: {theme}/{language}: {bounds}; button {button.ActualWidth}");
+					}
+					if (!String.IsNullOrWhiteSpace(preview)) Render(content, Path.Combine(preview, $"settings-{theme}-{language}.png"), 860, 960, 144);
+				}
+			}
+			finally { window.Close(); }
+		});
+	}
+
+	public void DownloadActionTranslationsPreservePackageIdentityAndState()
+	{
+		WithResources(resources =>
+		{
+			var window = new ReduxNexusDownloadsWindow();
+			try
+			{
+				var template = (DataTemplate)window.Resources["DownloadItemTemplate"];
+				var row = (FrameworkElement)template.LoadContent();
+				var item = new DivinityModManager.Models.NexusMods.NxmDownloadItem { ProjectName = "Save", FileDisplayName = "Install", FileName = "English Русский 中文.zip" };
+				row.DataContext = item;
+				var service = ReduxLanguageService.Current;
+				var english = service.Keys.Select(key => service.GetTranslation(key, "en")).ToHashSet();
+				foreach (var state in Enum.GetValues<DivinityModManager.Models.NexusMods.NxmDownloadState>())
+				foreach (var destination in new[] { "Inactive Mods", "Save Games", "Game-directory Mods" })
+				foreach (var error in new[] { "", "missing-dependencies", "archive-unreadable", "archive-layout", "invalid-package", "rollback-failed", "removal-incomplete" })
+				{
+					item.State = state; item.DetectedDestination = destination; item.ErrorCode = error;
+					foreach (var owned in new[] { item.StatusText, item.InstallActionText, item.NexusActionText, item.RemoveActionText, item.InstallActionToolTip, item.NexusActionToolTip })
+						if (!String.IsNullOrWhiteSpace(owned) && !english.Contains(owned)) throw new InvalidOperationException(owned);
+					var persisted = JsonConvert.SerializeObject(item);
+					foreach (var language in ReduxLanguageService.Languages)
+					{
+						service.SetLanguage(language.Code);
+						Layout(row, 900, 180);
+						var status = (TextBlock)row.FindName("StatusText");
+						RegressionAssert.Equal(service.Translate(item.StatusText), status.Text);
+						var actions = Descendants<Button>(row).Select(button => button.Content).OfType<Panel>().SelectMany(panel => panel.Children.OfType<TextBlock>());
+						if (!actions.Any(text => text.Text == service.Translate(item.InstallActionText)))
+							throw new InvalidOperationException($"{state} / {destination} / {error} / {language.Code}: expected {service.Translate(item.InstallActionText)}; actual {String.Join(", ", actions.Select(text => text.Text))}");
+						RegressionAssert.True(Descendants<TextBlock>(row).Any(text => text.Text == "Save"));
+						RegressionAssert.Equal(persisted, JsonConvert.SerializeObject(item));
+					}
+				}
+			}
+			finally { window.Close(); }
+		});
+	}
+
 	public void LanguagesPersistWithoutChangingCultureOrUserData()
 	{
 		var service = new ReduxLanguageService();

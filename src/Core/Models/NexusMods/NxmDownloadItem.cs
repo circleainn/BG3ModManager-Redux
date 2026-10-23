@@ -125,7 +125,17 @@ public sealed class NxmDownloadItem : ReactiveObject
 	[DataMember(Order = 27), Reactive] public AcquiredPackageSourceKind SourceKind { get; set; }
 	[DataMember(Order = 28), Reactive] public string SourceFileName { get; set; } = String.Empty;
 	[DataMember(Order = 29), Reactive] public string DetectedContentKind { get; set; } = String.Empty;
-	[DataMember(Order = 30), Reactive] public string DetectedDestination { get; set; } = String.Empty;
+	private string _detectedDestination = String.Empty;
+	[DataMember(Order = 30)] public string DetectedDestination
+	{
+		get => _detectedDestination;
+		set
+		{
+			this.RaiseAndSetIfChanged(ref _detectedDestination, value ?? String.Empty);
+			this.RaisePropertyChanged(nameof(InstallActionText));
+			this.RaisePropertyChanged(nameof(InstallActionToolTip));
+		}
+	}
 	[DataMember(Order = 31), Reactive] public string InspectionSummary { get; set; } = String.Empty;
 	[DataMember(Order = 32), Reactive] public bool InspectionCompleted { get; set; }
 

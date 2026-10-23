@@ -185,7 +185,7 @@
 											VerticalAlignment="Center"
 											Foreground="{DynamicResource ReduxInfoBrush}" StrokeData="{StaticResource Redux.Icon.Download}"
 											Style="{StaticResource ReduxOptionalInterfaceIconStyle}" />
-										<TextBlock Style="{StaticResource ReduxManagerStatusStyle}" x:Name="StatusText" VerticalAlignment="Center" Foreground="{DynamicResource ReduxInfoBrush}" Text="{Binding StatusText}" />
+										<TextBlock Style="{StaticResource ReduxManagerStatusStyle}" x:Name="StatusText" VerticalAlignment="Center" Foreground="{DynamicResource ReduxInfoBrush}" Text="{loc:BoundText Path=StatusText}" />
 									</StackPanel>
 								</Border>
 							</Grid>
@@ -218,17 +218,17 @@
 								<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" StrokeData="{StaticResource Redux.Icon.RefreshStroke}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" /><TextBlock Text="{loc:Text Resume_d640c742}" /></StackPanel>
 							</Button>
 							<Button Tag="{Binding}" Style="{StaticResource ReviewDownloadButton}" Click="ReviewButton_Click"
-								ToolTip="{Binding InstallActionToolTip}">
+								ToolTip="{loc:BoundText Path=InstallActionToolTip}">
 								<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0"
 									Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-									StrokeData="{StaticResource Redux.Icon.Package}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" /><TextBlock Text="{Binding InstallActionText}" /></StackPanel>
+									StrokeData="{StaticResource Redux.Icon.Package}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" /><TextBlock Text="{loc:BoundText Path=InstallActionText}" /></StackPanel>
 							</Button>
 							<Button Tag="{Binding}" Style="{StaticResource NexusDownloadSourceButtonStyle}" Click="NexusButton_Click"
-								ToolTip="{Binding NexusActionToolTip}">
-								<StackPanel Orientation="Horizontal"><ContentControl Width="16" Height="16" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,6,0" ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}" /><TextBlock Text="{Binding NexusActionText}" /></StackPanel>
+								ToolTip="{loc:BoundText Path=NexusActionToolTip}">
+								<StackPanel Orientation="Horizontal"><ContentControl Width="16" Height="16" Padding="0" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,6,0" ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}" /><TextBlock Text="{loc:BoundText Path=NexusActionText}" /></StackPanel>
 							</Button>
 							<Button Tag="{Binding}" Style="{StaticResource RemoveDownloadButton}" Click="RemoveButton_Click">
-								<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" StrokeData="{StaticResource Redux.Icon.Trash}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" /><TextBlock Text="{Binding RemoveActionText}" /></StackPanel>
+								<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" StrokeData="{StaticResource Redux.Icon.Trash}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" /><TextBlock Text="{loc:BoundText Path=RemoveActionText}" /></StackPanel>
 							</Button>
 							<Button Tag="{Binding}" Style="{StaticResource ClearDownloadHistoryButton}" Click="RemoveButton_Click">
 								<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" StrokeData="{StaticResource Redux.Icon.Close}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" /><TextBlock Text="{loc:Text Clear_83b12c22}" /></StackPanel>
