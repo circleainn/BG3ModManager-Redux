@@ -5,7 +5,7 @@
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Debug Information"
+	Title="{loc:Text Debug_Information_5dc4a193}"
 	Width="760" Height="680" MinWidth="620" MinHeight="480" MaxWidth="980" MaxHeight="900"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontSize="{DynamicResource Redux.FontSize.12}"
@@ -72,9 +72,9 @@
 				<StackPanel>
 					<TextBlock FontSize="{DynamicResource Redux.FontSize.20}"
 						FontWeight="{DynamicResource Redux.FontWeight.Title}"
-						Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Debug information" />
+						Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Debug_information_7f435ea7}" />
 					<TextBlock Margin="0,4,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-						Text="Read-only Redux state captured for troubleshooting. This window never changes mods, saves, or load orders."
+						Text="{loc:Text Read_only_Redux_state_captured_for_troubleshooting_This_wind_c3558708}"
 						TextWrapping="Wrap" />
 				</StackPanel>
 				<Border Grid.Row="1" Margin="0,12,0,12" Padding="10,8"
@@ -86,7 +86,7 @@
 							Style="{StaticResource ReduxOptionalInterfaceIconStyle}"
 							Foreground="{DynamicResource ReduxWarningBrush}" StrokeData="{StaticResource Redux.Icon.Warning}" />
 						<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Local paths can contain your Windows account name. Review screenshots before sharing them; API keys and credentials are never shown here."
+							Text="{loc:Text Local_paths_can_contain_your_Windows_account_name_Review_scr_72a63c6b}"
 							TextWrapping="Wrap" />
 					</StackPanel>
 				</Border>
@@ -100,7 +100,7 @@
 							<StackPanel Orientation="Horizontal">
 								<controls:ReduxIcon VerticalAlignment="Center" Width="15" Height="15" Margin="0,0,7,0"
 									Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Copy}" />
-								<TextBlock Text="Copy safe summary" />
+								<TextBlock Text="{loc:Text Copy_safe_summary_6b3129a8}" />
 							</StackPanel>
 						</Button>
 						<Button MinWidth="92" Margin="8,0,0,0" Click="RefreshButton_Click" Style="{StaticResource ReduxSecondaryActionButtonStyle}">

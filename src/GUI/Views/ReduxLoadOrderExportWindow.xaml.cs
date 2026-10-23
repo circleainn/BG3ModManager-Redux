@@ -29,20 +29,20 @@ public partial class ReduxLoadOrderExportWindow : AdonisUI.Controls.AdonisWindow
 		if (settings != null)
 			ReduxThemeService.Apply(Resources, settings.ColorTheme, ReduxThemeService.GetActiveTheme(settings), settings.UsesGeneratedGradients);
 
-		OrderNameText.Text = String.IsNullOrWhiteSpace(orderName) ? "Redux Modlist" : orderName;
+		OrderNameText.Text = String.IsNullOrWhiteSpace(orderName) ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Redux Modlist") : orderName;
 		ModCountText.Text = FormatCount(modCount, "mod");
 		CategoryCountText.Text = FormatCount(categoryCount, "category", "categories");
 		SeparatorCountText.Text = FormatCount(separatorCount, "separator");
 		IconCountText.Text = FormatCount(iconCount, "icon");
-		SourceLinkCountText.Text = $"{FormatCount(sourceLinkCount, "source link")} • recipient chooses whether to apply";
+		SourceLinkCountText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{FormatCount(sourceLinkCount, "source link")} • recipient chooses whether to apply");
 		PrivateNotesTitleText.Text =
-			$"Include notes ({Math.Max(0, privateNoteCount)})";
+			DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Include notes ({Math.Max(0, privateNoteCount)})");
 		IncludePrivateNotesCheckBox.IsEnabled = privateNoteCount > 0;
 		IncludePrivateNotesCheckBox.IsChecked = false;
 		if (unavailableIconCount > 0)
 		{
 			BundleSafetyText.Text +=
-				$" {FormatCount(unavailableIconCount, "unavailable custom icon")} will use the default marker.";
+				DivinityModManager.Localization.ReduxLanguageService.Current.Format($" {FormatCount(unavailableIconCount, "unavailable custom icon")} will use the default marker.");
 		}
 	}
 

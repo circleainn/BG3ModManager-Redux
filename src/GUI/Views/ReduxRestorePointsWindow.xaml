@@ -7,7 +7,7 @@
 	xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
 	xmlns:models="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Load Order History"
+	Title="{loc:Text Load_Order_History_0bf5a079}"
 	Width="980" Height="680" MinWidth="820" MinHeight="560" MaxWidth="1260" MaxHeight="900"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontSize="{DynamicResource Redux.FontSize.12}"
@@ -194,10 +194,10 @@
 						<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
 					<StackPanel>
-						<TextBlock Style="{StaticResource ReduxWindowHeadingStyle}" Text="Load order history" />
+						<TextBlock Style="{StaticResource ReduxWindowHeadingStyle}" Text="{loc:Text Load_order_history_e9129373}" />
 						<TextBlock Margin="0,5,0,0"
 							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Restore an earlier order. Sync separately to apply it to the game."
+							Text="{loc:Text Restore_an_earlier_order_Sync_separately_to_apply_it_to_the__7bc6b78d}"
 							TextWrapping="Wrap" />
 					</StackPanel>
 					<Button Grid.Column="1"
@@ -206,7 +206,7 @@
 						VerticalAlignment="Center"
 						Style="{StaticResource ReduxSecondaryActionButtonStyle}"
 						Click="CompareOrdersButton_Click">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.SwapHorizontalStroke}" /><TextBlock Text="Compare Orders" /></StackPanel>
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.SwapHorizontalStroke}" /><TextBlock Text="{loc:Text Compare_Orders_2ea68b57}" /></StackPanel>
 					</Button>
 				</Grid>
 
@@ -235,17 +235,17 @@
 								<StackPanel VerticalAlignment="Center">
 									<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 										FontWeight="{DynamicResource Redux.FontWeight.Control}"
-										Text="Snapshots" />
+										Text="{loc:Text Snapshots_f187f78e}" />
 									<TextBlock x:Name="SnapshotCountText" Margin="0,2,0,0"
 										Foreground="{DynamicResource ReduxTextMutedBrush}"
-										Text="0 saved" />
+										Text="{loc:Text 0_saved_5b74b091}" />
 								</StackPanel>
 								<Button x:Name="CreateButton"
 									Grid.Column="1"
 									MinWidth="88"
 									Style="{StaticResource ReduxSecondaryActionButtonStyle}"
 									Click="CreateButton_Click">
-									<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.AddCircle}" /><TextBlock Text="Capture" /></StackPanel>
+									<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.AddCircle}" /><TextBlock Text="{loc:Text Capture_1900b478}" /></StackPanel>
 								</Button>
 							</Grid>
 							<ListBox x:Name="RestorePointList"
@@ -274,11 +274,11 @@
 									HorizontalAlignment="Center"
 									Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 									FontWeight="{DynamicResource Redux.FontWeight.Control}"
-									Text="No snapshots yet" />
+									Text="{loc:Text No_snapshots_yet_168e5187}" />
 								<TextBlock Margin="0,3,0,0"
 									HorizontalAlignment="Center"
 									Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="Capture the working order or sync a load order to begin."
+									Text="{loc:Text Capture_the_working_order_or_sync_a_load_order_to_begin_61a025e3}"
 									TextAlignment="Center"
 									TextWrapping="Wrap" />
 							</StackPanel>
@@ -309,10 +309,10 @@
 										Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 										FontSize="{DynamicResource Redux.FontSize.16}"
 										FontWeight="{DynamicResource Redux.FontWeight.Title}"
-										Text="Select a snapshot" />
+										Text="{loc:Text Select_a_snapshot_a6f67f35}" />
 									<TextBlock x:Name="SelectedReasonText" Margin="0,4,0,0"
 										Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-										Text="Choose a snapshot to review its changes."
+										Text="{loc:Text Choose_a_snapshot_to_review_its_changes_fbab5155}"
 										TextTrimming="CharacterEllipsis" />
 								</StackPanel>
 								<Border Grid.Column="1"
@@ -326,7 +326,7 @@
 									<TextBlock x:Name="SelectedModCountText"
 										Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 										FontWeight="{DynamicResource Redux.FontWeight.Control}"
-										Text="0 mods" />
+										Text="{loc:Text 0_mods_772b55b7}" />
 								</Border>
 							</Grid>
 
@@ -334,7 +334,7 @@
 								Grid.Row="1"
 								Margin="0,5,0,0"
 								Foreground="{DynamicResource ReduxTextMutedBrush}"
-								Text="Source order"
+								Text="{loc:Text Source_order_77a9f139}"
 								TextTrimming="CharacterEllipsis" />
 
 							<UniformGrid Grid.Row="2" Margin="0,10,0,9" Columns="3">
@@ -353,7 +353,7 @@
 											Text="0" />
 										<TextBlock Margin="0,2,0,0"
 											Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-											Text="Added since" />
+											Text="{loc:Text Added_since_06fefec1}" />
 										</StackPanel>
 									</Grid>
 								</Border>
@@ -372,7 +372,7 @@
 											Text="0" />
 										<TextBlock Margin="0,2,0,0"
 											Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-											Text="Removed since" />
+											Text="{loc:Text Removed_since_50818b6e}" />
 										</StackPanel>
 									</Grid>
 								</Border>
@@ -391,7 +391,7 @@
 											Text="0" />
 										<TextBlock Margin="0,2,0,0"
 											Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-											Text="Repositioned" />
+											Text="{loc:Text Repositioned_13080dee}" />
 										</StackPanel>
 									</Grid>
 								</Border>
@@ -409,11 +409,11 @@
 									</Grid.ColumnDefinitions>
 									<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 										FontWeight="{DynamicResource Redux.FontWeight.Control}"
-										Text="Changes to the current working order" />
+										Text="{loc:Text Changes_to_the_current_working_order_c39a6f35}" />
 									<TextBlock x:Name="DifferenceCountText"
 										Grid.Column="1"
 										Foreground="{DynamicResource ReduxTextMutedBrush}"
-										Text="0 changes" />
+										Text="{loc:Text 0_changes_93238d7a}" />
 								</Grid>
 								<Grid Grid.Row="1">
 									<ListBox x:Name="ChangeList"
@@ -436,7 +436,7 @@
 											HorizontalAlignment="Center"
 											Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 											FontWeight="{DynamicResource Redux.FontWeight.Control}"
-											Text="The current order matches this snapshot" />
+											Text="{loc:Text The_current_order_matches_this_snapshot_de785a94}" />
 									</StackPanel>
 								</Grid>
 							</Grid>
@@ -460,7 +460,7 @@
 							VerticalAlignment="Center"
 							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							TextTrimming="CharacterEllipsis" TextWrapping="Wrap"
-							Text="The 20 newest snapshots are kept for each profile." />
+							Text="{loc:Text The_20_newest_snapshots_are_kept_for_each_profile_9830923d}" />
 					</Grid>
 					<Button x:Name="DeleteButton"
 						Grid.Column="1"
@@ -482,7 +482,7 @@
 						IsEnabled="False"
 						Style="{StaticResource ReduxPrimaryActionButtonStyle}"
 						Click="LoadButton_Click">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Undo}" /><TextBlock Text="Load Working Order" /></StackPanel>
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Undo}" /><TextBlock Text="{loc:Text Load_Working_Order_72a053e5}" /></StackPanel>
 					</Button>
 				</Grid>
 			</Grid>

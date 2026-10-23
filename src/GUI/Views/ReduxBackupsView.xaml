@@ -24,13 +24,13 @@
   <StackPanel Margin="18,14" Orientation="Vertical" VerticalAlignment="Top">
    <TextBlock Text="{loc:Text Backups_and_snapshots_821c74ec}" FontSize="{DynamicResource Redux.FontSize.20}" FontWeight="SemiBold" />
    <TextBlock Margin="0,8,0,8" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-    Text="Keep a version of Redux and its saved settings, orders, and artwork. Redux closes while a snapshot is created or restored, then restarts. Save unfinished order edits first." />
+    Text="{loc:Text Keep_a_version_of_Redux_and_its_saved_settings_orders_and_ar_617195a6}" />
    <TextBlock x:Name="SnapshotFolderText" TextWrapping="Wrap" Margin="0,0,0,12" />
    <TextBlock Text="{loc:Text Snapshot_name_b6bd65b1}" Margin="0,0,0,4" />
    <TextBox x:Name="SnapshotName" MaxLength="100" AutomationProperties.Name="{loc:Text Snapshot_name_b6bd65b1}" />
    <CheckBox x:Name="IncludeMods" Content="{loc:Text Include_mods_and_mod_lists_977e357d}" Style="{StaticResource ReduxCheckBoxStyle}" Margin="0,12,0,6" />
    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-    Text="Includes BG3's Mods folder, held Overrides, and profile load orders. Saved games, game-directory DLL/loose-texture mods, caches, logs, and the snapshot library are excluded. Snapshots contain private settings; keep them private." />
+    Text="{loc:Text Includes_BG3_s_Mods_folder_held_Overrides_and_profile_load_o_c9ac431a}" />
    <WrapPanel Margin="0,14,0,14">
     <Button x:Name="CreateSnapshotButton" Content="{loc:Text Create_snapshot_and_restart_56d50447}" Click="Create_Click" Margin="0,0,8,8"
      Style="{StaticResource ReduxPrimaryActionButtonStyle}" ContentTemplate="{StaticResource SnapshotActionContent}" Tag="{DynamicResource Redux.Icon.Save}" />
@@ -61,7 +61,7 @@
     </StackPanel></DataTemplate></ListBox.ItemTemplate>
    </ListBox>
    <TextBlock Margin="0,8,0,12" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-    Text="Restore any saved snapshot to roll backward or forward. Before restoring, Redux saves a return snapshot of the folders being replaced. Files added since the selected snapshot are removed from those folders; the return snapshot keeps them recoverable." />
+    Text="{loc:Text Restore_any_saved_snapshot_to_roll_backward_or_forward_Befor_95acbbed}" />
    <WrapPanel>
     <Button x:Name="RestoreSnapshotButton" Content="{loc:Text Restore_selected_and_restart_4a5e68c1}" Click="Restore_Click" Margin="0,0,8,8" IsEnabled="False"
      Style="{StaticResource ReduxMinorWarningActionButtonStyle}" ContentTemplate="{StaticResource SnapshotActionContent}" Tag="{DynamicResource Redux.Icon.Undo}" />

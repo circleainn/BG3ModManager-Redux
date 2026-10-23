@@ -120,7 +120,7 @@
 						Click="MinimizeButton_Click"
 						shell:WindowChrome.IsHitTestVisibleInChrome="True"
 						Style="{StaticResource ReduxCaptionButtonStyle}"
-						ToolTip="Minimize">
+						ToolTip="{loc:Text Minimize_d72e311c}">
 						<local:ReduxIcon Width="13"
 							Height="13"
 							StrokeData="{DynamicResource Redux.Icon.WindowMinimize}" />
@@ -129,7 +129,7 @@
 						Click="MaximizeButton_Click"
 						shell:WindowChrome.IsHitTestVisibleInChrome="True"
 						Style="{StaticResource ReduxCaptionButtonStyle}"
-						ToolTip="Maximize or restore">
+						ToolTip="{loc:Text Maximize_or_restore_9e47a676}">
 						<Grid>
 							<local:ReduxIcon x:Name="MaximizeIcon"
 								Width="13"

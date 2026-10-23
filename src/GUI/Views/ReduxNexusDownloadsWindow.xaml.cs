@@ -91,14 +91,14 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 		var installedCount = downloads.Count(item => item.IsInstalledHistory);
 		var hasPending = pendingCount > 0;
 		var hasInstalled = installedCount > 0;
-		PackageCountText.Text = $"{pendingCount} in Downloads · {installedCount} installed · {_viewModel.RetainedPackageArchives.Count} retained archives";
+		PackageCountText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{pendingCount} in Downloads · {installedCount} installed · {_viewModel.RetainedPackageArchives.Count} retained archives");
 		EmptyText.Visibility = hasPending ? Visibility.Collapsed : Visibility.Visible;
 		InstalledEmptyText.Visibility = hasInstalled ? Visibility.Collapsed : Visibility.Visible;
 		ArchivesEmptyText.Visibility = _viewModel.RetainedPackageArchives.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
 		ClearInstalledButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && hasInstalled;
         DeleteAllButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && hasPending;
 		ClearArchivesButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && _viewModel.RetainedPackageArchives.Count > 0;
-		OpenFolderText.Text = "Open Folder";
+		OpenFolderText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Open Folder");
 		InstallAllButton.Visibility = DownloadsTabs.SelectedIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
 		InstallAllButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && downloads.Any(item =>
 			item.State is NxmDownloadState.Downloaded or NxmDownloadState.NeedsReview or NxmDownloadState.InstallFailed);
@@ -146,7 +146,7 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Add Packages to Download Manager",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Add Packages to Download Manager"),
 			Filter = "Supported packages|*.pak;*.lsv;*.zip;*.7z;*.7zip;*.rar;*.tar;*.gz;*.gzip;*.tgz|All files|*.*",
 			Multiselect = true,
 			CheckFileExists = true

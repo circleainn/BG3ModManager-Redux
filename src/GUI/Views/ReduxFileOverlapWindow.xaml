@@ -6,7 +6,7 @@
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Active File Overlaps"
+	Title="{loc:Text Active_File_Overlaps_5e081980}"
 	Width="820" Height="650" MinWidth="640" MinHeight="500" MaxWidth="1080" MaxHeight="880"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontSize="{DynamicResource Redux.FontSize.12}"
@@ -118,10 +118,10 @@
 				</Grid.RowDefinitions>
 
 				<StackPanel>
-					<TextBlock Style="{StaticResource ReduxWindowHeadingStyle}" Text="Active file overlaps" />
+					<TextBlock Style="{StaticResource ReduxWindowHeadingStyle}" Text="{loc:Text Active_file_overlaps_50600d4f}" />
 					<TextBlock Margin="0,5,0,0"
 						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-						Text="Shared files may be intentional overrides. Overlaps alone do not establish incompatibility."
+						Text="{loc:Text Shared_files_may_be_intentional_overrides_Overlaps_alone_do__4a5fcccb}"
 						TextWrapping="Wrap" />
 				</StackPanel>
 
@@ -137,7 +137,7 @@
 							<StackPanel Grid.Column="1" VerticalAlignment="Center">
 								<TextBlock x:Name="ScannedPackageCountText" FontSize="{DynamicResource Redux.FontSize.20}"
 									FontWeight="{DynamicResource Redux.FontWeight.Title}" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="0" />
-								<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Packages scanned" />
+								<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text Packages_scanned_b7b4bfd2}" />
 							</StackPanel>
 						</Grid>
 					</Border>
@@ -152,7 +152,7 @@
 							<StackPanel Grid.Column="1" VerticalAlignment="Center">
 								<TextBlock x:Name="OverlapPathCountText" FontSize="{DynamicResource Redux.FontSize.20}"
 									FontWeight="{DynamicResource Redux.FontWeight.Title}" Foreground="{DynamicResource ReduxInfoBrush}" Text="0" />
-								<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Overlapping paths" />
+								<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text Overlapping_paths_f840d43d}" />
 							</StackPanel>
 						</Grid>
 					</Border>
@@ -167,7 +167,7 @@
 							<StackPanel Grid.Column="1" VerticalAlignment="Center">
 								<TextBlock x:Name="AffectedPackageCountText" FontSize="{DynamicResource Redux.FontSize.20}"
 									FontWeight="{DynamicResource Redux.FontWeight.Title}" Foreground="{DynamicResource ReduxInfoBrush}" Text="0" />
-								<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Packages affected" />
+								<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text Packages_affected_a5184ab9}" />
 							</StackPanel>
 						</Grid>
 					</Border>
@@ -182,7 +182,7 @@
 						MinHeight="33"
 						IsEnabled="False"
 						VerticalContentAlignment="Center"
-						ToolTip="Filter internal paths or package names"
+						ToolTip="{loc:Text Filter_internal_paths_or_package_names_b0146b27}"
 						TextChanged="SearchTextBox_TextChanged" />
 					<TextBlock x:Name="VisibleResultCountText" Grid.Column="1"
 						Margin="12,0,2,0"
@@ -219,11 +219,11 @@
 							HorizontalAlignment="Center"
 							Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 							FontWeight="{DynamicResource Redux.FontWeight.Control}"
-							Text="Reading package file tables" />
+							Text="{loc:Text Reading_package_file_tables_b333edd1}" />
 						<TextBlock x:Name="EmptyStateDescription" Margin="0,4,0,0"
 							HorizontalAlignment="Center"
 							Foreground="{DynamicResource ReduxTextMutedBrush}"
-							Text="Checking active and override packages." />
+							Text="{loc:Text Checking_active_and_override_packages_5abc5cb0}" />
 					</StackPanel>
 				</Grid>
 

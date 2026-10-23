@@ -8,7 +8,7 @@
 	xmlns:ext="clr-namespace:DivinityModManager.Controls.Extensions"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
 	xmlns:util="clr-namespace:DivinityModManager.Util"
-	Title="Custom Theme Editor"
+	Title="{loc:Text Custom_Theme_Editor_d7209d86}"
 	Width="960"
 	Height="700"
 	MinWidth="840"
@@ -166,13 +166,13 @@
 						<TextBlock
 							FontSize="{DynamicResource Redux.FontSize.19}"
 							FontWeight="SemiBold"
-							Text="Create a custom theme" />
+							Text="{loc:Text Create_a_custom_theme_83a0f196}" />
 						<TextBlock
 							MaxWidth="820"
 							Margin="0,4,0,12"
 							HorizontalAlignment="Left"
 							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Choose colors, font, text size, and category options."
+							Text="{loc:Text Choose_colors_font_text_size_and_category_options_89b52beb}"
 							TextWrapping="Wrap" />
 
 						<Grid Margin="0,0,0,15">
@@ -187,7 +187,7 @@
 							</Grid.ColumnDefinitions>
 
 							<StackPanel>
-								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="THEME NAME" />
+								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="{loc:Text THEME_NAME_b9a3ab43}" />
 								<Grid>
 									<TextBox x:Name="ThemeNameTextBox"
 										MinHeight="36"
@@ -206,7 +206,7 @@
 							</StackPanel>
 
 							<StackPanel Grid.Column="2">
-								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="BASE THEME" />
+								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="{loc:Text BASE_THEME_6a61407b}" />
 								<Grid>
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="Auto" />
@@ -228,7 +228,7 @@
 							</StackPanel>
 
 							<StackPanel Grid.Column="4">
-								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="TEXT SIZE" />
+								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="{loc:Text TEXT_SIZE_9752c1b4}" />
 								<Grid>
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="Auto" />
@@ -251,7 +251,7 @@
 							</StackPanel>
 
 							<StackPanel Grid.Column="6">
-								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="FONT" />
+								<TextBlock Style="{StaticResource ThemeEditorFieldLabelStyle}" Text="{loc:Text FONT_f054427a}" />
 								<Grid>
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="Auto" />
@@ -275,7 +275,7 @@
 										Padding="8"
 										Style="{StaticResource ReduxSecondaryActionButtonStyle}"
 										Click="ImportCustomFont_Click"
-										ToolTip="Import a TrueType or OpenType font">
+										ToolTip="{loc:Text Import_a_TrueType_or_OpenType_font_2d13f7b2}">
 										<controls:ReduxIcon VerticalAlignment="Center"
 											Width="15" Height="15"
 											StrokeData="{StaticResource Redux.Icon.Download}" />
@@ -310,11 +310,11 @@
 										<TextBlock
 											FontSize="{DynamicResource Redux.FontSize.14}"
 											FontWeight="SemiBold"
-											Text="Color palette" />
+											Text="{loc:Text Color_palette_81a9be1a}" />
 										<TextBlock
 											Margin="0,3,0,0"
 											Foreground="{DynamicResource ReduxTextMutedBrush}"
-											Text="Select a color to edit. Related colors update automatically."
+											Text="{loc:Text Select_a_color_to_edit_Related_colors_update_automatically_9da22242}"
 											TextWrapping="Wrap" />
 									</StackPanel>
 									<Border Grid.Column="2"
@@ -325,7 +325,7 @@
 										<TextBlock
 											HorizontalAlignment="Center"
 											Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-											Text="8 colors" />
+											Text="{loc:Text 8_colors_b79afa81}" />
 									</Border>
 								</Grid>
 
@@ -333,42 +333,42 @@
 									Margin="-5,8,-5,-5"
 									Columns="8"
 									Rows="1">
-									<Button Content="Background" Tag="BackgroundColor"
+									<Button Content="{loc:Text Background_ea2b8a87}" Tag="BackgroundColor"
 										Background="{Binding BackgroundColor}"
 										CommandParameter="{Binding BackgroundColor}"
 										Click="ColorButton_Click"
 										Style="{StaticResource ThemeColorButtonStyle}" />
-									<Button Content="Surface" Tag="SurfaceColor"
+									<Button Content="{loc:Text Surface_0905f7f5}" Tag="SurfaceColor"
 										Background="{Binding SurfaceColor}"
 										CommandParameter="{Binding SurfaceColor}"
 										Click="ColorButton_Click"
 										Style="{StaticResource ThemeColorButtonStyle}" />
-									<Button Content="Accent" Tag="AccentColor"
+									<Button Content="{loc:Text Accent_a5c6fb18}" Tag="AccentColor"
 										Background="{Binding AccentColor}"
 										CommandParameter="{Binding AccentColor}"
 										Click="ColorButton_Click"
 										Style="{StaticResource ThemeColorButtonStyle}" />
-									<Button Content="Text" Tag="TextColor"
+									<Button Content="{loc:Text Text_71988c4d}" Tag="TextColor"
 										Background="{Binding TextColor}"
 										CommandParameter="{Binding TextColor}"
 										Click="ColorButton_Click"
 										Style="{StaticResource ThemeColorButtonStyle}" />
-									<Button Content="Success" Tag="SuccessColor"
+									<Button Content="{loc:Text Success_c88a0b90}" Tag="SuccessColor"
 										Background="{Binding SuccessColor}"
 										CommandParameter="{Binding SuccessColor}"
 										Click="ColorButton_Click"
 										Style="{StaticResource ThemeColorButtonStyle}" />
-									<Button Content="Warning" Tag="WarningColor"
+									<Button Content="{loc:Text Warning_e981ddae}" Tag="WarningColor"
 										Background="{Binding WarningColor}"
 										CommandParameter="{Binding WarningColor}"
 										Click="ColorButton_Click"
 										Style="{StaticResource ThemeColorButtonStyle}" />
-									<Button Content="Error" Tag="ErrorColor"
+									<Button Content="{loc:Text Error_54a0e8c1}" Tag="ErrorColor"
 										Background="{Binding ErrorColor}"
 										CommandParameter="{Binding ErrorColor}"
 										Click="ColorButton_Click"
 										Style="{StaticResource ThemeColorButtonStyle}" />
-									<Button Content="Info" Tag="InfoColor"
+									<Button Content="{loc:Text Info_170322a3}" Tag="InfoColor"
 										Background="{Binding InfoColor}"
 										CommandParameter="{Binding InfoColor}"
 										Click="ColorButton_Click"
@@ -413,7 +413,7 @@
 										<StackPanel Grid.Column="1">
 											<TextBlock FontWeight="SemiBold" Text="{loc:Text Use_category_colors_for_selection_209451de}" />
 											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-												Text="Use category colors when hovering over or selecting mods."
+												Text="{loc:Text Use_category_colors_when_hovering_over_or_selecting_mods_56e7e3d5}"
 												TextWrapping="Wrap" />
 										</StackPanel>
 									</Grid>
@@ -439,7 +439,7 @@
 										<StackPanel Grid.Column="1">
 											<TextBlock FontWeight="SemiBold" Text="{loc:Text Hide_icons_db3f620f}" />
 											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-												Text="Remove decorative icons from lists, cards, details, and menus."
+												Text="{loc:Text Remove_decorative_icons_from_lists_cards_details_and_menus_0bef5cc0}"
 												TextWrapping="Wrap" />
 										</StackPanel>
 									</Grid>
@@ -463,9 +463,9 @@
 											Foreground="{DynamicResource ReduxAccentBrush}"
 											StrokeData="{StaticResource Redux.Icon.Pricetag}" />
 										<StackPanel Grid.Column="1">
-											<TextBlock FontWeight="SemiBold" Text="Colored text" />
+											<TextBlock FontWeight="SemiBold" Text="{loc:Text Colored_text_80111d15}" />
 											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-												Text="Use contextual colors for text and menu icons throughout Redux."
+												Text="{loc:Text Use_contextual_colors_for_text_and_menu_icons_throughout_Red_d6188ea1}"
 												TextWrapping="Wrap" />
 										</StackPanel>
 									</Grid>
@@ -490,9 +490,9 @@
 											Foreground="{DynamicResource ReduxAccentBrush}"
 											StrokeData="{StaticResource Redux.Icon.Albums}" />
 										<StackPanel Grid.Column="1">
-											<TextBlock FontWeight="SemiBold" Text="Hide icon labels" />
+											<TextBlock FontWeight="SemiBold" Text="{loc:Text Hide_icon_labels_14bb5c66}" />
 											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-												Text="Show icons without their text labels."
+												Text="{loc:Text Show_icons_without_their_text_labels_af059098}"
 												TextWrapping="Wrap" />
 										</StackPanel>
 									</Grid>
@@ -515,7 +515,7 @@
 										<StackPanel Grid.Column="1">
 											<TextBlock FontWeight="SemiBold" Text="{loc:Text Use_generated_gradients_69e174ff}" />
 											<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-												Text="Blend this theme's colors across primary and destructive action buttons."
+												Text="{loc:Text Blend_this_theme_s_colors_across_primary_and_destructive_act_854b53d9}"
 												TextWrapping="Wrap" />
 										</StackPanel>
 									</Grid>
@@ -541,7 +541,7 @@
 					<TextBlock Grid.Column="1"
 						VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-					Text="Changes preview live." />
+					Text="{loc:Text Changes_preview_live_4d1ea525}" />
 					<Button Grid.Column="2"
 						MinWidth="112"
 						Margin="16,0,10,0"
@@ -564,7 +564,7 @@
 								Margin="0,0,7,0"
 								Foreground="{DynamicResource ReduxAccentForegroundBrush}"
 								StrokeData="{StaticResource Redux.Icon.Save}" />
-							<TextBlock Text="Save Theme" />
+							<TextBlock Text="{loc:Text Save_Theme_e5424fa7}" />
 						</StackPanel>
 					</Button>
 				</Grid>

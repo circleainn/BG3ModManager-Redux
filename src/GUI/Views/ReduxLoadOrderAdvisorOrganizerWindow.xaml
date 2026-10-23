@@ -6,7 +6,7 @@
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Organize Active Load Order"
+	Title="{loc:Text Organize_Active_Load_Order_d488f4d4}"
 	Width="860" Height="680" MinWidth="760" MinHeight="560"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="{DynamicResource Redux.FontWeight.Body}" ResizeMode="CanResize" ShowInTaskbar="False"
@@ -89,7 +89,7 @@
 							Click="IgnoreAdviceButton_Click" CommandParameter="{Binding IgnoreKey}"
 							Style="{StaticResource ReduxSecondaryActionButtonStyle}"
 							Visibility="{Binding CanIgnore, Converter={StaticResource BoolToVisibilityConverter}}">
-							<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0" StrokeData="{StaticResource Redux.Icon.CircleMinus}" /><TextBlock Text="Ignore" /></StackPanel>
+							<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0" StrokeData="{StaticResource Redux.Icon.CircleMinus}" /><TextBlock Text="{loc:Text Ignore_fce77c34}" /></StackPanel>
 						</Button>
 					</Grid>
 				</Border>
@@ -112,7 +112,7 @@
 						<Button Grid.Column="3" Margin="10,0,12,0" Padding="9,4" VerticalAlignment="Center"
 							Click="IgnoreAdviceButton_Click" CommandParameter="{Binding IgnoreKey}"
 							Style="{StaticResource ReduxSecondaryActionButtonStyle}">
-							<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0" StrokeData="{StaticResource Redux.Icon.CircleMinus}" /><TextBlock Text="Ignore" /></StackPanel>
+							<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0" StrokeData="{StaticResource Redux.Icon.CircleMinus}" /><TextBlock Text="{loc:Text Ignore_fce77c34}" /></StackPanel>
 						</Button>
 					</Grid>
 				</Border>
@@ -174,9 +174,9 @@
 				<Grid>
 					<StackPanel>
 						<TextBlock FontSize="{DynamicResource Redux.FontSize.20}" FontWeight="{DynamicResource Redux.FontWeight.Title}"
-							Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Organize active load order" />
+							Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Organize_active_load_order_e6993a0f}" />
 						<TextBlock Margin="0,5,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Compare Redux's suggested changes before applying them. The game load order is not changed here." TextWrapping="Wrap" />
+							Text="{loc:Text Compare_Redux_s_suggested_changes_before_applying_them_The_g_99eefdd5}" TextWrapping="Wrap" />
 					</StackPanel>
 				</Grid>
 
@@ -184,7 +184,7 @@
 					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 					<StackPanel>
 						<TextBlock Margin="1,0,0,8" FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}"
-							Text="Choose how Redux handles separators" />
+							Text="{loc:Text Choose_how_Redux_handles_separators_b3f17567}" />
 						<UniformGrid Columns="3">
 							<RadioButton x:Name="PreservePolicyButton" Margin="0,0,7,0" GroupName="SeparatorPolicy"
 								Checked="PolicyButton_Checked" Style="{StaticResource PolicyCardStyle}">
@@ -195,9 +195,9 @@
 										Margin="0,0,10,0" Style="{StaticResource ReduxOptionalInterfaceIconStyle}"
 										Foreground="{DynamicResource ReduxAccentHoverBrush}" IconKey="list" />
 									<TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold"
-										Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Preserve my separators" />
+										Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Preserve_my_separators_1e0bae97}" />
 									<TextBlock Grid.Row="1" Grid.Column="1" Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-										Text="Keep each separator and its mods together. Only sort within each separator." TextWrapping="Wrap" />
+										Text="{loc:Text Keep_each_separator_and_its_mods_together_Only_sort_within_e_9e583a5f}" TextWrapping="Wrap" />
 								</Grid>
 							</RadioButton>
 							<RadioButton x:Name="SuggestedPolicyButton" Margin="0,0,7,0" GroupName="SeparatorPolicy"
@@ -209,9 +209,9 @@
 										Margin="0,0,10,0" Style="{StaticResource ReduxOptionalInterfaceIconStyle}"
 										Foreground="{DynamicResource ReduxAccentHoverBrush}" IconKey="sparkles" />
 									<TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold"
-										Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Use suggested separators" />
+										Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Use_suggested_separators_e93afe3a}" />
 									<TextBlock Grid.Row="1" Grid.Column="1" Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-									Text="Replace current separators with named groups from Redux's offline knowledge, then place matching mods inside them." TextWrapping="Wrap" />
+									Text="{loc:Text Replace_current_separators_with_named_groups_from_Redux_s_of_4966f95f}" TextWrapping="Wrap" />
 								</Grid>
 							</RadioButton>
 							<RadioButton x:Name="RemovePolicyButton" GroupName="SeparatorPolicy"
@@ -223,9 +223,9 @@
 										Margin="0,0,10,0" Style="{StaticResource ReduxOptionalInterfaceIconStyle}"
 										Foreground="{DynamicResource ReduxAccentHoverBrush}" IconKey="archive" />
 									<TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold"
-										Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Remove separators" />
+										Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Remove_separators_b3efc516}" />
 									<TextBlock Grid.Row="1" Grid.Column="1" Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-										Text="Remove active separators and reorder the full list. Inactive mods are untouched." TextWrapping="Wrap" />
+										Text="{loc:Text Remove_active_separators_and_reorder_the_full_list_Inactive__4b108390}" TextWrapping="Wrap" />
 								</Grid>
 							</RadioButton>
 						</UniformGrid>
@@ -238,26 +238,26 @@
 							Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}">
 							<controls:ReduxIcon Width="17" Height="17" Foreground="{DynamicResource ReduxInfoBrush}" StrokeData="{StaticResource Redux.Icon.ReorderStroke}" /></Border>
 						<StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock x:Name="MoveCountText" FontSize="{DynamicResource Redux.FontSize.20}"
-							FontWeight="Bold" Foreground="{DynamicResource ReduxInfoBrush}" Text="0" /><TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Mods repositioned" /></StackPanel>
+							FontWeight="Bold" Foreground="{DynamicResource ReduxInfoBrush}" Text="0" /><TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Mods_repositioned_68e4d989}" /></StackPanel>
 					</Grid></Border>
 					<Border Style="{StaticResource ReduxDialogSummaryCardStyle}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 						<Border Width="38" Height="38" Margin="0,0,11,0" Background="{DynamicResource ReduxAccentPillBackground}" CornerRadius="8"
 							Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}">
 							<controls:ReduxIcon Width="17" Height="17" Foreground="{DynamicResource ReduxAccentHoverBrush}" IconKey="list" /></Border>
 						<StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock x:Name="SeparatorCountText" FontSize="{DynamicResource Redux.FontSize.20}"
-							FontWeight="Bold" Foreground="{DynamicResource ReduxAccentHoverBrush}" Text="0" /><TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Separator changes" /></StackPanel>
+							FontWeight="Bold" Foreground="{DynamicResource ReduxAccentHoverBrush}" Text="0" /><TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Separator_changes_edb72dc6}" /></StackPanel>
 					</Grid></Border>
 					<Border Margin="0" Style="{StaticResource ReduxDialogSummaryCardStyle}"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 						<Border Width="38" Height="38" Margin="0,0,11,0" Background="{DynamicResource ReduxWarningPillBackground}" CornerRadius="8"
 							Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}">
 							<controls:ReduxIcon Width="17" Height="17" Foreground="{DynamicResource ReduxWarningBrush}" IconKey="warning" /></Border>
 						<StackPanel Grid.Column="1" VerticalAlignment="Center"><TextBlock x:Name="UnresolvedCountText" FontSize="{DynamicResource Redux.FontSize.20}"
-							FontWeight="Bold" Foreground="{DynamicResource ReduxWarningBrush}" Text="0" /><TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Needs review" /></StackPanel>
+							FontWeight="Bold" Foreground="{DynamicResource ReduxWarningBrush}" Text="0" /><TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Needs_review_07297fa9}" /></StackPanel>
 					</Grid></Border>
 				</UniformGrid>
 
 				<TabControl x:Name="PreviewTabs" Grid.Row="3" ItemContainerStyle="{StaticResource ReduxContentTabItemStyle}" Style="{StaticResource ReduxContentTabControlStyle}">
-					<TabItem Header="Proposed Moves"><Grid Margin="0,9,0,0">
+					<TabItem Header="{loc:Text Proposed_Moves_1866e5d1}"><Grid Margin="0,9,0,0">
 						<ListBox x:Name="MoveList" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch"
 							ItemContainerStyle="{StaticResource ReduxPassiveResultItemStyle}" ItemTemplate="{StaticResource MoveTemplate}"
 							ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" />
@@ -265,11 +265,11 @@
 							<Border Width="44" Height="44" HorizontalAlignment="Center" Background="{DynamicResource ReduxSuccessPillBackground}" CornerRadius="22"
 								Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}">
 								<controls:ReduxIcon Width="20" Height="20" Foreground="{DynamicResource ReduxSuccessBrush}" IconKey="shield-check" /></Border>
-							<TextBlock Margin="0,10,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" Text="This order already looks good" />
-							<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="No known placements need to change." />
+							<TextBlock Margin="0,10,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" Text="{loc:Text This_order_already_looks_good_34b88ad1}" />
+							<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text No_known_placements_need_to_change_e5a66505}" />
 						</StackPanel>
 					</Grid></TabItem>
-					<TabItem x:Name="ResultingSeparatorsTab" Header="Separator Changes"><Grid Margin="0,9,0,0">
+					<TabItem x:Name="ResultingSeparatorsTab" Header="{loc:Text Separator_Changes_5627cc1a}"><Grid Margin="0,9,0,0">
 						<ListBox x:Name="SeparatorList" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch"
 							ItemContainerStyle="{StaticResource ReduxPassiveResultItemStyle}" ItemTemplate="{StaticResource SeparatorTemplate}"
 							ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" />
@@ -277,11 +277,11 @@
 							<Border Width="44" Height="44" HorizontalAlignment="Center" Background="{DynamicResource ReduxAccentPillBackground}" CornerRadius="22"
 								Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}">
 								<controls:ReduxIcon Width="20" Height="20" Foreground="{DynamicResource ReduxAccentHoverBrush}" IconKey="list" /></Border>
-							<TextBlock x:Name="NoSeparatorsTitle" Margin="0,10,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" Text="No separator changes" />
-							<TextBlock x:Name="NoSeparatorsDescription" Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Your existing separators stay where they are." />
+							<TextBlock x:Name="NoSeparatorsTitle" Margin="0,10,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" Text="{loc:Text No_separator_changes_37ff25cb}" />
+							<TextBlock x:Name="NoSeparatorsDescription" Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Your_existing_separators_stay_where_they_are_47457cc9}" />
 						</StackPanel>
 					</Grid></TabItem>
-					<TabItem Header="Needs Review"><Grid Margin="0,9,0,0">
+					<TabItem Header="{loc:Text Needs_Review_d24c776d}"><Grid Margin="0,9,0,0">
 						<ListBox x:Name="UnresolvedList" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch"
 							ItemContainerStyle="{StaticResource ReduxPassiveResultItemStyle}" ItemTemplate="{StaticResource UnresolvedTemplate}"
 							ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" />
@@ -289,8 +289,8 @@
 							<Border Width="44" Height="44" HorizontalAlignment="Center" Background="{DynamicResource ReduxSuccessPillBackground}" CornerRadius="22"
 								Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}">
 								<controls:ReduxIcon Width="20" Height="20" Foreground="{DynamicResource ReduxSuccessBrush}" IconKey="shield-check" /></Border>
-							<TextBlock Margin="0,10,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" Text="Nothing needs your attention" />
-							<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="No known relationship is blocked by this separator layout." />
+							<TextBlock Margin="0,10,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" Text="{loc:Text Nothing_needs_your_attention_8fa19612}" />
+							<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text No_known_relationship_is_blocked_by_this_separator_layout_a9564b6c}" />
 						</StackPanel>
 					</Grid></TabItem>
 				</TabControl>
@@ -303,19 +303,19 @@
 							Style="{StaticResource ReduxOptionalInterfaceIconStyle}"
 							Foreground="{DynamicResource ReduxTextMutedBrush}" IconKey="info" />
 						<TextBlock Grid.Column="1" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Apply changes to this load order only. Use Ctrl+Z to undo, then sync with the game when ready."
+							Text="{loc:Text Apply_changes_to_this_load_order_only_Use_Ctrl_Z_to_undo_the_6bd3d825}"
 							TextTrimming="CharacterEllipsis" TextWrapping="Wrap" />
 					</Grid>
 					<Button x:Name="RestoreIgnoredButton" Grid.Column="1" Margin="0,0,10,0"
 						Click="RestoreIgnoredButton_Click" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /><TextBlock Text="Restore Ignored Advice" /></StackPanel>
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /><TextBlock Text="{loc:Text Restore_Ignored_Advice_13225ebe}" /></StackPanel>
 					</Button>
 					<Button Grid.Column="2" MinWidth="88" Margin="0,0,8,0" IsCancel="True" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
 						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Close}" /><TextBlock Text="{loc:Text Cancel_19766ed6}" /></StackPanel>
 					</Button>
 					<Button x:Name="ApplyButton" Grid.Column="3" MinWidth="126"
 						Style="{StaticResource ReduxPrimaryActionButtonStyle}" Click="ApplyButton_Click">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Check}" /><TextBlock Text="Apply Changes" /></StackPanel>
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Check}" /><TextBlock Text="{loc:Text Apply_Changes_d80d0faa}" /></StackPanel>
 					</Button>
 				</Grid>
 			</Grid>

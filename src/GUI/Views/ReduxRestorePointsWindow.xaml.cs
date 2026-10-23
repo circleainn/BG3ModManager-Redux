@@ -66,7 +66,7 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 
 		EmptyState.Visibility = _restorePoints.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 		SnapshotCountText.Text = _restorePoints.Count == 1
-			? "1 saved"
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("1 saved")
 			: $"{_restorePoints.Count} saved";
 		if (_restorePoints.Count > 0)
 		{
@@ -85,7 +85,7 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 	private async void CreateButton_Click(object sender, RoutedEventArgs e)
 	{
 		CreateButton.IsEnabled = false;
-		StatusText.Text = "Capturing the current working order…";
+		StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Capturing the current working order…");
 		var order = _workingOrder
 			.Where(entry => entry != null)
 			.Select(entry => entry.Clone())
@@ -107,13 +107,13 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 		CreateButton.IsEnabled = true;
 		if (!result.Saved)
 		{
-			StatusText.Text = "Could not capture the current working order.";
+			StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Could not capture the current working order.");
 			DivinityApp.Log($"Could not create manual load-order restore point: {result.Error}");
 			return;
 		}
 
 		RefreshRestorePoints(result.RestorePoint.Id);
-		StatusText.Text = "Current working order captured in history.";
+		StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Current working order captured in history.");
 	}
 
 	private void RestorePointList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -141,7 +141,7 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 		var orders = BuildComparisonOrders();
 		if (orders.Count < 2)
 		{
-			StatusText.Text = "At least two orders or snapshots are needed for comparison.";
+			StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("At least two orders or snapshots are needed for comparison.");
 			return;
 		}
 
@@ -211,14 +211,14 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 		var restorePoint = RestorePointList.SelectedItem as LoadOrderRestorePoint;
 		if (restorePoint == null)
 		{
-			SelectedCreatedText.Text = "Select a snapshot";
-			SelectedReasonText.Text = "Choose a snapshot to review its changes.";
-			SelectedSourceText.Text = "Source order";
-			SelectedModCountText.Text = "0 mods";
+			SelectedCreatedText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Select a snapshot");
+			SelectedReasonText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Choose a snapshot to review its changes.");
+			SelectedSourceText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Source order");
+			SelectedModCountText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("0 mods");
 			AddedCountText.Text = "0";
 			RemovedCountText.Text = "0";
 			MovedCountText.Text = "0";
-			DifferenceCountText.Text = "0 changes";
+			DifferenceCountText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("0 changes");
 			ChangeList.ItemsSource = null;
 			NoChangesState.Visibility = Visibility.Collapsed;
 			return;
@@ -226,9 +226,9 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 
 		SelectedCreatedText.Text = restorePoint.CreatedSummary;
 		SelectedReasonText.Text = String.IsNullOrWhiteSpace(restorePoint.Reason)
-			? "Redux snapshot"
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Redux snapshot")
 			: restorePoint.Reason;
-		SelectedSourceText.Text = $"Source order: {restorePoint.SourceOrderName}";
+		SelectedSourceText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Source order: {restorePoint.SourceOrderName}");
 		SelectedModCountText.Text = restorePoint.ModCountSummary;
 
 		var comparison = LoadOrderComparisonService.CompareSavedOrders(
@@ -242,7 +242,7 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 		RemovedCountText.Text = comparison.Deactivated.Count.ToString();
 		MovedCountText.Text = comparison.Repositioned.Count.ToString();
 		DifferenceCountText.Text = changes.Length == 1
-			? "1 change"
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("1 change")
 			: $"{changes.Length} changes";
 		NoChangesState.Visibility = changes.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
 	}
@@ -257,7 +257,7 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 
 		var result = ReduxMessageBox.Show(
 			this,
-			$"Delete the snapshot from {restorePoint.CreatedSummary}?\n\nThis removes only the Redux history entry. It does not change the working order, installed mods, or game files.",
+			DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Delete the snapshot from {restorePoint.CreatedSummary}?\n\nThis removes only the Redux history entry. It does not change the working order, installed mods, or game files."),
 			"Delete Snapshot",
 			MessageBoxButton.YesNo,
 			MessageBoxImage.Warning,
@@ -269,7 +269,7 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 
 		DeleteButton.IsEnabled = false;
 		LoadButton.IsEnabled = false;
-		StatusText.Text = "Deleting snapshot…";
+		StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Deleting snapshot…");
 		var deletion = await Task.Run(() =>
 		{
 			var deleted = LoadOrderRestorePointService.TryDelete(
@@ -282,14 +282,14 @@ public partial class ReduxRestorePointsWindow : AdonisUI.Controls.AdonisWindow
 
 		if (!deletion.Deleted)
 		{
-			StatusText.Text = "Could not delete the snapshot.";
+			StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Could not delete the snapshot.");
 			DivinityApp.Log($"Could not delete load-order restore point: {deletion.Error}");
 			RefreshRestorePoints();
 			return;
 		}
 
 		RefreshRestorePoints();
-		StatusText.Text = "Snapshot deleted.";
+		StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Snapshot deleted.");
 	}
 
 	private void AcceptSelection()

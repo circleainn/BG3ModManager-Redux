@@ -3,7 +3,11 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
 
+#if REDUX_UPDATER
+namespace ReduxUpdater.Localization;
+#else
 namespace DivinityModManager.Localization;
+#endif
 
 [MarkupExtensionReturnType(typeof(string))]
 public sealed class TextExtension : MarkupExtension
@@ -25,7 +29,7 @@ public sealed class BoundTextExtension : MarkupExtension
 	private sealed class Converter : IMultiValueConverter
 	{
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) =>
-			values.Length > 0 && values[0] is string text ? ReduxLanguageService.Current.Translate(text) : String.Empty;
+			values.Length > 0 && (values[0] is string || values[0] is Enum) ? ReduxLanguageService.Current.Translate(values[0].ToString()) : String.Empty;
 		public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) =>
 			throw new NotSupportedException();
 	}

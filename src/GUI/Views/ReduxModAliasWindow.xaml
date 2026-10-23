@@ -5,7 +5,7 @@
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Mod Alias"
+	Title="{loc:Text Mod_Alias_a0aa23a8}"
 	Width="540" MinWidth="440" MaxWidth="700"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontSize="{DynamicResource Redux.FontSize.12}"
@@ -42,7 +42,7 @@
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
-				<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="Custom mod name" />
+				<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="{loc:Text Custom_mod_name_b2e32023}" />
 				<StackPanel Grid.Row="1" Margin="0,5,0,0">
 					<TextBlock x:Name="OriginalNameText" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 						TextWrapping="Wrap" />
@@ -61,7 +61,7 @@
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
 						<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}"
-							Text="Saved locally and used in lists and search. Original package metadata stays unchanged."
+							Text="{loc:Text Saved_locally_and_used_in_lists_and_search_Original_package__38f67405}"
 							TextWrapping="Wrap" />
 						<TextBlock x:Name="CharacterCountText" Grid.Column="1" Margin="12,0,0,0"
 							Foreground="{DynamicResource ReduxTextMutedBrush}" />

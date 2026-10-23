@@ -6,7 +6,7 @@
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
 	xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-	Title="Add Mod Category"
+	Title="{loc:Text Add_Mod_Category_abbc935d}"
 	Width="600"
 	Height="600"
 	MinWidth="560"
@@ -142,7 +142,7 @@
                                 <TextBox x:Name="CategoryNameTextBox" Height="36" MaxLength="40" Padding="9,6"/>
                             </StackPanel>
                             <StackPanel x:Name="IconChooserCard" Grid.Column="1">
-                                <TextBlock x:Name="IconFieldLabel" Text="Icon" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                                <TextBlock x:Name="IconFieldLabel" Text="{loc:Text Icon_a35abcd6}" FontWeight="SemiBold" Margin="0,0,0,8"/>
                                 <StackPanel Orientation="Horizontal"><ComboBox x:Name="CategoryIconComboBox" Width="58" Height="36" Margin="0" SelectedValuePath="Id" MaxDropDownHeight="420"
 									ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
 									SelectionChanged="CategoryIconComboBox_SelectionChanged">
@@ -163,29 +163,29 @@
 									</ComboBox.ItemTemplate>
 								</ComboBox>
                                 <Button Height="36" Margin="7,0,0,0" MinWidth="98" Padding="9,4" Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="ImportCustomIcon_Click">
-									<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,5,0" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /><TextBlock Text="Import PNG" /></StackPanel>
+									<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,5,0" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /><TextBlock Text="{loc:Text Import_PNG_f8795ae9}" /></StackPanel>
 								</Button>
-								<Button x:Name="DeleteCustomIconButton" Margin="7,0,0,0" MinWidth="32" Padding="7,4" Style="{StaticResource ReduxMinorDestructiveActionButtonStyle}" Visibility="Collapsed" Click="DeleteCustomIcon_Click" ToolTip="Remove the selected custom icon">
+								<Button x:Name="DeleteCustomIconButton" Margin="7,0,0,0" MinWidth="32" Padding="7,4" Style="{StaticResource ReduxMinorDestructiveActionButtonStyle}" Visibility="Collapsed" Click="DeleteCustomIcon_Click" ToolTip="{loc:Text Remove_the_selected_custom_icon_48c64095}">
 									<controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" />
 								</Button></StackPanel>
                             </StackPanel>
                         </Grid>
-                        <Expander Style="{StaticResource CompactEditorDisclosureStyle}" x:Name="DescriptionEditorPanel" Header="Add a description" Margin="0,8,0,16">
+                        <Expander Style="{StaticResource CompactEditorDisclosureStyle}" x:Name="DescriptionEditorPanel" Header="{loc:Text Add_a_description_e707b452}" Margin="0,8,0,16">
                             <TextBox x:Name="CategoryDescriptionTextBox" Height="52" MaxLength="240" Margin="0,6,0,0" Padding="8,6" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
                         </Expander>
                         <DockPanel x:Name="SeparatorParentPanel" Visibility="Collapsed" Margin="0,0,0,12">
-                            <TextBlock Text="Nest under" Width="112" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                            <TextBlock Text="{loc:Text Nest_under_51cfaf6c}" Width="112" VerticalAlignment="Center" FontWeight="SemiBold"/>
                             <ComboBox x:Name="SeparatorParentComboBox" MinHeight="32" DisplayMemberPath="Label" SelectedValuePath="Id" MaxDropDownHeight="240" SelectionChanged="SeparatorParentComboBox_SelectionChanged"
-                                ToolTip="Choose a separator to make this a sub-separator. Changing nesting moves only this separator; mod order stays unchanged. Sub-separators inherit persistence."/>
+                                ToolTip="{loc:Text Choose_a_separator_to_make_this_a_sub_separator_Changing_nes_57c315bd}"/>
                         </DockPanel>
                         <Grid x:Name="ColorEditorCard">
                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="24"/><ColumnDefinition Width="180"/></Grid.ColumnDefinitions>
-                            <TextBlock x:Name="ColorFieldLabel" Text="Color" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                            <TextBlock Grid.Column="2" Text="Presets" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                            <TextBlock x:Name="ColorFieldLabel" Text="{loc:Text Color_6b73191a}" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                            <TextBlock Grid.Column="2" Text="{loc:Text Presets_954f93fe}" FontWeight="SemiBold" Margin="0,0,0,10"/>
                             <StackPanel Grid.Row="1">
                                 <Grid x:Name="ColorPlane" Height="156" Background="{DynamicResource Redux.CategoryEditor.HueBrush}" Cursor="Cross"
-                                    AutomationProperties.Name="Color saturation and brightness"
+                                    AutomationProperties.Name="{loc:Text Color_saturation_and_brightness_e6ec25db}"
                                     MouseLeftButtonDown="ColorPlane_MouseLeftButtonDown" MouseMove="ColorPlane_MouseMove" MouseLeftButtonUp="ColorSurface_MouseLeftButtonUp" SizeChanged="ColorPlane_SizeChanged">
                                     <Rectangle IsHitTestVisible="False"><Rectangle.Fill><LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5"><GradientStop Color="White" Offset="0"/><GradientStop Color="#00FFFFFF" Offset="1"/></LinearGradientBrush></Rectangle.Fill></Rectangle>
                                     <Rectangle IsHitTestVisible="False"><Rectangle.Fill><LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1"><GradientStop Color="#00000000" Offset="0"/><GradientStop Color="Black" Offset="1"/></LinearGradientBrush></Rectangle.Fill></Rectangle>
@@ -194,66 +194,66 @@
                                         <Ellipse.Effect><DropShadowEffect BlurRadius="3" ShadowDepth="0" Opacity="0.8" Color="Black"/></Ellipse.Effect>
                                     </Ellipse>
                                 </Grid>
-                                <Slider x:Name="HueSlider" Margin="0,10,0,10" Maximum="359.99" SmallChange="1" LargeChange="15" AutomationProperties.Name="Hue" Style="{StaticResource CategoryColorSliderStyle}" ValueChanged="HueSlider_ValueChanged">
+                                <Slider x:Name="HueSlider" Margin="0,10,0,10" Maximum="359.99" SmallChange="1" LargeChange="15" AutomationProperties.Name="{loc:Text Hue_4d7056f0}" Style="{StaticResource CategoryColorSliderStyle}" ValueChanged="HueSlider_ValueChanged">
                                     <Slider.Background><LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5"><GradientStop Color="Red" Offset="0"/><GradientStop Color="Yellow" Offset="0.1667"/><GradientStop Color="Lime" Offset="0.3333"/><GradientStop Color="Cyan" Offset="0.5"/><GradientStop Color="Blue" Offset="0.6667"/><GradientStop Color="Magenta" Offset="0.8333"/><GradientStop Color="Red" Offset="1"/></LinearGradientBrush></Slider.Background>
                                 </Slider>
                                 <Grid>
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="42"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
                                     <Border x:Name="SelectedColorPreview" Height="34" Margin="0,0,8,0" BorderThickness="1" BorderBrush="{DynamicResource ReduxBorderStrongBrush}" CornerRadius="{DynamicResource Redux.CornerRadius.Small}"/>
-                                    <TextBox x:Name="HexColorTextBox" Grid.Column="1" Height="34" MaxLength="7" Padding="8,5" AutomationProperties.Name="Hex color" LostFocus="HexColorTextBox_Commit" KeyDown="HexColorTextBox_KeyDown"/>
+                                    <TextBox x:Name="HexColorTextBox" Grid.Column="1" Height="34" MaxLength="7" Padding="8,5" AutomationProperties.Name="{loc:Text Hex_color_91f4e4b1}" LostFocus="HexColorTextBox_Commit" KeyDown="HexColorTextBox_KeyDown"/>
                                 </Grid>
                             </StackPanel>
                             <StackPanel Grid.Row="1" Grid.Column="2">
-                                <WrapPanel Width="180" HorizontalAlignment="Left"><Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#8A6AF1" Tag="#8A6AF1" ToolTip="Arcane Violet" Click="ColorSwatch_Click" />
-<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#3B82F6" Tag="#3B82F6" ToolTip="Electric Blue" Click="ColorSwatch_Click" />
-<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#22B8C5" Tag="#22B8C5" ToolTip="Cyan Tide" Click="ColorSwatch_Click" />
-<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#3FA37A" Tag="#3FA37A" ToolTip="Emerald Mist" Click="ColorSwatch_Click" />
-<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#71B96B" Tag="#71B96B" ToolTip="Moss Green" Click="ColorSwatch_Click" />
-<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#D7A24B" Tag="#D7A24B" ToolTip="Antique Amber" Click="ColorSwatch_Click" />
-<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#F97316" Tag="#F97316" ToolTip="Ember Orange" Click="ColorSwatch_Click" />
-<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#D66B55" Tag="#D66B55" ToolTip="Terracotta" Click="ColorSwatch_Click" />
-<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#D45A9E" Tag="#D45A9E" ToolTip="Rose" Click="ColorSwatch_Click" />
-<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#8F879E" Tag="#8F879E" ToolTip="Muted Lilac" Click="ColorSwatch_Click" /></WrapPanel>
+                                <WrapPanel Width="180" HorizontalAlignment="Left"><Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#8A6AF1" Tag="#8A6AF1" ToolTip="{loc:Text Arcane_Violet_16f770a1}" Click="ColorSwatch_Click" />
+<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#3B82F6" Tag="#3B82F6" ToolTip="{loc:Text Electric_Blue_c34dee36}" Click="ColorSwatch_Click" />
+<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#22B8C5" Tag="#22B8C5" ToolTip="{loc:Text Cyan_Tide_c529865d}" Click="ColorSwatch_Click" />
+<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#3FA37A" Tag="#3FA37A" ToolTip="{loc:Text Emerald_Mist_3aed0c47}" Click="ColorSwatch_Click" />
+<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#71B96B" Tag="#71B96B" ToolTip="{loc:Text Moss_Green_5d0272cd}" Click="ColorSwatch_Click" />
+<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#D7A24B" Tag="#D7A24B" ToolTip="{loc:Text Antique_Amber_40824362}" Click="ColorSwatch_Click" />
+<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#F97316" Tag="#F97316" ToolTip="{loc:Text Ember_Orange_8cb1e5d7}" Click="ColorSwatch_Click" />
+<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#D66B55" Tag="#D66B55" ToolTip="{loc:Text Terracotta_433d669d}" Click="ColorSwatch_Click" />
+<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#D45A9E" Tag="#D45A9E" ToolTip="{loc:Text Rose_e10d8509}" Click="ColorSwatch_Click" />
+<Button Style="{StaticResource CategoryColorSwatchStyle}" Background="#8F879E" Tag="#8F879E" ToolTip="{loc:Text Muted_Lilac_86320f20}" Click="ColorSwatch_Click" /></WrapPanel>
                                 <DockPanel Margin="0,12,0,8">
-                                    <Button x:Name="SaveColorButton" DockPanel.Dock="Right" Width="26" Height="26" MinWidth="0" MinHeight="0" Padding="0" Margin="0" Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="SaveCurrentColor_Click" AutomationProperties.Name="Save color" ToolTip="Save this color to your palette">
+                                    <Button x:Name="SaveColorButton" DockPanel.Dock="Right" Width="26" Height="26" MinWidth="0" MinHeight="0" Padding="0" Margin="0" Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="SaveCurrentColor_Click" AutomationProperties.Name="{loc:Text Save_color_a867fd29}" ToolTip="{loc:Text Save_this_color_to_your_palette_798d6520}">
                                         <controls:ReduxIcon Width="12" Height="12" StrokeData="{StaticResource Redux.Icon.AddStroke}"/>
                                     </Button>
-                                    <TextBlock Text="Saved colors" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
+                                    <TextBlock Text="{loc:Text Saved_colors_87cb60a3}" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
                                 </DockPanel>
                                 <ScrollViewer MaxHeight="108" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><WrapPanel x:Name="SavedColorsPanel"/></ScrollViewer>
-                                <TextBlock x:Name="NoSavedColorsText" Text="Save a color with + to reuse it." TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextMutedBrush}" FontSize="{DynamicResource Redux.FontSize.11}"/>
+                                <TextBlock x:Name="NoSavedColorsText" Text="{loc:Text Save_a_color_with_to_reuse_it_d8629179}" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextMutedBrush}" FontSize="{DynamicResource Redux.FontSize.11}"/>
                             </StackPanel>
-                            <Expander Grid.Row="2" Grid.ColumnSpan="3" Style="{StaticResource CompactEditorDisclosureStyle}" x:Name="CustomColorExpander" Header="Fine-tune color" Margin="0,10,0,0"><Grid Margin="0,8,0,0">
+                            <Expander Grid.Row="2" Grid.ColumnSpan="3" Style="{StaticResource CompactEditorDisclosureStyle}" x:Name="CustomColorExpander" Header="{loc:Text Fine_tune_color_88d52147}" Margin="0,10,0,0"><Grid Margin="0,8,0,0">
 						<Grid.ColumnDefinitions><ColumnDefinition Width="64" /><ColumnDefinition Width="*" /><ColumnDefinition Width="32" /></Grid.ColumnDefinitions>
 						<Grid.RowDefinitions>
 							<RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
 							<RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" />
 						</Grid.RowDefinitions>
-						<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Saturation" />
+						<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text Saturation_993f024b}" />
 						<Slider x:Name="SaturationSlider" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="100"
 							Background="{DynamicResource Redux.CategoryEditor.SaturationTrackBrush}"
 							ValueChanged="SaturationSlider_ValueChanged" />
 						<TextBlock Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="{Binding Value, ElementName=SaturationSlider, StringFormat={}{0:0}%}" />
-						<TextBlock Grid.Row="1" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Brightness" />
+						<TextBlock Grid.Row="1" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text Brightness_ec811d30}" />
 						<Slider x:Name="BrightnessSlider" Grid.Row="1" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="100"
 							Background="{DynamicResource Redux.CategoryEditor.BrightnessTrackBrush}"
 							ValueChanged="BrightnessSlider_ValueChanged" />
 						<TextBlock Grid.Row="1" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="{Binding Value, ElementName=BrightnessSlider, StringFormat={}{0:0}%}" />
-						<TextBlock Grid.Row="2" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Red" />
+						<TextBlock Grid.Row="2" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text Red_ba19e9c3}" />
 						<Slider x:Name="RedSlider" Grid.Row="2" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="255"
 							Background="{DynamicResource Redux.CategoryEditor.RedTrackBrush}"
 							ValueChanged="RgbSlider_ValueChanged" />
 						<TextBlock Grid.Row="2" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="{Binding Value, ElementName=RedSlider, StringFormat={}{0:0}}" />
-						<TextBlock Grid.Row="3" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Green" />
+						<TextBlock Grid.Row="3" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text Green_d486dfbd}" />
 						<Slider x:Name="GreenSlider" Grid.Row="3" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="255"
 							Background="{DynamicResource Redux.CategoryEditor.GreenTrackBrush}"
 							ValueChanged="RgbSlider_ValueChanged" />
 						<TextBlock Grid.Row="3" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 							Text="{Binding Value, ElementName=GreenSlider, StringFormat={}{0:0}}" />
-						<TextBlock Grid.Row="4" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Blue" />
+						<TextBlock Grid.Row="4" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text Blue_ec7d56a0}" />
 						<Slider x:Name="BlueSlider" Grid.Row="4" Grid.Column="1" Style="{StaticResource CategoryColorSliderStyle}" Maximum="255"
 							Background="{DynamicResource Redux.CategoryEditor.BlueTrackBrush}"
 							ValueChanged="RgbSlider_ValueChanged" />
@@ -264,17 +264,17 @@
                         </Grid>
                         <WrapPanel x:Name="IconOptionsPanel" Margin="0,16,0,0"><CheckBox x:Name="TintCustomIconCheckBox" Margin="0,0,20,8" Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed"
 								Checked="TintCustomIconCheckBox_Changed" Unchecked="TintCustomIconCheckBox_Changed"
-								ToolTip="Use the PNG transparency as a mask and apply this category or separator color.">
-								<TextBlock x:Name="TintCustomIconText" Text="Tint with category color" TextWrapping="Wrap" />
+								ToolTip="{loc:Text Use_the_PNG_transparency_as_a_mask_and_apply_this_category_o_22b03d0a}">
+								<TextBlock x:Name="TintCustomIconText" Text="{loc:Text Tint_with_category_color_73c13a8a}" TextWrapping="Wrap" />
 							</CheckBox>
 							<CheckBox x:Name="ShowSeparatorLineCheckBox" Margin="0,0,20,8"
 								Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed">
-								<TextBlock Text="Show separator line" TextWrapping="Wrap" />
+								<TextBlock Text="{loc:Text Show_separator_line_854ae5bf}" TextWrapping="Wrap" />
 							</CheckBox>
 							<CheckBox x:Name="GlobalSeparatorCheckBox" Margin="0,0,0,8"
 								Style="{StaticResource ReduxCheckBoxStyle}" Visibility="Collapsed"
-								ToolTip="Keep this separator available when you switch saved load orders.">
-								<TextBlock x:Name="GlobalSeparatorCheckBoxText" Text="Use in every load order" TextWrapping="Wrap" />
+								ToolTip="{loc:Text Keep_this_separator_available_when_you_switch_saved_load_ord_4f89c44e}">
+								<TextBlock x:Name="GlobalSeparatorCheckBoxText" Text="{loc:Text Use_in_every_load_order_979212ae}" TextWrapping="Wrap" />
 							</CheckBox>
 						</WrapPanel>
                     </StackPanel>
@@ -289,7 +289,7 @@
 					<controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0"
 						Foreground="{DynamicResource ReduxWarningBrush}"
 						StrokeData="{StaticResource Redux.Icon.RefreshStroke}" />
-					<TextBlock Text="Reset to default" />
+					<TextBlock Text="{loc:Text Reset_to_default_bc5b45ae}" />
 				</StackPanel>
 			</Button>
 			<Button x:Name="ConfirmButton" MinWidth="84" Margin="0,0,8,0" Style="{StaticResource ReduxPrimaryActionButtonStyle}" IsDefault="True" Click="Add_Click">
@@ -297,7 +297,7 @@
 					<controls:ReduxIcon VerticalAlignment="Center" x:Name="ConfirmButtonIcon" Width="14" Height="14" Margin="0,0,6,0"
 						Foreground="{DynamicResource ReduxAccentForegroundBrush}"
 						StrokeData="{StaticResource Redux.Icon.Check}" />
-					<TextBlock x:Name="ConfirmButtonText" Text="Add" />
+					<TextBlock x:Name="ConfirmButtonText" Text="{loc:Text Add_9fd728c6}" />
 				</StackPanel>
 			</Button>
 			<Button MinWidth="84" Style="{StaticResource ReduxSecondaryActionButtonStyle}" IsCancel="True">

@@ -306,7 +306,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Import Font",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Import Font"),
 			Filter = "Font files (*.ttf;*.otf)|*.ttf;*.otf|TrueType font (*.ttf)|*.ttf|OpenType font (*.otf)|*.otf",
 			CheckFileExists = true,
 			Multiselect = false
@@ -332,7 +332,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			? ""
 			: $"\n\n{affectedThemes} custom theme{(affectedThemes == 1 ? "" : "s")} will fall back to Manrope.";
 		var result = ReduxMessageBox.Show(this,
-			$"Remove '{choice.Name}'?{usageNote}", "Remove Custom Font",
+			DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Remove '{choice.Name}'?{usageNote}"), "Remove Custom Font",
 			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 		if (result != MessageBoxResult.Yes) return;
 		if (!ReduxCustomFontService.TryDelete(choice.CustomReference, out var error))
@@ -397,8 +397,8 @@ public partial class SettingsWindow : SettingsWindowBase
 		CustomThemeStatusText.Text = activeTheme != null
 			? $"Active custom theme · {activeTheme.Name} · {ReduxCustomFontService.GetDisplayName(activeTheme.TypographyFont, activeTheme.CustomTypographyFont)} · {activeTheme.TextSize.GetDescription()} text"
 			: ViewModel.Settings.CustomThemes.Count == 0
-				? "No custom themes yet. Create one from the current built-in palette."
-				: "Choose a custom theme above, or keep using a built-in theme.";
+				? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No custom themes yet. Create one from the current built-in palette.")
+				: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Choose a custom theme above, or keep using a built-in theme.");
 		_updatingCustomThemeSelection = false;
 		ThemeComboBox_SelectionChanged(ThemeComboBox, null);
 	}
@@ -512,7 +512,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		var selected = SelectedCustomTheme;
 		if (selected == null) return;
 		var result = ReduxMessageBox.Show(this,
-			$"Delete the custom theme '{selected.Name}'?\n\nExport it first if you may want to use it again.",
+			DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Delete the custom theme '{selected.Name}'?\n\nExport it first if you may want to use it again."),
 			"Delete Custom Theme", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 		if (result != MessageBoxResult.Yes) return;
 		ViewModel.Settings.CustomThemes.Remove(selected);
@@ -534,7 +534,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Import Custom Theme",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Import Custom Theme"),
 			Filter = "Theme file (*.json)|*.json|All files (*.*)|*.*",
 			CheckFileExists = true,
 			Multiselect = false
@@ -548,7 +548,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		}
 		catch (Exception ex)
 		{
-			ReduxMessageBox.Show(this, $"Could not import that theme.\n\n{ex.Message}",
+			ReduxMessageBox.Show(this, DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Could not import that theme.\n\n{ex.Message}"),
 				"Import Custom Theme", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
 	}
@@ -560,7 +560,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		var safeName = String.Concat(selected.Name.Select(character => Path.GetInvalidFileNameChars().Contains(character) ? '_' : character));
 		var dialog = new Microsoft.Win32.SaveFileDialog
 		{
-			Title = "Export Custom Theme",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Export Custom Theme"),
 			Filter = "Theme file (*.json)|*.json",
 			FileName = $"{safeName}.json",
 			AddExtension = true,
@@ -570,11 +570,11 @@ public partial class SettingsWindow : SettingsWindowBase
 		try
 		{
 			ReduxThemeService.Export(dialog.FileName, selected);
-			ViewModel.ShowAlert($"Exported '{selected.Name}'.", AlertType.Success);
+			ViewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Exported '{selected.Name}'."), AlertType.Success);
 		}
 		catch (Exception ex)
 		{
-			ReduxMessageBox.Show(this, $"Could not export that theme.\n\n{ex.Message}",
+			ReduxMessageBox.Show(this, DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Could not export that theme.\n\n{ex.Message}"),
 				"Export Custom Theme", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
 	}
@@ -801,7 +801,7 @@ public partial class SettingsWindow : SettingsWindowBase
 						locationPanel.Children.Add(locationRow);
 						var locationHint = new TextBlock
 						{
-							Text = "Switches on restart. The current folder's queue and files stay where they are.",
+							Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Switches on restart. The current folder's queue and files stay where they are."),
 							TextWrapping = TextWrapping.Wrap,
 							Margin = new Thickness(0, 4, 0, 0)
 						};
@@ -838,7 +838,7 @@ public partial class SettingsWindow : SettingsWindowBase
 								? "Redux found an existing queue in that folder and will use it after restart."
 								: "Redux will start a separate queue in that folder after restart.";
 							if (ReduxMessageBox.Show(this,
-									$"Use this Downloads folder?\n\n{selected}\n\n{detail} Your current queue and packages stay in their existing folder. No files will be moved or deleted.",
+									DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Use this Downloads folder?\n\n{selected}\n\n{detail} Your current queue and packages stay in their existing folder. No files will be moved or deleted."),
 									"Change Downloads folder", MessageBoxButton.YesNo, MessageBoxImage.Question,
 									MessageBoxResult.No) != MessageBoxResult.Yes) return;
 							downloadSettings.ManagedDownloadsDirectory =
@@ -849,7 +849,7 @@ public partial class SettingsWindow : SettingsWindowBase
 						resetButton.Click += (_, _) =>
 						{
 							if (ReduxMessageBox.Show(this,
-									$"Use Redux's default Downloads folder after restart?\n\n{defaultDirectory}\n\nThe current folder's queue and packages stay where they are.",
+									DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Use Redux's default Downloads folder after restart?\n\n{defaultDirectory}\n\nThe current folder's queue and packages stay where they are."),
 									"Reset Downloads folder", MessageBoxButton.YesNo, MessageBoxImage.Question,
 									MessageBoxResult.No) != MessageBoxResult.Yes) return;
 							downloadSettings.ManagedDownloadsDirectory = String.Empty;
@@ -1222,7 +1222,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		var action = collapse ? "Collapse all shortcut groups" : "Expand all shortcut groups";
 		ShortcutGroupsToggleButton.IsEnabled = !HasShortcutFilter && expanders.Count > 0;
 		ShortcutGroupsToggleButton.ToolTip = HasShortcutFilter
-			? "Clear the shortcut filter to expand or collapse all groups"
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Clear the shortcut filter to expand or collapse all groups")
 			: action;
 		System.Windows.Automation.AutomationProperties.SetName(ShortcutGroupsToggleButton, action);
 		ShortcutGroupsToggleIcon.SetResourceReference(

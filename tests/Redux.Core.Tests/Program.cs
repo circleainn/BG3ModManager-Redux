@@ -119,6 +119,10 @@ internal static class Program
 		var overrideDuplicateDialog = new OverrideDuplicateDialogTests();
 		var tests = new (string Name, Action Run)[]
 		{
+			(nameof(languages.TranslatedFormatsPreserveArgumentsAndCatalogIntegrity), languages.TranslatedFormatsPreserveArgumentsAndCatalogIntegrity),
+			(nameof(languages.OnboardingLanguageChangesEveryStepAndKeepsActionsReachable), languages.OnboardingLanguageChangesEveryStepAndKeepsActionsReachable),
+			(nameof(languages.ModalTranslationsPreserveDecisionsAndUserText), languages.ModalTranslationsPreserveDecisionsAndUserText),
+			(nameof(languages.SnapshotRunnerCarriesLanguageAndPreservesCancellation), languages.SnapshotRunnerCarriesLanguageAndPreservesCancellation),
 			(nameof(languages.LanguagesPersistWithoutChangingCultureOrUserData), languages.LanguagesPersistWithoutChangingCultureOrUserData),
 			(nameof(languages.TranslatedColumnsAndMenusKeepTheirOriginalIdentities), languages.TranslatedColumnsAndMenusKeepTheirOriginalIdentities),
 			(nameof(languages.LanguageSelectorAndTypographyRemainIndependent), languages.LanguageSelectorAndTypographyRemainIndependent),

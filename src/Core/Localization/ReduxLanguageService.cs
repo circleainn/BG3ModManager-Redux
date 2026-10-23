@@ -1,7 +1,11 @@
 using System.ComponentModel;
 using System.Text.Json;
 
+#if REDUX_UPDATER
+namespace ReduxUpdater.Localization;
+#else
 namespace DivinityModManager.Localization;
+#endif
 
 public sealed record InterfaceLanguageChoice(string Code, string NativeName);
 
@@ -57,4 +61,12 @@ public sealed class ReduxLanguageService : INotifyPropertyChanged
 	}
 	public string Translate(string english) => english != null && _englishKeys.TryGetValue(english, out var key)
 		? this[key] : english;
+
+	/// <summary>Translate a UI-owned sentence before inserting paths, names and other unchanged values.</summary>
+	public string Format(FormattableString message) => FormatEnglish(message.Format, message.GetArguments());
+	public string FormatEnglish(string englishFormat, params object[] arguments)
+	{
+		try { return String.Format(System.Globalization.CultureInfo.CurrentCulture, Translate(englishFormat), arguments); }
+		catch (FormatException) { return String.Format(System.Globalization.CultureInfo.CurrentCulture, englishFormat, arguments); }
+	}
 }

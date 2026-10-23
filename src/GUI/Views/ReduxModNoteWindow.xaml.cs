@@ -62,7 +62,7 @@ public partial class ReduxModNoteWindow : AdonisUI.Controls.AdonisWindow
 	{
 		if (CharacterCountText == null || NoteTextBox == null) return;
 		CharacterCountText.Text =
-			$"{NoteTextBox.Text.Length:N0} / {ReduxModAnnotationService.MaximumNoteLength:N0}";
+			DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{NoteTextBox.Text.Length:N0} / {ReduxModAnnotationService.MaximumNoteLength:N0}");
 		ClearButton.IsEnabled = !String.IsNullOrWhiteSpace(NoteTextBox.Text);
 		if (SaveButton != null)
 			SaveButton.IsEnabled = !_requiresSharedNoteText || !String.IsNullOrWhiteSpace(NoteTextBox.Text);

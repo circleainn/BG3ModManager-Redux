@@ -14,8 +14,12 @@ In development builds, open **Preferences > General > Interface language** and c
 Français, Español, Русский, or 简体中文 (Simplified Chinese). The interface previews the selection
 immediately; click **Save** to keep it after restart. Languages are bundled and work offline.
 
-Translation coverage is still being expanded. Navigation, mod panes, common actions, and Preferences
-have an initial translation pass; remaining messages use English. Mod names, descriptions, file paths,
+Welcome Setup also has a language selector at the top, with native language names. Its walkthrough
+updates immediately; the choice is saved when you finish or choose **Set up later**.
+
+Translations cover navigation, mod panes, Preferences, onboarding, modal layouts, confirmation
+messages, installation reviews, and the external backup/restore window. Some diagnostics and
+provider messages still use their original language. Mod names, descriptions, file paths,
 and saved load orders are not translated. Your font, custom theme, and text size remain selected.
 Windows supplies fallback glyphs for characters a chosen font does not contain, so some scripts may
 look different from the font's Latin letters.

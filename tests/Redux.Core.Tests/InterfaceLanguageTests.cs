@@ -192,6 +192,163 @@ internal sealed class InterfaceLanguageTests
 		});
 	}
 
+	public void TranslatedFormatsPreserveArgumentsAndCatalogIntegrity()
+	{
+		var service = new ReduxLanguageService();
+		foreach (var key in service.Keys)
+		{
+			var english = service.GetTranslation(key, "en");
+			if (!System.Text.RegularExpressions.Regex.IsMatch(english, @"\{\d+")) continue;
+			var original = System.Text.CompositeFormat.Parse(english);
+			foreach (var language in ReduxLanguageService.Languages)
+				RegressionAssert.True(System.Text.CompositeFormat.Parse(service.GetTranslation(key, language.Code)).MinimumArgumentCount <= original.MinimumArgumentCount);
+		}
+		WithResources(_ =>
+		{
+			foreach (var language in ReduxLanguageService.Languages)
+			{
+				ReduxLanguageService.Current.SetLanguage(language.Code);
+				service.SetLanguage(language.Code);
+				const string path = @"C:\Mods\Save {0} Русский 中文.pak";
+				var message = service.Format($"Copying {path}");
+				RegressionAssert.Contains(message, path);
+				if (language.Code != "en") RegressionAssert.False(message.StartsWith("Copying "));
+				var item = new ReduxCommandPaletteItem("Save", "File", "Save", "", "save", () => { }, localize: true);
+				RegressionAssert.True(item.Matches(service.Translate("Save")));
+				RegressionAssert.Equal("Save", item.Name);
+				RegressionAssert.Equal("Save", new ReduxCommandPaletteItem("Save", "File", "Save", "", "save", () => { }).DisplayName);
+			}
+		});
+	}
+
+	public void OnboardingLanguageChangesEveryStepAndKeepsActionsReachable()
+	{
+		WithResources(resources =>
+		{
+			foreach (var theme in new[] { ReduxThemeType.ReduxDark, ReduxThemeType.ReduxLight, ReduxThemeType.Parchment })
+			foreach (var size in new[] { ReduxTextSize.Default, ReduxTextSize.Large })
+			{
+				var settings = new DivinityModManagerSettings { ColorTheme = theme, TextSize = size, ReduceMotion = true };
+				var window = new ReduxOnboardingWindow(null!, settings);
+				try
+				{
+					var root = (FrameworkElement)window.Content;
+					root.Opacity = 1; root.RenderTransform = Transform.Identity;
+					var combo = (ComboBox)window.FindName("WelcomeLanguageComboBox");
+					var font = window.FontFamily;
+					foreach (var language in ReduxLanguageService.Languages)
+					{
+						combo.SelectedValue = language.Code;
+						RegressionAssert.Equal(language.Code, ReduxLanguageService.Current.Language);
+						RegressionAssert.Equal(font, window.FontFamily);
+						for (var step = 0; step < 5; step++)
+						{
+							typeof(ReduxOnboardingWindow).GetMethod("ShowStep", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(window, [step]);
+							Layout(root, 640, 480);
+							foreach (var name in new[] { "WelcomeLanguageComboBox", "NotNowButton", "SaveContinueButton", "BackButton" })
+							{
+								var control = (FrameworkElement)window.FindName(name);
+								if (control.Visibility != Visibility.Visible) continue;
+								var bounds = control.TransformToAncestor(root).TransformBounds(new Rect(control.RenderSize));
+								if (bounds.Left < -1 || bounds.Right > 641 || bounds.Bottom > 481 || bounds.Top < -1)
+									throw new InvalidOperationException($"Onboarding {name}: {theme}, {size}, {language.Code}, step {step}: {bounds}");
+							}
+							RegressionAssert.True(((ScrollViewer)window.FindName("OnboardingContentScrollViewer")).ActualHeight > 30);
+							RegressionAssert.Equal(ReduxLanguageService.Current.Translate(step == 4 ? "Start using Redux" : "Continue"), ((TextBlock)window.FindName("ContinueLabel")).Text);
+							var output = Environment.GetEnvironmentVariable("REDUX_LAYOUT_PREVIEW");
+							if (!String.IsNullOrWhiteSpace(output) && size == ReduxTextSize.Large)
+								Render(root, Path.Combine(output, $"onboarding-{theme}-{language.Code}-{step}.png"), 640, 480, 144);
+						}
+					}
+					RegressionAssert.SequenceEqual(DivinityModManager.AppServices.ReduxOnboardingPolicy.StarterSeparatorTitles, window.SelectedStarterSeparators);
+					((Button)window.FindName("NotNowButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+					RegressionAssert.True(window.WasResolved);
+					RegressionAssert.False(window.ApplyChanges);
+					RegressionAssert.Equal("zh-Hans", window.SelectedInterfaceLanguage);
+				}
+				finally { window.Close(); }
+			}
+		});
+	}
+
+	public void ModalTranslationsPreserveDecisionsAndUserText()
+	{
+		WithResources(resources =>
+		{
+			foreach (var language in ReduxLanguageService.Languages)
+			foreach (var theme in new[] { ReduxThemeType.ReduxDark, ReduxThemeType.ReduxLight, ReduxThemeType.Parchment })
+			{
+				ReduxLanguageService.Current.SetLanguage(language.Code);
+				ReduxTypographyService.ApplyTextSize(resources, ReduxTextSize.Large);
+				const string original = "Keep this window open. Cancellation is unavailable while files are being restored or recovered.";
+				var window = new ReduxMessageBoxWindow(null!, original, "Snapshot needs attention", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning, MessageBoxResult.No);
+				try
+				{
+					ReduxThemeService.Apply(window.Resources, theme);
+					window.SetButtonLabel(MessageBoxResult.Yes, "Keep the Mods copy");
+					window.AddExtraAction("Copy to Clipboard", "Redux.Icon.Copy", () => { });
+					var root = (FrameworkElement)window.Content;
+					root.Opacity = 1; root.RenderTransform = Transform.Identity;
+					Layout(root, 560, 480);
+					RegressionAssert.Equal(ReduxLanguageService.Current.Translate(original), ((TextBox)window.FindName("MessageTextBox")).Text);
+					RegressionAssert.Equal(ReduxLanguageService.Current.Translate("Keep the Mods copy"), ((TextBlock)window.FindName("YesButtonLabel")).Text);
+					RegressionAssert.True(((Button)window.FindName("NoButton")).IsDefault);
+					RegressionAssert.True(((Button)window.FindName("CancelButton")).IsCancel);
+					foreach (var name in new[] { "YesButton", "NoButton", "CancelButton" })
+					{
+						var button = (Button)window.FindName(name);
+						var bounds = button.TransformToAncestor(root).TransformBounds(new Rect(button.RenderSize));
+						RegressionAssert.True(bounds.Left >= -1 && bounds.Right <= 561 && bounds.Bottom <= 481);
+					}
+					var output = Environment.GetEnvironmentVariable("REDUX_LAYOUT_PREVIEW");
+					if (!String.IsNullOrWhiteSpace(output)) Render(root, Path.Combine(output, $"modal-{theme}-{language.Code}.png"), 560, 480, 144);
+					((Button)window.FindName("CancelButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+					RegressionAssert.Equal(MessageBoxResult.Cancel, window.Result);
+				}
+				finally { window.Close(); }
+			}
+		});
+	}
+
+	public void SnapshotRunnerCarriesLanguageAndPreservesCancellation()
+	{
+		WithResources(_ =>
+		{
+			foreach (var language in ReduxLanguageService.Languages)
+			{
+				ReduxLanguageService.Current.SetLanguage(language.Code);
+				var appearance = new DivinityModManager.AppServices.ReduxSnapshotAppearance { Language = language.Code, TextScale = 1.5 };
+				var transferred = System.Text.Json.JsonSerializer.Deserialize<ReduxUpdater.ReduxSnapshotAppearance>(System.Text.Json.JsonSerializer.Serialize(appearance))!;
+				RegressionAssert.Equal(language.Code, transferred.Normalize().Language);
+				var window = new ReduxUpdater.SnapshotProgressWindow(transferred);
+				try
+				{
+					window.SetOperation("restore");
+					var cancellations = 0;
+					window.CancelRequested += () => cancellations++;
+					window.Report(new("Mods/Save {0} Русский 中文.pak", 10, 20, false));
+					var button = (Button)window.FindName("ActionButton");
+					button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+					RegressionAssert.Equal(0, cancellations);
+					RegressionAssert.Equal(ReduxLanguageService.Current.Translate("Restoring snapshot"), ((TextBlock)window.FindName("Heading")).Text);
+					RegressionAssert.Equal("Mods/Save {0} Русский 中文.pak", ((TextBlock)window.FindName("Details")).Text);
+					var root = (FrameworkElement)window.Content;
+					root.Measure(new Size(580, Double.PositiveInfinity));
+					var height = (int)Math.Ceiling(root.DesiredSize.Height);
+					Layout(root, 580, height);
+					RegressionAssert.True(height < 650);
+					var output = Environment.GetEnvironmentVariable("REDUX_LAYOUT_PREVIEW");
+					if (!String.IsNullOrWhiteSpace(output)) Render(root, Path.Combine(output, $"snapshot-language-{language.Code}.png"), 580, height, 144);
+					window.Report(new("Verifying archive"));
+					button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+					RegressionAssert.Equal(1, cancellations);
+					RegressionAssert.Equal(ReduxLanguageService.Current.Translate("Canceling safely…"), ((TextBlock)window.FindName("Details")).Text);
+				}
+				finally { window.Finish(); ReduxUpdater.Localization.ReduxLanguageService.Current.SetLanguage("en"); }
+			}
+		});
+	}
+
 	private static IEnumerable<GlyphRunDrawing> Glyphs(Drawing drawing)
 	{
 		if (drawing is GlyphRunDrawing glyph) yield return glyph;
@@ -199,6 +356,7 @@ internal sealed class InterfaceLanguageTests
 	}
 	private static void WithResources(Action<ResourceDictionary> test)
 	{
+		Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 		var saved = Application.Current.Resources;
 		var language = ReduxLanguageService.Current.Language;
 		var motion = ReduxWindowBehavior.ReduceMotion;
@@ -233,6 +391,11 @@ internal sealed class InterfaceLanguageTests
 	{
 		Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 		var bitmap = new RenderTargetBitmap(width * dpi / 96, height * dpi / 96, dpi, dpi, PixelFormats.Pbgra32);
+		// Rendering window content alone omits its parent's background.
+		var background = new DrawingVisual();
+		using (var context = background.RenderOpen())
+			context.DrawRectangle(root.TryFindResource("ReduxWindowBrush") as Brush ?? Brushes.Transparent, null, new Rect(0, 0, width, height));
+		bitmap.Render(background);
 		bitmap.Render(root);
 		var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
 		using var file = File.Create(path); encoder.Save(file);

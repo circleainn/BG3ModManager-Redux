@@ -7,7 +7,7 @@
 	xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
 	xmlns:util="clr-namespace:DivinityModManager.Util"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Save Game Manager" Width="1080" Height="680" MinWidth="680" MinHeight="480"
+	Title="{loc:Text Save_Game_Manager_3eb1ecbb}" Width="1080" Height="680" MinWidth="680" MinHeight="480"
 	AllowDrop="True" Drop="Window_Drop" DragOver="Window_DragOver"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="{DynamicResource Redux.FontWeight.Body}" ResizeMode="CanResize" ShowInTaskbar="False"
@@ -175,38 +175,38 @@
 				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 				<Grid>
 					<StackPanel>
-						<TextBlock Style="{StaticResource ReduxWindowHeadingStyle}" Text="Save Game Manager" />
+						<TextBlock Style="{StaticResource ReduxWindowHeadingStyle}" Text="{loc:Text Save_Game_Manager_3eb1ecbb}" />
 						<TextBlock Margin="0,4,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Manage this profile’s saves. Drop a save file, folder, or ZIP to install." TextWrapping="Wrap" />
+							Text="{loc:Text Manage_this_profile_s_saves_Drop_a_save_file_folder_or_ZIP_t_77bbeaa5}" TextWrapping="Wrap" />
 					</StackPanel>
 				</Grid>
 
 				<WrapPanel Grid.Row="1" Margin="{DynamicResource Redux.Manager.ToolbarMargin}" Orientation="Horizontal">
-                    <Button Margin="{DynamicResource Redux.Manager.ActionMargin}" AutomationProperties.Name="Install save" Click="InstallSaveButton_Click" Style="{StaticResource ReduxMinorSuccessActionButtonStyle}">
+                    <Button Margin="{DynamicResource Redux.Manager.ActionMargin}" AutomationProperties.Name="{loc:Text Install_save_6690246f}" Click="InstallSaveButton_Click" Style="{StaticResource ReduxMinorSuccessActionButtonStyle}">
                         <Button.ContextMenu><ContextMenu>
-                            <MenuItem util:ReduxMenuItemExtension.UseSemanticHover="True" util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource ReduxSuccessPillBackground}" util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource ReduxSuccessBrush}" Header="File or Archive..." Click="ImportArchiveButton_Click">
+                            <MenuItem util:ReduxMenuItemExtension.UseSemanticHover="True" util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource ReduxSuccessPillBackground}" util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource ReduxSuccessBrush}" Header="{loc:Text File_or_Archive_d17e3e5d}" Click="ImportArchiveButton_Click">
                                 <MenuItem.Icon><controls:ReduxIcon Width="16" Height="16" StrokeData="{StaticResource Redux.Icon.Download}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}"/></MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem util:ReduxMenuItemExtension.UseSemanticHover="True" util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource ReduxSuccessPillBackground}" util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource ReduxSuccessBrush}" Header="Folder..." Click="ImportFolderButton_Click">
+                            <MenuItem util:ReduxMenuItemExtension.UseSemanticHover="True" util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource ReduxSuccessPillBackground}" util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource ReduxSuccessBrush}" Header="{loc:Text Folder_16b01eee}" Click="ImportFolderButton_Click">
                                 <MenuItem.Icon><controls:ReduxIcon Width="16" Height="16" StrokeData="{StaticResource Redux.Icon.FolderOpen}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}"/></MenuItem.Icon>
                             </MenuItem>
                         </ContextMenu></Button.ContextMenu>
                         <StackPanel Orientation="Horizontal">
                             <controls:ReduxIcon Width="15" Height="15" Margin="0,0,7,0" VerticalAlignment="Center" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Download}"/>
-                            <TextBlock Text="Install Save..."/>
+                            <TextBlock Text="{loc:Text Install_Save_580a4bd7}"/>
                         </StackPanel>
                     </Button>
-					<Button Margin="{DynamicResource Redux.Manager.ActionMargin}" AutomationProperties.Name="Open saves folder" Click="OpenFolderButton_Click" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="15" Height="15" Margin="0,0,7,0" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /><TextBlock Text="Saves Folder" /></StackPanel>
+					<Button Margin="{DynamicResource Redux.Manager.ActionMargin}" AutomationProperties.Name="{loc:Text Open_saves_folder_d37513e1}" Click="OpenFolderButton_Click" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="15" Height="15" Margin="0,0,7,0" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /><TextBlock Text="{loc:Text Saves_Folder_4625b0e3}" /></StackPanel>
 					</Button>
-					<Button Margin="{DynamicResource Redux.Manager.ActionMargin}" AutomationProperties.Name="Refresh saves" Click="RefreshButton_Click" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
+					<Button Margin="{DynamicResource Redux.Manager.ActionMargin}" AutomationProperties.Name="{loc:Text Refresh_saves_c7dc037d}" Click="RefreshButton_Click" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
 						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="15" Height="15" Margin="0,0,7,0" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /><TextBlock Text="{loc:Text Refresh_0e916101}" /></StackPanel>
 					</Button>
 
-                    <Button x:Name="ReviewModsButton" IsEnabled="False" Margin="{DynamicResource Redux.Manager.ActionMargin}" Click="ReviewModsButton_Click" AutomationProperties.Name="Review mods for selected save" Style="{StaticResource ReduxMinorActionButtonStyle}">
-<StackPanel Orientation="Horizontal"><controls:ReduxIcon Width="15" Height="15" Margin="0,0,7,0" VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.ReorderStroke}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}"/><TextBlock x:Name="ReviewModsLabel" Text="Review Mods..."/></StackPanel></Button>
+                    <Button x:Name="ReviewModsButton" IsEnabled="False" Margin="{DynamicResource Redux.Manager.ActionMargin}" Click="ReviewModsButton_Click" AutomationProperties.Name="{loc:Text Review_mods_for_selected_save_2fb319d3}" Style="{StaticResource ReduxMinorActionButtonStyle}">
+<StackPanel Orientation="Horizontal"><controls:ReduxIcon Width="15" Height="15" Margin="0,0,7,0" VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.ReorderStroke}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}"/><TextBlock x:Name="ReviewModsLabel" Text="{loc:Text Review_Mods_2bbdb812}"/></StackPanel></Button>
 <Button x:Name="CampaignBulkToggleButton" IsEnabled="False" Visibility="Collapsed"
-						AutomationProperties.Name="Collapse all campaigns" ToolTip="Collapse all campaigns"
+						AutomationProperties.Name="{loc:Text Collapse_all_campaigns_ffd8c825}" ToolTip="{loc:Text Collapse_all_campaigns_ffd8c825}"
 						Click="CampaignBulkToggleButton_Click" MouseEnter="CampaignBulkToggleButton_MouseEnter"
 						Style="{StaticResource CampaignBulkActionButtonStyle}">
 						<controls:ReduxIcon VerticalAlignment="Center" x:Name="CampaignBulkToggleIcon" Width="14" Height="14"
@@ -231,10 +231,10 @@
 						SelectionChanged="SaveList_SelectionChanged" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
 						VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.IsVirtualizingWhenGrouping="True" VirtualizingPanel.VirtualizationMode="Recycling">
                         <ListBox.ContextMenu><ContextMenu Style="{StaticResource ReduxContextMenuStyle}" ItemContainerStyle="{StaticResource ReduxPopupMenuItemStyle}">
-                            <MenuItem x:Name="SaveReviewMenu" Header="Review Mods…" Click="ReviewModsButton_Click"><MenuItem.Icon><controls:ReduxIcon StrokeData="{DynamicResource Redux.Icon.ReorderStroke}"/></MenuItem.Icon></MenuItem>
-                            <MenuItem Header="Export This Save…" Click="ExportThisSave_Click"><MenuItem.Icon><controls:ReduxIcon StrokeData="{DynamicResource Redux.Icon.Save}"/></MenuItem.Icon></MenuItem>
-                            <MenuItem Header="Export Campaign…" Click="ExportCampaignSaves_Click"><MenuItem.Icon><controls:ReduxIcon StrokeData="{DynamicResource Redux.Icon.BookOpen}"/></MenuItem.Icon></MenuItem>
-                            <MenuItem Header="Show in Folder" Click="ShowSelectedSaveFolder_Click"><MenuItem.Icon><controls:ReduxIcon StrokeData="{DynamicResource Redux.Icon.FolderOpen}"/></MenuItem.Icon></MenuItem>
+                            <MenuItem x:Name="SaveReviewMenu" Header="{loc:Text Review_Mods_9417e480}" Click="ReviewModsButton_Click"><MenuItem.Icon><controls:ReduxIcon StrokeData="{DynamicResource Redux.Icon.ReorderStroke}"/></MenuItem.Icon></MenuItem>
+                            <MenuItem Header="{loc:Text Export_This_Save_9277a665}" Click="ExportThisSave_Click"><MenuItem.Icon><controls:ReduxIcon StrokeData="{DynamicResource Redux.Icon.Save}"/></MenuItem.Icon></MenuItem>
+                            <MenuItem Header="{loc:Text Export_Campaign_f73b07d0}" Click="ExportCampaignSaves_Click"><MenuItem.Icon><controls:ReduxIcon StrokeData="{DynamicResource Redux.Icon.BookOpen}"/></MenuItem.Icon></MenuItem>
+                            <MenuItem Header="{loc:Text Show_in_Folder_3c4d9b8b}" Click="ShowSelectedSaveFolder_Click"><MenuItem.Icon><controls:ReduxIcon StrokeData="{DynamicResource Redux.Icon.FolderOpen}"/></MenuItem.Icon></MenuItem>
                         </ContextMenu></ListBox.ContextMenu>
 						<ListBox.GroupStyle>
 							<GroupStyle>
@@ -304,15 +304,15 @@
 							Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}">
 							<controls:ReduxIcon Width="22" Height="22" Foreground="{DynamicResource ReduxAccentHoverBrush}" IconKey="folder" />
 						</Border>
-						<TextBlock Margin="0,10,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" Text="No story saves found" />
-						<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Install a save or create one in game, then refresh." TextWrapping="Wrap" TextAlignment="Center" />
+						<TextBlock Margin="0,10,0,0" HorizontalAlignment="Center" FontWeight="SemiBold" Text="{loc:Text No_story_saves_found_1dae5fc6}" />
+						<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Install_a_save_or_create_one_in_game_then_refresh_846d0c85}" TextWrapping="Wrap" TextAlignment="Center" />
 					</StackPanel>
 
-                    <GridSplitter Grid.Column="1" Width="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext" Style="{StaticResource ReduxManagerPaneSplitterStyle}" AutomationProperties.Name="Resize save list and details"/>
+                    <GridSplitter Grid.Column="1" Width="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ResizeBehavior="PreviousAndNext" Style="{StaticResource ReduxManagerPaneSplitterStyle}" AutomationProperties.Name="{loc:Text Resize_save_list_and_details_45bb45c5}"/>
                     <Border x:Name="SaveDetailsPanel" Grid.Column="2" Padding="12,10"
                         Background="{DynamicResource ReduxSurfaceBrush}" BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
                         <Grid>
-                        <TextBlock x:Name="SaveDetailsPlaceholder" Text="Select a save to view its details." Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="SaveDetailsPlaceholder" Text="{loc:Text Select_a_save_to_view_its_details_b3d5f34a}" Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         <ScrollViewer x:Name="SaveDetailsContent" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <StackPanel>
 
@@ -322,7 +322,7 @@
                                     <TextBlock Text="{Binding SaveFacts}" Margin="0,8,0,0" Style="{StaticResource ReduxManagerMetadataStyle}"/>
                                     <TextBlock Text="{Binding SavedDateText}" Margin="0,3,0,0" Style="{StaticResource ReduxManagerMetadataStyle}"/>
                                     <TextBlock Text="{Binding GameVersionText}" Margin="0,3,0,0" Style="{StaticResource ReduxManagerMetadataStyle}"/>
-                                    <TextBlock Text="Mods" Margin="0,14,0,5" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{loc:Text Mods_6e58b577}" Margin="0,14,0,5" FontWeight="SemiBold"/>
                                     <TextBlock Text="{Binding ModSummary}" Style="{StaticResource ReduxManagerMetadataStyle}"/>
 
                                     <TextBlock Text="{Binding PartyHeading}" Margin="0,10,0,5" FontWeight="SemiBold"/>
@@ -351,7 +351,7 @@
 					<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
 					<TextBlock x:Name="ProfilePathText" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextMutedBrush}" TextTrimming="CharacterEllipsis" />
 					<Button x:Name="DeleteButton" Grid.Column="1" MinWidth="88" Margin="8,0" IsEnabled="False"
-						AutomationProperties.Name="Delete selected saves" Click="DeleteButton_Click" Style="{StaticResource ReduxMinorDestructiveActionButtonStyle}">
+						AutomationProperties.Name="{loc:Text Delete_selected_saves_de39d219}" Click="DeleteButton_Click" Style="{StaticResource ReduxMinorDestructiveActionButtonStyle}">
 						<StackPanel Orientation="Horizontal"><controls:ReduxIcon Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Trash}" /><TextBlock Text="{loc:Text Delete_e2d0a549}" /></StackPanel>
 					</Button>
 					<Button Grid.Column="2" MinWidth="88" IsCancel="True" Style="{StaticResource ReduxSecondaryActionButtonStyle}">

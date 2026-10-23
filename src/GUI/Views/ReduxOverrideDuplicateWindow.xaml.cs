@@ -1,3 +1,4 @@
+using DivinityModManager.Localization;
 using DivinityModManager.AppServices;
 using DivinityModManager.Util;
 using System.Diagnostics;
@@ -9,7 +10,10 @@ namespace DivinityModManager.Views;
 
 public partial class ReduxOverrideDuplicateWindow : AdonisUI.Controls.AdonisWindow
 {
-	public sealed record ChoiceOption(string Label, OverrideDuplicateChoice? Value);
+	public sealed record ChoiceOption(string Label, OverrideDuplicateChoice? Value)
+	{
+		public string DisplayLabel => ReduxLanguageService.Current.Translate(Label);
+	}
 	public sealed class ConflictRow(OverrideDuplicateConflict conflict)
 	{
 		public string Name => conflict.FileName;
@@ -21,8 +25,8 @@ public partial class ReduxOverrideDuplicateWindow : AdonisUI.Controls.AdonisWind
 		public OverrideDuplicateChoice? Choice { get; set; } = conflict.Identical ? OverrideDuplicateChoice.KeepMods : null;
 		public IReadOnlyList<ChoiceOption> Options { get; } = [new("Choose a copy…", null),
 			new("Keep the Mods copy", OverrideDuplicateChoice.KeepMods), new("Keep the held copy", OverrideDuplicateChoice.KeepHeld)];
-		private static string Summary(string label, IReadOnlyList<OverrideDuplicateFile> files) => label + ":\n"
-			+ String.Join("\n", files.Select(file => $"{file.Path}\n{file.Length:N0} bytes · {file.ModifiedUtc.ToLocalTime():g}"));
+		private static string Summary(string label, IReadOnlyList<OverrideDuplicateFile> files) => ReduxLanguageService.Current.Translate(label) + ":\n"
+			+ String.Join("\n", files.Select(file => ReduxLanguageService.Current.Format($"{file.Path}\n{file.Length:N0} bytes · {file.ModifiedUtc.ToLocalTime():g}")));
 	}
 
 	private readonly OverrideDuplicateRecoveryService _service;
@@ -70,7 +74,7 @@ public partial class ReduxOverrideDuplicateWindow : AdonisUI.Controls.AdonisWind
 			_rows = _review.Conflicts.Select(conflict => new ConflictRow(conflict)).ToArray();
 			ConflictItems.ItemsSource = _rows;
 			SetStatus(_rows.Length == 0 ? "No conflicting Override copies were found. Close this window and refresh the library."
-				: $"{_rows.Length} conflicting package group(s). Backups will be retained in {_service.BackupRoot}.");
+				: ReduxLanguageService.Current.Format($"{_rows.Length} conflicting package group(s). Backups will be retained in {_service.BackupRoot}."));
 		}
 		catch (OperationCanceledException) { SetStatus("Review cancelled."); }
 		catch (Exception ex) { _closeRequested = false; SetStatus(ex.Message, showInView: true); }
@@ -97,7 +101,7 @@ public partial class ReduxOverrideDuplicateWindow : AdonisUI.Controls.AdonisWind
 
 	private void SetStatus(string message, bool showInView = false)
 	{
-		StatusText.Text = message;
+		LocalizationBindings.Set(StatusText, TextBlock.TextProperty, message);
 		UIElementAutomationPeer.CreatePeerForElement(StatusText)?.RaiseAutomationEvent(AutomationEvents.LiveRegionChanged);
 		if (showInView)
 			Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Loaded, new Action(() => StatusText.BringIntoView()));

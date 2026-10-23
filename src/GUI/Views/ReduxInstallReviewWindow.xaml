@@ -125,7 +125,7 @@
 					<StackPanel Margin="0,0,14,0" VerticalAlignment="Center">
 						<TextBlock x:Name="FootnoteText" Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap" />
 						<CheckBox x:Name="SkipCleanReviewCheckBox" Margin="0,8,0,0"
-							Content="Don't show this review for clean packages" Visibility="Collapsed" />
+							Content="{loc:Text Don_t_show_this_review_for_clean_packages_e3243cf8}" Visibility="Collapsed" />
 					</StackPanel>
 					<StackPanel Grid.Column="1" Orientation="Horizontal">
 						<Button x:Name="CancelButton" MinWidth="86" Style="{StaticResource ReduxSecondaryActionButtonStyle}" IsCancel="True" Click="CancelButton_Click">

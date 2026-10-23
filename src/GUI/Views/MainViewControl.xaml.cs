@@ -63,7 +63,7 @@ public partial class MainViewControl : MainViewControlViewBase
 		panel.Children.Add(caption);
 		var dot = new Border { Width = 6, Height = 6, CornerRadius = new CornerRadius(3),
 			Margin = new Thickness(5, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center,
-			ToolTip = "Script Extender is not installed. Use Tools to install it." };
+			ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Script Extender is not installed. Use Tools to install it.") };
 		dot.SetResourceReference(Border.BackgroundProperty, "ReduxWarningBrush");
 		dot.SetBinding(VisibilityProperty, new Binding(nameof(MainWindowViewModel.ScriptExtenderMissing))
 		{ Source = ViewModel, Converter = FindResource("BoolToVisibilityConverter") as IValueConverter });
@@ -220,7 +220,7 @@ public partial class MainViewControl : MainViewControlViewBase
 		}
 		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
 		{
-			ViewModel.ShowAlert($"The save games folder could not be opened: {ex.Message}", AlertType.Warning);
+			ViewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"The save games folder could not be opened: {ex.Message}"), AlertType.Warning);
 		}
 	}
 
@@ -437,7 +437,7 @@ public partial class MainViewControl : MainViewControlViewBase
 				Header = "Reduce Motion",
 				IsCheckable = true,
 				StaysOpenOnClick = true,
-				ToolTip = "Remove sliding, scaling, smooth scrolling, and animated window or menu transitions while keeping clear interface feedback.",
+				ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Remove sliding, scaling, smooth scrolling, and animated window or menu transitions while keeping clear interface feedback."),
 				Icon = ReduxIcon.FromResource("Redux.Icon.CircleMinus", true)
 			};
 			LocalizationBindings.Set(reduceMotionItem, MenuItem.HeaderProperty, "Reduce Motion");
@@ -456,7 +456,7 @@ public partial class MainViewControl : MainViewControlViewBase
 				Header = "Disable Blur and Dimming",
 				IsCheckable = true,
 				StaysOpenOnClick = true,
-				ToolTip = "Keep the main window clear behind dialogs and secondary windows.",
+				ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Keep the main window clear behind dialogs and secondary windows."),
 				Icon = ReduxIcon.FromResource("Redux.Icon.Eye", true)
 			};
 			LocalizationBindings.Set(disableBackgroundEffectsItem, MenuItem.HeaderProperty, "Disable Blur and Dimming");
@@ -483,7 +483,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			var debugInformationItem = new MenuItem
 			{
 				Header = "Debug Information...",
-				ToolTip = "Review a read-only snapshot of Redux state for troubleshooting.",
+				ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Review a read-only snapshot of Redux state for troubleshooting."),
 				Icon = ReduxIcon.FromResource("Redux.Icon.Terminal", true)
 			};
 			LocalizationBindings.Set(debugInformationItem, MenuItem.HeaderProperty, "Debug Information...");
@@ -501,7 +501,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			var packagePreflightItem = new MenuItem
 			{
 				Header = "Inspect Mod Package...",
-				ToolTip = "Inspect a PAK or release archive without installing it.",
+				ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Inspect a PAK or release archive without installing it."),
 				Icon = ReduxIcon.FromResource("Redux.Icon.Package", true)
 			};
 			LocalizationBindings.Set(packagePreflightItem, MenuItem.HeaderProperty, "Inspect Mod Package...");
@@ -517,7 +517,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			var contributionItem = new MenuItem
 			{
 				Header = "Generate Redux Database Contribution...",
-				ToolTip = "Scan every installed user mod and create one privacy-limited, shareable report.",
+				ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Scan every installed user mod and create one privacy-limited, shareable report."),
 				Icon = ReduxIcon.FromResource("Redux.Icon.Database", true)
 			};
 			LocalizationBindings.Set(contributionItem, MenuItem.HeaderProperty, "Generate Redux Database Contribution...");
@@ -566,7 +566,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			};
 			var helpCaption = new TextBlock
 			{
-				Text = "Help",
+				Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Help"),
 				VerticalAlignment = VerticalAlignment.Center
 			};
 			LocalizationBindings.Set(helpCaption, TextBlock.TextProperty, "Help");
@@ -578,7 +578,7 @@ public partial class MainViewControl : MainViewControlViewBase
 				CornerRadius = new CornerRadius(3),
 				Margin = new Thickness(5, 0, 0, 0),
 				VerticalAlignment = VerticalAlignment.Center,
-				ToolTip = "A Redux update is available."
+				ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("A Redux update is available.")
 			};
 			updateIndicator.SetResourceReference(Border.BackgroundProperty, "ReduxSuccessBrush");
 			System.Windows.Automation.AutomationProperties.SetName(updateIndicator, "Redux update available in Help");
@@ -614,7 +614,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			var discordMenuItem = new MenuItem
 			{
 				Header = "Join the Redux Discord...",
-				ToolTip = "Open the Redux community Discord server.",
+				ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Open the Redux community Discord server."),
 				Icon = ReduxIcon.FromResource("Redux.Icon.Discord")
 			};
 			LocalizationBindings.Set(discordMenuItem, MenuItem.HeaderProperty, "Join the Redux Discord...");
@@ -678,7 +678,7 @@ public partial class MainViewControl : MainViewControlViewBase
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Inspect Mod Package",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Inspect Mod Package"),
 			Filter = "BG3 packages, saves, and archives (*.pak;*.lsv;*.zip;*.7z;*.rar;*.tar;*.gz)|*.pak;*.lsv;*.zip;*.7z;*.7zip;*.rar;*.tar;*.tar.gz;*.tgz;*.gz;*.gzip|Baldur's Gate 3 packages (*.pak)|*.pak|BG3 saves (*.lsv)|*.lsv|Archive files (*.zip;*.7z;*.rar;*.tar;*.gz)|*.zip;*.7z;*.7zip;*.rar;*.tar;*.tar.gz;*.tgz;*.gz;*.gzip|All files (*.*)|*.*",
 			DefaultExt = ".pak",
 			AddExtension = true,
@@ -723,7 +723,7 @@ public partial class MainViewControl : MainViewControlViewBase
 
 		var dialog = new Microsoft.Win32.SaveFileDialog
 		{
-			Title = "Save Redux Database Contribution",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Save Redux Database Contribution"),
 			Filter = "Redux database contribution (*.bg3redux-report)|*.bg3redux-report|JSON files (*.json)|*.json",
 			DefaultExt = ".bg3redux-report",
 			AddExtension = true,
@@ -734,7 +734,7 @@ public partial class MainViewControl : MainViewControlViewBase
 
 		try
 		{
-			ViewModel.ShowAlert($"Generating fingerprints for {installedMods.Count} installed mod package(s)...", AlertType.Info);
+			ViewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Generating fingerprints for {installedMods.Count} installed mod package(s)..."), AlertType.Info);
 			var result = await ReduxDatabaseContributionService.CreateAsync(installedMods);
 			ReduxDatabaseContributionService.Save(dialog.FileName, result.Report);
 
@@ -858,7 +858,7 @@ public partial class MainViewControl : MainViewControlViewBase
 				return;
 			}
 			var result = ReduxMessageBox.Show(main,
-				$"Replace the existing load order '{Path.GetFileNameWithoutExtension(renamePlan.DestinationPath)}'?",
+				DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Replace the existing load order '{Path.GetFileNameWithoutExtension(renamePlan.DestinationPath)}'?"),
 				"Replace Load Order?",
 				MessageBoxButton.YesNo,
 				MessageBoxImage.Warning,
@@ -1624,7 +1624,7 @@ public partial class MainViewControl : MainViewControlViewBase
 		{
 			ViewModel.AddActiveMod(dependency, recordHistory: true);
 			ViewModel.ShowAlert(
-				$"Activated {dependency.DisplayName}. Review its load-order position before syncing.",
+				DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Activated {dependency.DisplayName}. Review its load-order position before syncing."),
 				AlertType.Success,
 				20);
 			ModLayout.FocusModEntry(dependency);
@@ -1761,8 +1761,8 @@ public partial class MainViewControl : MainViewControlViewBase
 					Control.ForegroundProperty,
 					hasUnsavedChanges ? "ReduxWarningBrush" : "ReduxIconBrush");
 				SaveButton.ToolTip = hasUnsavedChanges
-					? "Save unsaved changes to the selected load order"
-					: "Save changes to the selected load order";
+					? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Save unsaved changes to the selected load order")
+					: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Save changes to the selected load order");
 			});
 		this.BindCommand(ViewModel, vm => vm.Keys.SaveNewOrder.Command, view => view.SaveAsOrderButton);
 		this.BindCommand(ViewModel, vm => vm.Keys.OrganizeLoadOrder.Command, view => view.OrganizeLoadOrderButton);

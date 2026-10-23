@@ -45,7 +45,7 @@
 			<StackPanel Orientation="Vertical">
 				<TextBlock Background="{DynamicResource {x:Static adonisUI:Brushes.Layer3BackgroundBrush}}"
 				    FontSize="{DynamicResource Redux.FontSize.24}"
-				    Text="Mod Updates"
+				    Text="{loc:Text Mod_Updates_9c099802}"
 				    TextAlignment="Center" />
 				<Rectangle Height="2" Fill="LightGray" />
 			</StackPanel>
@@ -55,7 +55,7 @@
 			    Rows="auto,*">
 				<TextBlock Background="{DynamicResource {x:Static adonisUI:Brushes.Layer4BackgroundBrush}}"
 				    FontSize="{DynamicResource Redux.FontSize.20}"
-				    Text="New Mods"
+				    Text="{loc:Text New_Mods_f98666f0}"
 				    TextAlignment="Center" />
 				<controls:ModListView x:Name="NewFilesModListView"
 				    BorderThickness="0"
@@ -205,7 +205,7 @@
 			<Grid Grid.Row="4" Margin="4">
 				<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Horizontal">
 					<Button x:Name="CopySelectedButton" Style="{StaticResource ReduxPrimaryActionButtonStyle}">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Copy}" /><TextBlock Text="Copy Selected to Mods Folder" /></StackPanel>
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Copy}" /><TextBlock Text="{loc:Text Copy_Selected_to_Mods_Folder_d8b8da38}" /></StackPanel>
 					</Button>
 				</StackPanel>
 			</Grid>

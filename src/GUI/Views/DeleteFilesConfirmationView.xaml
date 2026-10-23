@@ -90,7 +90,7 @@
 							<TextBlock FontSize="{DynamicResource Redux.FontSize.20}" FontWeight="{DynamicResource Redux.FontWeight.Title}"
 								Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{Binding Title}" />
 							<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-								Text="Review the selected mod files and deletion options before continuing." TextWrapping="Wrap" />
+								Text="{loc:Text Review_the_selected_mod_files_and_deletion_options_before_co_4fc37bca}" TextWrapping="Wrap" />
 						</StackPanel>
 					</Grid>
 
@@ -112,7 +112,7 @@
 											</GridViewColumn.Header>
 											<GridViewColumn.CellTemplate><DataTemplate>
 												<CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding IsSelected}"
-													Style="{StaticResource DeleteFilesCheckBoxStyle}" ToolTip="Select this file" />
+													Style="{StaticResource DeleteFilesCheckBoxStyle}" ToolTip="{loc:Text Select_this_file_7fe18db8}" />
 											</DataTemplate></GridViewColumn.CellTemplate>
 										</GridViewColumn>
 										<GridViewColumn Width="220">
@@ -145,12 +145,12 @@
 						BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
 						CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 						<WrapPanel VerticalAlignment="Center">
-							<CheckBox Margin="0,0,22,0" Content="Permanent" IsChecked="{Binding PermanentlyDelete, Mode=TwoWay}"
+							<CheckBox Margin="0,0,22,0" Content="{loc:Text Permanent_455a9549}" IsChecked="{Binding PermanentlyDelete, Mode=TwoWay}"
 								Style="{StaticResource DeleteFilesCheckBoxStyle}"
-								ToolTip="Delete files permanently instead of moving them to the Recycle Bin." />
-							<CheckBox Content="Remove from Load Order" IsChecked="{Binding RemoveFromLoadOrder, Mode=TwoWay}"
+								ToolTip="{loc:Text Delete_files_permanently_instead_of_moving_them_to_the_Recyc_e4bf2f5a}" />
+							<CheckBox Content="{loc:Text Remove_from_Load_Order_9c02f70a}" IsChecked="{Binding RemoveFromLoadOrder, Mode=TwoWay}"
 								Visibility="{Binding RemoveFromLoadOrderVisibility}" Style="{StaticResource DeleteFilesCheckBoxStyle}"
-								ToolTip="Remove deleted mods from the active load order." />
+								ToolTip="{loc:Text Remove_deleted_mods_from_the_active_load_order_78debad6}" />
 						</WrapPanel>
 					</Border>
 

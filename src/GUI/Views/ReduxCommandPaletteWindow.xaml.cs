@@ -1,3 +1,4 @@
+using DivinityModManager.Localization;
 using DivinityModManager.Models;
 using DivinityModManager.Models.App;
 using DivinityModManager.Util;
@@ -24,6 +25,10 @@ public sealed class ReduxCommandPaletteItem
 	public string Name { get; }
 	public string Category { get; }
 	public string Description { get; }
+	public bool Localize { get; }
+	public string DisplayName => Localize ? ReduxLanguageService.Current.Translate(Name) : Name;
+	public string DisplayCategory => Localize ? ReduxLanguageService.Current.Translate(Category) : Category;
+	public string DisplayDescription => Localize ? ReduxLanguageService.Current.Translate(Description) : Description;
 	public string Gesture { get; }
 	public string IconKey { get; }
 	public string AccentColor { get; }
@@ -51,8 +56,10 @@ public sealed class ReduxCommandPaletteItem
 		int minimumQueryLength = 0,
 		string searchTerms = null,
 		ReduxCommandPaletteTone tone = ReduxCommandPaletteTone.Neutral,
-		string accentColor = null)
+		string accentColor = null,
+		bool localize = false)
 	{
+		Localize = localize;
 		Name = name?.Trim() ?? String.Empty;
 		Category = category?.Trim() ?? String.Empty;
 		Description = description?.Trim() ?? String.Empty;
@@ -88,7 +95,7 @@ public sealed class ReduxCommandPaletteItem
 		}
 
 		var searchableText = NormalizeSearchText(
-			$"{Name} {Category} {Description} {Gesture} {SearchTerms}");
+			$"{Name} {Category} {Description} {DisplayName} {DisplayCategory} {DisplayDescription} {Gesture} {SearchTerms}");
 		var queryTerms = NormalizeSearchText(normalizedQuery)
 			.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 		return queryTerms.All(term => searchableText.Contains(term, StringComparison.Ordinal));
@@ -175,7 +182,7 @@ public partial class ReduxCommandPaletteWindow : AdonisUI.Controls.AdonisWindow
 					() => command.Execute(null),
 					() => item.Hotkey.CanExecuteCommand,
 					searchTerms: GetCommandSearchTerms(item.Property.Name),
-					tone: GetCommandTone(item.Property.Name));
+					tone: GetCommandTone(item.Property.Name), localize: true);
 			})
 			.ToList();
 

@@ -300,7 +300,7 @@
 								Click="ToolbarDiagnosticActivateDependency_Click"
 								CommandParameter="{Binding}"
 								Style="{StaticResource ReduxSecondaryActionButtonStyle}"
-								ToolTip="Add the installed dependency to the end of the current working order"
+								ToolTip="{loc:Text Add_the_installed_dependency_to_the_end_of_the_current_worki_26ad70a4}"
 								Visibility="{Binding CanActivateRelatedDependency, Converter={StaticResource BoolToVisibilityConverter}}">
 								<StackPanel Orientation="Horizontal">
 									<controls:ReduxIcon Width="13"
@@ -316,7 +316,7 @@
 								Click="ToolbarDiagnosticRelatedSource_Click"
 								CommandParameter="{Binding PrimaryRelatedSourceUrl}"
 								Style="{StaticResource ReduxSecondaryActionButtonStyle}"
-								ToolTip="Open the dependency's known source page"
+								ToolTip="{loc:Text Open_the_dependency_s_known_source_page_2af58828}"
 								Visibility="{Binding CanOpenRelatedDependencySource, Converter={StaticResource BoolToVisibilityConverter}}">
 								<StackPanel Orientation="Horizontal">
 									<controls:ReduxIcon Width="13"
@@ -325,14 +325,14 @@
 										VerticalAlignment="Center"
 										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 										StrokeData="{StaticResource Redux.Icon.LinkStroke}" />
-									<TextBlock VerticalAlignment="Center" Text="Dependency page" />
+									<TextBlock VerticalAlignment="Center" Text="{loc:Text Dependency_page_43589f03}" />
 								</StackPanel>
 							</Button>
 							<Button Margin="0,0,6,0"
 								Click="ToolbarDiagnosticCopyDependencyUuid_Click"
 								CommandParameter="{Binding PrimaryRelatedModUuid}"
 								Style="{StaticResource ReduxSecondaryActionButtonStyle}"
-								ToolTip="Copy the dependency UUID"
+								ToolTip="{loc:Text Copy_the_dependency_UUID_fdcb2e32}"
 								Visibility="{Binding CanCopyRelatedDependencyUuid, Converter={StaticResource BoolToVisibilityConverter}}">
 								<StackPanel Orientation="Horizontal">
 									<controls:ReduxIcon Width="13"
@@ -347,7 +347,7 @@
 							<Button Click="ToolbarDiagnosticAffectedSource_Click"
 								CommandParameter="{Binding PrimarySnapshot.Mod}"
 								Style="{StaticResource ReduxSecondaryActionButtonStyle}"
-								ToolTip="Open the linked mod source page"
+								ToolTip="{loc:Text Open_the_linked_mod_source_page_1388736c}"
 								Visibility="{Binding CanOpenAffectedModSource, Converter={StaticResource BoolToVisibilityConverter}}">
 								<StackPanel Orientation="Horizontal">
 									<controls:ReduxIcon Width="13"
@@ -413,7 +413,7 @@
 											Click="ToolbarCheckModUpdates_Click"
 											Command="{Binding PlacementTarget.DataContext.Keys.RefreshModUpdates.Command, RelativeSource={RelativeSource TemplatedParent}}"
 											Style="{StaticResource ReduxSecondaryActionButtonStyle}"
-											ToolTip="Check linked mod sources for newer files">
+											ToolTip="{loc:Text Check_linked_mod_sources_for_newer_files_3d3d1363}">
 											<StackPanel Orientation="Horizontal">
 												<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center"
 													StrokeData="{StaticResource Redux.Icon.SearchAlert}" />
@@ -599,20 +599,20 @@
 						<MenuItem x:Name="AccessibilityMenuItem" Tag="Accessibility" Header="{loc:Text Accessibility_d3368cbf}" />
 						<MenuItem x:Name="ToolsMenuItem" Tag="Tools" Header="{loc:Text Tools_ea93d6a2}" Style="{StaticResource ReduxMenuItemStyle}">
 							<MenuItem Command="{Binding ResolveOverrideDuplicatesCommand}" Header="{loc:Text Resolve_Override_Copies_7024b682}"
-								ToolTip="Compare conflicting packages in Mods and Redux's holding folder, then retain backups of the displaced copies.">
+								ToolTip="{loc:Text Compare_conflicting_packages_in_Mods_and_Redux_s_holding_fol_88abe2f6}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 							</MenuItem>
 							<MenuItem Command="{Binding Keys.OpenCommandPalette.Command}"
 								Header="{loc:Text Quick_Access_c549b798}"
 								InputGestureText="{Binding Keys.OpenCommandPalette.MenuDisplayBindingText}"
-								ToolTip="Find an action, mod, profile, order, or category.">
+								ToolTip="{loc:Text Find_an_action_mod_profile_order_or_category_10d94022}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Flash}" /></MenuItem.Icon>
 							</MenuItem>
 							<Separator />
 						</MenuItem>
 						<!-- A compact command surface remains available whenever the visual toolbar is hidden. -->
 						<MenuItem x:Name="ToolbarFallbackMenuItem" Tag="Toolbar" Header="{loc:Text Toolbar_451aa51a}" Visibility="Collapsed">
-							<MenuItem Header="Mods &amp; Campaign">
+							<MenuItem Header="{loc:Text Mods_Campaign_6e11b2bf}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Blocks}" /></MenuItem.Icon>
 								<MenuItem Command="{Binding Keys.ImportMod.Command}" Header="{loc:Text Install_Mod_9fe4bbfa}" InputGestureText="{Binding Keys.ImportMod.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.AddCircle}" /></MenuItem.Icon>
@@ -721,10 +721,10 @@
 								<MenuItem Header="{loc:Text Save_Game_Manager_016c8bd7}" Command="{Binding Keys.OpenSaveGameManager.Command}" InputGestureText="{Binding Keys.OpenSaveGameManager.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Save}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Header="Install Save..." Click="ImportSaveGameButton_Click">
+								<MenuItem Header="{loc:Text Install_Save_580a4bd7}" Click="ImportSaveGameButton_Click">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Download}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Header="Install Save Folder..." Click="ImportSaveGameFolder_Click">
+								<MenuItem Header="{loc:Text Install_Save_Folder_671d2045}" Click="ImportSaveGameFolder_Click">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 								</MenuItem>
 								<Separator />
@@ -747,10 +747,10 @@
 								<MenuItem Command="{Binding Keys.Refresh.Command}" Header="{loc:Text Refresh_Mods_4e111c72}" InputGestureText="{Binding Keys.Refresh.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.RefreshModUpdates.Command}" Header="{loc:Text Check_Mod_Updates_134afdc0}" ToolTip="Refresh linked sources. Known Nexus file replacements appear as a small dot beside the mod name." InputGestureText="{Binding Keys.RefreshModUpdates.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.RefreshModUpdates.Command}" Header="{loc:Text Check_Mod_Updates_134afdc0}" ToolTip="{loc:Text Refresh_linked_sources_Known_Nexus_file_replacements_appear__ffe6cada}" InputGestureText="{Binding Keys.RefreshModUpdates.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.OpenLogsFolder.Command}" Header="Extender Logs Folder" InputGestureText="{Binding Keys.OpenLogsFolder.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.OpenLogsFolder.Command}" Header="{loc:Text Extender_Logs_Folder_0cfa7cfd}" InputGestureText="{Binding Keys.OpenLogsFolder.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
 								</MenuItem>
 							</MenuItem>
@@ -786,31 +786,31 @@
 							<MenuItem Command="{Binding Keys.OpenGameFolder.Command}" Header="{loc:Text Game_Folder_10ae9660}" InputGestureText="{Binding Keys.OpenGameFolder.MenuDisplayBindingText}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.GameController}" /></MenuItem.Icon>
 							</MenuItem>
-							<MenuItem Command="{Binding Keys.OpenLogsFolder.Command}" Header="Extender Logs Folder" InputGestureText="{Binding Keys.OpenLogsFolder.MenuDisplayBindingText}">
+							<MenuItem Command="{Binding Keys.OpenLogsFolder.Command}" Header="{loc:Text Extender_Logs_Folder_0cfa7cfd}" InputGestureText="{Binding Keys.OpenLogsFolder.MenuDisplayBindingText}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
 							</MenuItem>
 							<MenuItem Header="{loc:Text Save_Games_Folder_392dab10}" Command="{Binding Keys.OpenSaveGamesFolder.Command}" InputGestureText="{Binding Keys.OpenSaveGamesFolder.MenuDisplayBindingText}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 							</MenuItem>
 							<Separator />
-							<MenuItem Header="BG3 on Nexus Mods"
+							<MenuItem Header="{loc:Text BG3_on_Nexus_Mods_94730a1a}"
 								Click="OpenBg3Nexus_Click"
 								util:ReduxMenuItemExtension.UseSemanticHover="True"
 								util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource Redux.Pill.Nexus.Background}"
 								util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource Redux.Pill.Nexus.Border}">
 								<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" /></MenuItem.Icon>
 							</MenuItem>
-							<MenuItem Header="BG3 Script Extender on GitHub" Click="OpenScriptExtenderRepo_Click">
+							<MenuItem Header="{loc:Text BG3_Script_Extender_on_GitHub_46369b54}" Click="OpenScriptExtenderRepo_Click">
 								<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource GithubPlatformIconTemplate}" /></MenuItem.Icon>
 							</MenuItem>
-							<MenuItem Header="BG3 Mod Manager Redux on Nexus Mods"
+							<MenuItem Header="{loc:Text BG3_Mod_Manager_Redux_on_Nexus_Mods_021919bd}"
 								Click="OpenReduxNexus_Click"
 								util:ReduxMenuItemExtension.UseSemanticHover="True"
 								util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource Redux.Pill.Nexus.Background}"
 								util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource Redux.Pill.Nexus.Border}">
 								<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" /></MenuItem.Icon>
 							</MenuItem>
-							<MenuItem Header="BG3 Mod Manager Redux on GitHub" Click="OpenReduxRepo_Click">
+							<MenuItem Header="{loc:Text BG3_Mod_Manager_Redux_on_GitHub_fe63ef6e}" Click="OpenReduxRepo_Click">
 								<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource GithubPlatformIconTemplate}" /></MenuItem.Icon>
 							</MenuItem>
 						</MenuItem>
@@ -828,7 +828,7 @@
 							MouseEnter="ToolbarModDiagnosticsStatusButton_MouseEnter"
 							MouseLeave="ToolbarModDiagnosticsStatusButton_MouseLeave"
 							Style="{StaticResource CompactTopBarDiagnosticStatusButtonStyle}"
-							AutomationProperties.Name="Mod diagnostics status"
+							AutomationProperties.Name="{loc:Text Mod_diagnostics_status_ec6dd90e}"
 							Visibility="{Binding Modules.ModDiagnosticsEnabled, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
 							<Button.ContextMenu>
 								<ContextMenu
@@ -868,7 +868,7 @@
 						    HorizontalAlignment="Stretch"
 						    VerticalAlignment="Stretch"
 						    BorderThickness="0"
-						    ToolTip="Toggle the Mod Updates View">
+						    ToolTip="{loc:Text Toggle_the_Mod_Updates_View_4df03355}">
 							<Button.Style>
 								<Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
 									<Setter Property="Background" Value="Transparent" />
@@ -1299,7 +1299,7 @@
 									<RowDefinition Height="Auto" />
 									<RowDefinition Height="Auto" />
 								</Grid.RowDefinitions>
-								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Mods &amp; Campaign" />
+								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="{loc:Text Mods_Campaign_6e11b2bf}" />
 								<StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
 									<Button x:Name="ImportModButton"
 										Margin="1,0,5,0"
@@ -1323,15 +1323,15 @@
 													</ContextMenu>
 												</Button.ContextMenu>
 											</Button>
-											<Button AutomationProperties.Name="Open Game-Directory Mod Manager"
+											<Button AutomationProperties.Name="{loc:Text Open_Game_Directory_Mod_Manager_ade4637d}"
 												Command="{Binding Keys.OpenGameDirectoryModManager.Command}"
 												Style="{StaticResource ToolbarUtilityButtonStyle}"
 												ToolTip="{Binding Keys.OpenGameDirectoryModManager.CommandToolTip}">
 												<controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Blocks}" />
 											</Button>
-											<Button x:Name="DownloadManagerToolbarButton" AutomationProperties.Name="Open Download Manager"
+											<Button x:Name="DownloadManagerToolbarButton" AutomationProperties.Name="{loc:Text Open_Download_Manager_d563d8bb}"
 												Command="{Binding Keys.OpenNexusDownloads.Command}"
-												Style="{StaticResource ToolbarUtilityButtonStyle}" ToolTip="Open Download Manager">
+												Style="{StaticResource ToolbarUtilityButtonStyle}" ToolTip="{loc:Text Open_Download_Manager_d563d8bb}">
 												<controls:ReduxIcon VerticalAlignment="Center" x:Name="DownloadManagerToolbarIcon" StrokeData="{StaticResource Redux.Icon.Download}" />
 											</Button>
 										</StackPanel>
@@ -1344,10 +1344,10 @@
 										IsEditable="False"
 										IsTextSearchEnabled="False"
 										Tag="{Binding}"
-										ToolTip="Active profile">
+										ToolTip="{loc:Text Active_profile_5608b89a}">
 										<ComboBox.ContextMenu>
 											<ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
-												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.Folder}" Header="Open Profile Folder in File Explorer...">
+												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.Folder}" Header="{loc:Text Open_Profile_Folder_in_File_Explorer_c7696a90}">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 												</MenuItem>
 												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedProfile.Folder}" Header="{loc:Text Copy_Profile_Path_to_Clipboard_817758ba}">
@@ -1365,7 +1365,7 @@
 										ToolTip="{StaticResource ModToolTip}">
 										<ComboBox.ContextMenu>
 											<ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
-												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="Open Adventure Mod in File Explorer...">
+												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="{loc:Text Open_Adventure_Mod_in_File_Explorer_d86a5529}">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 												</MenuItem>
 												<MenuItem Command="{Binding Path=CopyToClipboardCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="{loc:Text Copy_Mod_Path_to_Clipboard_b60debb1}">
@@ -1417,7 +1417,7 @@
 										Loaded="OrdersComboBox_Loaded"
 										LostFocus="OrdersComboBox_LostFocus"
 										Tag="{Binding}"
-										ToolTip="Current load order">
+										ToolTip="{loc:Text Current_load_order_4a871c37}">
 										<ComboBox.ItemContainerStyle>
 											<Style BasedOn="{StaticResource ToolbarComboBoxItemStyle}" TargetType="ComboBoxItem">
 												<EventSetter Event="ComboBoxItem.PreviewMouseDown" Handler="OrderComboBox_OnUserClick" />
@@ -1446,23 +1446,23 @@
 										Style="{StaticResource ToolbarActionClusterStyle}">
 										<StackPanel Orientation="Horizontal">
 									<Button x:Name="SaveButton"
-										AutomationProperties.Name="Save current load order"
+										AutomationProperties.Name="{loc:Text Save_current_load_order_f785cc9e}"
 										Style="{StaticResource ToolbarCompactIconButtonStyle}"
 										ToolTip="{Binding Keys.Save.CommandToolTip}">
 										<controls:ReduxIcon VerticalAlignment="Center" x:Name="SaveButtonIcon"
 											StrokeData="{StaticResource Redux.Icon.Save}" />
 									</Button>
 									<Button x:Name="SaveAsOrderButton"
-										AutomationProperties.Name="Save as a new load order"
+										AutomationProperties.Name="{loc:Text Save_as_a_new_load_order_63c7c192}"
 										Style="{StaticResource ToolbarCompactIconButtonStyle}"
 										ToolTip="{Binding Keys.SaveAs.CommandToolTip}">
 										<controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Duplicate}" />
 									</Button>
 									<Button Command="{Binding DeleteOrderCommand}"
 										CommandParameter="{Binding SelectedModOrder}"
-										AutomationProperties.Name="Delete selected load order"
+										AutomationProperties.Name="{loc:Text Delete_selected_load_order_26a95432}"
 										Style="{StaticResource ToolbarCompactIconButtonStyle}"
-										ToolTip="Delete the selected load order">
+										ToolTip="{loc:Text Delete_the_selected_load_order_b0d8c815}">
 										<controls:ReduxIcon VerticalAlignment="Center" Foreground="{DynamicResource ReduxErrorBrush}" StrokeData="{StaticResource Redux.Icon.Trash}" />
 									</Button>
 									<StackPanel Orientation="Horizontal"
@@ -1470,7 +1470,7 @@
 										<Rectangle Width="1" Height="18" Margin="3,0"
 											VerticalAlignment="Center" Fill="{DynamicResource ReduxBorderBrush}" Opacity="0.8" />
 										<Button x:Name="OrganizeLoadOrderButton"
-											AutomationProperties.Name="Open Load Order Advisor"
+											AutomationProperties.Name="{loc:Text Open_Load_Order_Advisor_e31d6eff}"
 											ToolTip="{Binding LoadOrderAdvisorStatusText}">
 											<Button.Style>
 												<Style BasedOn="{StaticResource ToolbarCompactIconButtonStyle}" TargetType="{x:Type Button}">
@@ -1490,11 +1490,11 @@
 										</Button>
 									</StackPanel>
 									<Button x:Name="OrderActionsButton"
-										AutomationProperties.Name="More load order actions"
+										AutomationProperties.Name="{loc:Text More_load_order_actions_1c201bdf}"
 										Click="OrderActionsButton_Click"
 										Foreground="{DynamicResource ReduxAccentHoverBrush}"
 										Style="{StaticResource ToolbarCompactIconButtonStyle}"
-										ToolTip="More load order actions">
+										ToolTip="{loc:Text More_load_order_actions_1c201bdf}">
 										<controls:ReduxIcon VerticalAlignment="Center" Data="{StaticResource Redux.Icon.MoreHorizontal}" />
 									<Button.ContextMenu>
 										<ContextMenu Placement="Bottom">
@@ -1512,7 +1512,7 @@
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Clipboard}" /></MenuItem.Icon>
 											</MenuItem>
 											<MenuItem Command="{Binding Keys.ExportOrderToList.Command}" Header="{loc:Text Export_Detailed_Mod_List_2d4314da}"
-												ToolTip="Save filenames, authors, dependencies, source links, and Override mods as TSV, text, or JSON.">
+												ToolTip="{loc:Text Save_filenames_authors_dependencies_source_links_and_Overrid_066c914b}">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
 											</MenuItem>
 											<Separator />
@@ -1582,7 +1582,7 @@
 										</StackPanel>
 										<Button.ContextMenu>
 											<ContextMenu>
-												<MenuItem Command="{Binding Path=OpenFileCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="Open Game Load Order File...">
+												<MenuItem Command="{Binding Path=OpenFileCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="{loc:Text Open_Game_Load_Order_File_bf267a9f}">
 													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Open}" /></MenuItem.Icon>
 												</MenuItem>
 												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="{loc:Text Open_in_File_Explorer_0b493974}">
@@ -1600,21 +1600,21 @@
 										Style="{StaticResource ToolbarActionClusterStyle}">
 										<StackPanel Orientation="Horizontal">
 									<Button x:Name="UndoLoadOrderButton"
-										AutomationProperties.Name="Undo last action"
+										AutomationProperties.Name="{loc:Text Undo_last_action_fa3dc360}"
 										Style="{StaticResource ToolbarUtilityButtonStyle}"
 										ToolTip="{Binding Keys.UndoLoadOrderChange.CommandToolTip}">
 										<controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Undo}" />
 									</Button>
 									<Button x:Name="RedoLoadOrderButton"
-										AutomationProperties.Name="Redo last action"
+										AutomationProperties.Name="{loc:Text Redo_last_action_a88e4d13}"
 										Style="{StaticResource ToolbarUtilityButtonStyle}"
 										ToolTip="{Binding Keys.RedoLoadOrderChange.CommandToolTip}">
 										<controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Redo}" />
 									</Button>
-									<Button x:Name="RefreshButton" AutomationProperties.Name="Refresh mods and load order" Style="{StaticResource ToolbarUtilityButtonStyle}" ToolTip="{Binding Keys.Refresh.CommandToolTip}">
+									<Button x:Name="RefreshButton" AutomationProperties.Name="{loc:Text Refresh_mods_and_load_order_e0788090}" Style="{StaticResource ToolbarUtilityButtonStyle}" ToolTip="{Binding Keys.Refresh.CommandToolTip}">
 										<controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.RefreshStroke}" />
 									</Button>
-									<Button x:Name="OpenExtenderLogsFolderButton" AutomationProperties.Name="Open extender logs folder" Style="{StaticResource ToolbarUtilityButtonStyle}" ToolTip="{Binding Keys.OpenLogsFolder.CommandToolTip}">
+									<Button x:Name="OpenExtenderLogsFolderButton" AutomationProperties.Name="{loc:Text Open_extender_logs_folder_5f578ad0}" Style="{StaticResource ToolbarUtilityButtonStyle}" ToolTip="{Binding Keys.OpenLogsFolder.CommandToolTip}">
 										<controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.DocumentText}" />
 										<Button.ContextMenu>
 											<ContextMenu>
@@ -1637,7 +1637,7 @@
 										MouseEnter="ToolbarModDiagnosticsStatusButton_MouseEnter"
 										MouseLeave="ToolbarModDiagnosticsStatusButton_MouseLeave"
 										Style="{StaticResource ToolbarDiagnosticStatusButtonStyle}"
-										AutomationProperties.Name="Mod review and update checks"
+										AutomationProperties.Name="{loc:Text Mod_review_and_update_checks_97e38eb2}"
 										Visibility="{Binding Modules.ModDiagnosticsEnabled, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
 										<Button.ContextMenu>
 											<ContextMenu
@@ -1665,9 +1665,9 @@
 								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="{loc:Text Saves_98971626}" />
 								<StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
 									<Button Click="SaveGameManagerButton_Click"
-										AutomationProperties.Name="Open Save Game Manager"
+										AutomationProperties.Name="{loc:Text Open_Save_Game_Manager_0a0f567f}"
 										Style="{StaticResource ToolbarWorkflowButtonStyle}"
-										ToolTip="Browse, install, and remove saves for the selected profile">
+										ToolTip="{loc:Text Browse_install_and_remove_saves_for_the_selected_profile_1fc303f1}">
 										<StackPanel Orientation="Horizontal">
 											<controls:ReduxIcon VerticalAlignment="Center" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Save}" Style="{StaticResource ToolbarWorkflowIconStyle}" />
 											<TextBlock Text="{loc:Text Manage_5a234448}" />
@@ -1677,26 +1677,26 @@
 										Style="{StaticResource ToolbarActionClusterStyle}">
 										<StackPanel Orientation="Horizontal">
 									<Button Click="ImportSaveGameButton_Click"
-										AutomationProperties.Name="Install save from file"
+										AutomationProperties.Name="{loc:Text Install_save_from_file_27d2b5a4}"
 										Style="{StaticResource ToolbarUtilityButtonStyle}"
-										ToolTip="Install a save from a ZIP archive or .lsv file">
+										ToolTip="{loc:Text Install_a_save_from_a_ZIP_archive_or_lsv_file_77fbb148}">
 										<controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Download}" />
 									</Button>
 									<Button Click="OpenSaveGamesFolder_Click"
-										AutomationProperties.Name="Open save games folder"
+										AutomationProperties.Name="{loc:Text Open_save_games_folder_3c321c18}"
 										Style="{StaticResource ToolbarUtilityButtonStyle}"
-										ToolTip="Open the selected profile's save games folder">
+										ToolTip="{loc:Text Open_the_selected_profile_s_save_games_folder_d54abbc8}">
 										<controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.FolderOpen}" />
 									</Button>
 									<Button Click="OrderActionsButton_Click"
-										AutomationProperties.Name="More save game actions"
+										AutomationProperties.Name="{loc:Text More_save_game_actions_2c0b57ee}"
 										Foreground="{DynamicResource ReduxAccentHoverBrush}"
 										Style="{StaticResource ToolbarCompactIconButtonStyle}"
-										ToolTip="More save game actions">
+										ToolTip="{loc:Text More_save_game_actions_2c0b57ee}">
 										<controls:ReduxIcon VerticalAlignment="Center" Data="{StaticResource Redux.Icon.MoreHorizontal}" />
 										<Button.ContextMenu>
 											<ContextMenu Placement="Bottom">
-												<MenuItem Header="Install Save Folder..." Click="ImportSaveGameFolder_Click">
+												<MenuItem Header="{loc:Text Install_Save_Folder_671d2045}" Click="ImportSaveGameFolder_Click">
 													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 												</MenuItem>
 												<Separator />
@@ -1745,18 +1745,18 @@
 										DisplayMemberPath="Description"
 										ItemsSource="{Binding Source={ext:EnumExtension {x:Type dapp:DivinityGameLaunchWindowAction}}}"
 										SelectedValuePath="Value"
-										ToolTip="Choose what happens after launching the game." />
+										ToolTip="{loc:Text Choose_what_happens_after_launching_the_game_e2fd247d}" />
 								</StackPanel>
 							</Grid>
 
 							<Button x:Name="OpenDonationPageButton"
 								Visibility="Collapsed"
-								ToolTip="Tip the Developer (Ko-fi)&#x0a;https://ko-fi.com/laughingleader">
+								ToolTip="{loc:Text Tip_the_Developer_Ko_fi_https_ko_fi_com_laughingleader_335f72aa}">
 								<controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Heart}" />
 							</Button>
 							<Button x:Name="OpenRepoPageButton"
 								Visibility="Collapsed"
-								ToolTip="Open Project Page (Github)">
+								ToolTip="{loc:Text Open_Project_Page_Github_71c3a59e}">
 								<ContentControl ContentTemplate="{DynamicResource GithubPlatformIconTemplate}" />
 							</Button>
 						</Grid>

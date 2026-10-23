@@ -22,7 +22,7 @@ public sealed class ReduxInstallProgressWindow : Window
 	public ReduxInstallProgressWindow(Window owner, bool exportingSaves = false)
 	{
 		Owner = owner;
-		Title = exportingSaves ? "Exporting saves" : "Installing packages";
+		Title = exportingSaves ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Exporting saves") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Installing packages");
 		Width = 480;
 		SizeToContent = SizeToContent.Height;
 		ResizeMode = ResizeMode.NoResize;
@@ -42,7 +42,7 @@ public sealed class ReduxInstallProgressWindow : Window
 		root.Children.Add(new ReduxWindowTitleBar());
 		var body = new StackPanel { Margin = new Thickness(24) };
 		AutomationProperties.SetLiveSetting(_status, AutomationLiveSetting.Polite);
-		_status.Text = exportingSaves ? "Preparing save export…" : "Preparing Install All…";
+		_status.Text = exportingSaves ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Preparing save export…") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Preparing Install All…");
 		body.Children.Add(_status);
 		_progress.SetResourceReference(StyleProperty, "ReduxProgressBarStyle");
 		AutomationProperties.SetName(_progress, exportingSaves ? "Save export progress" : "Package progress");
@@ -51,7 +51,7 @@ public sealed class ReduxInstallProgressWindow : Window
 		activity.SetResourceReference(StyleProperty, "ReduxProgressBarStyle");
 		AutomationProperties.SetName(activity, exportingSaves ? "Exporting save files" : "Current package is being processed");
 		body.Children.Add(activity);
-		body.Children.Add(new TextBlock { Text = exportingSaves ? "Your saves remain in place." : "Please wait while Redux checks and installs your packages.", TextWrapping = TextWrapping.Wrap });
+		body.Children.Add(new TextBlock { Text = exportingSaves ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Your saves remain in place.") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Please wait while Redux checks and installs your packages."), TextWrapping = TextWrapping.Wrap });
         _cancel.SetResourceReference(StyleProperty, "ReduxSecondaryActionButtonStyle");
         _cancel.Click += (_, _) => RequestCancellation();
         body.Children.Add(_cancel);
@@ -69,14 +69,14 @@ public sealed class ReduxInstallProgressWindow : Window
         }
         if (_finished || _cancellation.IsCancellationRequested) return;
         _cancel.IsEnabled = false;
-        _status.Text = "Canceling… Waiting for the current step to stop safely.";
+        _status.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Canceling… Waiting for the current step to stop safely.");
         _cancellation.Cancel();
     }
 
 	public async Task ReportAsync(string phase, string name, int current, int total)
 	{
 		if (!_cancellation.IsCancellationRequested)
-			_status.Text = $"{phase} {current} of {total}\n{name}";
+			_status.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{phase} {current} of {total}\n{name}");
 		_progress.IsIndeterminate = false;
 		_progress.Maximum = Math.Max(1, total);
 		_progress.Value = Math.Max(0, current - 1);

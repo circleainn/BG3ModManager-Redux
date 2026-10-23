@@ -2957,7 +2957,7 @@
 					</ContextMenu.Resources>
 					<MenuItem Command="{Binding Path=MoveModToActiveCommand, Source={x:Static dapp:DivinityApp.Commands}}"
 					    CommandParameter="{Binding}"
-					    Header="Move to Active Mods">
+					    Header="{loc:Text Move_to_Active_Mods_e1918fcf}">
 						<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.ArrowBackStroke}" /></MenuItem.Icon>
 						<MenuItem.Style>
 							<Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="MenuItem">
@@ -2976,7 +2976,7 @@
 					</MenuItem>
 					<MenuItem Command="{Binding Path=MoveModToInactiveCommand, Source={x:Static dapp:DivinityApp.Commands}}"
 					    CommandParameter="{Binding}"
-					    Header="Move to Inactive Mods">
+					    Header="{loc:Text Move_to_Inactive_Mods_27825bcf}">
 						<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.ArrowForwardStroke}" /></MenuItem.Icon>
 						<MenuItem.Style>
 							<Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="MenuItem">
@@ -3001,7 +3001,7 @@
 					</MenuItem>
 					<MenuItem Command="{Binding Path=OpenNexusModsPageCommand, Source={x:Static dapp:DivinityApp.Commands}}"
 					    CommandParameter="{Binding}"
-					    Header="View Mod on Nexus Mods"
+					    Header="{loc:Text View_Mod_on_Nexus_Mods_3ce1cfa7}"
 					    IsEnabled="{Binding CanOpenNexusModsLink}"
 					    Visibility="{Binding OpenNexusModsLinkVisibility}"
 						util:ReduxMenuItemExtension.UseSemanticHover="True"
@@ -3043,7 +3043,7 @@
 					</MenuItem>
 					<MenuItem Command="{Binding Path=DeleteModCommand, Source={x:Static dapp:DivinityApp.Commands}}"
 					    CommandParameter="{Binding}"
-					    Header="Delete Mod..."
+					    Header="{loc:Text Delete_Mod_028db91c}"
 					    IsEnabled="{Binding CanDelete}"
 						util:ReduxMenuItemExtension.UseSemanticHover="True"
 						util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource ReduxErrorPillBackground}"
@@ -3073,7 +3073,7 @@
 					</MenuItem>
 					<MenuItem Command="{Binding Path=CopyToClipboardCommand, Source={x:Static dapp:DivinityApp.Commands}}"
 					    CommandParameter="{Binding UUID}"
-					    Header="Copy UUID to Clipboard"
+					    Header="{loc:Text Copy_UUID_to_Clipboard_93bf2a64}"
 					    Visibility="{Binding Path=(dapp:DivinityApp.DeveloperModeEnabled), Converter={StaticResource BoolToVisibilityConverter}}">
 						<MenuItem.Icon>
 							<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Copy}" />
@@ -3081,7 +3081,7 @@
 					</MenuItem>
 					<MenuItem Command="{Binding Path=CopyToClipboardCommand, Source={x:Static dapp:DivinityApp.Commands}}"
 					    CommandParameter="{Binding Folder}"
-					    Header="Copy FolderName to Clipboard"
+					    Header="{loc:Text Copy_FolderName_to_Clipboard_e131d763}"
 					    Visibility="{Binding Path=(dapp:DivinityApp.DeveloperModeEnabled), Converter={StaticResource BoolToVisibilityConverter}}">
 						<MenuItem.Icon>
 							<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Copy}" />
@@ -3464,12 +3464,12 @@
 									<TextBlock Margin="0,10,0,0"
 										HorizontalAlignment="Center"
 										Style="{StaticResource Redux.Text.SectionTitle}"
-										Text="No mods here yet" />
+										Text="{loc:Text No_mods_here_yet_eec1cb15}" />
 									<TextBlock MaxWidth="280"
 										Margin="0,4,0,0"
 										HorizontalAlignment="Center"
 										Foreground="{DynamicResource ReduxTextMutedBrush}"
-										Text="Install a mod, move one into this list, or clear the current filter."
+										Text="{loc:Text Install_a_mod_move_one_into_this_list_or_clear_the_current_f_d123927e}"
 										TextAlignment="Center"
 										TextWrapping="Wrap" />
 								</StackPanel>
@@ -3827,7 +3827,7 @@
 				<StackPanel Grid.Column="0" Margin="0,54,0,0" HorizontalAlignment="Left" Orientation="Horizontal">
 					<TextBlock HorizontalAlignment="Right"
 					    Foreground="Lime"
-					    Text="(Editor Project)"
+					    Text="{loc:Text Editor_Project_7e4feffc}"
 					    Visibility="{Binding IsEditorMod, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
 				</StackPanel>
 			</Grid>
@@ -3997,7 +3997,7 @@
 				<StackPanel>
 					<TextBlock Margin="0"
 						MaxHeight="76"
-						AutomationProperties.Name="Mod description excerpt"
+						AutomationProperties.Name="{loc:Text Mod_description_excerpt_dbfb0093}"
 						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 						Text="{Binding Metadata.HoverDescriptionExcerpt}"
 						TextTrimming="CharacterEllipsis"
@@ -4005,7 +4005,7 @@
 					<TextBlock Margin="0,5,0,0"
 						FontSize="{DynamicResource Redux.FontSize.10}"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="Open details for the full description." />
+						Text="{loc:Text Open_details_for_the_full_description_bd7034e8}" />
 				</StackPanel>
 			</Border>
 
@@ -4057,7 +4057,7 @@
 					FontSize="{DynamicResource Redux.FontSize.11}"
 					FontWeight="SemiBold"
 					Foreground="{DynamicResource ReduxAccentHoverBrush}"
-					Text="Local package">
+					Text="{loc:Text Local_package_ecd31b69}">
 					<TextBlock.Style>
 						<Style TargetType="{x:Type TextBlock}">
 							<Style.Triggers>
@@ -4077,7 +4077,7 @@
 				<Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 				<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text File_50009ce1}" /><TextBlock Grid.Column="1" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" />
-				<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Last modified" /><TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding LastModifiedDateText}" />
+				<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Last_modified_0fe1058f}" /><TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding LastModifiedDateText}" />
 				<Grid Grid.Row="2" Grid.ColumnSpan="2">
 					<Grid.Style>
 						<Style TargetType="Grid">
@@ -4095,7 +4095,7 @@
 						</Style>
 					</Grid.Style>
 					<Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-					<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Load order" />
+					<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Load_order_d287beb5}" />
 					<TextBlock Grid.Column="1" Text="{Binding LoadOrderDisplayText}" />
 				</Grid>
 				<TextBlock Grid.Row="3" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="UUID" /><TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding UUID}" TextTrimming="CharacterEllipsis" ToolTip="{Binding UUID}" />
@@ -4158,10 +4158,10 @@
 				<Grid Margin="6,0,6,6" Visibility="{Binding Metadata.OnlineSourceVisibility}">
 					<Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 					<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-					<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Project" /><TextBlock Grid.Column="1" Text="{Binding Metadata.Title}" TextTrimming="CharacterEllipsis" />
+					<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Project_98595978}" /><TextBlock Grid.Column="1" Text="{Binding Metadata.Title}" TextTrimming="CharacterEllipsis" />
 					<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Author_d95082a2}" /><TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Metadata.Author}" />
-					<TextBlock Grid.Row="2" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Source updated" /><TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Metadata.UpdatedLabel}" />
-					<TextBlock Grid.Row="3" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Linked packages" /><TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SourceComponentCount}" />
+					<TextBlock Grid.Row="2" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Source_updated_4b9ab00e}" /><TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Metadata.UpdatedLabel}" />
+					<TextBlock Grid.Row="3" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Linked_packages_d9272188}" /><TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SourceComponentCount}" />
 				</Grid>
 				<ItemsControl Margin="6,0,6,2"
 					ItemTemplate="{StaticResource ReduxPackageTagTemplate}"
@@ -4173,7 +4173,7 @@
 				</ItemsControl>
 			</StackPanel>
 			<StackPanel Margin="2,5,2,2" Orientation="Vertical" Visibility="{Binding DependencyVisibility, FallbackValue=Collapsed}">
-				<TextBlock Margin="2,0,2,5" FontWeight="SemiBold" Text="Dependencies" />
+				<TextBlock Margin="2,0,2,5" FontWeight="SemiBold" Text="{loc:Text Dependencies_2e41b118}" />
 				<Border Background="{DynamicResource ReduxListInteriorBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
 					CornerRadius="{DynamicResource Redux.CornerRadius.Control}" ClipToBounds="True">
@@ -4192,7 +4192,7 @@
 				</Border>
 			</StackPanel>
 			<StackPanel Margin="2,5,2,2" Orientation="Vertical" Visibility="{Binding ConflictsVisibility, FallbackValue=Collapsed}">
-				<TextBlock Margin="2,0,2,5" FontWeight="SemiBold" Text="Conflicts" />
+				<TextBlock Margin="2,0,2,5" FontWeight="SemiBold" Text="{loc:Text Conflicts_9f5ea35d}" />
 				<Border Background="{DynamicResource ReduxListInteriorBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
 					CornerRadius="{DynamicResource Redux.CornerRadius.Control}" ClipToBounds="True">
@@ -4213,13 +4213,13 @@
 			<TextBlock Margin="6,4" Foreground="{DynamicResource ReduxWarningBrush}" Text="{Binding ScriptExtenderSupportToolTipText}" Visibility="{Binding ExtenderStatusVisibility}" />
 			<StackPanel Margin="2" Orientation="Vertical" Visibility="{Binding IsForceLoaded, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
 				<Separator Background="{DynamicResource ReduxBorderBrush}" />
-				<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxWarningBrush}" Text="Overrides Game Files" />
+				<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxWarningBrush}" Text="{loc:Text Overrides_Game_Files_dc6908b3}" />
 				<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap"
-					Text="This package contains files that directly override built-in game files. Those overrides remain active while the .pak exists in the Mods folder and usually are not written to modsettings.lsx." />
+					Text="{loc:Text This_package_contains_files_that_directly_override_built_in__1f52a675}" />
 				<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap"
-					Text="This package also has a normal load-order entry. Disabling that entry may not disable its direct file overrides."
+					Text="{loc:Text This_package_also_has_a_normal_load_order_entry_Disabling_th_9a0faf14}"
 					Visibility="{Binding IsForceLoadedMergedMod, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
-				<TextBlock Foreground="{DynamicResource ReduxWarningBrush}" Text="Overridden built-in folders:" />
+				<TextBlock Foreground="{DynamicResource ReduxWarningBrush}" Text="{loc:Text Overridden_built_in_folders_e680466e}" />
 				<TextBlock Text="{Binding BuiltinOverrideModsText}" />
 			</StackPanel>
 			<Grid Margin="2" Visibility="{Binding HasInvalidUUIDVisibility}">
@@ -4240,7 +4240,7 @@
 				<TextBlock Grid.Column="1"
 				    FontWeight="Bold"
 				    Foreground="{DynamicResource ReduxErrorBrush}"
-				    Text="This mod has an invalid UUID, and will likely fail to load, resetting your load order." />
+				    Text="{loc:Text This_mod_has_an_invalid_UUID_and_will_likely_fail_to_load_re_1374d900}" />
 				<controls:ReduxIcon Grid.Column="2"
 				    Width="16"
 				    Height="16"
@@ -4303,7 +4303,7 @@
 				<TextBlock FontSize="{DynamicResource Redux.FontSize.13}"
 					FontWeight="SemiBold"
 					Foreground="{DynamicResource ReduxAccentHoverBrush}"
-					Text="Note:" />
+					Text="{loc:Text Note_1150f054}" />
 				<TextBlock Margin="0,5,0,0"
 					Foreground="{DynamicResource ReduxTextPrimaryBrush}"
 					Text="{Binding PrivateNote}"
@@ -4426,7 +4426,7 @@
 				BorderBrush="{DynamicResource ReduxSuccessBrush}"
 				BorderThickness="0"
 				CornerRadius="{DynamicResource Redux.CornerRadius.Small}"
-				ToolTip="Newly detected mod"
+				ToolTip="{loc:Text Newly_detected_mod_7500cddc}"
 				Visibility="{Binding IsNewlyDetected, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
 				<Border.Effect>
 					<DropShadowEffect BlurRadius="8"
@@ -4461,7 +4461,7 @@
 				VerticalAlignment="Center"
 				Background="{DynamicResource ReduxAccentBrush}"
 				CornerRadius="4"
-				ToolTip="A newer file is linked to this installed Nexus Mods file"
+				ToolTip="{loc:Text A_newer_file_is_linked_to_this_installed_Nexus_Mods_file_dec4214b}"
 				Visibility="{Binding HasAvailableSourceUpdate, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}" />
 			<!-- Materialize the status subtree only when at least one indicator can render. -->
 			<ContentControl x:Name="DeferredModNameDetails"
@@ -4644,7 +4644,7 @@
 					    StrokeData="{StaticResource Redux.Icon.Danger}"
 					    Foreground="{DynamicResource ReduxErrorBrush}"
 					    IsHitTestVisible="True"
-					    ToolTip="This mod has an invalid UUID, and will likely fail to load"
+					    ToolTip="{loc:Text This_mod_has_an_invalid_UUID_and_will_likely_fail_to_load_8c6e4f47}"
 					    Visibility="{Binding HasInvalidUUIDVisibility, FallbackValue=Collapsed}" />
 					<controls:ReduxIcon Width="16"
 					    Height="16"
@@ -4686,7 +4686,7 @@
 					    VerticalAlignment="Center"
 					    StrokeData="{StaticResource Redux.Icon.Build}"
 					    IsHitTestVisible="True"
-					    ToolTip="Toolkit Mod Project"
+					    ToolTip="{loc:Text Toolkit_Mod_Project_1d0d8fc5}"
 					    Visibility="{Binding ToolkitIconVisibility, FallbackValue=Collapsed}" />
 					<controls:ReduxIcon Width="16"
 					    Height="16"
