@@ -5,8 +5,8 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: October 20, 2026. Published release line: `0.1.0-alpha.16.6`
-(verified October 20).
+Last reviewed: October 22, 2026. Published release line: `0.1.0-alpha.16.6.1`
+(verified October 22).
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -14,6 +14,17 @@ with progress and cancellation. Export retains the import limits: 32 saves, 1 GB
 regressions pass; real campaign export/restore and cancellation still need a live check.
 
 ## Development status
+
+### 16.6.1 update notifications and filters
+
+The 16.6.1 hotfix is published on GitHub, Nexus Mods, and the public-alpha updater channel.
+Linked Nexus mods can skip specific offered replacements and restore their notifications from
+the same right-click menu. Choices persist independently of the provider cache; later replacement
+files still notify. Withdrawn/unavailable files no longer qualify as updates, and all three mod
+filters again offer right-click Clear. See the [hotfix notes](releases/0.1.0-alpha.16.6.1.md).
+Both build configurations passed 746 checks, and exact-package update/rollback and clean-launch
+checks passed. The maintainer's existing Debug binaries remain at 16.6 for public updater testing.
+The [release record](RELEASE_RECORDS.md) captures exact artifacts and remaining limitations.
 
 ### 16.6 recovery update
 
