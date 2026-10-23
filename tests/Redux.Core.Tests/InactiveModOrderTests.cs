@@ -137,4 +137,59 @@ internal sealed class InactiveModOrderTests
 		RegressionAssert.True(plan.Dividers.All(divider => divider.IsActiveList));
 		RegressionAssert.Equal(before, JsonConvert.SerializeObject(inactive));
 	}
+
+	public void EveryModPaneFilterRetainsItsWorkingClearMenu()
+	{
+		var application = System.Windows.Application.Current;
+		var originalResources = application.Resources;
+		try
+		{
+			var resources = new System.Windows.ResourceDictionary();
+			foreach (var file in new[] { "Typography", "Light", "Dark" })
+				resources.MergedDictionaries.Add(new System.Windows.ResourceDictionary
+					{ Source = new Uri($"pack://application:,,,/Redux;component/Themes/{file}.xaml") });
+			resources.MergedDictionaries.Add(new System.Windows.ResourceDictionary
+				{ Source = new Uri("pack://application:,,,/AdonisUI.ClassicTheme;component/Resources.xaml") });
+			application.Resources = resources;
+			// The standalone layout also resolves its unrelated mod-row image menu.
+			resources[typeof(System.Windows.Controls.Image)] = new System.Windows.Style(typeof(System.Windows.Controls.Image));
+			VerifyModPaneClearMenus();
+		}
+		finally { application.Resources = originalResources; }
+	}
+
+	private static void VerifyModPaneClearMenus()
+	{
+		foreach (var theme in new[] { ReduxThemeType.ReduxDark, ReduxThemeType.ReduxLight, ReduxThemeType.Parchment })
+		{
+			var layout = new DivinityModManager.Views.HorizontalModLayout();
+			ReduxThemeService.Apply(layout.Resources, theme);
+			var first = new DivinityModData { UUID = "1", Name = "Matching Zebra", CustomAlias = "Matching Zebra", HasCustomAlias = true };
+			var second = new DivinityModData { UUID = "2", Name = "Unrelated", CustomAlias = "Unrelated", HasCustomAlias = true };
+			var third = new DivinityModData { UUID = "3", Name = "Matching Alpha", CustomAlias = "Matching Alpha", HasCustomAlias = true };
+			var source = new System.Collections.ObjectModel.ObservableCollection<DivinityModData> { first, second, third };
+			layout.ForceLoadedModsView.ItemsSource = source;
+			layout.Sort("Name", System.ComponentModel.ListSortDirection.Ascending, layout.ForceLoadedModsView);
+			foreach (var name in new[] { "ActiveModsFilterTextBox", "InactiveModsFilterTextBox", "OverrideModsFilterTextBox" })
+			{
+				var filter = (System.Windows.Controls.TextBox)layout.FindName(name);
+				filter.Text = "Matching";
+				var menu = filter.ContextMenu;
+				RegressionAssert.True(menu != null);
+				menu!.PlacementTarget = filter;
+				menu.ApplyTemplate();
+				menu.Measure(new System.Windows.Size(300, 300));
+				menu.Arrange(new System.Windows.Rect(0, 0, 300, 300));
+				menu.UpdateLayout();
+				var clear = menu.Items.OfType<System.Windows.Controls.MenuItem>()
+					.Single(item => ReferenceEquals(item.Command, DivinityModManager.AppCommands.Clear));
+				clear.Command.Execute(clear);
+				RegressionAssert.Equal(String.Empty, filter.Text);
+				clear.Command.Execute(clear);
+				RegressionAssert.Equal(String.Empty, filter.Text);
+				RegressionAssert.SequenceEqual([first, second, third], source);
+			}
+			RegressionAssert.SequenceEqual([third, first, second], layout.ForceLoadedModsView.Items.Cast<DivinityModData>());
+		}
+	}
 }

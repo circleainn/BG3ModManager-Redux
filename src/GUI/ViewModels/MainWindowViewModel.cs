@@ -4993,15 +4993,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					fileUpdateCheck = await NexusModsDataLoader.GetAvailableFileUpdatesAsync(targetMods, cancellationToken);
 					if (fileUpdateCheck?.CheckedModFiles.Count > 0)
 					{
-						var verified = UpdateHandler.Nexus.CacheData.VerifiedFileUpdates
-							??= new Dictionary<string, NexusVerifiedFileUpdate>(StringComparer.OrdinalIgnoreCase);
-						var checkedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+						var checkedAt = DateTimeOffset.UtcNow;
 						foreach (var (uuid, file) in fileUpdateCheck.CheckedModFiles)
 						{
-							if (fileUpdateCheck.AvailableModUuids.Contains(uuid))
-								verified[uuid] = new NexusVerifiedFileUpdate { ProjectId = file.ProjectId, FileId = file.FileId, CheckedAt = checkedAt };
-							else
-								verified.Remove(uuid);
+							UpdateHandler.Nexus.CacheData.RecordFileUpdateCheck(uuid, file.ProjectId, file.FileId,
+								fileUpdateCheck.AvailableModUuids.Contains(uuid), checkedAt);
 						}
 						await UpdateHandler.Nexus.SaveCacheAsync(false, Version.ToString(), cancellationToken);
 					}

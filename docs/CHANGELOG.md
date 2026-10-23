@@ -5,7 +5,8 @@ source for individual implementation details.
 
 ## Unreleased
 
-No additional changes queued.
+- Stop flagging archived, deleted, old, or unavailable Nexus files as mod updates. Follow explicit replacement history to currently offered files, including valid optional-file updates, and require a fresh check for older cached warnings.
+- Restore the right-click **Clear** action in the Active, Inactive, and Override text filters.
 
 ## 0.1.0-alpha.16.6 — 2026-10-20
 

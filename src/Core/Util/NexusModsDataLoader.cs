@@ -94,12 +94,39 @@ public static class NexusModsDataLoader
 		if (_pendingDispose) Dispose();
 	}
 
-	public static bool HasExplicitFileReplacement(long installedFileId, IEnumerable<NexusModFileUpdate> updates) =>
-		installedFileId > 0 && updates?.Any(update => update.OldFileId == installedFileId
-			&& update.NewFileId > 0 && update.NewFileId != installedFileId) == true;
+	public static bool HasAvailableFileReplacement(long installedFileId,
+		IEnumerable<NexusModFileUpdate> updates, IEnumerable<NexusModFile> files)
+	{
+		if (installedFileId <= 0 || updates == null || files == null) return false;
+
+		// History also contains withdrawn releases. Only files still offered in a
+		// current category qualify; unknown categories (including ARCHIVED in this
+		// older API client) must not turn historical edges into update warnings.
+		var availableIds = files.Where(file => file != null && file.FileId > 0
+			&& file.Category is NexusModFileCategory.Main or NexusModFileCategory.Update
+				or NexusModFileCategory.Optional or NexusModFileCategory.Miscellaneous)
+			.Select(file => file.FileId).ToHashSet();
+		var replacements = updates.Where(update => update != null
+			&& update.OldFileId > 0 && update.NewFileId > 0
+			&& update.NewFileId != update.OldFileId).ToLookup(update => update.OldFileId, update => update.NewFileId);
+		var visited = new HashSet<long> { installedFileId };
+		var pending = new Queue<long>();
+		pending.Enqueue(installedFileId);
+		while (pending.TryDequeue(out var fileId))
+		{
+			foreach (var replacement in replacements[fileId])
+			{
+				if (!visited.Add(replacement)) continue;
+				if (availableIds.Contains(replacement)) return true;
+				// An intermediate version may have been archived after a later update.
+				pending.Enqueue(replacement);
+			}
+		}
+		return false;
+	}
 
 	/// <summary>
-	/// Only explicit Nexus file-replacement links count as an available update.
+	/// Only explicit Nexus replacement paths to currently offered files count as updates.
 	/// A project's newest primary file may be unrelated to an installed optional file.
 	/// </summary>
 	public static async Task<NexusFileUpdateCheckResult> GetAvailableFileUpdatesAsync(IEnumerable<DivinityModData> mods, CancellationToken token)
@@ -133,10 +160,10 @@ public static class NexusModsDataLoader
 				{
 					var inquirer = new InfosInquirer(_client);
 					var files = await inquirer.ModFiles.GetModFilesAsync(DivinityApp.NEXUSMODS_GAME_DOMAIN, project.Key, token);
-					if (files?.ModFileUpdates == null) return (Failed: true, Checked: new List<(string Uuid, long ProjectId, long FileId, bool Available)>());
+					if (files?.ModFileUpdates == null || files.ModFiles == null) return (Failed: true, Checked: new List<(string Uuid, long ProjectId, long FileId, bool Available)>());
 					var checkedFiles = project.Select(mod => (Uuid: mod.UUID, ProjectId: project.Key,
 						FileId: mod.NexusModsData.LastFileId,
-						Available: HasExplicitFileReplacement(mod.NexusModsData.LastFileId, files.ModFileUpdates))).ToList();
+						Available: HasAvailableFileReplacement(mod.NexusModsData.LastFileId, files.ModFileUpdates, files.ModFiles))).ToList();
 					return (Failed: false, Checked: checkedFiles);
 				}
 				catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }

@@ -142,7 +142,7 @@
 				<Setter Property="IsHitTestVisible" Value="False" />
 			</Style>
 			<Style x:Key="ModPaneFilterTextBoxStyle"
-				BasedOn="{StaticResource {x:Type TextBox}}"
+				BasedOn="{StaticResource {x:Type c:UnfocusableTextBox}}"
 				TargetType="{x:Type c:UnfocusableTextBox}">
 				<Setter Property="Height" Value="28" />
 				<Setter Property="Padding" Value="8,0" />
