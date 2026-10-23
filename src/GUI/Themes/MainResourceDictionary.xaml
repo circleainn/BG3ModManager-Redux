@@ -1,4 +1,5 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
     xmlns:adonisUI="clr-namespace:AdonisUI;assembly=AdonisUI"
@@ -2568,7 +2569,7 @@
 		<MenuItem Command="ApplicationCommands.Paste">
 			<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Clipboard}" /></MenuItem.Icon>
 		</MenuItem>
-		<MenuItem Command="{Binding Source={x:Static mm:AppCommands.Clear}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}" Header="Clear">
+		<MenuItem Command="{Binding Source={x:Static mm:AppCommands.Clear}}" CommandParameter="{Binding RelativeSource={RelativeSource Self}}" Header="{loc:Text Clear_83b12c22}">
 			<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RemoveCircle}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
 		</MenuItem>
 	</ContextMenu>
@@ -2993,7 +2994,7 @@
 						</MenuItem.Style>
 					</MenuItem>
 					<Separator />
-					<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="Open in File Explorer...">
+					<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="{loc:Text Open_in_File_Explorer_0b493974}">
 						<MenuItem.Icon>
 							<controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" />
 						</MenuItem.Icon>
@@ -3357,7 +3358,7 @@
 		<Setter Property="ContextMenu">
 			<Setter.Value>
 				<ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
-					<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="Open in File Explorer...">
+					<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="{loc:Text Open_in_File_Explorer_0b493974}">
 						<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem Command="{Binding Path=ToggleNameDisplayCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding}">
@@ -4075,7 +4076,7 @@
 			<Grid Margin="6,0,6,6">
 				<Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 				<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-				<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="File" /><TextBlock Grid.Column="1" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" />
+				<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text File_50009ce1}" /><TextBlock Grid.Column="1" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" />
 				<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Last modified" /><TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding LastModifiedDateText}" />
 				<Grid Grid.Row="2" Grid.ColumnSpan="2">
 					<Grid.Style>
@@ -4158,7 +4159,7 @@
 					<Grid.ColumnDefinitions><ColumnDefinition Width="112" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 					<Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 					<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Project" /><TextBlock Grid.Column="1" Text="{Binding Metadata.Title}" TextTrimming="CharacterEllipsis" />
-					<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Author" /><TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Metadata.Author}" />
+					<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Author_d95082a2}" /><TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Metadata.Author}" />
 					<TextBlock Grid.Row="2" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Source updated" /><TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Metadata.UpdatedLabel}" />
 					<TextBlock Grid.Row="3" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Linked packages" /><TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SourceComponentCount}" />
 				</Grid>
@@ -5268,7 +5269,7 @@
 		<Setter Property="Margin" Value="0" />
 	</Style>
 	<DataTemplate x:Key="GridViewTextblockHeaderTemplate">
-		<TextBlock x:Name="HeaderLabel" Margin="2,0,2,0" Text="{Binding}" TextTrimming="CharacterEllipsis" />
+		<TextBlock x:Name="HeaderLabel" Margin="2,0,2,0" Text="{loc:BoundText}" TextTrimming="CharacterEllipsis" />
 		<DataTemplate.Triggers>
 			<MultiDataTrigger>
 				<MultiDataTrigger.Conditions>

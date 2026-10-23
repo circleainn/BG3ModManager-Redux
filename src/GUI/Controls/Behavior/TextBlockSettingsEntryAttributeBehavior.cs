@@ -50,8 +50,8 @@ public static class TextBlockSettingsEntryAttributeBehavior
 			SettingsEntryAttribute settingsEntry = prop.GetCustomAttribute<SettingsEntryAttribute>();
 			if (settingsEntry != null)
 			{
-				element.Text = settingsEntry.DisplayName;
-				element.ToolTip = settingsEntry.Tooltip;
+				DivinityModManager.Localization.LocalizationBindings.Set(element, TextBlock.TextProperty, settingsEntry.DisplayName);
+				DivinityModManager.Localization.LocalizationBindings.Set(element, ToolTipService.ToolTipProperty, settingsEntry.Tooltip);
 			}
 		}
 	}

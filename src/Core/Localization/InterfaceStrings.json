@@ -1,0 +1,1696 @@
+{
+  "Language_a4fe6526": {
+    "en": "Language",
+    "fr": "Langue",
+    "es": "Idioma",
+    "ru": "Язык",
+    "zh-Hans": "语言"
+  },
+  "Interface_language_8027f432": {
+    "en": "Interface language",
+    "fr": "Langue de l’interface",
+    "es": "Idioma de la interfaz",
+    "ru": "Язык интерфейса",
+    "zh-Hans": "界面语言"
+  },
+  "Choose_the_language_used_by_Redux_s_interface_96c896e5": {
+    "en": "Choose the language used by Redux's interface.",
+    "fr": "Choisissez la langue de l’interface de Redux.",
+    "es": "Elige el idioma de la interfaz de Redux.",
+    "ru": "Выберите язык интерфейса Redux.",
+    "zh-Hans": "选择 Redux 界面使用的语言。"
+  },
+  "Changes_interface_text_immediately_Save_your_preferences_to__51c4f990": {
+    "en": "Changes interface text immediately. Save your preferences to keep this language. Untranslated text uses English.",
+    "fr": "Le texte change immédiatement. Enregistrez les préférences pour conserver cette langue. Les textes non traduits restent en anglais.",
+    "es": "El texto cambia al instante. Guarda las preferencias para conservar el idioma. Los textos sin traducir se muestran en inglés.",
+    "ru": "Текст меняется сразу. Сохраните настройки, чтобы запомнить язык. Непереведённый текст отображается на английском.",
+    "zh-Hans": "界面文字会立即切换。保存偏好设置以记住所选语言。尚未翻译的文字会以英语显示。"
+  },
+  "File_50009ce1": {
+    "en": "File",
+    "fr": "Fichier",
+    "es": "Archivo",
+    "ru": "Файл",
+    "zh-Hans": "文件"
+  },
+  "Edit_464c4ffd": {
+    "en": "Edit",
+    "fr": "Édition",
+    "es": "Editar",
+    "ru": "Правка",
+    "zh-Hans": "编辑"
+  },
+  "Settings_74a883a0": {
+    "en": "Settings",
+    "fr": "Paramètres",
+    "es": "Ajustes",
+    "ru": "Настройки",
+    "zh-Hans": "设置"
+  },
+  "Tools_ea93d6a2": {
+    "en": "Tools",
+    "fr": "Outils",
+    "es": "Herramientas",
+    "ru": "Инструменты",
+    "zh-Hans": "工具"
+  },
+  "Help_b79cac92": {
+    "en": "Help",
+    "fr": "Aide",
+    "es": "Ayuda",
+    "ru": "Справка",
+    "zh-Hans": "帮助"
+  },
+  "Accessibility_d3368cbf": {
+    "en": "Accessibility",
+    "fr": "Accessibilité",
+    "es": "Accesibilidad",
+    "ru": "Специальные возможности",
+    "zh-Hans": "辅助功能"
+  },
+  "Preferences_66962f72": {
+    "en": "Preferences",
+    "fr": "Préférences",
+    "es": "Preferencias",
+    "ru": "Настройки",
+    "zh-Hans": "偏好设置"
+  },
+  "Preferences_60b51627": {
+    "en": "Preferences...",
+    "fr": "Préférences...",
+    "es": "Preferencias...",
+    "ru": "Настройки...",
+    "zh-Hans": "偏好设置..."
+  },
+  "General_c910d474": {
+    "en": "General",
+    "fr": "Général",
+    "es": "General",
+    "ru": "Общие",
+    "zh-Hans": "常规"
+  },
+  "Appearance_3907fa7f": {
+    "en": "Appearance",
+    "fr": "Apparence",
+    "es": "Apariencia",
+    "ru": "Внешний вид",
+    "zh-Hans": "外观"
+  },
+  "Advanced_9f088dbe": {
+    "en": "Advanced",
+    "fr": "Avancé",
+    "es": "Avanzado",
+    "ru": "Дополнительно",
+    "zh-Hans": "高级"
+  },
+  "Keyboard_shortcuts_e9bef0b0": {
+    "en": "Keyboard shortcuts",
+    "fr": "Raccourcis clavier",
+    "es": "Atajos de teclado",
+    "ru": "Сочетания клавиш",
+    "zh-Hans": "键盘快捷键"
+  },
+  "Keyboard_Shortcuts_e57ec9a1": {
+    "en": "Keyboard Shortcuts...",
+    "fr": "Raccourcis clavier...",
+    "es": "Atajos de teclado...",
+    "ru": "Сочетания клавиш...",
+    "zh-Hans": "键盘快捷键..."
+  },
+  "Backups_3334fee2": {
+    "en": "Backups",
+    "fr": "Sauvegardes",
+    "es": "Copias de seguridad",
+    "ru": "Резервные копии",
+    "zh-Hans": "备份"
+  },
+  "Backups_and_snapshots_821c74ec": {
+    "en": "Backups and snapshots",
+    "fr": "Sauvegardes et instantanés",
+    "es": "Copias de seguridad e instantáneas",
+    "ru": "Резервные копии и снимки",
+    "zh-Hans": "备份与快照"
+  },
+  "Backups_and_snapshots_315c19cf": {
+    "en": "Backups and snapshots...",
+    "fr": "Sauvegardes et instantanés...",
+    "es": "Copias de seguridad e instantáneas...",
+    "ru": "Резервные копии и снимки...",
+    "zh-Hans": "备份与快照..."
+  },
+  "Save_1509f561": {
+    "en": "Save",
+    "fr": "Enregistrer",
+    "es": "Guardar",
+    "ru": "Сохранить",
+    "zh-Hans": "保存"
+  },
+  "Cancel_19766ed6": {
+    "en": "Cancel",
+    "fr": "Annuler",
+    "es": "Cancelar",
+    "ru": "Отмена",
+    "zh-Hans": "取消"
+  },
+  "Close_7d9eb7ac": {
+    "en": "Close",
+    "fr": "Fermer",
+    "es": "Cerrar",
+    "ru": "Закрыть",
+    "zh-Hans": "关闭"
+  },
+  "Reset_daee7606": {
+    "en": "Reset",
+    "fr": "Réinitialiser",
+    "es": "Restablecer",
+    "ru": "Сбросить",
+    "zh-Hans": "重置"
+  },
+  "Clear_83b12c22": {
+    "en": "Clear",
+    "fr": "Effacer",
+    "es": "Limpiar",
+    "ru": "Очистить",
+    "zh-Hans": "清除"
+  },
+  "Delete_e2d0a549": {
+    "en": "Delete",
+    "fr": "Supprimer",
+    "es": "Eliminar",
+    "ru": "Удалить",
+    "zh-Hans": "删除"
+  },
+  "Remove_c3812fc4": {
+    "en": "Remove",
+    "fr": "Retirer",
+    "es": "Quitar",
+    "ru": "Убрать",
+    "zh-Hans": "移除"
+  },
+  "Create_4759498a": {
+    "en": "Create",
+    "fr": "Créer",
+    "es": "Crear",
+    "ru": "Создать",
+    "zh-Hans": "创建"
+  },
+  "Duplicate_02cdaabf": {
+    "en": "Duplicate",
+    "fr": "Dupliquer",
+    "es": "Duplicar",
+    "ru": "Дублировать",
+    "zh-Hans": "创建副本"
+  },
+  "Rename_3064d79a": {
+    "en": "Rename",
+    "fr": "Renommer",
+    "es": "Cambiar nombre",
+    "ru": "Переименовать",
+    "zh-Hans": "重命名"
+  },
+  "Browse_93c6b664": {
+    "en": "Browse…",
+    "fr": "Parcourir…",
+    "es": "Examinar…",
+    "ru": "Обзор…",
+    "zh-Hans": "浏览…"
+  },
+  "Browse_c58a6bd4": {
+    "en": "Browse...",
+    "fr": "Parcourir...",
+    "es": "Examinar...",
+    "ru": "Обзор...",
+    "zh-Hans": "浏览..."
+  },
+  "Restore_a76e13b9": {
+    "en": "Restore",
+    "fr": "Restaurer",
+    "es": "Restaurar",
+    "ru": "Восстановить",
+    "zh-Hans": "还原"
+  },
+  "Retry_942087cc": {
+    "en": "Retry",
+    "fr": "Réessayer",
+    "es": "Reintentar",
+    "ru": "Повторить",
+    "zh-Hans": "重试"
+  },
+  "Continue_31fbef16": {
+    "en": "Continue",
+    "fr": "Continuer",
+    "es": "Continuar",
+    "ru": "Продолжить",
+    "zh-Hans": "继续"
+  },
+  "Apply_31e392d1": {
+    "en": "Apply",
+    "fr": "Appliquer",
+    "es": "Aplicar",
+    "ru": "Применить",
+    "zh-Hans": "应用"
+  },
+  "Yes_85a39ab3": {
+    "en": "Yes",
+    "fr": "Oui",
+    "es": "Sí",
+    "ru": "Да",
+    "zh-Hans": "是"
+  },
+  "No_1ea442a1": {
+    "en": "No",
+    "fr": "Non",
+    "es": "No",
+    "ru": "Нет",
+    "zh-Hans": "否"
+  },
+  "OK_565339bc": {
+    "en": "OK",
+    "fr": "OK",
+    "es": "Aceptar",
+    "ru": "ОК",
+    "zh-Hans": "确定"
+  },
+  "Settings_Folder_d67a1497": {
+    "en": "Settings Folder",
+    "fr": "Dossier des paramètres",
+    "es": "Carpeta de ajustes",
+    "ru": "Папка настроек",
+    "zh-Hans": "设置文件夹"
+  },
+  "Save_settings_7f3a3b14": {
+    "en": "Save settings",
+    "fr": "Enregistrer les paramètres",
+    "es": "Guardar ajustes",
+    "ru": "Сохранить настройки",
+    "zh-Hans": "保存设置"
+  },
+  "Open_settings_folder_75132475": {
+    "en": "Open settings folder",
+    "fr": "Ouvrir le dossier des paramètres",
+    "es": "Abrir carpeta de ajustes",
+    "ru": "Открыть папку настроек",
+    "zh-Hans": "打开设置文件夹"
+  },
+  "Reset_settings_d33a83aa": {
+    "en": "Reset settings",
+    "fr": "Réinitialiser les paramètres",
+    "es": "Restablecer ajustes",
+    "ru": "Сбросить настройки",
+    "zh-Hans": "重置设置"
+  },
+  "Save_settings_now_Ctrl_S_21bba71e": {
+    "en": "Save settings now (Ctrl+S)",
+    "fr": "Enregistrer les paramètres (Ctrl+S)",
+    "es": "Guardar ajustes ahora (Ctrl+S)",
+    "ru": "Сохранить настройки (Ctrl+S)",
+    "zh-Hans": "立即保存设置 (Ctrl+S)"
+  },
+  "Change_the_manager_s_everyday_behavior_paths_and_online_mod__0b2956b2": {
+    "en": "Change the manager's everyday behavior, paths, and online mod information.",
+    "fr": "Réglez le fonctionnement courant, les chemins et les informations de mods en ligne.",
+    "es": "Configura el funcionamiento habitual, las rutas y la información de mods en línea.",
+    "ru": "Настройте поведение программы, пути и сведения о модах из сети.",
+    "zh-Hans": "调整管理器的日常行为、路径和在线模组信息。"
+  },
+  "Active_Mods_151935ef": {
+    "en": "Active Mods",
+    "fr": "Mods actifs",
+    "es": "Mods activos",
+    "ru": "Активные моды",
+    "zh-Hans": "已启用模组"
+  },
+  "Inactive_Mods_1df7c4ab": {
+    "en": "Inactive Mods",
+    "fr": "Mods inactifs",
+    "es": "Mods inactivos",
+    "ru": "Неактивные моды",
+    "zh-Hans": "未启用模组"
+  },
+  "INACTIVE_MODS_0387cd0e": {
+    "en": "INACTIVE MODS",
+    "fr": "MODS INACTIFS",
+    "es": "MODS INACTIVOS",
+    "ru": "НЕАКТИВНЫЕ МОДЫ",
+    "zh-Hans": "未启用模组"
+  },
+  "Override_Mods_2303d03c": {
+    "en": "Override Mods",
+    "fr": "Mods de remplacement",
+    "es": "Mods de reemplazo",
+    "ru": "Моды Override",
+    "zh-Hans": "覆盖模组"
+  },
+  "Active_92340695": {
+    "en": "Active",
+    "fr": "Actif",
+    "es": "Activo",
+    "ru": "Активен",
+    "zh-Hans": "已启用"
+  },
+  "Inactive_ac7c949f": {
+    "en": "Inactive",
+    "fr": "Inactif",
+    "es": "Inactivo",
+    "ru": "Неактивен",
+    "zh-Hans": "未启用"
+  },
+  "Activate_24433c70": {
+    "en": "Activate",
+    "fr": "Activer",
+    "es": "Activar",
+    "ru": "Активировать",
+    "zh-Hans": "启用"
+  },
+  "Filter_Active_Mods_a703b389": {
+    "en": "Filter Active Mods",
+    "fr": "Filtrer les mods actifs",
+    "es": "Filtrar mods activos",
+    "ru": "Фильтр активных модов",
+    "zh-Hans": "筛选已启用模组"
+  },
+  "Filter_Inactive_Mods_fe92b093": {
+    "en": "Filter Inactive Mods",
+    "fr": "Filtrer les mods inactifs",
+    "es": "Filtrar mods inactivos",
+    "ru": "Фильтр неактивных модов",
+    "zh-Hans": "筛选未启用模组"
+  },
+  "Filter_Overrides_94bd871f": {
+    "en": "Filter Overrides",
+    "fr": "Filtrer les remplacements",
+    "es": "Filtrar reemplazos",
+    "ru": "Фильтр модов Override",
+    "zh-Hans": "筛选覆盖模组"
+  },
+  "Active_Mods_Filter_6d74138c": {
+    "en": "Active Mods Filter",
+    "fr": "Filtre des mods actifs",
+    "es": "Filtro de mods activos",
+    "ru": "Фильтр активных модов",
+    "zh-Hans": "已启用模组筛选"
+  },
+  "Categories_b8b1d894": {
+    "en": "Categories",
+    "fr": "Catégories",
+    "es": "Categorías",
+    "ru": "Категории",
+    "zh-Hans": "分类"
+  },
+  "Mod_categories_c6bda6a1": {
+    "en": "Mod categories",
+    "fr": "Catégories de mods",
+    "es": "Categorías de mods",
+    "ru": "Категории модов",
+    "zh-Hans": "模组分类"
+  },
+  "Name_dcd1d522": {
+    "en": "Name",
+    "fr": "Nom",
+    "es": "Nombre",
+    "ru": "Название",
+    "zh-Hans": "名称"
+  },
+  "Author_d95082a2": {
+    "en": "Author",
+    "fr": "Auteur",
+    "es": "Autor",
+    "ru": "Автор",
+    "zh-Hans": "作者"
+  },
+  "Version_dd167905": {
+    "en": "Version",
+    "fr": "Version",
+    "es": "Versión",
+    "ru": "Версия",
+    "zh-Hans": "版本"
+  },
+  "Type_baaddf70": {
+    "en": "Type",
+    "fr": "Type",
+    "es": "Tipo",
+    "ru": "Тип",
+    "zh-Hans": "类型"
+  },
+  "Description_526e0087": {
+    "en": "Description",
+    "fr": "Description",
+    "es": "Descripción",
+    "ru": "Описание",
+    "zh-Hans": "描述"
+  },
+  "Status_920e413c": {
+    "en": "Status",
+    "fr": "État",
+    "es": "Estado",
+    "ru": "Состояние",
+    "zh-Hans": "状态"
+  },
+  "Actions_ff8059dc": {
+    "en": "Actions",
+    "fr": "Actions",
+    "es": "Acciones",
+    "ru": "Действия",
+    "zh-Hans": "操作"
+  },
+  "Position_6d031af1": {
+    "en": "Position",
+    "fr": "Position",
+    "es": "Posición",
+    "ru": "Позиция",
+    "zh-Hans": "位置"
+  },
+  "Notes_8a7525b1": {
+    "en": "Notes",
+    "fr": "Notes",
+    "es": "Notas",
+    "ru": "Заметки",
+    "zh-Hans": "备注"
+  },
+  "Overview_d4b1ea57": {
+    "en": "Overview",
+    "fr": "Vue d’ensemble",
+    "es": "Resumen",
+    "ru": "Обзор",
+    "zh-Hans": "概览"
+  },
+  "Requirements_e0cdd07f": {
+    "en": "Requirements",
+    "fr": "Prérequis",
+    "es": "Requisitos",
+    "ru": "Требования",
+    "zh-Hans": "前置要求"
+  },
+  "Files_abc7e989": {
+    "en": "Files",
+    "fr": "Fichiers",
+    "es": "Archivos",
+    "ru": "Файлы",
+    "zh-Hans": "文件"
+  },
+  "File_path_2fb6d386": {
+    "en": "File path",
+    "fr": "Chemin du fichier",
+    "es": "Ruta del archivo",
+    "ru": "Путь к файлу",
+    "zh-Hans": "文件路径"
+  },
+  "Folder_74ccd433": {
+    "en": "Folder",
+    "fr": "Dossier",
+    "es": "Carpeta",
+    "ru": "Папка",
+    "zh-Hans": "文件夹"
+  },
+  "Profile_d696a35b": {
+    "en": "Profile",
+    "fr": "Profil",
+    "es": "Perfil",
+    "ru": "Профиль",
+    "zh-Hans": "配置档案"
+  },
+  "Campaign_268286d2": {
+    "en": "Campaign",
+    "fr": "Campagne",
+    "es": "Campaña",
+    "ru": "Кампания",
+    "zh-Hans": "战役"
+  },
+  "Load_Order_ddb8bbce": {
+    "en": "Load Order",
+    "fr": "Ordre de chargement",
+    "es": "Orden de carga",
+    "ru": "Порядок загрузки",
+    "zh-Hans": "加载顺序"
+  },
+  "Load_Orders_65edab8e": {
+    "en": "Load Orders",
+    "fr": "Ordres de chargement",
+    "es": "Órdenes de carga",
+    "ru": "Порядки загрузки",
+    "zh-Hans": "加载顺序"
+  },
+  "Refresh_0e916101": {
+    "en": "Refresh",
+    "fr": "Actualiser",
+    "es": "Actualizar",
+    "ru": "Обновить",
+    "zh-Hans": "刷新"
+  },
+  "Refresh_Mods_4e111c72": {
+    "en": "Refresh Mods",
+    "fr": "Actualiser les mods",
+    "es": "Actualizar lista de mods",
+    "ru": "Обновить список модов",
+    "zh-Hans": "刷新模组"
+  },
+  "Install_Mod_f2d64bcc": {
+    "en": "Install Mod",
+    "fr": "Installer un mod",
+    "es": "Instalar mod",
+    "ru": "Установить мод",
+    "zh-Hans": "安装模组"
+  },
+  "Install_Mod_9fe4bbfa": {
+    "en": "Install Mod...",
+    "fr": "Installer un mod...",
+    "es": "Instalar mod...",
+    "ru": "Установить мод...",
+    "zh-Hans": "安装模组..."
+  },
+  "Launch_Game_ec155f2e": {
+    "en": "Launch Game",
+    "fr": "Lancer le jeu",
+    "es": "Iniciar juego",
+    "ru": "Запустить игру",
+    "zh-Hans": "启动游戏"
+  },
+  "Manage_5a234448": {
+    "en": "Manage",
+    "fr": "Gérer",
+    "es": "Gestionar",
+    "ru": "Управление",
+    "zh-Hans": "管理"
+  },
+  "Saves_98971626": {
+    "en": "Saves",
+    "fr": "Sauvegardes de jeu",
+    "es": "Partidas guardadas",
+    "ru": "Сохранения игры",
+    "zh-Hans": "游戏存档"
+  },
+  "Save_Game_Manager_016c8bd7": {
+    "en": "Save Game Manager...",
+    "fr": "Gestionnaire de sauvegardes...",
+    "es": "Gestor de partidas...",
+    "ru": "Менеджер сохранений...",
+    "zh-Hans": "存档管理器..."
+  },
+  "Download_Manager_160a4d63": {
+    "en": "Download Manager",
+    "fr": "Gestionnaire de téléchargements",
+    "es": "Gestor de descargas",
+    "ru": "Менеджер загрузок",
+    "zh-Hans": "下载管理器"
+  },
+  "Import_2cff9baa": {
+    "en": "Import",
+    "fr": "Importer",
+    "es": "Importar",
+    "ru": "Импорт",
+    "zh-Hans": "导入"
+  },
+  "Export_36648955": {
+    "en": "Export",
+    "fr": "Exporter",
+    "es": "Exportar",
+    "ru": "Экспорт",
+    "zh-Hans": "导出"
+  },
+  "Save_Current_Order_5600ab21": {
+    "en": "Save Current Order",
+    "fr": "Enregistrer l’ordre actuel",
+    "es": "Guardar orden actual",
+    "ru": "Сохранить текущий порядок",
+    "zh-Hans": "保存当前顺序"
+  },
+  "Save_Load_Order_to_File_e922a8e4": {
+    "en": "Save Load Order to File...",
+    "fr": "Enregistrer l’ordre dans un fichier...",
+    "es": "Guardar orden en archivo...",
+    "ru": "Сохранить порядок в файл...",
+    "zh-Hans": "将加载顺序保存到文件..."
+  },
+  "Save_as_New_Load_Order_5ffe447d": {
+    "en": "Save as New Load Order...",
+    "fr": "Enregistrer comme nouvel ordre...",
+    "es": "Guardar como nuevo orden...",
+    "ru": "Сохранить как новый порядок...",
+    "zh-Hans": "另存为新的加载顺序..."
+  },
+  "Create_Blank_Load_Order_19d53aa7": {
+    "en": "Create Blank Load Order",
+    "fr": "Créer un ordre vide",
+    "es": "Crear orden vacío",
+    "ru": "Создать пустой порядок",
+    "zh-Hans": "创建空白加载顺序"
+  },
+  "Rename_Load_Order_c2d40f9d": {
+    "en": "Rename Load Order...",
+    "fr": "Renommer l’ordre...",
+    "es": "Cambiar nombre del orden...",
+    "ru": "Переименовать порядок...",
+    "zh-Hans": "重命名加载顺序..."
+  },
+  "Delete_Order_76c4aed6": {
+    "en": "Delete Order",
+    "fr": "Supprimer l’ordre",
+    "es": "Eliminar orden",
+    "ru": "Удалить порядок",
+    "zh-Hans": "删除顺序"
+  },
+  "Delete_Selected_Order_97fee10f": {
+    "en": "Delete Selected Order",
+    "fr": "Supprimer l’ordre sélectionné",
+    "es": "Eliminar orden seleccionado",
+    "ru": "Удалить выбранный порядок",
+    "zh-Hans": "删除所选顺序"
+  },
+  "Copy_Order_to_Clipboard_69531667": {
+    "en": "Copy Order to Clipboard",
+    "fr": "Copier l’ordre dans le presse-papiers",
+    "es": "Copiar orden al portapapeles",
+    "ru": "Копировать порядок в буфер обмена",
+    "zh-Hans": "将顺序复制到剪贴板"
+  },
+  "Sync_Load_Order_to_Game_411c684b": {
+    "en": "Sync Load Order to Game",
+    "fr": "Synchroniser l’ordre avec le jeu",
+    "es": "Sincronizar orden con el juego",
+    "ru": "Синхронизировать порядок с игрой",
+    "zh-Hans": "将加载顺序同步到游戏"
+  },
+  "Import_Load_Order_from_File_f87d3cc0": {
+    "en": "Import Load Order from File...",
+    "fr": "Importer un ordre depuis un fichier...",
+    "es": "Importar orden desde archivo...",
+    "ru": "Импортировать порядок из файла...",
+    "zh-Hans": "从文件导入加载顺序..."
+  },
+  "Import_Load_Order_from_Save_9f086dc8": {
+    "en": "Import Load Order from Save...",
+    "fr": "Importer un ordre depuis une sauvegarde...",
+    "es": "Importar orden desde partida...",
+    "ru": "Импортировать порядок из сохранения...",
+    "zh-Hans": "从存档导入加载顺序..."
+  },
+  "Import_Save_as_New_Load_Order_3c6c1768": {
+    "en": "Import Save as New Load Order...",
+    "fr": "Importer la sauvegarde comme nouvel ordre...",
+    "es": "Importar partida como nuevo orden...",
+    "ru": "Импортировать сохранение как новый порядок...",
+    "zh-Hans": "将存档导入为新的加载顺序..."
+  },
+  "Import_Load_Order_and_Mods_from_Archive_f73c1017": {
+    "en": "Import Load Order and Mods from Archive...",
+    "fr": "Importer ordre et mods depuis une archive...",
+    "es": "Importar orden y mods desde archivo comprimido...",
+    "ru": "Импортировать порядок и моды из архива...",
+    "zh-Hans": "从压缩包导入加载顺序和模组..."
+  },
+  "Import_Redux_Modlist_1f3c23d6": {
+    "en": "Import Redux Modlist...",
+    "fr": "Importer une liste Redux...",
+    "es": "Importar lista Redux...",
+    "ru": "Импортировать список Redux...",
+    "zh-Hans": "导入 Redux 模组列表..."
+  },
+  "Export_Redux_Modlist_ec4c111a": {
+    "en": "Export Redux Modlist...",
+    "fr": "Exporter une liste Redux...",
+    "es": "Exportar lista Redux...",
+    "ru": "Экспортировать список Redux...",
+    "zh-Hans": "导出 Redux 模组列表..."
+  },
+  "Export_Detailed_Mod_List_2d4314da": {
+    "en": "Export Detailed Mod List...",
+    "fr": "Exporter une liste détaillée des mods...",
+    "es": "Exportar lista detallada de mods...",
+    "ru": "Экспортировать подробный список модов...",
+    "zh-Hans": "导出详细模组列表..."
+  },
+  "Back_Up_Active_Mods_to_ZIP_f62e8530": {
+    "en": "Back Up Active Mods to ZIP...",
+    "fr": "Sauvegarder les mods actifs en ZIP...",
+    "es": "Respaldar mods activos en ZIP...",
+    "ru": "Сохранить активные моды в ZIP...",
+    "zh-Hans": "将已启用模组备份为 ZIP..."
+  },
+  "Undo_Last_Action_01229263": {
+    "en": "Undo Last Action",
+    "fr": "Annuler la dernière action",
+    "es": "Deshacer última acción",
+    "ru": "Отменить последнее действие",
+    "zh-Hans": "撤销上一步操作"
+  },
+  "Redo_Last_Action_66c29c85": {
+    "en": "Redo Last Action",
+    "fr": "Rétablir la dernière action",
+    "es": "Rehacer última acción",
+    "ru": "Повторить последнее действие",
+    "zh-Hans": "重做上一步操作"
+  },
+  "Check_Mod_Updates_134afdc0": {
+    "en": "Check Mod Updates",
+    "fr": "Vérifier les mises à jour des mods",
+    "es": "Buscar actualizaciones de mods",
+    "ru": "Проверить обновления модов",
+    "zh-Hans": "检查模组更新"
+  },
+  "Check_Nexus_File_Update_bfa4c5ed": {
+    "en": "Check Nexus File Update",
+    "fr": "Vérifier la mise à jour du fichier Nexus",
+    "es": "Buscar actualización del archivo de Nexus",
+    "ru": "Проверить обновление файла Nexus",
+    "zh-Hans": "检查 Nexus 文件更新"
+  },
+  "Skip_this_update_df8ca878": {
+    "en": "Skip this update",
+    "fr": "Ignorer cette mise à jour",
+    "es": "Omitir esta actualización",
+    "ru": "Пропустить это обновление",
+    "zh-Hans": "跳过此更新"
+  },
+  "Skip_these_updates_7cf0dd28": {
+    "en": "Skip these updates",
+    "fr": "Ignorer ces mises à jour",
+    "es": "Omitir estas actualizaciones",
+    "ru": "Пропустить эти обновления",
+    "zh-Hans": "跳过这些更新"
+  },
+  "Show_skipped_updates_21fa4a53": {
+    "en": "Show skipped updates",
+    "fr": "Afficher les mises à jour ignorées",
+    "es": "Mostrar actualizaciones omitidas",
+    "ru": "Показать пропущенные обновления",
+    "zh-Hans": "显示已跳过的更新"
+  },
+  "Check_for_Updates_9ed79ee9": {
+    "en": "Check for Updates",
+    "fr": "Vérifier les mises à jour",
+    "es": "Buscar actualizaciones",
+    "ru": "Проверить обновления",
+    "zh-Hans": "检查更新"
+  },
+  "Redux_Update_88f0e10e": {
+    "en": "Redux Update",
+    "fr": "Mise à jour de Redux",
+    "es": "Actualización de Redux",
+    "ru": "Обновление Redux",
+    "zh-Hans": "Redux 更新"
+  },
+  "Update_Back_Up_082bb6a0": {
+    "en": "Update & Back Up",
+    "fr": "Mettre à jour et sauvegarder",
+    "es": "Actualizar y hacer copia",
+    "ru": "Обновить и создать копию",
+    "zh-Hans": "更新并备份"
+  },
+  "Update_Restart_6f74a4a2": {
+    "en": "Update & Restart",
+    "fr": "Mettre à jour et redémarrer",
+    "es": "Actualizar y reiniciar",
+    "ru": "Обновить и перезапустить",
+    "zh-Hans": "更新并重启"
+  },
+  "Update_Channel_230da4c2": {
+    "en": "Update Channel",
+    "fr": "Canal de mise à jour",
+    "es": "Canal de actualización",
+    "ru": "Канал обновлений",
+    "zh-Hans": "更新通道"
+  },
+  "Updates_22e2bada": {
+    "en": "Updates",
+    "fr": "Mises à jour",
+    "es": "Actualizaciones",
+    "ru": "Обновления",
+    "zh-Hans": "更新"
+  },
+  "Updates_f14f7563": {
+    "en": "Updates:",
+    "fr": "Mises à jour :",
+    "es": "Actualizaciones:",
+    "ru": "Обновления:",
+    "zh-Hans": "更新："
+  },
+  "Changelog_ead07c84": {
+    "en": "Changelog",
+    "fr": "Journal des modifications",
+    "es": "Registro de cambios",
+    "ru": "История изменений",
+    "zh-Hans": "更新日志"
+  },
+  "About_4efca0d1": {
+    "en": "About",
+    "fr": "À propos",
+    "es": "Acerca de",
+    "ru": "О программе",
+    "zh-Hans": "关于"
+  },
+  "What_s_New_2e207d8c": {
+    "en": "What's New...",
+    "fr": "Nouveautés...",
+    "es": "Novedades...",
+    "ru": "Что нового...",
+    "zh-Hans": "新增内容..."
+  },
+  "Quick_Access_c549b798": {
+    "en": "Quick Access...",
+    "fr": "Accès rapide...",
+    "es": "Acceso rápido...",
+    "ru": "Быстрый доступ...",
+    "zh-Hans": "快速访问..."
+  },
+  "Quick_Links_62b34994": {
+    "en": "Quick Links",
+    "fr": "Liens rapides",
+    "es": "Enlaces rápidos",
+    "ru": "Быстрые ссылки",
+    "zh-Hans": "快捷链接"
+  },
+  "Links_Folders_362e1821": {
+    "en": "Links & Folders",
+    "fr": "Liens et dossiers",
+    "es": "Enlaces y carpetas",
+    "ru": "Ссылки и папки",
+    "zh-Hans": "链接与文件夹"
+  },
+  "Toolbar_451aa51a": {
+    "en": "Toolbar",
+    "fr": "Barre d’outils",
+    "es": "Barra de herramientas",
+    "ru": "Панель инструментов",
+    "zh-Hans": "工具栏"
+  },
+  "Show_Toolbar_63a8fef5": {
+    "en": "Show Toolbar",
+    "fr": "Afficher la barre d’outils",
+    "es": "Mostrar barra de herramientas",
+    "ru": "Показать панель инструментов",
+    "zh-Hans": "显示工具栏"
+  },
+  "Show_or_Hide_Toolbar_baac9201": {
+    "en": "Show or Hide Toolbar",
+    "fr": "Afficher ou masquer la barre d’outils",
+    "es": "Mostrar u ocultar barra de herramientas",
+    "ru": "Показать или скрыть панель инструментов",
+    "zh-Hans": "显示或隐藏工具栏"
+  },
+  "Theme_Appearance_08ec49a0": {
+    "en": "Theme & Appearance...",
+    "fr": "Thème et apparence...",
+    "es": "Tema y apariencia...",
+    "ru": "Тема и внешний вид...",
+    "zh-Hans": "主题与外观..."
+  },
+  "Cycle_Theme_98808008": {
+    "en": "Cycle Theme",
+    "fr": "Changer de thème",
+    "es": "Cambiar tema",
+    "ru": "Переключить тему",
+    "zh-Hans": "切换主题"
+  },
+  "Theme_efb52e71": {
+    "en": "Theme",
+    "fr": "Thème",
+    "es": "Tema",
+    "ru": "Тема",
+    "zh-Hans": "主题"
+  },
+  "Typography_cab94aba": {
+    "en": "Typography",
+    "fr": "Typographie",
+    "es": "Tipografía",
+    "ru": "Типографика",
+    "zh-Hans": "字体排印"
+  },
+  "Font_64d0b3ad": {
+    "en": "Font",
+    "fr": "Police",
+    "es": "Fuente",
+    "ru": "Шрифт",
+    "zh-Hans": "字体"
+  },
+  "Text_size_d68761cc": {
+    "en": "Text size",
+    "fr": "Taille du texte",
+    "es": "Tamaño del texto",
+    "ru": "Размер текста",
+    "zh-Hans": "文字大小"
+  },
+  "Current_theme_4089af3e": {
+    "en": "Current theme",
+    "fr": "Thème actuel",
+    "es": "Tema actual",
+    "ru": "Текущая тема",
+    "zh-Hans": "当前主题"
+  },
+  "Built_in_themes_c4118c44": {
+    "en": "Built-in themes",
+    "fr": "Thèmes intégrés",
+    "es": "Temas incluidos",
+    "ru": "Встроенные темы",
+    "zh-Hans": "内置主题"
+  },
+  "Custom_themes_343cee86": {
+    "en": "Custom themes",
+    "fr": "Thèmes personnalisés",
+    "es": "Temas personalizados",
+    "ru": "Пользовательские темы",
+    "zh-Hans": "自定义主题"
+  },
+  "No_custom_themes_yet_c18c8b4c": {
+    "en": "No custom themes yet.",
+    "fr": "Aucun thème personnalisé.",
+    "es": "Aún no hay temas personalizados.",
+    "ru": "Пользовательских тем пока нет.",
+    "zh-Hans": "尚无自定义主题。"
+  },
+  "Choose_a_theme_or_make_your_own_97f368b3": {
+    "en": "Choose a theme or make your own.",
+    "fr": "Choisissez un thème ou créez le vôtre.",
+    "es": "Elige un tema o crea el tuyo.",
+    "ru": "Выберите тему или создайте свою.",
+    "zh-Hans": "选择主题或创建自己的主题。"
+  },
+  "Change_the_app_s_font_and_text_size_ff9ea553": {
+    "en": "Change the app's font and text size.",
+    "fr": "Modifiez la police et la taille du texte.",
+    "es": "Cambia la fuente y el tamaño del texto.",
+    "ru": "Измените шрифт и размер текста приложения.",
+    "zh-Hans": "更改应用字体和文字大小。"
+  },
+  "Save_your_colors_font_and_text_size_as_a_theme_82b9eeef": {
+    "en": "Save your colors, font, and text size as a theme.",
+    "fr": "Enregistrez vos couleurs, police et taille du texte comme thème.",
+    "es": "Guarda los colores, la fuente y el tamaño del texto como tema.",
+    "ru": "Сохраните цвета, шрифт и размер текста как тему.",
+    "zh-Hans": "将颜色、字体和文字大小保存为主题。"
+  },
+  "Use_generated_gradients_69e174ff": {
+    "en": "Use generated gradients",
+    "fr": "Utiliser les dégradés générés",
+    "es": "Usar degradados generados",
+    "ru": "Использовать создаваемые градиенты",
+    "zh-Hans": "使用自动生成的渐变"
+  },
+  "Hide_icons_db3f620f": {
+    "en": "Hide icons",
+    "fr": "Masquer les icônes",
+    "es": "Ocultar iconos",
+    "ru": "Скрыть значки",
+    "zh-Hans": "隐藏图标"
+  },
+  "Show_icons_without_labels_f9331ebb": {
+    "en": "Show icons without labels",
+    "fr": "Afficher les icônes sans texte",
+    "es": "Mostrar iconos sin etiquetas",
+    "ru": "Показывать значки без подписей",
+    "zh-Hans": "仅显示图标"
+  },
+  "Use_contextual_text_colors_db919c25": {
+    "en": "Use contextual text colors",
+    "fr": "Utiliser les couleurs de texte contextuelles",
+    "es": "Usar colores de texto contextuales",
+    "ru": "Использовать контекстные цвета текста",
+    "zh-Hans": "使用上下文文字颜色"
+  },
+  "Use_category_colors_for_selection_209451de": {
+    "en": "Use category colors for selection",
+    "fr": "Utiliser les couleurs des catégories pour la sélection",
+    "es": "Usar colores de categoría al seleccionar",
+    "ru": "Использовать цвета категорий при выборе",
+    "zh-Hans": "选中时使用分类颜色"
+  },
+  "Reduce_motion_297ef4c7": {
+    "en": "Reduce motion",
+    "fr": "Réduire les animations",
+    "es": "Reducir animaciones",
+    "ru": "Уменьшить анимацию",
+    "zh-Hans": "减少动画"
+  },
+  "Reduce_Motion_159f6410": {
+    "en": "Reduce Motion",
+    "fr": "Réduire les animations",
+    "es": "Reducir animaciones",
+    "ru": "Уменьшить анимацию",
+    "zh-Hans": "减少动画"
+  },
+  "Disable_blur_and_dimming_d13ac759": {
+    "en": "Disable blur and dimming",
+    "fr": "Désactiver le flou et l’assombrissement",
+    "es": "Desactivar desenfoque y oscurecimiento",
+    "ru": "Отключить размытие и затемнение",
+    "zh-Hans": "禁用模糊与变暗效果"
+  },
+  "Disable_Blur_and_Dimming_8b1435e7": {
+    "en": "Disable Blur and Dimming",
+    "fr": "Désactiver le flou et l’assombrissement",
+    "es": "Desactivar desenfoque y oscurecimiento",
+    "ru": "Отключить размытие и затемнение",
+    "zh-Hans": "禁用模糊与变暗效果"
+  },
+  "Paths_and_storage_96b8e09a": {
+    "en": "Paths and storage",
+    "fr": "Chemins et stockage",
+    "es": "Rutas y almacenamiento",
+    "ru": "Пути и хранение",
+    "zh-Hans": "路径与存储"
+  },
+  "Downloads_and_archives_2f9184a5": {
+    "en": "Downloads and archives",
+    "fr": "Téléchargements et archives",
+    "es": "Descargas y archivos",
+    "ru": "Загрузки и архивы",
+    "zh-Hans": "下载与归档"
+  },
+  "Game_launch_5398d056": {
+    "en": "Game launch",
+    "fr": "Lancement du jeu",
+    "es": "Inicio del juego",
+    "ru": "Запуск игры",
+    "zh-Hans": "游戏启动"
+  },
+  "Mod_lists_and_workspace_4574f2ca": {
+    "en": "Mod lists and workspace",
+    "fr": "Listes de mods et espace de travail",
+    "es": "Listas de mods y espacio de trabajo",
+    "ru": "Списки модов и рабочая область",
+    "zh-Hans": "模组列表与工作区"
+  },
+  "Optional_features_b2040f73": {
+    "en": "Optional features",
+    "fr": "Fonctions facultatives",
+    "es": "Funciones opcionales",
+    "ru": "Дополнительные функции",
+    "zh-Hans": "可选功能"
+  },
+  "Online_accounts_453c021c": {
+    "en": "Online accounts",
+    "fr": "Comptes en ligne",
+    "es": "Cuentas en línea",
+    "ru": "Онлайн-аккаунты",
+    "zh-Hans": "在线账户"
+  },
+  "Warnings_0e04cd10": {
+    "en": "Warnings",
+    "fr": "Avertissements",
+    "es": "Advertencias",
+    "ru": "Предупреждения",
+    "zh-Hans": "警告"
+  },
+  "Game_Data_folder_1c58ef7e": {
+    "en": "Game Data folder",
+    "fr": "Dossier Data du jeu",
+    "es": "Carpeta Data del juego",
+    "ru": "Папка Data игры",
+    "zh-Hans": "游戏 Data 文件夹"
+  },
+  "Game_executable_0e8e83f0": {
+    "en": "Game executable",
+    "fr": "Exécutable du jeu",
+    "es": "Ejecutable del juego",
+    "ru": "Исполняемый файл игры",
+    "zh-Hans": "游戏可执行文件"
+  },
+  "Use_DirectX_11_1b854777": {
+    "en": "Use DirectX 11",
+    "fr": "Utiliser DirectX 11",
+    "es": "Usar DirectX 11",
+    "ru": "Использовать DirectX 11",
+    "zh-Hans": "使用 DirectX 11"
+  },
+  "Nexus_Mods_API_key_bab15a0d": {
+    "en": "Nexus Mods API key",
+    "fr": "Clé API Nexus Mods",
+    "es": "Clave API de Nexus Mods",
+    "ru": "Ключ API Nexus Mods",
+    "zh-Hans": "Nexus Mods API 密钥"
+  },
+  "mod_io_API_key_b18c9280": {
+    "en": "mod.io API key",
+    "fr": "Clé API mod.io",
+    "es": "Clave API de mod.io",
+    "ru": "Ключ API mod.io",
+    "zh-Hans": "mod.io API 密钥"
+  },
+  "Disable_online_mod_information_f7e430bd": {
+    "en": "Disable online mod information",
+    "fr": "Désactiver les informations de mods en ligne",
+    "es": "Desactivar información de mods en línea",
+    "ru": "Отключить сведения о модах из сети",
+    "zh-Hans": "禁用在线模组信息"
+  },
+  "Launch_method_c611b5ef": {
+    "en": "Launch method",
+    "fr": "Méthode de lancement",
+    "es": "Método de inicio",
+    "ru": "Способ запуска",
+    "zh-Hans": "启动方式"
+  },
+  "Custom_launch_target_c6b3b9e5": {
+    "en": "Custom launch target",
+    "fr": "Cible de lancement personnalisée",
+    "es": "Destino de inicio personalizado",
+    "ru": "Пользовательский объект запуска",
+    "zh-Hans": "自定义启动目标"
+  },
+  "Custom_launch_arguments_56aa1625": {
+    "en": "Custom launch arguments",
+    "fr": "Arguments de lancement personnalisés",
+    "es": "Argumentos de inicio personalizados",
+    "ru": "Пользовательские параметры запуска",
+    "zh-Hans": "自定义启动参数"
+  },
+  "Load_order_folder_19700ed3": {
+    "en": "Load-order folder",
+    "fr": "Dossier des ordres de chargement",
+    "es": "Carpeta de órdenes de carga",
+    "ru": "Папка порядков загрузки",
+    "zh-Hans": "加载顺序文件夹"
+  },
+  "Add_missing_dependencies_when_exporting_d253a0c0": {
+    "en": "Add missing dependencies when exporting",
+    "fr": "Ajouter les dépendances manquantes à l’exportation",
+    "es": "Añadir dependencias que faltan al exportar",
+    "ru": "Добавлять отсутствующие зависимости при экспорте",
+    "zh-Hans": "导出时添加缺少的前置模组"
+  },
+  "Check_for_updates_automatically_04fd6c4d": {
+    "en": "Check for updates automatically",
+    "fr": "Vérifier les mises à jour automatiquement",
+    "es": "Buscar actualizaciones automáticamente",
+    "ru": "Автоматически проверять обновления",
+    "zh-Hans": "自动检查更新"
+  },
+  "Show_What_s_New_after_updates_dce66124": {
+    "en": "Show What's New after updates",
+    "fr": "Afficher les nouveautés après une mise à jour",
+    "es": "Mostrar novedades tras actualizar",
+    "ru": "Показывать изменения после обновления",
+    "zh-Hans": "更新后显示新增内容"
+  },
+  "BG3_AppData_folder_override_20aaa207": {
+    "en": "BG3 AppData folder override",
+    "fr": "Dossier AppData de BG3 personnalisé",
+    "es": "Carpeta AppData de BG3 personalizada",
+    "ru": "Своя папка AppData для BG3",
+    "zh-Hans": "自定义 BG3 AppData 文件夹"
+  },
+  "Script_Extender_detection_folder_146778d6": {
+    "en": "Script Extender detection folder",
+    "fr": "Dossier de détection de Script Extender",
+    "es": "Carpeta de detección de Script Extender",
+    "ru": "Папка обнаружения Script Extender",
+    "zh-Hans": "Script Extender 检测文件夹"
+  },
+  "Concurrent_Nexus_downloads_55162558": {
+    "en": "Concurrent Nexus downloads",
+    "fr": "Téléchargements Nexus simultanés",
+    "es": "Descargas simultáneas de Nexus",
+    "ru": "Одновременные загрузки Nexus",
+    "zh-Hans": "Nexus 并发下载数"
+  },
+  "Managed_Downloads_folder_84ec2500": {
+    "en": "Managed Downloads folder",
+    "fr": "Dossier des téléchargements gérés",
+    "es": "Carpeta de descargas gestionadas",
+    "ru": "Папка управляемых загрузок",
+    "zh-Hans": "托管下载文件夹"
+  },
+  "Open_Download_Manager_for_Nexus_links_03a0d5bd": {
+    "en": "Open Download Manager for Nexus links",
+    "fr": "Ouvrir le gestionnaire pour les liens Nexus",
+    "es": "Abrir gestor de descargas para enlaces Nexus",
+    "ru": "Открывать менеджер загрузок для ссылок Nexus",
+    "zh-Hans": "打开 Nexus 链接时显示下载管理器"
+  },
+  "Retain_installed_package_archives_bc1fd3ef": {
+    "en": "Retain installed package archives",
+    "fr": "Conserver les archives des paquets installés",
+    "es": "Conservar archivos de paquetes instalados",
+    "ru": "Хранить архивы установленных пакетов",
+    "zh-Hans": "保留已安装包的压缩文件"
+  },
+  "Command_71316697": {
+    "en": "Command",
+    "fr": "Commande",
+    "es": "Comando",
+    "ru": "Команда",
+    "zh-Hans": "命令"
+  },
+  "Shortcut_5753ea37": {
+    "en": "Shortcut",
+    "fr": "Raccourci",
+    "es": "Atajo",
+    "ru": "Сочетание клавиш",
+    "zh-Hans": "快捷键"
+  },
+  "Filter_shortcuts_9066acbf": {
+    "en": "Filter shortcuts",
+    "fr": "Filtrer les raccourcis",
+    "es": "Filtrar atajos",
+    "ru": "Фильтр сочетаний клавиш",
+    "zh-Hans": "筛选快捷键"
+  },
+  "No_matching_shortcuts_95dd64ae": {
+    "en": "No matching shortcuts",
+    "fr": "Aucun raccourci correspondant",
+    "es": "No hay atajos coincidentes",
+    "ru": "Подходящих сочетаний нет",
+    "zh-Hans": "没有匹配的快捷键"
+  },
+  "Try_a_command_name_category_or_key_combination_0c49ea69": {
+    "en": "Try a command name, category, or key combination.",
+    "fr": "Essayez un nom de commande, une catégorie ou une combinaison de touches.",
+    "es": "Prueba un nombre de comando, categoría o combinación de teclas.",
+    "ru": "Введите имя команды, категорию или сочетание клавиш.",
+    "zh-Hans": "尝试输入命令名称、分类或组合键。"
+  },
+  "Reset_Keybinding_3d014798": {
+    "en": "Reset Keybinding",
+    "fr": "Réinitialiser le raccourci",
+    "es": "Restablecer atajo",
+    "ru": "Сбросить сочетание клавиш",
+    "zh-Hans": "重置快捷键"
+  },
+  "Remove_Keybinding_5c7945de": {
+    "en": "Remove Keybinding",
+    "fr": "Supprimer le raccourci",
+    "es": "Quitar atajo",
+    "ru": "Удалить сочетание клавиш",
+    "zh-Hans": "移除快捷键"
+  },
+  "Snapshot_name_b6bd65b1": {
+    "en": "Snapshot name",
+    "fr": "Nom de l’instantané",
+    "es": "Nombre de la instantánea",
+    "ru": "Название снимка",
+    "zh-Hans": "快照名称"
+  },
+  "Include_mods_and_mod_lists_977e357d": {
+    "en": "Include mods and mod lists",
+    "fr": "Inclure les mods et leurs listes",
+    "es": "Incluir mods y listas de mods",
+    "ru": "Включить моды и списки модов",
+    "zh-Hans": "包含模组与模组列表"
+  },
+  "Create_snapshot_and_restart_56d50447": {
+    "en": "Create snapshot and restart",
+    "fr": "Créer un instantané et redémarrer",
+    "es": "Crear instantánea y reiniciar",
+    "ru": "Создать снимок и перезапустить",
+    "zh-Hans": "创建快照并重启"
+  },
+  "Saved_snapshots_77aa62c7": {
+    "en": "Saved snapshots",
+    "fr": "Instantanés enregistrés",
+    "es": "Instantáneas guardadas",
+    "ru": "Сохранённые снимки",
+    "zh-Hans": "已保存的快照"
+  },
+  "Restore_selected_and_restart_4a5e68c1": {
+    "en": "Restore selected and restart",
+    "fr": "Restaurer la sélection et redémarrer",
+    "es": "Restaurar selección y reiniciar",
+    "ru": "Восстановить выбранное и перезапустить",
+    "zh-Hans": "还原所选快照并重启"
+  },
+  "Recover_interrupted_restore_aa4bda46": {
+    "en": "Recover interrupted restore",
+    "fr": "Reprendre la restauration interrompue",
+    "es": "Recuperar restauración interrumpida",
+    "ru": "Восстановить после прерванной операции",
+    "zh-Hans": "恢复中断的还原操作"
+  },
+  "Open_backup_folder_08ad630c": {
+    "en": "Open backup folder",
+    "fr": "Ouvrir le dossier des sauvegardes",
+    "es": "Abrir carpeta de copias",
+    "ru": "Открыть папку резервных копий",
+    "zh-Hans": "打开备份文件夹"
+  },
+  "Open_in_File_Explorer_0b493974": {
+    "en": "Open in File Explorer...",
+    "fr": "Ouvrir dans l’Explorateur...",
+    "es": "Abrir en el Explorador...",
+    "ru": "Открыть в проводнике...",
+    "zh-Hans": "在文件资源管理器中打开..."
+  },
+  "Copy_Path_to_Clipboard_8dedea5d": {
+    "en": "Copy Path to Clipboard",
+    "fr": "Copier le chemin",
+    "es": "Copiar ruta al portapapeles",
+    "ru": "Копировать путь",
+    "zh-Hans": "复制路径到剪贴板"
+  },
+  "Copy_Mod_Path_to_Clipboard_b60debb1": {
+    "en": "Copy Mod Path to Clipboard",
+    "fr": "Copier le chemin du mod",
+    "es": "Copiar ruta del mod",
+    "ru": "Копировать путь мода",
+    "zh-Hans": "复制模组路径"
+  },
+  "Copy_Profile_Path_to_Clipboard_817758ba": {
+    "en": "Copy Profile Path to Clipboard",
+    "fr": "Copier le chemin du profil",
+    "es": "Copiar ruta del perfil",
+    "ru": "Копировать путь профиля",
+    "zh-Hans": "复制配置档案路径"
+  },
+  "Copy_Save_Folder_Path_9ff8a93f": {
+    "en": "Copy Save Folder Path",
+    "fr": "Copier le chemin des sauvegardes",
+    "es": "Copiar ruta de partidas",
+    "ru": "Копировать путь сохранений",
+    "zh-Hans": "复制存档文件夹路径"
+  },
+  "Copy_UUID_08f3e568": {
+    "en": "Copy UUID",
+    "fr": "Copier l’UUID",
+    "es": "Copiar UUID",
+    "ru": "Копировать UUID",
+    "zh-Hans": "复制 UUID"
+  },
+  "Mods_Folder_cf78b8c3": {
+    "en": "Mods Folder",
+    "fr": "Dossier des mods",
+    "es": "Carpeta de mods",
+    "ru": "Папка модов",
+    "zh-Hans": "模组文件夹"
+  },
+  "Game_Folder_10ae9660": {
+    "en": "Game Folder",
+    "fr": "Dossier du jeu",
+    "es": "Carpeta del juego",
+    "ru": "Папка игры",
+    "zh-Hans": "游戏文件夹"
+  },
+  "Save_Games_Folder_392dab10": {
+    "en": "Save Games Folder",
+    "fr": "Dossier des sauvegardes de jeu",
+    "es": "Carpeta de partidas",
+    "ru": "Папка сохранений",
+    "zh-Hans": "游戏存档文件夹"
+  },
+  "Open_Mods_Folder_61300a38": {
+    "en": "Open Mods Folder",
+    "fr": "Ouvrir le dossier des mods",
+    "es": "Abrir carpeta de mods",
+    "ru": "Открыть папку модов",
+    "zh-Hans": "打开模组文件夹"
+  },
+  "Open_Game_Folder_cf089fc0": {
+    "en": "Open Game Folder",
+    "fr": "Ouvrir le dossier du jeu",
+    "es": "Abrir carpeta del juego",
+    "ru": "Открыть папку игры",
+    "zh-Hans": "打开游戏文件夹"
+  },
+  "Open_Game_Folder_e6dcb09b": {
+    "en": "Open Game Folder...",
+    "fr": "Ouvrir le dossier du jeu...",
+    "es": "Abrir carpeta del juego...",
+    "ru": "Открыть папку игры...",
+    "zh-Hans": "打开游戏文件夹..."
+  },
+  "Open_Save_Games_Folder_bc988ab3": {
+    "en": "Open Save Games Folder",
+    "fr": "Ouvrir les sauvegardes de jeu",
+    "es": "Abrir carpeta de partidas",
+    "ru": "Открыть папку сохранений",
+    "zh-Hans": "打开游戏存档文件夹"
+  },
+  "Open_Load_Order_Folder_3436bc29": {
+    "en": "Open Load Order Folder",
+    "fr": "Ouvrir le dossier des ordres",
+    "es": "Abrir carpeta de órdenes",
+    "ru": "Открыть папку порядков загрузки",
+    "zh-Hans": "打开加载顺序文件夹"
+  },
+  "Open_mod_page_1c392e41": {
+    "en": "Open mod page",
+    "fr": "Ouvrir la page du mod",
+    "es": "Abrir página del mod",
+    "ru": "Открыть страницу мода",
+    "zh-Hans": "打开模组页面"
+  },
+  "Linked_mod_pages_245febc2": {
+    "en": "Linked mod pages",
+    "fr": "Pages de mods liées",
+    "es": "Páginas de mods vinculadas",
+    "ru": "Связанные страницы модов",
+    "zh-Hans": "已关联的模组页面"
+  },
+  "Diagnostics_268f14bb": {
+    "en": "Diagnostics",
+    "fr": "Diagnostics",
+    "es": "Diagnóstico",
+    "ru": "Диагностика",
+    "zh-Hans": "诊断"
+  },
+  "Review_recommended_6b75ef46": {
+    "en": "Review recommended",
+    "fr": "Vérification recommandée",
+    "es": "Se recomienda revisar",
+    "ru": "Рекомендуется проверка",
+    "zh-Hans": "建议检查"
+  },
+  "Maintenance_17ccfa5b": {
+    "en": "Maintenance",
+    "fr": "Maintenance",
+    "es": "Mantenimiento",
+    "ru": "Обслуживание",
+    "zh-Hans": "维护"
+  },
+  "Local_caches_671e6dda": {
+    "en": "Local caches",
+    "fr": "Caches locaux",
+    "es": "Cachés locales",
+    "ru": "Локальные кэши",
+    "zh-Hans": "本地缓存"
+  },
+  "Delete_Cache_e7d76ef0": {
+    "en": "Delete Cache",
+    "fr": "Supprimer le cache",
+    "es": "Eliminar caché",
+    "ru": "Удалить кэш",
+    "zh-Hans": "删除缓存"
+  },
+  "Remembered_source_links_08e058fe": {
+    "en": "Remembered source links",
+    "fr": "Liens de source mémorisés",
+    "es": "Enlaces de origen guardados",
+    "ru": "Сохранённые ссылки на источники",
+    "zh-Hans": "已记住的来源链接"
+  },
+  "Clear_Source_Links_cd24cc86": {
+    "en": "Clear Source Links",
+    "fr": "Effacer les liens de source",
+    "es": "Borrar enlaces de origen",
+    "ru": "Очистить ссылки на источники",
+    "zh-Hans": "清除来源链接"
+  },
+  "Restore_Automatic_Links_cdbed448": {
+    "en": "Restore Automatic Links",
+    "fr": "Restaurer les liens automatiques",
+    "es": "Restaurar enlaces automáticos",
+    "ru": "Восстановить автоматические ссылки",
+    "zh-Hans": "恢复自动关联"
+  },
+  "Restore_Automatic_Categories_fc113fd4": {
+    "en": "Restore Automatic Categories",
+    "fr": "Restaurer les catégories automatiques",
+    "es": "Restaurar categorías automáticas",
+    "ru": "Восстановить автоматические категории",
+    "zh-Hans": "恢复自动分类"
+  },
+  "Resolve_Override_Copies_7024b682": {
+    "en": "Resolve Override Copies...",
+    "fr": "Résoudre les copies de remplacement...",
+    "es": "Resolver copias de reemplazo...",
+    "ru": "Разрешить дубликаты Override...",
+    "zh-Hans": "处理覆盖模组副本..."
+  },
+  "Game_Directory_Mod_Manager_7edbec5d": {
+    "en": "Game-Directory Mod Manager...",
+    "fr": "Gérer les mods du dossier du jeu...",
+    "es": "Gestionar mods del directorio del juego...",
+    "ru": "Менеджер модов папки игры...",
+    "zh-Hans": "游戏目录模组管理器..."
+  },
+  "Organize_Active_Load_Order_89383fd4": {
+    "en": "Organize Active Load Order...",
+    "fr": "Organiser l’ordre actif...",
+    "es": "Organizar orden activo...",
+    "ru": "Упорядочить активный список...",
+    "zh-Hans": "整理当前加载顺序..."
+  },
+  "Select_Version_6ae46849": {
+    "en": "Select Version",
+    "fr": "Choisir la version",
+    "es": "Elegir versión",
+    "ru": "Выбрать версию",
+    "zh-Hans": "选择版本"
+  },
+  "Updater_764fe17a": {
+    "en": "Updater",
+    "fr": "Programme de mise à jour",
+    "es": "Actualizador",
+    "ru": "Средство обновления",
+    "zh-Hans": "更新程序"
+  },
+  "Extender_settings_f464c9ec": {
+    "en": "Extender settings",
+    "fr": "Paramètres de Script Extender",
+    "es": "Ajustes de Script Extender",
+    "ru": "Настройки Script Extender",
+    "zh-Hans": "Script Extender 设置"
+  },
+  "Extender_updater_7c62ffba": {
+    "en": "Extender updater",
+    "fr": "Mise à jour de Script Extender",
+    "es": "Actualizador de Script Extender",
+    "ru": "Обновление Script Extender",
+    "zh-Hans": "Script Extender 更新程序"
+  },
+  "Core_behavior_2d3947d3": {
+    "en": "Core behavior",
+    "fr": "Fonctionnement principal",
+    "es": "Funcionamiento principal",
+    "ru": "Основное поведение",
+    "zh-Hans": "基本行为"
+  },
+  "Advanced_tools_514cc538": {
+    "en": "Advanced tools",
+    "fr": "Outils avancés",
+    "es": "Herramientas avanzadas",
+    "ru": "Дополнительные инструменты",
+    "zh-Hans": "高级工具"
+  },
+  "After_Launch_22687dff": {
+    "en": "After Launch",
+    "fr": "Après le lancement",
+    "es": "Después de iniciar",
+    "ru": "После запуска",
+    "zh-Hans": "启动后"
+  },
+  "Launch_behavior_c30b958e": {
+    "en": "Launch behavior",
+    "fr": "Comportement au lancement",
+    "es": "Comportamiento al iniciar",
+    "ru": "Поведение при запуске",
+    "zh-Hans": "启动行为"
+  },
+  "Add_parameter_f4e0c4d7": {
+    "en": "Add parameter",
+    "fr": "Ajouter un paramètre",
+    "es": "Añadir parámetro",
+    "ru": "Добавить параметр",
+    "zh-Hans": "添加参数"
+  },
+  "Category_292c06f0": {
+    "en": "Category",
+    "fr": "Catégorie",
+    "es": "Categoría",
+    "ru": "Категория",
+    "zh-Hans": "类别"
+  },
+  "Last_Updated_048c7f2e": {
+    "en": "Last Updated",
+    "fr": "Dernière mise à jour",
+    "es": "Última actualización",
+    "ru": "Последнее обновление",
+    "zh-Hans": "最后更新"
+  },
+  "File_Name_ca4c37cb": {
+    "en": "File Name",
+    "fr": "Nom du fichier",
+    "es": "Nombre del archivo",
+    "ru": "Имя файла",
+    "zh-Hans": "文件名"
+  },
+  "Last_Modified_59387921": {
+    "en": "Last Modified",
+    "fr": "Dernière modification",
+    "es": "Última modificación",
+    "ru": "Последнее изменение",
+    "zh-Hans": "最后修改"
+  },
+  "Source_0e570ca6": {
+    "en": "Source",
+    "fr": "Source",
+    "es": "Origen",
+    "ru": "Источник",
+    "zh-Hans": "来源"
+  },
+  "Debug_Information_358aeacc": {
+    "en": "Debug Information...",
+    "fr": "Informations de débogage...",
+    "es": "Información de depuración...",
+    "ru": "Отладочная информация...",
+    "zh-Hans": "调试信息..."
+  },
+  "Inspect_Mod_Package_7543b594": {
+    "en": "Inspect Mod Package...",
+    "fr": "Inspecter un paquet de mod...",
+    "es": "Inspeccionar paquete de mod...",
+    "ru": "Проверить пакет мода...",
+    "zh-Hans": "检查模组包..."
+  },
+  "Generate_Redux_Database_Contribution_577595a9": {
+    "en": "Generate Redux Database Contribution...",
+    "fr": "Contribuer à la base de données Redux...",
+    "es": "Contribuir a la base de datos de Redux...",
+    "ru": "Подготовить данные для базы Redux...",
+    "zh-Hans": "为 Redux 数据库提供数据..."
+  },
+  "Welcome_Setup_5b7eb9eb": {
+    "en": "Welcome Setup...",
+    "fr": "Configuration initiale...",
+    "es": "Configuración inicial...",
+    "ru": "Начальная настройка...",
+    "zh-Hans": "初始设置..."
+  },
+  "Report_a_Bug_cc6673f6": {
+    "en": "Report a Bug...",
+    "fr": "Signaler un bug...",
+    "es": "Informar de un error...",
+    "ru": "Сообщить об ошибке...",
+    "zh-Hans": "报告问题..."
+  },
+  "Join_the_Redux_Discord_4596b511": {
+    "en": "Join the Redux Discord...",
+    "fr": "Rejoindre le Discord Redux...",
+    "es": "Unirse al Discord de Redux...",
+    "ru": "Присоединиться к Discord Redux...",
+    "zh-Hans": "加入 Redux Discord..."
+  },
+  "Credits_Attribution_d65f67eb": {
+    "en": "Credits & Attribution",
+    "fr": "Crédits et attributions",
+    "es": "Créditos y atribuciones",
+    "ru": "Авторы и благодарности",
+    "zh-Hans": "制作人员与鸣谢"
+  },
+  "Support_circleain_on_Ko_fi_0dc7dcce": {
+    "en": "Support circleain on Ko-fi",
+    "fr": "Soutenir circleain sur Ko-fi",
+    "es": "Apoyar a circleain en Ko-fi",
+    "ru": "Поддержать circleain на Ko-fi",
+    "zh-Hans": "在 Ko-fi 上支持 circleain"
+  },
+  "Keyboard_Shortcuts_59cdaa26": {
+    "en": "Keyboard Shortcuts",
+    "fr": "Raccourcis clavier",
+    "es": "Atajos de teclado",
+    "ru": "Сочетания клавиш",
+    "zh-Hans": "键盘快捷键"
+  },
+  "Default_21b111cb": {
+    "en": "Default",
+    "fr": "Par défaut",
+    "es": "Predeterminado",
+    "ru": "По умолчанию",
+    "zh-Hans": "默认"
+  },
+  "Switches_on_restart_The_current_folder_s_queue_and_files_sta_eb0db0a1": {
+    "en": "Switches on restart. The current folder's queue and files stay where they are.",
+    "fr": "Prend effet au redémarrage. La file d’attente et les fichiers du dossier actuel restent en place.",
+    "es": "Se aplica al reiniciar. La cola y los archivos de la carpeta actual permanecen donde están.",
+    "ru": "Применяется после перезапуска. Очередь и файлы текущей папки останутся на месте.",
+    "zh-Hans": "重启后生效。当前文件夹中的队列和文件将保留在原位置。"
+  }
+}

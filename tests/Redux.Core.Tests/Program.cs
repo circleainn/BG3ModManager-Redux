@@ -17,6 +17,7 @@ internal static class Program
 		_ = Application.Current ?? new Application();
 
 		var dialogLayout = new DialogLayoutTests();
+		var languages = new InterfaceLanguageTests();
 		var separatorLayout = new SeparatorLayoutTests();
 		var collections = new NexusCollectionPreviewTests();
 		var saveReview = new SaveModReviewTests();
@@ -118,6 +119,10 @@ internal static class Program
 		var overrideDuplicateDialog = new OverrideDuplicateDialogTests();
 		var tests = new (string Name, Action Run)[]
 		{
+			(nameof(languages.LanguagesPersistWithoutChangingCultureOrUserData), languages.LanguagesPersistWithoutChangingCultureOrUserData),
+			(nameof(languages.TranslatedColumnsAndMenusKeepTheirOriginalIdentities), languages.TranslatedColumnsAndMenusKeepTheirOriginalIdentities),
+			(nameof(languages.LanguageSelectorAndTypographyRemainIndependent), languages.LanguageSelectorAndTypographyRemainIndependent),
+			(nameof(languages.LanguagesRenderWithBuiltInCustomAndMissingFonts), languages.LanguagesRenderWithBuiltInCustomAndMissingFonts),
 			(nameof(overrideDuplicates.CompletedBackupsDoNotBlockChangedFolderTargets), overrideDuplicates.CompletedBackupsDoNotBlockChangedFolderTargets),
 			(nameof(overrideDuplicateDialog.CancelWithAnOccupiedRollbackTargetKeepsTheRecoveryErrorAvailable), overrideDuplicateDialog.CancelWithAnOccupiedRollbackTargetKeepsTheRecoveryErrorAvailable),
 			(nameof(overrideDuplicateDialog.RecoveryReviewRequiresExplicitChoicesAndKeepsActionsReachableInEveryTheme), overrideDuplicateDialog.RecoveryReviewRequiresExplicitChoicesAndKeepsActionsReachableInEveryTheme),

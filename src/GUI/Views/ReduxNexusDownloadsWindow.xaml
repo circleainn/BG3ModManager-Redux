@@ -1,5 +1,6 @@
 ﻿<adonisUI:AdonisWindow x:Class="DivinityModManager.Views.ReduxNexusDownloadsWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:adonis="clr-namespace:AdonisUI;assembly=AdonisUI"
@@ -7,7 +8,7 @@
 	xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
 	xmlns:util="clr-namespace:DivinityModManager.Util"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Download Manager" Width="940" Height="700" MinWidth="760" MinHeight="540"
+	Title="{loc:Text Download_Manager_160a4d63}" Width="940" Height="700" MinWidth="760" MinHeight="540"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	FontWeight="{DynamicResource Redux.FontWeight.Body}" ResizeMode="CanResize" ShowInTaskbar="False"
 	WindowStartupLocation="CenterOwner" WindowStyle="SingleBorderWindow"
@@ -230,7 +231,7 @@
 								<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" StrokeData="{StaticResource Redux.Icon.Trash}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" /><TextBlock Text="{Binding RemoveActionText}" /></StackPanel>
 							</Button>
 							<Button Tag="{Binding}" Style="{StaticResource ClearDownloadHistoryButton}" Click="RemoveButton_Click">
-								<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" StrokeData="{StaticResource Redux.Icon.Close}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" /><TextBlock Text="Clear" /></StackPanel>
+								<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,5,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" StrokeData="{StaticResource Redux.Icon.Close}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" /><TextBlock Text="{loc:Text Clear_83b12c22}" /></StackPanel>
 							</Button>
 						</WrapPanel>
 					</Grid>
@@ -326,7 +327,7 @@
 								<CheckBox Grid.Column="1" Margin="14,0,2,0" VerticalAlignment="Center"
 									IsChecked="{Binding Settings.RetainInstalledPackageArchives, Mode=TwoWay}"
 									Click="ArchiveRetentionCheckBox_Click" Style="{StaticResource ReduxCheckBoxStyle}"
-									Content="Retain installed package archives"
+									Content="{loc:Text Retain_installed_package_archives_bc1fd3ef}"
 									ToolTip="Keep verified install packages in the deduplicated archive library. Configure its storage limit in Preferences." />
 							</Grid>
 <Button x:Name="PreviousVersionsButton" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" Click="PreviousVersions_Click" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
@@ -334,11 +335,11 @@
                     </Button>
 <Button x:Name="DownloadsCloseButton" Grid.Row="1" Grid.Column="1" MinWidth="84" IsCancel="True"
 						Click="CloseButton_Click" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Close}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" /><TextBlock Text="Close" /></StackPanel>
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="13" Height="13" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Close}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" /><TextBlock Text="{loc:Text Close_7d9eb7ac}" /></StackPanel>
 					</Button>
 				</Grid>
 				<StackPanel DockPanel.Dock="Top">
-					<TextBlock Style="{StaticResource ReduxWindowHeadingStyle}" Text="Download Manager" />
+					<TextBlock Style="{StaticResource ReduxWindowHeadingStyle}" Text="{loc:Text Download_Manager_160a4d63}" />
 					<TextBlock Margin="0,5,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap"
 						Text="Download and review NXM or local packages before installing." />
 				</StackPanel>

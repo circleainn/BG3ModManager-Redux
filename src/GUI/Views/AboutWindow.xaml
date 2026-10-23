@@ -1,5 +1,6 @@
 <local:AboutWindowBase x:Class="DivinityModManager.Views.AboutWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:app="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
 	xmlns:c="clr-namespace:DivinityModManager.Controls"
@@ -159,7 +160,7 @@
 							</Grid.RowDefinitions>
 							<TextBlock Style="{StaticResource AboutLabelStyle}" Text="Upstream" />
 							<c:HyperlinkText Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Original BG3 Mod Manager" URL="{x:Static app:DivinityApp.URL_REPO}" />
-							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="Author" />
+							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="{loc:Text Author_d95082a2}" />
 							<c:HyperlinkText Grid.Row="1" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="LaughingLeader" URL="{x:Static app:DivinityApp.URL_AUTHOR}" />
 							<TextBlock Grid.Row="2" Style="{StaticResource AboutLabelStyle}" Text="Support" />
 							<c:HyperlinkText Grid.Row="2" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Support on Ko-fi" URL="{x:Static app:DivinityApp.URL_DONATION}" />

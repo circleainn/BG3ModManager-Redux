@@ -1,5 +1,6 @@
 ﻿<local:MainViewControlViewBase x:Class="DivinityModManager.Views.MainViewControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
     xmlns:adonisUI="clr-namespace:AdonisUI;assembly=AdonisUI"
@@ -308,7 +309,7 @@
 										VerticalAlignment="Center"
 										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 										StrokeData="{StaticResource Redux.Icon.CircleCheck}" />
-									<TextBlock VerticalAlignment="Center" Text="Activate" />
+									<TextBlock VerticalAlignment="Center" Text="{loc:Text Activate_24433c70}" />
 								</StackPanel>
 							</Button>
 							<Button Margin="0,0,6,0"
@@ -340,7 +341,7 @@
 										VerticalAlignment="Center"
 										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 										StrokeData="{StaticResource Redux.Icon.Copy}" />
-									<TextBlock VerticalAlignment="Center" Text="Copy UUID" />
+									<TextBlock VerticalAlignment="Center" Text="{loc:Text Copy_UUID_08f3e568}" />
 								</StackPanel>
 							</Button>
 							<Button Click="ToolbarDiagnosticAffectedSource_Click"
@@ -355,7 +356,7 @@
 										VerticalAlignment="Center"
 										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 										StrokeData="{StaticResource Redux.Icon.LinkStroke}" />
-									<TextBlock VerticalAlignment="Center" Text="Open mod page" />
+									<TextBlock VerticalAlignment="Center" Text="{loc:Text Open_mod_page_1c392e41}" />
 								</StackPanel>
 							</Button>
 						</WrapPanel>
@@ -395,7 +396,7 @@
 												<TextBlock x:Name="DiagnosticMenuTitle"
 												Foreground="{DynamicResource ReduxWarningBrush}"
 													Style="{StaticResource ReduxStatusCardTitleStyle}"
-													Text="Review recommended" />
+													Text="{loc:Text Review_recommended_6b75ef46}" />
 												<TextBlock x:Name="DiagnosticMenuSubtitle" Style="{StaticResource ReduxStatusCardSubtitleStyle}"
 													Text="{Binding PlacementTarget.DataContext.ActiveDiagnosticSummaryText, RelativeSource={RelativeSource TemplatedParent}}" />
 											</StackPanel>
@@ -416,7 +417,7 @@
 											<StackPanel Orientation="Horizontal">
 												<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center"
 													StrokeData="{StaticResource Redux.Icon.SearchAlert}" />
-												<TextBlock VerticalAlignment="Center" Text="Check Mod Updates" />
+												<TextBlock VerticalAlignment="Center" Text="{loc:Text Check_Mod_Updates_134afdc0}" />
 											</StackPanel>
 										</Button>
 									</Grid>
@@ -592,17 +593,17 @@
 						<Menu.Resources>
 							<Style BasedOn="{StaticResource ReduxMenuItemStyle}" TargetType="{x:Type MenuItem}" />
 						</Menu.Resources>
-						<MenuItem x:Name="FileMenuItem" Header="File" />
-						<MenuItem x:Name="EditMenuItem" Header="Edit" />
-						<MenuItem x:Name="SettingsMenuItem" Header="Settings" />
-						<MenuItem x:Name="AccessibilityMenuItem" Header="Accessibility" />
-						<MenuItem x:Name="ToolsMenuItem" Header="Tools" Style="{StaticResource ReduxMenuItemStyle}">
-							<MenuItem Command="{Binding ResolveOverrideDuplicatesCommand}" Header="Resolve Override Copies..."
+						<MenuItem x:Name="FileMenuItem" Tag="File" Header="{loc:Text File_50009ce1}" />
+						<MenuItem x:Name="EditMenuItem" Tag="Edit" Header="{loc:Text Edit_464c4ffd}" />
+						<MenuItem x:Name="SettingsMenuItem" Tag="Settings" Header="{loc:Text Settings_74a883a0}" />
+						<MenuItem x:Name="AccessibilityMenuItem" Tag="Accessibility" Header="{loc:Text Accessibility_d3368cbf}" />
+						<MenuItem x:Name="ToolsMenuItem" Tag="Tools" Header="{loc:Text Tools_ea93d6a2}" Style="{StaticResource ReduxMenuItemStyle}">
+							<MenuItem Command="{Binding ResolveOverrideDuplicatesCommand}" Header="{loc:Text Resolve_Override_Copies_7024b682}"
 								ToolTip="Compare conflicting packages in Mods and Redux's holding folder, then retain backups of the displaced copies.">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 							</MenuItem>
 							<MenuItem Command="{Binding Keys.OpenCommandPalette.Command}"
-								Header="Quick Access..."
+								Header="{loc:Text Quick_Access_c549b798}"
 								InputGestureText="{Binding Keys.OpenCommandPalette.MenuDisplayBindingText}"
 								ToolTip="Find an action, mod, profile, order, or category.">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Flash}" /></MenuItem.Icon>
@@ -610,24 +611,24 @@
 							<Separator />
 						</MenuItem>
 						<!-- A compact command surface remains available whenever the visual toolbar is hidden. -->
-						<MenuItem x:Name="ToolbarFallbackMenuItem" Header="Toolbar" Visibility="Collapsed">
+						<MenuItem x:Name="ToolbarFallbackMenuItem" Tag="Toolbar" Header="{loc:Text Toolbar_451aa51a}" Visibility="Collapsed">
 							<MenuItem Header="Mods &amp; Campaign">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Blocks}" /></MenuItem.Icon>
-								<MenuItem Command="{Binding Keys.ImportMod.Command}" Header="Install Mod..." InputGestureText="{Binding Keys.ImportMod.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.ImportMod.Command}" Header="{loc:Text Install_Mod_9fe4bbfa}" InputGestureText="{Binding Keys.ImportMod.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.AddCircle}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.OpenModsFolder.Command}" Header="Mods Folder" InputGestureText="{Binding Keys.OpenModsFolder.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.OpenModsFolder.Command}" Header="{loc:Text Mods_Folder_cf78b8c3}" InputGestureText="{Binding Keys.OpenModsFolder.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.OpenGameDirectoryModManager.Command}" Header="Game-Directory Mod Manager..." InputGestureText="{Binding Keys.OpenGameDirectoryModManager.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.OpenGameDirectoryModManager.Command}" Header="{loc:Text Game_Directory_Mod_Manager_7edbec5d}" InputGestureText="{Binding Keys.OpenGameDirectoryModManager.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Blocks}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.OpenNexusDownloads.Command}" Header="Download Manager" InputGestureText="{Binding Keys.OpenNexusDownloads.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.OpenNexusDownloads.Command}" Header="{loc:Text Download_Manager_160a4d63}" InputGestureText="{Binding Keys.OpenNexusDownloads.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Download}" /></MenuItem.Icon>
 								</MenuItem>
 								<Separator />
 								<MenuItem x:Name="ToolbarProfileMenu"
-									Header="Profile"
+									Header="{loc:Text Profile_d696a35b}"
 									DisplayMemberPath="Name"
 									ItemsSource="{Binding Profiles}"
 									SubmenuOpened="ToolbarProfileMenu_SubmenuOpened">
@@ -640,7 +641,7 @@
 									</MenuItem.ItemContainerStyle>
 								</MenuItem>
 								<MenuItem x:Name="ToolbarCampaignMenu"
-									Header="Campaign"
+									Header="{loc:Text Campaign_268286d2}"
 									DisplayMemberPath="DisplayName"
 									ItemsSource="{Binding AdventureMods}"
 									SubmenuOpened="ToolbarCampaignMenu_SubmenuOpened">
@@ -653,10 +654,10 @@
 									</MenuItem.ItemContainerStyle>
 								</MenuItem>
 							</MenuItem>
-							<MenuItem Header="Load Order">
+							<MenuItem Header="{loc:Text Load_Order_ddb8bbce}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.ListStroke}" /></MenuItem.Icon>
 								<MenuItem x:Name="ToolbarLoadOrderMenu"
-									Header="Load Orders"
+									Header="{loc:Text Load_Orders_65edab8e}"
 									DisplayMemberPath="Name"
 									ItemsSource="{Binding ModOrderList}"
 									SubmenuOpened="ToolbarLoadOrderMenu_SubmenuOpened">
@@ -669,55 +670,55 @@
 									</MenuItem.ItemContainerStyle>
 								</MenuItem>
 								<Separator />
-								<MenuItem Command="{Binding Keys.Save.Command}" Header="Save Current Order" InputGestureText="{Binding Keys.Save.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.Save.Command}" Header="{loc:Text Save_Current_Order_5600ab21}" InputGestureText="{Binding Keys.Save.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Save}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.SaveAs.Command}" Header="Save Load Order to File..." InputGestureText="{Binding Keys.SaveAs.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.SaveAs.Command}" Header="{loc:Text Save_Load_Order_to_File_e922a8e4}" InputGestureText="{Binding Keys.SaveAs.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Duplicate}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.NewOrder.Command}" Header="Create Blank Load Order" InputGestureText="{Binding Keys.NewOrder.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.NewOrder.Command}" Header="{loc:Text Create_Blank_Load_Order_19d53aa7}" InputGestureText="{Binding Keys.NewOrder.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.RenameOrder.Command}" Header="Rename Load Order..." InputGestureText="{Binding Keys.RenameOrder.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.RenameOrder.Command}" Header="{loc:Text Rename_Load_Order_c2d40f9d}" InputGestureText="{Binding Keys.RenameOrder.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Create}" /></MenuItem.Icon>
 								</MenuItem>
 								<Separator />
-								<MenuItem Command="{Binding Keys.ImportOrderFromFile.Command}" Header="Import Load Order from File..." InputGestureText="{Binding Keys.ImportOrderFromFile.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.ImportOrderFromFile.Command}" Header="{loc:Text Import_Load_Order_from_File_f87d3cc0}" InputGestureText="{Binding Keys.ImportOrderFromFile.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.ImportReduxLoadOrder.Command}" Header="Import Redux Modlist..." InputGestureText="{Binding Keys.ImportReduxLoadOrder.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.ImportReduxLoadOrder.Command}" Header="{loc:Text Import_Redux_Modlist_1f3c23d6}" InputGestureText="{Binding Keys.ImportReduxLoadOrder.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Download}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.ExportReduxLoadOrder.Command}" Header="Export Redux Modlist..." InputGestureText="{Binding Keys.ExportReduxLoadOrder.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.ExportReduxLoadOrder.Command}" Header="{loc:Text Export_Redux_Modlist_ec4c111a}" InputGestureText="{Binding Keys.ExportReduxLoadOrder.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.CloudUpload}" /></MenuItem.Icon>
 								</MenuItem>
 								<MenuItem Command="{Binding Keys.OrganizeLoadOrder.Command}"
-									Header="Organize Active Load Order..."
+									Header="{loc:Text Organize_Active_Load_Order_89383fd4}"
 									InputGestureText="{Binding Keys.OrganizeLoadOrder.MenuDisplayBindingText}"
 									Visibility="{Binding Modules.LoadOrderGuidanceEnabled, Converter={StaticResource BoolToVisibilityConverter}}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.ReorderStroke}" /></MenuItem.Icon>
 								</MenuItem>
 								<Separator />
-								<MenuItem Command="{Binding OpenLoadOrderFolderCommand}" Header="Open Load Order Folder">
+								<MenuItem Command="{Binding OpenLoadOrderFolderCommand}" Header="{loc:Text Open_Load_Order_Folder_3436bc29}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 								</MenuItem>
 								<Separator />
-								<MenuItem Command="{Binding DeleteOrderCommand}" CommandParameter="{Binding SelectedModOrder}" Header="Delete Selected Order">
+								<MenuItem Command="{Binding DeleteOrderCommand}" CommandParameter="{Binding SelectedModOrder}" Header="{loc:Text Delete_Selected_Order_97fee10f}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
 								</MenuItem>
 							</MenuItem>
-							<MenuItem Header="Export">
+							<MenuItem Header="{loc:Text Export_36648955}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.CloudUpload}" /></MenuItem.Icon>
-								<MenuItem Command="{Binding Keys.ExportOrderToGame.Command}" Header="Sync Load Order to Game" InputGestureText="{Binding Keys.ExportOrderToGame.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.ExportOrderToGame.Command}" Header="{loc:Text Sync_Load_Order_to_Game_411c684b}" InputGestureText="{Binding Keys.ExportOrderToGame.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.CloudUpload}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.ExportOrderToZip.Command}" Header="Back Up Active Mods to ZIP..." InputGestureText="{Binding Keys.ExportOrderToZip.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.ExportOrderToZip.Command}" Header="{loc:Text Back_Up_Active_Mods_to_ZIP_f62e8530}" InputGestureText="{Binding Keys.ExportOrderToZip.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Archive}" /></MenuItem.Icon>
 								</MenuItem>
 							</MenuItem>
-							<MenuItem Header="Saves">
+							<MenuItem Header="{loc:Text Saves_98971626}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Save}" /></MenuItem.Icon>
-								<MenuItem Header="Save Game Manager..." Command="{Binding Keys.OpenSaveGameManager.Command}" InputGestureText="{Binding Keys.OpenSaveGameManager.MenuDisplayBindingText}">
+								<MenuItem Header="{loc:Text Save_Game_Manager_016c8bd7}" Command="{Binding Keys.OpenSaveGameManager.Command}" InputGestureText="{Binding Keys.OpenSaveGameManager.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Save}" /></MenuItem.Icon>
 								</MenuItem>
 								<MenuItem Header="Install Save..." Click="ImportSaveGameButton_Click">
@@ -727,26 +728,26 @@
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 								</MenuItem>
 								<Separator />
-								<MenuItem Header="Open Save Games Folder" Command="{Binding Keys.OpenSaveGamesFolder.Command}" InputGestureText="{Binding Keys.OpenSaveGamesFolder.MenuDisplayBindingText}">
+								<MenuItem Header="{loc:Text Open_Save_Games_Folder_bc988ab3}" Command="{Binding Keys.OpenSaveGamesFolder.Command}" InputGestureText="{Binding Keys.OpenSaveGamesFolder.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Header="Copy Save Folder Path" Click="CopySaveGamesFolderPath_Click">
+								<MenuItem Header="{loc:Text Copy_Save_Folder_Path_9ff8a93f}" Click="CopySaveGamesFolderPath_Click">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
 								</MenuItem>
 							</MenuItem>
-							<MenuItem Header="Actions">
+							<MenuItem Header="{loc:Text Actions_ff8059dc}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Flash}" /></MenuItem.Icon>
-								<MenuItem Command="{Binding Keys.UndoLoadOrderChange.Command}" Header="Undo Last Action" InputGestureText="{Binding Keys.UndoLoadOrderChange.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.UndoLoadOrderChange.Command}" Header="{loc:Text Undo_Last_Action_01229263}" InputGestureText="{Binding Keys.UndoLoadOrderChange.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Undo}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.RedoLoadOrderChange.Command}" Header="Redo Last Action" InputGestureText="{Binding Keys.RedoLoadOrderChange.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.RedoLoadOrderChange.Command}" Header="{loc:Text Redo_Last_Action_66c29c85}" InputGestureText="{Binding Keys.RedoLoadOrderChange.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Redo}" /></MenuItem.Icon>
 								</MenuItem>
 								<Separator />
-								<MenuItem Command="{Binding Keys.Refresh.Command}" Header="Refresh Mods" InputGestureText="{Binding Keys.Refresh.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.Refresh.Command}" Header="{loc:Text Refresh_Mods_4e111c72}" InputGestureText="{Binding Keys.Refresh.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.RefreshModUpdates.Command}" Header="Check Mod Updates" ToolTip="Refresh linked sources. Known Nexus file replacements appear as a small dot beside the mod name." InputGestureText="{Binding Keys.RefreshModUpdates.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.RefreshModUpdates.Command}" Header="{loc:Text Check_Mod_Updates_134afdc0}" ToolTip="Refresh linked sources. Known Nexus file replacements appear as a small dot beside the mod name." InputGestureText="{Binding Keys.RefreshModUpdates.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
 								</MenuItem>
 								<MenuItem Command="{Binding Keys.OpenLogsFolder.Command}" Header="Extender Logs Folder" InputGestureText="{Binding Keys.OpenLogsFolder.MenuDisplayBindingText}">
@@ -756,7 +757,7 @@
 							<MenuItem Header="Baldur's Gate 3">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.GameController}" /></MenuItem.Icon>
 								<MenuItem x:Name="ToolbarAfterLaunchMenu"
-									Header="After Launch"
+									Header="{loc:Text After_Launch_22687dff}"
 									DisplayMemberPath="Description"
 									ItemsSource="{Binding Source={ext:EnumExtension {x:Type dapp:DivinityGameLaunchWindowAction}}}"
 									SubmenuOpened="ToolbarAfterLaunchMenu_SubmenuOpened">
@@ -769,26 +770,26 @@
 										</Style>
 									</MenuItem.ItemContainerStyle>
 								</MenuItem>
-								<MenuItem Command="{Binding Keys.LaunchGame.Command}" Header="Launch Game" InputGestureText="{Binding Keys.LaunchGame.MenuDisplayBindingText}">
+								<MenuItem Command="{Binding Keys.LaunchGame.Command}" Header="{loc:Text Launch_Game_ec155f2e}" InputGestureText="{Binding Keys.LaunchGame.MenuDisplayBindingText}">
 									<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.GameController}" /></MenuItem.Icon>
 								</MenuItem>
 							</MenuItem>
 							<Separator />
-							<MenuItem Command="{Binding Keys.ToggleToolbar.Command}" Header="Show Toolbar" InputGestureText="{Binding Keys.ToggleToolbar.MenuDisplayBindingText}">
+							<MenuItem Command="{Binding Keys.ToggleToolbar.Command}" Header="{loc:Text Show_Toolbar_63a8fef5}" InputGestureText="{Binding Keys.ToggleToolbar.MenuDisplayBindingText}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Desktop}" /></MenuItem.Icon>
 							</MenuItem>
 						</MenuItem>
-						<MenuItem x:Name="QuickLinksMenuItem" Header="Quick Links">
-							<MenuItem Command="{Binding Keys.OpenModsFolder.Command}" Header="Mods Folder" InputGestureText="{Binding Keys.OpenModsFolder.MenuDisplayBindingText}">
+						<MenuItem x:Name="QuickLinksMenuItem" Tag="Quick Links" Header="{loc:Text Quick_Links_62b34994}">
+							<MenuItem Command="{Binding Keys.OpenModsFolder.Command}" Header="{loc:Text Mods_Folder_cf78b8c3}" InputGestureText="{Binding Keys.OpenModsFolder.MenuDisplayBindingText}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 							</MenuItem>
-							<MenuItem Command="{Binding Keys.OpenGameFolder.Command}" Header="Game Folder" InputGestureText="{Binding Keys.OpenGameFolder.MenuDisplayBindingText}">
+							<MenuItem Command="{Binding Keys.OpenGameFolder.Command}" Header="{loc:Text Game_Folder_10ae9660}" InputGestureText="{Binding Keys.OpenGameFolder.MenuDisplayBindingText}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.GameController}" /></MenuItem.Icon>
 							</MenuItem>
 							<MenuItem Command="{Binding Keys.OpenLogsFolder.Command}" Header="Extender Logs Folder" InputGestureText="{Binding Keys.OpenLogsFolder.MenuDisplayBindingText}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
 							</MenuItem>
-							<MenuItem Header="Save Games Folder" Command="{Binding Keys.OpenSaveGamesFolder.Command}" InputGestureText="{Binding Keys.OpenSaveGamesFolder.MenuDisplayBindingText}">
+							<MenuItem Header="{loc:Text Save_Games_Folder_392dab10}" Command="{Binding Keys.OpenSaveGamesFolder.Command}" InputGestureText="{Binding Keys.OpenSaveGamesFolder.MenuDisplayBindingText}">
 								<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 							</MenuItem>
 							<Separator />
@@ -813,7 +814,7 @@
 								<MenuItem.Icon><ContentControl ContentTemplate="{DynamicResource GithubPlatformIconTemplate}" /></MenuItem.Icon>
 							</MenuItem>
 						</MenuItem>
-						<MenuItem x:Name="HelpMenuItem" Header="Help" />
+						<MenuItem x:Name="HelpMenuItem" Tag="Help" Header="{loc:Text Help_b79cac92}" />
 					</Menu>
 					<StackPanel Grid.Column="1"
 						Margin="3,0,6,0"
@@ -898,7 +899,7 @@
 									    HorizontalAlignment="Center"
 									    VerticalAlignment="Center"
 									    Foreground="{DynamicResource {x:Static adonisUI:Brushes.ForegroundBrush}}"
-									    Text="Updates:"
+									    Text="{loc:Text Updates_f14f7563}"
 									    TextAlignment="Center" />
 									<controls:BusyIndicator x:Name="UpdatesToggleButtonBusyIndicator"
 									    Grid.Column="1"
@@ -1306,17 +1307,17 @@
 										ToolTip="{Binding Keys.ImportMod.CommandToolTip}">
 										<StackPanel Orientation="Horizontal">
 											<controls:ReduxIcon VerticalAlignment="Center" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.AddCircle}" Style="{StaticResource ToolbarWorkflowIconStyle}" />
-											<TextBlock Text="Install Mod" />
+											<TextBlock Text="{loc:Text Install_Mod_f2d64bcc}" />
 										</StackPanel>
 									</Button>
 									<Border x:Name="ToolbarManagerShortcutCluster" Margin="0,0,7,0"
 										Style="{StaticResource ToolbarActionClusterStyle}">
 										<StackPanel Orientation="Horizontal">
-											<Button x:Name="OpenModsFolderButton" AutomationProperties.Name="Open Mods Folder" Style="{StaticResource ToolbarUtilityButtonStyle}" ToolTip="{Binding Keys.OpenModsFolder.CommandToolTip}">
+											<Button x:Name="OpenModsFolderButton" AutomationProperties.Name="{loc:Text Open_Mods_Folder_61300a38}" Style="{StaticResource ToolbarUtilityButtonStyle}" ToolTip="{Binding Keys.OpenModsFolder.CommandToolTip}">
 												<controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.FolderOpen}" />
 												<Button.ContextMenu>
 													<ContextMenu>
-														<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding PathwayData.AppDataModsPath}" Header="Copy Path to Clipboard">
+														<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding PathwayData.AppDataModsPath}" Header="{loc:Text Copy_Path_to_Clipboard_8dedea5d}">
 															<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
 														</MenuItem>
 													</ContextMenu>
@@ -1349,7 +1350,7 @@
 												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.Folder}" Header="Open Profile Folder in File Explorer...">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 												</MenuItem>
-												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedProfile.Folder}" Header="Copy Profile Path to Clipboard">
+												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedProfile.Folder}" Header="{loc:Text Copy_Profile_Path_to_Clipboard_817758ba}">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
 												</MenuItem>
 											</ContextMenu>
@@ -1367,7 +1368,7 @@
 												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="Open Adventure Mod in File Explorer...">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 												</MenuItem>
-												<MenuItem Command="{Binding Path=CopyToClipboardCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="Copy Mod Path to Clipboard">
+												<MenuItem Command="{Binding Path=CopyToClipboardCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding FilePath}" Header="{loc:Text Copy_Mod_Path_to_Clipboard_b60debb1}">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
 												</MenuItem>
 											</ContextMenu>
@@ -1390,7 +1391,7 @@
 									<ColumnDefinition Width="*" />
 									<ColumnDefinition Width="Auto" />
 								</Grid.ColumnDefinitions>
-								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Load Order" />
+								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="{loc:Text Load_Order_ddb8bbce}" />
 								<Rectangle x:Name="ToolbarOrderUtilityDivider" Grid.RowSpan="2" Grid.Column="1"
 									Width="1" Margin="10,3,0,0" HorizontalAlignment="Left"
 									Fill="{DynamicResource ReduxBorderBrush}" Opacity="0.7" />
@@ -1398,12 +1399,12 @@
 									Margin="22,0,0,3"
 									HorizontalAlignment="Left"
 									Style="{StaticResource ToolbarGroupLabelStyle}"
-									Text="Actions" />
+									Text="{loc:Text Actions_ff8059dc}" />
 								<TextBlock Grid.Column="2"
 									Margin="0,0,0,3"
 									HorizontalAlignment="Right"
 									Style="{StaticResource ToolbarGroupLabelStyle}"
-									Text="Status" />
+									Text="{loc:Text Status_920e413c}" />
 								<StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Orientation="Horizontal">
 									<controls:ReduxIcon Margin="0,0,4,0" StrokeData="{StaticResource Redux.Icon.Layers}" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" />
 									<ComboBox x:Name="OrdersComboBox"
@@ -1424,18 +1425,18 @@
 										</ComboBox.ItemContainerStyle>
 										<ComboBox.ContextMenu>
 											<ContextMenu DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=PlacementTarget.Tag}">
-											<MenuItem Command="{Binding Keys.RenameOrder.Command}" Header="Rename Load Order...">
+											<MenuItem Command="{Binding Keys.RenameOrder.Command}" Header="{loc:Text Rename_Load_Order_c2d40f9d}">
 												<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Create}" /></MenuItem.Icon>
 											</MenuItem>
 												<Separator />
-												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedModOrder.FilePath}" Header="Open in File Explorer...">
+												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedModOrder.FilePath}" Header="{loc:Text Open_in_File_Explorer_0b493974}">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 												</MenuItem>
-												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedModOrder.FilePath}" Header="Copy Path to Clipboard">
+												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedModOrder.FilePath}" Header="{loc:Text Copy_Path_to_Clipboard_8dedea5d}">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
 												</MenuItem>
 												<Separator />
-												<MenuItem Command="{Binding DeleteOrderCommand}" CommandParameter="{Binding SelectedModOrder}" Header="Delete Order">
+												<MenuItem Command="{Binding DeleteOrderCommand}" CommandParameter="{Binding SelectedModOrder}" Header="{loc:Text Delete_Order_76c4aed6}">
 													<MenuItem.Icon><controls:ReduxIcon StrokeData="{StaticResource Redux.Icon.Trash}" Foreground="{DynamicResource ReduxErrorBrush}" /></MenuItem.Icon>
 												</MenuItem>
 											</ContextMenu>
@@ -1497,39 +1498,39 @@
 										<controls:ReduxIcon VerticalAlignment="Center" Data="{StaticResource Redux.Icon.MoreHorizontal}" />
 									<Button.ContextMenu>
 										<ContextMenu Placement="Bottom">
-											<MenuItem Command="{Binding Keys.SaveAs.Command}" Header="Save Load Order to File...">
+											<MenuItem Command="{Binding Keys.SaveAs.Command}" Header="{loc:Text Save_Load_Order_to_File_e922a8e4}">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Duplicate}" /></MenuItem.Icon>
 											</MenuItem>
-											<MenuItem Command="{Binding Keys.NewOrder.Command}" Header="Create Blank Load Order">
+											<MenuItem Command="{Binding Keys.NewOrder.Command}" Header="{loc:Text Create_Blank_Load_Order_19d53aa7}">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
 											</MenuItem>
-											<MenuItem Command="{Binding Keys.RenameOrder.Command}" Header="Rename Load Order...">
+											<MenuItem Command="{Binding Keys.RenameOrder.Command}" Header="{loc:Text Rename_Load_Order_c2d40f9d}">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Create}" /></MenuItem.Icon>
 											</MenuItem>
 											<Separator />
-											<MenuItem Command="{Binding CopyOrderToClipboardCommand}" Header="Copy Order to Clipboard">
+											<MenuItem Command="{Binding CopyOrderToClipboardCommand}" Header="{loc:Text Copy_Order_to_Clipboard_69531667}">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Clipboard}" /></MenuItem.Icon>
 											</MenuItem>
-											<MenuItem Command="{Binding Keys.ExportOrderToList.Command}" Header="Export Detailed Mod List..."
+											<MenuItem Command="{Binding Keys.ExportOrderToList.Command}" Header="{loc:Text Export_Detailed_Mod_List_2d4314da}"
 												ToolTip="Save filenames, authors, dependencies, source links, and Override mods as TSV, text, or JSON.">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.DocumentText}" /></MenuItem.Icon>
 											</MenuItem>
 											<Separator />
-											<MenuItem Command="{Binding Keys.ImportOrderFromFile.Command}" Header="Import Load Order from File...">
+											<MenuItem Command="{Binding Keys.ImportOrderFromFile.Command}" Header="{loc:Text Import_Load_Order_from_File_f87d3cc0}">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 											</MenuItem>
-											<MenuItem Command="{Binding Keys.ImportReduxLoadOrder.Command}" Header="Import Redux Modlist...">
+											<MenuItem Command="{Binding Keys.ImportReduxLoadOrder.Command}" Header="{loc:Text Import_Redux_Modlist_1f3c23d6}">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Download}" /></MenuItem.Icon>
 											</MenuItem>
-											<MenuItem Command="{Binding Keys.ExportReduxLoadOrder.Command}" Header="Export Redux Modlist...">
+											<MenuItem Command="{Binding Keys.ExportReduxLoadOrder.Command}" Header="{loc:Text Export_Redux_Modlist_ec4c111a}">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.CloudUpload}" /></MenuItem.Icon>
 											</MenuItem>
 											<Separator />
-											<MenuItem Command="{Binding Keys.ExportOrderToZip.Command}" Header="Back Up Active Mods to ZIP..." InputGestureText="{Binding Keys.ExportOrderToZip.MenuDisplayBindingText}">
+											<MenuItem Command="{Binding Keys.ExportOrderToZip.Command}" Header="{loc:Text Back_Up_Active_Mods_to_ZIP_f62e8530}" InputGestureText="{Binding Keys.ExportOrderToZip.MenuDisplayBindingText}">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Archive}" /></MenuItem.Icon>
 											</MenuItem>
 											<Separator />
-											<MenuItem Command="{Binding OpenLoadOrderFolderCommand}" Header="Open Load Order Folder">
+											<MenuItem Command="{Binding OpenLoadOrderFolderCommand}" Header="{loc:Text Open_Load_Order_Folder_3436bc29}">
 												<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 											</MenuItem>
 										</ContextMenu>
@@ -1584,10 +1585,10 @@
 												<MenuItem Command="{Binding Path=OpenFileCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="Open Game Load Order File...">
 													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Open}" /></MenuItem.Icon>
 												</MenuItem>
-												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="Open in File Explorer...">
+												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="{loc:Text Open_in_File_Explorer_0b493974}">
 													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 												</MenuItem>
-												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="Copy Path to Clipboard">
+												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding SelectedProfile.ModSettingsFile}" Header="{loc:Text Copy_Path_to_Clipboard_8dedea5d}">
 													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
 												</MenuItem>
 											</ContextMenu>
@@ -1617,7 +1618,7 @@
 										<controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.DocumentText}" />
 										<Button.ContextMenu>
 											<ContextMenu>
-												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding Settings.ExtenderLogDirectory}" Header="Copy Path to Clipboard">
+												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding Settings.ExtenderLogDirectory}" Header="{loc:Text Copy_Path_to_Clipboard_8dedea5d}">
 													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
 												</MenuItem>
 											</ContextMenu>
@@ -1661,7 +1662,7 @@
 									<RowDefinition Height="Auto" />
 									<RowDefinition Height="Auto" />
 								</Grid.RowDefinitions>
-								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="Saves" />
+								<TextBlock Style="{StaticResource ToolbarGroupLabelStyle}" Text="{loc:Text Saves_98971626}" />
 								<StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
 									<Button Click="SaveGameManagerButton_Click"
 										AutomationProperties.Name="Open Save Game Manager"
@@ -1669,7 +1670,7 @@
 										ToolTip="Browse, install, and remove saves for the selected profile">
 										<StackPanel Orientation="Horizontal">
 											<controls:ReduxIcon VerticalAlignment="Center" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Save}" Style="{StaticResource ToolbarWorkflowIconStyle}" />
-											<TextBlock Text="Manage" />
+											<TextBlock Text="{loc:Text Manage_5a234448}" />
 										</StackPanel>
 									</Button>
 									<Border x:Name="ToolbarSaveUtilityCluster" Margin="6,0,0,0"
@@ -1699,7 +1700,7 @@
 													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 												</MenuItem>
 												<Separator />
-												<MenuItem Header="Copy Save Folder Path" Click="CopySaveGamesFolderPath_Click">
+												<MenuItem Header="{loc:Text Copy_Save_Folder_Path_9ff8a93f}" Click="CopySaveGamesFolderPath_Click">
 													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
 												</MenuItem>
 											</ContextMenu>
@@ -1726,14 +1727,14 @@
 										ToolTip="{Binding Keys.LaunchGame.CommandToolTip}">
 										<StackPanel Orientation="Horizontal">
 											<controls:ReduxIcon VerticalAlignment="Center" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.GameController}" Style="{StaticResource ToolbarWorkflowIconStyle}" />
-											<TextBlock Text="Launch Game" />
+											<TextBlock Text="{loc:Text Launch_Game_ec155f2e}" />
 										</StackPanel>
 										<Button.ContextMenu>
 											<ContextMenu>
-												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding Settings.GameExecutablePath}" Header="Open Game Folder...">
+												<MenuItem Command="{Binding Path=OpenInFileExplorerCommand, Source={x:Static dapp:DivinityApp.Commands}}" CommandParameter="{Binding Settings.GameExecutablePath}" Header="{loc:Text Open_Game_Folder_e6dcb09b}">
 													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /></MenuItem.Icon>
 												</MenuItem>
-												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding Settings.GameExecutablePath}" Header="Copy Path to Clipboard">
+												<MenuItem Command="{Binding CopyPathToClipboardCommand}" CommandParameter="{Binding Settings.GameExecutablePath}" Header="{loc:Text Copy_Path_to_Clipboard_8dedea5d}">
 													<MenuItem.Icon><controls:ReduxIcon VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.Copy}" /></MenuItem.Icon>
 												</MenuItem>
 											</ContextMenu>

@@ -1,5 +1,6 @@
 ﻿<adonisUI:AdonisWindow x:Class="DivinityModManager.Views.ReduxSaveManagerWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
@@ -199,7 +200,7 @@
 						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="15" Height="15" Margin="0,0,7,0" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.FolderOpen}" /><TextBlock Text="Saves Folder" /></StackPanel>
 					</Button>
 					<Button Margin="{DynamicResource Redux.Manager.ActionMargin}" AutomationProperties.Name="Refresh saves" Click="RefreshButton_Click" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="15" Height="15" Margin="0,0,7,0" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /><TextBlock Text="Refresh" /></StackPanel>
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="15" Height="15" Margin="0,0,7,0" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /><TextBlock Text="{loc:Text Refresh_0e916101}" /></StackPanel>
 					</Button>
 
                     <Button x:Name="ReviewModsButton" IsEnabled="False" Margin="{DynamicResource Redux.Manager.ActionMargin}" Click="ReviewModsButton_Click" AutomationProperties.Name="Review mods for selected save" Style="{StaticResource ReduxMinorActionButtonStyle}">
@@ -351,10 +352,10 @@
 					<TextBlock x:Name="ProfilePathText" VerticalAlignment="Center" Foreground="{DynamicResource ReduxTextMutedBrush}" TextTrimming="CharacterEllipsis" />
 					<Button x:Name="DeleteButton" Grid.Column="1" MinWidth="88" Margin="8,0" IsEnabled="False"
 						AutomationProperties.Name="Delete selected saves" Click="DeleteButton_Click" Style="{StaticResource ReduxMinorDestructiveActionButtonStyle}">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Trash}" /><TextBlock Text="Delete" /></StackPanel>
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Trash}" /><TextBlock Text="{loc:Text Delete_e2d0a549}" /></StackPanel>
 					</Button>
 					<Button Grid.Column="2" MinWidth="88" IsCancel="True" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Close}" /><TextBlock Text="Close" /></StackPanel>
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Close}" /><TextBlock Text="{loc:Text Close_7d9eb7ac}" /></StackPanel>
 					</Button>
 				</Grid>
 			</Grid>

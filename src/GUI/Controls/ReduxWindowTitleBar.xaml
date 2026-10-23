@@ -1,5 +1,6 @@
 ﻿<UserControl x:Class="DivinityModManager.Controls.ReduxWindowTitleBar"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
 	xmlns:local="clr-namespace:DivinityModManager.Controls"
@@ -145,7 +146,7 @@
 						Click="CloseButton_Click"
 						shell:WindowChrome.IsHitTestVisibleInChrome="True"
 						Style="{StaticResource ReduxCaptionButtonStyle}"
-						ToolTip="Close">
+						ToolTip="{loc:Text Close_7d9eb7ac}">
 						<local:ReduxIcon Width="13"
 							Height="13"
 							StrokeData="{DynamicResource Redux.Icon.Close}" />

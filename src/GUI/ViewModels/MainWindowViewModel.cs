@@ -2442,6 +2442,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private void InitSettingsBindings()
 	{
+		Settings.WhenAnyValue(x => x.InterfaceLanguage)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(language => DivinityModManager.Localization.ReduxLanguageService.Current.SetLanguage(language));
 		DivinityApp.DependencyFilter = Settings.WhenAnyValue(x => x.DebugModeEnabled).Select(MakeDependencyFilter);
 
 		var canOpenGameExe = Settings.WhenAnyValue(x => x.GameExecutablePath, x => x.FileExists());
@@ -2867,6 +2870,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Window.ToggleLogging(true);
 		}
 
+		Settings.InterfaceLanguage = DivinityModManager.Localization.ReduxLanguageService.NormalizeLanguage(Settings.InterfaceLanguage);
+		DivinityModManager.Localization.ReduxLanguageService.Current.SetLanguage(Settings.InterfaceLanguage);
 		SetGamePathways(Settings.GameDataPath, Settings.DocumentsFolderPathOverride);
 
 		if (loaded)

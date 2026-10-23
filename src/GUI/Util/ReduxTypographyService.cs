@@ -152,7 +152,9 @@ public static class ReduxTypographyService
 
 	private static ResourceDictionary FindResourceOwner(ResourceDictionary resources, string key)
 	{
-		if (resources.Contains(key)) return resources;
+		// Contains also searches merged dictionaries. Update the actual owner so
+		// existing DynamicResource subscribers see font and size changes immediately.
+		if (resources.Keys.Cast<object>().Contains(key)) return resources;
 		for (var index = resources.MergedDictionaries.Count - 1; index >= 0; index--)
 		{
 			var owner = FindResourceOwner(resources.MergedDictionaries[index], key);

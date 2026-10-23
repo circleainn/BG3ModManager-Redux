@@ -1,5 +1,6 @@
 ﻿using DivinityModManager.Controls;
 using DivinityModManager.Models;
+using DivinityModManager.Localization;
 using DivinityModManager.AppServices;
 using DivinityModManager.Models.App;
 using DivinityModManager.Models.Extender;
@@ -83,6 +84,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	}
 	private static readonly SettingsGroup[] GeneralSettingsGroups =
 	[
+		new("Language", "Choose the language used by Redux's interface.", nameof(DivinityModManagerSettings.InterfaceLanguage)),
 		new("Paths and storage",
 			"Choose where Redux finds the game, profiles, and saved load orders.",
 			nameof(DivinityModManagerSettings.GameExecutablePath),
@@ -628,12 +630,14 @@ public partial class SettingsWindow : SettingsWindowBase
 					HorizontalAlignment = HorizontalAlignment.Stretch,
 					Margin = new Thickness(0)
 				};
-				heading.Children.Add(new TextBlock
+				var groupTitle = new TextBlock
 				{
 					Text = currentGroupTitle,
 					Style = FindResource("SettingsSubsectionTitleStyle") as Style
-				});
-				heading.ToolTip = group.Description;
+				};
+				LocalizationBindings.Set(groupTitle, TextBlock.TextProperty, currentGroupTitle);
+				heading.Children.Add(groupTitle);
+				LocalizationBindings.Set(heading, ToolTipService.ToolTipProperty, group.Description);
 				targetGrid.Children.Add(heading);
 				Grid.SetRow(heading, row++);
 				Grid.SetColumnSpan(heading, 2);
@@ -658,6 +662,27 @@ public partial class SettingsWindow : SettingsWindowBase
 			if (prop.Attribute.IsDebug)
 			{
 				tb.SetBinding(TextBlock.VisibilityProperty, debugModeBinding);
+			}
+
+			if (source is DivinityModManagerSettings && prop.Property.Name == nameof(DivinityModManagerSettings.InterfaceLanguage))
+			{
+				var languages = new ComboBox
+				{
+					Name = "InterfaceLanguageComboBox", ItemsSource = ReduxLanguageService.Languages,
+					DisplayMemberPath = nameof(InterfaceLanguageChoice.NativeName),
+					SelectedValuePath = nameof(InterfaceLanguageChoice.Code),
+					HorizontalAlignment = HorizontalAlignment.Stretch,
+					MinWidth = 160, VerticalContentAlignment = VerticalAlignment.Center
+				};
+				languages.SetBinding(ComboBox.SelectedValueProperty, new Binding(prop.Property.Name)
+				{
+					Source = source, Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+				});
+				targetGrid.Children.Add(languages);
+				Grid.SetRow(languages, targetRow);
+				Grid.SetColumn(languages, 1);
+				createdObject = languages;
+				goto SetTooltip;
 			}
 
 			if (prop.Property.PropertyType.IsEnum)
@@ -766,6 +791,8 @@ public partial class SettingsWindow : SettingsWindowBase
 							Margin = new Thickness(6, 0, 0, 0),
 							Style = FindResource("ReduxSecondaryActionButtonStyle") as Style
 						};
+						LocalizationBindings.Set(browseButton, Button.ContentProperty, "Browse…");
+						LocalizationBindings.Set(resetButton, Button.ContentProperty, "Default");
 						locationRow.Children.Add(locationText);
 						locationRow.Children.Add(browseButton);
 						locationRow.Children.Add(resetButton);
@@ -778,6 +805,7 @@ public partial class SettingsWindow : SettingsWindowBase
 							TextWrapping = TextWrapping.Wrap,
 							Margin = new Thickness(0, 4, 0, 0)
 						};
+						LocalizationBindings.Set(locationHint, TextBlock.TextProperty, "Switches on restart. The current folder's queue and files stay where they are.");
 						locationHint.SetResourceReference(TextBlock.ForegroundProperty, "ReduxTextMutedBrush");
 						locationHint.SetResourceReference(TextBlock.FontSizeProperty, "Redux.FontSize.11");
 						locationPanel.Children.Add(locationHint);
@@ -964,10 +992,11 @@ public partial class SettingsWindow : SettingsWindowBase
 			}
 
 			SetTooltip:
+			LocalizationBindings.Set(tb, TextBlock.TextProperty, prop.Attribute.DisplayName);
 			if (createdObject != null)
 			{
-				System.Windows.Automation.AutomationProperties.SetName(createdObject, prop.Attribute.DisplayName);
-				System.Windows.Automation.AutomationProperties.SetHelpText(createdObject, tooltip ?? String.Empty);
+				LocalizationBindings.Set(createdObject, System.Windows.Automation.AutomationProperties.NameProperty, prop.Attribute.DisplayName);
+				LocalizationBindings.Set(createdObject, System.Windows.Automation.AutomationProperties.HelpTextProperty, tooltip ?? String.Empty);
 				tb.SetResourceReference(TextBlock.FontSizeProperty, "Redux.FontSize.12");
 				if (createdObject is Control control)
 				{
@@ -981,8 +1010,8 @@ public partial class SettingsWindow : SettingsWindowBase
 			}
 			if (createdObject != null && !string.IsNullOrWhiteSpace(tooltip))
 			{
-				ToolTipService.SetToolTip(tb, tooltip);
-				ToolTipService.SetToolTip(createdObject, tooltip);
+				LocalizationBindings.Set(tb, ToolTipService.ToolTipProperty, tooltip);
+				LocalizationBindings.Set(createdObject, ToolTipService.ToolTipProperty, tooltip);
 			}
 		}
 	}

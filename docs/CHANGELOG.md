@@ -3,6 +3,11 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
+## Unreleased
+
+- Add **Preferences > General > Interface language** with English, French, Spanish, Russian, and Simplified Chinese. Preview changes immediately and use Save to keep the selection. This first translation pass covers navigation, mod panes, common actions, and Preferences; remaining text falls back to English. Mod content, paths, and load orders keep their original text.
+- Keep language selection independent of built-in and custom fonts, themes, and text size. Preserve stable menu and column identifiers for command styling, sorting, and saved layouts.
+
 ## 0.1.0-alpha.16.6.1 — 2026-10-22
 
 - Add **Skip this update** to linked Nexus mods in Active, Inactive, and Override. Remember the specific installed file and offered replacements across restart; later replacement files can still notify. Use **Show skipped updates** in the same menu to restore notifications. Failed saves preserve the previous choice.
