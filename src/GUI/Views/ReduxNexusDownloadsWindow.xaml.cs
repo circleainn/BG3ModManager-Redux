@@ -19,6 +19,7 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 	public ReduxNexusDownloadsWindow()
 	{
 		InitializeComponent();
+		PropertyChangedEventManager.AddHandler(DivinityModManager.Localization.ReduxLanguageService.Current, InterfaceLanguageChanged, "Language");
         ReduxExternalDropFeedback.Attach(this, paths => paths.All(MainWindowViewModel.IsSupportedDownloadManagerInput), "Drop to add packages", "Redux.Icon.Package", "Review and install in Download Manager.");
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
 		ReduxWindowBehavior.AttachRoundedCorners(this);
@@ -49,6 +50,13 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 			foreach (var item in viewModel.NxmDownloads) item.PropertyChanged -= Download_PropertyChanged;
 			viewModel.PropertyChanged -= ViewModel_PropertyChanged;
 		};
+		UpdateEmptyState();
+		UpdateAssociationButton();
+	}
+
+	private void InterfaceLanguageChanged(object sender, PropertyChangedEventArgs e)
+	{
+		if (_viewModel == null) return;
 		UpdateEmptyState();
 		UpdateAssociationButton();
 	}
@@ -91,14 +99,14 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 		var installedCount = downloads.Count(item => item.IsInstalledHistory);
 		var hasPending = pendingCount > 0;
 		var hasInstalled = installedCount > 0;
-		PackageCountText.Text = $"{pendingCount} in Downloads · {installedCount} installed · {_viewModel.RetainedPackageArchives.Count} retained archives";
+		PackageCountText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{pendingCount} in Downloads · {installedCount} installed · {_viewModel.RetainedPackageArchives.Count} retained archives");
 		EmptyText.Visibility = hasPending ? Visibility.Collapsed : Visibility.Visible;
 		InstalledEmptyText.Visibility = hasInstalled ? Visibility.Collapsed : Visibility.Visible;
 		ArchivesEmptyText.Visibility = _viewModel.RetainedPackageArchives.Count > 0 ? Visibility.Collapsed : Visibility.Visible;
 		ClearInstalledButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && hasInstalled;
         DeleteAllButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && hasPending;
 		ClearArchivesButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && _viewModel.RetainedPackageArchives.Count > 0;
-		OpenFolderText.Text = "Open Folder";
+		OpenFolderText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Open Folder");
 		InstallAllButton.Visibility = DownloadsTabs.SelectedIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
 		InstallAllButton.IsEnabled = !_viewModel.DownloadManagerInstallIsActive && downloads.Any(item =>
 			item.State is NxmDownloadState.Downloaded or NxmDownloadState.NeedsReview or NxmDownloadState.InstallFailed);
@@ -109,7 +117,7 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 		var isWine = ReduxRuntimeEnvironment.IsWine;
 		AssociationText.Text = NxmAssociationPresentation.GetStatusText(status, isWine);
 		AssociationCheckBox.Content = NxmAssociationPresentation.GetToggleLabel(isWine);
-		AssociationScopeText.Text = isWine ? NxmAssociationPresentation.WineScopeNote : String.Empty;
+		AssociationScopeText.Text = isWine ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate(NxmAssociationPresentation.WineScopeNote) : String.Empty;
 		AssociationScopeText.Visibility = isWine ? Visibility.Visible : Visibility.Collapsed;
         AssociationCheckBox.IsChecked = status.Status == NxmAssociationStatus.Owned;
         AssociationCheckBox.IsEnabled = status.Success;
@@ -146,7 +154,7 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Add Packages to Download Manager",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Add Packages to Download Manager"),
 			Filter = "Supported packages|*.pak;*.lsv;*.zip;*.7z;*.7zip;*.rar;*.tar;*.gz;*.gzip;*.tgz|All files|*.*",
 			Multiselect = true,
 			CheckFileExists = true

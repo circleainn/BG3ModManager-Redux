@@ -67,20 +67,20 @@ public partial class ReduxInstallReviewWindow : AdonisUI.Controls.AdonisWindow
 		var isBatchInstall = kind == ReduxInstallReviewKind.Batch;
 		var noun = isSaveInstall ? "save" : isGameDirectoryInstall ? "change" : isBatchInstall ? "package" : "mod";
 		var count = items?.Count ?? 0;
-		Title = resultsOnly ? "Install All Results"
-			: isSaveInstall ? "Install Saves" : isGameDirectoryInstall ? "Review Game-Directory Changes"
-			: isBatchInstall ? "Install All Packages" : "Install Mods";
-		HeadingText.Text = resultsOnly ? "Install All complete"
-			: isSaveInstall ? "Install saves?" : isGameDirectoryInstall ? "Apply these game-directory changes?"
-			: isBatchInstall ? "Install all ready packages?" : "Install mods?";
+		Title = resultsOnly ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install All Results")
+			: isSaveInstall ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install Saves") : isGameDirectoryInstall ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Review Game-Directory Changes")
+			: isBatchInstall ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install All Packages") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install Mods");
+		HeadingText.Text = resultsOnly ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install All complete")
+			: isSaveInstall ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install saves?") : isGameDirectoryInstall ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Apply these game-directory changes?")
+			: isBatchInstall ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install all ready packages?") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install mods?");
 		DescriptionText.Text = resultsOnly
-			? "Review what Redux installed, skipped, or could not finish. Failed and skipped packages remain in the inbox."
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Review what Redux installed, skipped, or could not finish. Failed and skipped packages remain in the inbox.")
 			: isSaveInstall
-			? "Review what Save Game Manager found before anything is copied into the selected profile."
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Review what Save Game Manager found before anything is copied into the selected profile.")
 			: isGameDirectoryInstall
-				? "Review every destination carefully. Native DLLs run inside Baldur's Gate 3 and should only be installed from sources you trust."
+				? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Review every destination carefully. Native DLLs run inside Baldur's Gate 3 and should only be installed from sources you trust.")
 				: isBatchInstall
-					? "Redux will route each package to its reviewed destination without activating, reordering, or syncing mods."
+					? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Redux will route each package to its reviewed destination without activating, reordering, or syncing mods.")
 					: $"Review what Redux found before anything is installed into {destination}.";
 		SummaryIcon.IconKey = resultsOnly ? "circle-check" : isSaveInstall ? "book-open" : isGameDirectoryInstall ? "blocks" : "package";
 		SummaryText.Text = resultsOnly ? $"{count} package result{(count == 1 ? String.Empty : "s")}"
@@ -88,16 +88,16 @@ public partial class ReduxInstallReviewWindow : AdonisUI.Controls.AdonisWindow
 		SummaryDetailText.Text = summaryDetail;
 		ReviewList.ItemsSource = items ?? [];
 		FootnoteText.Text = resultsOnly
-			? "Installed packages remain inactive. Review your load order before syncing it to the game."
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Installed packages remain inactive. Review your load order before syncing it to the game.")
 			: isSaveInstall
-			? "Existing saves require a separate replacement confirmation."
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Existing saves require a separate replacement confirmation.")
 			: isGameDirectoryInstall
-				? "Redux rechecks the archive, prerequisites, destinations, and ownership record immediately before applying anything."
+				? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Redux rechecks the archive, prerequisites, destinations, and ownership record immediately before applying anything.")
 				: isBatchInstall
-					? "Packages install one at a time. One failure will not stop independent packages."
-					: "Packages are validated again during installation.";
-		InstallButtonText.Text = resultsOnly ? "Close" : isSaveInstall ? "Install Saves"
-			: isGameDirectoryInstall ? "Apply Changes" : isBatchInstall ? "Install All" : "Install Mods";
+					? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Packages install one at a time. One failure will not stop independent packages.")
+					: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Packages are validated again during installation.");
+		InstallButtonText.Text = resultsOnly ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Close") : isSaveInstall ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install Saves")
+			: isGameDirectoryInstall ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Apply Changes") : isBatchInstall ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install All") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install Mods");
 		SkipCleanReviewCheckBox.Visibility = canSkipCleanReview && kind == ReduxInstallReviewKind.Mods
 			? Visibility.Visible : Visibility.Collapsed;
 		CancelButton.Visibility = resultsOnly ? Visibility.Collapsed : Visibility.Visible;

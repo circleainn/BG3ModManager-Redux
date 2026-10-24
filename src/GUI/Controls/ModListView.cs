@@ -417,7 +417,7 @@ public class ModListView : ListView
 				{
 					//Capture user-resizing of the name column to disable auto-resizing
 					var nameColumn = grid.Columns.FirstOrDefault(column => column.Header as string == "Name"
-                        || column.Header is TextBlock text && text.Text == "Name");
+                        || column.Header is TextBlock text && DivinityModManager.Localization.LocalizationBindings.SourceText(text, TextBlock.TextProperty, text.Text) == "Name");
 					if (nameColumn != null)
 					{
 						pd.AddValueChanged(nameColumn, NameColumnWidthChanged);

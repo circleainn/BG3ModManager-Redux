@@ -83,23 +83,23 @@ public partial class ReduxPackagePreflightWindow : AdonisUI.Controls.AdonisWindo
 		}
 		catch (OperationCanceledException)
 		{
-			StatusTitleText.Text = "Inspection cancelled";
-			StatusDescriptionText.Text = "The package was not changed.";
+			StatusTitleText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Inspection cancelled");
+			StatusDescriptionText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("The package was not changed.");
 			FindingSummaryText.Text = String.Empty;
 			SetStatus("ReduxTextMutedBrush", "Redux.Icon.CloseCircle");
 		}
 		catch (Exception ex)
 		{
 			DivinityApp.Log($"Package preflight failed:\n{ex}");
-			StatusTitleText.Text = "Package could not be inspected";
-			StatusDescriptionText.Text = "See the Redux log for details.";
-			FindingSummaryText.Text = "Inspection failed";
+			StatusTitleText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Package could not be inspected");
+			StatusDescriptionText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("See the Redux log for details.");
+			FindingSummaryText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Inspection failed");
 			SetStatus("ReduxErrorBrush", "Redux.Icon.CloseCircle");
 		}
 		finally
 		{
 			_active = false;
-			ScanActionButtonText.Text = "Close";
+			ScanActionButtonText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Close");
 			ScanActionButton.IsEnabled = true;
 		}
 	}
@@ -343,7 +343,7 @@ public partial class ReduxPackagePreflightWindow : AdonisUI.Controls.AdonisWindo
 		if (_active)
 		{
 			ScanActionButton.IsEnabled = false;
-			StatusDescriptionText.Text = "Cancelling inspection...";
+			StatusDescriptionText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Cancelling inspection...");
 			_cancellation.Cancel();
 			return;
 		}

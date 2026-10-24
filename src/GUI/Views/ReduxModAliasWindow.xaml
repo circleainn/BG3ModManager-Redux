@@ -1,10 +1,11 @@
 <adonisUI:AdonisWindow x:Class="DivinityModManager.Views.ReduxModAliasWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Mod Alias"
+	Title="{loc:Text Mod_Alias_a0aa23a8}"
 	Width="540" MinWidth="440" MaxWidth="700"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontSize="{DynamicResource Redux.FontSize.12}"
@@ -41,7 +42,7 @@
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
-				<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="Custom mod name" />
+				<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="{loc:Text Custom_mod_name_b2e32023}" />
 				<StackPanel Grid.Row="1" Margin="0,5,0,0">
 					<TextBlock x:Name="OriginalNameText" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 						TextWrapping="Wrap" />
@@ -60,7 +61,7 @@
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
 						<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}"
-							Text="Saved locally and used in lists and search. Original package metadata stays unchanged."
+							Text="{loc:Text Saved_locally_and_used_in_lists_and_search_Original_package__38f67405}"
 							TextWrapping="Wrap" />
 						<TextBlock x:Name="CharacterCountText" Grid.Column="1" Margin="12,0,0,0"
 							Foreground="{DynamicResource ReduxTextMutedBrush}" />
@@ -72,14 +73,14 @@
 						<StackPanel Orientation="Horizontal">
 							<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center"
 								Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Trash}" />
-							<TextBlock Text="Clear" />
+							<TextBlock Text="{loc:Text Clear_83b12c22}" />
 						</StackPanel>
 					</Button>
 					<Button MinWidth="80" Margin="8,0,0,0" Style="{StaticResource ReduxSecondaryActionButtonStyle}" IsCancel="True">
 						<StackPanel Orientation="Horizontal">
 							<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center"
 								Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Close}" />
-							<TextBlock Text="Cancel" />
+							<TextBlock Text="{loc:Text Cancel_19766ed6}" />
 						</StackPanel>
 					</Button>
 					<Button MinWidth="80" Margin="8,0,0,0" Style="{StaticResource ReduxPrimaryActionButtonStyle}"
@@ -88,7 +89,7 @@
 							<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center"
 								Foreground="{DynamicResource ReduxAccentForegroundBrush}"
 								Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Save}" />
-							<TextBlock Text="Save" />
+							<TextBlock Text="{loc:Text Save_1509f561}" />
 						</StackPanel>
 					</Button>
 				</StackPanel>

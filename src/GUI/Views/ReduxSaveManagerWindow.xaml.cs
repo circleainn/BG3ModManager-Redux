@@ -216,7 +216,7 @@ public partial class ReduxSaveManagerWindow : AdonisUI.Controls.AdonisWindow
     private void ExportSaves(IReadOnlyList<Bg3SaveGameEntry> saves)
     {
         if (_isImporting || _isReadingSave || saves.Count == 0) return;
-        var chooser = new Microsoft.Win32.SaveFileDialog { Title = "Export Saves", Filter = "ZIP archive (*.zip)|*.zip", DefaultExt = ".zip", FileName = "Redux Saves", OverwritePrompt = true };
+        var chooser = new Microsoft.Win32.SaveFileDialog { Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Export Saves"), Filter = "ZIP archive (*.zip)|*.zip", DefaultExt = ".zip", FileName = "Redux Saves", OverwritePrompt = true };
         if (chooser.ShowDialog(this) != true) return;
         _isReadingSave = true;
         try
@@ -228,7 +228,7 @@ public partial class ReduxSaveManagerWindow : AdonisUI.Controls.AdonisWindow
                     _ = progressWindow.ReportAsync("Exporting", value.Name, Math.Min(value.Completed + 1, value.Total), value.Total);
             });
             progressWindow.Run(() => Task.Run(() => SaveArchiveExportService.ExportAsync(saves, chooser.FileName, progress, progressWindow.CancellationToken)));
-            _viewModel?.ShowAlert($"Exported {saves.Count} {(saves.Count == 1 ? "save" : "saves")}.", AlertType.Success, 8);
+            _viewModel?.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Exported {saves.Count} {(saves.Count == 1 ? "save" : "saves")}."), AlertType.Success, 8);
         }
         catch (OperationCanceledException) { }
         catch (Exception ex) { DivinityApp.Log(ex.ToString()); ShowMessage(ex.Message, "Could Not Export Saves", MessageBoxImage.Error); }
@@ -259,7 +259,7 @@ public partial class ReduxSaveManagerWindow : AdonisUI.Controls.AdonisWindow
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Install BG3 Save",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Install BG3 Save"),
 			Filter = "BG3 saves and archives (*.lsv;*.zip;*.7z;*.rar;*.tar;*.gz)|*.lsv;*.zip;*.7z;*.7zip;*.rar;*.tar;*.tar.gz;*.tgz;*.gz;*.gzip|BG3 saves (*.lsv)|*.lsv|Archives (*.zip;*.7z;*.rar;*.tar;*.gz)|*.zip;*.7z;*.7zip;*.rar;*.tar;*.tar.gz;*.tgz;*.gz;*.gzip",
 			CheckFileExists = true,
 			Multiselect = false
@@ -294,7 +294,7 @@ public partial class ReduxSaveManagerWindow : AdonisUI.Controls.AdonisWindow
 			if (collisions.Length > 0)
 			{
 				var result = ReduxMessageBox.Show(this,
-					$"{collisions.Length} save{(collisions.Length == 1 ? "" : "s")} already exist. Replace the existing save folders?",
+					DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{collisions.Length} save{(collisions.Length == 1 ? "" : "s")} already exist. Replace the existing save folders?"),
 					"Replace Existing Saves?", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 				if (result != MessageBoxResult.Yes) return;
 				replace = true;
@@ -306,7 +306,7 @@ public partial class ReduxSaveManagerWindow : AdonisUI.Controls.AdonisWindow
 			var imported = await Task.Run(() => Bg3SaveGameService.Import(sourcePath, _storyFolder, replace));
 			ImportedSaveCount += imported.Count;
 			RefreshSaves();
-			_viewModel?.ShowAlert($"Installed {imported.Count} save{(imported.Count == 1 ? "" : "s")}.", AlertType.Success, 12);
+			_viewModel?.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Installed {imported.Count} save{(imported.Count == 1 ? "" : "s")}."), AlertType.Success, 12);
 		}
 		catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException
 			or InvalidOperationException or SharpCompress.Common.InvalidFormatException)
@@ -333,7 +333,7 @@ public partial class ReduxSaveManagerWindow : AdonisUI.Controls.AdonisWindow
 		try
 		{
 			_isReadingSave = true;
-			ReviewModsLabel.Text = "Reading save…";
+			ReviewModsLabel.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Reading save…");
 			ReviewModsButton.IsEnabled = false;
 			DeleteButton.IsEnabled = false;
 			SaveList.IsEnabled = false;
@@ -354,7 +354,7 @@ public partial class ReduxSaveManagerWindow : AdonisUI.Controls.AdonisWindow
 			if (!ReferenceEquals(profile, _viewModel.SelectedProfile) || !ReferenceEquals(order, _viewModel.SelectedModOrder) || !SaveUnchanged())
 				throw new InvalidOperationException("The save or selected workspace changed. Review the save again before applying.");
 			var count = _viewModel.ActivateReviewedSaveMods(recorded.Order, review, dialog.SelectedIds);
-			_viewModel.ShowAlert($"Activated {count} recorded mod{(count == 1 ? "" : "s")}. Review your order, then save and sync when ready.", AlertType.Success, 12);
+			_viewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Activated {count} recorded mod{(count == 1 ? "" : "s")}. Review your order, then save and sync when ready."), AlertType.Success, 12);
 		}
 		catch (Exception ex)
 		{
@@ -364,7 +364,7 @@ public partial class ReduxSaveManagerWindow : AdonisUI.Controls.AdonisWindow
 		finally
 		{
 			_isReadingSave = false;
-			ReviewModsLabel.Text = "Review Mods...";
+			ReviewModsLabel.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Review Mods...");
 			SaveList.IsEnabled = true;
 			DeleteButton.IsEnabled = SaveList.SelectedItem != null;
 			UpdateReviewButton();
@@ -378,7 +378,7 @@ public partial class ReduxSaveManagerWindow : AdonisUI.Controls.AdonisWindow
 		if (_isImporting || _isReadingSave) return;
 		if (SaveList.SelectedItem is not ReduxSaveGameItem selected) return;
 		var result = ReduxMessageBox.Show(this,
-			$"Move '{selected.DisplayName}' to the Recycle Bin?",
+			DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Move '{selected.DisplayName}' to the Recycle Bin?"),
 			"Delete Save?", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 		if (result != MessageBoxResult.Yes) return;
 		try
@@ -481,9 +481,9 @@ public partial class ReduxSaveManagerWindow : AdonisUI.Controls.AdonisWindow
             warning ? "ReduxWarningBrush" : "ReduxBorderStrongBrush",
             warning ? "ReduxWarningBrush" : enabled ? "ReduxTextPrimaryBrush" : "ReduxTextMutedBrush",
             _viewModel?.Settings?.ReduceMotion == true);
-        ReviewModsButton.ToolTip = selected == null ? "Select a save to review its mods."
+        ReviewModsButton.ToolTip = selected == null ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Select a save to review its mods.")
             : selected.HasModWarning ? selected.ModWarning
-            : selected.CanReviewMods ? "Review this save’s recorded mods." : "No recorded mods to review.";
+            : selected.CanReviewMods ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Review this save’s recorded mods.") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No recorded mods to review.");
         SaveModWarning.Visibility = Visibility.Collapsed;
 
     }

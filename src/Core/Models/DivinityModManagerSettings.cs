@@ -102,6 +102,10 @@ public class DivinityModManagerSettings : ReactiveObject
 
 	[DataMember] public List<NexusSkippedFileUpdate> SkippedNexusFileUpdates { get; set; } = [];
 
+	[DefaultValue("en")]
+	[SettingsEntry("Interface language", "Changes interface text immediately. Save your preferences to keep this language. Untranslated text uses English.")]
+	[DataMember, Reactive] public string InterfaceLanguage { get; set; } = "en";
+
 	[DefaultValue(false)]
 	[SettingsEntry("Enable story logging", "Enable the Osiris story log (osiris.log) when launching the game.")]
 	[DataMember, Reactive] public bool GameStoryLogEnabled { get; set; }

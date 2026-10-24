@@ -798,7 +798,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			if (!ManagedDownloadsLocation.TryPrepare(String.Empty, defaultDirectory,
 					out _activeDownloadsDirectory, out var fallbackError))
 				throw new IOException(fallbackError);
-			ShowAlert($"{locationError} Using Redux's default Downloads folder for this session.", AlertType.Warning, 25);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{locationError} Using Redux's default Downloads folder for this session."), AlertType.Warning, 25);
 		}
 		Settings.NxmActiveDownloadLimit = Math.Clamp(Settings.NxmActiveDownloadLimit, 1, 6);
 		Settings.RetainedPackageArchiveQuotaGb = Math.Clamp(Settings.RetainedPackageArchiveQuotaGb, 1, 100);
@@ -899,7 +899,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				{
 					failed++;
 					DivinityApp.Log($"Local package intake failed for '{Path.GetFileName(path)}': {ex.GetType().Name}");
-					ShowAlert($"Redux could not add {Path.GetFileName(path)} to Download Manager.", AlertType.Danger, 25);
+					ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Redux could not add {Path.GetFileName(path)} to Download Manager."), AlertType.Danger, 25);
 				}
 				LocalPackageIntakeCompleted++;
 			}
@@ -1229,7 +1229,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
         if (_nxmDownloadManager == null || _nxmShuttingDown || DownloadManagerInstallIsActive) return;
         var items = NxmDownloads.Where(item => !item.IsInstalledHistory && item.State != NxmDownloadState.Installing).ToArray();
         if (items.Length == 0) return;
-        if (ReduxMessageBox.Show(owner, $"Delete all {items.Length} downloads? Active downloads will be canceled and downloaded packages moved to the Recycle Bin. Installed mods and retained archives are kept.",
+        if (ReduxMessageBox.Show(owner, DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Delete all {items.Length} downloads? Active downloads will be canceled and downloaded packages moved to the Recycle Bin. Installed mods and retained archives are kept."),
             "Delete All Downloads", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return;
         await RunDownloadManagerMutationAsync(async () =>
         {
@@ -1241,7 +1241,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
                 try { await _nxmDownloadManager.RemoveAsync(item.Id, true); }
                 catch (Exception ex) { failed++; DivinityApp.Log($"Could not delete download: {ex.Message}"); }
             }
-            if (failed > 0) ShowAlert($"{failed} downloads could not be fully deleted. Check their files and try again.", AlertType.Warning);
+            if (failed > 0) ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{failed} downloads could not be fully deleted. Check their files and try again."), AlertType.Warning);
         }, "Could Not Delete Packages", owner);
     }
 
@@ -2380,11 +2380,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 			if(Settings.SettingsWindowIsOpen && Services.Get<SettingsWindowViewModel>() is SettingsWindowViewModel settingsWindowViewModel)
 			{
-				settingsWindowViewModel.ShowAlert($"Skip Launcher - Created '{steamAppidPath}'", AlertType.Success, 10);
+				settingsWindowViewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Skip Launcher - Created '{steamAppidPath}'"), AlertType.Success, 10);
 			}
 			else
 			{
-				ShowAlert($"Skip Launcher - Created '{steamAppidPath}'", AlertType.Success, 10);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Skip Launcher - Created '{steamAppidPath}'"), AlertType.Success, 10);
 			}
 		}
 	}
@@ -2401,11 +2401,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 				if (Settings.SettingsWindowIsOpen && Services.Get<SettingsWindowViewModel>() is SettingsWindowViewModel settingsWindowViewModel)
 				{
-					settingsWindowViewModel.ShowAlert($"Skip Launcher - Deleted '{steamAppidPath}'", AlertType.Danger, 10);
+					settingsWindowViewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Skip Launcher - Deleted '{steamAppidPath}'"), AlertType.Danger, 10);
 				}
 				else
 				{
-					ShowAlert($"Skip Launcher - Deleted '{steamAppidPath}'", AlertType.Danger, 10);
+					ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Skip Launcher - Deleted '{steamAppidPath}'"), AlertType.Danger, 10);
 				}
 			}
 			catch (Exception ex)
@@ -2442,6 +2442,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	private void InitSettingsBindings()
 	{
+		Settings.WhenAnyValue(x => x.InterfaceLanguage)
+			.ObserveOn(RxApp.MainThreadScheduler)
+			.Subscribe(language => DivinityModManager.Localization.ReduxLanguageService.Current.SetLanguage(language));
 		DivinityApp.DependencyFilter = Settings.WhenAnyValue(x => x.DebugModeEnabled).Select(MakeDependencyFilter);
 
 		var canOpenGameExe = Settings.WhenAnyValue(x => x.GameExecutablePath, x => x.FileExists());
@@ -2524,7 +2527,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					}
 					else
 					{
-						ShowAlert($"The game executable was not found at '{exePath}'.", AlertType.Danger, 90);
+						ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"The game executable was not found at '{exePath}'."), AlertType.Danger, 90);
 					}
 					return;
 				}
@@ -2815,7 +2818,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 		catch (Exception ex)
 		{
-			ShowAlert($"Error loading settings at '{settingsFile}': {ex}", AlertType.Danger);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Error loading settings at '{settingsFile}': {ex}"), AlertType.Danger);
 		}
 
 		if (ProtectedCredentialStore.TryLoad(credentialFile, out var nexusModsApiKey, out var modioApiKey))
@@ -2867,6 +2870,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			Window.ToggleLogging(true);
 		}
 
+		Settings.InterfaceLanguage = DivinityModManager.Localization.ReduxLanguageService.NormalizeLanguage(Settings.InterfaceLanguage);
+		DivinityModManager.Localization.ReduxLanguageService.Current.SetLanguage(Settings.InterfaceLanguage);
 		SetGamePathways(Settings.GameDataPath, Settings.DocumentsFolderPathOverride);
 
 		if (loaded)
@@ -3016,7 +3021,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 		catch (Exception ex)
 		{
-			ShowAlert($"Error saving settings at '{settingsFile}': {ex}", AlertType.Danger);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Error saving settings at '{settingsFile}': {ex}"), AlertType.Danger);
 		}
 		return false;
 	}
@@ -3641,7 +3646,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					ShowWhenMainWindowReady("startup-duplicate-toolkit-projects", () =>
 					{
 						ReduxMessageBox.Show(Window,
-							$"Duplicate toolkit projects were found in the Data folder:\n\n{message}",
+							DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Duplicate toolkit projects were found in the Data folder:\n\n{message}"),
 							"Duplicate Toolkit Projects",
 							MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 						ShowAlert("Duplicate Toolkit projects were found in the BG3 Data folder.", AlertType.Danger, 60);
@@ -3667,7 +3672,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				{
 					ShowWhenMainWindowReady("startup-duplicate-mods", () =>
 					{
-						ShowAlert($"{dupeCount} duplicate mod{(dupeCount == 1 ? String.Empty : "s")} found.", AlertType.Danger, 30);
+						ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{dupeCount} duplicate mod{(dupeCount == 1 ? String.Empty : "s")} found."), AlertType.Danger, 30);
 						DeleteMods(duplicateMods, true, retainedMods);
 					});
 				}, RxApp.MainThreadScheduler);
@@ -3940,7 +3945,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		catch (Exception exception)
 		{
 			DivinityApp.Log($"Could not persist legacy separators for '{owner.Name}': {exception}");
-			ShowAlert($"Could not upgrade separators for '{owner.Name}'. The saved load order was left unchanged.", AlertType.Warning, 20);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Could not upgrade separators for '{owner.Name}'. The saved load order was left unchanged."), AlertType.Warning, 20);
 		}
 	}
 
@@ -3995,7 +4000,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			if (ReduxMessageBox.Show(owner, message + "Permanently delete these recovery copies? Installed mods and downloaded packages are kept.",
 				"Clear previous mod versions", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return;
 			var result = ModBackupRetention.DeleteReviewed(ModBackupDirectory, files);
-			ShowAlert($"Removed {result.Deleted} previous mod files. {result.Failed} could not be removed.",
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Removed {result.Deleted} previous mod files. {result.Failed} could not be removed."),
 				result.Failed > 0 ? AlertType.Warning : AlertType.Success, 15);
 		}
 		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -4093,7 +4098,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			catch (IOException ex)
 			{
 				DivinityApp.Log($"File may be in use by another process:\n{ex}");
-				ShowAlert($"Failed to safely import '{Path.GetFileName(filePath)}': {ex.Message}", AlertType.Danger);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Failed to safely import '{Path.GetFileName(filePath)}': {ex.Message}"), AlertType.Danger);
 				taskResult.AddError(filePath, ex);
 			}
 			catch (Exception ex)
@@ -4239,13 +4244,13 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 						{
 							if (result.Mods.Count > 1)
 							{
-								ShowAlert($"Imported {total} mods.", AlertType.Success, 20);
+								ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Imported {total} mods."), AlertType.Success, 20);
 							}
 							else if (total == 1)
 							{
 								var modFileName = result.Mods.First().FileName;
 								var fileNames = String.Join(", ", fileList.Select(x => Path.GetFileName(x)));
-								ShowAlert($"Successfully imported '{modFileName}' from '{fileNames}'", AlertType.Success, 20);
+								ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Successfully imported '{modFileName}' from '{fileNames}'"), AlertType.Success, 20);
 							}
 							else
 							{
@@ -4268,7 +4273,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 							}
 							else
 							{
-								ShowAlert($"Imported {total} of {result.TotalPaks} mods. Check the log for details.", AlertType.Danger, 60);
+								ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Imported {total} of {result.TotalPaks} mods. Check the log for details."), AlertType.Danger, 60);
 							}
 						}
 					}
@@ -5779,6 +5784,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 
 		Settings.HasSeenReduxWelcome = true;
+		// Keep the explicitly chosen language even when the user chooses Set up later.
+		Settings.InterfaceLanguage = welcomeWindow.SelectedInterfaceLanguage;
 		if (welcomeWindow.ApplyChanges)
 		{
 			var themeChanged = welcomeWindow.ThemeSelectionChanged;
@@ -6030,7 +6037,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			}
 			catch (Exception ex)
 			{
-				ShowAlert($"An interrupted package operation needs manual attention: {ex.Message}", AlertType.Danger, 30);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"An interrupted package operation needs manual attention: {ex.Message}"), AlertType.Danger, 30);
 			}
 			DivinityApp.Log("Loading mods...");
 			await SetMainProgressTextAsync("Loading mods...");
@@ -6464,7 +6471,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		};
 		AddNewModOrder(restoredOrder);
 		ShowAlert(
-			$"Loaded restore point from {restorePoint.CreatedSummary} as '{restoredName}'. Export when you are ready to apply it to the game.",
+			DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Loaded restore point from {restorePoint.CreatedSummary} as '{restoredName}'. Export when you are ready to apply it to the game."),
 			AlertType.Success,
 			20);
 	}
@@ -6552,7 +6559,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			}
 			catch (Exception ex)
 			{
-				ShowAlert($"Failed to save mod load order to '{outputPath}': {ex.Message}", AlertType.Danger);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Failed to save mod load order to '{outputPath}': {ex.Message}"), AlertType.Danger);
 				result = false;
 			}
 
@@ -6630,7 +6637,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			tempOrder.Order.AddRange(CreateWorkingLoadOrderEntries());
 			if (DivinityModDataLoader.ExportLoadOrderToFile(outputPath, tempOrder))
 			{
-				ShowAlert($"Saved mod load order to '{outputPath}'", AlertType.Success, 10);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Saved mod load order to '{outputPath}'"), AlertType.Success, 10);
 				var updatedOrder = false;
 				foreach (var order in ModOrderList)
 				{
@@ -6648,7 +6655,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			}
 			else
 			{
-				ShowAlert($"Failed to save mod load order to '{outputPath}'", AlertType.Danger);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Failed to save mod load order to '{outputPath}'"), AlertType.Danger);
 			}
 		}
 	}
@@ -6692,7 +6699,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			ReduxMessageBox.Show(
 				Window,
-				$"A load order named '{name}' already exists. Choose a different name.",
+				DivinityModManager.Localization.ReduxLanguageService.Current.Format($"A load order named '{name}' already exists. Choose a different name."),
 				"Load Order Already Exists",
 				MessageBoxButton.OK,
 				MessageBoxImage.Information,
@@ -6718,7 +6725,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			HasUnsavedLoadOrderChanges = false;
 			CaptureVisualDividerBaseline();
 			ClearLoadOrderEditHistory();
-			ShowAlert($"Saved and selected '{name}'.", AlertType.Success, 12);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Saved and selected '{name}'."), AlertType.Success, 12);
 		}
 		catch (Exception ex)
 		{
@@ -7175,7 +7182,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 							previouslyExportedOrder.Select(entry => entry.UUID),
 							finalOrder.Select(mod => mod.UUID));
 					}
-					ShowAlert($"Applied load-order changes to '{outputPath}'", AlertType.Success, 15);
+					ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Applied load-order changes to '{outputPath}'"), AlertType.Success, 15);
 
 					if (DivinityModDataLoader.ExportedSelectedProfile(PathwayData.AppDataProfilesPath, profile.UUID))
 					{
@@ -7295,8 +7302,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					if (!_nxmShuttingDown)
 					{
 						if (completed != null) completed(wasCanceled, failure);
-						else if (wasCanceled) ShowAlert($"{title} canceled.", AlertType.Info, 20);
-						else if (failure != null) ShowAlert($"{title} failed: {failure.Message}", AlertType.Danger, 30);
+						else if (wasCanceled) ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{title} canceled."), AlertType.Info, 20);
+						else if (failure != null) ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{title} failed: {failure.Message}"), AlertType.Danger, 30);
 					}
 					return Unit.Default;
 				}, RxApp.MainThreadScheduler);
@@ -7659,7 +7666,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			taskResult.AddError(filePath, ex);
 			DivinityApp.Log($"Error importing compressed package '{filePath}': {ex}");
 			RxApp.MainThreadScheduler.Schedule(() =>
-				ShowAlert($"Error extracting compressed package: {ex.Message}", AlertType.Danger, 0));
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Error extracting compressed package: {ex.Message}"), AlertType.Danger, 0));
 			return false;
 		}
 		finally
@@ -7759,7 +7766,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			taskResult.AddError(archivePath, ex);
 			RxApp.MainThreadScheduler.Schedule(_ =>
 			{
-				ShowAlert($"Error extracting archive (check the log): {ex.Message}", AlertType.Danger, 0);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Error extracting archive (check the log): {ex.Message}"), AlertType.Danger, 0);
 			});
 		}
 		finally
@@ -7840,7 +7847,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				{
 					if (!_nxmShuttingDown)
 					{
-						ShowAlert($"Saved active mod backup to '{outputPath}'", AlertType.Success, 15);
+						ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Saved active mod backup to '{outputPath}'"), AlertType.Success, 15);
 						ProcessHelper.TryOpenPath(Path.GetDirectoryName(outputPath));
 					}
 				});
@@ -8021,11 +8028,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				try
 				{
 					AtomicFileWriter.WriteAllText(dialog.FileName, outputText);
-					ShowAlert($"Exported order to '{dialog.FileName}'", AlertType.Success, 20);
+					ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Exported order to '{dialog.FileName}'"), AlertType.Success, 20);
 				}
 				catch (Exception ex)
 				{
-					ShowAlert($"Error exporting mod order to '{dialog.FileName}':\n{ex}", AlertType.Danger);
+					ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Error exporting mod order to '{dialog.FileName}':\n{ex}"), AlertType.Danger);
 				}
 			}
 		}
@@ -8077,7 +8084,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			else
 			{
 				DivinityApp.Log($"Failed to load order from '{dialog.FileName}'.");
-				ShowAlert($"No mod order found in save \"{Path.GetFileNameWithoutExtension(dialog.FileName)}\"", AlertType.Danger, 30);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"No mod order found in save \"{Path.GetFileNameWithoutExtension(dialog.FileName)}\""), AlertType.Danger, 30);
 			}
 		}
 		return null;
@@ -8156,16 +8163,16 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					newOrder.LastModifiedDate = File.GetLastWriteTime(managedPath);
 					AddNewModOrder(newOrder);
 					LoadModOrder(newOrder);
-					ShowAlert($"Added load order '{newOrder.Name}'.", AlertType.Success, 12);
+					ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Added load order '{newOrder.Name}'."), AlertType.Success, 12);
 				}
 				else
 				{
-					ShowAlert($"Failed to copy the load order into Redux's Orders folder.", AlertType.Danger, 30);
+					ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Failed to copy the load order into Redux's Orders folder."), AlertType.Danger, 30);
 				}
 			}
 			else
 			{
-				ShowAlert($"Failed to import order from '{dialog.FileName}'", AlertType.Danger, 60);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Failed to import order from '{dialog.FileName}'"), AlertType.Danger, 60);
 			}
 		}
 	}
@@ -8363,7 +8370,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				$"{presentation.SourceLinks.Count} source link(s), " +
 				$"{presentation.PrivateModNotes.Count} note(s), creator {presentation.CreatorVersion} " +
 				$"({presentation.CreatorInternalVersion}).");
-			ShowAlert($"Exported Redux modlist '{Path.GetFileName(dialog.FileName)}'.", AlertType.Success, 15);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Exported Redux modlist '{Path.GetFileName(dialog.FileName)}'."), AlertType.Success, 15);
 			if (reviewWindow.OpenContainingFolder)
 			{
 				try
@@ -8966,7 +8973,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 					$" {missingSourceCount} source link{(missingSourceCount == 1 ? " was" : "s were")} saved for missing mods.";
 			}
 			ShowAlert(
-				$"Imported {String.Join(" and ", importedParts)}.{warningSuffix}",
+				DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Imported {String.Join(" and ", importedParts)}.{warningSuffix}"),
 				warnings.Count > 0 ? AlertType.Warning : AlertType.Success,
 				20);
 			DivinityApp.Log($"[ReduxBundle] Import completed: {String.Join(" and ", importedParts)}.");
@@ -8974,7 +8981,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		else if (importedParts.Count > 0)
 		{
 			ShowAlert(
-				$"Imported {String.Join(" and ", importedParts)}, but Redux could not import {String.Join(" and ", failedParts)}. Check the log for details.",
+				DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Imported {String.Join(" and ", importedParts)}, but Redux could not import {String.Join(" and ", failedParts)}. Check the log for details."),
 				AlertType.Warning,
 				30);
 			DivinityApp.Log(
@@ -8984,7 +8991,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		else
 		{
 			ShowAlert(
-				$"Redux could not import {String.Join(" or ", failedParts)}. Check the log for details.",
+				DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Redux could not import {String.Join(" or ", failedParts)}. Check the log for details."),
 				AlertType.Danger,
 				30);
 			DivinityApp.Log($"[ReduxBundle] Import failed: {String.Join(", ", failedParts)}.");
@@ -9082,7 +9089,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 							}
 						}
 
-						ShowAlert($"Successfully renamed '{dialog.FileName}' to '{renameDialog.FileName}'", AlertType.Success, 15);
+						ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Successfully renamed '{dialog.FileName}' to '{renameDialog.FileName}'"), AlertType.Success, 15);
 					}
 					catch (Exception ex)
 					{
@@ -9103,7 +9110,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			if (force)
 			{
-				ShowAlert($"The Redux public-alpha update channel has not been published yet. {DivinityApp.REDUX_DISPLAY_VERSION} remains a manual build.", AlertType.Info, 30);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"The Redux public-alpha update channel has not been published yet. {DivinityApp.REDUX_DISPLAY_VERSION} remains a manual build."), AlertType.Info, 30);
 			}
 			return;
 		}
@@ -10747,7 +10754,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			catch (Exception ex)
 			{
 				RestoreLoadOrderEditState(historyBefore);
-				ShowAlert($"Could not change Override package state: {ex.Message}", AlertType.Danger, 25);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Could not change Override package state: {ex.Message}"), AlertType.Danger, 25);
 				return;
 			}
 		}
@@ -11677,6 +11684,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 	public void ShowAlert(string message, AlertType alertType = AlertType.Info, int timeout = 0)
 	{
+		message = DivinityModManager.Localization.ReduxLanguageService.Current.Translate(message);
 		message = message.ReplaceSpecialPaths();
 		DivinityApp.Log(message);
 		RxApp.MainThreadScheduler.Schedule(() =>
@@ -11716,7 +11724,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		if (offerRecovery || !String.Equals(names, _lastOverrideConflictNotice, StringComparison.Ordinal))
 		{
 			_lastOverrideConflictNotice = names;
-			ShowAlert($"Override copies need review: {names}. Open Tools > Resolve Override Copies to compare both folders and keep backups.", AlertType.Warning, 30);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Override copies need review: {names}. Open Tools > Resolve Override Copies to compare both folders and keep backups."), AlertType.Warning, 30);
 		}
 		if (offerRecovery) OpenOverrideDuplicateRecovery();
 	}
@@ -11736,12 +11744,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			// Refresh metadata before another order operation. Retaining a held copy
 			// does not authorize activating it as part of this recovery.
 			_overrideRecoveryNeedsRefresh = true;
-			ShowAlert($"Override copies resolved. Backups: {dialog.BackupDirectory}. After Refresh finishes, retry your order change if needed.", AlertType.Success, 30);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Override copies resolved. Backups: {dialog.BackupDirectory}. After Refresh finishes, retry your order change if needed."), AlertType.Success, 30);
 			RxApp.MainThreadScheduler.Schedule(() => RefreshCommand.Execute(Unit.Default).Subscribe());
 		}
 		catch (Exception ex)
 		{
-			ShowAlert($"Could not review Override copies: {ex.Message}", AlertType.Danger, 30);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Could not review Override copies: {ex.Message}"), AlertType.Danger, 30);
 		}
 		finally { _overrideRecoveryDialogOpen = false; }
 	}
@@ -11823,7 +11831,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 		catch (Exception ex)
 		{
-			ShowAlert($"Cannot switch Override mods: {ex.Message}", AlertType.Danger, 25);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Cannot switch Override mods: {ex.Message}"), AlertType.Danger, 25);
 			return false;
 		}
 		if (plan.Moves.Count == 0) return true;
@@ -11835,7 +11843,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 		catch (Exception ex)
 		{
-			ShowAlert($"Override switch failed: {ex.Message}", AlertType.Danger, 25);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Override switch failed: {ex.Message}"), AlertType.Danger, 25);
 			return false;
 		}
 	}
@@ -11931,7 +11939,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		catch (Exception ex)
 		{
 			order.OverrideModFiles = previous;
-			ShowAlert($"Could not {(activate ? "activate" : "disable")} Override mods: {ex.Message}", AlertType.Danger, 25);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Could not {(activate ? "activate" : "disable")} Override mods: {ex.Message}"), AlertType.Danger, 25);
 			return false;
 		}
 	}
@@ -11956,11 +11964,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			if (hasSavedFile)
 			{
 				RecycleBinHelper.DeleteFile(order.FilePath, false, false);
-				ShowAlert($"Sent load order '{order.Name}' to the Recycle Bin", AlertType.Warning, 25);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Sent load order '{order.Name}' to the Recycle Bin"), AlertType.Warning, 25);
 			}
 			else
 			{
-				ShowAlert($"Removed load order '{order.Name}'", AlertType.Warning, 15);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Removed load order '{order.Name}'"), AlertType.Warning, 15);
 			}
 		}
 	}
@@ -12052,7 +12060,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			var additional = e.FailureMessages.Count > 1
 				? $" (+{e.FailureMessages.Count - 1} more; see the log)"
 				: String.Empty;
-			ShowAlert($"Could not delete {e.FailureMessages.Count} mod file(s). {firstFailure}{additional}",
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Could not delete {e.FailureMessages.Count} mod file(s). {firstFailure}{additional}"),
 				AlertType.Danger, 60);
 		}
 	}
@@ -12157,12 +12165,12 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}, (wasCanceled, failure) =>
 		{
 			if (wasCanceled)
-				ShowAlert($"Extraction canceled. {successes} of {paths.Count} packages completed; files already extracted remain in the output folder.", AlertType.Info, 25);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Extraction canceled. {successes} of {paths.Count} packages completed; files already extracted remain in the output folder."), AlertType.Info, 25);
 			else if (failure != null || successes != paths.Count)
-				ShowAlert($"Extracted {successes} of {paths.Count} packages. Check the log for failures.", AlertType.Warning, 30);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Extracted {successes} of {paths.Count} packages. Check the log for failures."), AlertType.Warning, 30);
 			else
 			{
-				ShowAlert($"Extracted {successes} packages to '{openOutputPath}'.", AlertType.Success, 20);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Extracted {successes} packages to '{openOutputPath}'."), AlertType.Success, 20);
 				ProcessHelper.TryOpenPath(openOutputPath);
 			}
 		});
@@ -12172,7 +12180,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	{
 		if (_nxmShuttingDown || MainProgressIsActive || SelectedPakMods.Count == 0) return;
 		if (SelectedPakMods.Count == 1
-			|| ReduxMessageBox.Show(Window, $"Extract the following mods?\n'{String.Join("\n", SelectedPakMods.Select(mod => mod.DisplayName))}'", "Extract Mods?",
+			|| ReduxMessageBox.Show(Window, DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Extract the following mods?\n'{String.Join("\n", SelectedPakMods.Select(mod => mod.DisplayName))}'"), "Extract Mods?",
 				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)
 			ExtractSelectedMods_ChooseFolder();
 	}
@@ -12183,7 +12191,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		var adventure = SelectedAdventureMod;
 		if (adventure == null || adventure.IsEditorMod || adventure.IsLarianMod || !File.Exists(adventure.FilePath))
 		{
-			ShowAlert($"Current adventure mod '{adventure?.DisplayName}' is not extractable", AlertType.Warning, 30);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Current adventure mod '{adventure?.DisplayName}' is not extractable"), AlertType.Warning, 30);
 			return;
 		}
 		var dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog
@@ -12307,7 +12315,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			if (totalRemoved > 0)
 			{
 				HasUnsavedLoadOrderChanges = true;
-				ShowAlert($"Removed {totalRemoved} missing mods from the current order. Save to confirm", AlertType.Warning);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Removed {totalRemoved} missing mods from the current order. Save to confirm"), AlertType.Warning);
 			}
 		});
 	}
@@ -13186,11 +13194,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			if (!String.IsNullOrWhiteSpace(path))
 			{
 				Clipboard.SetText(path);
-				ShowAlert($"Copied '{path}' to clipboard", 0, 10);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Copied '{path}' to clipboard"), 0, 10);
 			}
 			else
 			{
-				ShowAlert($"Path '{path}' not found", AlertType.Danger, 30);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Path '{path}' not found"), AlertType.Danger, 30);
 			}
 		});
 
@@ -13219,7 +13227,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			}
 			catch (Exception ex)
 			{
-				ShowAlert($"Error copying order to clipboard: {ex}", AlertType.Danger, 15);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Error copying order to clipboard: {ex}"), AlertType.Danger, 15);
 			}
 		});
 
@@ -13488,11 +13496,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			if (!String.IsNullOrWhiteSpace(path))
 			{
 				Clipboard.SetText(path);
-				ShowAlert($"Copied '{path}' to clipboard", 0, 10);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Copied '{path}' to clipboard"), 0, 10);
 			}
 			else
 			{
-				ShowAlert($"Path '{path}' not found", AlertType.Danger, 30);
+				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Path '{path}' not found"), AlertType.Danger, 30);
 			}
 		}, adventureModCanOpenObservable);
 

@@ -102,12 +102,12 @@ public partial class ReduxCollectionWindow : AdonisUI.Controls.AdonisWindow
                 if (_sessions.Count > 0)
                 {
                     LinkBox.Text = _sessions[0].Link;
-                    StatusText.Text = "Import to resume your last collection, or choose another from Recent collections.";
+                    StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Import to resume your last collection, or choose another from Recent collections.");
                     RecentButton.Visibility = Visibility.Visible;
                 }
             }
             catch (Exception ex) when (ex is System.IO.IOException or System.UnauthorizedAccessException or System.Text.Json.JsonException)
-            { StatusText.Text = "Saved collection choices could not be read. You can still import a collection link."; }
+            { StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Saved collection choices could not be read. You can still import a collection link."); }
         }
         _sessionSaveTimer.Tick += (_, _) => { _sessionSaveTimer.Stop(); PersistSession(); };
         _guideTimer.Tick += (_, _) => UpdateDownloadGuide();
@@ -131,7 +131,7 @@ public partial class ReduxCollectionWindow : AdonisUI.Controls.AdonisWindow
         var selected = _choices.Where(c => c.Selected).ToArray();
         var hidden = selected.Count(c => !visible.Contains(c));
         var bytes = selected.Sum(c => (decimal)c.File.SizeBytes);
-        SelectionText.Text = selected.Length == 0 ? "No files selected" : $"{selected.Length} selected · {CollectionFileChoice.FormatSize((long)Math.Min(bytes, Int64.MaxValue))}" + (selected.Any(c => c.File.SizeBytes <= 0) ? " (some sizes unknown)" : "") + (hidden > 0 ? $" · {hidden} hidden by filters" : "");
+        SelectionText.Text = selected.Length == 0 ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No files selected") : $"{selected.Length} selected · {CollectionFileChoice.FormatSize((long)Math.Min(bytes, Int64.MaxValue))}" + (selected.Any(c => c.File.SizeBytes <= 0) ? " (some sizes unknown)" : "") + (hidden > 0 ? $" · {hidden} hidden by filters" : "");
     }
     private void UpdateDownloadGuide()
     {
@@ -145,11 +145,11 @@ public partial class ReduxCollectionWindow : AdonisUI.Controls.AdonisWindow
         var retryCount = NexusCollectionRecovery.Eligible(_choices.Where(c => c.IsQueued).Select(c => c.File), downloads).Count;
         RetryFailedButton.Visibility = retryCount > 0 ? Visibility.Visible : Visibility.Collapsed;
         RetryFailedButton.IsEnabled = retryCount > 0;
-        RetryFailedLabel.Text = $"Retry failed downloads ({retryCount})";
+        RetryFailedLabel.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Retry failed downloads ({retryCount})");
         var counts = $"{_downloadProgress.Downloaded} downloaded · {_downloadProgress.Installed} installed · {_downloadProgress.AwaitingLink} need a Nexus link";
         if (_downloadProgress.Failed > 0) counts += $" · {_downloadProgress.Failed} need attention";
         var next = _downloadProgress.NextFile;
-        NextFileLabel.Text = next?.Id == _openedGuideItem ? "Open file again" : "Download next file";
+        NextFileLabel.Text = next?.Id == _openedGuideItem ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Open file again") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Download next file");
         DownloadGuideText.Text = counts + (next == null ? ". Continue in Download Manager." :
             $"\n{(next.Id == _openedGuideItem ? "Waiting for" : "Next:")} {next.FileDisplayName}. Choose Mod Manager Download on Nexus; Redux will receive the link.");
         var lookup = downloads.GroupBy(d => (d.ModId, d.FileId)).ToDictionary(g => g.Key, g => g.First());
@@ -168,7 +168,7 @@ public partial class ReduxCollectionWindow : AdonisUI.Controls.AdonisWindow
             StatusText.Text = $"Retry started for {result.Retried} downloads." + (result.Failed > 0 ? $" {result.Failed} could not restart; check Download Manager." : "");
         }
         catch (OperationCanceledException) { }
-        catch (Exception) { StatusText.Text = "Could not retry collection downloads. Check Download Manager."; }
+        catch (Exception) { StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Could not retry collection downloads. Check Download Manager."); }
         finally { Busy(false); }
     }
     private void FilterChanged(object sender, RoutedEventArgs e) => ApplyFileFilter();
@@ -180,7 +180,7 @@ public partial class ReduxCollectionWindow : AdonisUI.Controls.AdonisWindow
         var search = SearchBox.Text;
         _fileView.Filter = item => item is CollectionFileChoice choice && choice.MatchesFilter(search, filter);
         ClearFiltersButton.IsEnabled = !String.IsNullOrWhiteSpace(search) || filter != CollectionFileFilter.All;
-        VisibleFilesText.Text = $"{_fileView.Cast<object>().Count()} of {_choices.Length} files";
+        VisibleFilesText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{_fileView.Cast<object>().Count()} of {_choices.Length} files");
         Refresh();
     }
     private void NextFile_Click(object sender, RoutedEventArgs e)
@@ -236,7 +236,7 @@ public partial class ReduxCollectionWindow : AdonisUI.Controls.AdonisWindow
             RecentButton.Visibility = Visibility.Visible;
         }
         catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException or System.Text.Json.JsonException)
-        { StatusText.Text = "Your choices could not be saved for next time. Downloads can still continue."; }
+        { StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Your choices could not be saved for next time. Downloads can still continue."); }
     }
     private void Recent_Click(object sender, RoutedEventArgs e)
     {
@@ -275,16 +275,16 @@ public partial class ReduxCollectionWindow : AdonisUI.Controls.AdonisWindow
         PersistSession();
         _sessionSaveTimer.Stop();
         _sessionDirty = false;
-        _preview = null; _collectionOrder = null; _downloadProgress = null; _openedGuideItem = null; DownloadGuidePanel.Visibility = Visibility.Collapsed; SaveOrderButton.ToolTip = "Import a collection to check whether it includes a BG3 load order."; PresentFiles(Array.Empty<CollectionFileChoice>()); Heading.Text = "Add a Nexus collection"; CollectionSummary.Text = ""; CollectionImage.Source = null; CollectionImage.Visibility = Visibility.Collapsed;
-        if (!NexusCollectionLink.TryParse(LinkBox.Text, out var link)) { StatusText.Text = "Enter a Baldur’s Gate 3 Nexus collection link."; return; }
-        if (!_viewModel.Modules.SourceIntegrationsEnabled) { StatusText.Text = "In Preferences > General > Optional features, turn off 'Disable online mod information' to load collections."; return; }
-        Busy(true); StatusText.Text = "Loading collection…";
+        _preview = null; _collectionOrder = null; _downloadProgress = null; _openedGuideItem = null; DownloadGuidePanel.Visibility = Visibility.Collapsed; SaveOrderButton.ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Import a collection to check whether it includes a BG3 load order."); PresentFiles(Array.Empty<CollectionFileChoice>()); Heading.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Add a Nexus collection"); CollectionSummary.Text = ""; CollectionImage.Source = null; CollectionImage.Visibility = Visibility.Collapsed;
+        if (!NexusCollectionLink.TryParse(LinkBox.Text, out var link)) { StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Enter a Baldur’s Gate 3 Nexus collection link."); return; }
+        if (!_viewModel.Modules.SourceIntegrationsEnabled) { StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("In Preferences > General > Optional features, turn off 'Disable online mod information' to load collections."); return; }
+        Busy(true); StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Loading collection…");
         try
         {
             var preview = await new NexusCollectionPreviewService(_client).LoadAsync(link, _viewModel.Settings.NexusModsAPIKey, _lifetime.Token);
             await _viewModel.EnsureNxmDownloadsInitializedAsync();
             if (_lifetime.IsCancellationRequested) return;
-            StatusText.Text = "Checking installed mods…";
+            StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Checking installed mods…");
             var inventory = await _viewModel.GetCollectionInstallInventoryAsync(_lifetime.Token);
             if (_lifetime.IsCancellationRequested) return;
             PresentFiles(preview.Files.Select(f => new CollectionFileChoice(f,
@@ -307,36 +307,36 @@ public partial class ReduxCollectionWindow : AdonisUI.Controls.AdonisWindow
                 CollectionImage.Visibility = Visibility.Visible;
             }
             if (_choices.Length > 0) FilesList.SelectedIndex = 0;
-            StatusText.Text = $"Revision {preview.Revision} · {preview.Files.Count} files · {_choices.Count(c => c.InstallState == NexusCollectionInstallState.Installed)} installed · {preview.Files.Count(f => f.Optional)} optional · {preview.Files.Count(f => !f.Available)} unavailable";
+            StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Revision {preview.Revision} · {preview.Files.Count} files · {_choices.Count(c => c.InstallState == NexusCollectionInstallState.Installed)} installed · {preview.Files.Count(f => f.Optional)} optional · {preview.Files.Count(f => !f.Available)} unavailable");
             if (previousSession != null)
-                StatusText.Text += previousSession.Matches(preview) ? " · Previous choices restored" : " · New revision: review the default selection";
+                StatusText.Text += previousSession.Matches(preview) ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate(" · Previous choices restored") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate(" · New revision: review the default selection");
             if (!String.IsNullOrEmpty(inventory.Warning)) StatusText.Text += " · " + inventory.Warning;
-            SaveOrderButton.ToolTip = "Checking whether this collection includes a BG3 load order…";
+            SaveOrderButton.ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Checking whether this collection includes a BG3 load order…");
             try
             {
                 _collectionOrder = await new NexusCollectionPreviewService(_client).LoadOrderAsync(preview, _viewModel.Settings.NexusModsAPIKey, _lifetime.Token);
-                SaveOrderButton.ToolTip = $"Save this collection’s {_collectionOrder.Count} ordered mods to your saved load orders. Select it later from the main window’s Load Order dropdown. Saving does not activate or apply it.";
+                SaveOrderButton.ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Save this collection’s {_collectionOrder.Count} ordered mods to your saved load orders. Select it later from the main window’s Load Order dropdown. Saving does not activate or apply it.");
             }
             catch (OperationCanceledException) when (!_lifetime.IsCancellationRequested)
             {
-                SaveOrderButton.ToolTip = "The load-order check timed out. Import the collection again to retry.";
-                StatusText.Text += " · Load order could not be checked";
+                SaveOrderButton.ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("The load-order check timed out. Import the collection again to retry.");
+                StatusText.Text += DivinityModManager.Localization.ReduxLanguageService.Current.Translate(" · Load order could not be checked");
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                SaveOrderButton.ToolTip = ex is InvalidDataException ? ex.Message : "Could not retrieve the collection load order. Import the collection again to retry.";
-                StatusText.Text += ex is InvalidDataException ? " · No importable load order" : " · Load order could not be checked";
+                SaveOrderButton.ToolTip = ex is InvalidDataException ? ex.Message : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Could not retrieve the collection load order. Import the collection again to retry.");
+                StatusText.Text += ex is InvalidDataException ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate(" · No importable load order") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate(" · Load order could not be checked");
             }
         }
-        catch (OperationCanceledException) { if (!_lifetime.IsCancellationRequested) StatusText.Text = "Loading timed out. Try again."; }
-        catch (Exception ex) { StatusText.Text = ex is InvalidDataException or InvalidOperationException ? ex.Message : "Could not load the collection. Check your connection and try again."; }
+        catch (OperationCanceledException) { if (!_lifetime.IsCancellationRequested) StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Loading timed out. Try again."); }
+        catch (Exception ex) { StatusText.Text = ex is InvalidDataException or InvalidOperationException ? ex.Message : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Could not load the collection. Check your connection and try again."); }
         finally { Busy(false); }
     }
     private void SaveOrder_Click(object sender, RoutedEventArgs e)
     {
         if (_busy || _preview == null || _collectionOrder?.Count is not > 0) return;
         Busy(true);
-        StatusText.Text = "Saving collection load order…";
+        StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Saving collection load order…");
         try
         {
             var entries = _collectionOrder;
@@ -344,15 +344,15 @@ public partial class ReduxCollectionWindow : AdonisUI.Controls.AdonisWindow
             var review = new ReduxSaveModReviewWindow(this, _preview.Name, _viewModel.ReviewSaveMods(entries), _viewModel.Settings, collectionOrder: true);
             if (ReduxWindowBehavior.ShowDialogWithOwnerBackdrop(review, this) != true) return;
             var name = _viewModel.SaveCollectionLoadOrder(_preview, entries);
-            StatusText.Text = $"Saved {name} ({entries.Count} mods). Select it from the main window’s Load Order dropdown.";
+            StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Saved {name} ({entries.Count} mods). Select it from the main window’s Load Order dropdown.");
             ReduxMessageBox.Show(this,
-                $"Saved “{name}” with {entries.Count} mods.\n\nYou can select it from the Load Order dropdown in the main Redux window. Your current load order has not been changed.",
+                DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Saved “{name}” with {entries.Count} mods.\n\nYou can select it from the Load Order dropdown in the main Redux window. Your current load order has not been changed."),
                 "Load Order Saved", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-        catch (OperationCanceledException) { if (!_lifetime.IsCancellationRequested) StatusText.Text = "Reading the load order timed out. Try again."; }
+        catch (OperationCanceledException) { if (!_lifetime.IsCancellationRequested) StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Reading the load order timed out. Try again."); }
         catch (Exception ex)
         {
-            StatusText.Text = ex is InvalidDataException ? ex.Message : "Could not read or save the collection load order. Try again later.";
+            StatusText.Text = ex is InvalidDataException ? ex.Message : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Could not read or save the collection load order. Try again later.");
             if (!_lifetime.IsCancellationRequested)
                 ReduxMessageBox.Show(this, StatusText.Text, "Load Order Not Saved", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
@@ -371,10 +371,10 @@ public partial class ReduxCollectionWindow : AdonisUI.Controls.AdonisWindow
                 await _viewModel.QueueCollectionFileAsync(choice.File, _lifetime.Token);
                 choice.MarkQueued(); added++;
             }
-            StatusText.Text = $"{added} files sent to Download Manager. Review their download and installation status there.";
+            StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{added} files sent to Download Manager. Review their download and installation status there.");
         }
         catch (OperationCanceledException) { }
-        catch (Exception) { StatusText.Text = $"{added} files sent to Download Manager. Remaining files could not be added; try again."; }
+        catch (Exception) { StatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{added} files sent to Download Manager. Remaining files could not be added; try again."); }
         finally { Busy(false); }
     }
     private void Close_Click(object sender, RoutedEventArgs e) => Close();

@@ -70,12 +70,12 @@ public partial class CategoryNameDialog : AdonisWindow
 	{
 		if (GlobalSeparatorCheckBox == null || SeparatorParentComboBox?.SelectedItem is not SeparatorParentChoice choice) return;
 		var hasParent = !String.IsNullOrEmpty(choice.Id);
-		Title = hasParent ? "Edit Sub-separator" : "Edit Separator";
+		Title = hasParent ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Edit Sub-separator") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Edit Separator");
 		GlobalSeparatorCheckBox.IsEnabled = _parentScopeCanChange && !hasParent;
 		if (hasParent) GlobalSeparatorCheckBox.IsChecked = choice.IsGlobal;
 		GlobalSeparatorCheckBox.ToolTip = hasParent
-			? "Sub-separators inherit persistence from their containing separator."
-			: _parentScopeCanChange ? "Keep this separator available across saved load orders." : "This pane's organization is shared across load orders.";
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Sub-separators inherit persistence from their containing separator.")
+			: _parentScopeCanChange ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Keep this separator available across saved load orders.") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("This pane's organization is shared across load orders.");
 	}
 
 	private sealed class IconChooserChoice : INotifyPropertyChanged
@@ -119,7 +119,7 @@ public partial class CategoryNameDialog : AdonisWindow
 		NameEditorPanel.Visibility = Visibility.Collapsed;
 		IconChooserCard.Visibility = Visibility.Collapsed;
 		DescriptionEditorPanel.Visibility = Visibility.Collapsed;
-		ConfirmButtonText.Text = "Save";
+		ConfirmButtonText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Save");
 		ConfirmButtonIcon.StrokeData = FindResource("Redux.Icon.Save") as Geometry;
 		DialogHeading.Visibility = Visibility.Visible;
 		IconOptionsPanel.Visibility = Visibility.Collapsed;
@@ -194,24 +194,24 @@ public partial class CategoryNameDialog : AdonisWindow
 		TintCustomIconCheckBox.IsChecked = tintCustomIcon;
 		UpdateCustomIconControls();
 		if (ColorConverter.ConvertFromString(color) is Color selectedColor) CategoryColorPicker.SelectedColor = selectedColor;
-		Title = visualDividerMode ? (String.IsNullOrEmpty(categoryName) ? "Add Separator" : "Edit Separator") : canEditName ? "Add Mod Category" : "Edit Category";
-		DialogHeading.Text = visualDividerMode ? "Style a separator" : canEditName ? "Create a category" : $"Edit {categoryName}";
+		Title = visualDividerMode ? (String.IsNullOrEmpty(categoryName) ? "Add Separator" : "Edit Separator") : canEditName ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Add Mod Category") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Edit Category");
+		DialogHeading.Text = visualDividerMode ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Style a separator") : canEditName ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Create a category") : $"Edit {categoryName}";
 		DialogHelperText.Text = visualDividerMode
-			? "Organize your mods with a label, icon, and color."
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Organize your mods with a label, icon, and color.")
 			: canEditName
-			? "Give your category a name, then choose an icon and color."
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Give your category a name, then choose an icon and color.")
 			: canResetToDefault
-			? "Built-in category names cannot be changed. Change its color and icon, or reset it to the default."
-			: "Choose a color and marker or icon. Dot is the default.";
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Built-in category names cannot be changed. Change its color and icon, or reset it to the default.")
+			: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Choose a color and marker or icon. Dot is the default.");
 		var isNewCategory = !visualDividerMode && canEditName;
-		ConfirmButtonText.Text = isNewCategory ? "Add" : "Save";
+		ConfirmButtonText.Text = isNewCategory ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Add") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Save");
 		ConfirmButtonIcon.StrokeData = FindResource(isNewCategory ? "Redux.Icon.AddCircle" : "Redux.Icon.Save") as Geometry;
 		ResetToDefaultButton.Visibility = canResetToDefault ? Visibility.Visible : Visibility.Collapsed;
 		if (canResetToDefault)
-			CategoryNameTextBox.ToolTip = "Create a custom category to use a different name.";
+			CategoryNameTextBox.ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Create a custom category to use a different name.");
 		if (visualDividerMode)
 		{
-			CategoryNameFieldLabel.Text = "Label (optional)";
+			CategoryNameFieldLabel.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Label (optional)");
 			DescriptionEditorPanel.Visibility = Visibility.Visible;
 			ShowSeparatorLineCheckBox.IsChecked = !hideSeparatorLine;
 			ShowSeparatorLineCheckBox.Visibility = Visibility.Visible;
@@ -222,21 +222,21 @@ public partial class CategoryNameDialog : AdonisWindow
 			GlobalSeparatorCheckBox.IsEnabled = allowGlobalSeparator && !lockedGlobalSeparator.HasValue;
 			if (lockedGlobalSeparator.HasValue)
 			{
-				GlobalSeparatorCheckBoxText.Text = "Use in every load order";
+				GlobalSeparatorCheckBoxText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Use in every load order");
 				GlobalSeparatorCheckBox.ToolTip = lockedGlobalSeparator.Value
-					? "This sub-separator inherits persistence from its containing separator."
-					: "This sub-separator is local because its containing separator is local.";
+					? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("This sub-separator inherits persistence from its containing separator.")
+					: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("This sub-separator is local because its containing separator is local.");
 			}
 			else if (!allowGlobalSeparator)
 			{
-				GlobalSeparatorCheckBoxText.Text = "Used in every load order";
-				GlobalSeparatorCheckBox.ToolTip = "Inactive Mods organization is shared across every load order automatically.";
+				GlobalSeparatorCheckBoxText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Used in every load order");
+				GlobalSeparatorCheckBox.ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Inactive Mods organization is shared across every load order automatically.");
 			}
-			ColorFieldLabel.Text = "Separator color";
-			IconFieldLabel.Text = "Icon";
-			TintCustomIconText.Text = "Tint with separator color";
-			CategoryNameTextBox.ToolTip = "Optional separator label";
-			CategoryDescriptionTextBox.ToolTip = "Shown when the separator is hovered in the mod list";
+			ColorFieldLabel.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Separator color");
+			IconFieldLabel.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Icon");
+			TintCustomIconText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Tint with separator color");
+			CategoryNameTextBox.ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Optional separator label");
+			CategoryDescriptionTextBox.ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Shown when the separator is hovered in the mod list");
 		}
 		UpdateColorPresentation();
 		RefreshSavedColors();
@@ -493,7 +493,7 @@ public partial class CategoryNameDialog : AdonisWindow
 	{
 		var dialog = new OpenFileDialog
 		{
-			Title = "Import Custom Icon",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Import Custom Icon"),
 			Filter = "PNG images (*.png)|*.png",
 			CheckFileExists = true,
 			Multiselect = false

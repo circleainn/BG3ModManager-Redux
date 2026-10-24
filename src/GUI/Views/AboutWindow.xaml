@@ -1,11 +1,12 @@
 <local:AboutWindowBase x:Class="DivinityModManager.Views.AboutWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:app="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore"
 	xmlns:c="clr-namespace:DivinityModManager.Controls"
 	xmlns:local="clr-namespace:DivinityModManager.Views"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="About BG3 Mod Manager Redux"
+	Title="{loc:Text About_BG3_Mod_Manager_Redux_7df2c203}"
 	Width="720"
 	Height="500"
 	MinWidth="640"
@@ -88,9 +89,9 @@
 					<TextBlock Margin="0,4,0,0"
 						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 						TextWrapping="Wrap">
-						<Run Text="Version " />
+						<Run Text="{loc:Text Version_92b2c95e}" />
 						<Run Text="{x:Static app:DivinityApp.REDUX_DISPLAY_VERSION}" />
-						<Run Text="  •  A community-made update to BG3 Mod Manager" />
+						<Run Text="{loc:Text A_community_made_update_to_BG3_Mod_Manager_b39de384}" />
 					</TextBlock>
 				</StackPanel>
 			</Grid>
@@ -109,10 +110,10 @@
 
 				<Border Style="{StaticResource AboutSectionCardStyle}">
 					<StackPanel>
-						<TextBlock Style="{StaticResource Redux.Text.SectionTitle}" Text="Current Project" />
+						<TextBlock Style="{StaticResource Redux.Text.SectionTitle}" Text="{loc:Text Current_Project_e1e7a358}" />
 						<TextBlock Margin="0,5,0,14"
 							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="Maintained by circleainn."
+							Text="{loc:Text Maintained_by_circleainn_47f9bf41}"
 							TextWrapping="Wrap" />
 						<Grid>
 							<Grid.ColumnDefinitions>
@@ -126,15 +127,15 @@
 								<RowDefinition MinHeight="29" />
 								<RowDefinition MinHeight="29" />
 							</Grid.RowDefinitions>
-							<TextBlock Style="{StaticResource AboutLabelStyle}" Text="Project" />
+							<TextBlock Style="{StaticResource AboutLabelStyle}" Text="{loc:Text Project_98595978}" />
 							<c:HyperlinkText Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Open on GitHub" URL="{x:Static app:DivinityApp.URL_REDUX_REPO}" />
-							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="Releases" />
+							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="{loc:Text Releases_1a6f7cae}" />
 							<c:HyperlinkText Grid.Row="1" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="View releases" URL="{x:Static app:DivinityApp.URL_REDUX_RELEASES}" />
-							<TextBlock Grid.Row="2" Style="{StaticResource AboutLabelStyle}" Text="Issues" />
+							<TextBlock Grid.Row="2" Style="{StaticResource AboutLabelStyle}" Text="{loc:Text Issues_666067dd}" />
 							<c:HyperlinkText Grid.Row="2" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Report an issue" URL="{x:Static app:DivinityApp.URL_REDUX_BUG_REPORT}" />
-							<TextBlock Grid.Row="3" Style="{StaticResource AboutLabelStyle}" Text="License" />
+							<TextBlock Grid.Row="3" Style="{StaticResource AboutLabelStyle}" Text="{loc:Text License_c011d609}" />
 							<c:HyperlinkText Grid.Row="3" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="MIT License" URL="{x:Static app:DivinityApp.URL_REDUX_LICENSE}" />
-							<TextBlock Grid.Row="4" Style="{StaticResource AboutLabelStyle}" Text="Support" />
+							<TextBlock Grid.Row="4" Style="{StaticResource AboutLabelStyle}" Text="{loc:Text Support_be91940b}" />
 							<c:HyperlinkText Grid.Row="4" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Support circleain on Ko-fi" URL="{x:Static app:DivinityApp.URL_REDUX_DONATION}" />
 						</Grid>
 					</StackPanel>
@@ -142,10 +143,10 @@
 
 				<Border Grid.Column="2" Style="{StaticResource AboutSectionCardStyle}">
 					<StackPanel>
-						<TextBlock Style="{StaticResource Redux.Text.SectionTitle}" Text="Original Project" />
+						<TextBlock Style="{StaticResource Redux.Text.SectionTitle}" Text="{loc:Text Original_Project_8e5c518b}" />
 						<TextBlock Margin="0,5,0,14"
 							Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="This project builds on LaughingLeader's BG3 Mod Manager and keeps its familiar load-order and package-management foundation."
+							Text="{loc:Text This_project_builds_on_LaughingLeader_s_BG3_Mod_Manager_and__1d73fadf}"
 							TextWrapping="Wrap" />
 						<Grid>
 							<Grid.ColumnDefinitions>
@@ -157,11 +158,11 @@
 								<RowDefinition MinHeight="29" />
 								<RowDefinition MinHeight="29" />
 							</Grid.RowDefinitions>
-							<TextBlock Style="{StaticResource AboutLabelStyle}" Text="Upstream" />
+							<TextBlock Style="{StaticResource AboutLabelStyle}" Text="{loc:Text Upstream_94adc696}" />
 							<c:HyperlinkText Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Original BG3 Mod Manager" URL="{x:Static app:DivinityApp.URL_REPO}" />
-							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="Author" />
+							<TextBlock Grid.Row="1" Style="{StaticResource AboutLabelStyle}" Text="{loc:Text Author_d95082a2}" />
 							<c:HyperlinkText Grid.Row="1" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="LaughingLeader" URL="{x:Static app:DivinityApp.URL_AUTHOR}" />
-							<TextBlock Grid.Row="2" Style="{StaticResource AboutLabelStyle}" Text="Support" />
+							<TextBlock Grid.Row="2" Style="{StaticResource AboutLabelStyle}" Text="{loc:Text Support_be91940b}" />
 							<c:HyperlinkText Grid.Row="2" Grid.Column="1" Style="{StaticResource AboutLinkStyle}" DisplayText="Support on Ko-fi" URL="{x:Static app:DivinityApp.URL_DONATION}" />
 						</Grid>
 					</StackPanel>
@@ -172,7 +173,7 @@
 				Margin="0,16,0,0"
 				HorizontalAlignment="Center"
 				Style="{StaticResource Redux.Text.Caption}"
-				Text="Built on the original BG3 Mod Manager." />
+				Text="{loc:Text Built_on_the_original_BG3_Mod_Manager_708c53ef}" />
 		</Grid>
 		</Border>
 	</Grid>

@@ -41,7 +41,7 @@ public partial class ReduxFileOverlapWindow : AdonisUI.Controls.AdonisWindow
 		}
 
 		_candidates = candidates ?? [];
-		ScanStatusText.Text = $"0 of {_candidates.Count} packages scanned";
+		ScanStatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"0 of {_candidates.Count} packages scanned");
 		Loaded += ReduxFileOverlapWindow_Loaded;
 		Closing += ReduxFileOverlapWindow_Closing;
 		PreviewKeyDown += ReduxFileOverlapWindow_PreviewKeyDown;
@@ -73,7 +73,7 @@ public partial class ReduxFileOverlapWindow : AdonisUI.Controls.AdonisWindow
 				state.TotalPackageCount,
 				state.CompletedPackageCount + 1);
 			ScanStatusText.Text = state.CompletedPackageCount >= state.TotalPackageCount
-				? "Preparing overlap results..."
+				? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Preparing overlap results...")
 				: $"{current} of {state.TotalPackageCount} · {state.CurrentModName}";
 		});
 
@@ -118,7 +118,7 @@ public partial class ReduxFileOverlapWindow : AdonisUI.Controls.AdonisWindow
 		AffectedPackageCountText.Text = _result.AffectedPackageCount.ToString();
 		ScanStatusText.Text = BuildStatusText(_result);
 		SearchTextBox.IsEnabled = true;
-		ScanActionButtonText.Text = "Close";
+		ScanActionButtonText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Close");
 		SetEmptyStateIcon("Redux.Icon.CircleCheck", "ReduxSuccessBrush");
 		RefreshFilter();
 	}
@@ -129,10 +129,10 @@ public partial class ReduxFileOverlapWindow : AdonisUI.Controls.AdonisWindow
 		OverlapList.ItemsSource = null;
 		VisibleResultCountText.Text = String.Empty;
 		EmptyState.Visibility = Visibility.Visible;
-		EmptyStateTitle.Text = "Inspection cancelled";
-		EmptyStateDescription.Text = "No files or load-order data were changed.";
-		ScanStatusText.Text = "Cancelled";
-		ScanActionButtonText.Text = "Close";
+		EmptyStateTitle.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Inspection cancelled");
+		EmptyStateDescription.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No files or load-order data were changed.");
+		ScanStatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Cancelled");
+		ScanActionButtonText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Close");
 		ScanActionButton.IsEnabled = true;
 		SetEmptyStateIcon("Redux.Icon.CloseCircle", "ReduxTextMutedBrush");
 	}
@@ -143,12 +143,12 @@ public partial class ReduxFileOverlapWindow : AdonisUI.Controls.AdonisWindow
 		OverlapList.ItemsSource = null;
 		VisibleResultCountText.Text = String.Empty;
 		EmptyState.Visibility = Visibility.Visible;
-		EmptyStateTitle.Text = "Packages could not be inspected";
+		EmptyStateTitle.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Packages could not be inspected");
 		EmptyStateDescription.Text = String.IsNullOrWhiteSpace(message)
-			? "See the Redux log for details."
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("See the Redux log for details.")
 			: message;
-		ScanStatusText.Text = "Inspection failed";
-		ScanActionButtonText.Text = "Close";
+		ScanStatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Inspection failed");
+		ScanActionButtonText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Close");
 		ScanActionButton.IsEnabled = true;
 		SetEmptyStateIcon("Redux.Icon.CloseCircle", "ReduxErrorBrush");
 	}
@@ -201,17 +201,17 @@ public partial class ReduxFileOverlapWindow : AdonisUI.Controls.AdonisWindow
 						|| package.PackageFileName.Contains(query, StringComparison.OrdinalIgnoreCase)))
 				.ToArray();
 		OverlapList.ItemsSource = visible;
-		VisibleResultCountText.Text = $"{visible.Count} of {_result.OverlapPathCount}";
+		VisibleResultCountText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{visible.Count} of {_result.OverlapPathCount}");
 		EmptyState.Visibility = visible.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 		if (visible.Count == 0 && _result.HasOverlaps)
 		{
-			EmptyStateTitle.Text = "No matching overlaps";
-			EmptyStateDescription.Text = "Try a different path or package name.";
+			EmptyStateTitle.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No matching overlaps");
+			EmptyStateDescription.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Try a different path or package name.");
 		}
 		else
 		{
-			EmptyStateTitle.Text = "No shared internal paths found";
-			EmptyStateDescription.Text = "The scanned packages do not overlap.";
+			EmptyStateTitle.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No shared internal paths found");
+			EmptyStateDescription.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("The scanned packages do not overlap.");
 		}
 	}
 
@@ -220,7 +220,7 @@ public partial class ReduxFileOverlapWindow : AdonisUI.Controls.AdonisWindow
 		if (_scanActive)
 		{
 			ScanActionButton.IsEnabled = false;
-			ScanStatusText.Text = "Cancelling...";
+			ScanStatusText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Cancelling...");
 			_scanCancellation.Cancel();
 			return;
 		}

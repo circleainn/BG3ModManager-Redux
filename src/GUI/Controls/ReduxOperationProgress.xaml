@@ -1,5 +1,6 @@
 <UserControl x:Class="DivinityModManager.Controls.ReduxOperationProgress"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	x:Name="Root"
@@ -79,7 +80,7 @@
 					Foreground="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
 					StrokeData="{DynamicResource Redux.Icon.Close}"
 					Style="{DynamicResource ReduxOptionalInterfaceIconStyle}" />
-				<TextBlock Text="Cancel" />
+				<TextBlock Text="{loc:Text Cancel_19766ed6}" />
 			</StackPanel>
 		</Button>
 	</Grid>

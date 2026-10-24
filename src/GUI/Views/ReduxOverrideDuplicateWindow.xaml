@@ -1,10 +1,11 @@
 <adonisUI:AdonisWindow x:Class="DivinityModManager.Views.ReduxOverrideDuplicateWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Resolve Override Copies" Width="880" Height="700" MinWidth="650" MinHeight="480"
+	Title="{loc:Text Resolve_Override_Copies_1416205c}" Width="880" Height="700" MinWidth="650" MinHeight="480"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	ResizeMode="CanResize" ShowInTaskbar="False" WindowStartupLocation="CenterOwner"
 	WindowStyle="SingleBorderWindow" Template="{DynamicResource ReduxWindowTemplate}"
@@ -36,9 +37,9 @@
 				<Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
 				<ScrollViewer x:Name="ReviewScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,12">
 					<StackPanel>
-						<TextBlock Text="Choose which copy to keep" FontSize="{DynamicResource Redux.FontSize.20}" FontWeight="SemiBold" TextWrapping="Wrap" />
+						<TextBlock Text="{loc:Text Choose_which_copy_to_keep_4330add9}" FontSize="{DynamicResource Redux.FontSize.20}" FontWeight="SemiBold" TextWrapping="Wrap" />
 						<TextBlock Margin="0,7,0,12" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-							Text="The chosen copy stays in its current folder. Redux backs up the other complete package before removing it from that folder. Keeping a held copy does not enable it. Your load-order choice is unchanged." />
+							Text="{loc:Text The_chosen_copy_stays_in_its_current_folder_Redux_backs_up_t_31fa0a1f}" />
 						<ProgressBar x:Name="BusyProgress" Height="4" Margin="0,0,0,12" IsIndeterminate="True" />
 					<ItemsControl x:Name="ConflictItems">
 						<ItemsControl.ItemTemplate><DataTemplate>
@@ -46,12 +47,12 @@
 								BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Card}">
 								<StackPanel>
 									<TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
-									<TextBlock Text="{Binding Comparison}" Margin="0,5,0,8" TextWrapping="Wrap" Foreground="{DynamicResource ReduxWarningBrush}" />
+									<TextBlock Text="{loc:BoundText Path=Comparison}" Margin="0,5,0,8" TextWrapping="Wrap" Foreground="{DynamicResource ReduxWarningBrush}" />
 									<TextBlock Text="{Binding ModsSummary}" TextWrapping="Wrap" Margin="0,0,0,6" />
 									<TextBlock Text="{Binding HeldSummary}" TextWrapping="Wrap" Margin="0,0,0,10" />
-									<ComboBox ItemsSource="{Binding Options}" DisplayMemberPath="Label" SelectedValuePath="Value"
+									<ComboBox ItemsSource="{Binding Options}" DisplayMemberPath="DisplayLabel" SelectedValuePath="Value"
 										SelectedValue="{Binding Choice, Mode=TwoWay}" SelectionChanged="Choice_SelectionChanged"
-										MinWidth="240" HorizontalAlignment="Left" AutomationProperties.Name="{Binding Name, StringFormat=Copy to keep for {0}}" />
+										MinWidth="240" HorizontalAlignment="Left" AutomationProperties.Name="{loc:FormatText Key=Copy_to_keep_for_0_4e361873, Path=Name}" />
 								</StackPanel>
 							</Border>
 						</DataTemplate></ItemsControl.ItemTemplate>
@@ -62,19 +63,19 @@
 				<Grid Grid.Row="1">
 					<Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
 					<WrapPanel VerticalAlignment="Center">
-						<Button Content="Open Mods" Tag="{StaticResource Redux.Icon.FolderOpen}" ContentTemplate="{StaticResource OverrideRecoveryActionContentTemplate}"
+						<Button Content="{loc:Text Open_Mods_df7e0667}" Tag="{StaticResource Redux.Icon.FolderOpen}" ContentTemplate="{StaticResource OverrideRecoveryActionContentTemplate}"
 							Margin="0,0,6,6" Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="OpenMods_Click" />
-						<Button Content="Open Holding" Tag="{StaticResource Redux.Icon.FolderOpen}" ContentTemplate="{StaticResource OverrideRecoveryActionContentTemplate}"
+						<Button Content="{loc:Text Open_Holding_58d8af3d}" Tag="{StaticResource Redux.Icon.FolderOpen}" ContentTemplate="{StaticResource OverrideRecoveryActionContentTemplate}"
 							Margin="0,0,6,6" Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="OpenHolding_Click" />
-						<Button Content="Copy Details" Tag="{StaticResource Redux.Icon.Copy}" ContentTemplate="{StaticResource OverrideRecoveryActionContentTemplate}"
+						<Button Content="{loc:Text Copy_Details_c6bb8a59}" Tag="{StaticResource Redux.Icon.Copy}" ContentTemplate="{StaticResource OverrideRecoveryActionContentTemplate}"
 							Margin="0,0,6,6" Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="CopyDetails_Click" />
-						<Button x:Name="ReviewButton" Content="Review Again" Tag="{StaticResource Redux.Icon.RefreshStroke}" ContentTemplate="{StaticResource OverrideRecoveryActionContentTemplate}"
+						<Button x:Name="ReviewButton" Content="{loc:Text Review_Again_823d9ee0}" Tag="{StaticResource Redux.Icon.RefreshStroke}" ContentTemplate="{StaticResource OverrideRecoveryActionContentTemplate}"
 							Margin="0,0,6,6" IsEnabled="False" Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="ReviewAgain_Click" />
 					</WrapPanel>
 					<StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="12,0,0,6">
-						<Button Content="Cancel" Tag="{StaticResource Redux.Icon.Close}" ContentTemplate="{StaticResource OverrideRecoveryActionContentTemplate}"
+						<Button Content="{loc:Text Cancel_19766ed6}" Tag="{StaticResource Redux.Icon.Close}" ContentTemplate="{StaticResource OverrideRecoveryActionContentTemplate}"
 							MinWidth="80" IsCancel="True" Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="Cancel_Click" />
-						<Button x:Name="ApplyButton" Content="Back Up and Apply" MinWidth="150" Margin="8,0,0,0" IsEnabled="False"
+						<Button x:Name="ApplyButton" Content="{loc:Text Back_Up_and_Apply_71c1e7bc}" MinWidth="150" Margin="8,0,0,0" IsEnabled="False"
 							Tag="{StaticResource Redux.Icon.Archive}" ContentTemplate="{StaticResource OverrideRecoveryActionContentTemplate}"
 							Style="{StaticResource ReduxPrimaryActionButtonStyle}" Click="Apply_Click" />
 					</StackPanel>

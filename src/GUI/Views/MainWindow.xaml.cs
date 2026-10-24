@@ -143,7 +143,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		var shutdownText = doShutdown ? " The program will close." : "";
 		DivinityApp.Log($"An exception in the UI occurred.{shutdownText}\n{e.Exception}");
 
-		var result = ReduxMessageBox.Show($"An exception in the UI occurred.{shutdownText}\n{e.Exception}",
+		var result = ReduxMessageBox.Show(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"An exception in the UI occurred.{shutdownText}\n{e.Exception}"),
 			"Open the logs folder?",
 			System.Windows.MessageBoxButton.YesNo,
 			System.Windows.MessageBoxImage.Error,
@@ -167,7 +167,7 @@ public partial class MainWindow : AdonisWindow, IViewFor<MainWindowViewModel>, I
 		var shutdownText = doShutdown ? " The program will close." : "";
 
 		DivinityApp.Log($"An unhandled exception occurred.{shutdownText}\n{e.ExceptionObject}");
-		var result = ReduxMessageBox.Show($"An unhandled exception occurred.{shutdownText}\n{e.ExceptionObject}",
+		var result = ReduxMessageBox.Show(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"An unhandled exception occurred.{shutdownText}\n{e.ExceptionObject}"),
 			"Open the logs folder?",
 			System.Windows.MessageBoxButton.YesNo,
 			System.Windows.MessageBoxImage.Error,

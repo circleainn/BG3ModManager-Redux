@@ -21,6 +21,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<InternalsVisibleTo Include="Redux.Core.Tests" />
+		<EmbeddedResource Include="Localization/InterfaceStrings.json" LogicalName="Redux.InterfaceStrings.json" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\External\lslib\LSLibNative\LSLibNative.vcxproj" />

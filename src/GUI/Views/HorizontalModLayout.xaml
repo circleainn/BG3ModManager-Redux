@@ -1,5 +1,6 @@
 ﻿<local:HorizontalModLayoutBase x:Class="DivinityModManager.Views.HorizontalModLayout"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
 	xmlns:behavior="clr-namespace:DivinityModManager.Controls.Behavior"
@@ -119,7 +120,7 @@
 			<DataTemplate x:Key="ModCategoryFilterNoticeContentTemplate">
 				<StackPanel Orientation="Horizontal">
 					<TextBlock Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-						Text="Filtered: " />
+						Text="{loc:Text Filtered_e23d8f1f}" />
 					<c:ReduxIcon Width="11" Height="11" Margin="0,0,4,0"
 						VerticalAlignment="Center"
 						Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
@@ -128,7 +129,7 @@
 					<TextBlock Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 						Text="{Binding SelectedModCategory}" />
 					<TextBlock Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
-						Text=" · Clear" />
+						Text="{loc:Text Clear_c34cbc45}" />
 				</StackPanel>
 			</DataTemplate>
 			<!-- One vertical rhythm for Categories, Active Mods, and Inactive Mods. -->
@@ -877,11 +878,11 @@
 										HorizontalAlignment="Center"
 										FontWeight="SemiBold"
 										Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-										Text="No linked media" />
+										Text="{loc:Text No_linked_media_28839805}" />
 									<TextBlock Margin="0,2,0,0"
 										HorizontalAlignment="Center"
 										Foreground="{DynamicResource ReduxTextMutedBrush}"
-										Text="Online source will appear here when linked."
+										Text="{loc:Text Online_source_will_appear_here_when_linked_dca6829a}"
 										TextAlignment="Center"
 										TextWrapping="Wrap" />
 								</StackPanel>
@@ -919,16 +920,16 @@
 						<WrapPanel Grid.Row="2" Margin="0,7,0,0">
 							<Border Style="{StaticResource ModDetailsMetadataChipStyle}"
 								Visibility="{Binding HasCustomAlias, Converter={StaticResource BoolToVisibilityConverter}}"
-								ToolTip="Original Redux/provider package title">
+								ToolTip="{loc:Text Original_Redux_provider_package_title_8fb0595c}">
 								<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}">
-									<Run Text="Original: " /><Run Text="{Binding Metadata.PackageTitle, Mode=OneWay}" />
+									<Run Text="{loc:Text Original_018584f3}" /><Run Text="{Binding Metadata.PackageTitle, Mode=OneWay}" />
 								</TextBlock>
 							</Border>
 							<Border Style="{StaticResource ModDetailsMetadataChipStyle}"
 								Visibility="{Binding HasCustomAlias, Converter={StaticResource BoolToVisibilityConverter}}"
-								ToolTip="Original module name from meta.lsx">
+								ToolTip="{loc:Text Original_module_name_from_meta_lsx_f1304ee8}">
 								<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}">
-									<Run Text="Module: " /><Run Text="{Binding Name, Mode=OneWay}" />
+									<Run Text="{loc:Text Module_92455aa4}" /><Run Text="{Binding Name, Mode=OneWay}" />
 								</TextBlock>
 							</Border>
 							<Border Style="{StaticResource ModDetailsMetadataChipStyle}"
@@ -968,7 +969,7 @@
 							</Border>
 							<Button Click="EditModAliasButton_Click"
 								Style="{StaticResource ModDetailsLocalActionButtonStyle}"
-								ToolTip="Use a local display name while preserving the original package metadata.">
+								ToolTip="{loc:Text Use_a_local_display_name_while_preserving_the_original_packa_66f0312a}">
 								<StackPanel Orientation="Horizontal">
                                     <c:ReduxIcon Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center"
                                         Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Create}"/>
@@ -988,7 +989,7 @@
                             </Button>
 							<Button Click="EditModArtworkButton_Click"
 								Style="{StaticResource ModDetailsLocalActionButtonStyle}"
-								ToolTip="Choose a local preview image without changing provider metadata.">
+								ToolTip="{loc:Text Choose_a_local_preview_image_without_changing_provider_metad_59ae430a}">
 								<StackPanel Orientation="Horizontal">
                                     <c:ReduxIcon Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center"
                                         Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Camera}"/>
@@ -1007,7 +1008,7 @@
                                 </StackPanel>
                             </Button>
 							<Button Click="ClearModArtworkButton_Click"
-								Content="Clear artwork"
+								Content="{loc:Text Clear_artwork_e38bfaee}"
 								Style="{StaticResource ModDetailsLocalActionButtonStyle}"
 								Visibility="{Binding HasCustomPreviewImage, Converter={StaticResource BoolToVisibilityConverter}}" />
 							<Button Command="{Binding Path=OpenURLCommand, Source={x:Static dapp:DivinityApp.Commands}}"
@@ -1015,7 +1016,7 @@
 								Content="{Binding}"
 								ContentTemplate="{StaticResource PlatformAuthorButtonTemplate}"
 								Style="{StaticResource ModDetailsSourceButtonStyle}"
-								ToolTip="Open the mod author's profile"
+								ToolTip="{loc:Text Open_the_mod_author_s_profile_536ff378}"
 								Visibility="{Binding Metadata.AuthorPageVisibility}" />
 							<Button Command="{Binding Path=OpenModSourcePageCommand, Source={x:Static dapp:DivinityApp.Commands}}"
 								CommandParameter="{Binding}"
@@ -1045,7 +1046,7 @@
 								<TextBlock FontSize="{DynamicResource Redux.FontSize.11}"
 									FontWeight="SemiBold"
 									Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="SUMMARY" />
+									Text="{loc:Text SUMMARY_6997c676}" />
 								<ScrollViewer Grid.Row="1"
 									Margin="0,4,0,0"
 									HorizontalScrollBarVisibility="Disabled"
@@ -1107,13 +1108,13 @@
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="Auto" />
 					</Grid.RowDefinitions>
-					<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="Installed package" />
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="{loc:Text Installed_package_740ffa91}" />
 					<Grid Grid.Row="1" Margin="0,10,0,0">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="80" />
 							<ColumnDefinition Width="*" />
 						</Grid.ColumnDefinitions>
-						<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Mod UUID" />
+						<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text Mod_UUID_c6d51f0f}" />
 						<TextBlock Grid.Column="1" Text="{Binding UUID}" TextTrimming="CharacterEllipsis" ToolTip="{Binding UUID}" />
 					</Grid>
 					<Grid Grid.Row="2" Margin="0,8,0,0">
@@ -1121,7 +1122,7 @@
 							<ColumnDefinition Width="80" />
 							<ColumnDefinition Width="*" />
 						</Grid.ColumnDefinitions>
-						<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="File path" />
+						<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text File_path_2fb6d386}" />
 						<TextBlock Grid.Column="1" Text="{Binding FilePath}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" />
 					</Grid>
 				</Grid>
@@ -1133,11 +1134,11 @@
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="*" />
 					</Grid.RowDefinitions>
-					<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="Installed mod dependencies" />
+					<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="{loc:Text Installed_mod_dependencies_52e08b87}" />
 					<TextBlock Grid.Row="1"
 						Margin="0,2,0,0"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="Dependencies parsed from the installed mod package. Online requirements can be added when a source provides them." />
+						Text="{loc:Text Dependencies_parsed_from_the_installed_mod_package_Online_re_250e58d8}" />
 					<Border Grid.Row="2"
 						Margin="0,9,0,0"
 						Padding="10"
@@ -1170,10 +1171,10 @@
 										</Style.Triggers>
 									</Style>
 								</StackPanel.Style>
-								<TextBlock HorizontalAlignment="Center" FontWeight="SemiBold" Text="No installed dependencies declared" />
+								<TextBlock HorizontalAlignment="Center" FontWeight="SemiBold" Text="{loc:Text No_installed_dependencies_declared_d02d89c5}" />
 								<TextBlock Margin="0,5,0,0"
 									Foreground="{DynamicResource ReduxTextMutedBrush}"
-									Text="This mod does not list another mod as a dependency."
+									Text="{loc:Text This_mod_does_not_list_another_mod_as_a_dependency_4bc0b4e0}"
 									TextAlignment="Center"
 									TextWrapping="Wrap" />
 							</StackPanel>
@@ -1254,7 +1255,7 @@
 							<TextBlock VerticalAlignment="Center"
 								FontSize="{DynamicResource Redux.FontSize.16}"
 								FontWeight="SemiBold"
-								Text="Notes" />
+								Text="{loc:Text Notes_8a7525b1}" />
 						</StackPanel>
 						<Button Grid.Column="1"
 							MinWidth="76"
@@ -1274,7 +1275,7 @@
 					<TextBlock Grid.Row="1"
 						Margin="0,3,0,10"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="Stored on this computer unless included in a Redux Modlist."
+						Text="{loc:Text Stored_on_this_computer_unless_included_in_a_Redux_Modlist_b8589f73}"
 						TextWrapping="Wrap" />
 					<Border Grid.Row="2"
 						Padding="12,10"
@@ -1306,27 +1307,27 @@
 			<DataTemplate x:Key="ModDetailsDebugTemplate" DataType="{x:Type data:DivinityModData}">
 				<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 					<StackPanel Margin="18,12">
-						<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="Technical mod state" />
+						<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold" Text="{loc:Text Technical_mod_state_8443c20d}" />
 						<TextBlock Margin="0,2,0,10" Foreground="{DynamicResource ReduxTextMutedBrush}"
-							Text="Read-only values used to identify this package and diagnose its current Redux state."
+							Text="{loc:Text Read_only_values_used_to_identify_this_package_and_diagnose__44d5c556}"
 							TextWrapping="Wrap" />
 						<UniformGrid Columns="2">
 							<Border Margin="0,0,5,8" Padding="11,9" Background="{DynamicResource ReduxListInteriorBrush}"
 								BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 								<StackPanel>
-									<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Package identity" />
+									<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Package_identity_1284e9ed}" />
 									<Grid Margin="0,7,0,0">
 										<Grid.ColumnDefinitions><ColumnDefinition Width="92" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 										<Grid.RowDefinitions><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /></Grid.RowDefinitions>
 										<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="UUID" />
 										<TextBlock Grid.Column="1" Text="{Binding UUID}" TextTrimming="CharacterEllipsis" ToolTip="{Binding UUID}" />
-										<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Folder" />
+										<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Folder_74ccd433}" />
 										<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Folder}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Folder}" />
 										<TextBlock Grid.Row="2" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="PAK" />
 										<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding FileName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding FilePath}" />
-										<TextBlock Grid.Row="3" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Type" />
+										<TextBlock Grid.Row="3" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Type_baaddf70}" />
 										<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ModType, TargetNullValue=Unknown}" />
-										<TextBlock Grid.Row="4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Publish ID" />
+										<TextBlock Grid.Row="4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Publish_ID_6545a0e7}" />
 										<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding PublishHandle}" />
 									</Grid>
 								</StackPanel>
@@ -1334,19 +1335,19 @@
 							<Border Margin="5,0,0,8" Padding="11,9" Background="{DynamicResource ReduxListInteriorBrush}"
 								BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 								<StackPanel>
-									<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Load-order state" />
+									<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Load_order_state_0ccd4a15}" />
 									<Grid Margin="0,7,0,0">
 										<Grid.ColumnDefinitions><ColumnDefinition Width="104" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 										<Grid.RowDefinitions><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /></Grid.RowDefinitions>
-										<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Position" />
+										<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Position_6d031af1}" />
 										<TextBlock Grid.Column="1" Text="{Binding LoadOrderDisplayText}" />
-										<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Active" />
+										<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Active_92340695}" />
 										<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding IsActive}" />
-										<TextBlock Grid.Row="2" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Always loaded" />
+										<TextBlock Grid.Row="2" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Always_loaded_6ed25449}" />
 										<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding IsForceLoaded}" />
-										<TextBlock Grid.Row="3" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Merged override" />
+										<TextBlock Grid.Row="3" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Merged_override_741fb06b}" />
 										<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding IsForceLoadedMergedMod}" />
-										<TextBlock Grid.Row="4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Order allowed" />
+										<TextBlock Grid.Row="4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Order_allowed_b687a9c7}" />
 										<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding CanAddToLoadOrder}" />
 									</Grid>
 								</StackPanel>
@@ -1354,19 +1355,19 @@
 							<Border Margin="0,0,5,8" Padding="11,9" Background="{DynamicResource ReduxListInteriorBrush}"
 								BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 								<StackPanel>
-									<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Source recognition" />
+									<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Source_recognition_eb06890f}" />
 									<Grid Margin="0,7,0,0">
 										<Grid.ColumnDefinitions><ColumnDefinition Width="98" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 										<Grid.RowDefinitions><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /></Grid.RowDefinitions>
-										<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Resolved source" />
+										<TextBlock Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Resolved_source_fd812a89}" />
 										<TextBlock Grid.Column="1" Text="{Binding Metadata.SourceLabel}" />
-										<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Provenance" />
+										<TextBlock Grid.Row="1" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Provenance_1c4b8ff6}" />
 										<TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Metadata.LinkStatus}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Metadata.LinkStatus}" />
-										<TextBlock Grid.Row="2" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Nexus ID" />
+										<TextBlock Grid.Row="2" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Nexus_ID_f2b9d958}" />
 										<TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding NexusModsData.ModId}" />
-										<TextBlock Grid.Row="3" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Nexus origin" />
+										<TextBlock Grid.Row="3" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Nexus_origin_65ddd978}" />
 										<TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding NexusModsData.MetadataOrigin}" />
-										<TextBlock Grid.Row="4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="mod.io ID" />
+										<TextBlock Grid.Row="4" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text mod_io_ID_e113b82f}" />
 										<TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding ModioData.ModId}" />
 									</Grid>
 								</StackPanel>
@@ -1374,15 +1375,15 @@
 							<Border Margin="5,0,0,8" Padding="11,9" Background="{DynamicResource ReduxListInteriorBrush}"
 								BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 								<StackPanel>
-									<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Classification" />
-									<TextBlock Margin="0,7,0,2" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Resolved categories" />
+									<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Classification_72f04995}" />
+									<TextBlock Margin="0,7,0,2" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Resolved_categories_3d93df12}" />
 									<ItemsControl ItemsSource="{Binding DisplayCategories}">
 										<ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
 										<ItemsControl.ItemTemplate>
 											<DataTemplate><Border Margin="0,2,5,2" Padding="7,2" Background="{Binding SoftColor}" CornerRadius="{DynamicResource Redux.CornerRadius.Pill}"><TextBlock Foreground="{Binding Color}" Text="{Binding Name}" /></Border></DataTemplate>
 										</ItemsControl.ItemTemplate>
 									</ItemsControl>
-									<TextBlock Margin="0,7,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="Creator manifest" />
+									<TextBlock Margin="0,7,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}" Text="{loc:Text Creator_manifest_bbe2bad3}" />
 									<TextBlock Text="{Binding CreatorManifest.State}" />
 								</StackPanel>
 							</Border>
@@ -1390,7 +1391,7 @@
 						<Border Padding="11,9" Background="{DynamicResource ReduxListInteriorBrush}"
 							BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1" CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 							<StackPanel>
-								<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Diagnostics and advisor findings" />
+								<TextBlock FontWeight="SemiBold" Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Diagnostics_and_advisor_findings_2139f168}" />
 								<TextBlock Margin="0,3,0,6" Foreground="{DynamicResource ReduxTextMutedBrush}"
 									Text="{Binding HealthSnapshot.FindingCountSummary, TargetNullValue='Diagnostics have not run for this mod.'}" />
 								<ItemsControl ItemsSource="{Binding HealthSnapshot.Findings}">
@@ -1414,26 +1415,26 @@
 				<TabControl ItemContainerStyle="{StaticResource ReduxContentTabItemStyle}"
 					SelectedIndex="0"
 					Style="{StaticResource ReduxContentTabControlStyle}">
-					<TabItem Header="Overview">
+					<TabItem Header="{loc:Text Overview_d4b1ea57}">
 						<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModDetailsOverviewTemplate}" />
 					</TabItem>
-					<TabItem Header="Description">
+					<TabItem Header="{loc:Text Description_526e0087}">
 						<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModDetailsDescriptionTemplate}" />
 					</TabItem>
-					<TabItem Header="Requirements">
+					<TabItem Header="{loc:Text Requirements_e0cdd07f}">
 						<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModDetailsRequirementsTemplate}" />
 					</TabItem>
-					<TabItem Header="Files">
+					<TabItem Header="{loc:Text Files_abc7e989}">
 						<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModDetailsFilesTemplate}" />
 					</TabItem>
-					<TabItem Header="Debug"
+					<TabItem Header="{loc:Text Debug_1a03bd2f}"
 						Visibility="{Binding DataContext.Settings.DebugModeEnabled, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Converter={StaticResource BoolToVisibilityConverter}}">
 						<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModDetailsDebugTemplate}" />
 					</TabItem>
-					<TabItem Header="Changelog">
+					<TabItem Header="{loc:Text Changelog_ead07c84}">
 						<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModDetailsChangelogTemplate}" />
 					</TabItem>
-					<TabItem Header="Notes">
+					<TabItem Header="{loc:Text Notes_8a7525b1}">
 						<ContentControl Content="{Binding}" ContentTemplate="{StaticResource ModDetailsNotesTemplate}" />
 					</TabItem>
 				</TabControl>
@@ -1462,73 +1463,73 @@
 			<Border.ContextMenu>
 				<ContextMenu Opened="CategoriesContextMenu_Opened">
 					<MenuItem x:Name="ShowEmptyCategoriesMenuItem"
-						Header="Show categories with 0 mods"
+						Header="{loc:Text Show_categories_with_0_mods_942b5888}"
 						IsCheckable="True"
 						Click="ShowEmptyCategoriesMenuItem_Click">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.ListStroke}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem x:Name="SaveCategoryFilterMenuItem"
-						Header="Save filter state between sessions"
+						Header="{loc:Text Save_filter_state_between_sessions_2926383b}"
 						IsCheckable="True"
 						Click="SaveCategoryFilterMenuItem_Click">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Save}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem x:Name="DisableNewModIndicatorsMenuItem"
-						Header="Disable new-mod indicators"
+						Header="{loc:Text Disable_new_mod_indicators_bf0319cd}"
 						IsCheckable="True"
 						Click="DisableNewModIndicatorsMenuItem_Click">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Information}" /></MenuItem.Icon>
 					</MenuItem>
 					<Separator />
 					<MenuItem x:Name="AutomaticCategoriesMenuItem"
-						Header="Assign categories automatically"
+						Header="{loc:Text Assign_categories_automatically_169943e8}"
 						IsCheckable="True"
 						Click="AutomaticCategoriesMenuItem_Click"
-						ToolTip="Turn off Redux's built-in automatic categories. Custom categories and manual assignments are preserved.">
+						ToolTip="{loc:Text Turn_off_Redux_s_built_in_automatic_categories_Custom_catego_545929ab}">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Sparkles}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem x:Name="RestoreAutomaticCategoriesMenuItem"
-						Header="Reset all mods to automatic categories..."
+						Header="{loc:Text Reset_all_mods_to_automatic_categories_6f353602}"
 						Click="RestoreAutomaticCategoriesMenuItem_Click"
-						ToolTip="Clear every per-mod manual category choice, including No Category. Category definitions and styles are kept.">
+						ToolTip="{loc:Text Clear_every_per_mod_manual_category_choice_including_No_Cate_e22eebd1}">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem x:Name="ClearAutomaticAssignmentsMenuItem"
-						Header="Clear automatic assignments for current mods"
+						Header="{loc:Text Clear_automatic_assignments_for_current_mods_5f8fa28f}"
 						Click="ClearAutomaticAssignmentsMenuItem_Click"
-						ToolTip="Keep current mods under No Category across Refresh and restart. Manual choices are preserved; new mods can still be categorized automatically.">
+						ToolTip="{loc:Text Keep_current_mods_under_No_Category_across_Refresh_and_resta_ac5d743c}">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.RemoveCircle}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem x:Name="RestoreClearedAutomaticAssignmentsMenuItem"
-						Header="Restore cleared automatic assignments"
+						Header="{loc:Text Restore_cleared_automatic_assignments_37fe5c4e}"
 						Click="RestoreClearedAutomaticAssignmentsMenuItem_Click"
-						ToolTip="Allow cleared mods to use automatic categories again. Manual choices and the global automatic-category preference are preserved.">
+						ToolTip="{loc:Text Allow_cleared_mods_to_use_automatic_categories_again_Manual__a63a41a6}">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.RefreshStroke}" /></MenuItem.Icon>
 					</MenuItem>
 					<Separator />
-					<MenuItem Header="Create Custom Category..." Click="AddCustomCategoryMenuItem_Click">
+					<MenuItem Header="{loc:Text Create_Custom_Category_b08326c0}" Click="AddCustomCategoryMenuItem_Click">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.AddCircle}" /></MenuItem.Icon>
 					</MenuItem>
-					<MenuItem x:Name="EditCategoryMenuItem" Header="Edit Selected Category..." Click="EditCategoryMenuItem_Click">
+					<MenuItem x:Name="EditCategoryMenuItem" Header="{loc:Text Edit_Selected_Category_bd5460eb}" Click="EditCategoryMenuItem_Click">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.ColorPalette}" /></MenuItem.Icon>
 					</MenuItem>
 					<Separator />
-					<MenuItem x:Name="HideBuiltInCategoryFiltersMenuItem" Header="Hide built-in category filters"
+					<MenuItem x:Name="HideBuiltInCategoryFiltersMenuItem" Header="{loc:Text Hide_built_in_category_filters_ec416f12}"
 						Click="HideBuiltInCategoryFiltersMenuItem_Click"
-						ToolTip="Hide built-in sidebar filters. Assignments, custom filters, and No Category are preserved.">
+						ToolTip="{loc:Text Hide_built_in_sidebar_filters_Assignments_custom_filters_and_38384318}">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Funnel}" /></MenuItem.Icon>
 					</MenuItem>
-					<MenuItem x:Name="ShowBuiltInCategoryFiltersMenuItem" Header="Show built-in category filters"
+					<MenuItem x:Name="ShowBuiltInCategoryFiltersMenuItem" Header="{loc:Text Show_built_in_category_filters_d4873453}"
 						Click="ShowBuiltInCategoryFiltersMenuItem_Click"
-						ToolTip="Show built-in sidebar filters according to your automatic-category and empty-category preferences.">
+						ToolTip="{loc:Text Show_built_in_sidebar_filters_according_to_your_automatic_ca_7a003c12}">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Eye}" /></MenuItem.Icon>
 					</MenuItem>
-					<MenuItem x:Name="EnableCategoriesMenuItem" Header="Visible category filters"
-						ToolTip="Choose sidebar filters to show. Hiding a filter does not change category assignments.">
+					<MenuItem x:Name="EnableCategoriesMenuItem" Header="{loc:Text Visible_category_filters_f6f88574}"
+						ToolTip="{loc:Text Choose_sidebar_filters_to_show_Hiding_a_filter_does_not_chan_e9f18940}">
 						<MenuItem.Icon><c:ReduxIcon StrokeData="{StaticResource Redux.Icon.Pricetag}" /></MenuItem.Icon>
 					</MenuItem>
 					<MenuItem x:Name="DeleteCustomCategoryMenuItem"
-						Header="Delete Custom Category"
+						Header="{loc:Text Delete_Custom_Category_8e4c582f}"
 						util:ReduxMenuItemExtension.UseSemanticHover="True"
 						util:ReduxMenuItemExtension.SemanticHoverBrush="{DynamicResource ReduxErrorPillBackground}"
 						util:ReduxMenuItemExtension.SemanticRailBrush="{DynamicResource ReduxErrorBrush}">
@@ -1569,10 +1570,10 @@
 								</Style.Triggers>
 							</Style>
 						</StackPanel.Style>
-						<TextBlock Style="{StaticResource ModSectionTitle}" Text="Categories">
+						<TextBlock Style="{StaticResource ModSectionTitle}" Text="{loc:Text Categories_b8b1d894}">
 							<TextBlock.ToolTip>
 								<ToolTip MaxWidth="340">
-							<TextBlock Text="Category suggestions use available mod information and may need correction."
+							<TextBlock Text="{loc:Text Category_suggestions_use_available_mod_information_and_may_n_75f50de1}"
 										TextWrapping="Wrap" />
 								</ToolTip>
 							</TextBlock.ToolTip>
@@ -1580,7 +1581,7 @@
 					</StackPanel>
 					<Button Grid.Column="1"
 						Click="AddCustomCategoryMenuItem_Click"
-						AutomationProperties.Name="Create a custom category">
+						AutomationProperties.Name="{loc:Text Create_a_custom_category_d268d669}">
 						<Button.Style>
 							<Style BasedOn="{StaticResource ModPaneHeaderActionButtonStyle}" TargetType="{x:Type Button}">
 								<Style.Triggers>
@@ -1600,7 +1601,7 @@
 						Padding="0"
 						IsChecked="{Binding IsCategoriesExpanded, Mode=TwoWay}"
 						Style="{StaticResource CategoryPanelToggleStyle}"
-						ToolTip="Collapse or expand categories">
+						ToolTip="{loc:Text Collapse_or_expand_categories_f054d656}">
 						<Path Width="5" Height="10"
 							Data="{StaticResource Redux.Icon.ChevronLeftStroke}"
 							RenderTransformOrigin="0.5,0.5"
@@ -1732,7 +1733,7 @@
 										VerticalAlignment="Center"
 										Background="{DynamicResource ReduxSuccessBrush}"
 										CornerRadius="4"
-										ToolTip="New mod detected in this category">
+										ToolTip="{loc:Text New_mod_detected_in_this_category_a47b861a}">
 										<Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding HasNewMods}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Border.Style>
 										<Border.Effect>
 											<DropShadowEffect BlurRadius="8"
@@ -1804,7 +1805,7 @@
 					FontWeight="SemiBold"
 					Foreground="{DynamicResource ReduxTextMutedBrush}"
 					IsHitTestVisible="False"
-					Text="CATEGORIES">
+					Text="{loc:Text CATEGORIES_b4f50590}">
 					<TextBlock.LayoutTransform>
 						<RotateTransform Angle="-90" />
 					</TextBlock.LayoutTransform>
@@ -1846,19 +1847,19 @@
                     <ColumnDefinition Width="8"/><ColumnDefinition Width="220"/><ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 				<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-					<TextBlock Style="{StaticResource ModSectionTitle}" Text="Active Mods" />
+					<TextBlock Style="{StaticResource ModSectionTitle}" Text="{loc:Text Active_Mods_151935ef}" />
 					<Border Style="{StaticResource ModPaneCountBadgeStyle}"
-						ToolTip="{Binding ActiveMods.Count, StringFormat={}{0} active mods}">
+						ToolTip="{loc:FormatText Key=0_active_mods_a66c2ddc, Path=ActiveMods.Count}">
 						<TextBlock Style="{StaticResource ModPaneCountTextStyle}" Text="{Binding ActiveMods.Count}" />
 					</Border>
 				</StackPanel>
 				<DockPanel Grid.Column="1" Margin="12,0,8,0" LastChildFill="True">
 					<Button Margin="0,0,12,0" Tag="Active" Click="ClearModListSort_Click"
                         Style="{StaticResource ModViewNoticeButtonStyle}"
-                        ToolTip="Clear sorting and return to your arrangement"
-                        AutomationProperties.Name="Clear active mod sorting"
+                        ToolTip="{loc:Text Clear_sorting_and_return_to_your_arrangement_5c791ff5}"
+                        AutomationProperties.Name="{loc:Text Clear_active_mod_sorting_f4c5ed0f}"
                         Visibility="{Binding IsActiveListMetadataSorted, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-                        <TextBlock Text="Sorted view · Clear" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                        <TextBlock Text="{loc:Text Sorted_view_Clear_37bf78fa}" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
                     </Button>
 					<Button Command="{Binding ClearModCategoryFilterCommand}"
 						Content="{Binding}"
@@ -1868,15 +1869,15 @@
 				<c:UnfocusableTextBox x:Name="ActiveModsFilterTextBox"
 					Grid.Column="5"
 					HorizontalAlignment="Stretch"
-					behavior:ScreenReaderHelperBehavior.Name="Active Mods Filter"
+					behavior:ScreenReaderHelperBehavior.Name="{loc:Text Active_Mods_Filter_6d74138c}"
 					AcceptsReturn="False"
 					AcceptsTab="False"
 					CanUndoTextOnEscape="True"
 					Style="{StaticResource ModPaneFilterTextBoxStyle}"
-					ToolTip="Filter Active Mods"
+					ToolTip="{loc:Text Filter_Active_Mods_a703b389}"
 					UpdateBindingOnFocusLost="True" />
 				<TextBlock Grid.Column="5"
-					Text="Filter Active Mods">
+					Text="{loc:Text Filter_Active_Mods_a703b389}">
 					<TextBlock.Style>
 						<Style BasedOn="{StaticResource ModPaneFilterPlaceholderStyle}" TargetType="{x:Type TextBlock}">
 							<Setter Property="Visibility" Value="Collapsed" />
@@ -1896,8 +1897,8 @@
 						Click="ActiveSeparatorBulkToggleButton_Click"
 						Loaded="ActiveSeparatorBulkToggleButton_Loaded"
 						MouseEnter="ActiveSeparatorBulkToggleButton_MouseEnter"
-						AutomationProperties.Name="Collapse all active separators"
-						ToolTip="Collapse all active separators">
+						AutomationProperties.Name="{loc:Text Collapse_all_active_separators_c8fa0cc5}"
+						ToolTip="{loc:Text Collapse_all_active_separators_c8fa0cc5}">
 						<c:ReduxIcon x:Name="ActiveSeparatorBulkToggleIcon"
 							Width="14"
 							Height="14"
@@ -1906,8 +1907,8 @@
 					</Button>
 					<Button Style="{StaticResource ModPaneHeaderActionButtonStyle}"
 						Click="AddActiveSeparatorButton_Click"
-						AutomationProperties.Name="Insert a separator after the selected mod"
-						ToolTip="Add a separator after the selected active mod">
+						AutomationProperties.Name="{loc:Text Insert_a_separator_after_the_selected_mod_8585b756}"
+						ToolTip="{loc:Text Add_a_separator_after_the_selected_active_mod_fb9bb21e}">
 						<c:ReduxIcon Width="14" Height="14"
 							Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 							StrokeData="{StaticResource Redux.Icon.AddStroke}" />
@@ -1926,7 +1927,7 @@
 					HorizontalAlignment="Left"
 					VerticalAlignment="Center"
 					AutomationProperties.HelpText="{Binding Text, RelativeSource={RelativeSource Self}}"
-					AutomationProperties.Name="Active Mods" />
+					AutomationProperties.Name="{loc:Text Active_Mods_151935ef}" />
 			</Grid>
 			<Border Grid.Row="1" Background="{DynamicResource ReduxBorderBrush}" />
 			<Grid x:Name="ActiveModListGrid" Grid.Row="2">
@@ -1937,7 +1938,7 @@
 				</Grid.RowDefinitions>
 				<c:ModListView x:Name="ActiveModsListView"
 					MaxHeight="99999"
-					behavior:ScreenReaderHelperBehavior.Name="Active Mods"
+					behavior:ScreenReaderHelperBehavior.Name="{loc:Text Active_Mods_151935ef}"
 					dd:DragDrop.DragHandler="{Binding DragHandler}"
 					dd:DragDrop.DropHandler="{Binding DropHandler}"
 					ContextMenuOpening="ModListView_ContextMenuOpening"
@@ -1962,7 +1963,7 @@
 					ResizeBehavior="PreviousAndNext"
 					ShowsPreview="False"
 					Style="{StaticResource ReduxHorizontalSplitterStyle}"
-					ToolTip="Drag to resize Active and Override Mods"
+					ToolTip="{loc:Text Drag_to_resize_Active_and_Override_Mods_43fde9c6}"
 					Visibility="Collapsed" />
 				<Border x:Name="AlwaysLoadedSectionShell" Grid.Row="2" Margin="6,1,6,6" Visibility="Collapsed"
 					Background="{DynamicResource ReduxSurfaceBrush}"
@@ -1983,7 +1984,7 @@
 						Background="Transparent"
 						BorderThickness="0"
 						SnapsToDevicePixels="True"
-						ToolTip="Always loaded while installed - outside the normal load order">
+						ToolTip="{loc:Text Always_loaded_while_installed_outside_the_normal_load_order_639a9f32}">
 						<Grid>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="Auto" />
@@ -1994,9 +1995,9 @@
 								<TextBlock VerticalAlignment="Center"
 									Foreground="{Binding OverrideModsCategoryColor, Converter={StaticResource StringToSolidBrushConverter}}"
 									Style="{StaticResource ModSectionTitle}"
-									Text="Override Mods" />
+									Text="{loc:Text Override_Mods_2303d03c}" />
 								<Border Style="{StaticResource ModPaneCountBadgeStyle}"
-									ToolTip="{Binding ForceLoadedMods.Count, StringFormat={}{0} override mods}">
+									ToolTip="{loc:FormatText Key=0_override_mods_d289d87b, Path=ForceLoadedMods.Count}">
 									<TextBlock Style="{StaticResource ModPaneCountTextStyle}" Text="{Binding ForceLoadedMods.Count}" />
 								</Border>
 							</StackPanel>
@@ -2005,10 +2006,10 @@
 								<Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
 								<Button Grid.Column="0" Margin="0,0,8,0" Tag="Override" Click="ClearModListSort_Click"
 									Style="{StaticResource ModViewNoticeButtonStyle}"
-									ToolTip="Clear sorting and return to your arrangement"
-									AutomationProperties.Name="Clear override mod sorting"
+									ToolTip="{loc:Text Clear_sorting_and_return_to_your_arrangement_5c791ff5}"
+									AutomationProperties.Name="{loc:Text Clear_override_mod_sorting_d867576a}"
 									Visibility="{Binding IsOverrideListMetadataSorted, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-									<TextBlock Text="Sorted · Clear" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+									<TextBlock Text="{loc:Text Sorted_Clear_2001391e}" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
 								</Button>
 								<c:UnfocusableTextBox x:Name="OverrideModsFilterTextBox"
 									Grid.Column="1"
@@ -2016,8 +2017,8 @@
 									AcceptsReturn="False" AcceptsTab="False"
 									CanUndoTextOnEscape="True" TextChanged="OverrideModsFilterTextBox_TextChanged"
 									Style="{StaticResource ModPaneFilterTextBoxStyle}"
-									ToolTip="Filter Override Mods" />
-								<TextBlock Grid.Column="1" Text="Filter Overrides">
+									ToolTip="{loc:Text Filter_Override_Mods_f27b8124}" />
+								<TextBlock Grid.Column="1" Text="{loc:Text Filter_Overrides_94bd871f}">
 									<TextBlock.Style>
 										<Style BasedOn="{StaticResource ModPaneFilterPlaceholderStyle}" TargetType="{x:Type TextBlock}">
 											<Setter Property="Visibility" Value="Collapsed" />
@@ -2033,7 +2034,7 @@
 									Click="OverrideSeparatorBulkToggleButton_Click"
 									Loaded="OverrideSeparatorBulkToggleButton_Loaded"
 									MouseEnter="OverrideSeparatorBulkToggleButton_MouseEnter"
-									AutomationProperties.Name="Collapse all override separators">
+									AutomationProperties.Name="{loc:Text Collapse_all_override_separators_beb267a7}">
 									<c:ReduxIcon x:Name="OverrideSeparatorBulkToggleIcon" Width="14" Height="14"
 										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 										StrokeData="{StaticResource Redux.Icon.FoldSections}" />
@@ -2041,14 +2042,14 @@
 								<Button x:Name="AddOverrideSeparatorButton"
 									Style="{StaticResource ModPaneHeaderActionButtonStyle}"
 									Click="AddOverrideSeparatorButton_Click"
-									ToolTip="Add a separator after the selected override mod"
-									AutomationProperties.Name="Add override separator">
+									ToolTip="{loc:Text Add_a_separator_after_the_selected_override_mod_49b415b4}"
+									AutomationProperties.Name="{loc:Text Add_override_separator_a10c9488}">
 									<c:ReduxIcon Width="14" Height="14"
 										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 										StrokeData="{StaticResource Redux.Icon.AddStroke}" />
 								</Button>
 								<ToggleButton x:Name="AlwaysLoadedToggleButton"
-									AutomationProperties.Name="Collapse or expand Override Mods"
+									AutomationProperties.Name="{loc:Text Collapse_or_expand_Override_Mods_a2b5aa90}"
 									Style="{StaticResource ModDetailsToggleStyle}"
 									IsChecked="{Binding IsAlwaysLoadedExpanded, Mode=TwoWay}"
 									ToolTip="{Binding Keys.ToggleOverrideMods.CommandToolTip}" />
@@ -2082,7 +2083,7 @@
 					VerticalAlignment="Center"
 					Foreground="{DynamicResource ReduxTextMutedBrush}"
 					IsHitTestVisible="False"
-					Text="Drag an inactive Override here to enable it for this order."
+					Text="{loc:Text Drag_an_inactive_Override_here_to_enable_it_for_this_order_3c5fc81a}"
 					TextWrapping="Wrap">
 					<TextBlock.Style>
 						<Style TargetType="TextBlock">
@@ -2163,9 +2164,9 @@
 					VerticalAlignment="Center"
 					Orientation="Horizontal"
 					Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">
-					<TextBlock Style="{StaticResource ModSectionTitle}" Text="Inactive Mods" />
+					<TextBlock Style="{StaticResource ModSectionTitle}" Text="{loc:Text Inactive_Mods_1df7c4ab}" />
 					<Border Style="{StaticResource ModPaneCountBadgeStyle}"
-						ToolTip="{Binding InactiveMods.Count, StringFormat={}{0} inactive mods}">
+						ToolTip="{loc:FormatText Key=0_inactive_mods_01af1581, Path=InactiveMods.Count}">
 						<TextBlock Style="{StaticResource ModPaneCountTextStyle}" Text="{Binding InactiveMods.Count}" />
 					</Border>
 				</StackPanel>
@@ -2179,8 +2180,8 @@
 						Click="InactiveSeparatorBulkToggleButton_Click"
 						Loaded="InactiveSeparatorBulkToggleButton_Loaded"
 						MouseEnter="InactiveSeparatorBulkToggleButton_MouseEnter"
-						AutomationProperties.Name="Collapse all inactive separators"
-						ToolTip="Collapse all inactive separators">
+						AutomationProperties.Name="{loc:Text Collapse_all_inactive_separators_48c1cdfd}"
+						ToolTip="{loc:Text Collapse_all_inactive_separators_48c1cdfd}">
 						<c:ReduxIcon x:Name="InactiveSeparatorBulkToggleIcon"
 							Width="14" Height="14"
 							Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
@@ -2189,8 +2190,8 @@
 					<Button x:Name="AddInactiveSeparatorButton"
 						Style="{StaticResource ModPaneHeaderActionButtonStyle}"
 						Click="AddInactiveSeparatorButton_Click"
-						ToolTip="Add a separator after the selected inactive mod"
-						AutomationProperties.Name="Add inactive separator">
+						ToolTip="{loc:Text Add_a_separator_after_the_selected_inactive_mod_f0019d6c}"
+						AutomationProperties.Name="{loc:Text Add_inactive_separator_3cbb275f}">
 						<c:ReduxIcon Width="14" Height="14"
 							Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 							StrokeData="{StaticResource Redux.Icon.AddStroke}" />
@@ -2199,10 +2200,10 @@
                 <DockPanel Grid.Column="2" Margin="12,0,8,0" LastChildFill="True">
                     <Button Margin="0,0,12,0" Tag="Inactive" Click="ClearModListSort_Click"
                         Style="{StaticResource ModViewNoticeButtonStyle}"
-                        ToolTip="Clear sorting and return to your arrangement"
-                        AutomationProperties.Name="Clear inactive mod sorting"
+                        ToolTip="{loc:Text Clear_sorting_and_return_to_your_arrangement_5c791ff5}"
+                        AutomationProperties.Name="{loc:Text Clear_inactive_mod_sorting_042b628e}"
                         Visibility="{Binding IsInactiveListMetadataSorted, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}">
-                        <TextBlock Text="Sorted view · Clear" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                        <TextBlock Text="{loc:Text Sorted_view_Clear_37bf78fa}" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
                     </Button>
 				<Button
 					Margin="0"
@@ -2219,10 +2220,10 @@
 					AcceptsTab="False"
 					CanUndoTextOnEscape="True"
 					Style="{StaticResource ModPaneFilterTextBoxStyle}"
-					ToolTip="Filter Inactive Mods"
+					ToolTip="{loc:Text Filter_Inactive_Mods_fe92b093}"
 					UpdateBindingOnFocusLost="True" />
 				<TextBlock Grid.Column="5"
-					Text="Filter Inactive Mods">
+					Text="{loc:Text Filter_Inactive_Mods_fe92b093}">
 					<TextBlock.Style>
 						<Style BasedOn="{StaticResource ModPaneFilterPlaceholderStyle}" TargetType="{x:Type TextBlock}">
 							<Setter Property="Visibility" Value="Collapsed" />
@@ -2248,15 +2249,15 @@
 					VerticalAlignment="Center"
 					behavior:ScreenReaderHelperBehavior.Name="Total Inactive Mods Selected"
 					AutomationProperties.HelpText="{Binding Text, RelativeSource={RelativeSource Self}}"
-					AutomationProperties.Name="Inactive Mods" />
+					AutomationProperties.Name="{loc:Text Inactive_Mods_1df7c4ab}" />
 				<ToggleButton Grid.Column="0"
 					Width="30"
 					Height="28"
 					Padding="0"
-					behavior:ScreenReaderHelperBehavior.Name="Collapse or expand inactive mods"
+					behavior:ScreenReaderHelperBehavior.Name="{loc:Text Collapse_or_expand_inactive_mods_89e1eab7}"
 					IsChecked="{Binding IsInactiveModsExpanded, Mode=TwoWay}"
 					Style="{StaticResource CategoryPanelToggleStyle}"
-					ToolTip="Collapse or expand inactive mods">
+					ToolTip="{loc:Text Collapse_or_expand_inactive_mods_89e1eab7}">
 					<!--  Right-edge pane: collapse pushes it rightward, so the chevron mirrors the categories pane.  -->
 					<Path Width="5" Height="10"
 						Data="{StaticResource Redux.Icon.ChevronRightStroke}"
@@ -2302,7 +2303,7 @@
 			<c:ModListView x:Name="InactiveModsListView"
 				Grid.Row="2"
 				MaxHeight="99999"
-				behavior:ScreenReaderHelperBehavior.Name="Inactive Mods"
+				behavior:ScreenReaderHelperBehavior.Name="{loc:Text Inactive_Mods_1df7c4ab}"
 				dd:DragDrop.DragHandler="{Binding DragHandler}"
 				dd:DragDrop.DropHandler="{Binding DropHandler}"
 				ContextMenuOpening="ModListView_ContextMenuOpening"
@@ -2334,7 +2335,7 @@
 				FontWeight="SemiBold"
 				Foreground="{DynamicResource ReduxTextMutedBrush}"
 				IsHitTestVisible="False"
-				Text="INACTIVE MODS">
+				Text="{loc:Text INACTIVE_MODS_0387cd0e}">
 				<TextBlock.LayoutTransform>
 					<RotateTransform Angle="-90" />
 				</TextBlock.LayoutTransform>
@@ -2392,7 +2393,7 @@
 								<ColumnDefinition Width="Auto" />
 								<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
-					<Grid Width="14" Height="14" Margin="2,0,10,0" VerticalAlignment="Center" ToolTip="Primary mod category">
+					<Grid Width="14" Height="14" Margin="2,0,10,0" VerticalAlignment="Center" ToolTip="{loc:Text Primary_mod_category_512ce9e2}">
 						<Ellipse Width="{DynamicResource Redux.MarkerSize.Default}"
 							Height="{DynamicResource Redux.MarkerSize.Default}"
 							Fill="Transparent"
@@ -2495,7 +2496,7 @@
 						VerticalAlignment="Center"
 						IsChecked="{Binding IsModDetailsExpanded, Mode=TwoWay}"
 						Style="{StaticResource ModDetailsToggleStyle}"
-						ToolTip="Collapse or expand mod details" />
+						ToolTip="{loc:Text Collapse_or_expand_mod_details_7681b12f}" />
 				</Grid>
 				<Border Grid.Row="1"
 					Background="{DynamicResource ReduxBorderBrush}"

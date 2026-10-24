@@ -1,6 +1,7 @@
 <local:VersionGeneratorWindowBase
 	x:Class="DivinityModManager.Views.VersionGeneratorWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -8,7 +9,7 @@
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:xc="http://schemas.xceed.com/wpf/xaml/toolkit"
-	Title="Version Generator"
+	Title="{loc:Text Version_Generator_b414110a}"
 	Width="620"
 	Height="480"
 	MinWidth="560"
@@ -80,10 +81,10 @@
 					Style="{StaticResource ReduxOptionalInterfaceIconStyle}"
 					StrokeData="{StaticResource Redux.Icon.Build}" />
 				<StackPanel Grid.Column="1" Margin="13,0,0,0">
-					<TextBlock Style="{StaticResource Redux.Text.PageTitle}" Text="Version Generator" />
+					<TextBlock Style="{StaticResource Redux.Text.PageTitle}" Text="{loc:Text Version_Generator_b414110a}" />
 					<TextBlock Margin="0,4,0,0"
 						Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-						Text="For mod authors working with BG3 module metadata."
+						Text="{loc:Text For_mod_authors_working_with_BG3_module_metadata_613d453d}"
 						TextWrapping="Wrap" />
 				</StackPanel>
 			</Grid>
@@ -91,7 +92,7 @@
 			<TextBlock Grid.Row="1"
 				Margin="0,16,0,14"
 				Style="{StaticResource Redux.Text.Body}"
-				Text="BG3 stores a mod's version as one packed Version64 number in meta.lsx. Set the four components below, or paste an existing packed value, then copy the result."
+				Text="{loc:Text BG3_stores_a_mod_s_version_as_one_packed_Version64_number_in_c50c74f7}"
 				TextWrapping="Wrap" />
 
 			<Border Grid.Row="2"
@@ -112,7 +113,7 @@
 					</Grid.ColumnDefinitions>
 
 					<StackPanel>
-						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="Major" />
+						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="{loc:Text Major_2bc58fcc}" />
 						<xc:ULongUpDown x:Name="MajorUpDown"
 							HorizontalAlignment="Stretch"
 							MinHeight="{DynamicResource Redux.ControlHeight.Standard}"
@@ -121,7 +122,7 @@
 							Minimum="0" />
 					</StackPanel>
 					<StackPanel Grid.Column="2">
-						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="Minor" />
+						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="{loc:Text Minor_5717c39b}" />
 						<xc:ULongUpDown x:Name="MinorUpDown"
 							HorizontalAlignment="Stretch"
 							MinHeight="{DynamicResource Redux.ControlHeight.Standard}"
@@ -130,7 +131,7 @@
 							Minimum="0" />
 					</StackPanel>
 					<StackPanel Grid.Column="4">
-						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="Revision" />
+						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="{loc:Text Revision_2e516d68}" />
 						<xc:ULongUpDown x:Name="RevisionUpDown"
 							HorizontalAlignment="Stretch"
 							MinHeight="{DynamicResource Redux.ControlHeight.Standard}"
@@ -139,7 +140,7 @@
 							Minimum="0" />
 					</StackPanel>
 					<StackPanel Grid.Column="6">
-						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="Build" />
+						<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="{loc:Text Build_bdd254b6}" />
 						<xc:ULongUpDown x:Name="BuildUpDown"
 							HorizontalAlignment="Stretch"
 							MinHeight="{DynamicResource Redux.ControlHeight.Standard}"
@@ -163,7 +164,7 @@
 						<RowDefinition Height="Auto" />
 						<RowDefinition Height="Auto" />
 					</Grid.RowDefinitions>
-					<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="Packed version number" />
+					<TextBlock Style="{StaticResource VersionComponentLabelStyle}" Text="{loc:Text Packed_version_number_22790607}" />
 					<Grid Grid.Row="1">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="*" />
@@ -185,7 +186,7 @@
 									Foreground="{DynamicResource ReduxAccentForegroundBrush}"
 									Style="{StaticResource ReduxOptionalInterfaceIconStyle}"
 									StrokeData="{StaticResource Redux.Icon.Copy}" />
-								<TextBlock Text="Copy" />
+								<TextBlock Text="{loc:Text Copy_e21f935f}" />
 							</StackPanel>
 						</Button>
 						<Button x:Name="ResetButton"
@@ -200,7 +201,7 @@
 									Foreground="{DynamicResource ReduxWarningBrush}"
 									Style="{StaticResource ReduxOptionalInterfaceIconStyle}"
 									StrokeData="{StaticResource Redux.Icon.RefreshStroke}" />
-								<TextBlock Text="Reset" />
+								<TextBlock Text="{loc:Text Reset_daee7606}" />
 							</StackPanel>
 						</Button>
 					</Grid>

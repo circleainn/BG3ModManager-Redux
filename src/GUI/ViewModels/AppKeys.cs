@@ -358,7 +358,7 @@ public class AppKeys : ReactiveObject
 		}
 		catch (Exception ex)
 		{
-			vm.ShowAlert($"Error loading keybindings at '{filePath}': {ex}", AlertType.Danger);
+			vm.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Error loading keybindings at '{filePath}': {ex}"), AlertType.Danger);
 		}
 		return false;
 	}

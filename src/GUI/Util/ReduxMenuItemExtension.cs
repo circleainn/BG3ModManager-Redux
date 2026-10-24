@@ -215,12 +215,12 @@ public static class ReduxMenuItemExtension
 		// Parent rows describe a group; semantic colour belongs to the command rows inside it.
 		if (menuItem.HasItems) return;
 
-		var header = menuItem.Header switch
+		var header = DivinityModManager.Localization.LocalizationBindings.SourceText(menuItem, MenuItem.HeaderProperty, menuItem.Header switch
 		{
 			string text => text,
 			TextBlock textBlock => textBlock.Text,
 			_ => String.Empty
-		};
+		});
 
 		string hoverBrushResource = null;
 		string railBrushResource = null;

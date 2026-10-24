@@ -106,9 +106,9 @@ public partial class ReduxLoadOrderComparisonWindow : AdonisUI.Controls.AdonisWi
 		AddedCountText.Text = comparison.Activated.Count.ToString();
 		RemovedCountText.Text = comparison.Deactivated.Count.ToString();
 		MovedCountText.Text = comparison.Repositioned.Count.ToString();
-		ComparisonTitleText.Text = $"{baseline.Name} compared with {compared.Name}";
+		ComparisonTitleText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{baseline.Name} compared with {compared.Name}");
 		OrderCountText.Text =
-			$"{baseline.Order.Count} vs {compared.Order.Count} {(compared.Order.Count == 1 ? "mod" : "mods")}";
+			DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{baseline.Order.Count} vs {compared.Order.Count} {(compared.Order.Count == 1 ? "mod" : "mods")}");
 	}
 
 	private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();

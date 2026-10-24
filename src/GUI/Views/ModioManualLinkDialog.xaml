@@ -1,10 +1,11 @@
 <adonisUi:AdonisWindow x:Class="DivinityModManager.Views.ModioManualLinkDialog"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUi="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Link mod.io Page"
+	Title="{loc:Text Link_mod_io_Page_b7d84335}"
 	Width="520" MinWidth="440" MinHeight="210" MaxHeight="480"
 	SizeToContent="Height"
 	ResizeMode="CanResize" ShowInTaskbar="False"
@@ -36,20 +37,20 @@
 					<RowDefinition Height="Auto" />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
-				<TextBlock FontSize="{DynamicResource Redux.FontSize.17}" FontWeight="SemiBold" Text="Link a mod.io page" />
+				<TextBlock FontSize="{DynamicResource Redux.FontSize.17}" FontWeight="SemiBold" Text="{loc:Text Link_a_mod_io_page_46d2a380}" />
 				<TextBlock Grid.Row="1" Margin="0,5,0,12" TextWrapping="Wrap"
 					Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-					Text="Paste the Baldur's Gate 3 mod.io page for this mod. The installed file and load order will not change." />
+					Text="{loc:Text Paste_the_Baldur_s_Gate_3_mod_io_page_for_this_mod_The_insta_42461884}" />
 				<TextBox x:Name="ModioLinkTextBox" Grid.Row="2" MinHeight="34" Padding="9,5"
-					ToolTip="Example: https://mod.io/g/baldursgate3/m/mod-name" />
+					ToolTip="{loc:Text Example_https_mod_io_g_baldursgate3_m_mod_name_7aa8d702}" />
 				<TextBlock Grid.Row="3" Margin="0,8,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-					Text="A mod.io API key is required so Redux can verify the page." />
+					Text="{loc:Text A_mod_io_API_key_is_required_so_Redux_can_verify_the_page_c060df30}" />
 				<StackPanel Grid.Row="4" Margin="0,14,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
 					<Button MinWidth="92" Margin="0,0,8,0" IsDefault="True" Click="Link_Click" Style="{StaticResource ReduxPrimaryActionButtonStyle}">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.LinkStroke}" /><TextBlock Text="Link Page" /></StackPanel>
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.LinkStroke}" /><TextBlock Text="{loc:Text Link_Page_f50671ad}" /></StackPanel>
 					</Button>
 					<Button MinWidth="84" IsCancel="True" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
-						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Close}" /><TextBlock Text="Cancel" /></StackPanel>
+						<StackPanel Orientation="Horizontal"><controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" StrokeData="{StaticResource Redux.Icon.Close}" /><TextBlock Text="{loc:Text Cancel_19766ed6}" /></StackPanel>
 					</Button>
 				</StackPanel>
 			</Grid>

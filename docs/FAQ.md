@@ -8,6 +8,22 @@ the upstream package, profile, and load-order foundation while adding a cohesive
 categories and separators, deliberate review workflows, managers for downloads and saves, guarded
 support for reviewed game-directory mods, custom themes, and accessibility options.
 
+## How do I change the interface language?
+
+In development builds, open **Preferences > General > Interface language** and choose English,
+Français, Español, Русский, or 简体中文 (Simplified Chinese). The interface previews the selection
+immediately; click **Save** to keep it after restart. Languages are bundled and work offline.
+
+Welcome Setup also has a language selector at the top, with native language names. Its walkthrough
+updates immediately; the choice is saved when you finish or choose **Set up later**.
+
+Translations cover navigation, mod panes, Preferences, onboarding, modal layouts, confirmation
+messages, installation reviews, and the external backup/restore window. Some diagnostics and
+provider messages still use their original language. Mod names, descriptions, file paths,
+and saved load orders are not translated. Your font, custom theme, and text size remain selected.
+Windows supplies fallback glyphs for characters a chosen font does not contain, so some scripts may
+look different from the font's Latin letters.
+
 ## Is Redux official?
 
 No. Redux is not affiliated with or endorsed by Larian Studios, Nexus Mods, or mod.io. Baldur's Gate

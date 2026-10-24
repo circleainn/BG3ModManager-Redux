@@ -1,4 +1,5 @@
-﻿<adonisUI:AdonisWindow xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI" xmlns:controls="clr-namespace:DivinityModManager.Controls" xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore" xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" x:Class="DivinityModManager.Views.ReduxOnboardingWindow" Title="Welcome Setup" Width="740" Height="720" MinWidth="640" MinHeight="480" MaxWidth="900" MaxHeight="780" SizeToContent="Manual" ResizeMode="CanResize" ShowInTaskbar="False" WindowStartupLocation="CenterOwner" WindowStyle="SingleBorderWindow" Template="{DynamicResource ReduxWindowTemplate}" Background="{DynamicResource ReduxWindowBrush}" FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}" FontWeight="{DynamicResource Redux.FontWeight.Body}" TextOptions.TextFormattingMode="Ideal" TextOptions.TextRenderingMode="ClearType">
+﻿<adonisUI:AdonisWindow xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI" xmlns:controls="clr-namespace:DivinityModManager.Controls" xmlns:dapp="clr-namespace:DivinityModManager;assembly=DivinityModManagerCore" xmlns:data="clr-namespace:DivinityModManager.Models;assembly=DivinityModManagerCore" xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework" x:Class="DivinityModManager.Views.ReduxOnboardingWindow" Title="{loc:Text Welcome_Setup_85742881}" Width="740" Height="720" MinWidth="640" MinHeight="480" MaxWidth="900" MaxHeight="780" SizeToContent="Manual" ResizeMode="CanResize" ShowInTaskbar="False" WindowStartupLocation="CenterOwner" WindowStyle="SingleBorderWindow" Template="{DynamicResource ReduxWindowTemplate}" Background="{DynamicResource ReduxWindowBrush}" FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}" FontWeight="{DynamicResource Redux.FontWeight.Body}" TextOptions.TextFormattingMode="Ideal" TextOptions.TextRenderingMode="ClearType">
 	<shell:WindowChrome.WindowChrome>
 		<shell:WindowChrome CaptionHeight="0" CornerRadius="0" GlassFrameThickness="0" ResizeBorderThickness="6" UseAeroCaptionButtons="False"/>
 	</shell:WindowChrome.WindowChrome>
@@ -148,12 +149,13 @@
 					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 				<StackPanel Margin="0,0,0,24">
+
 					<UniformGrid Columns="5" Margin="0,0,0,24">
-<Button x:Name="SetupStepButton" Tag="0" Click="StepButton_Click" Margin="0,0,8,0" Style="{StaticResource WelcomeStepStyle}" Content="01   Your look"/>
-<Button x:Name="SourcesStepButton" Tag="1" Click="StepButton_Click" Margin="0,0,8,0" Style="{StaticResource WelcomeStepStyle}" Content="02   Add mods"/>
-<Button x:Name="OrderStepButton" Tag="2" Click="StepButton_Click" Margin="0,0,8,0" Style="{StaticResource WelcomeStepStyle}" Content="03   Load order"/>
-<Button x:Name="OrganizeStepButton" Tag="3" Click="StepButton_Click" Margin="0,0,8,0" Style="{StaticResource WelcomeStepStyle}" Content="04   Organize"/>
-<Button x:Name="ManagersStepButton" Tag="4" Click="StepButton_Click" Style="{StaticResource WelcomeStepStyle}" Content="05   Explore"/>
+<Button x:Name="SetupStepButton" Tag="0" Click="StepButton_Click" Margin="0,0,8,0" Style="{StaticResource WelcomeStepStyle}" Content="{loc:Text 01_Your_look_cfd44991}"/>
+<Button x:Name="SourcesStepButton" Tag="1" Click="StepButton_Click" Margin="0,0,8,0" Style="{StaticResource WelcomeStepStyle}" Content="{loc:Text 02_Add_mods_2af35b94}"/>
+<Button x:Name="OrderStepButton" Tag="2" Click="StepButton_Click" Margin="0,0,8,0" Style="{StaticResource WelcomeStepStyle}" Content="{loc:Text 03_Load_order_b7a1de3a}"/>
+<Button x:Name="OrganizeStepButton" Tag="3" Click="StepButton_Click" Margin="0,0,8,0" Style="{StaticResource WelcomeStepStyle}" Content="{loc:Text 04_Organize_1615dbea}"/>
+<Button x:Name="ManagersStepButton" Tag="4" Click="StepButton_Click" Style="{StaticResource WelcomeStepStyle}" Content="{loc:Text 05_Explore_c8396c13}"/>
 </UniformGrid>
 					<Grid>
 						<Grid.ColumnDefinitions>
@@ -165,7 +167,10 @@
 							<TextBlock x:Name="StepTitleText" FontSize="28" FontWeight="SemiBold" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextPrimaryBrush}"/>
 							<TextBlock x:Name="StepDescriptionText" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
 						</StackPanel>
-						<controls:ReduxIcon Width="42" Height="42" StrokeData="{DynamicResource Redux.Icon.ReduxStar}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Grid.Column="1" Margin="20,0,4,0" Opacity="0.7" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
+						<StackPanel Grid.Column="1" Width="200" Margin="20,0,0,0" VerticalAlignment="Top" Orientation="Vertical">
+						<TextBlock Text="Language · Langue · Idioma · Язык · 语言" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Margin="0,0,0,6" />
+						<ComboBox x:Name="WelcomeLanguageComboBox" MinHeight="32" MinWidth="180" HorizontalAlignment="Stretch" DisplayMemberPath="NativeName" SelectedValuePath="Code" SelectionChanged="WelcomeLanguage_Changed" AutomationProperties.Name="Language · Langue · Idioma · Язык · 语言" />
+					</StackPanel>
 					</Grid>
 				</StackPanel>
 				<ScrollViewer Grid.Row="1" x:Name="OnboardingContentScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -192,15 +197,15 @@
 													<ColumnDefinition Width="*"/>
 												</Grid.ColumnDefinitions>
 												<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.FolderOpen}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-												<TextBlock Text="Browse…" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+												<TextBlock Text="{loc:Text Browse_93c6b664}" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
 											</Grid>
 										</StackPanel>
 									</Button>
 								</Grid>
 							</Border>
-							<TextBlock Text="Choose your look" Style="{StaticResource WelcomeSectionTitleStyle}" TextWrapping="Wrap"/>
+							<TextBlock Text="{loc:Text Choose_your_look_161bc039}" Style="{StaticResource WelcomeSectionTitleStyle}" TextWrapping="Wrap"/>
 							<UniformGrid Columns="3" Margin="0,12,0,0">
-								<RadioButton x:Name="ReduxDarkThemeCard" GroupName="WelcomeThemes" Style="{StaticResource WelcomeThemeCardStyle}" Tag="{x:Static data:ReduxThemeType.ReduxDark}" Click="ThemeCard_Click" AutomationProperties.Name="Dark theme">
+								<RadioButton x:Name="ReduxDarkThemeCard" GroupName="WelcomeThemes" Style="{StaticResource WelcomeThemeCardStyle}" Tag="{x:Static data:ReduxThemeType.ReduxDark}" Click="ThemeCard_Click" AutomationProperties.Name="{loc:Text Dark_theme_3f11a5cc}">
 									<StackPanel>
 										<Border Height="100" Background="#17121D" CornerRadius="5" Padding="10">
 											<Grid>
@@ -222,10 +227,10 @@
 												</StackPanel>
 											</Grid>
 										</Border>
-										<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Dark" Margin="0,10,0,0" FontWeight="SemiBold"/>
+										<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Dark_60acc53f}" Margin="0,10,0,0" FontWeight="SemiBold"/>
 									</StackPanel>
 								</RadioButton>
-								<RadioButton x:Name="ReduxLightThemeCard" GroupName="WelcomeThemes" Style="{StaticResource WelcomeThemeCardStyle}" Tag="{x:Static data:ReduxThemeType.ReduxLight}" Click="ThemeCard_Click" AutomationProperties.Name="Light theme">
+								<RadioButton x:Name="ReduxLightThemeCard" GroupName="WelcomeThemes" Style="{StaticResource WelcomeThemeCardStyle}" Tag="{x:Static data:ReduxThemeType.ReduxLight}" Click="ThemeCard_Click" AutomationProperties.Name="{loc:Text Light_theme_3669a1b2}">
 									<StackPanel>
 										<Border Height="100" Background="#F1EDF4" CornerRadius="5" Padding="10">
 											<Grid>
@@ -247,10 +252,10 @@
 												</StackPanel>
 											</Grid>
 										</Border>
-										<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Light" Margin="0,10,0,0" FontWeight="SemiBold"/>
+										<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Light_dbcd5e7b}" Margin="0,10,0,0" FontWeight="SemiBold"/>
 									</StackPanel>
 								</RadioButton>
-								<RadioButton x:Name="ParchmentThemeCard" GroupName="WelcomeThemes" Style="{StaticResource WelcomeThemeCardStyle}" Tag="{x:Static data:ReduxThemeType.Parchment}" Click="ThemeCard_Click" AutomationProperties.Name="Parchment theme">
+								<RadioButton x:Name="ParchmentThemeCard" GroupName="WelcomeThemes" Style="{StaticResource WelcomeThemeCardStyle}" Tag="{x:Static data:ReduxThemeType.Parchment}" Click="ThemeCard_Click" AutomationProperties.Name="{loc:Text Parchment_theme_16d30aa6}">
 									<StackPanel>
 										<Border Height="100" Background="#EBDEC5" CornerRadius="5" Padding="10">
 											<Grid>
@@ -272,11 +277,11 @@
 												</StackPanel>
 											</Grid>
 										</Border>
-										<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="Parchment" Margin="0,10,0,0" FontWeight="SemiBold"/>
+										<TextBlock Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{loc:Text Parchment_ff872964}" Margin="0,10,0,0" FontWeight="SemiBold"/>
 									</StackPanel>
 								</RadioButton>
 							</UniformGrid>
-							<TextBlock Text="Create your own themes later in Preferences." Style="{StaticResource WelcomeCaptionStyle}"/>
+							<TextBlock Text="{loc:Text Create_your_own_themes_later_in_Preferences_a31ceea1}" Style="{StaticResource WelcomeCaptionStyle}"/>
 							<UniformGrid Columns="2" Margin="0,16,0,0">
 								<CheckBox x:Name="ReduceMotionCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Checked="AccessibilityCheckBox_Changed" Unchecked="AccessibilityCheckBox_Changed" Margin="0,4,16,4" VerticalContentAlignment="Center">
 									<Grid>
@@ -285,7 +290,7 @@
 											<ColumnDefinition Width="*"/>
 										</Grid.ColumnDefinitions>
 										<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.Flash}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-										<TextBlock Text="Reduce motion" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+										<TextBlock Text="{loc:Text Reduce_motion_297ef4c7}" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
 									</Grid>
 								</CheckBox>
 								<CheckBox x:Name="DisableBackgroundEffectsCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Checked="AccessibilityCheckBox_Changed" Unchecked="AccessibilityCheckBox_Changed" Margin="0,4,16,4" VerticalContentAlignment="Center">
@@ -295,11 +300,11 @@
 											<ColumnDefinition Width="*"/>
 										</Grid.ColumnDefinitions>
 										<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.Eye}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-										<TextBlock Text="Disable blur and dimming" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+										<TextBlock Text="{loc:Text Disable_blur_and_dimming_d13ac759}" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
 									</Grid>
 								</CheckBox>
 							</UniformGrid>
-							<Expander x:Name="AppearanceOptionsExpander" Header="Appearance options" Style="{StaticResource WelcomeDetailsStyle}" Expanded="BeforePlayExpansion_Changed" Collapsed="BeforePlayExpansion_Changed" Margin="0,8,0,0">
+							<Expander x:Name="AppearanceOptionsExpander" Header="{loc:Text Appearance_options_5af17c25}" Style="{StaticResource WelcomeDetailsStyle}" Expanded="BeforePlayExpansion_Changed" Collapsed="BeforePlayExpansion_Changed" Margin="0,8,0,0">
 								<StackPanel Margin="4,8,4,0">
 									<UniformGrid Columns="2">
 										<CheckBox x:Name="HideIconsCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Click="AppearanceOption_Click" Margin="0,6,16,6" VerticalContentAlignment="Center">
@@ -309,7 +314,7 @@
 													<ColumnDefinition Width="*"/>
 												</Grid.ColumnDefinitions>
 												<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.ListStroke}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-												<TextBlock Grid.Column="1" Text="Hide icons" TextWrapping="Wrap" VerticalAlignment="Center"/>
+												<TextBlock Grid.Column="1" Text="{loc:Text Hide_icons_db3f620f}" TextWrapping="Wrap" VerticalAlignment="Center"/>
 											</Grid>
 										</CheckBox>
 										<CheckBox x:Name="IconsOnlyCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Click="AppearanceOption_Click" Margin="0,6,16,6" VerticalContentAlignment="Center">
@@ -319,7 +324,7 @@
 													<ColumnDefinition Width="*"/>
 												</Grid.ColumnDefinitions>
 												<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.Albums}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-												<TextBlock Grid.Column="1" Text="Show icons without labels" TextWrapping="Wrap" VerticalAlignment="Center"/>
+												<TextBlock Grid.Column="1" Text="{loc:Text Show_icons_without_labels_f9331ebb}" TextWrapping="Wrap" VerticalAlignment="Center"/>
 											</Grid>
 										</CheckBox>
 										<CheckBox x:Name="CategorySelectionCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Click="AppearanceOption_Click" Margin="0,6,16,6" VerticalContentAlignment="Center">
@@ -329,7 +334,7 @@
 													<ColumnDefinition Width="*"/>
 												</Grid.ColumnDefinitions>
 												<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.ReorderStroke}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-												<TextBlock Grid.Column="1" Text="Use category colors for selection" TextWrapping="Wrap" VerticalAlignment="Center"/>
+												<TextBlock Grid.Column="1" Text="{loc:Text Use_category_colors_for_selection_209451de}" TextWrapping="Wrap" VerticalAlignment="Center"/>
 											</Grid>
 										</CheckBox>
 										<CheckBox x:Name="CategoryTextCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Click="AppearanceOption_Click" Margin="0,6,16,6" VerticalContentAlignment="Center">
@@ -339,7 +344,7 @@
 													<ColumnDefinition Width="*"/>
 												</Grid.ColumnDefinitions>
 												<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.Create}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-												<TextBlock Grid.Column="1" Text="Use category colors for text" TextWrapping="Wrap" VerticalAlignment="Center"/>
+												<TextBlock Grid.Column="1" Text="{loc:Text Use_category_colors_for_text_7007308c}" TextWrapping="Wrap" VerticalAlignment="Center"/>
 											</Grid>
 										</CheckBox>
 										<CheckBox x:Name="GradientsCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Click="AppearanceOption_Click" Margin="0,6,16,6" VerticalContentAlignment="Center">
@@ -349,7 +354,7 @@
 													<ColumnDefinition Width="*"/>
 												</Grid.ColumnDefinitions>
 												<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.Sparkles}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-												<TextBlock Grid.Column="1" Text="Use generated gradients" TextWrapping="Wrap" VerticalAlignment="Center"/>
+												<TextBlock Grid.Column="1" Text="{loc:Text Use_generated_gradients_69e174ff}" TextWrapping="Wrap" VerticalAlignment="Center"/>
 											</Grid>
 										</CheckBox>
 									</UniformGrid>
@@ -360,12 +365,12 @@
 											<ColumnDefinition/>
 										</Grid.ColumnDefinitions>
 										<StackPanel Grid.Column="0">
-											<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Font" Margin="0,0,0,5"/>
-											<ComboBox x:Name="WelcomeFontComboBox" AutomationProperties.Name="Font" MinHeight="32" SelectionChanged="AppearanceSelection_Changed"/>
+											<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text Font_64d0b3ad}" Margin="0,0,0,5"/>
+											<ComboBox x:Name="WelcomeFontComboBox" AutomationProperties.Name="{loc:Text Font_64d0b3ad}" MinHeight="32" SelectionChanged="AppearanceSelection_Changed"/>
 										</StackPanel>
 										<StackPanel Grid.Column="2">
-											<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="Text size" Margin="0,0,0,5"/>
-											<ComboBox x:Name="WelcomeTextSizeComboBox" AutomationProperties.Name="Text size" MinHeight="32" SelectionChanged="AppearanceSelection_Changed"/>
+											<TextBlock Foreground="{DynamicResource ReduxTextSecondaryBrush}" Text="{loc:Text Text_size_d68761cc}" Margin="0,0,0,5"/>
+											<ComboBox x:Name="WelcomeTextSizeComboBox" AutomationProperties.Name="{loc:Text Text_size_d68761cc}" MinHeight="32" SelectionChanged="AppearanceSelection_Changed"><ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{loc:BoundText}" /></DataTemplate></ComboBox.ItemTemplate></ComboBox>
 										</StackPanel>
 									</Grid>
 								</StackPanel>
@@ -381,8 +386,8 @@
 								<Border Grid.Column="0" Style="{StaticResource WelcomeFeatureCardStyle}" Padding="18">
 									<StackPanel>
 										<controls:ReduxIcon Width="32" Height="32" StrokeData="{DynamicResource Redux.Icon.Archive}" Foreground="{DynamicResource ReduxAccentHoverBrush}" HorizontalAlignment="Left" Margin="0,0,0,14" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-										<TextBlock Text="Drop a file" Style="{StaticResource WelcomeSectionTitleStyle}" TextWrapping="Wrap"/>
-										<TextBlock Text="Drag a PAK or archive into Redux, or choose Add Package." Style="{StaticResource WelcomeCaptionStyle}"/>
+										<TextBlock Text="{loc:Text Drop_a_file_c11cbde1}" Style="{StaticResource WelcomeSectionTitleStyle}" TextWrapping="Wrap"/>
+										<TextBlock Text="{loc:Text Drag_a_PAK_or_archive_into_Redux_or_choose_Add_Package_40169cbd}" Style="{StaticResource WelcomeCaptionStyle}"/>
 									</StackPanel>
 								</Border>
 								<Border Grid.Column="2" Style="{StaticResource WelcomeFeatureCardStyle}" Padding="18">
@@ -390,8 +395,8 @@
 										<Viewbox Width="32" Height="32" HorizontalAlignment="Left" Margin="0,0,0,14" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}">
 											<ContentControl Width="16" Height="16" ContentTemplate="{DynamicResource NexusPlatformIconTemplate}"/>
 										</Viewbox>
-										<TextBlock Text="Download from Nexus" Style="{StaticResource WelcomeSectionTitleStyle}" TextWrapping="Wrap"/>
-										<TextBlock Text="Choose Mod Manager Download on Nexus Mods to send it to Redux." Style="{StaticResource WelcomeCaptionStyle}"/>
+										<TextBlock Text="{loc:Text Download_from_Nexus_1f78133f}" Style="{StaticResource WelcomeSectionTitleStyle}" TextWrapping="Wrap"/>
+										<TextBlock Text="{loc:Text Choose_Mod_Manager_Download_on_Nexus_Mods_to_send_it_to_Redu_5bb84ac8}" Style="{StaticResource WelcomeCaptionStyle}"/>
 									</StackPanel>
 								</Border>
 							</Grid>
@@ -402,10 +407,10 @@
 										<ColumnDefinition Width="*"/>
 									</Grid.ColumnDefinitions>
 									<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.LinkStroke}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-									<TextBlock Text="Connect mod services" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+									<TextBlock Text="{loc:Text Connect_mod_services_5f6df720}" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
 								</Grid>
 							</CheckBox>
-							<TextBlock Text="Get mod details and update information from Nexus Mods and mod.io." Style="{StaticResource WelcomeCaptionStyle}"/>
+							<TextBlock Text="{loc:Text Get_mod_details_and_update_information_from_Nexus_Mods_and_m_d3302295}" Style="{StaticResource WelcomeCaptionStyle}"/>
 							<Border x:Name="SourceCredentialsPanel" Visibility="Collapsed" Margin="0,16,0,0" Padding="16" Background="{DynamicResource ReduxSurfaceBrush}" CornerRadius="8">
 								<StackPanel>
 									<Grid>
@@ -421,9 +426,9 @@
 													<ColumnDefinition Width="*"/>
 												</Grid.ColumnDefinitions>
 												<ContentControl Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-												<TextBlock Text="Nexus Mods API key" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+												<TextBlock Text="{loc:Text Nexus_Mods_API_key_bab15a0d}" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
 											</Grid>
-											<PasswordBox x:Name="NexusApiKeyTextBox" AutomationProperties.Name="Nexus Mods API key" MinHeight="34"/>
+											<PasswordBox x:Name="NexusApiKeyTextBox" AutomationProperties.Name="{loc:Text Nexus_Mods_API_key_bab15a0d}" MinHeight="34"/>
 										</StackPanel>
 										<StackPanel Grid.Column="2">
 											<Grid Margin="0,0,0,7">
@@ -432,12 +437,12 @@
 													<ColumnDefinition Width="*"/>
 												</Grid.ColumnDefinitions>
 												<ContentControl Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" ContentTemplate="{DynamicResource ModioPlatformIconTemplate}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-												<TextBlock Text="mod.io API key (optional)" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+												<TextBlock Text="{loc:Text mod_io_API_key_optional_b3d93420}" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
 											</Grid>
-											<PasswordBox x:Name="ModioApiKeyTextBox" AutomationProperties.Name="mod.io API key (optional)" MinHeight="34"/>
+											<PasswordBox x:Name="ModioApiKeyTextBox" AutomationProperties.Name="{loc:Text mod_io_API_key_optional_b3d93420}" MinHeight="34"/>
 										</StackPanel>
 									</Grid>
-									<TextBlock Text="Keys stay on this computer. Change them in Preferences." Style="{StaticResource WelcomeCaptionStyle}"/>
+									<TextBlock Text="{loc:Text Keys_stay_on_this_computer_Change_them_in_Preferences_50d83c10}" Style="{StaticResource WelcomeCaptionStyle}"/>
 									<CheckBox x:Name="NxmLinksCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Margin="0,16,0,0">
 										<Grid>
 											<Grid.ColumnDefinitions>
@@ -445,10 +450,10 @@
 												<ColumnDefinition Width="*"/>
 											</Grid.ColumnDefinitions>
 											<ContentControl Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" ContentTemplate="{DynamicResource NexusPlatformIconTemplate}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-											<TextBlock x:Name="NxmLinksLabel" Text="Open Nexus download links in Redux" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+											<TextBlock x:Name="NxmLinksLabel" Text="{loc:Text Open_Nexus_download_links_in_Redux_e74ad74a}" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
 										</Grid>
 									</CheckBox>
-									<TextBlock Text="A Nexus API key is required for downloads." Style="{StaticResource WelcomeCaptionStyle}"/>
+									<TextBlock Text="{loc:Text A_Nexus_API_key_is_required_for_downloads_b1afcfa4}" Style="{StaticResource WelcomeCaptionStyle}"/>
 								</StackPanel>
 							</Border>
 						</StackPanel>
@@ -460,8 +465,8 @@
 											<ColumnDefinition/>
 											<ColumnDefinition Width="Auto"/>
 										</Grid.ColumnDefinitions>
-										<TextBlock Text="Your load order" FontWeight="SemiBold"/>
-										<TextBlock Grid.Column="1" Text="PRACTICE" Foreground="{DynamicResource ReduxTextMutedBrush}"/>
+										<TextBlock Text="{loc:Text Your_load_order_7fdb93ee}" FontWeight="SemiBold"/>
+										<TextBlock Grid.Column="1" Text="{loc:Text PRACTICE_e7932041}" Foreground="{DynamicResource ReduxTextMutedBrush}"/>
 									</Grid>
 									<Border Background="{DynamicResource ReduxBorderBrush}" Height="1"/>
 									<Grid Margin="18,12,18,14">
@@ -471,29 +476,29 @@
 											<ColumnDefinition/>
 										</Grid.ColumnDefinitions>
 										<StackPanel>
-											<TextBlock Text="Inactive" Foreground="{DynamicResource ReduxTextMutedBrush}" Margin="0,0,0,12"/>
+											<TextBlock Text="{loc:Text Inactive_ac7c949f}" Foreground="{DynamicResource ReduxTextMutedBrush}" Margin="0,0,0,12"/>
 											<Border Style="{StaticResource WelcomeFeatureCardStyle}" MinHeight="70">
 												<StackPanel>
 													<controls:ReduxIcon Width="22" Height="22" StrokeData="{DynamicResource Redux.Icon.Archive}" Foreground="{DynamicResource ReduxAccentHoverBrush}" HorizontalAlignment="Left" Margin="0,0,0,10" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-													<TextBlock x:Name="DemoInactiveText" Text="Example mod" TextWrapping="Wrap"/>
+													<TextBlock x:Name="DemoInactiveText" Text="{loc:Text Example_mod_3f835e5d}" TextWrapping="Wrap"/>
 												</StackPanel>
 											</Border>
 										</StackPanel>
 										<controls:ReduxIcon Width="18" Height="18" StrokeData="{DynamicResource Redux.Icon.ChevronRightStroke}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Grid.Column="1" VerticalAlignment="Center" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
 										<StackPanel Grid.Column="2">
-											<TextBlock Text="Active" Foreground="{DynamicResource ReduxTextMutedBrush}" Margin="0,0,0,12"/>
+											<TextBlock Text="{loc:Text Active_92340695}" Foreground="{DynamicResource ReduxTextMutedBrush}" Margin="0,0,0,12"/>
 											<Border Style="{StaticResource WelcomeFeatureCardStyle}" MinHeight="70">
 												<StackPanel>
 													<controls:ReduxIcon Width="22" Height="22" StrokeData="{DynamicResource Redux.Icon.ReorderStroke}" Foreground="{DynamicResource ReduxAccentHoverBrush}" HorizontalAlignment="Left" Margin="0,0,0,10" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-													<TextBlock x:Name="DemoActiveText" Text="No active mods" TextWrapping="Wrap"/>
+													<TextBlock x:Name="DemoActiveText" Text="{loc:Text No_active_mods_da8d1eb4}" TextWrapping="Wrap"/>
 												</StackPanel>
 											</Border>
 										</StackPanel>
 									</Grid>
 									<Border Background="{DynamicResource ReduxSurfaceElevatedBrush}" Padding="18,14" CornerRadius="0,0,10,10">
 										<StackPanel>
-											<TextBlock x:Name="DemoProgressText" Text="01 / Activate" Foreground="{DynamicResource ReduxAccentHoverBrush}" FontWeight="SemiBold"/>
-											<TextBlock x:Name="DemoInstructionText" Text="Installed mods start here. Move one to Active to use it." TextWrapping="Wrap" Margin="0,6,0,10"/>
+											<TextBlock x:Name="DemoProgressText" Text="{loc:Text 01_Activate_d3a18ca6}" Foreground="{DynamicResource ReduxAccentHoverBrush}" FontWeight="SemiBold"/>
+											<TextBlock x:Name="DemoInstructionText" Text="{loc:Text Installed_mods_start_here_Move_one_to_Active_to_use_it_0defe009}" TextWrapping="Wrap" Margin="0,6,0,10"/>
 											<Button x:Name="DemoActionButton" Click="DemoAction_Click" HorizontalAlignment="Left" Style="{StaticResource ReduxPrimaryActionButtonStyle}">
 												<Grid>
 													<Grid.ColumnDefinitions>
@@ -501,54 +506,54 @@
 														<ColumnDefinition Width="*"/>
 													</Grid.ColumnDefinitions>
 													<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.ChevronRightStroke}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" x:Name="DemoActionIcon" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-													<TextBlock x:Name="DemoActionLabel" Text="Activate mod" Grid.Column="1" VerticalAlignment="Center"/>
+													<TextBlock x:Name="DemoActionLabel" Text="{loc:Text Activate_mod_6a1fa503}" Grid.Column="1" VerticalAlignment="Center"/>
 												</Grid>
 											</Button>
 										</StackPanel>
 									</Border>
 								</StackPanel>
 							</Border>
-							<CheckBox x:Name="GuidanceCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Checked="GuidanceCheckBox_Changed" Unchecked="GuidanceCheckBox_Changed" Margin="0,18,0,0" ToolTip="Offers suggestions for active mods. You review changes before applying them.">
+							<CheckBox x:Name="GuidanceCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Checked="GuidanceCheckBox_Changed" Unchecked="GuidanceCheckBox_Changed" Margin="0,18,0,0" ToolTip="{loc:Text Offers_suggestions_for_active_mods_You_review_changes_before_9b79b4fb}">
 								<Grid>
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="Auto"/>
 										<ColumnDefinition Width="*"/>
 									</Grid.ColumnDefinitions>
 									<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.Flag}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-									<TextBlock Text="Enable Load Order Advisor (experimental)" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+									<TextBlock Text="{loc:Text Enable_Load_Order_Advisor_experimental_54a25b5f}" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
 								</Grid>
 							</CheckBox>
-							<CheckBox x:Name="RetainArchivesCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Margin="0,10,0,0" ToolTip="Uses additional disk space. Off by default.">
+							<CheckBox x:Name="RetainArchivesCheckBox" Style="{StaticResource ReduxCheckBoxStyle}" Margin="0,10,0,0" ToolTip="{loc:Text Uses_additional_disk_space_Off_by_default_f8cc7683}">
 								<Grid>
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="Auto"/>
 										<ColumnDefinition Width="*"/>
 									</Grid.ColumnDefinitions>
 									<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.Archive}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-									<TextBlock Text="Keep installed archives for reinstalling" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+									<TextBlock Text="{loc:Text Keep_installed_archives_for_reinstalling_b53063b2}" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
 								</Grid>
 							</CheckBox>
-							<Expander x:Name="BeforePlayExpander" Header="Before you play" Style="{StaticResource WelcomeDetailsStyle}" Expanded="BeforePlayExpansion_Changed" Collapsed="BeforePlayExpansion_Changed" Margin="0,8,0,0">
-								<TextBlock Margin="4,8" Text="Install each mod’s requirements, check Mod Diagnostics, then sync your order. Keep the same mod setup when returning to an existing save." TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
+							<Expander x:Name="BeforePlayExpander" Header="{loc:Text Before_you_play_2764b4c1}" Style="{StaticResource WelcomeDetailsStyle}" Expanded="BeforePlayExpansion_Changed" Collapsed="BeforePlayExpansion_Changed" Margin="0,8,0,0">
+								<TextBlock Margin="4,8" Text="{loc:Text Install_each_mod_s_requirements_check_Mod_Diagnostics_then_s_a2b176ee}" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
 							</Expander>
 						</StackPanel>
 						<StackPanel x:Name="OrganizePage" Visibility="Collapsed">
 <Border Style="{StaticResource WelcomeFeatureCardStyle}" Margin="0,0,0,12">
 <StackPanel>
-<StackPanel Orientation="Horizontal" Margin="0,0,0,8"><controls:ReduxIcon Width="18" Height="18" Margin="0,0,8,0" StrokeData="{DynamicResource Redux.Icon.Layers}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}"/><TextBlock Text="Categories find. Separators organize." FontWeight="SemiBold"/></StackPanel>
-<TextBlock Text="Create custom categories in the sidebar and assign them to mods. Click a category to filter both panes; click the filtered-view notice to show everything again." TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
-<TextBlock Text="Use + beside Active or Inactive Mods to add a separator. Give it a name, color, and icon, then drag it into place. Collapse sections to keep long lists readable." TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Margin="0,10,0,0"/>
+<StackPanel Orientation="Horizontal" Margin="0,0,0,8"><controls:ReduxIcon Width="18" Height="18" Margin="0,0,8,0" StrokeData="{DynamicResource Redux.Icon.Layers}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}"/><TextBlock Text="{loc:Text Categories_find_Separators_organize_39abdd47}" FontWeight="SemiBold"/></StackPanel>
+<TextBlock Text="{loc:Text Create_custom_categories_in_the_sidebar_and_assign_them_to_m_5719b0b1}" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
+<TextBlock Text="{loc:Text Use_beside_Active_or_Inactive_Mods_to_add_a_separator_Give_i_608ad371}" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}" Margin="0,10,0,0"/>
 </StackPanel>
 </Border>
 <Border Style="{StaticResource WelcomeFeatureCardStyle}">
 <StackPanel>
-<CheckBox x:Name="StarterSeparatorsCheckBox" Style="{StaticResource ReduxCheckBoxStyle}"><TextBlock Text="Start with a few sections" FontWeight="SemiBold"/></CheckBox>
-<TextBlock Text="Choose the separators to add to the end of Active Mods when you finish setup." TextWrapping="Wrap" Margin="0,8,0,12" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
+<CheckBox x:Name="StarterSeparatorsCheckBox" Style="{StaticResource ReduxCheckBoxStyle}"><TextBlock Text="{loc:Text Start_with_a_few_sections_8f411ff8}" FontWeight="SemiBold"/></CheckBox>
+<TextBlock Text="{loc:Text Choose_the_separators_to_add_to_the_end_of_Active_Mods_when__c4fac12d}" TextWrapping="Wrap" Margin="0,8,0,12" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
 <UniformGrid x:Name="StarterSeparatorsPreview" Columns="3" IsEnabled="{Binding IsChecked, ElementName=StarterSeparatorsCheckBox}"/>
-<TextBlock Text="Your mods stay in place. Existing names are skipped. Rename or delete any section later." TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"/>
+<TextBlock Text="{loc:Text Your_mods_stay_in_place_Existing_names_are_skipped_Rename_or_0df60c2a}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"/>
 </StackPanel>
 </Border>
-<TextBlock Text="These are labels, not a recommended load order. Follow each mod’s installation instructions." TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"/>
+<TextBlock Text="{loc:Text These_are_labels_not_a_recommended_load_order_Follow_each_mo_f9b97b37}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"/>
 </StackPanel>
 <StackPanel x:Name="ManagersPage" Visibility="Collapsed">
 							<Grid Margin="0,0,0,12">
@@ -560,19 +565,19 @@
 								<Button x:Name="SaveTourButton" Tag="save" Click="ManagerTourSelection_Click" Style="{StaticResource WelcomeCurrentStepStyle}">
 									<StackPanel Orientation="Horizontal">
 										<controls:ReduxIcon Width="20" Height="20" Margin="0,0,8,0" StrokeData="{DynamicResource Redux.Icon.Save}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-										<TextBlock Text="Save games" VerticalAlignment="Center"/>
+										<TextBlock Text="{loc:Text Save_games_fade0398}" VerticalAlignment="Center"/>
 									</StackPanel>
 								</Button>
 								<Button x:Name="NativeTourButton" Grid.Column="2" Tag="native" Click="ManagerTourSelection_Click" Style="{StaticResource WelcomeStepStyle}">
 									<StackPanel Orientation="Horizontal">
 										<controls:ReduxIcon Width="20" Height="20" Margin="0,0,8,0" StrokeData="{DynamicResource Redux.Icon.Shield}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-										<TextBlock Text="Native mods" VerticalAlignment="Center"/>
+										<TextBlock Text="{loc:Text Native_mods_7b953a2e}" VerticalAlignment="Center"/>
 									</StackPanel>
 								</Button>
 							</Grid>
 							<Border Background="{DynamicResource ReduxSurfaceBrush}" CornerRadius="10" Padding="18">
 								<StackPanel>
-									<TextBlock Text="Import a save · Preview" x:Name="TourTitle" Margin="0,0,0,14" Style="{StaticResource WelcomeSectionTitleStyle}"/>
+									<TextBlock Text="{loc:Text Import_a_save_Preview_b474a925}" x:Name="TourTitle" Margin="0,0,0,14" Style="{StaticResource WelcomeSectionTitleStyle}"/>
 									<Grid>
 										<Grid.ColumnDefinitions>
 											<ColumnDefinition Width="*"/>
@@ -582,24 +587,24 @@
 										<Border Style="{StaticResource WelcomeFeatureCardStyle}">
 											<StackPanel>
 												<controls:ReduxIcon x:Name="TourFileIcon" Width="32" Height="32" HorizontalAlignment="Left" Margin="0,0,0,10" Foreground="{DynamicResource ReduxAccentHoverBrush}" StrokeData="{DynamicResource Redux.Icon.Save}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-												<TextBlock x:Name="TourFileName" Text="Example save.zip" TextWrapping="Wrap" FontWeight="SemiBold"/>
-												<TextBlock x:Name="TourFileDescription" Text="A save file, folder, or ZIP" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
+												<TextBlock x:Name="TourFileName" Text="{loc:Text Example_save_zip_5eda8cdd}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+												<TextBlock x:Name="TourFileDescription" Text="{loc:Text A_save_file_folder_or_ZIP_1c441752}" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
 											</StackPanel>
 										</Border>
 										<controls:ReduxIcon Grid.Column="1" Width="22" Height="22" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.ChevronRightStroke}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
 										<Border Grid.Column="2" Style="{StaticResource WelcomeFeatureCardStyle}">
 											<StackPanel>
 												<controls:ReduxIcon x:Name="TourDestinationIcon" Width="32" Height="32" HorizontalAlignment="Left" Margin="0,0,0,10" Foreground="{DynamicResource ReduxAccentHoverBrush}" StrokeData="{DynamicResource Redux.Icon.FolderOpen}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-												<TextBlock x:Name="TourDestination" Text="Save Game Manager" FontWeight="SemiBold" TextWrapping="Wrap"/>
-												<TextBlock x:Name="TourResult" Text="Ready for your save" Margin="0,4,0,0" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}" AutomationProperties.LiveSetting="Polite"/>
+												<TextBlock x:Name="TourDestination" Text="{loc:Text Save_Game_Manager_3eb1ecbb}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+												<TextBlock x:Name="TourResult" Text="{loc:Text Ready_for_your_save_86cdc18f}" Margin="0,4,0,0" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}" AutomationProperties.LiveSetting="Polite"/>
 											</StackPanel>
 										</Border>
 									</Grid>
-									<TextBlock x:Name="TourExplanation" Text="Drop a save file, folder, or ZIP into Redux." Margin="0,14,0,12" TextWrapping="Wrap"/>
-									<Button ToolTip="Practice only. No files are changed." x:Name="TourActionButton" Click="ManagerTourAction_Click" HorizontalAlignment="Left" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
+									<TextBlock x:Name="TourExplanation" Text="{loc:Text Drop_a_save_file_folder_or_ZIP_into_Redux_1b0a735e}" Margin="0,14,0,12" TextWrapping="Wrap"/>
+									<Button ToolTip="{loc:Text Practice_only_No_files_are_changed_6981aa3d}" x:Name="TourActionButton" Click="ManagerTourAction_Click" HorizontalAlignment="Left" Style="{StaticResource ReduxSecondaryActionButtonStyle}">
 										<StackPanel Orientation="Horizontal">
 											<controls:ReduxIcon Width="14" Height="14" Margin="0,0,6,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.Download}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-											<TextBlock x:Name="TourActionLabel" Text="Preview import"/>
+											<TextBlock x:Name="TourActionLabel" Text="{loc:Text Preview_import_ab5c8e55}"/>
 										</StackPanel>
 									</Button>
 								</StackPanel>
@@ -612,8 +617,8 @@
 									</Grid.ColumnDefinitions>
 									<controls:ReduxIcon Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Top" StrokeData="{DynamicResource Redux.Icon.FolderOpen}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
 									<StackPanel Grid.Column="1">
-										<TextBlock x:Name="TourLocation" Text="Saves → Manage" FontWeight="SemiBold" TextWrapping="Wrap"/>
-										<TextBlock x:Name="TourTip" Text="Browse, import, and open the selected profile’s saves." Margin="0,5,0,0" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
+										<TextBlock x:Name="TourLocation" Text="{loc:Text Saves_Manage_fc1e68d5}" FontWeight="SemiBold" TextWrapping="Wrap"/>
+										<TextBlock x:Name="TourTip" Text="{loc:Text Browse_import_and_open_the_selected_profile_s_saves_ba865a4f}" Margin="0,5,0,0" TextWrapping="Wrap" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
 									</StackPanel>
 								</Grid>
 							</Border>
@@ -624,7 +629,7 @@
 										<ColumnDefinition Width="*"/>
 									</Grid.ColumnDefinitions>
 									<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.Download}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-									<TextBlock Text="Open Download Manager when I finish" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
+									<TextBlock Text="{loc:Text Open_Download_Manager_when_I_finish_9f8e112a}" TextWrapping="Wrap" Grid.Column="1" VerticalAlignment="Center"/>
 								</Grid>
 							</CheckBox>
 						</StackPanel>
@@ -642,7 +647,7 @@
 								<ColumnDefinition Width="*"/>
 							</Grid.ColumnDefinitions>
 							<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.Close}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-							<TextBlock Text="Set up later" Grid.Column="1" VerticalAlignment="Center"/>
+							<TextBlock Text="{loc:Text Set_up_later_eb5e1049}" Grid.Column="1" VerticalAlignment="Center"/>
 						</Grid>
 					</Button>
 					<StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -653,12 +658,12 @@
 									<ColumnDefinition Width="*"/>
 								</Grid.ColumnDefinitions>
 								<controls:ReduxIcon Width="16" Height="16" Margin="0,0,8,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.ChevronLeftStroke}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" Foreground="{DynamicResource ReduxAccentHoverBrush}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
-								<TextBlock Text="Back" Grid.Column="1" VerticalAlignment="Center"/>
+								<TextBlock Text="{loc:Text Back_76900f1b}" Grid.Column="1" VerticalAlignment="Center"/>
 							</Grid>
 						</Button>
 						<Button x:Name="SaveContinueButton" Click="SaveButton_Click" IsDefault="True" MinWidth="110" Style="{StaticResource ReduxPrimaryActionButtonStyle}">
 							<StackPanel Orientation="Horizontal">
-								<TextBlock x:Name="ContinueLabel" Text="Continue"/>
+								<TextBlock x:Name="ContinueLabel" Text="{loc:Text Continue_31fbef16}"/>
 								<controls:ReduxIcon x:Name="ContinueIcon" Width="14" Height="14" Margin="8,0,0,0" VerticalAlignment="Center" StrokeData="{DynamicResource Redux.Icon.ChevronRightStroke}" Visibility="{Binding Path=(dapp:DivinityApp.ShowInterfaceIcons), Converter={StaticResource BoolToVisibilityConverter}}"/>
 							</StackPanel>
 						</Button>

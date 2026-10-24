@@ -49,10 +49,10 @@ public partial class ReduxSaveModReviewWindow : AdonisUI.Controls.AdonisWindow
         _collectionOrder = collectionOrder;
         if (collectionOrder)
         {
-            Title = "Collection Load Order";
-            InstructionsText.Text = "Review the collection’s order before saving. Missing and unmatched entries stay in the saved order so you can install their mods later.";
-            FooterText.Text = "Saving adds a separate order to the Load Order dropdown. It does not activate mods or change your current order.";
-            ApplyLabel.Text = "Save load order";
+            Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Collection Load Order");
+            InstructionsText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Review the collection’s order before saving. Missing and unmatched entries stay in the saved order so you can install their mods later.");
+            FooterText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Saving adds a separate order to the Load Order dropdown. It does not activate mods or change your current order.");
+            ApplyLabel.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Save load order");
             requirements = requirements.Select(r => r with { Detail = r.Status switch {
                 SaveModStatus.Active => "Installed in Active Mods. Your current order will not change.",
                 SaveModStatus.Inactive => "Installed in Inactive Mods. Saving will not activate it.",
@@ -71,11 +71,11 @@ public partial class ReduxSaveModReviewWindow : AdonisUI.Controls.AdonisWindow
         if (_collectionOrder)
         {
             ApplyButton.IsEnabled = _choices.Length > 0;
-            SummaryText.Text = $"{_choices.Count(c => c.Requirement.Status == SaveModStatus.Active)} active · {_choices.Count(c => c.Requirement.Status == SaveModStatus.Inactive)} inactive · {_choices.Count(c => c.Requirement.Status == SaveModStatus.Missing)} missing · {_choices.Count(c => c.Requirement.Status == SaveModStatus.Unavailable)} unmatched / need attention";
+            SummaryText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{_choices.Count(c => c.Requirement.Status == SaveModStatus.Active)} active · {_choices.Count(c => c.Requirement.Status == SaveModStatus.Inactive)} inactive · {_choices.Count(c => c.Requirement.Status == SaveModStatus.Missing)} missing · {_choices.Count(c => c.Requirement.Status == SaveModStatus.Unavailable)} unmatched / need attention");
             return;
         }
         ApplyButton.IsEnabled = _choices.Any(c => c.Selected);
-        SummaryText.Text = _choices.Length == 0 ? "No non-built-in mods are recorded in this save." :
+        SummaryText.Text = _choices.Length == 0 ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No non-built-in mods are recorded in this save.") :
             $"{_choices.Count(c => c.Requirement.Status == SaveModStatus.Active)} active · {_choices.Count(c => c.Requirement.Status == SaveModStatus.Inactive)} inactive · {_choices.Count(c => c.Requirement.Status == SaveModStatus.Missing)} missing · {_choices.Count(c => c.Requirement.Status == SaveModStatus.Unavailable)} need attention · {_choices.Count(c => c.Selected)} selected";
     }
     private void Apply_Click(object sender, RoutedEventArgs e)

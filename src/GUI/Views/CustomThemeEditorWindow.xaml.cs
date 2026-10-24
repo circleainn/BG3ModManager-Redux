@@ -77,7 +77,7 @@ public partial class CustomThemeEditorWindow : AdonisWindow
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Import Font",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Import Font"),
 			Filter = "Font files (*.ttf;*.otf)|*.ttf;*.otf|TrueType font (*.ttf)|*.ttf|OpenType font (*.otf)|*.otf",
 			CheckFileExists = true,
 			Multiselect = false

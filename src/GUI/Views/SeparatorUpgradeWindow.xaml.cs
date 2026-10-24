@@ -18,9 +18,9 @@ public partial class SeparatorUpgradeWindow : AdonisUI.Controls.AdonisWindow
             ReduxThemeService.Apply(Resources, settings.ColorTheme, ReduxThemeService.GetActiveTheme(settings), settings.UsesGeneratedGradients);
         MaxHeight = Math.Max(300, SystemParameters.WorkArea.Height - 32);
         Height = Math.Min(Height, MaxHeight);
-        OrderSummary.Text = $"{orderName}: {separatorCount} existing separator{(separatorCount == 1 ? String.Empty : "s")}. Choose what to update, or leave everything as it is.";
+        OrderSummary.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{orderName}: {separatorCount} existing separator{(separatorCount == 1 ? String.Empty : "s")}. Choose what to update, or leave everything as it is.");
         PersistentChoice.IsEnabled = canMakePersistent;
-        PersistentChoice.ToolTip = canMakePersistent ? null : "These separators are already persistent.";
+        PersistentChoice.ToolTip = canMakePersistent ? null : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("These separators are already persistent.");
         DisableLinesChoice.IsEnabled = canDisableLines;
         ReduxWindowBehavior.AttachDialogTransitions(this, 40);
         ReduxWindowBehavior.AttachRoundedCorners(this);

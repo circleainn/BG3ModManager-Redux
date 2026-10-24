@@ -101,7 +101,7 @@ public sealed class ReduxSnapshotStore
 		{
 			await ReduxPreUpdateBackupService.CreateAsync(pending,
 				scopes.Select(s => new ReduxPreUpdateBackupService.Source(s.Id, s.Directory, s.ProfileLoadOrdersOnly)),
-				new InlineProgress<ReduxPreUpdateBackupService.Progress>(p => progress?.Report(new("Copying " + p.CurrentFile, p.CopiedBytes, p.TotalBytes))), token, excluded,
+				new InlineProgress<ReduxPreUpdateBackupService.Progress>(p => progress?.Report(new(Localization.ReduxLanguageService.Current.Format($"Copying {p.CurrentFile}"), p.CopiedBytes, p.TotalBytes))), token, excluded,
 				async (copiedFiles, cancellation) =>
 				{
 					if (copiedFiles.Count > MaximumFiles) throw new IOException("The snapshot contains too many files.");
@@ -113,7 +113,7 @@ public sealed class ReduxSnapshotStore
 						var scope = scopes.Single(s => s.Id == file.ArchivePath[..split]);
 						var relative = file.ArchivePath[(split + 1)..];
 						var source = Contained(scope.Directory, relative);
-						progress?.Report(new("Checking source " + file.ArchivePath));
+						progress?.Report(new(Localization.ReduxLanguageService.Current.Format($"Checking source {file.ArchivePath}")));
 						if (new FileInfo(source).Length != file.Length || await HashAsync(source, cancellation) != file.Sha256)
 							throw new IOException("A file changed during backup. Close the game and finish file operations, then retry.");
 						files.Add(new(scope.Id, relative, file.Length, file.Sha256));
@@ -129,7 +129,7 @@ public sealed class ReduxSnapshotStore
 				var manifest = ReadManifest(zip);
 				foreach (var file in manifest.Files)
 				{
-					progress?.Report(new("Verifying archive " + file.Path));
+					progress?.Report(new(Localization.ReduxLanguageService.Current.Format($"Verifying archive {file.Path}")));
 					var entry = zip.GetEntry(file.Scope + "/" + file.Path)!;
 					await using var encoded = entry.Open();
 					var digest = Convert.ToHexString(await SHA256.HashDataAsync(encoded, token));
@@ -161,7 +161,7 @@ public sealed class ReduxSnapshotStore
 			WriteJson(JournalPath, new Journal(1, before, scopes, manifest.IncludeMods));
 			try
 			{
-				progress?.Report(new("Restoring snapshot. Keep this window open.", CanCancel: false));
+				progress?.Report(new(Localization.ReduxLanguageService.Current.Translate("Restoring snapshot. Keep this window open."), CanCancel: false));
 				Apply(manifest, scopes, stage);
 				File.Delete(JournalPath);
 			}
@@ -193,7 +193,7 @@ public sealed class ReduxSnapshotStore
 		var stage = NewStage();
 		try
 		{
-			progress?.Report(new("Recovering the previous installation. Keep this window open.", CanCancel: false));
+			progress?.Report(new(Localization.ReduxLanguageService.Current.Translate("Recovering the previous installation. Keep this window open."), CanCancel: false));
 			await StageAsync(zip, manifest, stage, null, CancellationToken.None);
 			Apply(manifest, scopes, stage);
 			File.Delete(JournalPath);
@@ -247,7 +247,7 @@ public sealed class ReduxSnapshotStore
 			var path = Contained(stage, file.Scope + "/" + file.Path);
 			var entry = zip.GetEntry(file.Scope + "/" + file.Path)!;
 			Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-			progress?.Report(new("Verifying " + file.Path, completed, total));
+			progress?.Report(new(Localization.ReduxLanguageService.Current.Format($"Verifying {file.Path}"), completed, total));
 			await using (var source = entry.Open())
 			await using (var target = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1024 * 1024, true))
 			{

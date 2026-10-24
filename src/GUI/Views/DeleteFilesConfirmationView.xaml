@@ -1,5 +1,6 @@
 <adonisUI:AdonisWindow x:Class="DivinityModManager.Views.DeleteFilesConfirmationView"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
@@ -89,7 +90,7 @@
 							<TextBlock FontSize="{DynamicResource Redux.FontSize.20}" FontWeight="{DynamicResource Redux.FontWeight.Title}"
 								Foreground="{DynamicResource ReduxTextPrimaryBrush}" Text="{Binding Title}" />
 							<TextBlock Margin="0,3,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-								Text="Review the selected mod files and deletion options before continuing." TextWrapping="Wrap" />
+								Text="{loc:Text Review_the_selected_mod_files_and_deletion_options_before_co_4fc37bca}" TextWrapping="Wrap" />
 						</StackPanel>
 					</Grid>
 
@@ -111,11 +112,11 @@
 											</GridViewColumn.Header>
 											<GridViewColumn.CellTemplate><DataTemplate>
 												<CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="{Binding IsSelected}"
-													Style="{StaticResource DeleteFilesCheckBoxStyle}" ToolTip="Select this file" />
+													Style="{StaticResource DeleteFilesCheckBoxStyle}" ToolTip="{loc:Text Select_this_file_7fe18db8}" />
 											</DataTemplate></GridViewColumn.CellTemplate>
 										</GridViewColumn>
 										<GridViewColumn Width="220">
-											<GridViewColumn.Header><TextBlock Text="Name" /></GridViewColumn.Header>
+											<GridViewColumn.Header><TextBlock Text="{loc:Text Name_dcd1d522}" /></GridViewColumn.Header>
 											<GridViewColumn.CellTemplate><DataTemplate>
 												<TextBlock Margin="10,0" VerticalAlignment="Center" FontWeight="{DynamicResource Redux.FontWeight.Control}"
 													Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding DisplayName}" />
@@ -144,12 +145,12 @@
 						BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
 						CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
 						<WrapPanel VerticalAlignment="Center">
-							<CheckBox Margin="0,0,22,0" Content="Permanent" IsChecked="{Binding PermanentlyDelete, Mode=TwoWay}"
+							<CheckBox Margin="0,0,22,0" Content="{loc:Text Permanent_455a9549}" IsChecked="{Binding PermanentlyDelete, Mode=TwoWay}"
 								Style="{StaticResource DeleteFilesCheckBoxStyle}"
-								ToolTip="Delete files permanently instead of moving them to the Recycle Bin." />
-							<CheckBox Content="Remove from Load Order" IsChecked="{Binding RemoveFromLoadOrder, Mode=TwoWay}"
+								ToolTip="{loc:Text Delete_files_permanently_instead_of_moving_them_to_the_Recyc_e4bf2f5a}" />
+							<CheckBox Content="{loc:Text Remove_from_Load_Order_9c02f70a}" IsChecked="{Binding RemoveFromLoadOrder, Mode=TwoWay}"
 								Visibility="{Binding RemoveFromLoadOrderVisibility}" Style="{StaticResource DeleteFilesCheckBoxStyle}"
-								ToolTip="Remove deleted mods from the active load order." />
+								ToolTip="{loc:Text Remove_deleted_mods_from_the_active_load_order_78debad6}" />
 						</WrapPanel>
 					</Border>
 
@@ -162,7 +163,7 @@
 									<controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,7,0"
 										Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"
 										StrokeData="{StaticResource Redux.Icon.Close}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" />
-									<TextBlock Text="Cancel" />
+									<TextBlock Text="{loc:Text Cancel_19766ed6}" />
 								</StackPanel>
 							</Button>
 							<Button x:Name="DeleteActionButton" MinWidth="96" Margin="8,0,0,0" Command="{Binding RunCommand}" IsDefault="True"
@@ -171,7 +172,7 @@
 									<controls:ReduxIcon VerticalAlignment="Center" x:Name="DeleteActionIcon" Width="14" Height="14" Margin="0,0,7,0"
 										Foreground="{DynamicResource ReduxErrorBrush}"
 										StrokeData="{StaticResource Redux.Icon.Trash}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" />
-									<TextBlock Text="Delete" />
+									<TextBlock Text="{loc:Text Delete_e2d0a549}" />
 								</StackPanel>
 							</Button>
 						</StackPanel>

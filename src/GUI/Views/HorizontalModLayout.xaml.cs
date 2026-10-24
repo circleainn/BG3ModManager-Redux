@@ -337,7 +337,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		EnableCategoriesMenuItem.Items.Clear();
 		foreach (var category in ViewModel.GetAllModCategories().Concat(ViewModel.GetBuiltInCategoryFilters()).Distinct(StringComparer.OrdinalIgnoreCase))
 		{
-			var item = new MenuItem { Header = category, IsCheckable = true, IsChecked = ViewModel.IsModCategoryEnabled(category), Icon = CreateCategoryAssignmentIcon(category), ToolTip = "Show this category filter in the sidebar." };
+			var item = new MenuItem { Header = category, IsCheckable = true, IsChecked = ViewModel.IsModCategoryEnabled(category), Icon = CreateCategoryAssignmentIcon(category), ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Show this category filter in the sidebar.") };
 			ReduxMenuItemExtension.SetCheckOnRight(item, true);
 			item.Click += (_, _) =>
 			{
@@ -380,7 +380,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private void ClearAutomaticAssignmentsMenuItem_Click(object sender, RoutedEventArgs e) => ApplyCategoryPreference(() =>
 	{
 		var cleared = ViewModel.ClearAutomaticAssignmentsForCurrentMods();
-		ViewModel.ShowAlert($"Cleared automatic assignments for {cleared} mod{(cleared == 1 ? "" : "s")}. Use Restore cleared automatic assignments to undo this choice.", AlertType.Info, 15);
+		ViewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Cleared automatic assignments for {cleared} mod{(cleared == 1 ? "" : "s")}. Use Restore cleared automatic assignments to undo this choice."), AlertType.Info, 15);
 	});
 
 	private void RestoreClearedAutomaticAssignmentsMenuItem_Click(object sender, RoutedEventArgs e) => ApplyCategoryPreference(() =>
@@ -1018,8 +1018,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				IsEnabled = divider != null && String.IsNullOrWhiteSpace(divider.ParentDividerId) &&
 					!mod.IsVisualDividerCollapsed,
 				ToolTip = mod.IsVisualDividerCollapsed
-					? "Expand this separator before adding a sub-separator."
-					: "Create a sub-separator inside this separator.",
+					? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Expand this separator before adding a sub-separator.")
+					: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Create a sub-separator inside this separator."),
 				Icon = ReduxIcon.FromResource("Redux.Icon.AddStroke", true)
 			};
 			addChild.Click += (_, _) => ShowAddVisualDividerDialog(
@@ -1032,8 +1032,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					? Visibility.Visible : Visibility.Collapsed,
 				IsEnabled = !mod.IsVisualDividerCollapsed,
 				ToolTip = mod.IsVisualDividerCollapsed
-					? "Expand this separator before changing its nesting."
-					: "Make this sub-separator a standalone separator.",
+					? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Expand this separator before changing its nesting.")
+					: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Make this sub-separator a standalone separator."),
 				Icon = ReduxIcon.FromResource("Redux.Icon.ChevronLeftStroke", true)
 			};
 			removeParent.Click += (_, _) => ViewModel.RemoveVisualDividerParent(mod);
@@ -1060,15 +1060,15 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			{
 				moveInto.IsEnabled = false;
 				moveInto.ToolTip = mod.IsVisualDividerCollapsed
-					? "Expand this separator before changing its nesting."
-					: "No eligible separators are available in this pane.";
+					? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Expand this separator before changing its nesting.")
+					: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No eligible separators are available in this pane.");
 			}
 			var remove = new MenuItem
 			{
 				Header = "Remove Separator",
 				Tag = VisualDividerMenuTag,
 				IsEnabled = !mod.IsVisualDividerCollapsed,
-				ToolTip = mod.IsVisualDividerCollapsed ? "Expand this separator before removing it." : null,
+				ToolTip = mod.IsVisualDividerCollapsed ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Expand this separator before removing it.") : null,
 				Icon = ReduxIcon.FromResource("Redux.Icon.Trash", true, "ReduxErrorBrush")
 			};
 			ApplySemanticMenuHover(remove, "ReduxErrorPillBackground", "ReduxErrorBrush");
@@ -1101,7 +1101,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					Tag = OverrideTransferMenuTag,
 					Icon = ReduxIcon.FromResource(
 						activateOverride ? "Redux.Icon.ArrowBackStroke" : "Redux.Icon.ArrowForwardStroke", true),
-					ToolTip = "Move this Override PAK between the game folder and Redux's managed holding folder."
+					ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Move this Override PAK between the game folder and Redux's managed holding folder.")
 				};
 				transfer.Click += (_, _) => ViewModel.TransferOverrideMods([mod], activateOverride);
 				menu.Items.Insert(0, transfer);
@@ -1132,7 +1132,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			Tag = CategoryAssignmentMenuTag,
 			Icon = ReduxIcon.FromResource("Redux.Icon.Pricetag", true),
 			ToolTip = hasBulkCategoryTargets
-				? "Category changes apply to every selected mod."
+				? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Category changes apply to every selected mod.")
 				: null
 		};
 		var automaticItem = new MenuItem
@@ -1201,7 +1201,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			Tag = PrivateNoteMenuTag,
 			Icon = ReduxIcon.FromResource("Redux.Icon.ScrollText", true),
 			ToolTip = hasBulkCategoryTargets
-				? "Saving applies the same note to every selected mod."
+				? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Saving applies the same note to every selected mod.")
 				: null
 		};
 		privateNoteItem.Click += (_, _) => ShowModNoteDialog(categoryTargets);
@@ -1210,7 +1210,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			Header = mod.HasCustomAlias ? "Edit Alias..." : "Set Alias...",
 			Tag = ModAliasMenuTag,
 			Icon = ReduxIcon.FromResource("Redux.Icon.Create", true),
-			ToolTip = "Use a local display name without changing the installed package or provider metadata."
+			ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Use a local display name without changing the installed package or provider metadata.")
 		};
 		aliasItem.Click += (_, _) => ShowModAliasDialog(mod);
 		var artworkMenu = new MenuItem
@@ -1407,7 +1407,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 					Header = "Check Nexus File Update",
 					Tag = ModUpdateMenuTag,
 					Icon = ReduxIcon.FromResource("Redux.Icon.RefreshStroke", true),
-					ToolTip = "Check this installed Nexus file for an explicit replacement. Uses one Nexus API request."
+					ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Check this installed Nexus file for an explicit replacement. Uses one Nexus API request.")
 				};
 				checkUpdate.Click += (_, _) => ViewModel.CheckNexusFileUpdate(mod);
 				menu.Items.Insert(Math.Min(4, menu.Items.Count), checkUpdate);
@@ -1466,7 +1466,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 				Header = offered.Length == 1 ? "Skip this update" : "Skip these updates",
 				Tag = ModUpdateMenuTag, IsEnabled = enabled,
 				Icon = ReduxIcon.FromResource("Redux.Icon.RemoveCircle", true),
-				ToolTip = "Skip the currently offered replacement files for this installed mod. Later updates can still notify you."
+				ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Skip the currently offered replacement files for this installed mod. Later updates can still notify you.")
 			};
 			skip.Click += (_, _) => apply(offered, true);
 			yield return skip;
@@ -1477,7 +1477,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			{
 				Header = "Show skipped updates", Tag = ModUpdateMenuTag, IsEnabled = enabled,
 				Icon = ReduxIcon.FromResource("Redux.Icon.Undo", true),
-				ToolTip = "This installed mod has skipped updates. Restore their notifications; a fresh check may be needed."
+				ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("This installed mod has skipped updates. Restore their notifications; a fresh check may be needed.")
 			};
 			restore.Click += (_, _) => apply(skipped, false);
 			yield return restore;
@@ -1493,8 +1493,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			Tag = VisualDividerMenuTag,
 			Icon = ReduxIcon.FromResource("Redux.Icon.ListStroke", true),
 			IsEnabled = destinations.Count > 0 && ViewModel.IsInitialized && !ViewModel.IsLocked,
-			ToolTip = destinations.Count == 0 ? "Add a separator in this pane first."
-				: "Append to a separator in this pane, keeping the selected mods in their current order."
+			ToolTip = destinations.Count == 0 ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Add a separator in this pane first.")
+				: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Append to a separator in this pane, keeping the selected mods in their current order.")
 		};
 		foreach (var destination in destinations)
 		{
@@ -1507,7 +1507,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			{
 				Header = label,
 				Icon = ReduxIcon.FromResource("Redux.Icon.ChevronRightStroke", true),
-				ToolTip = "Append after this separator's own mods, before any sub-separator."
+				ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Append after this separator's own mods, before any sub-separator.")
 			};
 			destinationItem.Click += (_, _) =>
 			{
@@ -1564,8 +1564,8 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			|| ReferenceEquals(item.Command, DivinityApp.Commands.DeleteModCommand))
 			return true;
 
-		return item.Header is string header
-			&& (header == "Move to Active Mods"
+		var header = DivinityModManager.Localization.LocalizationBindings.SourceText(item, MenuItem.HeaderProperty, item.Header as string);
+		return (header == "Move to Active Mods"
 				|| header == "Move to Inactive Mods"
 				|| header == "Delete Mod...");
 	}
@@ -1715,9 +1715,9 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			{ Owner = Window.GetWindow(this) };
 		if (parent != null)
 		{
-			dialog.Title = "Add Sub-separator";
-			dialog.DialogHeading.Text = $"Add a sub-separator to {parent.Title}";
-			dialog.DialogHelperText.Text = "This sub-separator will collapse with its containing separator and can still collapse its own mods.";
+			dialog.Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Add Sub-separator");
+			dialog.DialogHeading.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Add a sub-separator to {parent.Title}");
+			dialog.DialogHelperText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("This sub-separator will collapse with its containing separator and can still collapse its own mods.");
 		}
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme,
 			ReduxThemeService.GetActiveTheme(ViewModel.Settings), ViewModel.Settings.UsesGeneratedGradients);
@@ -1754,7 +1754,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		if (mod == null || mod.IsVisualDivider || String.IsNullOrWhiteSpace(mod.UUID)) return;
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = mod.HasCustomPreviewImage ? "Replace Custom Mod Artwork" : "Choose Custom Mod Artwork",
+			Title = mod.HasCustomPreviewImage ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Replace Custom Mod Artwork") : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Choose Custom Mod Artwork"),
 			Filter = "Image files|*.png;*.jpg;*.jpeg;*.webp;*.bmp;*.gif|All files|*.*",
 			CheckFileExists = true,
 			Multiselect = false
@@ -2019,7 +2019,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		OverrideSeparatorBulkToggleButton.Visibility = ViewModel.Settings.OverrideVisualModListDividers?.Count > 1
 			? Visibility.Visible : Visibility.Collapsed;
 		OverrideSeparatorBulkToggleButton.IsEnabled = target.HasValue && ViewModel.IsInitialized && !ViewModel.IsLocked;
-		OverrideSeparatorBulkToggleButton.ToolTip = target.HasValue ? action : "No override separators to expand or collapse";
+		OverrideSeparatorBulkToggleButton.ToolTip = target.HasValue ? action : DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No override separators to expand or collapse");
 		System.Windows.Automation.AutomationProperties.SetName(OverrideSeparatorBulkToggleButton, action);
 		OverrideSeparatorBulkToggleIcon.SetResourceReference(
 			ReduxIcon.StrokeDataProperty,
@@ -2082,7 +2082,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			!overrideDivider && divider.IsActiveList,
 			divider.IsCollapsed ? "Expand this separator before changing its nesting." : "Move the existing sub-separators before nesting this separator.");
 		if (parent != null)
-			dialog.DialogHelperText.Text = $"Inside {parent.Title}. It collapses with that separator and can still collapse its own mods.";
+			dialog.DialogHelperText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Inside {parent.Title}. It collapses with that separator and can still collapse its own mods.");
 		ReduxThemeService.Apply(dialog.Resources, ViewModel.Settings.ColorTheme,
 			ReduxThemeService.GetActiveTheme(ViewModel.Settings), ViewModel.Settings.UsesGeneratedGradients);
 		if (dialog.ShowDialog() != true) { SaveCategoryDialogColors(dialog); return; }
@@ -4683,11 +4683,11 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
                 StaysOpenOnClick = true,
                 ToolTip = columnName switch
                 {
-                    "Last Modified" => "When the local mod file was modified. This is not necessarily its installation date.",
-                    "Last Updated" => "The source update date when available; otherwise the local file date.",
-                    "File Name" => "Show the actual file name alongside the mod name.",
-                    "#" => "Show order numbers in this pane.",
-                    _ => "Show or hide this column across the mod panes."
+                    "Last Modified" => DivinityModManager.Localization.ReduxLanguageService.Current.Translate("When the local mod file was modified. This is not necessarily its installation date."),
+                    "Last Updated" => DivinityModManager.Localization.ReduxLanguageService.Current.Translate("The source update date when available; otherwise the local file date."),
+                    "File Name" => DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Show the actual file name alongside the mod name."),
+                    "#" => DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Show order numbers in this pane."),
+                    _ => DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Show or hide this column across the mod panes.")
                 },
                 IsCheckable = true,
                 IsChecked = columnName == "#"
@@ -4813,7 +4813,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 				if (headerClicked.Column.Header is TextBlock textBlock)
 				{
-					header = textBlock.Text;
+					header = DivinityModManager.Localization.LocalizationBindings.SourceText(textBlock, TextBlock.TextProperty, textBlock.Text);
 				}
 				else if (headerClicked.Column.Header is string gridHeader)
 				{

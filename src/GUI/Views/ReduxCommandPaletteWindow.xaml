@@ -1,5 +1,6 @@
 <adonisUI:AdonisWindow x:Class="DivinityModManager.Views.ReduxCommandPaletteWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
@@ -7,7 +8,7 @@
 	xmlns:local="clr-namespace:DivinityModManager.Views"
 	xmlns:util="clr-namespace:DivinityModManager.Util"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Quick Access"
+	Title="{loc:Text Quick_Access_04f45b0c}"
 	Width="620" Height="530" MinWidth="520" MinHeight="420" MaxWidth="760" MaxHeight="760"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}"
 	FontSize="{DynamicResource Redux.FontSize.12}"
@@ -361,7 +362,7 @@
 									</Border>
 									<StackPanel Grid.Column="1" Margin="0,8,12,8" VerticalAlignment="Center">
 									<TextBlock FontWeight="{DynamicResource Redux.FontWeight.Control}"
-										Text="{Binding Name}"
+										Text="{Binding DisplayName}"
 										TextTrimming="CharacterEllipsis">
 										<TextBlock.Style>
 											<Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="{x:Type TextBlock}">
@@ -380,7 +381,7 @@
 									</TextBlock>
 										<TextBlock Margin="0,2,0,0"
 											Foreground="{DynamicResource ReduxTextMutedBrush}"
-											Text="{Binding Category}"
+											Text="{Binding DisplayCategory}"
 											TextTrimming="CharacterEllipsis" />
 									</StackPanel>
 									<Border x:Name="GesturePill" Grid.Column="2"
@@ -499,7 +500,7 @@
 							CaretBrush="{DynamicResource ReduxAccentBrush}"
 							FontSize="{DynamicResource Redux.FontSize.14}"
 							TextChanged="SearchBox_TextChanged"
-							ToolTip="Find actions, mods, profiles, orders, or categories" />
+							ToolTip="{loc:Text Find_actions_mods_profiles_orders_or_categories_45a3cf52}" />
 					</Grid>
 				</Border>
 
@@ -538,7 +539,7 @@
 							<TextBlock Margin="0,8,0,0"
 								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
 								FontWeight="{DynamicResource Redux.FontWeight.Control}"
-								Text="No matching results" />
+								Text="{loc:Text No_matching_results_5be9bd04}" />
 						</StackPanel>
 					</Grid>
 				</Border>
@@ -550,11 +551,11 @@
 					</Grid.ColumnDefinitions>
 					<TextBlock VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="&#x2191;&#x2193; Navigate   Enter Open   Esc Close" />
+						Text="{loc:Text Navigate_Enter_Open_Esc_Close_820d2012}" />
 					<TextBlock Grid.Column="1"
 						VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="{Binding ElementName=CommandList, Path=Items.Count, StringFormat={}{0} results}" />
+						Text="{loc:FormatText Key=0_results_84cbe8d0, Path=Items.Count, ElementName=CommandList}" />
 				</Grid>
 			</Grid>
 		</Border>
