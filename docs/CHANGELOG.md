@@ -5,6 +5,8 @@ source for individual implementation details.
 
 ## Unreleased
 
+## 0.1.0-alpha.16.7 — 2026-10-23
+
 Initial interface language support. Translation corrections from native speakers are welcome.
 
 - Add **Preferences > General > Interface language** with English, French, Spanish, Russian, and Simplified Chinese. Preview changes immediately and use Save to keep the selection. Coverage includes navigation, Preferences, onboarding, modal layouts, confirmation messages, installation reviews, and the external backup/restore window; untranslated diagnostics fall back to English. Mod content, paths, and load orders keep their original text.
