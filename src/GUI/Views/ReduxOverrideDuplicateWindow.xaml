@@ -52,7 +52,7 @@
 									<TextBlock Text="{Binding HeldSummary}" TextWrapping="Wrap" Margin="0,0,0,10" />
 									<ComboBox ItemsSource="{Binding Options}" DisplayMemberPath="DisplayLabel" SelectedValuePath="Value"
 										SelectedValue="{Binding Choice, Mode=TwoWay}" SelectionChanged="Choice_SelectionChanged"
-										MinWidth="240" HorizontalAlignment="Left" AutomationProperties.Name="{Binding Name, StringFormat=Copy to keep for {0}}" />
+										MinWidth="240" HorizontalAlignment="Left" AutomationProperties.Name="{loc:FormatText Key=Copy_to_keep_for_0_4e361873, Path=Name}" />
 								</StackPanel>
 							</Border>
 						</DataTemplate></ItemsControl.ItemTemplate>

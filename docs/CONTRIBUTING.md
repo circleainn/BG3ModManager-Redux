@@ -74,6 +74,8 @@ the game. Missing translations fall back to English.
 Use `loc:Text` for static XAML labels and `LocalizationBindings.Set` for UI-owned labels created in
 code. Use `loc:BoundText` only to display a known UI label whose underlying English identifier must
 remain stable. Never translate user content, paths, persistent identifiers, or column sort keys.
+Use `loc:FormatText` for a translated sentence containing one bound count, name, or path; its
+`Key` identifies the sentence template and its argument is preserved unchanged.
 For messages containing names, paths, or counts, use `ReduxLanguageService.Format` on the
 interpolated UI sentence so its template is translated before unchanged values are inserted. The
 external snapshot runner embeds the same catalog and receives the selected language with its palette.

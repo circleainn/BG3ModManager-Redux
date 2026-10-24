@@ -1849,7 +1849,7 @@
 				<StackPanel VerticalAlignment="Center" Orientation="Horizontal">
 					<TextBlock Style="{StaticResource ModSectionTitle}" Text="{loc:Text Active_Mods_151935ef}" />
 					<Border Style="{StaticResource ModPaneCountBadgeStyle}"
-						ToolTip="{Binding ActiveMods.Count, StringFormat={}{0} active mods}">
+						ToolTip="{loc:FormatText Key=0_active_mods_a66c2ddc, Path=ActiveMods.Count}">
 						<TextBlock Style="{StaticResource ModPaneCountTextStyle}" Text="{Binding ActiveMods.Count}" />
 					</Border>
 				</StackPanel>
@@ -1997,7 +1997,7 @@
 									Style="{StaticResource ModSectionTitle}"
 									Text="{loc:Text Override_Mods_2303d03c}" />
 								<Border Style="{StaticResource ModPaneCountBadgeStyle}"
-									ToolTip="{Binding ForceLoadedMods.Count, StringFormat={}{0} override mods}">
+									ToolTip="{loc:FormatText Key=0_override_mods_d289d87b, Path=ForceLoadedMods.Count}">
 									<TextBlock Style="{StaticResource ModPaneCountTextStyle}" Text="{Binding ForceLoadedMods.Count}" />
 								</Border>
 							</StackPanel>
@@ -2166,7 +2166,7 @@
 					Visibility="{Binding IsInactiveModsExpanded, Converter={StaticResource BoolToVisibilityConverter}}">
 					<TextBlock Style="{StaticResource ModSectionTitle}" Text="{loc:Text Inactive_Mods_1df7c4ab}" />
 					<Border Style="{StaticResource ModPaneCountBadgeStyle}"
-						ToolTip="{Binding InactiveMods.Count, StringFormat={}{0} inactive mods}">
+						ToolTip="{loc:FormatText Key=0_inactive_mods_01af1581, Path=InactiveMods.Count}">
 						<TextBlock Style="{StaticResource ModPaneCountTextStyle}" Text="{Binding InactiveMods.Count}" />
 					</Border>
 				</StackPanel>

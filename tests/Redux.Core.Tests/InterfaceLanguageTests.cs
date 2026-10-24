@@ -21,6 +21,113 @@ namespace Redux.Core.Tests;
 
 internal sealed class InterfaceLanguageTests
 {
+	public void BoundSentenceTranslationsUpdateCountsAndPreserveNames()
+	{
+		WithResources(_ =>
+		{
+			var service = ReduxLanguageService.Current;
+			foreach (var english in new[] { "{0} results", "{0} active mods", "{0} inactive mods", "{0} override mods", "Source order: {0}", "Copy to keep for {0}" })
+			{
+				var key = service.Keys.Single(k => service.GetTranslation(k, "en") == english);
+				var root = (Grid)System.Windows.Markup.XamlReader.Parse($$"""
+					<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:DivinityModManager.Localization;assembly=Redux">
+					 <TextBlock x:Name="Source"/><TextBlock x:Name="Result" Text="{loc:FormatText Key={{key}}, Path=Tag, ElementName=Source}"/>
+					</Grid>
+					""");
+				var source = (TextBlock)root.FindName("Source");
+				var result = (TextBlock)root.FindName("Result");
+				foreach (var language in ReduxLanguageService.Languages.Concat(ReduxLanguageService.Languages.Reverse()))
+				foreach (var argument in new object[] { 0, 37, "Save {0} Русский 中文" })
+				{
+					service.SetLanguage(language.Code);
+					source.Tag = argument;
+					Layout(root, 900, 50);
+					RegressionAssert.Equal(service.FormatEnglish(english, argument), result.Text);
+					RegressionAssert.Equal(argument, source.Tag);
+					if (language.Code != "en") RegressionAssert.False(result.Text == String.Format(english, argument));
+				}
+			}
+		});
+	}
+
+	public void DownloadAndSnapshotDetailsTranslateWithoutRewritingStoredData()
+	{
+		WithResources(resources =>
+		{
+			var service = ReduxLanguageService.Current;
+			var download = new DivinityModManager.Models.NexusMods.NxmDownloadItem
+			{
+				SourceKind = DivinityModManager.Models.NexusMods.AcquiredPackageSourceKind.LocalFile,
+				Author = "Save", ProjectName = "Install", BytesReceived = 1024, SizeBytes = 2048,
+				State = DivinityModManager.Models.NexusMods.NxmDownloadState.Paused
+			};
+			var retained = new DivinityModManager.Models.NexusMods.RetainedPackageArchiveEntry
+			{
+				SourceKind = DivinityModManager.Models.NexusMods.AcquiredPackageSourceKind.LocalFile,
+				ProjectName = "Save", InstallDestination = @"C:\Mods\Save {0} 中文", PackageKind = "native"
+			};
+			var backup = new DivinityModManager.AppServices.ReduxSnapshotStore.Item("snapshot.zip", "Save", "16.6.1", DateTimeOffset.UtcNow, true, 1048576);
+			var view = new ReduxBackupsView();
+			var snapshots = (ListBox)view.FindName("Snapshots");
+			snapshots.ItemsSource = new[] { backup };
+			var metadata = new TextBlock(); metadata.SetBinding(TextBlock.TextProperty, new Binding(nameof(download.MetadataText)) { Source = download });
+			var detail = new TextBlock(); detail.SetBinding(TextBlock.TextProperty, new Binding(nameof(download.DownloadDetailText)) { Source = download });
+			var destination = new TextBlock(); destination.SetBinding(TextBlock.TextProperty, new Binding(nameof(retained.DestinationText)) { Source = retained });
+			var storedDownload = JsonConvert.SerializeObject(download);
+			var storedRetained = JsonConvert.SerializeObject(retained);
+			var storedBackup = JsonConvert.SerializeObject(backup);
+			foreach (var language in ReduxLanguageService.Languages.Concat(ReduxLanguageService.Languages.Reverse()))
+			{
+				service.SetLanguage(language.Code);
+				Layout(view, 780, 900);
+				Layout(metadata, 780, 50); Layout(detail, 780, 50); Layout(destination, 780, 50);
+				RegressionAssert.Contains(metadata.Text, service.Translate("Local package"));
+				RegressionAssert.Contains(metadata.Text, service.FormatEnglish("by {0}", "Save"));
+				RegressionAssert.Equal(service.FormatEnglish("{0} downloaded", "1 KB"), detail.Text);
+				RegressionAssert.Equal(service.FormatEnglish("Reinstall to {0}", retained.InstallDestination), destination.Text);
+				RegressionAssert.True(Descendants<TextBlock>(snapshots).Any(text => text.Text.Contains(service.Translate("Redux + mods and mod lists"))));
+				RegressionAssert.True(Descendants<TextBlock>(snapshots).Any(text => text.Text == "Save"));
+				RegressionAssert.Equal(storedDownload, JsonConvert.SerializeObject(download));
+				RegressionAssert.Equal(storedRetained, JsonConvert.SerializeObject(retained));
+				RegressionAssert.Equal(storedBackup, JsonConvert.SerializeObject(backup));
+				var output = Environment.GetEnvironmentVariable("REDUX_LAYOUT_PREVIEW");
+				if (!String.IsNullOrWhiteSpace(output))
+				{
+					foreach (var theme in new[] { ReduxThemeType.ReduxDark, ReduxThemeType.ReduxLight, ReduxThemeType.Parchment })
+					{
+						ReduxThemeService.Apply(view.Resources, theme);
+						ReduxTypographyService.ApplyTextSize(resources, ReduxTextSize.Large);
+						Layout(view, 780, 900);
+						Layout(view, 780, 900);
+						Render(view, Path.Combine(output, $"backup-summary-{theme}-{language.Code}.png"), 780, 900, 144);
+					}
+				}
+				var result = new DivinityModManager.AppServices.NxmAssociationResult(true, DivinityModManager.AppServices.NxmAssociationStatus.OwnedByAnotherHandler, "Provider message", retained.InstallDestination);
+				foreach (var wine in new[] { false, true })
+				{
+					var prompt = DivinityModManager.AppServices.NxmAssociationPresentation.GetConfigurePrompt(result, wine);
+					RegressionAssert.Contains(prompt, retained.InstallDestination);
+					if (language.Code != "en") RegressionAssert.False(prompt.StartsWith("Use this Redux installation"));
+				}
+			}
+			foreach (var language in ReduxLanguageService.Languages)
+			{
+				service.SetLanguage(language.Code);
+				download.State = DivinityModManager.Models.NexusMods.NxmDownloadState.Downloading;
+				RegressionAssert.Equal(service.FormatEnglish("{0} of {1}", "1 KB", "2 KB"), download.DownloadDetailText);
+				download.State = DivinityModManager.Models.NexusMods.NxmDownloadState.RetryWaiting;
+				RegressionAssert.Equal(service.FormatEnglish("{0} downloaded  ·  retrying shortly", "1 KB"), download.DownloadDetailText);
+				download.State = DivinityModManager.Models.NexusMods.NxmDownloadState.Failed;
+				download.ErrorCode = "missing-file"; download.ErrorDetails = "";
+				if (language.Code != "en") RegressionAssert.False(download.FailureDetails.StartsWith("The downloaded archive"));
+				download.ErrorDetails = "Save {0}: Failed";
+				RegressionAssert.Equal(download.ErrorDetails, download.DownloadDetailText);
+				var converter = new SnapshotSummaryConverter();
+				RegressionAssert.Equal("Save {0}: Failed", converter.Convert([backup with { Error = "Save {0}: Failed" }, language.Code], typeof(string), null!, CultureInfo.CurrentCulture));
+			}
+		});
+	}
+
 	public void SettingsAndCommandMetadataHaveTranslationsInEveryLanguage()
 	{
 		using var stream = typeof(ReduxLanguageService).Assembly.GetManifestResourceStream("Redux.InterfaceStrings.json")!;

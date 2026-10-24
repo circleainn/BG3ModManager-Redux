@@ -11786,5 +11786,299 @@
     "es": "{0} (modificado)",
     "ru": "{0} (изменено)",
     "zh-Hans": "{0}（已修改）"
+  },
+  "Copy_to_keep_for_0_4e361873": {
+    "en": "Copy to keep for {0}",
+    "fr": "Copie à conserver pour {0}",
+    "es": "Copia que conservar de {0}",
+    "ru": "Копия для сохранения: {0}",
+    "zh-Hans": "为 {0} 保留的副本"
+  },
+  "Let_Redux_handle_NXM_links_inside_this_Wine_prefix_Current_h_14e6d435": {
+    "en": "Let Redux handle NXM links inside this Wine prefix?\n\nCurrent handler: {0}\n\nNon-BG3 links are forwarded to the previous handler when it can be invoked safely.",
+    "fr": "Autoriser Redux à gérer les liens NXM dans ce préfixe Wine ?\n\nGestionnaire actuel : {0}\n\nLes liens pour d’autres jeux sont transmis au gestionnaire précédent lorsque cela peut être fait sans risque.",
+    "es": "¿Permitir que Redux gestione los enlaces NXM dentro de este prefijo de Wine?\n\nGestor actual: {0}\n\nLos enlaces de otros juegos se envían al gestor anterior cuando puede ejecutarse de forma segura.",
+    "ru": "Разрешить Redux обрабатывать ссылки NXM в этом префиксе Wine?\n\nТекущий обработчик: {0}\n\nСсылки других игр передаются предыдущему обработчику, если его можно безопасно запустить.",
+    "zh-Hans": "允许 Redux 处理此 Wine 前缀中的 NXM 链接吗？\n\n当前处理程序：{0}\n\n其他游戏的链接会在能够安全调用时转发给原处理程序。"
+  },
+  "Let_Redux_handle_Nexus_Mod_Manager_links_for_this_Windows_ac_9223e681": {
+    "en": "Let Redux handle Nexus Mod Manager links for this Windows account?\n\nCurrent handler: {0}\n\nNon-BG3 links are forwarded to the previous handler when it can be invoked safely.",
+    "fr": "Autoriser Redux à gérer les liens Nexus Mod Manager pour ce compte Windows ?\n\nGestionnaire actuel : {0}\n\nLes liens pour d’autres jeux sont transmis au gestionnaire précédent lorsque cela peut être fait sans risque.",
+    "es": "¿Permitir que Redux gestione los enlaces de Nexus Mod Manager para esta cuenta de Windows?\n\nGestor actual: {0}\n\nLos enlaces de otros juegos se envían al gestor anterior cuando puede ejecutarse de forma segura.",
+    "ru": "Разрешить Redux обрабатывать ссылки Nexus Mod Manager для этой учётной записи Windows?\n\nТекущий обработчик: {0}\n\nСсылки других игр передаются предыдущему обработчику, если его можно безопасно запустить.",
+    "zh-Hans": "允许 Redux 为此 Windows 账户处理 Nexus Mod Manager 链接吗？\n\n当前处理程序：{0}\n\n其他游戏的链接会在能够安全调用时转发给原处理程序。"
+  },
+  "Linux_browser_links_need_a_separate_desktop_handler_that_for_baab7ef7": {
+    "en": "Linux browser links need a separate desktop handler that forwards to this Wine prefix. Its status is not checked here.",
+    "fr": "Les liens du navigateur Linux nécessitent un gestionnaire de bureau distinct qui les transmet à ce préfixe Wine. Son état n’est pas vérifié ici.",
+    "es": "Los enlaces del navegador de Linux necesitan un gestor de escritorio independiente que los reenvíe a este prefijo de Wine. Su estado no se comprueba aquí.",
+    "ru": "Для ссылок из браузера Linux нужен отдельный обработчик рабочего стола, передающий их в этот префикс Wine. Его состояние здесь не проверяется.",
+    "zh-Hans": "Linux 浏览器链接需要单独的桌面处理程序来转发到此 Wine 前缀。此处不会检查其状态。"
+  },
+  "NXM_links_need_repair_52678ace": {
+    "en": "NXM links need repair",
+    "fr": "Les liens NXM doivent être réparés",
+    "es": "Los enlaces NXM necesitan reparación",
+    "ru": "Нужна настройка ссылок NXM",
+    "zh-Hans": "NXM 链接需要修复"
+  },
+  "NXM_links_open_in_Redux_fc1e3c1f": {
+    "en": "NXM links open in Redux",
+    "fr": "Les liens NXM s’ouvrent dans Redux",
+    "es": "Los enlaces NXM se abren en Redux",
+    "ru": "Ссылки NXM открываются в Redux",
+    "zh-Hans": "NXM 链接由 Redux 打开"
+  },
+  "NXM_links_use_another_app_2cbba945": {
+    "en": "NXM links use another app",
+    "fr": "Les liens NXM utilisent une autre application",
+    "es": "Los enlaces NXM usan otra aplicación",
+    "ru": "Ссылки NXM открываются другим приложением",
+    "zh-Hans": "NXM 链接由其他应用处理"
+  },
+  "NXM_status_unavailable_d466a0e7": {
+    "en": "NXM status unavailable",
+    "fr": "État NXM indisponible",
+    "es": "Estado de NXM no disponible",
+    "ru": "Состояние NXM недоступно",
+    "zh-Hans": "无法获取 NXM 状态"
+  },
+  "Nexus_Mods_Mod_0_716e42c0": {
+    "en": "Nexus Mods · Mod {0}",
+    "fr": "Nexus Mods · Mod {0}",
+    "es": "Nexus Mods · Mod {0}",
+    "ru": "Nexus Mods · Мод {0}",
+    "zh-Hans": "Nexus Mods · 模组 {0}"
+  },
+  "Open_its_Nexus_file_page_to_request_a_fresh_Mod_Manager_Down_f26199eb": {
+    "en": "Open its Nexus file page to request a fresh Mod Manager Download link.",
+    "fr": "Ouvrez sa page de fichier sur Nexus pour demander un nouveau lien Mod Manager Download.",
+    "es": "Abre su página de archivo en Nexus para solicitar un nuevo enlace Mod Manager Download.",
+    "ru": "Откройте страницу файла на Nexus, чтобы получить новую ссылку Mod Manager Download.",
+    "zh-Hans": "打开其 Nexus 文件页面，获取新的 Mod Manager Download 链接。"
+  },
+  "Open_this_file_on_Nexus_Mods_and_choose_Mod_Manager_Download_d922d24a": {
+    "en": "Open this file on Nexus Mods and choose Mod Manager Download to authorize a new download.",
+    "fr": "Ouvrez ce fichier sur Nexus Mods et choisissez Mod Manager Download pour autoriser un nouveau téléchargement.",
+    "es": "Abre este archivo en Nexus Mods y elige Mod Manager Download para autorizar una nueva descarga.",
+    "ru": "Откройте этот файл на Nexus Mods и выберите Mod Manager Download, чтобы разрешить новую загрузку.",
+    "zh-Hans": "在 Nexus Mods 上打开此文件，然后选择 Mod Manager Download 以授权新的下载。"
+  },
+  "Package_removal_did_not_finish_Close_any_application_using_i_7ef5890f": {
+    "en": "Package removal did not finish. Close any application using its files, then choose Retry Delete.",
+    "fr": "La suppression du paquet n’est pas terminée. Fermez les applications qui utilisent ses fichiers, puis choisissez Réessayer la suppression.",
+    "es": "La eliminación del paquete no terminó. Cierra las aplicaciones que usen sus archivos y elige Reintentar eliminación.",
+    "ru": "Удаление пакета не завершено. Закройте приложения, использующие его файлы, затем выберите «Повторить удаление».",
+    "zh-Hans": "安装包删除未完成。请关闭正在使用其文件的应用，然后选择“重试删除”。"
+  },
+  "Redux_mods_and_mod_lists_6a0a1722": {
+    "en": "Redux + mods and mod lists",
+    "fr": "Redux + mods et listes de mods",
+    "es": "Redux + mods y listas de mods",
+    "ru": "Redux + моды и списки модов",
+    "zh-Hans": "Redux + 模组及模组列表"
+  },
+  "Redux_download_072b3795": {
+    "en": "Redux download",
+    "fr": "Téléchargement Redux",
+    "es": "Descarga de Redux",
+    "ru": "Загрузка Redux",
+    "zh-Hans": "Redux 下载"
+  },
+  "Redux_only_0861f164": {
+    "en": "Redux only",
+    "fr": "Redux uniquement",
+    "es": "Solo Redux",
+    "ru": "Только Redux",
+    "zh-Hans": "仅 Redux"
+  },
+  "Reinstall_to_0_f53c8c48": {
+    "en": "Reinstall to {0}",
+    "fr": "Réinstaller dans {0}",
+    "es": "Reinstalar en {0}",
+    "ru": "Переустановить в {0}",
+    "zh-Hans": "重新安装到 {0}"
+  },
+  "Reinstall_existing_placement_preserved_cbdca42d": {
+    "en": "Reinstall · existing placement preserved",
+    "fr": "Réinstaller · emplacement actuel conservé",
+    "es": "Reinstalar · se conserva la ubicación actual",
+    "ru": "Переустановка · текущее размещение сохраняется",
+    "zh-Hans": "重新安装 · 保留现有位置"
+  },
+  "Repair_Redux_s_NXM_link_registration_inside_this_Wine_prefix_4cae3d84": {
+    "en": "Repair Redux's NXM link registration inside this Wine prefix?",
+    "fr": "Réparer l’enregistrement des liens NXM de Redux dans ce préfixe Wine ?",
+    "es": "¿Reparar el registro de enlaces NXM de Redux dentro de este prefijo de Wine?",
+    "ru": "Восстановить регистрацию ссылок NXM для Redux в этом префиксе Wine?",
+    "zh-Hans": "修复此 Wine 前缀中 Redux 的 NXM 链接注册吗？"
+  },
+  "Repair_this_Redux_installation_s_NXM_link_registration_13806c5b": {
+    "en": "Repair this Redux installation's NXM link registration?",
+    "fr": "Réparer l’enregistrement des liens NXM de cette installation de Redux ?",
+    "es": "¿Reparar el registro de enlaces NXM de esta instalación de Redux?",
+    "ru": "Восстановить регистрацию ссылок NXM для этой установки Redux?",
+    "zh-Hans": "修复此 Redux 安装的 NXM 链接注册吗？"
+  },
+  "Retained_package_a87fb17b": {
+    "en": "Retained package",
+    "fr": "Paquet conservé",
+    "es": "Paquete conservado",
+    "ru": "Сохранённый пакет",
+    "zh-Hans": "已保留安装包"
+  },
+  "Stop_Redux_from_handling_NXM_links_and_restore_the_previous__87c90724": {
+    "en": "Stop Redux from handling NXM links and restore the previous per-user handler?",
+    "fr": "Cesser de gérer les liens NXM avec Redux et rétablir le gestionnaire précédent de cet utilisateur ?",
+    "es": "¿Dejar de gestionar los enlaces NXM con Redux y restaurar el gestor anterior de este usuario?",
+    "ru": "Прекратить обработку ссылок NXM в Redux и восстановить предыдущий обработчик пользователя?",
+    "zh-Hans": "停止由 Redux 处理 NXM 链接，并恢复此用户原来的处理程序吗？"
+  },
+  "Stop_Redux_from_handling_NXM_links_inside_this_Wine_prefix_a_90316218": {
+    "en": "Stop Redux from handling NXM links inside this Wine prefix and restore its previous handler?",
+    "fr": "Cesser de gérer les liens NXM avec Redux dans ce préfixe Wine et rétablir son gestionnaire précédent ?",
+    "es": "¿Dejar de gestionar los enlaces NXM con Redux en este prefijo de Wine y restaurar su gestor anterior?",
+    "ru": "Прекратить обработку ссылок NXM в Redux в этом префиксе Wine и восстановить предыдущий обработчик?",
+    "zh-Hans": "停止由 Redux 处理此 Wine 前缀中的 NXM 链接，并恢复原处理程序吗？"
+  },
+  "The_archive_size_differs_from_the_completed_download_record__977e43c1": {
+    "en": "The archive size differs from the completed download record. Download it again before installing.",
+    "fr": "La taille de l’archive diffère de celle du téléchargement terminé. Téléchargez-la à nouveau avant l’installation.",
+    "es": "El tamaño del archivo difiere del registrado al completar la descarga. Descárgalo de nuevo antes de instalarlo.",
+    "ru": "Размер архива отличается от записанного при завершении загрузки. Скачайте его заново перед установкой.",
+    "zh-Hans": "压缩文件大小与已完成的下载记录不符。请重新下载后再安装。"
+  },
+  "The_completed_archive_no_longer_matches_the_file_Redux_downl_bc45dbb5": {
+    "en": "The completed archive no longer matches the file Redux downloaded. Download it again before review.",
+    "fr": "L’archive terminée ne correspond plus au fichier téléchargé par Redux. Téléchargez-la à nouveau avant l’examen.",
+    "es": "El archivo completado ya no coincide con el que descargó Redux. Descárgalo de nuevo antes de revisarlo.",
+    "ru": "Архив больше не соответствует файлу, загруженному Redux. Скачайте его заново перед проверкой.",
+    "zh-Hans": "已完成的压缩文件与 Redux 下载的文件不再一致。请重新下载后再检查。"
+  },
+  "The_downloaded_archive_is_missing_Download_it_again_a_fresh__fe3f6f8d": {
+    "en": "The downloaded archive is missing. Download it again; a fresh Nexus link may be required.",
+    "fr": "L’archive téléchargée est introuvable. Téléchargez-la à nouveau ; un nouveau lien Nexus peut être nécessaire.",
+    "es": "Falta el archivo descargado. Descárgalo de nuevo; puede que necesites un nuevo enlace de Nexus.",
+    "ru": "Загруженный архив отсутствует. Скачайте его заново; может потребоваться новая ссылка Nexus.",
+    "zh-Hans": "找不到已下载的压缩文件。请重新下载；可能需要新的 Nexus 链接。"
+  },
+  "The_transfer_failed_Check_the_connection_and_available_disk__a1494e83": {
+    "en": "The transfer failed. Check the connection and available disk space, then retry the download.",
+    "fr": "Le transfert a échoué. Vérifiez la connexion et l’espace disque disponible, puis réessayez le téléchargement.",
+    "es": "La transferencia falló. Comprueba la conexión y el espacio libre en disco, y vuelve a intentar la descarga.",
+    "ru": "Передача не удалась. Проверьте подключение и свободное место на диске, затем повторите загрузку.",
+    "zh-Hans": "传输失败。请检查网络连接和可用磁盘空间，然后重试下载。"
+  },
+  "This_older_failure_record_did_not_retain_its_cause_Open_Deta_1a06787f": {
+    "en": "This older failure record did not retain its cause. Open Details to inspect the archive and check its requirements without installing it.",
+    "fr": "Cet ancien échec n’a pas conservé sa cause. Ouvrez Détails pour examiner l’archive et ses prérequis sans l’installer.",
+    "es": "Este registro antiguo de error no conservó la causa. Abre Detalles para inspeccionar el archivo y comprobar sus requisitos sin instalarlo.",
+    "ru": "В этой старой записи не сохранена причина ошибки. Откройте сведения, чтобы проверить архив и его требования без установки.",
+    "zh-Hans": "此旧错误记录未保留原因。请打开详情，在不安装的情况下检查压缩文件及其要求。"
+  },
+  "Use_Redux_for_Wine_prefix_links_ae6288b7": {
+    "en": "Use Redux for Wine-prefix links",
+    "fr": "Utiliser Redux pour les liens du préfixe Wine",
+    "es": "Usar Redux para los enlaces del prefijo de Wine",
+    "ru": "Использовать Redux для ссылок в префиксе Wine",
+    "zh-Hans": "使用 Redux 处理 Wine 前缀中的链接"
+  },
+  "Use_this_Redux_installation_for_NXM_links_inside_this_Wine_p_7851b999": {
+    "en": "Use this Redux installation for NXM links inside this Wine prefix instead?\n\nCurrent handler: {0}\n\nThe current handler will be saved so Redux can restore it later.",
+    "fr": "Utiliser cette installation de Redux pour les liens NXM dans ce préfixe Wine ?\n\nGestionnaire actuel : {0}\n\nLe gestionnaire actuel sera mémorisé pour pouvoir le rétablir ultérieurement.",
+    "es": "¿Usar esta instalación de Redux para los enlaces NXM dentro de este prefijo de Wine?\n\nGestor actual: {0}\n\nSe guardará el gestor actual para que Redux pueda restaurarlo más adelante.",
+    "ru": "Использовать эту установку Redux для ссылок NXM в этом префиксе Wine?\n\nТекущий обработчик: {0}\n\nТекущий обработчик будет сохранён, чтобы Redux мог восстановить его позже.",
+    "zh-Hans": "改用此 Redux 安装处理此 Wine 前缀中的 NXM 链接吗？\n\n当前处理程序：{0}\n\nRedux 会保存当前处理程序，以便日后恢复。"
+  },
+  "Use_this_Redux_installation_for_Nexus_Mod_Manager_links_inst_821dfeeb": {
+    "en": "Use this Redux installation for Nexus Mod Manager links instead?\n\nCurrent handler: {0}\n\nThe current handler will be saved so Redux can restore it later.",
+    "fr": "Utiliser cette installation de Redux pour les liens Nexus Mod Manager ?\n\nGestionnaire actuel : {0}\n\nLe gestionnaire actuel sera mémorisé pour pouvoir le rétablir ultérieurement.",
+    "es": "¿Usar esta instalación de Redux para los enlaces de Nexus Mod Manager?\n\nGestor actual: {0}\n\nSe guardará el gestor actual para que Redux pueda restaurarlo más adelante.",
+    "ru": "Использовать эту установку Redux для ссылок Nexus Mod Manager?\n\nТекущий обработчик: {0}\n\nТекущий обработчик будет сохранён, чтобы Redux мог восстановить его позже.",
+    "zh-Hans": "改用此 Redux 安装处理 Nexus Mod Manager 链接吗？\n\n当前处理程序：{0}\n\nRedux 会保存当前处理程序，以便日后恢复。"
+  },
+  "Wine_prefix_link_status_unavailable_4b2b7d12": {
+    "en": "Wine-prefix link status unavailable",
+    "fr": "État des liens du préfixe Wine indisponible",
+    "es": "Estado de los enlaces del prefijo de Wine no disponible",
+    "ru": "Состояние ссылок в префиксе Wine недоступно",
+    "zh-Hans": "无法获取 Wine 前缀链接状态"
+  },
+  "Wine_prefix_links_are_not_registered_to_Redux_7fcc9120": {
+    "en": "Wine-prefix links are not registered to Redux",
+    "fr": "Les liens du préfixe Wine ne sont pas associés à Redux",
+    "es": "Los enlaces del prefijo de Wine no están registrados en Redux",
+    "ru": "Ссылки в префиксе Wine не зарегистрированы для Redux",
+    "zh-Hans": "Wine 前缀中的链接尚未注册到 Redux"
+  },
+  "Wine_prefix_links_need_repair_38993ec4": {
+    "en": "Wine-prefix links need repair",
+    "fr": "Les liens du préfixe Wine doivent être réparés",
+    "es": "Los enlaces del prefijo de Wine necesitan reparación",
+    "ru": "Нужна настройка ссылок в префиксе Wine",
+    "zh-Hans": "Wine 前缀中的链接需要修复"
+  },
+  "Wine_prefix_links_use_Redux_c8a942d2": {
+    "en": "Wine-prefix links use Redux",
+    "fr": "Les liens du préfixe Wine utilisent Redux",
+    "es": "Los enlaces del prefijo de Wine usan Redux",
+    "ru": "Ссылки в префиксе Wine используют Redux",
+    "zh-Hans": "Wine 前缀中的链接由 Redux 处理"
+  },
+  "Wine_prefix_links_use_another_app_f348052f": {
+    "en": "Wine-prefix links use another app",
+    "fr": "Les liens du préfixe Wine utilisent une autre application",
+    "es": "Los enlaces del prefijo de Wine usan otra aplicación",
+    "ru": "Ссылки в префиксе Wine используют другое приложение",
+    "zh-Hans": "Wine 前缀中的链接由其他应用处理"
+  },
+  "by_0_0c7cdc37": {
+    "en": "by {0}",
+    "fr": "par {0}",
+    "es": "por {0}",
+    "ru": "автор: {0}",
+    "zh-Hans": "作者：{0}"
+  },
+  "0_active_mods_a66c2ddc": {
+    "en": "{0} active mods",
+    "fr": "{0} mods actifs",
+    "es": "{0} mods activos",
+    "ru": "Активных модов: {0}",
+    "zh-Hans": "{0} 个已启用模组"
+  },
+  "0_downloaded_e2366a37": {
+    "en": "{0} downloaded",
+    "fr": "{0} téléchargés",
+    "es": "{0} descargados",
+    "ru": "Загружено: {0}",
+    "zh-Hans": "已下载 {0}"
+  },
+  "0_downloaded_retrying_shortly_ba7d111b": {
+    "en": "{0} downloaded  ·  retrying shortly",
+    "fr": "{0} téléchargés · nouvelle tentative imminente",
+    "es": "{0} descargados · se reintentará en breve",
+    "ru": "Загружено: {0} · скоро повторная попытка",
+    "zh-Hans": "已下载 {0} · 即将重试"
+  },
+  "0_inactive_mods_01af1581": {
+    "en": "{0} inactive mods",
+    "fr": "{0} mods inactifs",
+    "es": "{0} mods inactivos",
+    "ru": "Неактивных модов: {0}",
+    "zh-Hans": "{0} 个未启用模组"
+  },
+  "0_override_mods_d289d87b": {
+    "en": "{0} override mods",
+    "fr": "{0} mods de remplacement",
+    "es": "{0} mods de sobrescritura",
+    "ru": "Модов Override: {0}",
+    "zh-Hans": "{0} 个覆盖模组"
+  },
+  "0_results_84cbe8d0": {
+    "en": "{0} results",
+    "fr": "Résultats : {0}",
+    "es": "Resultados: {0}",
+    "ru": "Результатов: {0}",
+    "zh-Hans": "结果：{0}"
   }
 }

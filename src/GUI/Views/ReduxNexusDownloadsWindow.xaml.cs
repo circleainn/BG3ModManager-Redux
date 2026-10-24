@@ -19,6 +19,7 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 	public ReduxNexusDownloadsWindow()
 	{
 		InitializeComponent();
+		PropertyChangedEventManager.AddHandler(DivinityModManager.Localization.ReduxLanguageService.Current, InterfaceLanguageChanged, "Language");
         ReduxExternalDropFeedback.Attach(this, paths => paths.All(MainWindowViewModel.IsSupportedDownloadManagerInput), "Drop to add packages", "Redux.Icon.Package", "Review and install in Download Manager.");
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
 		ReduxWindowBehavior.AttachRoundedCorners(this);
@@ -49,6 +50,13 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 			foreach (var item in viewModel.NxmDownloads) item.PropertyChanged -= Download_PropertyChanged;
 			viewModel.PropertyChanged -= ViewModel_PropertyChanged;
 		};
+		UpdateEmptyState();
+		UpdateAssociationButton();
+	}
+
+	private void InterfaceLanguageChanged(object sender, PropertyChangedEventArgs e)
+	{
+		if (_viewModel == null) return;
 		UpdateEmptyState();
 		UpdateAssociationButton();
 	}
@@ -109,7 +117,7 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 		var isWine = ReduxRuntimeEnvironment.IsWine;
 		AssociationText.Text = NxmAssociationPresentation.GetStatusText(status, isWine);
 		AssociationCheckBox.Content = NxmAssociationPresentation.GetToggleLabel(isWine);
-		AssociationScopeText.Text = isWine ? NxmAssociationPresentation.WineScopeNote : String.Empty;
+		AssociationScopeText.Text = isWine ? DivinityModManager.Localization.ReduxLanguageService.Current.Translate(NxmAssociationPresentation.WineScopeNote) : String.Empty;
 		AssociationScopeText.Visibility = isWine ? Visibility.Visible : Visibility.Collapsed;
         AssociationCheckBox.IsChecked = status.Status == NxmAssociationStatus.Owned;
         AssociationCheckBox.IsEnabled = status.Success;

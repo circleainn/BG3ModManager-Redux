@@ -1,3 +1,6 @@
+using DivinityModManager.Localization;
+using System.ComponentModel;
+using System.Windows;
 using System.Runtime.Serialization;
 
 namespace DivinityModManager.Models.NexusMods;
@@ -31,6 +34,14 @@ public sealed record NxmArchiveInspection(string FileName, long Length, DateTime
 [DataContract]
 public sealed class NxmDownloadItem : ReactiveObject
 {
+	public NxmDownloadItem() => PropertyChangedEventManager.AddHandler(ReduxLanguageService.Current, LanguageChanged, nameof(ReduxLanguageService.Language));
+	private void LanguageChanged(object sender, PropertyChangedEventArgs e)
+	{
+		this.RaisePropertyChanged(nameof(MetadataText));
+		this.RaisePropertyChanged(nameof(DownloadDetailText));
+		this.RaisePropertyChanged(nameof(FailureDetails));
+	}
+
 	public const string RemovalIncompleteErrorCode = "removal-incomplete";
 	[DataMember(Order = 1), Reactive] public string Id { get; set; } = Guid.NewGuid().ToString("N");
 	[DataMember(Order = 2), Reactive] public long QueuePosition { get; set; }
@@ -207,7 +218,7 @@ public sealed class NxmDownloadItem : ReactiveObject
 		(NxmDownloadState.Downloaded or NxmDownloadState.NeedsReview or NxmDownloadState.InstallFailed or NxmDownloadState.Failed);
 	public bool CanRetryInstall => State == NxmDownloadState.InstallFailed
 		&& ErrorCode is not ("archive-unreadable" or "rollback-failed");
-	public string FailureDetails => !String.IsNullOrWhiteSpace(ErrorDetails) ? ErrorDetails : ErrorCode switch
+	public string FailureDetails => !String.IsNullOrWhiteSpace(ErrorDetails) ? ErrorDetails : ReduxLanguageService.Current.Translate(ErrorCode switch
 	{
 		"missing-file" => "The downloaded archive is missing. Download it again; a fresh Nexus link may be required.",
 		"file-size-mismatch" => "The archive size differs from the completed download record. Download it again before installing.",
@@ -217,16 +228,16 @@ public sealed class NxmDownloadItem : ReactiveObject
 		"transfer-failed" => "The transfer failed. Check the connection and available disk space, then retry the download.",
 		RemovalIncompleteErrorCode => "Package removal did not finish. Close any application using its files, then choose Retry Delete.",
 		_ => StatusText
-	};
+	});
 	public string MetadataText
 	{
 		get
 		{
 			var details = new List<string>();
-			details.Add(SourceText);
+			details.Add(ReduxLanguageService.Current.Translate(SourceText));
 			var packageSummary = InspectionSummary.Split(" · ")[0];
 			if (packageSummary.Contains("PAK mod", StringComparison.Ordinal)) details.Add(packageSummary.Replace("PAK mod", "PAK", StringComparison.Ordinal));
-			if (!String.IsNullOrWhiteSpace(Author)) details.Add($"by {Author}");
+			if (!String.IsNullOrWhiteSpace(Author)) details.Add(ReduxLanguageService.Current.Format($"by {Author}"));
 			if (!String.IsNullOrWhiteSpace(Version)) details.Add($"v{Version}");
 			if (SizeBytes > 0) details.Add(FormatBytes(SizeBytes));
 			return String.Join("  ·  ", details);
@@ -235,10 +246,10 @@ public sealed class NxmDownloadItem : ReactiveObject
 	public string DownloadDetailText => State switch
 	{
 		NxmDownloadState.Downloading when SizeBytes > 0 =>
-			$"{FormatBytes(BytesReceived)} of {FormatBytes(SizeBytes)}{(BytesPerSecond > 0 ? $"  ·  {FormatBytes((long)BytesPerSecond)}/s" : String.Empty)}",
-		NxmDownloadState.Paused when BytesReceived > 0 => $"{FormatBytes(BytesReceived)} downloaded",
-		NxmDownloadState.RetryWaiting when BytesReceived > 0 => $"{FormatBytes(BytesReceived)} downloaded  ·  retrying shortly",
-		NxmDownloadState.NeedsFreshLink => "Open its Nexus file page to request a fresh Mod Manager Download link.",
+			ReduxLanguageService.Current.Format($"{FormatBytes(BytesReceived)} of {FormatBytes(SizeBytes)}") + (BytesPerSecond > 0 ? $"  ·  {FormatBytes((long)BytesPerSecond)}/s" : String.Empty),
+		NxmDownloadState.Paused when BytesReceived > 0 => ReduxLanguageService.Current.Format($"{FormatBytes(BytesReceived)} downloaded"),
+		NxmDownloadState.RetryWaiting when BytesReceived > 0 => ReduxLanguageService.Current.Format($"{FormatBytes(BytesReceived)} downloaded  ·  retrying shortly"),
+		NxmDownloadState.NeedsFreshLink => ReduxLanguageService.Current.Translate("Open its Nexus file page to request a fresh Mod Manager Download link."),
 		NxmDownloadState.Downloaded when !String.IsNullOrWhiteSpace(InspectionSummary) => InspectionSummary.Contains("PAK mod", StringComparison.Ordinal) ? String.Empty : InspectionSummary,
 		NxmDownloadState.Failed or NxmDownloadState.InstallFailed or NxmDownloadState.NeedsReview
 			=> FailureDetails,

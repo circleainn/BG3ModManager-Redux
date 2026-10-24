@@ -555,7 +555,7 @@
 					<TextBlock Grid.Column="1"
 						VerticalAlignment="Center"
 						Foreground="{DynamicResource ReduxTextMutedBrush}"
-						Text="{Binding ElementName=CommandList, Path=Items.Count, StringFormat={}{0} results}" />
+						Text="{loc:FormatText Key=0_results_84cbe8d0, Path=Items.Count, ElementName=CommandList}" />
 				</Grid>
 			</Grid>
 		</Border>
