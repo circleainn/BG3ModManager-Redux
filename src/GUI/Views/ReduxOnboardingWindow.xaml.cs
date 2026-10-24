@@ -1,5 +1,6 @@
 ﻿using DivinityModManager.AppServices;
 using DivinityModManager.Models;
+using DivinityModManager.Localization;
 using DivinityModManager.Util;
 
 using System.ComponentModel;
@@ -46,6 +47,7 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
     public bool OpenDownloadsAfterSetup => OpenDownloadsCheckBox.IsChecked == true;
 	public bool WasResolved { get; private set; }
 	public bool ApplyChanges { get; private set; }
+	public string SelectedInterfaceLanguage => WelcomeLanguageComboBox.SelectedValue as string ?? "en";
 	public bool ThemeSelectionChanged => _themePreviewActive;
 	public ReduxThemeType SelectedTheme => !_themePreviewActive ? _initialTheme : ReduxDarkThemeCard.IsChecked == true
 		? ReduxThemeType.ReduxDark
@@ -64,9 +66,12 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 	public ReduxOnboardingWindow(Window owner, DivinityModManagerSettings settings)
 	{
 		InitializeComponent();
+		WelcomeLanguageComboBox.ItemsSource = ReduxLanguageService.Languages;
+		WelcomeLanguageComboBox.SelectedValue = ReduxLanguageService.NormalizeLanguage(settings?.InterfaceLanguage);
+		ReduxLanguageService.Current.SetLanguage(SelectedInterfaceLanguage);
 		if (ReduxRuntimeEnvironment.IsWine)
 		{
-			NxmLinksLabel.Text = NxmAssociationPresentation.GetToggleLabel(isWine: true);
+			LocalizationBindings.Set(NxmLinksLabel, TextBlock.TextProperty, NxmAssociationPresentation.GetToggleLabel(isWine: true));
 			NxmLinksCheckBox.ToolTip = NxmAssociationPresentation.WineScopeNote;
 		}
 		foreach (var title in ReduxOnboardingPolicy.StarterSeparatorTitles)
@@ -74,6 +79,7 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
             var choice = new CheckBox { Tag = title, IsChecked = true, Margin = new Thickness(0, 8, 12, 8),
                 Content = new TextBlock { Text = title, TextWrapping = TextWrapping.Wrap } };
             choice.SetResourceReference(StyleProperty, "ReduxCheckBoxStyle");
+            LocalizationBindings.Set((TextBlock)choice.Content, TextBlock.TextProperty, title);
             StarterSeparatorsPreview.Children.Add(choice);
         }
         ReduxWindowBehavior.AttachDialogTransitions(this, 30);
@@ -115,7 +121,7 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 			_nxmAssociationChoiceAvailable = nxmStatus?.Success != false;
 			NxmLinksCheckBox.ToolTip = _nxmAssociationChoiceAvailable
 				? nxmStatus?.Status == NxmAssociationStatus.OwnedByAnotherHandler
-					? "Choose Redux, then confirm replacing the current Nexus link handler."
+					? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Choose Redux, then confirm replacing the current Nexus link handler.")
 					: nxmStatus?.Message
 				: nxmStatus?.Message;
 			if (ReduxRuntimeEnvironment.IsWine)
@@ -148,6 +154,12 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 		_isInitializing = false;
 		UpdateSourceIntegrationState();
 		ShowStep(0);
+	}
+
+	private void WelcomeLanguage_Changed(object sender, SelectionChangedEventArgs e)
+	{
+		if (_isInitializing) return;
+		ReduxLanguageService.Current.SetLanguage(SelectedInterfaceLanguage);
 	}
 
 	private void ApplyAdaptiveDefaultSize(Window owner)
@@ -431,15 +443,16 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 	private void UpdateGameStatus()
 	{
 		var exists = System.IO.File.Exists(SelectedGameExecutablePath);
-		GameStatusText.Text = exists ? "Game found" : "Choose your game location";
+		LocalizationBindings.Set(GameStatusText, TextBlock.TextProperty, exists ? "Game found" : "Choose your game location");
 		GameStatusText.SetResourceReference(TextBlock.ForegroundProperty, exists ? "ReduxSuccessBrush" : "ReduxWarningBrush");
-		GamePathText.Text = exists ? SelectedGameExecutablePath : "Select bg3.exe or bg3_dx11.exe in the game’s bin folder.";
-		GamePathText.ToolTip = GamePathText.Text;
+		if (exists) GamePathText.Text = SelectedGameExecutablePath;
+		else LocalizationBindings.Set(GamePathText, TextBlock.TextProperty, "Select bg3.exe or bg3_dx11.exe in the game’s bin folder.");
+		GamePathText.SetBinding(ToolTipProperty, new System.Windows.Data.Binding("Text") { Source = GamePathText });
 	}
 
 	private void ChooseGame_Click(object sender, RoutedEventArgs e)
 	{
-		var picker = new Microsoft.Win32.OpenFileDialog { Title = "Locate Baldur’s Gate 3", Filter = "Baldur’s Gate 3|bg3.exe;bg3_dx11.exe", CheckFileExists = true };
+		var picker = new Microsoft.Win32.OpenFileDialog { Title = ReduxLanguageService.Current.Translate("Locate Baldur’s Gate 3"), Filter = "Baldur’s Gate 3|bg3.exe;bg3_dx11.exe", CheckFileExists = true };
 		if (picker.ShowDialog(this) != true) return;
 		var name = System.IO.Path.GetFileName(picker.FileName);
 		if (!name.Equals("bg3.exe", StringComparison.OrdinalIgnoreCase) && !name.Equals("bg3_dx11.exe", StringComparison.OrdinalIgnoreCase)) return;
@@ -468,17 +481,17 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 	{
 		SaveTourButton.SetResourceReference(StyleProperty, _nativeTour ? "WelcomeStepStyle" : "WelcomeCurrentStepStyle");
 		NativeTourButton.SetResourceReference(StyleProperty, _nativeTour ? "WelcomeCurrentStepStyle" : "WelcomeStepStyle");
-		System.Windows.Automation.AutomationProperties.SetItemStatus(SaveTourButton, _nativeTour ? "" : "Selected");
-		System.Windows.Automation.AutomationProperties.SetItemStatus(NativeTourButton, _nativeTour ? "Selected" : "");
-		TourTitle.Text = _nativeTour ? "Native installation · Preview" : "Import a save · Preview";
+		LocalizationBindings.Set(SaveTourButton, System.Windows.Automation.AutomationProperties.ItemStatusProperty, _nativeTour ? "" : "Selected");
+		LocalizationBindings.Set(NativeTourButton, System.Windows.Automation.AutomationProperties.ItemStatusProperty, _nativeTour ? "Selected" : "");
+		LocalizationBindings.Set(TourTitle, TextBlock.TextProperty, _nativeTour ? "Native installation · Preview" : "Import a save · Preview");
 		TourDestinationIcon.SetResourceReference(Controls.ReduxIcon.StrokeDataProperty, _managerTourStep == 2 ? "Redux.Icon.Check" : "Redux.Icon.FolderOpen");
-		TourFileName.Text = _nativeTour ? "Example native mod.zip" : "Example save.zip";
-		TourFileDescription.Text = _nativeTour ? "A package containing native DLLs" : "A save file, folder, or ZIP";
+		LocalizationBindings.Set(TourFileName, TextBlock.TextProperty, _nativeTour ? "Example native mod.zip" : "Example save.zip");
+		LocalizationBindings.Set(TourFileDescription, TextBlock.TextProperty, _nativeTour ? "A package containing native DLLs" : "A save file, folder, or ZIP");
 		TourFileIcon.SetResourceReference(Controls.ReduxIcon.StrokeDataProperty, _nativeTour ? "Redux.Icon.Shield" : "Redux.Icon.Save");
-		TourDestination.Text = _nativeTour ? "Game-Directory Mod Manager" : "Save Game Manager";
-		TourResult.Text = (_nativeTour ? new[] { "Ready for a native package", "Review files and replacements", "Installed in the game folder" } : new[] { "Ready for your save", "Save found · selected profile", "Save added to the profile" })[_managerTourStep];
+		LocalizationBindings.Set(TourDestination, TextBlock.TextProperty, _nativeTour ? "Game-Directory Mod Manager" : "Save Game Manager");
+		LocalizationBindings.Set(TourResult, TextBlock.TextProperty, (_nativeTour ? new[] { "Ready for a native package", "Review files and replacements", "Installed in the game folder" } : new[] { "Ready for your save", "Save found · selected profile", "Save added to the profile" })[_managerTourStep]);
 		TourResult.SetResourceReference(TextBlock.ForegroundProperty, _managerTourStep == 2 ? "ReduxSuccessBrush" : "ReduxTextSecondaryBrush");
-		TourExplanation.Text = (_nativeTour ? new[] {
+		LocalizationBindings.Set(TourExplanation, TextBlock.TextProperty, (_nativeTour ? new[] {
 			"Drop a native DLL package into Redux. These mods live in the game folder.",
 			"Check the files being replaced. Redux verifies protected backups before continuing.",
 			"Installed. Manage tracked files here, outside the load order."
@@ -486,10 +499,10 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 			"Drop a save file, folder, or ZIP into Redux.",
 			"Choose the profile. Review any existing files before replacing them.",
 			"Your save is ready. Install its required mods before playing."
-		})[_managerTourStep];
-		TourActionLabel.Text = (_nativeTour ? new[] { "Preview install", "Install example", "Replay" } : new[] { "Preview import", "Import example", "Replay" })[_managerTourStep];
-		TourLocation.Text = _nativeTour ? "Tools → Game-Directory Mod Manager" : "Saves → Manage";
-		TourTip.Text = _nativeTour ? "Native mods run code inside the game. Only install from sources you trust." : "Browse, import, and open the selected profile’s saves.";
+		})[_managerTourStep]);
+		LocalizationBindings.Set(TourActionLabel, TextBlock.TextProperty, (_nativeTour ? new[] { "Preview install", "Install example", "Replay" } : new[] { "Preview import", "Import example", "Replay" })[_managerTourStep]);
+		LocalizationBindings.Set(TourLocation, TextBlock.TextProperty, _nativeTour ? "Tools → Game-Directory Mod Manager" : "Saves → Manage");
+		LocalizationBindings.Set(TourTip, TextBlock.TextProperty, _nativeTour ? "Native mods run code inside the game. Only install from sources you trust." : "Browse, import, and open the selected profile’s saves.");
 		AnimateEntrance(TourResult, 1);
 		AnimateEntrance(TourExplanation, 1);
 	}
@@ -497,17 +510,17 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 	private void DemoAction_Click(object sender, RoutedEventArgs e)
 	{
 		_demoStep = (_demoStep + 1) % 4;
-		DemoInactiveText.Text = _demoStep == 0 ? "Example mod" : "No inactive mods";
-		DemoActiveText.Text = _demoStep == 0 ? "No active mods" : "1  Example mod";
-		DemoInstructionText.Text = new[] {
+		LocalizationBindings.Set(DemoInactiveText, TextBlock.TextProperty, _demoStep == 0 ? "Example mod" : "No inactive mods");
+		LocalizationBindings.Set(DemoActiveText, TextBlock.TextProperty, _demoStep == 0 ? "No active mods" : "1  Example mod");
+		LocalizationBindings.Set(DemoInstructionText, TextBlock.TextProperty, new[] {
 			"Installed mods start here. Move one to Active to use it.",
 			"Save keeps this arrangement in Redux.",
 			"Sync applies your saved order to Baldur’s Gate 3.",
 			"Ready to play. That’s the full workflow."
-		}[_demoStep];
+		}[_demoStep]);
 		DemoActionIcon.SetResourceReference(Controls.ReduxIcon.StrokeDataProperty, new[] { "Redux.Icon.ChevronRightStroke", "Redux.Icon.Save", "Redux.Icon.Check", "Redux.Icon.ReorderStroke" }[_demoStep]);
-		DemoActionLabel.Text = new[] { "Activate mod", "Save order", "Sync to game", "Replay" }[_demoStep];
-		DemoProgressText.Text = new[] { "01 / Activate", "02 / Save", "03 / Sync", "Order synced" }[_demoStep];
+		LocalizationBindings.Set(DemoActionLabel, TextBlock.TextProperty, new[] { "Activate mod", "Save order", "Sync to game", "Replay" }[_demoStep]);
+		LocalizationBindings.Set(DemoProgressText, TextBlock.TextProperty, new[] { "01 / Activate", "02 / Save", "03 / Sync", "Order synced" }[_demoStep]);
 		DemoProgressText.SetResourceReference(TextBlock.ForegroundProperty, _demoStep == 3 ? "ReduxSuccessBrush" : "ReduxAccentHoverBrush");
 		AnimateEntrance(DemoActiveText, 1);
 		AnimateEntrance(DemoInstructionText, 1);
@@ -584,21 +597,21 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 		OrganizePage.Visibility = _step == 3 ? Visibility.Visible : Visibility.Collapsed;
 		ManagersPage.Visibility = _step == 4 ? Visibility.Visible : Visibility.Collapsed;
 		OptionsPage.Visibility = _step == 2 ? Visibility.Visible : Visibility.Collapsed;
-		StepProgressText.Text = $"Step {_step + 1} of 5 · {new[] { "Your setup", "Add mods", "Load order", "Organize", "Saves & DLLs" }[_step]}";
-		StepTitleText.Text = new[] { "Welcome to Redux", "Bring in your mods", "Make it part of your game", "A place for every mod", "Beyond the load order" }[_step];
-		StepDescriptionText.Text = new[] { "Set up Redux for Baldur’s Gate 3.", "Local files and Nexus downloads meet in Download Manager.", "Activate. Save. Sync. Try it below without changing your files.", "Make your library easier to browse with categories and separators.", "Saves and native mods have their own place in Redux." }[_step];
+		StepProgressText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Step {_step + 1} of 5 · {new[] { "Your setup", "Add mods", "Load order", "Organize", "Saves & DLLs" }[_step]}");
+		LocalizationBindings.Set(StepTitleText, TextBlock.TextProperty, new[] { "Welcome to Redux", "Bring in your mods", "Make it part of your game", "A place for every mod", "Beyond the load order" }[_step]);
+		LocalizationBindings.Set(StepDescriptionText, TextBlock.TextProperty, new[] { "Set up Redux for Baldur’s Gate 3.", "Local files and Nexus downloads meet in Download Manager.", "Activate. Save. Sync. Try it below without changing your files.", "Make your library easier to browse with categories and separators.", "Saves and native mods have their own place in Redux." }[_step]);
 		BackButton.Visibility = _step > 0 ? Visibility.Visible : Visibility.Collapsed;
-		ContinueLabel.Text = _step == 4 ? "Start using Redux" : "Continue";
+		LocalizationBindings.Set(ContinueLabel, TextBlock.TextProperty, _step == 4 ? "Start using Redux" : "Continue");
 		ContinueIcon.SetResourceReference(Controls.ReduxIcon.StrokeDataProperty, _step == 4 ? "Redux.Icon.Check" : "Redux.Icon.ChevronRightStroke");
 		var stepButtons = new[] { SetupStepButton, SourcesStepButton, OrderStepButton, OrganizeStepButton, ManagersStepButton };
 		for (var i = 0; i < stepButtons.Length; i++)
 		{
 			stepButtons[i].SetResourceReference(StyleProperty, i == _step ? "WelcomeCurrentStepStyle" : "WelcomeStepStyle");
-			System.Windows.Automation.AutomationProperties.SetItemStatus(stepButtons[i], i == _step ? "Current step" : "Go to step");
+			LocalizationBindings.Set(stepButtons[i], System.Windows.Automation.AutomationProperties.ItemStatusProperty, i == _step ? "Current step" : "Go to step");
 		}
 		AnimateEntrance(_step == 0 ? AppearancePage : _step == 1 ? ConnectionsPage : _step == 2 ? OptionsPage : _step == 3 ? OrganizePage : ManagersPage, direction);
 		OnboardingContentScrollViewer.ScrollToTop();
-		System.Windows.Input.FocusManager.SetFocusedElement(this, _step == 0 ? ReduxDarkThemeCard : _step == 1 ? SourceIntegrationsCheckBox : _step == 2 ? GuidanceCheckBox : _step == 3 ? StarterSeparatorsCheckBox : SaveTourButton);
+		System.Windows.Input.FocusManager.SetFocusedElement(this, _step == 0 ? WelcomeLanguageComboBox : _step == 1 ? SourceIntegrationsCheckBox : _step == 2 ? GuidanceCheckBox : _step == 3 ? StarterSeparatorsCheckBox : SaveTourButton);
 	}
 
 	private void SaveButton_Click(object sender, RoutedEventArgs e)

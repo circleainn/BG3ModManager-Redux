@@ -22,6 +22,9 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<Using Include="System.IO" />
+		<Compile Include="..\Core\Localization\ReduxLanguageService.cs" Link="Localization\ReduxLanguageService.cs" />
+		<Compile Include="..\GUI\Localization\TextExtension.cs" Link="Localization\TextExtension.cs" />
+		<EmbeddedResource Include="..\Core\Localization\InterfaceStrings.json" LogicalName="Redux.InterfaceStrings.json" />
 		<InternalsVisibleTo Include="Redux.Core.Tests" />
 		<Compile Include="..\Core\AppServices\ReduxLaunchTarget.cs" Link="ReduxLaunchTarget.cs" />
 		<Compile Include="..\Core\AppServices\ReduxPreUpdateBackupService.cs" Link="ReduxPreUpdateBackupService.cs" />

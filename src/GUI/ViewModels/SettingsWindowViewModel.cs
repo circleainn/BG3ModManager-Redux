@@ -124,6 +124,7 @@ public class SettingsWindowViewModel : ReactiveObject
 
 	public void ShowAlert(string message, AlertType alertType = AlertType.Info, int timeout = 0)
 	{
+		message = DivinityModManager.Localization.ReduxLanguageService.Current.Translate(message);
 		DivinityApp.Log(message);
 		RxApp.MainThreadScheduler.Schedule(() =>
 		{
@@ -167,7 +168,7 @@ public class SettingsWindowViewModel : ReactiveObject
 			{
 				_lastWarnedVersion = gameCurrentVersion;
 				ReduxMessageBox.Show(View,
-					$"Script Extender {version.Version} ({channel}) requires at minimum game version {version.MinGameVersion}. The current game version is {gameCurrentVersion}.",
+					DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Script Extender {version.Version} ({channel}) requires at minimum game version {version.MinGameVersion}. The current game version is {gameCurrentVersion}."),
 					"Old Game Detected", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 			}
 		}
@@ -284,12 +285,12 @@ public class SettingsWindowViewModel : ReactiveObject
 			AtomicFileWriter.WriteAllText(outputFile, contents, validateTemporaryFile: temporaryPath =>
 				JsonConvert.DeserializeObject<ScriptExtenderSettings>(File.ReadAllText(temporaryPath), _jsonConfigExportSettings) != null);
 			DivinityApp.Log($"ExtenderUpdaterSettings differs? {ExtenderUpdaterSettings == Settings.ExtenderUpdaterSettings}");
-			ShowAlert($"Saved Script Extender settings to '{outputFile}'", AlertType.Success, 20);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Saved Script Extender settings to '{outputFile}'"), AlertType.Success, 20);
 			return true;
 		}
 		catch (Exception ex)
 		{
-			ShowAlert($"Error saving Script Extender settings to '{outputFile}':\n{ex}", AlertType.Danger);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Error saving Script Extender settings to '{outputFile}':\n{ex}"), AlertType.Danger);
 		}
 		return false;
 	}
@@ -311,7 +312,7 @@ public class SettingsWindowViewModel : ReactiveObject
 		}
 		catch (Exception ex)
 		{
-			ShowAlert($"Error saving Script Extender Updater settings to '{outputFile}':\n{ex}", AlertType.Danger);
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Error saving Script Extender Updater settings to '{outputFile}':\n{ex}"), AlertType.Danger);
 		}
 		return false;
 	}
@@ -462,7 +463,7 @@ public class SettingsWindowViewModel : ReactiveObject
 		ResetSettingsCommand = ReactiveCommand.Create(() =>
 		{
 			var tabName = TabToName(SelectedTabIndex);
-			MessageBoxResult result = ReduxMessageBox.Show(View, $"Reset {tabName} settings?\nCurrent changes on this page will be lost.", "Reset Settings?",
+			MessageBoxResult result = ReduxMessageBox.Show(View, DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Reset {tabName} settings?\nCurrent changes on this page will be lost."), "Reset Settings?",
 				MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 			if (result == MessageBoxResult.Yes)
 			{
@@ -657,11 +658,11 @@ public class SettingsWindowViewModel : ReactiveObject
 			{
 				if(String.IsNullOrEmpty(x))
 				{
-					ShowAlert($"AppData path override cleared - Make sure to refresh", AlertType.Warning, 60);
+					ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"AppData path override cleared - Make sure to refresh"), AlertType.Warning, 60);
 				}
 				else
 				{
-					ShowAlert($"AppData path override changed to '{x}' - Make sure to refresh", AlertType.Warning, 60);
+					ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"AppData path override changed to '{x}' - Make sure to refresh"), AlertType.Warning, 60);
 				}
 			}
 		});

@@ -142,15 +142,15 @@ public partial class ReduxLoadOrderAdvisorOrganizerWindow : AdonisUI.Controls.Ad
 		NoSeparatorsText.Visibility = separators.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
 		NoSeparatorsTitle.Text = _selectedPolicy switch
 		{
-			LoadOrderAdvisorSeparatorPolicy.CreateSuggestedSeparators => "No suggested separators",
-			LoadOrderAdvisorSeparatorPolicy.RemoveSeparators => "No separators to remove",
-			_ => "No separator changes"
+			LoadOrderAdvisorSeparatorPolicy.CreateSuggestedSeparators => DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No suggested separators"),
+			LoadOrderAdvisorSeparatorPolicy.RemoveSeparators => DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No separators to remove"),
+			_ => DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No separator changes")
 		};
 		NoSeparatorsDescription.Text = _selectedPolicy switch
 		{
-			LoadOrderAdvisorSeparatorPolicy.CreateSuggestedSeparators => "Redux has no separator groups to add for this order.",
-			LoadOrderAdvisorSeparatorPolicy.RemoveSeparators => "The active order is already one continuous list.",
-			_ => "Your existing separators stay where they are."
+			LoadOrderAdvisorSeparatorPolicy.CreateSuggestedSeparators => DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Redux has no separator groups to add for this order."),
+			LoadOrderAdvisorSeparatorPolicy.RemoveSeparators => DivinityModManager.Localization.ReduxLanguageService.Current.Translate("The active order is already one continuous list."),
+			_ => DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Your existing separators stay where they are.")
 		};
 		RestoreIgnoredButton.Visibility = (_viewModel.Settings.IgnoredLoadOrderAdvisorFindingKeys?.Count ?? 0) > 0
 			? Visibility.Visible

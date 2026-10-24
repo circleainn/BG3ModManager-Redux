@@ -26,6 +26,7 @@ public sealed class ReduxSnapshotAppearance
 	public Dictionary<string, string> Colors { get; set; } = new();
 	public double TextScale { get; set; } = 1;
 	public string FontFamily { get; set; } = "Manrope";
+	public string Language { get; set; } = "en";
 	public bool ShowIcons { get; set; } = true;
 	public ReduxSnapshotAppearance Normalize()
 	{
@@ -33,7 +34,8 @@ public sealed class ReduxSnapshotAppearance
 		{
 			TextScale = Double.IsFinite(TextScale) ? Math.Clamp(TextScale, 0.8, 1.5) : 1,
 			FontFamily = FontFamily is "Manrope" or "Segoe UI" or "Archivo Black" or "IBM Plex Mono" or "Atkinson Hyperlegible" ? FontFamily : "Manrope",
-			ShowIcons = ShowIcons
+			ShowIcons = ShowIcons,
+			Language = Localization.ReduxLanguageService.NormalizeLanguage(Language)
 		};
 		foreach (var entry in DefaultColors)
 			result.Colors[entry.Key] = Colors != null && Colors.TryGetValue(entry.Key, out var color)

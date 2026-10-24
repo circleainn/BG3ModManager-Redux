@@ -64,6 +64,24 @@ Keep issue triage in GitHub and work summaries in the conversation. Do not add d
 session logs, or duplicate issue inventories to the repository documentation. Update existing guides
 only when the findings change lasting product or development guidance.
 
+## Interface translations
+
+Bundled strings live in `src/Core/Localization/InterfaceStrings.json`, with stable keys and `en`,
+`fr`, `es`, `ru`, and `zh-Hans` values. Keep keys stable when correcting translations. Native-speaker
+review is welcome; preserve action meaning and distinguish saving a Redux order from syncing it to
+the game. Missing translations fall back to English.
+
+Use `loc:Text` for static XAML labels and `LocalizationBindings.Set` for UI-owned labels created in
+code. Use `loc:BoundText` only to display a known UI label whose underlying English identifier must
+remain stable. Never translate user content, paths, persistent identifiers, or column sort keys.
+Use `loc:FormatText` for a translated sentence containing one bound count, name, or path; its
+`Key` identifies the sentence template and its argument is preserved unchanged.
+For messages containing names, paths, or counts, use `ReduxLanguageService.Format` on the
+interpolated UI sentence so its template is translated before unchanged values are inserted. The
+external snapshot runner embeds the same catalog and receives the selected language with its palette.
+Test live switching in both directions, saved preferences, custom fonts, and long labels at larger
+text sizes. Language selection must not change formatting culture or typography preferences.
+
 ## Mod database contributions
 
 Do not submit mod archives or PAKs. Generate a privacy-limited `.bg3redux-report`, independently

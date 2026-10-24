@@ -8,7 +8,7 @@ internal static class ReduxSnapshotPresentation
 {
 	public static ReduxSnapshotAppearance Capture(FrameworkElement source)
 	{
-		var appearance = new ReduxSnapshotAppearance { ShowIcons = DivinityApp.ShowInterfaceIcons };
+		var appearance = new ReduxSnapshotAppearance { ShowIcons = DivinityApp.ShowInterfaceIcons, Language = Localization.ReduxLanguageService.Current.Language };
 		foreach (var key in ReduxSnapshotAppearance.DefaultColors.Keys)
 			if (source.TryFindResource(key) is SolidColorBrush brush) appearance.Colors[key] = brush.Color.ToString();
 		if (source.TryFindResource("Redux.FontSize.12") is double size) appearance.TextScale = size / 12;

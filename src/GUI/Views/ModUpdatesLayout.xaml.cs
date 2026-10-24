@@ -143,7 +143,7 @@ public partial class ModUpdatesLayout : ModUpdatesLayoutBase
 
 				if (headerClicked.Column.Header is TextBlock textBlock)
 				{
-					header = textBlock.Text;
+					header = DivinityModManager.Localization.LocalizationBindings.SourceText(textBlock, TextBlock.TextProperty, textBlock.Text);
 				}
 				else if (headerClicked.Column.Header is string gridHeader)
 				{

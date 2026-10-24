@@ -19,7 +19,7 @@ public sealed class ReduxWhatsNewWindow : Window
 	public ReduxWhatsNewWindow(Window owner, string version, DivinityModManagerSettings preferences = null, Action savePreferences = null)
 	{
 		Owner = owner;
-		Title = "What's New";
+		Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("What's New");
 		Width = 720; Height = 560; MinWidth = 420; MinHeight = 320;
 		ShowInTaskbar = false;
 		ShowActivated = owner?.WindowState != WindowState.Minimized;
@@ -47,7 +47,7 @@ public sealed class ReduxWhatsNewWindow : Window
 		var titleBar = new ReduxWindowTitleBar();
 		titleBar.SetResourceReference(ReduxWindowTitleBar.IconDataProperty, "Redux.Icon.DocumentText");
 		root.Children.Add(titleBar);
-		var heading = new TextBlock { Text = "Update changelog", Margin = new Thickness(18, 14, 18, 10), TextWrapping = TextWrapping.Wrap };
+		var heading = new TextBlock { Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Update changelog"), Margin = new Thickness(18, 14, 18, 10), TextWrapping = TextWrapping.Wrap };
 		heading.SetResourceReference(TextBlock.FontSizeProperty, "Redux.FontSize.20");
 		Grid.SetRow(heading, 1); root.Children.Add(heading);
 		_notes.Margin = new Thickness(18, 0, 18, 8);
@@ -91,7 +91,7 @@ public sealed class ReduxWhatsNewWindow : Window
 		github.Click += (_, _) => ProcessHelper.TryOpenUrl(url);
 		var support = new Button { Content = ActionContent(supportIcon, "Support me"), Margin = new Thickness(0, 0, 8, 0) };
 		System.Windows.Automation.AutomationProperties.SetName(support, "Support circleain on Ko-fi");
-		support.ToolTip = "Support circleain on Ko-fi";
+		support.ToolTip = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Support circleain on Ko-fi");
 		support.SetResourceReference(StyleProperty, "ReduxSecondaryActionButtonStyle");
 		support.Click += (_, _) => ProcessHelper.TryOpenUrl(DivinityApp.URL_REDUX_DONATION);
 		var close = new Button { Content = ActionContent(closeIcon, "Close"), IsCancel = true, IsDefault = true };

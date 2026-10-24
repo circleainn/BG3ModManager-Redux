@@ -1,3 +1,6 @@
+using DivinityModManager.Localization;
+using System.ComponentModel;
+using System.Windows;
 using Newtonsoft.Json;
 
 namespace DivinityModManager.Models.NexusMods;
@@ -5,6 +8,13 @@ namespace DivinityModManager.Models.NexusMods;
 [JsonObject(MemberSerialization.OptIn)]
 public sealed class RetainedPackageArchiveEntry : ReactiveObject
 {
+	public RetainedPackageArchiveEntry() => PropertyChangedEventManager.AddHandler(ReduxLanguageService.Current, LanguageChanged, nameof(ReduxLanguageService.Language));
+	private void LanguageChanged(object sender, PropertyChangedEventArgs e)
+	{
+		this.RaisePropertyChanged(nameof(MetadataText));
+		this.RaisePropertyChanged(nameof(DestinationText));
+	}
+
 	[JsonProperty(Order = 1), Reactive] public string Sha256 { get; set; } = String.Empty;
 	[JsonProperty(Order = 2), Reactive] public string StoredFileName { get; set; } = String.Empty;
 	[JsonProperty(Order = 3), Reactive] public string OriginalFileName { get; set; } = String.Empty;
@@ -32,13 +42,14 @@ public sealed class RetainedPackageArchiveEntry : ReactiveObject
 	};
 	[JsonIgnore] public string MetadataText => String.Join("  ·  ", new[]
 	{
-		SourceText,
+		SourceKind == AcquiredPackageSourceKind.NexusMods && NexusModId > 0
+			? ReduxLanguageService.Current.Format($"Nexus Mods · Mod {NexusModId}") : ReduxLanguageService.Current.Translate(SourceText),
 		String.IsNullOrWhiteSpace(Version) ? null : $"v{Version}",
 		FormatBytes(SizeBytes)
 	}.Where(value => !String.IsNullOrWhiteSpace(value)));
 	[JsonIgnore] public string DestinationText => PackageKind?.Contains("PAK", StringComparison.OrdinalIgnoreCase) == true
-		? "Reinstall · existing placement preserved"
-		: String.IsNullOrWhiteSpace(InstallDestination) ? "Retained package" : $"Reinstall to {InstallDestination}";
+		? ReduxLanguageService.Current.Translate("Reinstall · existing placement preserved")
+		: String.IsNullOrWhiteSpace(InstallDestination) ? ReduxLanguageService.Current.Translate("Retained package") : ReduxLanguageService.Current.Format($"Reinstall to {InstallDestination}");
 	[JsonIgnore] public Uri NexusPage => SourceKind == AcquiredPackageSourceKind.NexusMods && NexusModId > 0
 		? new Uri($"https://www.nexusmods.com/baldursgate3/mods/{NexusModId}?tab=files&file_id={NexusFileId}")
 		: null;

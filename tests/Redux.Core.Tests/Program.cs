@@ -17,6 +17,7 @@ internal static class Program
 		_ = Application.Current ?? new Application();
 
 		var dialogLayout = new DialogLayoutTests();
+		var languages = new InterfaceLanguageTests();
 		var separatorLayout = new SeparatorLayoutTests();
 		var collections = new NexusCollectionPreviewTests();
 		var saveReview = new SaveModReviewTests();
@@ -118,6 +119,19 @@ internal static class Program
 		var overrideDuplicateDialog = new OverrideDuplicateDialogTests();
 		var tests = new (string Name, Action Run)[]
 		{
+			(nameof(languages.BoundSentenceTranslationsUpdateCountsAndPreserveNames), languages.BoundSentenceTranslationsUpdateCountsAndPreserveNames),
+			(nameof(languages.DownloadAndSnapshotDetailsTranslateWithoutRewritingStoredData), languages.DownloadAndSnapshotDetailsTranslateWithoutRewritingStoredData),
+			(nameof(languages.SettingsAndCommandMetadataHaveTranslationsInEveryLanguage), languages.SettingsAndCommandMetadataHaveTranslationsInEveryLanguage),
+			(nameof(languages.GeneratedSettingsAndShortcutsSwitchLanguageWithoutChangingValues), languages.GeneratedSettingsAndShortcutsSwitchLanguageWithoutChangingValues),
+			(nameof(languages.DownloadActionTranslationsPreservePackageIdentityAndState), languages.DownloadActionTranslationsPreservePackageIdentityAndState),
+			(nameof(languages.TranslatedFormatsPreserveArgumentsAndCatalogIntegrity), languages.TranslatedFormatsPreserveArgumentsAndCatalogIntegrity),
+			(nameof(languages.OnboardingLanguageChangesEveryStepAndKeepsActionsReachable), languages.OnboardingLanguageChangesEveryStepAndKeepsActionsReachable),
+			(nameof(languages.ModalTranslationsPreserveDecisionsAndUserText), languages.ModalTranslationsPreserveDecisionsAndUserText),
+			(nameof(languages.SnapshotRunnerCarriesLanguageAndPreservesCancellation), languages.SnapshotRunnerCarriesLanguageAndPreservesCancellation),
+			(nameof(languages.LanguagesPersistWithoutChangingCultureOrUserData), languages.LanguagesPersistWithoutChangingCultureOrUserData),
+			(nameof(languages.TranslatedColumnsAndMenusKeepTheirOriginalIdentities), languages.TranslatedColumnsAndMenusKeepTheirOriginalIdentities),
+			(nameof(languages.LanguageSelectorAndTypographyRemainIndependent), languages.LanguageSelectorAndTypographyRemainIndependent),
+			(nameof(languages.LanguagesRenderWithBuiltInCustomAndMissingFonts), languages.LanguagesRenderWithBuiltInCustomAndMissingFonts),
 			(nameof(overrideDuplicates.CompletedBackupsDoNotBlockChangedFolderTargets), overrideDuplicates.CompletedBackupsDoNotBlockChangedFolderTargets),
 			(nameof(overrideDuplicateDialog.CancelWithAnOccupiedRollbackTargetKeepsTheRecoveryErrorAvailable), overrideDuplicateDialog.CancelWithAnOccupiedRollbackTargetKeepsTheRecoveryErrorAvailable),
 			(nameof(overrideDuplicateDialog.RecoveryReviewRequiresExplicitChoicesAndKeepsActionsReachableInEveryTheme), overrideDuplicateDialog.RecoveryReviewRequiresExplicitChoicesAndKeepsActionsReachableInEveryTheme),

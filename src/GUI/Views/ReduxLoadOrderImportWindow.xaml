@@ -1,10 +1,11 @@
 <adonisUI:AdonisWindow x:Class="DivinityModManager.Views.ReduxLoadOrderImportWindow"
 	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:loc="clr-namespace:DivinityModManager.Localization"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:adonisUI="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
 	xmlns:controls="clr-namespace:DivinityModManager.Controls"
 	xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-	Title="Import Redux Modlist"
+	Title="{loc:Text Import_Redux_Modlist_72832ae1}"
 	Width="600" MinWidth="420" Height="640" MinHeight="320"
 	FontFamily="{DynamicResource Redux.FontFamily.UI}" FontSize="{DynamicResource Redux.FontSize.12}"
 	ResizeMode="CanResize" SizeToContent="Manual" ShowInTaskbar="False"
@@ -43,7 +44,7 @@
 					Foreground="{DynamicResource ReduxAccentHoverBrush}" StrokeData="{StaticResource Redux.Icon.Download}" />
 				<StackPanel Grid.Column="1" VerticalAlignment="Center">
 					<TextBlock FontSize="{DynamicResource Redux.FontSize.16}" FontWeight="SemiBold"
-						Text="Choose what to import" />
+						Text="{loc:Text Choose_what_to_import_5804a52b}" />
 					<TextBlock x:Name="BundleSummaryText" Margin="0,4,0,0"
 						Foreground="{DynamicResource ReduxTextSecondaryBrush}" TextWrapping="Wrap" />
 					<TextBlock x:Name="BundleMetadataText" Margin="0,3,0,0"
@@ -55,12 +56,12 @@
 				<Border Padding="14,12" Background="{DynamicResource ReduxSurfaceBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
 					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-					<CheckBox x:Name="ImportLoadOrderCheckBox" AutomationProperties.Name="Import load order" IsChecked="True" Style="{StaticResource ReduxCheckBoxStyle}"
+					<CheckBox x:Name="ImportLoadOrderCheckBox" AutomationProperties.Name="{loc:Text Import_load_order_96c8e8dc}" IsChecked="True" Style="{StaticResource ReduxCheckBoxStyle}"
 						Checked="ImportOption_Changed" Unchecked="ImportOption_Changed">
 						<StackPanel Margin="5,0,0,0">
-							<TextBlock FontWeight="SemiBold" Text="Load order" />
+							<TextBlock FontWeight="SemiBold" Text="{loc:Text Load_order_d287beb5}" />
 							<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-								Text="Create a saved order." TextWrapping="Wrap" />
+								Text="{loc:Text Create_a_saved_order_d9585741}" TextWrapping="Wrap" />
 							<TextBlock x:Name="LoadOrderAvailabilityText" Margin="0,5,0,0"
 								Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap" />
 						</StackPanel>
@@ -69,12 +70,12 @@
 				<Border Margin="0,8,0,0" Padding="14,12" Background="{DynamicResource ReduxSurfaceBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
 					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-					<CheckBox x:Name="ImportPresentationCheckBox" AutomationProperties.Name="Import categories and separators" IsChecked="True" Style="{StaticResource ReduxCheckBoxStyle}"
+					<CheckBox x:Name="ImportPresentationCheckBox" AutomationProperties.Name="{loc:Text Import_categories_and_separators_ba81e380}" IsChecked="True" Style="{StaticResource ReduxCheckBoxStyle}"
 						Checked="ImportOption_Changed" Unchecked="ImportOption_Changed">
 						<StackPanel Margin="5,0,0,0">
-							<TextBlock FontWeight="SemiBold" Text="Categories and separators" />
+							<TextBlock FontWeight="SemiBold" Text="{loc:Text Categories_and_separators_1472618c}" />
 							<TextBlock Margin="0,2,0,0" Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-								Text="Merge categories, icons, and active-list separators." TextWrapping="Wrap" />
+								Text="{loc:Text Merge_categories_icons_and_active_list_separators_fc518165}" TextWrapping="Wrap" />
 							<TextBlock x:Name="PresentationContentsText" Margin="0,5,0,0"
 								Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap" />
 						</StackPanel>
@@ -84,14 +85,14 @@
 					Background="{DynamicResource ReduxSurfaceBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
 					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-					<CheckBox x:Name="ImportSourceLinksCheckBox" AutomationProperties.Name="Replace source links" IsChecked="False"
+					<CheckBox x:Name="ImportSourceLinksCheckBox" AutomationProperties.Name="{loc:Text Replace_source_links_1dd06291}" IsChecked="False"
 						Style="{StaticResource ReduxCheckBoxStyle}"
 						Checked="ImportOption_Changed" Unchecked="ImportOption_Changed">
 						<StackPanel Margin="5,0,0,0">
-							<TextBlock FontWeight="SemiBold" Text="Source links (optional)" />
+							<TextBlock FontWeight="SemiBold" Text="{loc:Text Source_links_optional_8dab04b7}" />
 							<TextBlock Margin="0,2,0,0"
 								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-								Text="Use the modlist author’s Nexus Mods and mod.io links."
+								Text="{loc:Text Use_the_modlist_author_s_Nexus_Mods_and_mod_io_links_e971f907}"
 								TextWrapping="Wrap" />
 							<TextBlock x:Name="SourceLinksContentsText" Margin="0,5,0,0"
 								Foreground="{DynamicResource ReduxTextMutedBrush}" />
@@ -102,14 +103,14 @@
 					Background="{DynamicResource ReduxSurfaceBrush}"
 					BorderBrush="{DynamicResource ReduxBorderBrush}" BorderThickness="1"
 					CornerRadius="{DynamicResource Redux.CornerRadius.Control}">
-					<CheckBox x:Name="ImportPrivateNotesCheckBox" AutomationProperties.Name="Import notes" IsChecked="True"
+					<CheckBox x:Name="ImportPrivateNotesCheckBox" AutomationProperties.Name="{loc:Text Import_notes_f5544a89}" IsChecked="True"
 						Style="{StaticResource ReduxCheckBoxStyle}"
 						Checked="ImportOption_Changed" Unchecked="ImportOption_Changed">
 						<StackPanel Margin="5,0,0,0">
-							<TextBlock FontWeight="SemiBold" Text="Notes" />
+							<TextBlock FontWeight="SemiBold" Text="{loc:Text Notes_8a7525b1}" />
 							<TextBlock Margin="0,2,0,0"
 								Foreground="{DynamicResource ReduxTextSecondaryBrush}"
-								Text="Add included notes; keep existing notes."
+								Text="{loc:Text Add_included_notes_keep_existing_notes_177ffbd0}"
 								TextWrapping="Wrap" />
 							<TextBlock x:Name="PrivateNotesContentsText" Margin="0,5,0,0"
 								Foreground="{DynamicResource ReduxTextMutedBrush}" />
@@ -133,27 +134,27 @@
 			</Border>
 
 			<TextBlock Grid.Row="3" Margin="0,14,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"
-				Text="Apply to the game later with Sync Load Order to Game."
+				Text="{loc:Text Apply_to_the_game_later_with_Sync_Load_Order_to_Game_d3473f7a}"
 				TextWrapping="Wrap" />
 
 		</Grid>
 			</ScrollViewer>
 			<StackPanel Grid.Row="1" Margin="0,18,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
-				<Button x:Name="CancelButton" AutomationProperties.Name="Cancel" MinWidth="86" IsCancel="True"
+				<Button x:Name="CancelButton" AutomationProperties.Name="{loc:Text Cancel_19766ed6}" MinWidth="86" IsCancel="True"
 					Style="{StaticResource ReduxSecondaryActionButtonStyle}" Click="CancelButton_Click">
 					<StackPanel Orientation="Horizontal">
 						<controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0" Style="{StaticResource ReduxOptionalInterfaceIconStyle}" StrokeData="{StaticResource Redux.Icon.Close}" />
-						<TextBlock Text="Cancel" />
+						<TextBlock Text="{loc:Text Cancel_19766ed6}" />
 					</StackPanel>
 				</Button>
-				<Button x:Name="ImportButton" AutomationProperties.Name="Import modlist" MinWidth="86" Margin="8,0,0,0" IsDefault="True"
+				<Button x:Name="ImportButton" AutomationProperties.Name="{loc:Text Import_modlist_520e75c0}" MinWidth="86" Margin="8,0,0,0" IsDefault="True"
 					Style="{StaticResource ReduxPrimaryActionButtonStyle}" Click="ImportButton_Click">
 					<StackPanel Orientation="Horizontal">
 						<controls:ReduxIcon VerticalAlignment="Center" Width="14" Height="14" Margin="0,0,6,0"
 							Foreground="{DynamicResource ReduxAccentForegroundBrush}"
 							Style="{StaticResource ReduxOptionalInterfaceIconStyle}"
 							StrokeData="{StaticResource Redux.Icon.Download}" />
-						<TextBlock Text="Import" />
+						<TextBlock Text="{loc:Text Import_2cff9baa}" />
 					</StackPanel>
 				</Button>
 			</StackPanel>

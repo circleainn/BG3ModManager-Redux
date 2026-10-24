@@ -198,7 +198,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 					inspection.PackageEntries.Count > 0
 						? token => viewModel.ImportModsWithoutReviewAsync([archivePath], null, nexusSource, token)
 						: null, cancellationToken);
-				viewModel.ShowAlert($"Installed {inspection.Definition.Name}.", AlertType.Success, 20);
+				viewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Installed {inspection.Definition.Name}."), AlertType.Success, 20);
 				return true;
 			}
 			catch (OperationCanceledException) when (!cancellationToken.CanBeCanceled)
@@ -266,7 +266,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 				catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException)
 				{
 					InstallYanmlButton.IsEnabled = false;
-					NativeWarningText.Text = $"Redux cannot safely manage this YANML Plugins folder: {ex.Message}";
+					NativeWarningText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Redux cannot safely manage this YANML Plugins folder: {ex.Message}");
 				}
 			}
 			var scriptExtender = entries.FirstOrDefault(item => item.Entry.NexusModId == ScriptExtenderNexusModId);
@@ -281,7 +281,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 			InstalledList.ItemsSource = null;
 			InstalledList.Visibility = Visibility.Collapsed;
 			EmptyText.Visibility = Visibility.Visible;
-			EmptyText.Text = $"Redux could not safely read game-directory install state.\n{ex.Message}";
+			EmptyText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Redux could not safely read game-directory install state.\n{ex.Message}");
 		}
 	}
 
@@ -368,7 +368,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 	{
 		var dialog = new OpenFileDialog
 		{
-			Title = "Choose a Reviewed Game-Directory Mod Archive",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Choose a Reviewed Game-Directory Mod Archive"),
 			Filter = "Supported archives (*.zip;*.7z;*.7zip;*.rar)|*.zip;*.7z;*.7zip;*.rar|All files (*.*)|*.*",
 			Multiselect = false,
 			CheckFileExists = true
@@ -433,7 +433,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or InvalidOperationException)
 		{
 			ReduxMessageBox.Show(this,
-				$"Redux could not download Script Extender.\n\n{ex.Message}",
+				DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Redux could not download Script Extender.\n\n{ex.Message}"),
 				"Script Extender Download Stopped", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
 		finally
@@ -553,13 +553,13 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 			? "Redux will remove only the adopted DLL files, and only if each still matches the version you adopted. Settings files and companion content remain untouched."
 			: "Files Redux added will be removed, and any files it replaced will be restored. Redux will only continue if every managed file still matches its installation record.";
 		var answer = ReduxMessageBox.Show(this,
-			$"Delete Redux's managed installation of {item.Name}? {detail}",
+			DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Delete Redux's managed installation of {item.Name}? {detail}"),
 			"Delete Game-Directory Mod", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 		if (answer != MessageBoxResult.Yes) return;
 		try
 		{
 			await (item.IsYanml ? _yanmlInstaller : _installer).RestoreAsync(item.Entry.NexusModId);
-			_viewModel.ShowAlert($"Removed {item.Name} and restored any files it replaced.", AlertType.Success, 20);
+			_viewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Removed {item.Name} and restored any files it replaced."), AlertType.Success, 20);
 			RefreshList();
 		}
 		catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException)
@@ -575,7 +575,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		try
 		{
 			await (item.IsYanml ? _yanmlInstaller : _installer).AdoptExternalAsync(item.Entry.NexusModId);
-			_viewModel.ShowAlert($"Redux now manages {item.Name}.", AlertType.Success, 20);
+			_viewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Redux now manages {item.Name}."), AlertType.Success, 20);
 			RefreshList();
 		}
 		catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException)
@@ -607,10 +607,10 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		InstallYanmlButton.Visibility = configured ? Visibility.Visible : Visibility.Collapsed;
 		InstallYanmlButton.IsEnabled = configured;
 		NativeWarningText.Text = configured
-			? "Native DLLs run code inside the game. YANML uses the local Plugins folder; Redux can now install reviewed plugins there. YANML itself must be started or installed separately. Some plugins still read settings from BG3\\bin\\NativeMods."
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Native DLLs run code inside the game. YANML uses the local Plugins folder; Redux can now install reviewed plugins there. YANML itself must be started or installed separately. Some plugins still read settings from BG3\\bin\\NativeMods.")
 			: ownsYanmlPlugins
-				? "YANML's configuration is missing. Redux can still show its previous plugin ownership, but new installs are blocked until YANML is configured again."
-				: "Native DLLs run code inside the game. Install only from sources you trust.";
+				? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("YANML's configuration is missing. Redux can still show its previous plugin ownership, but new installs are blocked until YANML is configured again.")
+				: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Native DLLs run code inside the game. Install only from sources you trust.");
 	}
 
 	private void RefreshButton_Click(object sender, RoutedEventArgs e) => RefreshList();

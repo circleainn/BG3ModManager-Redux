@@ -21,7 +21,7 @@ public sealed class ReduxDownloadNotification : Window
 
 	public ReduxDownloadNotification(Window main, Func<Task> openDownloads)
 	{
-		Title = "Redux downloads";
+		Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Redux downloads");
 		ShowActivated = false;
 		ShowInTaskbar = false;
 		Topmost = true;

@@ -1,3 +1,4 @@
+using ReduxUpdater.Localization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -13,8 +14,9 @@ internal partial class SnapshotProgressWindow : Window
 	public event Action? CancelRequested;
 	public SnapshotProgressWindow(ReduxSnapshotAppearance appearance)
 	{
-		InitializeComponent();
 		appearance = appearance.Normalize();
+		ReduxLanguageService.Current.SetLanguage(appearance.Language);
+		InitializeComponent();
 		foreach (var color in appearance.Colors) Resources[color.Key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color.Value));
 		Resources["Redux.CornerRadius.Control"] = new CornerRadius(7);
 		Resources["Redux.CornerRadius.Pill"] = new CornerRadius(10);
@@ -29,10 +31,10 @@ internal partial class SnapshotProgressWindow : Window
 	}
 	public void SetOperation(string operation)
 	{
-		Heading.Text = operation switch { "restore" => "Restoring snapshot", "recover" => "Recovering previous state", _ => "Creating snapshot" };
+		Heading.Text = ReduxLanguageService.Current.Translate(operation switch { "restore" => "Restoring snapshot", "recover" => "Recovering previous state", _ => "Creating snapshot" });
 		OperationGlyph.Data = (Geometry)FindResource(operation == "create" ? "Redux.Icon.Save" : "Redux.Icon.Undo");
-		Description.Text = operation == "restore" ? "Your current state will be saved before restoring. Redux will reopen when finished."
-			: "Redux will reopen when the operation finishes.";
+		Description.Text = ReduxLanguageService.Current.Translate(operation == "restore" ? "Your current state will be saved before restoring. Redux will reopen when finished."
+			: "Redux will reopen when the operation finishes.");
 	}
 	public void Report(ReduxSnapshotStore.Progress progress)
 	{
@@ -44,22 +46,22 @@ internal partial class SnapshotProgressWindow : Window
 		if (progress.Total > 0)
 		{
 			Progress.Value = Math.Clamp(100d * progress.Current / progress.Total, 0, 100);
-			ProgressSummary.Text = $"{Progress.Value:0}% · {progress.Current / 1048576d:N1} of {progress.Total / 1048576d:N1} MB";
+			ProgressSummary.Text = ReduxLanguageService.Current.Format($"{Progress.Value:0}% · {progress.Current / 1048576d:N1} of {progress.Total / 1048576d:N1} MB");
 		}
-		else ProgressSummary.Text = "Working…";
-		SafetyHint.Text = _canCancel ? "You can cancel while the snapshot is being prepared."
-			: "Keep this window open. Cancellation is unavailable while files are being restored or recovered.";
+		else ProgressSummary.Text = ReduxLanguageService.Current.Translate("Working…");
+		SafetyHint.Text = ReduxLanguageService.Current.Translate(_canCancel ? "You can cancel while the snapshot is being prepared."
+			: "Keep this window open. Cancellation is unavailable while files are being restored or recovered.");
 	}
 	public Task ShowResultAsync(string heading, string message)
 	{
-		Heading.Text = heading;
-		Description.Text = "Review the result below.";
-		Details.Text = message;
+		Heading.Text = ReduxLanguageService.Current.Translate(heading);
+		Description.Text = ReduxLanguageService.Current.Translate("Review the result below.");
+		Details.Text = ReduxLanguageService.Current.Translate(message);
 		Progress.Visibility = ProgressSummary.Visibility = SafetyHint.Visibility = Visibility.Collapsed;
-		ActionLabel.Text = "Close";
+		ActionLabel.Text = ReduxLanguageService.Current.Translate("Close");
 		ActionButton.IsEnabled = CloseWindowButton.IsEnabled = true;
-		CloseWindowButton.ToolTip = "Close";
-		System.Windows.Automation.AutomationProperties.SetName(CloseWindowButton, "Close");
+		CloseWindowButton.ToolTip = ReduxLanguageService.Current.Translate("Close");
+		System.Windows.Automation.AutomationProperties.SetName(CloseWindowButton, ReduxLanguageService.Current.Translate("Close"));
 		_acknowledgement = new(TaskCreationOptions.RunContinuationsAsynchronously);
 		return _acknowledgement.Task;
 	}
@@ -69,7 +71,7 @@ internal partial class SnapshotProgressWindow : Window
 		if (_acknowledgement != null) { _acknowledgement.TrySetResult(); return; }
 		if (!_canCancel || _canceling) return;
 		_canceling = true;
-		Details.Text = "Canceling safely…";
+		Details.Text = ReduxLanguageService.Current.Translate("Canceling safely…");
 		ActionButton.IsEnabled = CloseWindowButton.IsEnabled = false;
 		CancelRequested?.Invoke();
 	}

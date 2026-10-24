@@ -1,5 +1,6 @@
 ﻿using DivinityModManager.Controls;
 using DivinityModManager.Models;
+using DivinityModManager.Localization;
 using DivinityModManager.AppServices;
 using DivinityModManager.Models.App;
 using DivinityModManager.Models.Extender;
@@ -83,6 +84,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	}
 	private static readonly SettingsGroup[] GeneralSettingsGroups =
 	[
+		new("Language", "Choose the language used by Redux's interface.", nameof(DivinityModManagerSettings.InterfaceLanguage)),
 		new("Paths and storage",
 			"Choose where Redux finds the game, profiles, and saved load orders.",
 			nameof(DivinityModManagerSettings.GameExecutablePath),
@@ -204,6 +206,14 @@ public partial class SettingsWindow : SettingsWindowBase
 	public SettingsWindow()
 	{
 		InitializeComponent();
+		PropertyChangedEventManager.AddHandler(ReduxLanguageService.Current, InterfaceLanguageChanged, nameof(ReduxLanguageService.Language));
+	}
+
+	private void InterfaceLanguageChanged(object sender, PropertyChangedEventArgs e)
+	{
+		_keybindingsView?.Refresh();
+		RefreshCustomThemeControls();
+		UpdateShortcutGroupToggleButton();
 	}
 
 	public void ApplyAdaptiveDefaultSize(Window owner)
@@ -219,7 +229,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		if(sender is ComboBox combo && combo.SelectedItem is EnumEntry enumEntry && !string.IsNullOrWhiteSpace(enumEntry.Description))
 		{
-			ToolTipService.SetToolTip(combo, enumEntry.Description);
+			LocalizationBindings.Set(combo, ToolTipService.ToolTipProperty, enumEntry.Description);
 		}
 	}
 
@@ -304,7 +314,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Import Font",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Import Font"),
 			Filter = "Font files (*.ttf;*.otf)|*.ttf;*.otf|TrueType font (*.ttf)|*.ttf|OpenType font (*.otf)|*.otf",
 			CheckFileExists = true,
 			Multiselect = false
@@ -330,7 +340,7 @@ public partial class SettingsWindow : SettingsWindowBase
 			? ""
 			: $"\n\n{affectedThemes} custom theme{(affectedThemes == 1 ? "" : "s")} will fall back to Manrope.";
 		var result = ReduxMessageBox.Show(this,
-			$"Remove '{choice.Name}'?{usageNote}", "Remove Custom Font",
+			DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Remove '{choice.Name}'?{usageNote}"), "Remove Custom Font",
 			MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 		if (result != MessageBoxResult.Yes) return;
 		if (!ReduxCustomFontService.TryDelete(choice.CustomReference, out var error))
@@ -384,7 +394,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		CustomThemeComboBox.ItemsSource = ViewModel.Settings.CustomThemes;
 		var activeTheme = ReduxThemeService.GetActiveTheme(ViewModel.Settings);
 		CustomThemeComboBox.SelectedItem = activeTheme;
-		CurrentThemeNameText.Text = activeTheme?.Name ?? ViewModel.Settings.ColorTheme.GetDescription();
+		CurrentThemeNameText.Text = activeTheme?.Name ?? ReduxLanguageService.Current.Translate(ViewModel.Settings.ColorTheme.GetDescription());
 		GeneratedGradientsCheckBox.IsChecked = activeTheme?.UsesGeneratedGradients
 			?? ViewModel.Settings.UsesGeneratedGradients;
 		var hasSelection = CustomThemeComboBox.SelectedItem is ReduxCustomTheme;
@@ -393,10 +403,10 @@ public partial class SettingsWindow : SettingsWindowBase
 		DuplicateCustomThemeButton.IsEnabled = hasSelection;
 		ExportCustomThemeButton.IsEnabled = hasSelection;
 		CustomThemeStatusText.Text = activeTheme != null
-			? $"Active custom theme · {activeTheme.Name} · {ReduxCustomFontService.GetDisplayName(activeTheme.TypographyFont, activeTheme.CustomTypographyFont)} · {activeTheme.TextSize.GetDescription()} text"
+			? ReduxLanguageService.Current.Format($"Active custom theme · {activeTheme.Name} · {ReduxCustomFontService.GetDisplayName(activeTheme.TypographyFont, activeTheme.CustomTypographyFont)} · {ReduxLanguageService.Current.Translate(activeTheme.TextSize.GetDescription())} text")
 			: ViewModel.Settings.CustomThemes.Count == 0
-				? "No custom themes yet. Create one from the current built-in palette."
-				: "Choose a custom theme above, or keep using a built-in theme.";
+				? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("No custom themes yet. Create one from the current built-in palette.")
+				: DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Choose a custom theme above, or keep using a built-in theme.");
 		_updatingCustomThemeSelection = false;
 		ThemeComboBox_SelectionChanged(ThemeComboBox, null);
 	}
@@ -510,7 +520,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		var selected = SelectedCustomTheme;
 		if (selected == null) return;
 		var result = ReduxMessageBox.Show(this,
-			$"Delete the custom theme '{selected.Name}'?\n\nExport it first if you may want to use it again.",
+			DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Delete the custom theme '{selected.Name}'?\n\nExport it first if you may want to use it again."),
 			"Delete Custom Theme", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 		if (result != MessageBoxResult.Yes) return;
 		ViewModel.Settings.CustomThemes.Remove(selected);
@@ -532,7 +542,7 @@ public partial class SettingsWindow : SettingsWindowBase
 	{
 		var dialog = new Microsoft.Win32.OpenFileDialog
 		{
-			Title = "Import Custom Theme",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Import Custom Theme"),
 			Filter = "Theme file (*.json)|*.json|All files (*.*)|*.*",
 			CheckFileExists = true,
 			Multiselect = false
@@ -546,7 +556,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		}
 		catch (Exception ex)
 		{
-			ReduxMessageBox.Show(this, $"Could not import that theme.\n\n{ex.Message}",
+			ReduxMessageBox.Show(this, DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Could not import that theme.\n\n{ex.Message}"),
 				"Import Custom Theme", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
 	}
@@ -558,7 +568,7 @@ public partial class SettingsWindow : SettingsWindowBase
 		var safeName = String.Concat(selected.Name.Select(character => Path.GetInvalidFileNameChars().Contains(character) ? '_' : character));
 		var dialog = new Microsoft.Win32.SaveFileDialog
 		{
-			Title = "Export Custom Theme",
+			Title = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Export Custom Theme"),
 			Filter = "Theme file (*.json)|*.json",
 			FileName = $"{safeName}.json",
 			AddExtension = true,
@@ -568,11 +578,11 @@ public partial class SettingsWindow : SettingsWindowBase
 		try
 		{
 			ReduxThemeService.Export(dialog.FileName, selected);
-			ViewModel.ShowAlert($"Exported '{selected.Name}'.", AlertType.Success);
+			ViewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Exported '{selected.Name}'."), AlertType.Success);
 		}
 		catch (Exception ex)
 		{
-			ReduxMessageBox.Show(this, $"Could not export that theme.\n\n{ex.Message}",
+			ReduxMessageBox.Show(this, DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Could not export that theme.\n\n{ex.Message}"),
 				"Export Custom Theme", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 		}
 	}
@@ -628,12 +638,14 @@ public partial class SettingsWindow : SettingsWindowBase
 					HorizontalAlignment = HorizontalAlignment.Stretch,
 					Margin = new Thickness(0)
 				};
-				heading.Children.Add(new TextBlock
+				var groupTitle = new TextBlock
 				{
 					Text = currentGroupTitle,
 					Style = FindResource("SettingsSubsectionTitleStyle") as Style
-				});
-				heading.ToolTip = group.Description;
+				};
+				LocalizationBindings.Set(groupTitle, TextBlock.TextProperty, currentGroupTitle);
+				heading.Children.Add(groupTitle);
+				LocalizationBindings.Set(heading, ToolTipService.ToolTipProperty, group.Description);
 				targetGrid.Children.Add(heading);
 				Grid.SetRow(heading, row++);
 				Grid.SetColumnSpan(heading, 2);
@@ -658,6 +670,27 @@ public partial class SettingsWindow : SettingsWindowBase
 			if (prop.Attribute.IsDebug)
 			{
 				tb.SetBinding(TextBlock.VisibilityProperty, debugModeBinding);
+			}
+
+			if (source is DivinityModManagerSettings && prop.Property.Name == nameof(DivinityModManagerSettings.InterfaceLanguage))
+			{
+				var languages = new ComboBox
+				{
+					Name = "InterfaceLanguageComboBox", ItemsSource = ReduxLanguageService.Languages,
+					DisplayMemberPath = nameof(InterfaceLanguageChoice.NativeName),
+					SelectedValuePath = nameof(InterfaceLanguageChoice.Code),
+					HorizontalAlignment = HorizontalAlignment.Stretch,
+					MinWidth = 160, VerticalContentAlignment = VerticalAlignment.Center
+				};
+				languages.SetBinding(ComboBox.SelectedValueProperty, new Binding(prop.Property.Name)
+				{
+					Source = source, Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+				});
+				targetGrid.Children.Add(languages);
+				Grid.SetRow(languages, targetRow);
+				Grid.SetColumn(languages, 1);
+				createdObject = languages;
+				goto SetTooltip;
 			}
 
 			if (prop.Property.PropertyType.IsEnum)
@@ -766,6 +799,8 @@ public partial class SettingsWindow : SettingsWindowBase
 							Margin = new Thickness(6, 0, 0, 0),
 							Style = FindResource("ReduxSecondaryActionButtonStyle") as Style
 						};
+						LocalizationBindings.Set(browseButton, Button.ContentProperty, "Browse…");
+						LocalizationBindings.Set(resetButton, Button.ContentProperty, "Default");
 						locationRow.Children.Add(locationText);
 						locationRow.Children.Add(browseButton);
 						locationRow.Children.Add(resetButton);
@@ -774,10 +809,11 @@ public partial class SettingsWindow : SettingsWindowBase
 						locationPanel.Children.Add(locationRow);
 						var locationHint = new TextBlock
 						{
-							Text = "Switches on restart. The current folder's queue and files stay where they are.",
+							Text = DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Switches on restart. The current folder's queue and files stay where they are."),
 							TextWrapping = TextWrapping.Wrap,
 							Margin = new Thickness(0, 4, 0, 0)
 						};
+						LocalizationBindings.Set(locationHint, TextBlock.TextProperty, "Switches on restart. The current folder's queue and files stay where they are.");
 						locationHint.SetResourceReference(TextBlock.ForegroundProperty, "ReduxTextMutedBrush");
 						locationHint.SetResourceReference(TextBlock.FontSizeProperty, "Redux.FontSize.11");
 						locationPanel.Children.Add(locationHint);
@@ -810,7 +846,7 @@ public partial class SettingsWindow : SettingsWindowBase
 								? "Redux found an existing queue in that folder and will use it after restart."
 								: "Redux will start a separate queue in that folder after restart.";
 							if (ReduxMessageBox.Show(this,
-									$"Use this Downloads folder?\n\n{selected}\n\n{detail} Your current queue and packages stay in their existing folder. No files will be moved or deleted.",
+									DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Use this Downloads folder?\n\n{selected}\n\n{detail} Your current queue and packages stay in their existing folder. No files will be moved or deleted."),
 									"Change Downloads folder", MessageBoxButton.YesNo, MessageBoxImage.Question,
 									MessageBoxResult.No) != MessageBoxResult.Yes) return;
 							downloadSettings.ManagedDownloadsDirectory =
@@ -821,7 +857,7 @@ public partial class SettingsWindow : SettingsWindowBase
 						resetButton.Click += (_, _) =>
 						{
 							if (ReduxMessageBox.Show(this,
-									$"Use Redux's default Downloads folder after restart?\n\n{defaultDirectory}\n\nThe current folder's queue and packages stay where they are.",
+									DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Use Redux's default Downloads folder after restart?\n\n{defaultDirectory}\n\nThe current folder's queue and packages stay where they are."),
 									"Reset Downloads folder", MessageBoxButton.YesNo, MessageBoxImage.Question,
 									MessageBoxResult.No) != MessageBoxResult.Yes) return;
 							downloadSettings.ManagedDownloadsDirectory = String.Empty;
@@ -964,10 +1000,11 @@ public partial class SettingsWindow : SettingsWindowBase
 			}
 
 			SetTooltip:
+			LocalizationBindings.Set(tb, TextBlock.TextProperty, prop.Attribute.DisplayName);
 			if (createdObject != null)
 			{
-				System.Windows.Automation.AutomationProperties.SetName(createdObject, prop.Attribute.DisplayName);
-				System.Windows.Automation.AutomationProperties.SetHelpText(createdObject, tooltip ?? String.Empty);
+				LocalizationBindings.Set(createdObject, System.Windows.Automation.AutomationProperties.NameProperty, prop.Attribute.DisplayName);
+				LocalizationBindings.Set(createdObject, System.Windows.Automation.AutomationProperties.HelpTextProperty, tooltip ?? String.Empty);
 				tb.SetResourceReference(TextBlock.FontSizeProperty, "Redux.FontSize.12");
 				if (createdObject is Control control)
 				{
@@ -981,8 +1018,8 @@ public partial class SettingsWindow : SettingsWindowBase
 			}
 			if (createdObject != null && !string.IsNullOrWhiteSpace(tooltip))
 			{
-				ToolTipService.SetToolTip(tb, tooltip);
-				ToolTipService.SetToolTip(createdObject, tooltip);
+				LocalizationBindings.Set(tb, ToolTipService.ToolTipProperty, tooltip);
+				LocalizationBindings.Set(createdObject, ToolTipService.ToolTipProperty, tooltip);
 			}
 		}
 	}
@@ -1073,7 +1110,8 @@ public partial class SettingsWindow : SettingsWindowBase
 
 		this.Bind(ViewModel, vm => vm.SelectedTabIndex, view => view.PreferencesTabControl.SelectedIndex, TabToIndex, IndexToTab);
 		this.OneWayBind(ViewModel, vm => vm.ExtenderUpdaterVisibility, view => view.ScriptExtenderUpdaterTab.Visibility);
-		this.OneWayBind(ViewModel, vm => vm.ResetSettingsCommandToolTip, view => view.ResetSettingsButton.ToolTip);
+		ViewModel.WhenAnyValue(vm => vm.ResetSettingsCommandToolTip)
+			.Subscribe(text => LocalizationBindings.Set(ResetSettingsButton, ToolTipService.ToolTipProperty, text));
 
 		this.BindCommand(ViewModel, vm => vm.SaveSettingsCommand, view => view.SaveSettingsButton);
 		this.BindCommand(ViewModel, vm => vm.OpenSettingsFolderCommand, view => view.OpenSettingsFolderButton);
@@ -1100,7 +1138,10 @@ public partial class SettingsWindow : SettingsWindowBase
 		if (String.IsNullOrWhiteSpace(query))
 			return true;
 
-		return hotkey.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+		return hotkey.LocalizedDisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+			hotkey.LocalizedCategory.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+			hotkey.LocalizedDescription.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+			hotkey.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase) ||
 			hotkey.Category.Contains(query, StringComparison.OrdinalIgnoreCase) ||
 			hotkey.Description.Contains(query, StringComparison.OrdinalIgnoreCase) ||
 			hotkey.DisplayBindingText.Contains(query, StringComparison.OrdinalIgnoreCase);
@@ -1190,10 +1231,10 @@ public partial class SettingsWindow : SettingsWindowBase
 
 		var expanders = KeybindingsListView.FindVisualChildren<Expander>().ToList();
 		var collapse = expanders.Count == 0 || expanders.Any(expander => expander.IsExpanded);
-		var action = collapse ? "Collapse all shortcut groups" : "Expand all shortcut groups";
+		var action = ReduxLanguageService.Current.Translate(collapse ? "Collapse all shortcut groups" : "Expand all shortcut groups");
 		ShortcutGroupsToggleButton.IsEnabled = !HasShortcutFilter && expanders.Count > 0;
 		ShortcutGroupsToggleButton.ToolTip = HasShortcutFilter
-			? "Clear the shortcut filter to expand or collapse all groups"
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Clear the shortcut filter to expand or collapse all groups")
 			: action;
 		System.Windows.Automation.AutomationProperties.SetName(ShortcutGroupsToggleButton, action);
 		ShortcutGroupsToggleIcon.SetResourceReference(

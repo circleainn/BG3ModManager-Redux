@@ -20,8 +20,8 @@ public partial class ReduxModAliasWindow : AdonisUI.Controls.AdonisWindow
 		if (settings != null)
 			ReduxThemeService.Apply(Resources, settings.ColorTheme, ReduxThemeService.GetActiveTheme(settings), settings.UsesGeneratedGradients);
 
-		OriginalNameText.Text = $"Original name: {mod?.Metadata?.PackageTitle ?? mod?.Name ?? "Selected mod"}";
-		FileNameText.Text = $"Package file: {mod?.FileName ?? "Unavailable"}";
+		OriginalNameText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Original name: {mod?.Metadata?.PackageTitle ?? mod?.Name ?? "Selected mod"}");
+		FileNameText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Package file: {mod?.FileName ?? "Unavailable"}");
 		AliasTextBox.Text = mod?.CustomAlias ?? String.Empty;
 		ReduxWindowBehavior.AttachDialogTransitions(this, 40);
 		ReduxWindowBehavior.AttachRoundedCorners(this);
@@ -38,7 +38,7 @@ public partial class ReduxModAliasWindow : AdonisUI.Controls.AdonisWindow
 	private void UpdateState()
 	{
 		if (AliasTextBox == null || CharacterCountText == null || ClearButton == null) return;
-		CharacterCountText.Text = $"{AliasTextBox.Text.Length:N0} / {ReduxModAnnotationService.MaximumAliasLength:N0}";
+		CharacterCountText.Text = DivinityModManager.Localization.ReduxLanguageService.Current.Format($"{AliasTextBox.Text.Length:N0} / {ReduxModAnnotationService.MaximumAliasLength:N0}");
 		ClearButton.IsEnabled = !String.IsNullOrWhiteSpace(AliasTextBox.Text);
 	}
 

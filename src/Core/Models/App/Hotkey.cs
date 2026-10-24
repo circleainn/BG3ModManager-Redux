@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json.Converters;
+﻿using DivinityModManager.Localization;
+using System.ComponentModel;
+using System.Windows;
+using Newtonsoft.Json.Converters;
 
 using System.Runtime.Serialization;
 using System.Text;
@@ -24,18 +27,21 @@ public class Hotkey : ReactiveObject, IHotkey
 	[Reactive] public string Category { get; set; }
 	[Reactive] public string Description { get; set; }
 
-	private readonly ObservableAsPropertyHelper<string> _tooltip;
-	public string ToolTip => _tooltip.Value;
+	public string LocalizedDisplayName => ReduxLanguageService.Current.Translate(DisplayName);
+	public string LocalizedCategory => ReduxLanguageService.Current.Translate(Category);
+	public string LocalizedDescription => ReduxLanguageService.Current.Translate(Description);
+	public string ToolTip => IsDefault ? LocalizedDisplayName
+		: ReduxLanguageService.Current.FormatEnglish("{0} (Modified)", LocalizedDisplayName);
 	public string CommandToolTip
 	{
 		get
 		{
 			var title = Key == Key.None
-				? DisplayName
-				: $"{DisplayName} ({DisplayBindingText})";
+				? LocalizedDisplayName
+				: $"{LocalizedDisplayName} ({DisplayBindingText})";
 			return String.IsNullOrWhiteSpace(Description)
 				? title
-				: $"{title}\n{Description}";
+				: $"{title}\n{LocalizedDescription}";
 		}
 	}
 
@@ -151,9 +157,9 @@ public class Hotkey : ReactiveObject, IHotkey
 		_modifiedText = isDefaultObservable.Select(b => !b ? "*" : "")
 			.ToProperty(this, nameof(ModifiedText), "", scheduler: RxApp.MainThreadScheduler);
 
-		_tooltip = this.WhenAnyValue(x => x.DisplayName, x => x.IsDefault)
-			.Select(x => !x.Item2 ? $"{x.Item1} (Modified)" : x.Item1)
-			.ToProperty(this, nameof(ToolTip), scheduler: RxApp.MainThreadScheduler);
+		this.WhenAnyValue(x => x.DisplayName, x => x.Category, x => x.Description, x => x.IsDefault)
+			.Subscribe(_ => RefreshLocalizedText());
+		PropertyChangedEventManager.AddHandler(ReduxLanguageService.Current, OnLanguageChanged, nameof(ReduxLanguageService.Language));
 
 		this.WhenAnyValue(
 				x => x.DisplayName,
@@ -167,6 +173,17 @@ public class Hotkey : ReactiveObject, IHotkey
 
 		ResetCommand = ReactiveCommand.Create(ResetToDefault, canReset);
 		ClearCommand = ReactiveCommand.Create(Clear, canClear);
+	}
+
+	private void OnLanguageChanged(object sender, PropertyChangedEventArgs e) => RefreshLocalizedText();
+
+	private void RefreshLocalizedText()
+	{
+		this.RaisePropertyChanged(nameof(LocalizedDisplayName));
+		this.RaisePropertyChanged(nameof(LocalizedCategory));
+		this.RaisePropertyChanged(nameof(LocalizedDescription));
+		this.RaisePropertyChanged(nameof(ToolTip));
+		this.RaisePropertyChanged(nameof(CommandToolTip));
 	}
 
 	public override string ToString()

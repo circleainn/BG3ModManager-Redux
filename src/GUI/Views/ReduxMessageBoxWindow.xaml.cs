@@ -1,3 +1,4 @@
+using DivinityModManager.Localization;
 using DivinityModManager.Controls;
 using DivinityModManager.Util;
 
@@ -39,9 +40,9 @@ public partial class ReduxMessageBoxWindow : AdonisUI.Controls.AdonisWindow
 			ReduxThemeService.Apply(Resources, settings.ColorTheme, ReduxThemeService.GetActiveTheme(settings), settings.UsesGeneratedGradients);
 		}
 
-		Title = caption;
-		CaptionText.Text = caption;
-		MessageTextBox.Text = text;
+		LocalizationBindings.Set(this, TitleProperty, caption);
+		LocalizationBindings.Set(CaptionText, TextBlock.TextProperty, caption);
+		LocalizationBindings.Set(MessageTextBox, TextBox.TextProperty, text);
 
 		ApplySeverityIcon(icon);
 
@@ -124,7 +125,7 @@ public partial class ReduxMessageBoxWindow : AdonisUI.Controls.AdonisWindow
 			MessageBoxResult.Cancel => CancelButtonLabel,
 			_ => throw new ArgumentOutOfRangeException(nameof(result), result, "The result does not have a dialog button.")
 		};
-		labelElement.Text = label;
+		LocalizationBindings.Set(labelElement, TextBlock.TextProperty, label);
 	}
 
 	/// <summary>
@@ -139,7 +140,9 @@ public partial class ReduxMessageBoxWindow : AdonisUI.Controls.AdonisWindow
 		icon.Margin = new Thickness(0, 0, 6, 0);
 		var content = new StackPanel { Orientation = Orientation.Horizontal };
 		content.Children.Add(icon);
-		content.Children.Add(new TextBlock { Text = label });
+		var labelElement = new TextBlock();
+		LocalizationBindings.Set(labelElement, TextBlock.TextProperty, label);
+		content.Children.Add(labelElement);
 		var button = new Button
 		{
 			Content = content,
