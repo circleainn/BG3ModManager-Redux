@@ -5,8 +5,8 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: October 22, 2026. Published release line: `0.1.0-alpha.16.6.1`
-(verified October 22).
+Last reviewed: October 23, 2026. Release candidate: `0.1.0-alpha.16.7`.
+Last verified published release: `0.1.0-alpha.16.6.1` (October 22).
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -14,6 +14,15 @@ with progress and cancellation. Export retains the import limits: 32 saves, 1 GB
 regressions pass; real campaign export/restore and cancellation still need a live check.
 
 ## Development status
+
+### 16.7 interface languages
+
+The language release adds English, French, Spanish, Russian, and Simplified Chinese selection in
+Welcome Setup and Preferences. Navigation, settings, dialogs, download and snapshot details,
+shortcut search, and the external backup runner follow the selected language. Typography and
+formatting culture remain independent; user content, paths, and persisted identifiers are preserved.
+This is initial language support. Some diagnostics fall back to English, and native-speaker wording
+review remains outstanding. See the [16.7 notes](releases/0.1.0-alpha.16.7.md).
 
 ### 16.6.1 update notifications and filters
 
@@ -23,7 +32,8 @@ the same right-click menu. Choices persist independently of the provider cache; 
 files still notify. Withdrawn/unavailable files no longer qualify as updates, and all three mod
 filters again offer right-click Clear. See the [hotfix notes](releases/0.1.0-alpha.16.6.1.md).
 Both build configurations passed 746 checks, and exact-package update/rollback and clean-launch
-checks passed. The maintainer's existing Debug binaries remain at 16.6 for public updater testing.
+checks passed. Release publishing leaves the maintainer's existing Debug binaries untouched for
+public updater testing.
 The [release record](RELEASE_RECORDS.md) captures exact artifacts and remaining limitations.
 
 ### 16.6 recovery update
