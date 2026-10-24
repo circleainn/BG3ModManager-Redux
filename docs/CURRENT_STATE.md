@@ -5,8 +5,8 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: October 23, 2026. Release candidate: `0.1.0-alpha.16.7`.
-Last verified published release: `0.1.0-alpha.16.6.1` (October 22).
+Last reviewed: October 23, 2026. Published release line: `0.1.0-alpha.16.7`
+(verified October 23).
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -17,12 +17,17 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 
 ### 16.7 interface languages
 
-The language release adds English, French, Spanish, Russian, and Simplified Chinese selection in
+The 16.7 language release is published on GitHub, Nexus Mods, and the public-alpha updater channel.
+It adds English, French, Spanish, Russian, and Simplified Chinese selection in
 Welcome Setup and Preferences. Navigation, settings, dialogs, download and snapshot details,
 shortcut search, and the external backup runner follow the selected language. Typography and
 formatting culture remain independent; user content, paths, and persisted identifiers are preserved.
 This is initial language support. Some diagnostics fall back to English, and native-speaker wording
 review remains outstanding. See the [16.7 notes](releases/0.1.0-alpha.16.7.md).
+Both build configurations passed 759 regression checks. The exact-package update, rollback,
+snapshot restore/roll-forward, and disposable-profile launch passed. The maintainer's Debug
+installation was preserved for updater testing; no public in-app update is claimed. Exact artifacts
+and verification boundaries are recorded in [release records](RELEASE_RECORDS.md).
 
 ### 16.6.1 update notifications and filters
 
