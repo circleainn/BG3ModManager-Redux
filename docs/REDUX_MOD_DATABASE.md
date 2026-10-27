@@ -1,10 +1,11 @@
 # Redux mod database
 
-Redux ships a reviewed offline knowledge file at
+Redux ships an offline knowledge file at
 `src/GUI/Resources/ReduxModDatabase.json`. It serves two related purposes:
 
 1. conservatively recognize some installed Nexus Mods packages without a live API request; and
-2. provide exact dependency and placement facts to the optional Load Order Advisor.
+2. provide UUID-keyed dependency and placement rules, plus grouping evidence, to the optional
+   Load Order Advisor.
 
 These evidence sets share one validated database but remain logically separate. Recognizing a
 source never changes a load order, and ordering knowledge never invents a provider identity.
@@ -66,7 +67,12 @@ offline ordering sections. It can explain reversed dependency placement, exact d
 reviewed load-after relationships, and known substitutes. Patch-style exceptions that intentionally
 load later are represented explicitly rather than guessed from names.
 
-The organizer uses the same facts to create a deterministic preview:
+Grouping evidence has mixed confidence: explicit records, provider categories, existing sections,
+and name-based inference can suggest placement. A UUID identifies a record; it does not prove that
+every rule or grouping is independently verified. The preview labels its evidence, and mod-author
+instructions take priority.
+
+The organizer uses these rules and suggestions to create a deterministic preview:
 
 - **Preserve my separators** sorts only within existing membership boundaries;
 - **Use suggested separators** creates non-empty named groups; and
@@ -121,7 +127,7 @@ community UUID into the reviewed `moduleIdentities` collection.
 
 ## Database maintenance
 
-The bundled Advisor catalog contains 10,623 UUID-backed entries. Category suggestions carry
+The bundled Advisor catalog contains 10,626 UUID-backed entries. Category suggestions carry
 concise evidence labels; they do not imply compatibility. Unresolved name-only records are excluded,
 and proposed dependency or ordering changes require review before inclusion.
 

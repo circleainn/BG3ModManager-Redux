@@ -66,7 +66,7 @@ distribution in `THIRD-PARTY-NOTICES.md`.
 
 ## Json.NET
 
-Redux and its standalone Setup use Json.NET (Newtonsoft.Json), copyright James Newton-King and
+Redux uses Json.NET (Newtonsoft.Json), copyright James Newton-King and
 contributors, under the MIT License. A copy is included in the distribution in
 `THIRD-PARTY-NOTICES.md`.
 

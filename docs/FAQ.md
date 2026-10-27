@@ -10,7 +10,7 @@ support for reviewed game-directory mods, custom themes, and accessibility optio
 
 ## How do I change the interface language?
 
-In development builds, open **Preferences > General > Interface language** and choose English,
+In Redux 0.1.0-alpha.16.7 and later, open **Preferences > General > Interface language** and choose English,
 Français, Español, Русский, or 简体中文 (Simplified Chinese). The interface previews the selection
 immediately; click **Save** to keep it after restart. Languages are bundled and work offline.
 

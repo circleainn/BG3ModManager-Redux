@@ -113,7 +113,11 @@ The advisor can report:
 
 Known patch-style relationships that intentionally load later are handled separately to avoid false
 warnings. Inactive packages and always-loaded overrides are excluded from numbered-order advice.
-The advisor does not infer an order from a vague category, author, or filename match.
+Exact UUID lookup identifies the database entry, not the strength of every placement suggestion.
+Suggested separator groups can use community sections, provider categories, name patterns, or
+inferred placement recorded in that entry. The preview labels this evidence separately from
+declared dependencies and explicit load-after rules; a grouping suggestion is not a compatibility
+guarantee.
 
 ### Organize Active Load Order
 
@@ -140,10 +144,12 @@ or not Load Order Advisor is enabled.
 
 The first-run setup is also reachable from Help. Theme, motion, and background effects preview live
 and return to their previous values if setup is dismissed. API keys and persistent settings are
-stored only after **Save & Continue**. Online source information, NXM association, Load Order
+stored when setup is completed with **Start using Redux**; **Continue** advances between steps.
+The interface-language choice is retained even if setup is deferred. Online source information, NXM association, Load Order
 Advisor guidance, and retained package archives remain independent opt-in choices. Enabling NXM
 links does not enable archive retention, and enabling provider information does not authorize a
-download or installation. Setup never edits packages or load orders.
+download or installation. Setup does not install packages or sync the game. Explicitly requested
+starter separators can add presentation data to the working Active order.
 
 ## Rules for new feature work
 
