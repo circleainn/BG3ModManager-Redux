@@ -15,6 +15,17 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 
 ## Development status
 
+### Maintenance gates
+
+Publication documentation and database counts are checked in Windows CI. Publish builds retain a
+separate candidate provenance sidecar, and dependency maintenance has a Windows audit/report path.
+These checks do not complete the outstanding real-user observations in the release records or
+enforce repository branch protection by themselves.
+
+The .NET 8 support deadline is November 10, 2026. Runtime migration remains outstanding; the
+[security policy](SECURITY.md#runtime-lifecycle) records the .NET 10 toolchain, native-library,
+updater-prerequisite, and release-validation requirements.
+
 ### 16.7 interface languages
 
 The 16.7 language release is published on GitHub, Nexus Mods, and the public-alpha updater channel.

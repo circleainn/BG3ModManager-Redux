@@ -131,8 +131,39 @@ The bundled Advisor catalog contains 10,626 UUID-backed entries. Category sugges
 concise evidence labels; they do not imply compatibility. Unresolved name-only records are excluded,
 and proposed dependency or ordering changes require review before inclusion.
 
-Catalog preparation and source provenance are maintained internally. The public database utility
-supports validation and independently reviewed contribution and fingerprint updates.
+Coverage uses distinct units that overlap; do not add them together as a number of supported mods.
+These values describe the bundled JSON, not a compatibility test matrix:
+
+| Coverage unit | Count |
+|:--|--:|
+| Nexus project records | 3,695 |
+| mod.io project records | 1,761 |
+| Advisor entries with dependencies | 630 |
+| Advisor entries with explicit load-after rules | 11 |
+
+An entry with dependencies or a load-after rule can appear in both rows. Most Advisor entries
+provide grouping evidence rather than explicit ordering relationships. Run
+`python tools/maintenance/check_project_docs.py` when changing the corpus or these counts.
+
+### Legacy provenance and new contributions
+
+The legacy catalog contains curated records, community section evidence, provider categories,
+name patterns, inferred placements, author-catalogue evidence, and entries with no verified
+placement. Some retained placement explanations explicitly credit VOLO. Those legacy records do
+not carry pinned upstream commits or an individually reproducible source trail, so their presence
+must not be described as independent verification of every relationship. Redux does not ship or
+invoke the VOLO sorter. Removing the proposed maintainer importer does not remove this pre-existing
+data, and it does not change essential package libraries such as LSLib.
+
+Older public counts used less precise terminology. The current figures above count the actual
+bundled records; they do not establish the size or review quality of an earlier source collection.
+Do not repeat a broad historical coverage number as a current guarantee.
+
+The public database utility supports validation and independently reviewed contribution and
+fingerprint updates. For a new or changed relationship, retain the mod-author source URL, exact
+package/version or source revision where available, the selected UUIDs, and the review reasoning
+in the contribution or pull request. Preserve uncertainty where original evidence is unavailable;
+do not manufacture provenance for legacy entries.
 
 For one local artifact, use the guarded fingerprint/add workflow:
 

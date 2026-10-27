@@ -397,7 +397,9 @@ reminds users that redistributing mod files requires permission from every relev
 Redux includes a curated offline database that connects exact package fingerprints and reviewed
 module identities to Nexus Mods projects. Matching is intentionally conservative: uncertain mods
 remain **Local** rather than being assigned a potentially incorrect source. The same database also
-contains exact dependency and ordering facts used only when Load Order Advisor is enabled.
+contains explicit dependency and ordering rules, plus grouping suggestions with different evidence
+strengths, used only when Load Order Advisor is enabled. Exact UUID matching identifies the entry;
+it does not make a name-based or inferred placement suggestion a verified compatibility rule.
 
 Use **Help > Generate Redux Database Contribution...** to create a privacy-limited
 `.bg3redux-report`. It contains sanitized mod identity, known provider IDs, and exact PAK
