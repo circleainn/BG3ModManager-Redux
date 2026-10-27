@@ -37,6 +37,15 @@ jobs:
         shell: pwsh
         run: .\Build-Redux.ps1 -Configuration Debug
 
+      - name: Check publication documentation and maintenance tools
+        shell: pwsh
+        run: |
+          python tools/maintenance/check_project_docs.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests/maintenance -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .\tests\maintenance\Test-DependencyReports.ps1
+
       - name: Verify native host output
         shell: pwsh
         run: |
@@ -47,14 +56,7 @@ jobs:
       - name: Audit NuGet dependencies
         shell: pwsh
         run: |
-          $audit = dotnet list '.\tests\Redux.Core.Tests\Redux.Core.Tests.csproj' package --vulnerable --include-transitive
-          $audit | Write-Host
-          if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
-          }
-          if ($audit -match 'has the following vulnerable packages') {
-            throw 'NuGet reported one or more vulnerable dependencies.'
-          }
+          .\tools\maintenance\Check-Dependencies.ps1 -SkipBuild
 
       - name: Run Redux regression checks
         shell: pwsh
@@ -101,6 +103,15 @@ jobs:
           $archiveHash = (Get-FileHash -LiteralPath $versionedArchive.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($portableArtifact.sha256 -ne $archiveHash) {
             throw 'The public-alpha update manifest contains the wrong archive SHA-256.'
+          }
+          $provenance = Get-Content -LiteralPath './Redux-Build-Provenance.json' -Raw | ConvertFrom-Json
+          if ($provenance.schemaVersion -ne 1 -or $provenance.purpose -ne 'local-candidate-not-publication' -or
+              $provenance.source.commit -ne $env:GITHUB_SHA -or
+              $provenance.displayVersion -ne $updateManifest.displayVersion -or
+              $provenance.archive.sha256 -ne $archiveHash -or
+              $provenance.archive.sizeBytes -ne $versionedArchive.Length -or
+              $provenance.manifest.sha256 -ne (Get-FileHash -LiteralPath $updateManifestPath -Algorithm SHA256).Hash.ToLowerInvariant()) {
+            throw 'Candidate provenance does not match the source and generated artifacts.'
           }
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           $archive = [System.IO.Compression.ZipFile]::OpenRead($versionedArchive.FullName)
@@ -153,7 +164,9 @@ jobs:
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v7
         with:
-          name: Redux-portable-${{ github.ref_name }}-${{ github.run_number }}
-          path: BG3ModManager-Redux_v*.zip
+          name: Redux-candidate-${{ github.ref_name }}-${{ github.run_number }}
+          path: |
+            BG3ModManager-Redux_v*.zip
+            Redux-Build-Provenance.json
           if-no-files-found: error
           retention-days: 7

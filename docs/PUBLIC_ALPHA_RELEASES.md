@@ -68,6 +68,9 @@ Latest, uploads to Nexus Mods, and moves the public-alpha channel like any other
    Start from the previous file in [`releases/`](releases/) and update only the final,
    artifact-specific details. For a corrective follow-up to a hotfix, retain that hotfix's full
    changelog and prepend the new correction so users skipping the broken build see all included fixes.
+   Run `python tools/maintenance/check_project_docs.py` to compare published-state references with
+   the latest publication record and database coverage with the actual corpus. Development version
+   changes do not change what has already been published.
 2. Run `Build-Redux.ps1 -Configuration Debug` and the complete Redux regression executable.
 3. Run `Build-Redux.ps1 -Configuration Publish` with Python 3 available. This creates the
    versioned and Latest ZIPs, release inventory, and public-alpha channel manifest.
@@ -82,6 +85,15 @@ For alpha.15, migration testing also covered a folder from the legacy `BG3ModMan
 clean public package must contain only the new `Redux.*` root runtime. The final portable archive
 must be regenerated after any README or packaged-document change because those bytes affect its
 SHA-256 digest.
+
+Every Publish build also writes `Redux-Build-Provenance.json` beside the archives. It records the
+source commit, whether source changes or untracked files were present, and the archive/manifest
+hashes. Missing Git history is recorded as unknown. This sidecar is not packaged into Redux and is
+not part of the updater schema. It labels local output as a candidate, never as publication approval.
+CI artifacts use the same candidate label and include the sidecar. A clean commit or a familiar
+versioned filename still does not prove that the bytes equal an approved public release: compare
+the exact release-record hash before reusing or uploading an archive. Keep different candidates in
+separate folders and never substitute a rebuilt same-version archive for the published ZIP.
 
 ## Publish without creating a broken channel
 
@@ -131,6 +143,22 @@ workflow, install/update/uninstall failure, or credential/privacy leak remains o
 
 Expected limitations should be written plainly in the release notes, installation guide, or
 troubleshooting guide. Speculative redesigns can remain deferred without blocking a safe alpha.
+
+### Incomplete observations and exceptions
+
+Record each required observation as passed, failed, not performed, or explicitly excepted. An
+automated packaged-updater test proves its covered file operations; it does not prove that the
+public in-app update was observed. Hash equality proves identical bytes, not a fresh launch.
+
+If a required observation cannot be performed, the maintainer must explicitly accept the specific
+exception before publication or announcement. Record the missing check, reason, substitute evidence,
+remaining risk, acceptance reference, and follow-up criterion in the publication record. A general
+instruction to publish is not evidence that every required check passed. Known release-blocking
+crashes, data loss, unsafe writes, or credential leaks remain blockers under the gate above.
+
+Existing 16.6, 16.6.1, and 16.7 records retain their stated gaps. This policy does not retroactively
+mark those checks passed or invent an exception approval. Close a gap only with new evidence and
+identify the exact package tested.
 
 ## Per-release publication record
 

@@ -5,6 +5,32 @@
 Only the newest published Redux public alpha receives security fixes. Older public alphas, private
 test builds, and source snapshots are unsupported once a newer build is available.
 
+### Runtime lifecycle
+
+The published 16.7 application requires .NET 8 Desktop Runtime. Microsoft ends .NET 8 support on
+November 10, 2026; the current release does not yet provide a supported-runtime migration.
+The maintenance target is .NET 10 LTS, subject to validation of the Windows desktop and C++/CLI
+dependencies. Installing a newer major runtime alone does not retarget the existing application.
+See Microsoft's [support policy](https://dotnet.microsoft.com/en-us/platform/support/policy) and
+[Windows SDK/Visual Studio requirements](https://learn.microsoft.com/en-us/dotnet/core/install/windows).
+
+Before publishing a migration:
+
+1. Validate the .NET 10 SDK and Visual Studio 2026 toolchain locally and in CI, including C++/CLI,
+   Windows SDK, LSLib, CrossSpeak, and native hosting. Verify the supported Windows editions and
+   versions; do not assume the current Windows 10/11 wording transfers unchanged.
+2. Retarget and test the application, Core, updater/snapshot runner, tests, and maintainer tools
+   together. Review submodule targets through the existing compatibility policy and retain notices.
+3. Exercise the full Debug/Publish regressions and exact candidate package, especially package
+   parsing, accessibility, localization, native DLL loading, snapshots, rollback, and saved-state
+   compatibility. Preserve a copy of the previous runtime's installation for recovery.
+4. Validate an update from the current public app on a machine without .NET 10. A framework-dependent
+   new updater or app may fail to start there. Provide a tested prerequisite/bridge path or explicit
+   manual migration instructions before offering that candidate through the public channel.
+5. Update SDK pinning, CI runners, runtime requirements, release notes and public installation
+   guidance only when the selected configuration passes. Record remaining real-user observations
+   under the release gate; do not claim a completed migration from a target-framework edit alone.
+
 ## Report a vulnerability
 
 Do not open a public issue for a vulnerability that could expose credentials, overwrite files
