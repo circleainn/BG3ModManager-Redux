@@ -8,6 +8,8 @@ source for individual implementation details.
 - Preserve Override package selection and separator placement when using **Save Order As**.
   Replacing an existing saved order refreshes its loaded copies and selects the destination
   through the normal order-switch review. Failed writes retain the previous file and loaded state.
+- Clarify Install All results in all five interface languages: new load-order mods start inactive,
+  while updates preserve their existing state and position.
 
 ## 0.1.0-alpha.16.7 — 2026-10-23
 

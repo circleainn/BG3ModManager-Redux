@@ -94,6 +94,16 @@ renaming a DLL or adding Linux runtime identifiers does not port this bridge.
    and representative interface proofs identify the remaining integration work.
 
 The output of this proof is a recorded implementation decision and measured gaps.
+
+An isolated Windows dependency probe on October 28 read synthetic v18 packages with ordinary,
+raw-LZ4, multipart and solid layouts. All four header reads and all four metadata extractions
+passed with the current native bridge. With `LSLibNative` omitted, header reads still passed,
+but every full read failed resolving that assembly in `CompressionHelpers.Decompress` while
+reading the compressed file table. The compiled reader therefore remains coupled to the bridge
+even when an individual payload uses a managed decoding path. The next harness must isolate
+managed block decoding from native frame decoding before testing the portable build. These
+results concern the current assembly on Windows; Linux execution remains outstanding.
+
 If the shared interface is not ready for the beta scope, continue a focused Windows
 beta while the port remains experimental. Avoid a permanent separately designed Linux
 edition, and avoid broad WPF-only visual rewrites before the shared-interface decision.
