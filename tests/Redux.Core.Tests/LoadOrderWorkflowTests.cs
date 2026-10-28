@@ -1,11 +1,18 @@
 using DivinityModManager.AppServices;
 using DivinityModManager.Models;
 using DivinityModManager.Util;
+using DivinityModManager.ViewModels;
 using DynamicData;
+using DynamicData.Binding;
+using ReactiveUI;
 
 using System;
 using System.IO;
 using System.Linq;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Redux.Core.Tests;
 
@@ -175,6 +182,181 @@ internal sealed class LoadOrderWorkflowTests
 			RegressionAssert.Equal("source-mod", replaced.Single(order => order.Name == "Destination").Order.Single().UUID);
 		});
 	}
+
+	public void SaveCopyPreservesOverrideMembershipAndSeparatorPlacementAfterRestart()
+	{
+		WithTemporaryDirectory(directory =>
+		{
+			var original = CreateOrder(directory, "Original", "first-mod");
+			original.OverrideModFiles = ["Texture.pak"];
+			original.VisualDividers = [new ModListVisualDividerData
+			{
+				Id = "section", Title = "Textures", IsActiveList = true, IsGlobal = true,
+				Position = 0, IsCollapsed = true, MemberModUuids = ["first-mod"]
+			}];
+			DivinityModDataLoader.ExportLoadOrderToFile(original.FilePath, original);
+			var originalBytes = File.ReadAllBytes(original.FilePath);
+			var copyPath = Path.Combine(directory, "Copy.json");
+			var copy = LoadOrderFileWorkflow.SaveCopy(original, copyPath, [original]);
+			var reopened = LoadOrders(directory).Single(order => order.Name == "Copy");
+			RegressionAssert.Equal("Texture.pak", reopened.OverrideModFiles.Single());
+			RegressionAssert.Equal("first-mod", reopened.Order.Single().UUID);
+			RegressionAssert.True(reopened.VisualDividers.Single().IsCollapsed);
+			RegressionAssert.True(reopened.VisualDividers.Single().IsGlobal);
+			RegressionAssert.Equal("first-mod", reopened.VisualDividers.Single().MemberModUuids.Single());
+			RegressionAssert.Equal("Original", original.Name);
+			RegressionAssert.Equal(Path.Combine(directory, "Original.json"), original.FilePath);
+			RegressionAssert.SequenceEqual(originalBytes, File.ReadAllBytes(original.FilePath));
+			copy.Order[0].UUID = "changed";
+			copy.OverrideModFiles.Clear();
+			copy.VisualDividers[0].MemberModUuids.Clear();
+			RegressionAssert.Equal("first-mod", original.Order.Single().UUID);
+			RegressionAssert.Equal("Texture.pak", original.OverrideModFiles.Single());
+			RegressionAssert.Equal("first-mod", original.VisualDividers.Single().MemberModUuids.Single());
+		});
+	}
+
+	public void ReplacingSavedCopyRefreshesLoadedOrdersIncludingEmptyOverrideSelection()
+	{
+		WithTemporaryDirectory(directory =>
+		{
+			var displayed = CreateOrder(directory, "Destination", "old-mod");
+			var savedListEntry = CreateOrder(directory, "Destination", "old-mod");
+			var unrelated = CreateOrder(directory, "Unrelated", "keep-mod");
+			var working = CreateOrder(directory, "Working", "new-mod");
+			working.VisualDividers = [];
+			foreach (var selection in new System.Collections.Generic.List<string>?[]
+				{ ["NewTexture.pak"], [], null })
+			{
+				displayed.OverrideModFiles = ["Stale.pak"];
+				savedListEntry.OverrideModFiles = ["Stale.pak"];
+				displayed.VisualDividers = [new ModListVisualDividerData { Id = "old-section", IsActiveList = true }];
+				working.OverrideModFiles = selection!;
+				var copy = LoadOrderFileWorkflow.SaveCopy(working, displayed.FilePath,
+					[displayed, savedListEntry, displayed, unrelated]);
+				var reopened = LoadOrders(directory).Single(order => order.Name == "Destination");
+				foreach (var order in new[] { displayed, savedListEntry, reopened })
+				{
+					RegressionAssert.Equal("new-mod", order.Order.Single().UUID);
+					RegressionAssert.Equal(0, order.VisualDividers.Count);
+					RegressionAssert.Equal(selection == null, order.OverrideModFiles == null);
+					if (selection != null) RegressionAssert.SequenceEqual(selection, order.OverrideModFiles!);
+				}
+				RegressionAssert.Equal(copy.LastModifiedDate, displayed.LastModifiedDate);
+				RegressionAssert.Equal(copy.LastModifiedDate, savedListEntry.LastModifiedDate);
+				copy.Order[0].UUID = "copy-only-edit";
+				copy.OverrideModFiles?.Clear();
+				RegressionAssert.Equal("new-mod", displayed.Order.Single().UUID);
+				RegressionAssert.Equal("new-mod", savedListEntry.Order.Single().UUID);
+				if (selection?.Count > 0) RegressionAssert.Equal("NewTexture.pak", displayed.OverrideModFiles.Single());
+			}
+			RegressionAssert.Equal("keep-mod", unrelated.Order.Single().UUID);
+		});
+	}
+
+	public void FailedCopyPreservesSavedFileAndLoadedOrderState()
+	{
+		WithTemporaryDirectory(directory =>
+		{
+			var destination = CreateOrder(directory, "Destination", "keep-mod");
+			destination.OverrideModFiles = ["Keep.pak"];
+			destination.VisualDividers = [new ModListVisualDividerData { Id = "keep-section", IsActiveList = true }];
+			DivinityModDataLoader.ExportLoadOrderToFile(destination.FilePath, destination);
+			var before = File.ReadAllBytes(destination.FilePath);
+			var modified = destination.LastModifiedDate;
+			var working = CreateOrder(directory, "Working", "new-mod");
+			working.OverrideModFiles = [];
+			working.VisualDividers = [];
+			using (var held = new FileStream(destination.FilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+			{
+				RegressionAssert.Throws<IOException>(() =>
+					LoadOrderFileWorkflow.SaveCopy(working, destination.FilePath, [destination]));
+			}
+			RegressionAssert.SequenceEqual(before, File.ReadAllBytes(destination.FilePath));
+			RegressionAssert.Equal("keep-mod", destination.Order.Single().UUID);
+			RegressionAssert.Equal("Keep.pak", destination.OverrideModFiles.Single());
+			RegressionAssert.Equal("keep-section", destination.VisualDividers.Single().Id);
+			RegressionAssert.Equal(modified, destination.LastModifiedDate);
+			RegressionAssert.Equal(0, Directory.GetFiles(directory, "*.tmp").Length);
+		});
+	}
+
+	public void ReplacingMalformedLoadedCopyRepairsItsStateAfterCommit()
+	{
+		WithTemporaryDirectory(directory =>
+		{
+			var destinationPath = Path.Combine(directory, "Destination.json");
+			File.WriteAllText(destinationPath, "{\"Order\":null,\"OverrideModFiles\":[\"Stale.pak\"]}");
+			var loaded = LoadOrders(directory).Single();
+			RegressionAssert.True(loaded.Order == null);
+			var working = CreateOrder(directory, "Working", "new-mod");
+			working.OverrideModFiles = [];
+			LoadOrderFileWorkflow.SaveCopy(working, destinationPath, [loaded]);
+			RegressionAssert.Equal("new-mod", loaded.Order!.Single().UUID);
+			RegressionAssert.Equal(0, loaded.OverrideModFiles.Count);
+			RegressionAssert.Equal("new-mod", LoadOrders(directory).Single().Order.Single().UUID);
+		});
+	}
+
+	public void SavingOverAnotherListedOrderSelectsItsDestinationThroughTheGuard()
+	{
+		WithSavedCopySelection((model, copy) =>
+		{
+			var selections = new System.Collections.Generic.List<int>();
+			using var observer = model.WhenAnyValue(item => item.SelectedModOrderIndex)
+				.Skip(1).Subscribe(selections.Add);
+			SelectSavedCopy(model, copy);
+			RegressionAssert.SequenceEqual(new[] { 1 }, selections);
+			RegressionAssert.Equal(1, model.SelectedModOrderIndex);
+			// Loading and clearing the dirty flag belong to the guarded selection
+			// handler, which this isolated fixture deliberately does not install.
+			RegressionAssert.True(model.HasUnsavedLoadOrderChanges);
+		});
+	}
+
+	public void RejectedSavedCopySelectionDoesNotForceLoadOrClearUnsavedChanges()
+	{
+		WithSavedCopySelection((model, copy) =>
+		{
+			var rejected = false;
+			using var guard = model.WhenAnyValue(item => item.SelectedModOrderIndex)
+				.Skip(1).Subscribe(index =>
+				{
+					if (index != 1) return;
+					rejected = true;
+					model.SelectedModOrderIndex = 0;
+				});
+			SelectSavedCopy(model, copy);
+			RegressionAssert.True(rejected);
+			RegressionAssert.Equal(0, model.SelectedModOrderIndex);
+			RegressionAssert.True(model.HasUnsavedLoadOrderChanges);
+			RegressionAssert.Equal("source-mod", model.ModOrderList[0].Order.Single().UUID);
+		});
+	}
+
+	private static void WithSavedCopySelection(Action<MainWindowViewModel, DivinityLoadOrder> action)
+	{
+		var originalScheduler = RxApp.MainThreadScheduler;
+		RxApp.MainThreadScheduler = ImmediateScheduler.Instance;
+		try
+		{
+			// Exercise the actual Save As selection handoff without profile discovery,
+			// directory watchers, file dialogs or a forced mod-list load.
+			var model = (MainWindowViewModel)RuntimeHelpers.GetUninitializedObject(typeof(MainWindowViewModel));
+			var source = new DivinityLoadOrder { Name = "Source", FilePath = "source.json",
+				Order = [new DivinityLoadOrderEntry { UUID = "source-mod" }] };
+			var destination = new DivinityLoadOrder { Name = "Destination", FilePath = "destination.json" };
+			model.ModOrderList = new ObservableCollectionExtended<DivinityLoadOrder> { source, destination };
+			model.SelectedModOrderIndex = 0;
+			typeof(MainWindowViewModel).GetProperty(nameof(model.HasUnsavedLoadOrderChanges))!.SetValue(model, true);
+			action(model, new DivinityLoadOrder { Name = "Destination", FilePath = destination.FilePath });
+		}
+		finally { RxApp.MainThreadScheduler = originalScheduler; }
+	}
+
+	private static void SelectSavedCopy(MainWindowViewModel model, DivinityLoadOrder copy) =>
+		typeof(MainWindowViewModel).GetMethod("SelectSavedLoadOrderCopy", BindingFlags.Instance | BindingFlags.NonPublic)!
+			.Invoke(model, [copy]);
 
 	private static DivinityLoadOrder CreateOrder(string directory, string name, string modUuid) => new()
 	{

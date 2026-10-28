@@ -8918,11 +8918,11 @@
     "zh-Hans": "安装存档？"
   },
   "Installed_packages_remain_inactive_Review_your_load_order_be_de567344": {
-    "en": "Installed packages remain inactive. Review your load order before syncing it to the game.",
-    "fr": "Les paquets installés restent inactifs. Vérifiez votre ordre avant de le synchroniser avec le jeu.",
-    "es": "Los paquetes instalados quedan inactivos. Revisa el orden antes de sincronizarlo con el juego.",
-    "ru": "Установленные пакеты остаются неактивными. Проверьте порядок перед синхронизацией с игрой.",
-    "zh-Hans": "已安装的包保持未启用状态。同步到游戏前请检查加载顺序。"
+    "en": "New load-order mods start inactive; updates preserve their state and position. Review your order before syncing.",
+    "fr": "Les nouveaux mods de l’ordre de chargement sont initialement inactifs ; leurs mises à jour conservent leur état et leur position. Vérifiez votre ordre avant de le synchroniser.",
+    "es": "Los nuevos mods del orden de carga empiezan inactivos; sus actualizaciones conservan su estado y posición. Revisa el orden antes de sincronizarlo.",
+    "ru": "Новые моды, включаемые в порядок загрузки, устанавливаются неактивными; при обновлении их состояние и позиция сохраняются. Проверьте порядок перед синхронизацией.",
+    "zh-Hans": "新安装且需要加入加载顺序的模组默认为未启用；更新此类模组会保留其状态和位置。同步前请检查加载顺序。"
   },
   "Installing_packages_5b1ba058": {
     "en": "Installing packages",

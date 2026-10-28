@@ -499,6 +499,7 @@ manifest is unavailable. Imported fonts and PNG icons remain the user's responsi
 | [Privacy and local data](docs/PRIVACY_AND_DATA.md) | Everyone | Understand stored data, network requests, logs, and safe sharing |
 | [Changes from upstream](docs/CHANGES_FROM_UPSTREAM.md) | Users and contributors | Understand what Redux retains and changes |
 | [Architecture](docs/ARCHITECTURE.md) | Contributors | Understand project boundaries, major components, and validation paths |
+| [Beta plan](docs/BETA_PLAN.md) | Contributors and testers | Follow the proposed beta scope, acceptance gates, and shared-platform direction |
 | [Diagnostics and optional features](docs/REDUX_OPTIONAL_MODULES.md) | Users and contributors | Understand diagnostics, online information, and advisor boundaries |
 | [Redux mod database](docs/REDUX_MOD_DATABASE.md) | Contributors and maintainers | Recognition, advisor knowledge, and reports |
 | [Mod developer tools](docs/MOD_DEVELOPER_TOOLS.md) | Mod authors | Inspect releases before distribution |
