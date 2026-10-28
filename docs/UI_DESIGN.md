@@ -4,6 +4,58 @@ Redux manages dense lists that users may spend hours arranging. Make the next ac
 result understandable without sacrificing useful information or existing customization. Review
 the whole workflow before adjusting a single control's appearance.
 
+## Application-wide direction for beta
+
+Working direction, October 28, 2026. These are acceptance requirements for proposed changes,
+not a claim that all current screens already meet them. The finite release scope and platform
+sequence live in [BETA_PLAN](BETA_PLAN.md); keep this page as the shared interaction reference.
+
+Make Redux **readable, predictable, and recoverable**. Its main workspace should help people
+install and inspect, organize, save, review and sync, then recover when necessary. Keep the
+mod lists central. A person should be able to identify the selected profile/order, pending
+changes, and the consequence of the next action without searching several windows.
+
+| Workflow | Required presentation and behavior |
+|:--|:--|
+| Install and inspect | An accessible install action shows progress and cancellation. New packages arrive Inactive; installing does not silently activate or sync them. Explain failed or unsupported input near the operation. |
+| Organize | Search, selection, movement, separators and details form one coherent workspace. Preserve full-order positions through filtering; provide keyboard alternatives to drag. Useful metadata must not compete with the mod name. |
+| Save | State whether the Redux order has unsaved changes. Saving a copy preserves active entries, order-specific separator placement and Override selection. Saving does not imply that the game was synced. |
+| Review and sync | Show the intended game-order changes and affected profile before applying them. Cancellation preserves the prior game state. Report success only after the write succeeds; unavailable or failed reads must not appear as an empty order. |
+| Recover | Make undo and the relevant recovery route discoverable from the affected workflow. Explain what a restore includes, what it excludes, and the state that will remain afterward. |
+
+Use one component vocabulary across the main window, details, Preferences and everyday dialogs:
+
+- Share text hierarchy, spacing roles, icons, surfaces, selection and focus states. Use semantic
+  theme resources, including existing user choices; do not recolor every feature independently.
+- Keep commands in predictable places. Put the primary action with its consequences, cancellation
+  beside the action it affects, and secondary details behind a clearly labelled disclosure.
+- Use the same wording for the same operation. Preserve the specific meanings of Active,
+  Inactive, Override, saved order, profile, Save and Sync across entry points and translations.
+- Prefer a stable, information-dense layout with readable labels. Increased padding, extra cards,
+  gradients or motion must solve a demonstrated problem before becoming a shared pattern.
+- Preserve context while work runs. Indicate what is busy, leave unrelated safe actions available,
+  and restore command state on completion, failure and cancellation.
+- Keep dialogs and status messages at the same text scale as the workspace. Include keyboard
+  access, screen-reader names/status, larger text, all supported themes and Reduce Motion in review.
+
+For a shared application, use the same component and workflow definitions on every supported
+platform. File pickers, key conventions, paths, credentials and game integrations can have platform
+implementations. A native window frame may differ; it must not cause a separately designed Linux
+workflow. Prototype and validate the representative shared workflow before a broad UI replacement.
+
+### Design validation sequence
+
+1. Record the current task, user-visible state transitions and known failure/recovery paths.
+2. Compare proposed layouts using the same representative mod data and complete workflow. A
+   clickable study can evaluate hierarchy and discoverability; it cannot establish real package
+   safety, platform support, rendering performance or accessibility in the desktop implementation.
+3. Observe volunteers completing install, organize, Save, review/Sync and recovery without coaching.
+   Record hesitation and incorrect expectations, then revise the pattern before applying it widely.
+4. Implement a complete workflow using shared resources/components. Check the real candidate on
+   representative small and large lists; record hardware, list sizes, timings and observed stalls.
+5. Expand only after the workflow passes the acceptance checks below. Record remaining gaps in
+   B04 of the beta plan; do not equate a preferred mockup with an approved or completed redesign.
+
 ## Shared rules
 
 1. **Keep the three mod panes related.** Active, Inactive, and Override use the same header,
