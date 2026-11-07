@@ -5,6 +5,10 @@ source for individual implementation details.
 
 ## Unreleased
 
+- Preserve Script Extender version/digest pins while refreshing the available-version list,
+  including pins no longer listed. Only an explicit version selection changes the pin.
+- Remember column order separately for Active, Inactive, and Override panes, retain hidden
+  column positions, and preserve resized widths when toggling other columns.
 - Preserve Override package selection and separator placement when using **Save Order As**.
   Replacing an existing saved order refreshes its loaded copies and selects the destination
   through the normal order-switch review. Failed writes retain the previous file and loaded state.

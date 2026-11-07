@@ -81,6 +81,7 @@ internal static class Program
 		var sourceLinkValidation = new SourceLinkValidationTests();
 		var extenderDetectionPaths = new ScriptExtenderDetectionPathTests();
 		var extenderConfigReload = new ExtenderConfigReloadTests();
+		var preferencePreservation = new UserPreferencePreservationTests();
 		var nxmPresentation = new NxmAssociationPresentationTests();
 		var launchTarget = new ReduxLaunchTargetTests();
 		var smoothLogicalScroll = new SmoothLogicalScrollPolicyTests();
@@ -618,6 +619,9 @@ internal static class Program
 			(nameof(sourceLinkValidation.BrowserLaunchPreparationRetainsProtocolTargetsAndSeparateArguments), sourceLinkValidation.BrowserLaunchPreparationRetainsProtocolTargetsAndSeparateArguments),
 			(nameof(extenderDetectionPaths.DefaultExtenderDetectionFollowsTheBg3Profile), extenderDetectionPaths.DefaultExtenderDetectionFollowsTheBg3Profile),
 			(nameof(extenderConfigReload.RemovedExtenderUpdaterConfigClearsStaleVersionPinAndCache), extenderConfigReload.RemovedExtenderUpdaterConfigClearsStaleVersionPinAndCache),
+			(nameof(preferencePreservation.ManifestRefreshPreservesExactAndUnavailablePins), preferencePreservation.ManifestRefreshPreservesExactAndUnavailablePins),
+			(nameof(preferencePreservation.RefreshSelectionCannotWritePinsButExplicitLatestCan), preferencePreservation.RefreshSelectionCannotWritePinsButExplicitLatestCan),
+			(nameof(preferencePreservation.ColumnOrderRoundTripPreservesHiddenSlotsAndPaneIndependence), preferencePreservation.ColumnOrderRoundTripPreservesHiddenSlotsAndPaneIndependence),
 			(nameof(extenderConfigReload.SwitchingGameInstallationsDoesNotReuseAnOldExtenderPin), extenderConfigReload.SwitchingGameInstallationsDoesNotReuseAnOldExtenderPin),
 			(nameof(extenderConfigReload.ExistingExtenderVersionPinIsRespectedAndUnreadableConfigIsPreserved), extenderConfigReload.ExistingExtenderVersionPinIsRespectedAndUnreadableConfigIsPreserved),
 			(nameof(extenderDetectionPaths.ConfiguredExtenderCacheIsUsedWithoutAppendingAnotherCacheFolder), extenderDetectionPaths.ConfiguredExtenderCacheIsUsedWithoutAppendingAnotherCacheFolder),

@@ -363,6 +363,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	// Widths are stored independently because each pane can be sized
 	// for different content. Hidden columns retain their last useful width.
 	[DataMember, Reactive] public Dictionary<string, double> ActiveModListColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+	[DataMember, Reactive] public Dictionary<string, List<string>> ModListColumnOrders { get; set; } = new();
 	[DataMember, Reactive] public Dictionary<string, double> OverrideModListColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 	[DataMember, Reactive] public Dictionary<string, double> InactiveModListColumnWidths { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 

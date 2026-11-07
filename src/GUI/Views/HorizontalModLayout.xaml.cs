@@ -4094,12 +4094,28 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		return ReferenceEquals(InactiveModsListView.View, gridView) ? InactiveModsListView : null;
 	}
 
+	private string GetColumnPaneKey(GridView view) => ReferenceEquals(view, InactiveModsListView.View)
+		? "Inactive" : ReferenceEquals(view, ForceLoadedModsListView.View) ? "Override" : "Active";
+
+	private List<string> GetPersistedColumnOrder(GridView view)
+	{
+		ViewModel.Settings.ModListColumnOrders ??= new();
+		ViewModel.Settings.ModListColumnOrders.TryGetValue(GetColumnPaneKey(view), out var saved);
+		return ModColumnOrder.Normalize(saved, _modListColumnRegistry[view].OrderBy(x => x.Value.Index).Select(x => x.Key));
+	}
+
 	private void RestorePersistedModListColumnWidths()
 	{
 		CaptureModListColumnWidths();
 		foreach (var (gridView, registry) in _modListColumnRegistry)
 		{
 			var listView = GetOwningModListView(gridView);
+			var order = GetPersistedColumnOrder(gridView);
+			for (var i = 0; i < order.Count; i++)
+			{
+				var column = registry[order[i]].Column;
+				if (gridView.Columns.Contains(column)) gridView.Columns.Move(gridView.Columns.IndexOf(column), i);
+			}
 			var persisted = GetPersistedColumnWidths(listView);
 			if (listView == null || persisted == null || persisted.Count == 0)
 			{
@@ -4142,9 +4158,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			if (Double.IsFinite(width) && width > 0)
 			{
 				persisted[columnName] = width;
+				_visibleModListColumnWidths[entry.Column] = width;
 			}
 		}
 
+		ViewModel.Settings.ModListColumnOrders[GetColumnPaneKey(gridView)] = ModColumnOrder.MergeVisible(
+			GetPersistedColumnOrder(gridView), gridView.Columns.Select(GetColumnName), registry.OrderBy(x => x.Value.Index).Select(x => x.Key));
 		if (queueSave)
 		{
 			ViewModel.QueueSave();
@@ -4515,9 +4534,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		if (isVisible)
 		{
+			if (gridView.Columns.Contains(column)) return;
 			if (!gridView.Columns.Contains(column))
 			{
-				var insertionIndex = registry.Values.Count(item => item.Index < registeredColumn.Index && gridView.Columns.Contains(item.Column));
+				var order = GetPersistedColumnOrder(gridView);
+				var insertionIndex = order.TakeWhile(key => !String.Equals(key, columnName, StringComparison.OrdinalIgnoreCase))
+					.Count(key => gridView.Columns.Contains(registry[key].Column));
 				gridView.Columns.Insert(Math.Min(insertionIndex, gridView.Columns.Count), column);
 			}
 			column.Width = _visibleModListColumnWidths.TryGetValue(column, out var storedWidth)
@@ -4560,6 +4582,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private void ResetModListColumnsToDefaults()
 	{
+		ViewModel.Settings.ModListColumnOrders = new();
 		ViewModel.Settings.ShowActiveModIndex = true;
         ViewModel.Settings.ShowInactiveModIndex = false;
         CaptureModListColumnWidths();
