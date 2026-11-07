@@ -42,8 +42,10 @@ public sealed record ReduxGameDirectoryModListItem(
 			? "This Redux installation has no protected original backups. If another Redux copy installed this mod, manage it there. Otherwise, remove it, verify BG3's files in Steam or GOG, then install it through this copy."
 			: Status == ReduxGameDirectoryModStatus.External
 				? "Redux cannot manage this installation because its DLL does not match a reviewed version. Remove it manually before installing a reviewed archive."
-				: Status is ReduxGameDirectoryModStatus.Changed or ReduxGameDirectoryModStatus.Missing
-					? "Redux owns this installation, but its managed DLL changed or is missing. Reinstall the reviewed release to repair it."
+				: Status == ReduxGameDirectoryModStatus.Changed
+					? "The installed DLL differs from Redux's recorded copy. Redux left it in place. This does not indicate whether it loads in the game. Managed removal is unavailable while the file differs."
+					: Status == ReduxGameDirectoryModStatus.Missing
+					? "A recorded DLL is missing. Reinstall a reviewed compatible release if you want to restore this mod."
 					: StatusText;
 	public bool HasSource => !String.IsNullOrWhiteSpace(SourceUrl);
 }
@@ -305,15 +307,15 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 			_ => "Game-directory files"
 		};
 		var creator = !String.IsNullOrWhiteSpace(metadata?.Author) ? metadata.Author : metadata?.UploadedBy;
-		var displayVersion = !String.IsNullOrWhiteSpace(entry.DetectedVersion)
-			? entry.DetectedVersion : metadata?.Version;
+		var displayVersion = entry.Status is ReduxGameDirectoryModStatus.Changed or ReduxGameDirectoryModStatus.Missing
+			? null : entry.DetectedVersion;
 		var details = String.Join(" · ", new[]
 		{
 			isYanml ? "YANML Plugins" : "BG3 game folder",
 			kind,
 			String.IsNullOrWhiteSpace(sourceUrl) ? null : "Nexus Mods",
 			String.IsNullOrWhiteSpace(creator) ? null : $"by {creator}",
-			String.IsNullOrWhiteSpace(displayVersion) ? null : $"v{displayVersion}",
+			String.IsNullOrWhiteSpace(displayVersion) ? "Installed version unverified" : $"Installed v{displayVersion}",
 			metadata?.UpdatedAt is DateTime updated ? $"Updated {updated:g}" : null
 		}.Where(value => !String.IsNullOrWhiteSpace(value)));
         var files = entry.Files.Count == 0 ? "No installed files recorded"

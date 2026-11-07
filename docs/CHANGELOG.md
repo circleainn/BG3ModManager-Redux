@@ -5,6 +5,9 @@ source for individual implementation details.
 
 ## Unreleased
 
+- Clarify that the AppData override changes Redux's paths without moving files or redirecting BG3.
+  Explain changed native DLLs without implying they are disabled, and stop presenting recorded or
+  source-page versions as verified installed versions for changed files. Clarify API-key versus NXM-link entry.
 - Preserve Script Extender version/digest pins while refreshing the available-version list,
   including pins no longer listed. Only an explicit version selection changes the pin.
 - Remember column order separately for Active, Inactive, and Override panes, retain hidden

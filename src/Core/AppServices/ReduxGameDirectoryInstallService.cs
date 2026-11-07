@@ -503,7 +503,8 @@ public sealed class ReduxGameDirectoryInstallService
 					installation.PackageId, installation.NexusModId, installation.Name, installation.SourceUrl,
 					installation.ArchiveName,
 					status, statusText, installation.Files.Select(file => file.RelativePath).ToArray(),
-					status == ReduxGameDirectoryModStatus.Managed, installation.DetectedVersion));
+					status == ReduxGameDirectoryModStatus.Managed,
+					status == ReduxGameDirectoryModStatus.Managed ? installation.DetectedVersion : String.Empty));
 			}
 		}
 

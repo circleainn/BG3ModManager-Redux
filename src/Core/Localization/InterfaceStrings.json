@@ -10829,11 +10829,11 @@
     "zh-Hans": "Osiris 调试器端口"
   },
   "Override_LOCALAPPDATA_Larian_Studios_Baldur_s_Gate_3_for_pro_3de6fcef": {
-    "en": "Override %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 for profiles, installed mods, and exported load orders.",
-    "fr": "Remplacer %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 pour les profils, mods installés et ordres exportés.",
-    "es": "Sustituir %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 para perfiles, mods instalados y órdenes exportados.",
-    "ru": "Переопределить %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 для профилей, установленных модов и экспортированных порядков загрузки.",
-    "zh-Hans": "覆盖配置文件、已安装模组和导出加载顺序使用的 %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 路径。"
+    "en": "Choose the BG3 user-data folder Redux reads and writes (containing Mods and PlayerProfiles). This does not move files or redirect the game.",
+    "fr": "Choisissez le dossier de données BG3 utilisé par Redux (contenant Mods et PlayerProfiles). Cela ne déplace aucun fichier et ne redirige pas le jeu.",
+    "es": "Elige la carpeta de datos de BG3 que usa Redux (con Mods y PlayerProfiles). Esto no mueve archivos ni redirige el juego.",
+    "ru": "Выберите папку данных BG3 для чтения и записи в Redux (с Mods и PlayerProfiles). Это не перемещает файлы и не меняет путь, используемый игрой.",
+    "zh-Hans": "选择 Redux 读写的 BG3 用户数据文件夹（包含 Mods 和 PlayerProfiles）。此设置不会移动文件，也不会更改游戏使用的路径。"
   },
   "Package_archive_quota_GB_37501208": {
     "en": "Package archive quota (GB)",

@@ -149,7 +149,7 @@ public class DivinityModManagerSettings : ReactiveObject
 	[DataMember, Reactive] public bool CheckForUpdates { get; set; }
 
 	[DefaultValue("")]
-	[SettingsEntry("BG3 AppData folder override", "Override %LOCALAPPDATA%\\Larian Studios\\Baldur's Gate 3 for profiles, installed mods, and exported load orders.")]
+	[SettingsEntry("BG3 AppData folder override", "Choose the BG3 user-data folder Redux reads and writes (containing Mods and PlayerProfiles). This does not move files or redirect the game.")]
 	[DataMember, Reactive] public string DocumentsFolderPathOverride { get; set; }
 
 	[DefaultValue("")]
