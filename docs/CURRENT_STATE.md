@@ -17,6 +17,11 @@ regressions pass; real campaign export/restore and cancellation still need a liv
 
 ### Maintenance gates
 
+The [beta plan](BETA_PLAN.md) defines a finite release worklist and the shared-platform sequence.
+[Runtime and portability planning](RUNTIME_PORTABILITY_PLAN.md) separates the time-sensitive
+.NET maintenance from the larger shared-interface investigation. These are working plans;
+the published platform and release claims below remain tied to verified release records.
+
 Publication documentation and database counts are checked in Windows CI. Publish builds retain a
 separate candidate provenance sidecar, and dependency maintenance has a Windows audit/report path.
 These checks do not complete the outstanding real-user observations in the release records or

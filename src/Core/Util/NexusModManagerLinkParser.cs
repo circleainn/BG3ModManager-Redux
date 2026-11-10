@@ -127,7 +127,7 @@ public static partial class NexusModManagerLinkParser
 			uri.Port != -1 ||
 			!String.IsNullOrEmpty(uri.Fragment))
 		{
-			error = "The Nexus link is not a safe NXM URL.";
+			error = "Enter a valid nxm:// download link. A Nexus API key belongs in Preferences, not in this link field.";
 			return false;
 		}
 

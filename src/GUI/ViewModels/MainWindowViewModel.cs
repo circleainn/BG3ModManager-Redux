@@ -6613,7 +6613,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 
 		outputPath = DivinityModDataLoader.MakeSafeFilename(outputPath, '_');
-		var modOrderName = Path.GetFileNameWithoutExtension(outputPath);
 
 		dialog.FileName = outputPath;
 		dialog.CheckFileExists = false;
@@ -6624,40 +6623,41 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		if (dialog.ShowDialog(Window) == true)
 		{
 			outputPath = dialog.FileName;
-			modOrderName = Path.GetFileNameWithoutExtension(outputPath);
-			// Save mods that aren't missing
-			var tempOrder = new DivinityLoadOrder
+			DivinityLoadOrder tempOrder;
+			try
 			{
-				Name = modOrderName,
-				FilePath = outputPath,
-				LastModifiedDate = DateTime.Now,
-				VisualDividers = LoadOrderPersistencePolicy.CloneActiveVisualDividers(
-					Settings.VisualModListDividers)
-			};
-			tempOrder.Order.AddRange(CreateWorkingLoadOrderEntries());
-			if (DivinityModDataLoader.ExportLoadOrderToFile(outputPath, tempOrder))
-			{
-				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Saved mod load order to '{outputPath}'"), AlertType.Success, 10);
-				var updatedOrder = false;
-				foreach (var order in ModOrderList)
-				{
-					if (String.Equals(order.FilePath, outputPath, StringComparison.OrdinalIgnoreCase))
-					{
-						order.SetOrder(tempOrder);
-						order.VisualDividers = LoadOrderPersistencePolicy.CloneActiveVisualDividers(
-							tempOrder.VisualDividers);
-						updatedOrder = true;
-						DivinityApp.Log($"Updated saved order '{order.Name}' from '{modOrderName}'");
-					}
-				}
-				if (!updatedOrder) AddNewModOrder(tempOrder);
-				LoadModOrder(tempOrder);
+				tempOrder = LoadOrderFileWorkflow.SaveCopy(CreateWorkingLoadOrderSnapshot(), outputPath,
+					ModOrderList.Concat(SavedModOrderList));
 			}
-			else
+			catch (Exception ex)
 			{
+				DivinityApp.Log($"Could not save a load-order copy to '{outputPath}':\n{ex}");
 				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Failed to save mod load order to '{outputPath}'"), AlertType.Danger);
+				return;
 			}
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Saved mod load order to '{outputPath}'"), AlertType.Success, 10);
+			SelectSavedLoadOrderCopy(tempOrder);
 		}
+	}
+
+	private void SelectSavedLoadOrderCopy(DivinityLoadOrder savedCopy)
+	{
+		var existing = ModOrderList.FirstOrDefault(order => String.Equals(order.FilePath,
+			savedCopy.FilePath, StringComparison.OrdinalIgnoreCase));
+		if (existing == null)
+		{
+			AddNewModOrder(savedCopy);
+			return;
+		}
+		var index = ModOrderList.IndexOf(existing);
+		if (index != SelectedModOrderIndex)
+		{
+			// The selection handler owns Override review, rollback and loading. A
+			// rejected switch must leave the current workspace and its dirty state intact.
+			SelectedModOrderIndex = index;
+			return;
+		}
+		LoadModOrder(existing);
 	}
 
 	private void SaveAsNewManagedLoadOrder()
@@ -13324,6 +13324,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 						DivinityApp.Log($"Order changed to {SelectedModOrder.Name}. Skipping list loading since the orders match.");
 						ApplyActiveVisualDividers(SelectedModOrder);
 						RefreshVisualDividers(activeListOnly: true);
+						HasUnsavedLoadOrderChanges = false;
 					}
 				}
 			}

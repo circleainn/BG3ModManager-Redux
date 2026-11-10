@@ -16,6 +16,11 @@ See Microsoft's [support policy](https://dotnet.microsoft.com/en-us/platform/sup
 
 Before publishing a migration:
 
+Use `tools/maintenance/Test-RuntimeMigrationReadiness.ps1` for a read-only prerequisite inventory.
+Its output distinguishes an installed runtime from the SDK/native build toolchain; it is not
+evidence that the migration or release passed. The [implementation plan](RUNTIME_PORTABILITY_PLAN.md)
+records the bounded maintenance and portability work.
+
 1. Validate the .NET 10 SDK and Visual Studio 2026 toolchain locally and in CI, including C++/CLI,
    Windows SDK, LSLib, CrossSpeak, and native hosting. Verify the supported Windows editions and
    versions; do not assume the current Windows 10/11 wording transfers unchanged.

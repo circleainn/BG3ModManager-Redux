@@ -38,6 +38,8 @@ detail.
 | Guide | What it covers |
 |:--|:--|
 | [Contributing](CONTRIBUTING.md) | Build, test, documentation, and pull-request expectations |
+| [Product direction and beta plan](BETA_PLAN.md) | Finite beta scope, evidence gates, and the shared-platform sequence |
+| [Runtime and portability plan](RUNTIME_PORTABILITY_PLAN.md) | Read-only toolchain inventory, .NET maintenance, and Linux feasibility |
 | [Interface principles and workflow review](UI_DESIGN.md) | Shared UI rules, local findings, and end-to-end usability checks |
 | [Architecture](ARCHITECTURE.md) | Major components, ownership boundaries, and safe write patterns |
 | [Release process and update recovery](PUBLIC_ALPHA_RELEASES.md) | Versioning, packaging, publishing, verification, and recovery |

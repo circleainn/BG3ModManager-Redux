@@ -188,37 +188,21 @@ public class SettingsWindowViewModel : ReactiveObject
 				var res = data.Resources.FirstOrDefault();
 				if (res != null)
 				{
-					var lastVersion = ExtenderUpdaterSettings.TargetVersion;
-					var lastDigest = ExtenderUpdaterSettings.TargetResourceDigest;
-					var lastBuildDate = TargetVersion != _emptyVersion ? TargetVersion?.BuildDate : null;
 					RxApp.MainThreadScheduler.Schedule(() =>
 					{
-						ScriptExtenderUpdateVersion nextVersion = null;
-						TargetVersion = null;
-						ScriptExtenderUpdates.Clear();
-						ScriptExtenderUpdates.Add(_emptyVersion);
-						ScriptExtenderUpdates.AddRange(res.Versions.OrderByDescending(x => x.BuildDate));
-						if (lastBuildDate != null)
+						_refreshingExtenderVersions = true;
+						try
 						{
-							nextVersion = ScriptExtenderUpdates.FirstOrDefault(x => x.BuildDate == lastBuildDate);
+							TargetVersion = null;
+							ScriptExtenderUpdates.Clear();
+							ScriptExtenderUpdates.Add(_emptyVersion);
+							ScriptExtenderUpdates.AddRange(res.Versions.OrderByDescending(x => x.BuildDate));
+							var selected = ExtenderVersionSelection.Resolve(ExtenderUpdaterSettings, ScriptExtenderUpdates.Skip(1), _emptyVersion);
+							if (!ScriptExtenderUpdates.Contains(selected)) ScriptExtenderUpdates.Add(selected);
+							TargetVersion = selected;
+							HasFetchedManifest = true;
 						}
-						if (nextVersion == null && !String.IsNullOrEmpty(lastDigest))
-						{
-							nextVersion = ScriptExtenderUpdates.FirstOrDefault(x => x.Digest == lastDigest);
-						}
-						if (nextVersion == null && !String.IsNullOrEmpty(lastVersion))
-						{
-							nextVersion = ScriptExtenderUpdates.FirstOrDefault(x => x.Version == lastVersion);
-						}
-						nextVersion ??= _emptyVersion;
-
-						if (nextVersion != _emptyVersion)
-						{
-							CheckForGameVersionMismatch(channel, nextVersion);
-						}
-
-						HasFetchedManifest = true;
-						TargetVersion = nextVersion;
+						finally { _refreshingExtenderVersions = false; }
 					});
 				}
 			}
@@ -258,9 +242,11 @@ public class SettingsWindowViewModel : ReactiveObject
 	public ScriptExtenderUpdateConfig ExtenderUpdaterSettings { get; private set; }
 
 	private Version _lastWarnedVersion;
+	private bool _refreshingExtenderVersions;
 
 	public void OnTargetVersionSelected(ScriptExtenderUpdateVersion entry)
 	{
+		if (_refreshingExtenderVersions || entry == null) return;
 		if (entry != _emptyVersion)
 		{
 			ExtenderUpdaterSettings.TargetVersion = entry.Version;
@@ -415,7 +401,7 @@ public class SettingsWindowViewModel : ReactiveObject
 		_extenderTabIsVisible = whenTab.Select(x => x == SettingsWindowTab.Extender).ToProperty(this, nameof(ExtenderTabIsVisible));
 		_keybindingsTabIsVisible = whenTab.Select(x => x == SettingsWindowTab.Keybindings).ToProperty(this, nameof(KeybindingsTabIsVisible));
 
-		this.WhenAnyValue(x => x.TargetVersion).WhereNotNull().ObserveOn(RxApp.MainThreadScheduler).Subscribe(OnTargetVersionSelected);
+		this.WhenAnyValue(x => x.TargetVersion).Skip(1).WhereNotNull().Subscribe(OnTargetVersionSelected);
 
 		_resetSettingsCommandToolTip = this.WhenAnyValue(x => x.SelectedTabIndex).Select(SelectedTabToResetTooltip).ToProperty(this, nameof(ResetSettingsCommandToolTip), scheduler: RxApp.MainThreadScheduler);
 

@@ -88,7 +88,7 @@ public partial class ReduxInstallReviewWindow : AdonisUI.Controls.AdonisWindow
 		SummaryDetailText.Text = summaryDetail;
 		ReviewList.ItemsSource = items ?? [];
 		FootnoteText.Text = resultsOnly
-			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Installed packages remain inactive. Review your load order before syncing it to the game.")
+			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("New load-order mods start inactive; updates preserve their state and position. Review your order before syncing.")
 			: isSaveInstall
 			? DivinityModManager.Localization.ReduxLanguageService.Current.Translate("Existing saves require a separate replacement confirmation.")
 			: isGameDirectoryInstall

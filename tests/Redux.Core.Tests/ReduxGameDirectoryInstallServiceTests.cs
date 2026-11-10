@@ -473,14 +473,26 @@ public sealed class ReduxGameDirectoryInstallServiceTests
 	{
 		using var managedFixture = new NativeFixture();
 		managedFixture.InstallLoader();
+		var ownership = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(managedFixture.ManifestPath))!;
+		ownership["Installations"]![0]!["DetectedVersion"] = "1.2.3";
+		File.WriteAllText(managedFixture.ManifestPath, ownership.ToJsonString());
+		var ownershipBefore = File.ReadAllText(managedFixture.ManifestPath);
 		var managed = managedFixture.Installer().GetInstalledMods().Single();
 		RegressionAssert.Equal(ReduxGameDirectoryModStatus.Managed, managed.Status);
 		RegressionAssert.True(managed.CanRestore);
+		RegressionAssert.Equal("1.2.3", managed.DetectedVersion);
 
 		File.WriteAllBytes(managedFixture.LoaderPath, managedFixture.Pe("changed outside Redux"));
 		var changed = managedFixture.Installer().GetInstalledMods().Single();
 		RegressionAssert.Equal(ReduxGameDirectoryModStatus.Changed, changed.Status);
 		RegressionAssert.False(changed.CanRestore);
+		RegressionAssert.True(String.IsNullOrEmpty(changed.DetectedVersion));
+		RegressionAssert.Equal(ownershipBefore, File.ReadAllText(managedFixture.ManifestPath));
+		RegressionAssert.True(File.Exists(managedFixture.LoaderPath));
+		File.Delete(managedFixture.LoaderPath);
+		var missing = managedFixture.Installer().GetInstalledMods().Single();
+		RegressionAssert.Equal(ReduxGameDirectoryModStatus.Missing, missing.Status);
+		RegressionAssert.True(String.IsNullOrEmpty(missing.DetectedVersion));
 
 		using var externalFixture = new NativeFixture();
 		externalFixture.WriteVanillaLoader(externalFixture.Pe("external loader"));
