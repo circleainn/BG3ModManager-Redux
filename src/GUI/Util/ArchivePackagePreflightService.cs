@@ -93,7 +93,8 @@ public static class ArchivePackagePreflightService
 	public static async Task<ArchivePackagePreflightResult> AnalyzeAsync(
 		string archivePath,
 		IEnumerable<DivinityModData> installedMods,
-		CancellationToken cancellationToken = default)
+		CancellationToken cancellationToken = default,
+		long? sourceModId = null)
 	{
 		if (String.IsNullOrWhiteSpace(archivePath))
 			throw new ArgumentException("An archive path is required.", nameof(archivePath));
@@ -151,7 +152,7 @@ public static class ArchivePackagePreflightService
 			{
 				try
 				{
-					nativeInspection = ReduxGameDirectoryInstallService.TryInspectKnownArchive(normalizedPath, computeArchiveHash: false);
+					nativeInspection = ReduxGameDirectoryInstallService.TryInspectKnownArchive(normalizedPath, computeArchiveHash: false, sourceModId: sourceModId);
 				}
 				catch (ReduxUnsupportedGameDirectoryArchiveException ex)
 				{

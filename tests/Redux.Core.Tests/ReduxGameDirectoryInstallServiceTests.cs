@@ -233,6 +233,33 @@ public sealed class ReduxGameDirectoryInstallServiceTests
 		RegressionAssert.Equal("native-camera-tweaks", camera.Definition.PackageId);
 	}
 
+	public void NativeArchiveRecognitionRequiresConsistentSourceAndLayout()
+	{
+		using var fixture = new NativeFixture();
+		var fork = fixture.NewArchivePath("Achievement Enabler Fixed-26032-1-1700000000.zip");
+		fixture.CreateArchive(fork, ("bin/NativeMods/BG3AchievementEnabler.dll", fixture.Pe("fork")));
+		RegressionAssert.Throws<ReduxUnsupportedGameDirectoryArchiveException>(() =>
+			ReduxGameDirectoryInstallService.TryInspectKnownArchive(fork));
+		RegressionAssert.Throws<ReduxUnsupportedGameDirectoryArchiveException>(() =>
+			fixture.Installer(NativeFixture.SupportedVersion).InspectArchiveAsync(668, fork).GetAwaiter().GetResult());
+
+		var renamed = fixture.NewArchivePath("download.zip");
+		File.Copy(fork, renamed);
+		RegressionAssert.Throws<ReduxUnsupportedGameDirectoryArchiveException>(() =>
+			ReduxGameDirectoryInstallService.TryInspectKnownArchive(renamed, sourceModId: 26032));
+		RegressionAssert.Throws<ReduxUnsupportedGameDirectoryArchiveException>(() =>
+			ReduxGameDirectoryInstallService.TryInspectKnownArchive(renamed, sourceModId: 944));
+		RegressionAssert.Equal(668L, ReduxGameDirectoryInstallService.TryInspectKnownArchive(renamed, sourceModId: 668)!.Definition.NexusModId);
+
+		fixture.CreateCameraArchive(fixture.Pe("camera"), "[camera]");
+		RegressionAssert.Equal(22892L, ReduxGameDirectoryInstallService.TryInspectKnownArchive(
+			fixture.CameraArchivePath, sourceModId: 22892)!.Definition.NexusModId);
+		var namedCamera = fixture.NewArchivePath("Camera 945 2.5.1 abcDEF12.zip");
+		File.Copy(fixture.CameraArchivePath, namedCamera);
+		RegressionAssert.Throws<ReduxUnsupportedGameDirectoryArchiveException>(() =>
+			ReduxGameDirectoryInstallService.TryInspectKnownArchive(namedCamera, sourceModId: 22892));
+	}
+
 	public void ArchiveRecognitionRoutesScriptExtenderToGuardedGameDirectoryWorkflow()
 	{
 		using var fixture = new NativeFixture();

@@ -101,12 +101,12 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		bool preferYanml = false,
 		NexusModManagerLink nexusSource = null,
 		CancellationToken cancellationToken = default,
-		Func<Task> installStarting = null)
+		Func<Task> installStarting = null, long? sourceModId = null)
 	{
 		ReduxGameDirectoryArchiveInspection inspection;
 		try
 		{
-			inspection = await Task.Run(() => ReduxGameDirectoryInstallService.TryInspectKnownArchive(archivePath), cancellationToken);
+			inspection = await Task.Run(() => ReduxGameDirectoryInstallService.TryInspectKnownArchive(archivePath, sourceModId: nexusSource?.ModId ?? sourceModId), cancellationToken);
 			cancellationToken.ThrowIfCancellationRequested();
 			if (inspection == null)
 			{
@@ -384,9 +384,9 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		MainWindowViewModel viewModel,
 		string archivePath,
 		NexusModManagerLink nexusSource = null,
-		CancellationToken cancellationToken = default)
+		CancellationToken cancellationToken = default, long? sourceModId = null)
 	{
-		var inspection = await Task.Run(() => ReduxGameDirectoryInstallService.TryInspectKnownArchive(archivePath), cancellationToken)
+		var inspection = await Task.Run(() => ReduxGameDirectoryInstallService.TryInspectKnownArchive(archivePath, sourceModId: nexusSource?.ModId ?? sourceModId), cancellationToken)
 			?? throw new InvalidDataException("This archive no longer matches a reviewed game-directory package.");
 		cancellationToken.ThrowIfCancellationRequested();
 		ArchivePakImport.RequireUniqueDestinations(inspection.PackageEntries);
