@@ -5,6 +5,8 @@ source for individual implementation details.
 
 ## Unreleased
 
+- Show a repeated Nexus file once in collection previews when its details and optional status agree.
+  If two entries conflict, the error identifies the collection revision and file ID.
 - Clarify that the AppData override changes Redux's paths without moving files or redirecting BG3.
   Explain changed native DLLs without implying they are disabled, and stop presenting recorded or
   source-page versions as verified installed versions for changed files. Clarify API-key versus NXM-link entry.

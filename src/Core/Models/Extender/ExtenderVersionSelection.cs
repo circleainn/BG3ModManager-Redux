@@ -10,7 +10,7 @@ public static class ExtenderVersionSelection
 		return versions.FirstOrDefault(v =>
 			(String.IsNullOrEmpty(config.TargetVersion) || v.Version == config.TargetVersion) &&
 			(String.IsNullOrEmpty(config.TargetResourceDigest) || v.Digest == config.TargetResourceDigest))
-			?? new ScriptExtenderUpdateVersion { Version = config.TargetVersion, Digest = config.TargetResourceDigest,
+			?? new ScriptExtenderUpdateVersion { Version = config.TargetVersion, Digest = config.TargetResourceDigest, IsUnavailablePin = true,
 				Notice = "Saved pin is unavailable in the current version list." };
 	}
 }

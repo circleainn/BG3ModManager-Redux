@@ -302,6 +302,21 @@ internal sealed class NexusCollectionPreviewTests
         Reject("{\"errors\":[{\"message\":\"Failed\"}],\"data\":null}", new("abc123", null));
     }
 
+    public void CollectionPreviewCoalescesOnlyMatchingRepeatedFiles()
+    {
+        var root = System.Text.Json.Nodes.JsonNode.Parse(Response)!;
+        var rows = root["data"]!["collection"]!["latestPublishedRevision"]!["modFiles"]!.AsArray();
+        var repeat = rows[0]!.DeepClone();
+        rows.Add(repeat);
+        rows.Add(rows[2]!.DeepClone());
+        var link = new NexusCollectionLink("abc123", 3);
+        var preview = NexusCollectionPreviewService.ParseResponse(root.ToJsonString(), link);
+        RegressionAssert.True(preview.Files.Select(file => file.FileId).SequenceEqual(new long[] { 101, 102, 103 }));
+        RegressionAssert.False(preview.Files[2].Available);
+        repeat["optional"] = true;
+        Reject(root.ToJsonString(), link);
+    }
+
     private static void Reject(string json, NexusCollectionLink link)
     {
         try { NexusCollectionPreviewService.ParseResponse(json, link); }

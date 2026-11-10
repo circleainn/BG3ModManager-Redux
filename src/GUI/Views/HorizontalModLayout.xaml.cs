@@ -4111,11 +4111,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		{
 			var listView = GetOwningModListView(gridView);
 			var order = GetPersistedColumnOrder(gridView);
-			for (var i = 0; i < order.Count; i++)
-			{
-				var column = registry[order[i]].Column;
-				if (gridView.Columns.Contains(column)) gridView.Columns.Move(gridView.Columns.IndexOf(column), i);
-			}
+			ModColumnOrder.RestoreVisible(gridView.Columns, order.Select(key => registry[key].Column));
 			var persisted = GetPersistedColumnWidths(listView);
 			if (listView == null || persisted == null || persisted.Count == 0)
 			{
