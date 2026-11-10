@@ -105,18 +105,21 @@ public sealed class NexusCollectionPreviewService
         if (files.ValueKind != JsonValueKind.Array || files.GetArrayLength() > 10000)
             throw new InvalidDataException("The collection file list is unavailable or too large.");
         var result = new List<NexusCollectionFile>();
-        var seen = new HashSet<long>();
+        var filesById = new Dictionary<long, NexusCollectionFile>();
         foreach (var entry in files.EnumerateArray())
         {
             var file = Child(entry, "file");
             var mod = Child(file, "mod");
             var id = Number(entry, "fileId");
             if (id <= 0) throw new InvalidDataException("A collection entry has no valid file identifier.");
-            if (!seen.Add(id)) throw new InvalidDataException("The collection contains duplicate file entries.");
             var modId = Number(mod, "modId");
             var available = modId > 0 && Number(file, "fileId") == id;
-            result.Add(new(modId, id, Text(mod, "name"), Text(file, "name"), Text(file, "version"),
-                Math.Max(0, Number(file, "sizeInBytes")), Child(entry, "optional").ValueKind == JsonValueKind.True, available) { Author = Text(mod, "author"), Summary = Text(mod, "summary"), Category = Text(mod, "category") });
+            var previewFile = new NexusCollectionFile(modId, id, Text(mod, "name"), Text(file, "name"), Text(file, "version"),
+                Math.Max(0, Number(file, "sizeInBytes")), Child(entry, "optional").ValueKind == JsonValueKind.True, available) { Author = Text(mod, "author"), Summary = Text(mod, "summary"), Category = Text(mod, "category") };
+            if (filesById.TryAdd(id, previewFile))
+                result.Add(previewFile);
+            else if (filesById[id] != previewFile)
+                throw new InvalidDataException($"Collection {link.Slug} revision {revisionNumber} lists conflicting entries for file {id}.");
         }
         return new(link.Slug, Text(collection, "name"), Text(collection, "summary"), (int)revisionNumber, result.AsReadOnly()) { ThumbnailUrl = SafeImageUrl(Text(Child(collection, "tileImage"), "url")), ManifestLink = Text(revision, "downloadLink") };
     }

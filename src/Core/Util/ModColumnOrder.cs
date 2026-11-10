@@ -1,7 +1,21 @@
+using System.Collections.ObjectModel;
+
 namespace DivinityModManager.Util;
 
 public static class ModColumnOrder
 {
+	public static void RestoreVisible<T>(ObservableCollection<T> columns, IEnumerable<T> savedOrder)
+	{
+		var visibleIndex = 0;
+		foreach (var column in savedOrder)
+		{
+			var currentIndex = columns.IndexOf(column);
+			if (currentIndex < 0) continue;
+			if (currentIndex != visibleIndex) columns.Move(currentIndex, visibleIndex);
+			visibleIndex++;
+		}
+	}
+
 	public static List<string> Normalize(IEnumerable<string> saved, IEnumerable<string> defaults)
 	{
 		var known = defaults.ToList();

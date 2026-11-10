@@ -31,16 +31,20 @@ public class ScriptExtenderUpdateVersion : ReactiveObject
 	[DataMember][Reactive] public string Signature { get; set; }
 
 	private readonly ObservableAsPropertyHelper<string> _displayName;
-	public string DisplayName => _displayName.Value;
+	internal bool IsUnavailablePin { get; init; }
+	public string DisplayName => IsUnavailablePin
+		? $"{(String.IsNullOrEmpty(Version) ? Digest : Version)} (unavailable)"
+		: _displayName.Value;
 
 	private readonly ObservableAsPropertyHelper<string> _buildDateDate;
 	public string BuildDateDisplayString => _buildDateDate.Value;
 
 	private readonly ObservableAsPropertyHelper<bool> _isEmpty;
-	public bool IsEmpty => _isEmpty.Value;
+	public bool IsEmpty => !IsUnavailablePin && _isEmpty.Value;
 
 	private string TimestampToReadableString(long timestamp)
 	{
+		if (timestamp == 0) return String.Empty;
 		var date = DateTime.FromFileTime(timestamp);
 		return date.ToString(DivinityApp.DateTimeExtenderBuildFormat, CultureInfo.InstalledUICulture);
 	}
