@@ -136,6 +136,11 @@ public sealed class ArchivePackagePreflightTests
 			RegressionAssert.Equal(668L, report.GameDirectoryInspection.Definition.NexusModId);
 			RegressionAssert.False(report.Findings.Any(finding => finding.Title == "No PAK files found"));
 			RegressionAssert.True(report.Findings.Any(finding => finding.Title == "Expected game-directory destinations"));
+
+			var fromFork = ArchivePackagePreflightService.AnalyzeAsync(archivePath,
+				Array.Empty<DivinityModManager.Models.DivinityModData>(), sourceModId: 26032).GetAwaiter().GetResult();
+			RegressionAssert.Equal(ArchivePackagePreflightKind.UnreviewedNative, fromFork.Kind);
+			RegressionAssert.True(fromFork.GameDirectoryInspection == null);
 		}
 		finally
 		{
