@@ -5,6 +5,9 @@ source for individual implementation details.
 
 ## Unreleased
 
+- Refresh the offline Load Order Advisor with 1,391 additional modules, updated dependency and
+  placement guidance, and support for Fade's Equipment Distribution AIO as a substitute for FED.
+
 - Show a repeated Nexus file once in collection previews when its details and optional status agree.
   If two entries conflict, the error identifies the collection revision and file ID.
 - Clarify that the AppData override changes Redux's paths without moving files or redirecting BG3.

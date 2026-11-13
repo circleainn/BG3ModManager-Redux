@@ -127,7 +127,7 @@ community UUID into the reviewed `moduleIdentities` collection.
 
 ## Database maintenance
 
-The bundled Advisor catalog contains 10,626 UUID-backed entries. Category suggestions carry
+The bundled Advisor catalog contains 12,017 UUID-backed entries. Category suggestions carry
 concise evidence labels; they do not imply compatibility. Unresolved name-only records are excluded,
 and proposed dependency or ordering changes require review before inclusion.
 
@@ -138,20 +138,35 @@ These values describe the bundled JSON, not a compatibility test matrix:
 |:--|--:|
 | Nexus project records | 3,695 |
 | mod.io project records | 1,761 |
-| Advisor entries with dependencies | 630 |
-| Advisor entries with explicit load-after rules | 11 |
+| Advisor entries with dependencies | 810 |
+| Advisor entries with explicit load-after rules | 17 |
 
 An entry with dependencies or a load-after rule can appear in both rows. Most Advisor entries
 provide grouping evidence rather than explicit ordering relationships. Run
 `python tools/maintenance/check_project_docs.py` when changing the corpus or these counts.
 
+### November 2026 Advisor data refresh
+
+Redux translated 12,016 UUID-backed records from the November 12 masterlist into its offline
+Advisor format. One earlier Redux entry, Backgrounds (`2bfb4ecc-46e5-4fbc-89cf-d777ff5278ab`),
+retains its previous evidence. The snapshot also contains 216 name-only rows, which have no module
+UUID for Redux to match. The original data is published by VOLO Contributors under CC0-1.0.
+[Masterlist at the pinned revision](https://github.com/Moonie8t7/VOLO/blob/8ba640cc69f777e2ad9f36bc24b74362047e19c4/masterlist/bg3-masterlist.json)
+([data license](https://github.com/Moonie8t7/VOLO/blob/8ba640cc69f777e2ad9f36bc24b74362047e19c4/masterlist/LICENSE)).
+The source file's SHA-256 is `b01b252dbc20d8fd5310a4935b5abd571bcc65a351cbec70d17df22af9278eec`.
+
+The translation preserves Redux's known aliases and Compatibility Framework late-loading exception.
+Placement evidence retains its original confidence category. Dependency and load-after lists use
+the current snapshot's exact target UUIDs. The Advisor also recognizes Fade's Equipment Distribution
+AIO as satisfying the standalone FED requirement when the AIO is installed.
+[Mod author's description](https://www.nexusmods.com/baldursgate3/mods/16328)
+
 ### Legacy provenance and new contributions
 
 The legacy catalog contains curated records, community section evidence, provider categories,
 name patterns, inferred placements, author-catalogue evidence, and entries with no verified
-placement. Some retained placement explanations explicitly credit VOLO. Those legacy records do
-not carry pinned upstream commits or an individually reproducible source trail, so their presence
-must not be described as independent verification of every relationship. Redux does not ship or
+placement. Some retained placement explanations explicitly credit VOLO. Before the November refresh, Redux did
+not record the upstream revision for those placements. Redux does not ship or
 invoke the VOLO sorter. Removing the proposed maintainer importer does not remove this pre-existing
 data, and it does not change essential package libraries such as LSLib.
 
