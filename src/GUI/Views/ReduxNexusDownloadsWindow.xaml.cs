@@ -191,7 +191,7 @@ public partial class ReduxNexusDownloadsWindow : AdonisUI.Controls.AdonisWindow
 	private async void ReviewButton_Click(object sender, RoutedEventArgs e) => await _viewModel.ReviewNxmDownloadAsync(Item(sender), this);
 	private async void RemoveButton_Click(object sender, RoutedEventArgs e) => await _viewModel.RemoveNxmDownloadAsync(Item(sender));
 	private async void ClearInstalledButton_Click(object sender, RoutedEventArgs e) => await _viewModel.ClearInstalledNxmHistoryAsync();
-	private void ArchiveRetentionCheckBox_Click(object sender, RoutedEventArgs e) => _viewModel.SaveSettings();
+	private void DownloadPreference_Click(object sender, RoutedEventArgs e) => _viewModel.SaveSettings();
 	private async void ClearArchivesButton_Click(object sender, RoutedEventArgs e) => await _viewModel.ClearRetainedPackageArchivesAsync(this);
 	private async void ReinstallArchiveButton_Click(object sender, RoutedEventArgs e) =>
 		await _viewModel.ReinstallRetainedPackageAsync((sender as FrameworkElement)?.Tag as RetainedPackageArchiveEntry, this);

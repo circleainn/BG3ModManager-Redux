@@ -46,6 +46,7 @@ internal sealed class NxmDownloadStoreTests
 		using var fixture = new StoreFixture();
 		var item = fixture.Item(NxmDownloadState.Paused);
 		item.Authorization = new NexusModManagerLink(10, 20, "secret", 4_000_000_000, 7);
+		item.AutoInstallRequested = true;
 		item.ThumbnailUrl = "https://static.example.test/mod.webp";
 		item.InstallDestination = "Inactive Mods";
 		item.InstalledAt = DateTimeOffset.Parse("2026-09-07T12:00:00Z");
@@ -53,6 +54,7 @@ internal sealed class NxmDownloadStoreTests
 
 		var json = File.ReadAllText(Path.Combine(fixture.Directory, "downloads.json"));
 		var restored = fixture.Store.LoadAsync(CancellationToken.None).GetAwaiter().GetResult().Single();
+		RegressionAssert.True(restored.AutoInstallRequested);
 
 		RegressionAssert.False(json.Contains("secret", StringComparison.Ordinal));
 		RegressionAssert.False(json.Contains("DownloadUri", StringComparison.Ordinal));

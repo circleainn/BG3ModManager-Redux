@@ -548,7 +548,7 @@
 <Border Style="{StaticResource WelcomeFeatureCardStyle}">
 <StackPanel>
 <CheckBox x:Name="StarterSeparatorsCheckBox" Style="{StaticResource ReduxCheckBoxStyle}"><TextBlock Text="{loc:Text Start_with_a_few_sections_8f411ff8}" FontWeight="SemiBold"/></CheckBox>
-<TextBlock Text="{loc:Text Choose_the_separators_to_add_to_the_end_of_Active_Mods_when__c4fac12d}" TextWrapping="Wrap" Margin="0,8,0,12" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
+<TextBlock Text="{loc:Text WelcomeStarterPlacement}" TextWrapping="Wrap" Margin="0,8,0,12" Foreground="{DynamicResource ReduxTextSecondaryBrush}"/>
 <UniformGrid x:Name="StarterSeparatorsPreview" Columns="3" IsEnabled="{Binding IsChecked, ElementName=StarterSeparatorsCheckBox}"/>
 <TextBlock Text="{loc:Text Your_mods_stay_in_place_Existing_names_are_skipped_Rename_or_0df60c2a}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{DynamicResource ReduxTextMutedBrush}"/>
 </StackPanel>

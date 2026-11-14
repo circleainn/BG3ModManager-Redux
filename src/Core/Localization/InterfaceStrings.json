@@ -5263,13 +5263,6 @@
     "ru": "Начать с нескольких разделов",
     "zh-Hans": "从几个分组开始"
   },
-  "Choose_the_separators_to_add_to_the_end_of_Active_Mods_when__c4fac12d": {
-    "en": "Choose the separators to add to the end of Active Mods when you finish setup.",
-    "fr": "Choisissez les séparateurs à ajouter à la fin des mods actifs après la configuration.",
-    "es": "Elige separadores para añadir al final de los mods activos al terminar.",
-    "ru": "Выберите разделители для добавления в конец активных модов после настройки.",
-    "zh-Hans": "选择完成设置后要添加到启用列表末尾的分隔线。"
-  },
   "Your_mods_stay_in_place_Existing_names_are_skipped_Rename_or_0df60c2a": {
     "en": "Your mods stay in place. Existing names are skipped. Rename or delete any section later.",
     "fr": "Vos mods restent en place. Les noms existants sont ignorés. Renommez ou supprimez les sections plus tard.",
@@ -12626,5 +12619,82 @@
     "es": "Cambiar el tamaño de registros y campos",
     "ru": "Изменить размер областей записей и полей",
     "zh-Hans": "调整记录和字段区域大小"
+  },
+  "StarterFrameworks": {
+    "en": "Frameworks & Utilities",
+    "fr": "Bibliothèques et utilitaires",
+    "es": "Bibliotecas y herramientas",
+    "ru": "Библиотеки и утилиты",
+    "zh-Hans": "框架与工具"
+  },
+  "StarterVisuals": {
+    "en": "Visuals & Audio",
+    "fr": "Image et son",
+    "es": "Imagen y sonido",
+    "ru": "Графика и звук",
+    "zh-Hans": "画面与音效"
+  },
+  "StarterInterface": {
+    "en": "Interface & Dice",
+    "fr": "Interface et dés",
+    "es": "Interfaz y dados",
+    "ru": "Интерфейс и кости",
+    "zh-Hans": "界面与骰子"
+  },
+  "StarterGear": {
+    "en": "Gear & Items",
+    "fr": "Équipement et objets",
+    "es": "Equipo y objetos",
+    "ru": "Снаряжение и предметы",
+    "zh-Hans": "装备与物品"
+  },
+  "StarterRaces": {
+    "en": "Races & Classes",
+    "fr": "Races et classes",
+    "es": "Razas y clases",
+    "ru": "Расы и классы",
+    "zh-Hans": "种族与职业"
+  },
+  "StarterQuests": {
+    "en": "Quests & Locations",
+    "fr": "Quêtes et lieux",
+    "es": "Misiones y lugares",
+    "ru": "Задания и локации",
+    "zh-Hans": "任务与地点"
+  },
+  "StarterCompanions": {
+    "en": "Companions & NPCs",
+    "fr": "Compagnons et PNJ",
+    "es": "Compañeros y PNJ",
+    "ru": "Спутники и NPC",
+    "zh-Hans": "同伴与 NPC"
+  },
+  "StarterFixes": {
+    "en": "Fixes & Patches",
+    "fr": "Correctifs et compatibilité",
+    "es": "Correcciones y parches",
+    "ru": "Исправления и патчи",
+    "zh-Hans": "修复与补丁"
+  },
+  "AutoInstallNxmToInactive": {
+    "en": "Auto-install NXM downloads to Inactive Mods",
+    "fr": "Installer automatiquement les téléchargements NXM dans les mods inactifs",
+    "es": "Instalar automáticamente las descargas NXM en Mods inactivos",
+    "ru": "Автоматически устанавливать загрузки NXM в неактивные моды",
+    "zh-Hans": "自动将 NXM 下载的模组安装到未启用列表"
+  },
+  "AutoInstallNxmToInactiveHelp": {
+    "en": "New PAK mods from Nexus links go straight to Inactive Mods. Updates, overrides, saves and game-folder files stay in Downloads for review.",
+    "fr": "Les nouveaux mods PAK des liens Nexus sont installés dans les mods inactifs. Les mises à jour, remplacements, sauvegardes et fichiers du dossier du jeu restent à vérifier.",
+    "es": "Los mods PAK nuevos de enlaces Nexus van a Mods inactivos. Las actualizaciones, sobrescrituras, partidas y archivos de la carpeta del juego quedan pendientes de revisión.",
+    "ru": "Новые PAK-моды по ссылкам Nexus попадут в неактивные. Обновления, переопределения, сохранения и файлы папки игры останутся в загрузках для проверки.",
+    "zh-Hans": "来自 Nexus 链接的新 PAK 模组会进入未启用列表。更新、覆盖模组、存档及游戏目录文件将留在下载列表中等待确认。"
+  },
+  "WelcomeStarterPlacement": {
+    "en": "Choose sections for Active Mods. Redux uses its offline database to place them beside matching mods where possible.",
+    "fr": "Choisissez les sections des mods actifs. Redux utilise sa base hors ligne pour les placer près des mods correspondants lorsque c’est possible.",
+    "es": "Elige secciones para Mods activos. Redux usa su base de datos local para colocarlas junto a los mods correspondientes cuando sea posible.",
+    "ru": "Выберите разделы для активных модов. По возможности Redux разместит их рядом с подходящими модами по данным локальной базы.",
+    "zh-Hans": "为启用的模组选择分组。Redux 会根据离线数据库尽可能将分隔线放在对应模组旁。"
   }
 }

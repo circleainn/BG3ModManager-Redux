@@ -35,11 +35,30 @@ internal sealed class ReduxModuleStateTests
         var existing = new[] { new ModListVisualDividerData { Title = " interface ", IsActiveList = true },
             new ModListVisualDividerData { Title = "Gameplay", IsActiveList = false } };
         var missing = ReduxOnboardingPolicy.MissingStarterSeparators(existing);
-        RegressionAssert.Equal(8, missing.Count);
-        RegressionAssert.False(missing.Contains("Interface"));
+        RegressionAssert.Equal(ReduxOnboardingPolicy.StarterSections.Count - 1, missing.Count);
+        RegressionAssert.False(missing.Contains("Interface & Dice"));
         RegressionAssert.True(missing.Contains("Gameplay"));
         RegressionAssert.Equal(" interface ", existing[0].Title);
-        RegressionAssert.Equal(9, ReduxOnboardingPolicy.StarterSeparatorTitles.Count);
+        var sections = ReduxOnboardingPolicy.StarterSections;
+        RegressionAssert.Equal(sections.Count, sections.Select(s => s.Color).Distinct().Count());
+        RegressionAssert.Equal(sections.Count, sections.Select(s => s.IconId).Distinct().Count());
+        var groups = sections.SelectMany(s => s.Groups).ToArray();
+        RegressionAssert.Equal(groups.Length, groups.Distinct().Count());
+
+        var library = new RegressionModData { UUID = "library" };
+        var spell = new RegressionModData { UUID = "spell" };
+        var knowledge = ReduxLoadOrderAdvisorKnowledge.Create([], null, null, [
+            new() { Uuid = library.UUID, Group = "Resources" }, new() { Uuid = spell.UUID, Group = "Spells" }]);
+        var selected = new[] { "Frameworks & Utilities", "Spells", "Fixes & Patches" };
+        var marker = new RegressionModData { IsVisualDivider = true };
+        var planned = ReduxOnboardingPolicy.PlanStarterSeparators(selected, [library, spell, marker, spell], existing, knowledge);
+        RegressionAssert.SequenceEqual(new[] { 0, 2, 6 }, planned.Select(section => section.Position));
+        RegressionAssert.SequenceEqual(selected, planned.Select(section => section.Title));
+        var playerOrder = ReduxOnboardingPolicy.PlanStarterSeparators(selected, [spell, library], [], knowledge);
+        RegressionAssert.SequenceEqual(new[] { "Spells", "Frameworks & Utilities", "Fixes & Patches" }, playerOrder.Select(section => section.Title));
+        RegressionAssert.SequenceEqual(new[] { 0, 2, 4 }, playerOrder.Select(section => section.Position));
+        var empty = ReduxOnboardingPolicy.PlanStarterSeparators(selected, [], [], knowledge);
+        RegressionAssert.SequenceEqual(new[] { 0, 1, 2 }, empty.Select(section => section.Position));
     }
 
 	public void FirstRunOnboardingStartsWithIntegrationsAndGuidanceOff()

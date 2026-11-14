@@ -8,6 +8,34 @@ namespace Redux.Core.Tests;
 
 public sealed class BatchInstallUiTests
 {
+	public void AutomaticNxmImportsOnlyAcceptNewInactivePackages()
+	{
+		var folder = System.IO.Directory.CreateTempSubdirectory("redux-auto-import-");
+		try
+		{
+			var incoming = new RegressionModData { UUID = Guid.NewGuid().ToString(), Name = "Example" };
+			var package = new DivinityModManager.Models.PackagePreflightReport("Example.pak", incoming, 2, 30, []);
+			bool Accept(DivinityModManager.Util.ArchivePackagePreflightResult? archive = null,
+				params DivinityModManager.Models.DivinityModData[] existing) =>
+				MainWindowViewModel.CanAutoInstallToInactive([package], archive!, existing, folder.FullName, package.PackagePath);
+			RegressionAssert.False(new DivinityModManager.Models.DivinityModManagerSettings().AutoInstallNxmToInactive);
+			RegressionAssert.True(Accept());
+			RegressionAssert.False(Accept(null, incoming));
+			var archive = new DivinityModManager.Util.ArchivePackagePreflightResult("download.zip", 2, 100,
+				[package], [], entryNames: ["Mods/Example.pak", "readme.txt"]);
+			RegressionAssert.True(Accept(archive));
+			RegressionAssert.False(Accept(new DivinityModManager.Util.ArchivePackagePreflightResult("hybrid.zip", 2, 100,
+				[package], [], DivinityModManager.Util.ArchivePackagePreflightKind.Mixed)));
+			incoming.IsForceLoaded = true;
+			RegressionAssert.False(Accept());
+			incoming.IsForceLoaded = false;
+			System.IO.File.WriteAllText(System.IO.Path.Combine(folder.FullName, "Example.pak"), "existing file");
+			RegressionAssert.False(Accept(archive));
+			RegressionAssert.False(Accept());
+		}
+		finally { folder.Delete(true); }
+	}
+
 	public void ToolbarPrioritizesFailuresAndClearsWhenPackagesAreInstalled()
 	{
 		var ready = new NxmDownloadItem { State = NxmDownloadState.Downloaded };

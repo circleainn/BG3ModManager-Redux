@@ -722,7 +722,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				return;
 			}
 			await EnsureNxmDownloadsInitializedAsync();
-			var id = await _nxmDownloadManager.EnqueueAsync(link);
+			var id = await _nxmDownloadManager.EnqueueAsync(link, autoInstallToInactive: Settings.AutoInstallNxmToInactive);
 			if (!fromProtocolActivation || Settings.BringNxmDownloadsToFront)
 				await Window.OpenNexusDownloadsAsync();
 			else
@@ -826,15 +826,91 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		_nxmDownloadManager.ItemChanged += item =>
 		{
 			Application.Current.Dispatcher.BeginInvoke(RefreshDownloadManagerStatus);
-			Application.Current.Dispatcher.BeginInvoke(() => NotifyQuietNxmDownload(item));
+			Application.Current.Dispatcher.BeginInvoke(() =>
+			{
+				NotifyQuietNxmDownload(item);
+				if (item.AutoInstallRequested && item.State == NxmDownloadState.Downloaded && item.InspectionCompleted)
+					_ = ProcessAutoInstallRequestsAsync();
+			});
 			if (NeedsAcquiredPackageInspection(item))
 				_ = InspectAcquiredPackageAsync(item);
 		};
 		await _nxmDownloadManager.InitializeAsync();
+		this.WhenAnyValue(x => x.IsInitialized, x => x.IsRefreshing, x => x.MainProgressIsActive,
+			x => x.DownloadManagerInstallIsActive, x => x.IsLoadingOrder, (ready, refreshing, progress, installing, loading) =>
+				ready && !refreshing && !progress && !installing && !loading)
+			.Where(ready => ready).ObserveOn(RxApp.MainThreadScheduler).Subscribe(ready => { _ = ProcessAutoInstallRequestsAsync(); });
 		foreach (var item in NxmDownloads.Where(item => item.State == NxmDownloadState.Installed))
 			item.HasAvailableArchive = File.Exists(GetNxmArchivePath(item));
 		foreach (var item in NxmDownloads.Where(NeedsAcquiredPackageInspection))
 			_ = InspectAcquiredPackageAsync(item);
+	}
+
+	private bool _processingAutoInstalls;
+
+	private async Task ProcessAutoInstallRequestsAsync()
+	{
+		if (_processingAutoInstalls || !IsInitialized || RefreshIsBlocked || IsLoadingOrder) return;
+		using var cancellation = new CancellationTokenSource();
+		using var registration = _pendingOperations.TryRegister(cancellation.Cancel);
+		if (registration == null) return;
+		_processingAutoInstalls = true;
+		try
+		{
+			while (!RefreshIsBlocked && !IsLoadingOrder && NxmDownloads.FirstOrDefault(row => row.AutoInstallRequested
+				&& row.HasNexusSource && row.State == NxmDownloadState.Downloaded && row.InspectionCompleted) is { } item)
+			{
+				DownloadManagerInstallIsActive = true;
+				try
+				{
+					if (!await _nxmDownloadManager.ConsumeAutoInstallRequestAsync(item)) break;
+					if (!Settings.AutoInstallNxmToInactive || item.State != NxmDownloadState.Downloaded
+						|| item.DetectedDestination != "Inactive Mods") continue;
+					var path = GetNxmArchivePath(item);
+					var token = cancellation.Token;
+					using (var lease = await VerifiedPackageReadLease.OpenAsync(path, item.SizeBytes, item.ArchiveSha256, token))
+					{
+						var installed = mods.Items.ToArray();
+						var parsed = await InspectAcquiredPackageContentsAsync(path, installed, token, item.ModId);
+						if (!parsed.Classification.Installable || parsed.Classification.Destination != "Inactive Mods"
+							|| !Settings.AutoInstallNxmToInactive || item.State != NxmDownloadState.Downloaded
+							|| !CanAutoInstallToInactive(parsed.Packages, parsed.Archive, mods.Items.Concat(DivinityApp.IgnoredMods.Items),
+								PathwayData.AppDataModsPath, path)) continue;
+						await _nxmDownloadManager.SetStateAsync(item.Id, NxmDownloadState.Installing);
+						var source = new NexusModManagerLink(item.ModId, item.FileId, null, null, null);
+						if (!await ImportModsWithoutReviewAsync([path], null, source, token))
+							throw new InvalidOperationException("The automatic import could not finish. Review the download to retry.");
+					}
+					await CompleteAcquiredPackageInstallAsync(item, "Inactive Mods", path);
+				}
+				catch (OperationCanceledException)
+				{
+					if (item.State == NxmDownloadState.Installing)
+						await _nxmDownloadManager.SetStateAsync(item.Id, NxmDownloadState.Downloaded, "install-canceled");
+					if (cancellation.IsCancellationRequested) break;
+				}
+				catch (Exception ex)
+				{
+					await _nxmDownloadManager.SetStateAsync(item.Id, NxmDownloadState.InstallFailed, "auto-install-failed", SafeBatchError(ex));
+				}
+				finally { DownloadManagerInstallIsActive = false; }
+			}
+		}
+		catch (Exception ex) { DivinityApp.Log($"Automatic NXM installation stopped: {ex}"); }
+		finally { _processingAutoInstalls = false; }
+	}
+
+	public static bool CanAutoInstallToInactive(IReadOnlyList<PackagePreflightReport> packages,
+		ArchivePackagePreflightResult archive, IEnumerable<DivinityModData> installed, string modsDirectory, string path)
+	{
+		if (packages.Count == 0 || HasBlockingPackageFinding(packages) || !Directory.Exists(modsDirectory)) return false;
+		if (archive != null && (archive.Kind != ArchivePackagePreflightKind.PakArchive
+			|| archive.Findings.Any(finding => finding.Severity == ModHealthSeverity.Error))) return false;
+		var uuids = installed.Select(mod => mod.UUID).ToHashSet(StringComparer.OrdinalIgnoreCase);
+		if (packages.Any(report => report.Mod.IsForceLoaded || report.Mod.IsLarianMod || report.Mod.ModType == "Adventure"
+			|| String.IsNullOrWhiteSpace(report.Mod.UUID) || !uuids.Add(report.Mod.UUID))) return false;
+		var filenames = archive?.EntryNames.Where(name => name.EndsWith(".pak", StringComparison.OrdinalIgnoreCase)) ?? [path];
+		return filenames.All(name => !File.Exists(Path.Combine(modsDirectory, Path.GetFileName(name))));
 	}
 
 	private static bool NeedsAcquiredPackageInspection(NxmDownloadItem item) => item != null
@@ -5837,14 +5913,34 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		if (SaveSettings() && welcomeWindow.ApplyChanges)
 		{
 			if (welcomeWindow.AddStarterSeparators)
-            {
-                foreach (var title in ReduxOnboardingPolicy.MissingStarterSeparators(Settings.VisualModListDividers).Where(welcomeWindow.SelectedStarterSeparators.Contains))
-                    AddVisualDivider(true, DisplayActiveMods.Count, title, GetSuggestedSeparatorColor(), "layers", true);
-            }
-            ApplyNxmAssociationPreference(welcomeWindow.SelectedNxmAssociationEnabled);
+				AddWelcomeSeparators(welcomeWindow.SelectedStarterSeparators);
+			ApplyNxmAssociationPreference(welcomeWindow.SelectedNxmAssociationEnabled);
 			if (welcomeWindow.OpenDownloadsAfterSetup)
 				Window.Dispatcher.BeginInvoke(new Action(async () => await Window.OpenNexusDownloadsAsync()));
 		}
+	}
+
+	private void AddWelcomeSeparators(IReadOnlyList<string> selected)
+	{
+		EnsureVisualDividerBaseline();
+		Settings.VisualModListDividers ??= [];
+		EnsureVisualDividerMemberships();
+		var sequence = BuildVisualDividerSequence(true).ToList();
+		var additions = ReduxOnboardingPolicy.PlanStarterSeparators(selected, sequence, Settings.VisualModListDividers,
+			ReduxModDatabaseService.LoadOrderAdvisorKnowledge);
+		if (additions.Count == 0) return;
+		var before = CaptureLoadOrderEditState();
+		foreach (var divider in additions)
+		{
+			Settings.VisualModListDividers.Add(divider);
+			sequence.Insert(divider.Position, CreateVisualDividerItem(divider));
+		}
+		SaveVisualDividerPositions(sequence, true);
+		VisualDividerSectionPolicy.AssignMembersPreservingCollapsedSections(sequence, Settings.VisualModListDividers, true);
+		RefreshVisualDividers();
+		HasUnsavedLoadOrderChanges = true;
+		QueueSave();
+		RecordLoadOrderEdit(before);
 	}
 
 	private bool _firstRunWelcomeIsDeferred;
