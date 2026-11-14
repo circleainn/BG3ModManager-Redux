@@ -1,5 +1,16 @@
 # Public-alpha publication records
 
+## 0.1.0-alpha.16.7.2 — downloads, starter sections and Script Extender
+
+Published November 13, 2026 (America/New_York) as a quiet maintenance release. [GitHub release](https://github.com/circleainn/BG3ModManager-Redux/releases/tag/v0.1.0-alpha.16.7.2) · [Nexus files](https://www.nexusmods.com/baldursgate3/mods/23799?tab=files)
+
+- The release tag points to main commit `68a7b472f192d1f5879bfb5adf5977d4c7b74dee`. Candidate `ac39f916` and dev merge `6f5631d2` share the same tree (`40259ac16fb36965db6a700597576e9635fd0cb5`). [Main CI](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/43543656412) and [dev CI](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/43543649557) passed.
+- Local Debug and Publish each passed 792/792 regression checks. Five additional checks against the packaged DLLs covered version identity, NXM auto-install eligibility and queue behavior, starter separator placement, and unidentified Script Extender files.
+- The 78-file portable ZIP measures 24,027,308 bytes and has SHA-256 `3a5f670d7d58bf2000ee5ba4581f224d6cb1c8df0282fdea1f1773a34653fb29`. Candidate, draft download and anonymous public download matched. Both clean launches reached the new main window and closed normally.
+- In disposable installations, the exact ZIP passed upgrade from 16.7.1, locked-file rollback, manual replacement and inventory removal. Five synthetic user files survived. The previous public client's channel, download and launch services fetched the live update and handed it to the packaged updater. The runner reported success, restarted into the 16.7.2 main window and preserved the test order. All 78 installed files matched. This check invoked the same services the dialog uses programmatically. The dialog button itself was not exercised.
+- [Nexus publication](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/43544546508) returned file-version ID `14920716521728` for the verified archive. The public-alpha manifest was uploaded last. Its anonymous download matched the candidate at 618 bytes and SHA-256 `b3dcc55c289eb2b2d8d5122c56a4bfa15f55bfe259868b317b532a7e9cbe96bc`, with internal version `0.1.16.702`.
+- The release retains the .NET 8 Desktop Runtime note and the no-announcement marker. Runtime migration remains outstanding.
+
 ## 0.1.0-alpha.16.7.1 — offline database and maintenance update
 
 Published November 13, 2026 (America/New_York) as a quiet maintenance release.
