@@ -5,7 +5,7 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: October 23, 2026. Published release line: `0.1.0-alpha.16.7`
+Last reviewed: October 27, 2026. Published release line: `0.1.0-alpha.16.7`
 (verified October 23).
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
@@ -14,6 +14,22 @@ with progress and cancellation. Export retains the import limits: 32 saves, 1 GB
 regressions pass; real campaign export/restore and cancellation still need a live check.
 
 ## Development status
+
+### Maintenance gates
+
+The [beta plan](BETA_PLAN.md) defines a finite release worklist and the shared-platform sequence.
+[Runtime and portability planning](RUNTIME_PORTABILITY_PLAN.md) separates the time-sensitive
+.NET maintenance from the larger shared-interface investigation. These are working plans;
+the published platform and release claims below remain tied to verified release records.
+
+Publication documentation and database counts are checked in Windows CI. Publish builds retain a
+separate candidate provenance sidecar, and dependency maintenance has a Windows audit/report path.
+These checks do not complete the outstanding real-user observations in the release records or
+enforce repository branch protection by themselves.
+
+The .NET 8 support deadline is November 10, 2026. Runtime migration remains outstanding; the
+[security policy](SECURITY.md#runtime-lifecycle) records the .NET 10 toolchain, native-library,
+updater-prerequisite, and release-validation requirements.
 
 ### 16.7 interface languages
 
@@ -170,7 +186,7 @@ mods, and never saves or syncs automatically.
 |:--|:--|
 | Product | Baldur's Gate 3 Mod Manager Redux |
 | Short name | Redux |
-| Latest verified published version | `0.1.0-alpha.16.5.6` |
+| Latest verified published version | `0.1.0-alpha.16.7` |
 | Lifecycle | Public alpha |
 | Supported platform | Windows 10/11 x64 |
 | Required runtime | .NET 8 Desktop Runtime |
@@ -180,7 +196,7 @@ mods, and never saves or syncs automatically.
 | Update channel | `public-alpha` |
 | Active milestone | `v0.1.0 – Public Alpha` |
 
-The release tag is `v0.1.0-alpha.16.5.6`. Always verify the live branches and releases before
+The release tag is `v0.1.0-alpha.16.7`. Always verify the live branches and releases before
 preparing another publication.
 
 ## What Redux is

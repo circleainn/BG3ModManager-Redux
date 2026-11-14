@@ -252,6 +252,10 @@ public class AppKeys : ReactiveObject
 		"Read active and override PAK file tables to find shared internal paths. Overlaps are not necessarily conflicts.")]
 	public Hotkey InspectFileOverlaps { get; private set; } = new Hotkey(Key.None);
 
+	[MenuSettings("Tools", "What this mod changes...", false,
+		"Inspect the selected mod's Stats records and package contents without changing any files.")]
+	public Hotkey InspectModContent { get; private set; } = new Hotkey(Key.None);
+
 	[MenuSettings("Tools", "Manage Script Extender...", Tooltip = "Open Script Extender in the Game-directory Mod Manager.")]
 	public Hotkey DownloadScriptExtender { get; private set; } = new Hotkey(Key.T, ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Alt);
 

@@ -1,0 +1,33 @@
+name: Dependency maintenance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 13 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Windows dependency review
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore supported graph and report advisories and updates
+        shell: pwsh
+        run: .\tools\maintenance\Check-Dependencies.ps1
+      - name: Retain dependency reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Redux-dependency-review-${{ github.run_number }}
+          path: artifacts/maintenance/*.json
+          if-no-files-found: warn
+          retention-days: 30

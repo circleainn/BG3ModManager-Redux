@@ -348,4 +348,6 @@ ASALocalRun/
 .mfractor/
 *.zip
 /Redux-Update-Public-Alpha.json
+/Redux-Build-Provenance.json
+/artifacts/maintenance/
 *.psd

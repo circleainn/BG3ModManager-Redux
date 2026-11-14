@@ -947,7 +947,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		{
 			var path = GetNxmArchivePath(item);
 			await VerifyNxmArchiveAsync(item, path, inspectionToken);
-			var classification = await ClassifyAcquiredPackageAsync(path, inspectionToken);
+			var classification = await ClassifyAcquiredPackageAsync(path, inspectionToken, ArchiveProjectId(item));
 			inspectionToken.ThrowIfCancellationRequested();
 			await _nxmDownloadManager.SetInspectionAsync(item.Id, classification.ProjectName,
 				classification.ContentKind, classification.Destination, classification.Summary, classification.Installable,
@@ -972,14 +972,25 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 	}
 
-	private async Task<AcquiredPackageClassification> ClassifyAcquiredPackageAsync(string path, CancellationToken cancellationToken = default)
+	// Retained and downloaded files may have been renamed to a hash or collision-safe name.
+	private static long? ArchiveProjectId(NxmDownloadItem item) => item.HasNexusSource
+		? item.ModId : ProjectIdFromOriginalFilename(item.SourceFileName);
+
+	private static long? ProjectIdFromOriginalFilename(string filename)
+	{
+		if (String.IsNullOrWhiteSpace(filename)) return null;
+		var identity = NexusModFileVersionData.FromFilePath(filename);
+		return identity.Success ? identity.ModId : null;
+	}
+
+	private async Task<AcquiredPackageClassification> ClassifyAcquiredPackageAsync(string path, CancellationToken cancellationToken = default, long? sourceModId = null)
 	{
 		var installed = mods.Items.Where(mod => mod != null && !mod.IsVisualDivider).ToArray();
-		return (await InspectAcquiredPackageContentsAsync(path, installed, cancellationToken)).Classification;
+		return (await InspectAcquiredPackageContentsAsync(path, installed, cancellationToken, sourceModId)).Classification;
 	}
 
 	private static async Task<AcquiredPackageInspection> InspectAcquiredPackageContentsAsync(string path,
-		IReadOnlyList<DivinityModData> installed, CancellationToken cancellationToken)
+		IReadOnlyList<DivinityModData> installed, CancellationToken cancellationToken, long? sourceModId = null)
 	{
 		if (Path.GetExtension(path).Equals(".pak", StringComparison.OrdinalIgnoreCase))
 		{
@@ -999,7 +1010,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			return new AcquiredPackageInspection(classification, [report], null);
 		}
 
-		var inspection = await Task.Run(() => ArchivePackagePreflightService.AnalyzeAsync(path, installed, cancellationToken), cancellationToken);
+		var inspection = await Task.Run(() => ArchivePackagePreflightService.AnalyzeAsync(path, installed, cancellationToken, sourceModId), cancellationToken);
 		var unsupportedArchive = inspection.Findings.Concat(inspection.Packages.SelectMany(report => report.Findings))
 			.FirstOrDefault(IsUnsupportedPakLayout);
 		if (unsupportedArchive != null)
@@ -1308,7 +1319,8 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 		try
 		{
-			var classification = await ClassifyAcquiredPackageAsync(archivePath, cancellationToken);
+			var classification = await ClassifyAcquiredPackageAsync(archivePath, cancellationToken,
+				entry.HasNexusSource ? entry.NexusModId : ProjectIdFromOriginalFilename(entry.OriginalFileName));
 			cancellationToken.ThrowIfCancellationRequested();
 			var id = await _nxmDownloadManager.AddLocalPackageAsync(archivePath, entry.Sha256,
 				String.IsNullOrWhiteSpace(entry.ProjectName) ? classification.ProjectName : entry.ProjectName,
@@ -1400,7 +1412,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			var nexusSource = item.HasNexusSource
 				? new NexusModManagerLink(item.ModId, item.FileId, null, null, null) : null;
 			var installed = await ReduxGameDirectoryModManagerWindow.ReviewAndInstallAsync(dialogOwner, this, archivePath,
-				nexusSource: nexusSource, cancellationToken: preparationCancellation.Token, installStarting: async () =>
+				nexusSource: nexusSource, sourceModId: ArchiveProjectId(item), cancellationToken: preparationCancellation.Token, installStarting: async () =>
 				{
 					installStarted = true;
 					await _nxmDownloadManager.SetStateAsync(item.Id, NxmDownloadState.Installing);
@@ -1442,7 +1454,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 
 			await SetMainProgressPhaseAsync($"Inspecting archive: {Path.GetFileName(archivePath)}…");
 			var inspection = await Task.Run(() => ArchivePackagePreflightService.AnalyzeAsync(
-				archivePath, installed, preparationCancellation.Token), preparationCancellation.Token);
+				archivePath, installed, preparationCancellation.Token, ArchiveProjectId(item)), preparationCancellation.Token);
 			preparationCancellation.Token.ThrowIfCancellationRequested();
 			FinishPreparation();
 			if (RejectUnsupportedPakLayout(inspection.Findings.Concat(inspection.Packages.SelectMany(report => report.Findings)), dialogOwner)) return;
@@ -1560,7 +1572,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				// before checking the next one. Installation takes a fresh verified lease.
 				using var reviewLease = await VerifiedPackageReadLease.OpenAsync(
 					archivePath, reviewedSize, reviewedSha256, cancellationToken);
-				var parsed = await InspectAcquiredPackageContentsAsync(archivePath, installed, cancellationToken);
+				var parsed = await InspectAcquiredPackageContentsAsync(archivePath, installed, cancellationToken, ArchiveProjectId(item));
 				var classification = parsed.Classification;
 				await _nxmDownloadManager.SetInspectionAsync(item.Id, classification.ProjectName,
 					classification.ContentKind, classification.Destination, classification.Summary,
@@ -1724,7 +1736,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 						{
 							AcquiredPackageBatchKind.Pak => await ImportModsWithoutReviewAsync([candidate.ArchivePath], null, nexusSource, cancellationToken),
 							AcquiredPackageBatchKind.Save => await ImportSaveBatchPackageAsync(candidate.ArchivePath),
-							AcquiredPackageBatchKind.GameDirectory => await InstallGameDirectoryBatchPackageAsync(candidate.ArchivePath, nexusSource, cancellationToken),
+							AcquiredPackageBatchKind.GameDirectory => await InstallGameDirectoryBatchPackageAsync(candidate.ArchivePath, nexusSource, cancellationToken, ArchiveProjectId(candidate.Item)),
 							_ => false
 						};
 						if (!installedOk) throw new InvalidOperationException("Redux could not finish this installation.");
@@ -1851,9 +1863,9 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 	}
 
 	private async Task<bool> InstallGameDirectoryBatchPackageAsync(string archivePath, NexusModManagerLink nexusSource,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken, long? sourceModId)
 	{
-		await ReduxGameDirectoryModManagerWindow.InstallReviewedArchiveWithoutReviewAsync(this, archivePath, nexusSource, cancellationToken);
+		await ReduxGameDirectoryModManagerWindow.InstallReviewedArchiveWithoutReviewAsync(this, archivePath, nexusSource, cancellationToken, sourceModId);
 		return true;
 	}
 
@@ -4375,7 +4387,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 				{
 					await SetMainProgressPhaseAsync($"Inspecting archive: {Path.GetFileName(file)}…");
 					var archive = await Task.Run(() => ArchivePackagePreflightService.AnalyzeAsync(
-						file, installed, preparationCancellation.Token), preparationCancellation.Token);
+						file, installed, preparationCancellation.Token, nexusSource?.ModId), preparationCancellation.Token);
 					unsupportedLayouts.AddRange(archive.Findings);
 					unsupportedLayouts.AddRange(archive.Packages.SelectMany(report => report.Findings));
 					if (archive.Packages.Count > 0)
@@ -6476,6 +6488,22 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			20);
 	}
 
+	public void OpenModContentInspector(DivinityModData mod)
+	{
+		if (MainProgressIsActive || mod == null || mod.IsVisualDivider) return;
+		if (String.IsNullOrWhiteSpace(mod.FilePath)
+			|| !String.Equals(Path.GetExtension(mod.FilePath), ".pak", StringComparison.OrdinalIgnoreCase)
+			|| !File.Exists(mod.FilePath))
+		{
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Translate(
+				"The installed PAK could not be found. Refresh the mod list and try again."), AlertType.Info, 15);
+			return;
+		}
+		var dialog = new ReduxModContentWindow(mod.FilePath, mod.DisplayName);
+		if (Window?.IsLoaded == true) dialog.Owner = Window;
+		dialog.ShowDialog();
+	}
+
 	private void OpenFileOverlapInspector()
 	{
 		if (MainProgressIsActive)
@@ -6613,7 +6641,6 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		}
 
 		outputPath = DivinityModDataLoader.MakeSafeFilename(outputPath, '_');
-		var modOrderName = Path.GetFileNameWithoutExtension(outputPath);
 
 		dialog.FileName = outputPath;
 		dialog.CheckFileExists = false;
@@ -6624,40 +6651,41 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		if (dialog.ShowDialog(Window) == true)
 		{
 			outputPath = dialog.FileName;
-			modOrderName = Path.GetFileNameWithoutExtension(outputPath);
-			// Save mods that aren't missing
-			var tempOrder = new DivinityLoadOrder
+			DivinityLoadOrder tempOrder;
+			try
 			{
-				Name = modOrderName,
-				FilePath = outputPath,
-				LastModifiedDate = DateTime.Now,
-				VisualDividers = LoadOrderPersistencePolicy.CloneActiveVisualDividers(
-					Settings.VisualModListDividers)
-			};
-			tempOrder.Order.AddRange(CreateWorkingLoadOrderEntries());
-			if (DivinityModDataLoader.ExportLoadOrderToFile(outputPath, tempOrder))
-			{
-				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Saved mod load order to '{outputPath}'"), AlertType.Success, 10);
-				var updatedOrder = false;
-				foreach (var order in ModOrderList)
-				{
-					if (String.Equals(order.FilePath, outputPath, StringComparison.OrdinalIgnoreCase))
-					{
-						order.SetOrder(tempOrder);
-						order.VisualDividers = LoadOrderPersistencePolicy.CloneActiveVisualDividers(
-							tempOrder.VisualDividers);
-						updatedOrder = true;
-						DivinityApp.Log($"Updated saved order '{order.Name}' from '{modOrderName}'");
-					}
-				}
-				if (!updatedOrder) AddNewModOrder(tempOrder);
-				LoadModOrder(tempOrder);
+				tempOrder = LoadOrderFileWorkflow.SaveCopy(CreateWorkingLoadOrderSnapshot(), outputPath,
+					ModOrderList.Concat(SavedModOrderList));
 			}
-			else
+			catch (Exception ex)
 			{
+				DivinityApp.Log($"Could not save a load-order copy to '{outputPath}':\n{ex}");
 				ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Failed to save mod load order to '{outputPath}'"), AlertType.Danger);
+				return;
 			}
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Saved mod load order to '{outputPath}'"), AlertType.Success, 10);
+			SelectSavedLoadOrderCopy(tempOrder);
 		}
+	}
+
+	private void SelectSavedLoadOrderCopy(DivinityLoadOrder savedCopy)
+	{
+		var existing = ModOrderList.FirstOrDefault(order => String.Equals(order.FilePath,
+			savedCopy.FilePath, StringComparison.OrdinalIgnoreCase));
+		if (existing == null)
+		{
+			AddNewModOrder(savedCopy);
+			return;
+		}
+		var index = ModOrderList.IndexOf(existing);
+		if (index != SelectedModOrderIndex)
+		{
+			// The selection handler owns Override review, rollback and loading. A
+			// rejected switch must leave the current workspace and its dirty state intact.
+			SelectedModOrderIndex = index;
+			return;
+		}
+		LoadModOrder(existing);
 	}
 
 	private void SaveAsNewManagedLoadOrder()
@@ -13324,6 +13352,7 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 						DivinityApp.Log($"Order changed to {SelectedModOrder.Name}. Skipping list loading since the orders match.");
 						ApplyActiveVisualDividers(SelectedModOrder);
 						RefreshVisualDividers(activeListOnly: true);
+						HasUnsavedLoadOrderChanges = false;
 					}
 				}
 			}
@@ -13526,6 +13555,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		DeleteOrderCommand = ReactiveCommand.Create<DivinityLoadOrder>(DeleteOrder, canDeleteOrder, RxApp.MainThreadScheduler);
 
 		modsConnection.AutoRefresh(x => x.IsSelected).Filter(x => x.IsSelected && !x.IsEditorMod && File.Exists(x.FilePath)).Bind(out selectedPakMods).Subscribe();
+
+		Keys.InspectModContent.AddAction(
+			() => OpenModContentInspector(SelectedPakMods.Count == 1 ? SelectedPakMods[0] : null),
+			this.WhenAnyValue(x => x.SelectedPakMods.Count)
+				.CombineLatest(canOpenDialogWindow, (count, canOpen) => count == 1 && canOpen));
 
 		var anyPakModSelectedObservable = this.WhenAnyValue(x => x.SelectedPakMods.Count, (count) => count > 0);
 		Keys.ExtractSelectedMods.AddAction(ExtractSelectedMods_Start, anyPakModSelectedObservable);

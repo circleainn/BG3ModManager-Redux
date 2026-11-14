@@ -46,6 +46,8 @@ internal static class Program
 		var restorePoints = new LoadOrderRestorePointTests();
 		var annotations = new ModAnnotationTests();
 		var overlaps = new ModFileOverlapTests();
+		var modContent = new ModContentInspectionTests();
+		var modContentWindow = new ModContentWindowTests();
 		var preflight = new PackagePreflightTests();
 		var archivePreflight = new ArchivePackagePreflightTests();
 		var archiveTraversal = new ArchiveEntryTraversalTests();
@@ -81,6 +83,7 @@ internal static class Program
 		var sourceLinkValidation = new SourceLinkValidationTests();
 		var extenderDetectionPaths = new ScriptExtenderDetectionPathTests();
 		var extenderConfigReload = new ExtenderConfigReloadTests();
+		var preferencePreservation = new UserPreferencePreservationTests();
 		var nxmPresentation = new NxmAssociationPresentationTests();
 		var launchTarget = new ReduxLaunchTargetTests();
 		var smoothLogicalScroll = new SmoothLogicalScrollPolicyTests();
@@ -119,6 +122,23 @@ internal static class Program
 		var overrideDuplicateDialog = new OverrideDuplicateDialogTests();
 		var tests = new (string Name, Action Run)[]
 		{
+			(nameof(modContentWindow.ModContentInspectorCatalogHasCompleteTranslations), modContentWindow.ModContentInspectorCatalogHasCompleteTranslations),
+			(nameof(modContentWindow.ModContentInspectorCanCancelBeforeLoadWithoutReadingPackage), modContentWindow.ModContentInspectorCanCancelBeforeLoadWithoutReadingPackage),
+			(nameof(modContent.ContentInspectionCancellationStopsDuringContentRead), modContent.ContentInspectionCancellationStopsDuringContentRead),
+			(nameof(modContent.ContentInspectionBoundsZstdDecoderWindowIndependentlyOfOutput), modContent.ContentInspectionBoundsZstdDecoderWindowIndependentlyOfOutput),
+			(nameof(modContentWindow.ModContentInspectorKeepsActionsReachableAcrossThemesAndLanguages), modContentWindow.ModContentInspectorKeepsActionsReachableAcrossThemesAndLanguages),
+			(nameof(modContentWindow.ModContentInspectorSearchAndSelectionPreservePackageValues), modContentWindow.ModContentInspectorSearchAndSelectionPreservePackageValues),
+			(nameof(modContentWindow.ModContentInspectorShowsPartialAndEmptyResultsWithoutCompatibilityClaims), modContentWindow.ModContentInspectorShowsPartialAndEmptyResultsWithoutCompatibilityClaims),
+			(nameof(modContentWindow.ModContentInspectorVirtualizesLargeInventories), modContentWindow.ModContentInspectorVirtualizesLargeInventories),
+			(nameof(modContent.StatsInspectionKeepsDeclaredValuesAndInheritanceProvenance), modContent.StatsInspectionKeepsDeclaredValuesAndInheritanceProvenance),
+			(nameof(modContent.StatsInspectionRetainsSelfLayersButDoesNotGuessFileOrder), modContent.StatsInspectionRetainsSelfLayersButDoesNotGuessFileOrder),
+			(nameof(modContent.StatsInspectionFlagsExternalParentsAndCyclesWithoutInventingFields), modContent.StatsInspectionFlagsExternalParentsAndCyclesWithoutInventingFields),
+			(nameof(modContent.StatsInspectionIsolatesMalformedAndOversizedFiles), modContent.StatsInspectionIsolatesMalformedAndOversizedFiles),
+			(nameof(modContent.StatsInspectionCancellationAndRecordLimitsRemainBounded), modContent.StatsInspectionCancellationAndRecordLimitsRemainBounded),
+			(nameof(modContent.PackageContentInspectionReadsSelectedStatsWithoutWritesOrExtraction), modContent.PackageContentInspectionReadsSelectedStatsWithoutWritesOrExtraction),
+			(nameof(modContent.PackageContentInspectionRejectsSolidAndOversizedTablesBeforeExpansion), modContent.PackageContentInspectionRejectsSolidAndOversizedTablesBeforeExpansion),
+			(nameof(modContent.StatsInspectionReportsRepeatedFieldsWithoutDroppingTheRecord), modContent.StatsInspectionReportsRepeatedFieldsWithoutDroppingTheRecord),
+			(nameof(modContent.ContentInspectionDiagnosticsHaveAllInterfaceTranslations), modContent.ContentInspectionDiagnosticsHaveAllInterfaceTranslations),
 			(nameof(languages.BoundSentenceTranslationsUpdateCountsAndPreserveNames), languages.BoundSentenceTranslationsUpdateCountsAndPreserveNames),
 			(nameof(languages.DownloadAndSnapshotDetailsTranslateWithoutRewritingStoredData), languages.DownloadAndSnapshotDetailsTranslateWithoutRewritingStoredData),
 			(nameof(languages.SettingsAndCommandMetadataHaveTranslationsInEveryLanguage), languages.SettingsAndCommandMetadataHaveTranslationsInEveryLanguage),
@@ -256,6 +276,7 @@ internal static class Program
 			(nameof(collections.CollectionLinksAreRestrictedToBg3OnNexus), collections.CollectionLinksAreRestrictedToBg3OnNexus),
 			(nameof(collections.CollectionBulkSelectionRespectsAvailabilityAndDefaults), collections.CollectionBulkSelectionRespectsAvailabilityAndDefaults),
 			(nameof(collections.CollectionPreviewPreservesFilesAndUnavailableEntries), collections.CollectionPreviewPreservesFilesAndUnavailableEntries),
+			(nameof(collections.CollectionPreviewCoalescesOnlyMatchingRepeatedFiles), collections.CollectionPreviewCoalescesOnlyMatchingRepeatedFiles),
 			(nameof(collections.CollectionPreviewRejectsWrongIdentityAndPartialResponses), collections.CollectionPreviewRejectsWrongIdentityAndPartialResponses),
 			(nameof(saveReview.MatchesSaveUUIDsWithoutNameFallbackOrMutation), saveReview.MatchesSaveUUIDsWithoutNameFallbackOrMutation),
 			(nameof(saveReview.AmbiguousAndInvalidRequirementsCannotActivate), saveReview.AmbiguousAndInvalidRequirementsCannotActivate),
@@ -618,6 +639,11 @@ internal static class Program
 			(nameof(sourceLinkValidation.BrowserLaunchPreparationRetainsProtocolTargetsAndSeparateArguments), sourceLinkValidation.BrowserLaunchPreparationRetainsProtocolTargetsAndSeparateArguments),
 			(nameof(extenderDetectionPaths.DefaultExtenderDetectionFollowsTheBg3Profile), extenderDetectionPaths.DefaultExtenderDetectionFollowsTheBg3Profile),
 			(nameof(extenderConfigReload.RemovedExtenderUpdaterConfigClearsStaleVersionPinAndCache), extenderConfigReload.RemovedExtenderUpdaterConfigClearsStaleVersionPinAndCache),
+			(nameof(preferencePreservation.ManifestRefreshPreservesExactAndUnavailablePins), preferencePreservation.ManifestRefreshPreservesExactAndUnavailablePins),
+			(nameof(preferencePreservation.ReactivatingGridRestoresOnlyVisibleColumnsInSavedOrder), preferencePreservation.ReactivatingGridRestoresOnlyVisibleColumnsInSavedOrder),
+			(nameof(preferencePreservation.UnavailablePinsDisplayTheirIdentityWithoutAnInventedBuildDate), preferencePreservation.UnavailablePinsDisplayTheirIdentityWithoutAnInventedBuildDate),
+			(nameof(preferencePreservation.RefreshSelectionCannotWritePinsButExplicitLatestCan), preferencePreservation.RefreshSelectionCannotWritePinsButExplicitLatestCan),
+			(nameof(preferencePreservation.ColumnOrderRoundTripPreservesHiddenSlotsAndPaneIndependence), preferencePreservation.ColumnOrderRoundTripPreservesHiddenSlotsAndPaneIndependence),
 			(nameof(extenderConfigReload.SwitchingGameInstallationsDoesNotReuseAnOldExtenderPin), extenderConfigReload.SwitchingGameInstallationsDoesNotReuseAnOldExtenderPin),
 			(nameof(extenderConfigReload.ExistingExtenderVersionPinIsRespectedAndUnreadableConfigIsPreserved), extenderConfigReload.ExistingExtenderVersionPinIsRespectedAndUnreadableConfigIsPreserved),
 			(nameof(extenderDetectionPaths.ConfiguredExtenderCacheIsUsedWithoutAppendingAnotherCacheFolder), extenderDetectionPaths.ConfiguredExtenderCacheIsUsedWithoutAppendingAnotherCacheFolder),
@@ -661,6 +687,12 @@ internal static class Program
 			(nameof(fileSafety.FirstGameLoadOrderExportCanUndoBackToNoFile), fileSafety.FirstGameLoadOrderExportCanUndoBackToNoFile),
 			(nameof(fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson), fileSafety.ProviderCredentialsAreEncryptedAndExcludedFromSettingsJson),
 			(nameof(loadOrderWorkflow.StartupRestoresRememberedOrderWhileRefreshKeepsCurrentSelection), loadOrderWorkflow.StartupRestoresRememberedOrderWhileRefreshKeepsCurrentSelection),
+			(nameof(loadOrderWorkflow.SaveCopyPreservesOverrideMembershipAndSeparatorPlacementAfterRestart), loadOrderWorkflow.SaveCopyPreservesOverrideMembershipAndSeparatorPlacementAfterRestart),
+			(nameof(loadOrderWorkflow.ReplacingSavedCopyRefreshesLoadedOrdersIncludingEmptyOverrideSelection), loadOrderWorkflow.ReplacingSavedCopyRefreshesLoadedOrdersIncludingEmptyOverrideSelection),
+			(nameof(loadOrderWorkflow.FailedCopyPreservesSavedFileAndLoadedOrderState), loadOrderWorkflow.FailedCopyPreservesSavedFileAndLoadedOrderState),
+			(nameof(loadOrderWorkflow.ReplacingMalformedLoadedCopyRepairsItsStateAfterCommit), loadOrderWorkflow.ReplacingMalformedLoadedCopyRepairsItsStateAfterCommit),
+			(nameof(loadOrderWorkflow.SavingOverAnotherListedOrderSelectsItsDestinationThroughTheGuard), loadOrderWorkflow.SavingOverAnotherListedOrderSelectsItsDestinationThroughTheGuard),
+			(nameof(loadOrderWorkflow.RejectedSavedCopySelectionDoesNotForceLoadOrClearUnsavedChanges), loadOrderWorkflow.RejectedSavedCopySelectionDoesNotForceLoadOrClearUnsavedChanges),
 			(nameof(archiveOrders.BundledMetadataIsNotImportedAsAnEmptyLoadOrder), archiveOrders.BundledMetadataIsNotImportedAsAnEmptyLoadOrder),
 			(nameof(refreshOperations.RefreshShortcutStaysDisabledUntilOperationCleanupCompletes), refreshOperations.RefreshShortcutStaysDisabledUntilOperationCleanupCompletes),
 			(nameof(refreshOperations.DirectRefreshDuringFileWorkPreservesProgressAndShutdownCancellation), refreshOperations.DirectRefreshDuringFileWorkPreservesProgressAndShutdownCancellation),
@@ -749,6 +781,7 @@ internal static class Program
 			(nameof(nativeMods.ReviewedCatalogFingerprintsCoverEveryKnownDllProject), nativeMods.ReviewedCatalogFingerprintsCoverEveryKnownDllProject),
 			(nameof(nativeMods.UnknownSharedCameraBinaryRemainsAnUnverifiedVariant), nativeMods.UnknownSharedCameraBinaryRemainsAnUnverifiedVariant),
 			(nameof(nativeMods.ArchiveRecognitionUsesReviewedLayoutAndCorroboratesOverlappingProjects), nativeMods.ArchiveRecognitionUsesReviewedLayoutAndCorroboratesOverlappingProjects),
+			(nameof(nativeMods.NativeArchiveRecognitionRequiresConsistentSourceAndLayout), nativeMods.NativeArchiveRecognitionRequiresConsistentSourceAndLayout),
 			(nameof(nativeMods.ArchiveRecognitionRoutesScriptExtenderToGuardedGameDirectoryWorkflow), nativeMods.ArchiveRecognitionRoutesScriptExtenderToGuardedGameDirectoryWorkflow),
 			(nameof(nativeMods.ScriptExtenderUsesTheSameStagedCommitAndOwnershipRecordAsOtherGameDirectoryMods), nativeMods.ScriptExtenderUsesTheSameStagedCommitAndOwnershipRecordAsOtherGameDirectoryMods),
 			(nameof(nativeMods.UnreviewedDllArchiveIsNeverTreatedAsAnOrdinaryModArchive), nativeMods.UnreviewedDllArchiveIsNeverTreatedAsAnOrdinaryModArchive),

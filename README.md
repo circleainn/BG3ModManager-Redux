@@ -3,7 +3,7 @@
 <img src="docs/assets/nexus-description/00-redux-header.png#gh-dark-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 <img src="docs/assets/nexus-description/00-redux-header-light.png#gh-light-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 
-[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.7-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
+[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.7.1-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-4F86F7?style=flat-square)](#requirements-and-alpha-status)
 [![License](https://img.shields.io/badge/license-MIT-42A66F?style=flat-square)](LICENSE)
 [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/circleain)
@@ -24,6 +24,10 @@ Redux is a Windows mod manager built on
 [LaughingLeader's BG3 Mod Manager](https://github.com/LaughingLeader/BG3ModManager). It preserves
 BG3MM's proven package, profile, and load-order foundation while adding a cohesive interface,
 stronger organization, safer review workflows, and optional offline-assisted guidance.
+
+## Maintenance update 16.7.1
+
+The offline Load Order Advisor recognizes 1,391 more modules. Inspect the contents of an installed mod with **What this mod changes...**. This update also improves saved orders, column layouts, collection previews, and Script Extender version selection. [Release notes](docs/releases/0.1.0-alpha.16.7.1.md)
 
 <h3 id="new-in-16-7" align="center">New in 16.7</h3>
 <hr>
@@ -397,7 +401,9 @@ reminds users that redistributing mod files requires permission from every relev
 Redux includes a curated offline database that connects exact package fingerprints and reviewed
 module identities to Nexus Mods projects. Matching is intentionally conservative: uncertain mods
 remain **Local** rather than being assigned a potentially incorrect source. The same database also
-contains exact dependency and ordering facts used only when Load Order Advisor is enabled.
+contains explicit dependency and ordering rules, plus grouping suggestions with different evidence
+strengths, used only when Load Order Advisor is enabled. Exact UUID matching identifies the entry;
+it does not make a name-based or inferred placement suggestion a verified compatibility rule.
 
 Use **Help > Generate Redux Database Contribution...** to create a privacy-limited
 `.bg3redux-report`. It contains sanitized mod identity, known provider IDs, and exact PAK
@@ -497,6 +503,7 @@ manifest is unavailable. Imported fonts and PNG icons remain the user's responsi
 | [Privacy and local data](docs/PRIVACY_AND_DATA.md) | Everyone | Understand stored data, network requests, logs, and safe sharing |
 | [Changes from upstream](docs/CHANGES_FROM_UPSTREAM.md) | Users and contributors | Understand what Redux retains and changes |
 | [Architecture](docs/ARCHITECTURE.md) | Contributors | Understand project boundaries, major components, and validation paths |
+| [Beta plan](docs/BETA_PLAN.md) | Contributors and testers | Follow the proposed beta scope, acceptance gates, and shared-platform direction |
 | [Diagnostics and optional features](docs/REDUX_OPTIONAL_MODULES.md) | Users and contributors | Understand diagnostics, online information, and advisor boundaries |
 | [Redux mod database](docs/REDUX_MOD_DATABASE.md) | Contributors and maintainers | Recognition, advisor knowledge, and reports |
 | [Mod developer tools](docs/MOD_DEVELOPER_TOOLS.md) | Mod authors | Inspect releases before distribution |

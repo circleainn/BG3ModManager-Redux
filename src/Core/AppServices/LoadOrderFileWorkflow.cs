@@ -12,10 +12,52 @@ public sealed record LoadOrderRenamePlan(
 	bool DestinationExists);
 
 /// <summary>
-/// Plans and applies managed load-order file renames independently from the UI.
+/// Applies managed load-order file copies and renames independently from the UI.
 /// </summary>
 public static class LoadOrderFileWorkflow
 {
+	/// <summary>
+	/// Saves a detached working copy and updates matching loaded orders only after
+	/// the complete file has been committed. Empty Override selections remain opt-in.
+	/// </summary>
+	public static DivinityLoadOrder SaveCopy(DivinityLoadOrder workingOrder, string destinationPath,
+		IEnumerable<DivinityLoadOrder> loadedOrders)
+	{
+		ArgumentNullException.ThrowIfNull(workingOrder);
+		ArgumentException.ThrowIfNullOrWhiteSpace(destinationPath);
+		var fullPath = Path.GetFullPath(destinationPath);
+		var saved = new DivinityLoadOrder
+		{
+			Name = Path.GetFileNameWithoutExtension(fullPath),
+			FilePath = fullPath,
+			Order = workingOrder.Order.Select(entry => entry.Clone()).ToList(),
+			VisualDividers = workingOrder.VisualDividers == null ? null
+				: LoadOrderPersistencePolicy.CloneActiveVisualDividers(workingOrder.VisualDividers),
+			OverrideModFiles = workingOrder.OverrideModFiles?.ToList()
+		};
+		var updates = (loadedOrders ?? []).Where(order => order != null
+			&& String.Equals(order.FilePath, fullPath, StringComparison.OrdinalIgnoreCase)).Distinct()
+			.Select(loaded => new
+			{
+				Loaded = loaded,
+				Order = saved.Order.Select(entry => entry.Clone()).ToList(),
+				VisualDividers = saved.VisualDividers == null ? null
+					: LoadOrderPersistencePolicy.CloneActiveVisualDividers(saved.VisualDividers),
+				OverrideModFiles = saved.OverrideModFiles?.ToList()
+			}).ToArray();
+		if (!DivinityModDataLoader.ExportLoadOrderToFile(fullPath, saved))
+			throw new IOException("The load-order copy could not be saved.");
+		saved.LastModifiedDate = File.GetLastWriteTime(fullPath);
+		foreach (var update in updates)
+		{
+			update.Loaded.Order = update.Order;
+			update.Loaded.VisualDividers = update.VisualDividers;
+			update.Loaded.OverrideModFiles = update.OverrideModFiles;
+			update.Loaded.LastModifiedDate = saved.LastModifiedDate;
+		}
+		return saved;
+	}
+
 	public static LoadOrderRenamePlan PlanRename(DivinityLoadOrder order, string requestedName)
 	{
 		ArgumentNullException.ThrowIfNull(order);

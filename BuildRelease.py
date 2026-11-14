@@ -6,6 +6,7 @@ import sys
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
+from tools.maintenance.build_provenance import write_provenance
 
 
 ROOT = Path(__file__).resolve().parent
@@ -24,6 +25,7 @@ THIRD_PARTY_LICENSE_FILES = (
 	Path("CrossSpeak-LGPL-2.1.txt"),
 	Path("Lucide-ISC.txt"),
 	Path("LSLib-MIT.txt"),
+	Path("BG3-Forge-MIT.txt"),
 	Path("Manrope-OFL-1.1.txt"),
 	Path("Atkinson-Hyperlegible-OFL-1.1.txt"),
 	Path("ArchivoBlack-OFL-1.1.txt"),
@@ -385,7 +387,9 @@ package_files = collect_package_files()
 validate_package_privacy(package_files)
 write_archive(package_files)
 write_update_manifest()
+provenance_path = write_provenance(ROOT, version, archive_path, update_manifest_path)
 
 print(f"Created {archive_path.name} with {len(package_files)} files.")
 print(f"Updated {latest_path.name}.")
 print(f"Created {update_manifest_path.name} with SHA-256 and byte-length verification metadata.")
+print(f"LOCAL CANDIDATE ONLY: {provenance_path.name} records source and artifact hashes; it is not publication approval.")

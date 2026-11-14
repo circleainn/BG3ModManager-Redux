@@ -233,6 +233,33 @@ public sealed class ReduxGameDirectoryInstallServiceTests
 		RegressionAssert.Equal("native-camera-tweaks", camera.Definition.PackageId);
 	}
 
+	public void NativeArchiveRecognitionRequiresConsistentSourceAndLayout()
+	{
+		using var fixture = new NativeFixture();
+		var fork = fixture.NewArchivePath("Achievement Enabler Fixed-26032-1-1700000000.zip");
+		fixture.CreateArchive(fork, ("bin/NativeMods/BG3AchievementEnabler.dll", fixture.Pe("fork")));
+		RegressionAssert.Throws<ReduxUnsupportedGameDirectoryArchiveException>(() =>
+			ReduxGameDirectoryInstallService.TryInspectKnownArchive(fork));
+		RegressionAssert.Throws<ReduxUnsupportedGameDirectoryArchiveException>(() =>
+			fixture.Installer(NativeFixture.SupportedVersion).InspectArchiveAsync(668, fork).GetAwaiter().GetResult());
+
+		var renamed = fixture.NewArchivePath("download.zip");
+		File.Copy(fork, renamed);
+		RegressionAssert.Throws<ReduxUnsupportedGameDirectoryArchiveException>(() =>
+			ReduxGameDirectoryInstallService.TryInspectKnownArchive(renamed, sourceModId: 26032));
+		RegressionAssert.Throws<ReduxUnsupportedGameDirectoryArchiveException>(() =>
+			ReduxGameDirectoryInstallService.TryInspectKnownArchive(renamed, sourceModId: 944));
+		RegressionAssert.Equal(668L, ReduxGameDirectoryInstallService.TryInspectKnownArchive(renamed, sourceModId: 668)!.Definition.NexusModId);
+
+		fixture.CreateCameraArchive(fixture.Pe("camera"), "[camera]");
+		RegressionAssert.Equal(22892L, ReduxGameDirectoryInstallService.TryInspectKnownArchive(
+			fixture.CameraArchivePath, sourceModId: 22892)!.Definition.NexusModId);
+		var namedCamera = fixture.NewArchivePath("Camera 945 2.5.1 abcDEF12.zip");
+		File.Copy(fixture.CameraArchivePath, namedCamera);
+		RegressionAssert.Throws<ReduxUnsupportedGameDirectoryArchiveException>(() =>
+			ReduxGameDirectoryInstallService.TryInspectKnownArchive(namedCamera, sourceModId: 22892));
+	}
+
 	public void ArchiveRecognitionRoutesScriptExtenderToGuardedGameDirectoryWorkflow()
 	{
 		using var fixture = new NativeFixture();
@@ -473,14 +500,26 @@ public sealed class ReduxGameDirectoryInstallServiceTests
 	{
 		using var managedFixture = new NativeFixture();
 		managedFixture.InstallLoader();
+		var ownership = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(managedFixture.ManifestPath))!;
+		ownership["Installations"]![0]!["DetectedVersion"] = "1.2.3";
+		File.WriteAllText(managedFixture.ManifestPath, ownership.ToJsonString());
+		var ownershipBefore = File.ReadAllText(managedFixture.ManifestPath);
 		var managed = managedFixture.Installer().GetInstalledMods().Single();
 		RegressionAssert.Equal(ReduxGameDirectoryModStatus.Managed, managed.Status);
 		RegressionAssert.True(managed.CanRestore);
+		RegressionAssert.Equal("1.2.3", managed.DetectedVersion);
 
 		File.WriteAllBytes(managedFixture.LoaderPath, managedFixture.Pe("changed outside Redux"));
 		var changed = managedFixture.Installer().GetInstalledMods().Single();
 		RegressionAssert.Equal(ReduxGameDirectoryModStatus.Changed, changed.Status);
 		RegressionAssert.False(changed.CanRestore);
+		RegressionAssert.True(String.IsNullOrEmpty(changed.DetectedVersion));
+		RegressionAssert.Equal(ownershipBefore, File.ReadAllText(managedFixture.ManifestPath));
+		RegressionAssert.True(File.Exists(managedFixture.LoaderPath));
+		File.Delete(managedFixture.LoaderPath);
+		var missing = managedFixture.Installer().GetInstalledMods().Single();
+		RegressionAssert.Equal(ReduxGameDirectoryModStatus.Missing, missing.Status);
+		RegressionAssert.True(String.IsNullOrEmpty(missing.DetectedVersion));
 
 		using var externalFixture = new NativeFixture();
 		externalFixture.WriteVanillaLoader(externalFixture.Pe("external loader"));

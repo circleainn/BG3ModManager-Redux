@@ -503,7 +503,8 @@ public sealed class ReduxGameDirectoryInstallService
 					installation.PackageId, installation.NexusModId, installation.Name, installation.SourceUrl,
 					installation.ArchiveName,
 					status, statusText, installation.Files.Select(file => file.RelativePath).ToArray(),
-					status == ReduxGameDirectoryModStatus.Managed, installation.DetectedVersion));
+					status == ReduxGameDirectoryModStatus.Managed,
+					status == ReduxGameDirectoryModStatus.Managed ? installation.DetectedVersion : String.Empty));
 			}
 		}
 
@@ -674,10 +675,11 @@ public sealed class ReduxGameDirectoryInstallService
 
 	/// <summary>
 	/// Conservatively identifies a reviewed game-directory archive without changing either Redux state
-	/// or the game. Layout alone is sufficient only when it identifies one catalog project; overlapping
-	/// layouts additionally require a Nexus-generated filename carrying the matching project id.
+	/// or the game. A known Nexus source must agree with the reviewed layout and any identified binary.
+	/// Without a source, use an exact reviewed fingerprint or an unambiguous layout.
 	/// </summary>
-	public static ReduxGameDirectoryArchiveInspection? TryInspectKnownArchive(string archivePath, bool computeArchiveHash = true)
+	public static ReduxGameDirectoryArchiveInspection? TryInspectKnownArchive(string archivePath, bool computeArchiveHash = true,
+		long? sourceModId = null)
 	{
 		var normalizedArchive = ValidateArchivePath(archivePath);
 		using var source = new FileStream(normalizedArchive, FileMode.Open, FileAccess.Read, FileShare.Read,
@@ -704,14 +706,19 @@ public sealed class ReduxGameDirectoryInstallService
 				}
 				return null;
 			}
+			var projectId = ResolveArchiveProjectId(normalizedArchive, sourceModId);
 			var exactBinaryMatch = FindExactBinaryMatch(matching, entries);
-			var nexusIdentity = NexusModFileVersionData.FromFilePath(normalizedArchive);
-			var projectMatches = nexusIdentity.Success
-				? matching.Where(match => match.Definition.NexusModId == nexusIdentity.ModId).ToArray()
-				: Array.Empty<(ReduxGameDirectoryModDefinition Definition, ReduxGameDirectoryModLayout Layout)>();
-			var selected = exactBinaryMatch ?? (projectMatches.Length == 1
-				? projectMatches[0]
-				: matching.Count == 1 ? matching[0] : default);
+			if (projectId.HasValue)
+			{
+				if (exactBinaryMatch is { } exact && exact.Definition.NexusModId != projectId.Value)
+					throw new ReduxUnsupportedGameDirectoryArchiveException(
+						$"The archive identifies Nexus project {projectId}, but the DLL matches reviewed project {exact.Definition.NexusModId}.");
+				matching.RemoveAll(match => match.Definition.NexusModId != projectId.Value);
+				if (matching.Count == 0)
+					throw new ReduxUnsupportedGameDirectoryArchiveException(
+						$"Nexus project {projectId} has no reviewed game-directory layout matching this archive.");
+			}
+			var selected = exactBinaryMatch ?? (matching.Count == 1 ? matching[0] : default);
 			if (selected.Definition == null)
 				throw new ReduxUnsupportedGameDirectoryArchiveException(
 					"This native archive matches more than one reviewed package. Keep its Nexus-generated filename so Redux can identify the intended project safely.");
@@ -735,6 +742,16 @@ public sealed class ReduxGameDirectoryInstallService
 		{
 			throw new InvalidDataException("Redux could not inspect this game-directory archive safely.", ex);
 		}
+	}
+
+	private static long? ResolveArchiveProjectId(string archivePath, long? sourceModId)
+	{
+		var filename = NexusModFileVersionData.FromFilePath(archivePath);
+		if (!filename.Success) return sourceModId;
+		if (sourceModId.HasValue && sourceModId.Value != filename.ModId)
+			throw new ReduxUnsupportedGameDirectoryArchiveException(
+				$"The archive filename identifies Nexus project {filename.ModId}, but its selected source is project {sourceModId}.");
+		return filename.ModId;
 	}
 
 	public async Task InspectArchiveAsync(long projectId, string archivePath, CancellationToken cancellationToken = default)
@@ -1175,6 +1192,7 @@ public sealed class ReduxGameDirectoryInstallService
 	private async Task<IReadOnlyDictionary<string, string>> ExtractValidatedArchiveAsync(ReduxGameDirectoryModDefinition definition,
 		string archivePath, string stageDirectory, CancellationToken cancellationToken)
 	{
+		ResolveArchiveProjectId(archivePath, definition.NexusModId);
 		try
 		{
 			using var source = new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.Read,

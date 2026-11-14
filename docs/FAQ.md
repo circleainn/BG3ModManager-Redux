@@ -10,7 +10,7 @@ support for reviewed game-directory mods, custom themes, and accessibility optio
 
 ## How do I change the interface language?
 
-In development builds, open **Preferences > General > Interface language** and choose English,
+In Redux 0.1.0-alpha.16.7 and later, open **Preferences > General > Interface language** and choose English,
 Français, Español, Русский, or 简体中文 (Simplified Chinese). The interface previews the selection
 immediately; click **Save** to keep it after restart. Languages are bundled and work offline.
 
@@ -23,6 +23,25 @@ provider messages still use their original language. Mod names, descriptions, fi
 and saved load orders are not translated. Your font, custom theme, and text size remain selected.
 Windows supplies fallback glyphs for characters a chosen font does not contain, so some scripts may
 look different from the font's Latin letters.
+
+## Does the BG3 AppData folder override move my mods?
+
+No. It changes where Redux reads profiles and mods and writes game load orders. It does not
+move files or redirect BG3. With `G:\BG3` selected, Redux uses `G:\BG3\Mods` and
+`G:\BG3\PlayerProfiles`. BG3 must access the same files through its own expected location.
+Moving the game installation alone does not move its Local AppData folder.
+
+## Does “Files changed” mean Redux disabled a DLL mod?
+
+No. It means the installed file differs from Redux's recorded copy. Redux leaves it in place
+and blocks managed removal while it differs. The warning does not establish whether the DLL
+loads successfully or is compatible with your game. A manual replacement may be intentional.
+
+## Is a Nexus API key an NXM link?
+
+No. Enter your API key in Preferences. An NXM download link begins with `nxm://` and identifies
+a download; Nexus's **Mod Manager Download** action supplies it. Do not share your API key or
+signed download links in public reports.
 
 ## Is Redux official?
 

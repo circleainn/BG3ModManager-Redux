@@ -35,6 +35,14 @@ Changes to the experimental native Linux forwarding helper also require
 `python -m unittest discover -s tests/linux -v`. These tests simulate dispatch; they do not replace
 real Wine desktop, browser, and restart checks.
 
+Publication metadata and maintenance-tool changes also require:
+
+```powershell
+python tools/maintenance/check_project_docs.py
+python -m unittest discover -s tests/maintenance -v
+.\tests\maintenance\Test-DependencyReports.ps1
+```
+
 Changes affecting release packaging should also build the Publish configuration. Filesystem,
 archive, download, native-mod, and load-order changes need tests for failure, cancellation, and
 recovery—not only the success path. Visual changes require inspection across built-in themes,
@@ -52,6 +60,33 @@ git diff --check
 The Publish build creates the portable ZIP and update-channel manifest locally; it does not publish
 a GitHub release. Do not commit generated archives, build directories, logs, user settings, or local
 test fixtures.
+
+### Dependency maintenance
+
+Run `tools/maintenance/Check-Dependencies.ps1` on Windows with the supported build toolchain.
+It builds/restores the C++/CLI graph, restores the separate maintainer tools, and records both
+vulnerability and available-update reports under `artifacts/maintenance/`. After a successful Debug
+build in the same checkout, `-SkipBuild` reuses that restore. Reports include transitive dependencies;
+failed queries and reported advisories fail the check instead of being interpreted as clean.
+
+The Dependency maintenance workflow runs weekly and can be dispatched manually. Its reports identify
+review candidates; it does not install upgrades or create automatic dependency PRs. The Windows CI
+uses the same audit. This provides a Windows review path while Linux Dependabot restoration cannot
+evaluate the native C++/CLI project. Dependabot's automatic PR creation remains a separate limitation.
+
+Review each advisory and release note, update the owning `PackageReference` in a focused branch,
+then rebuild Debug and Publish and run the full regression suite. Treat vendored submodule updates
+separately: review the pinned revision, compatibility overrides, native output, and notices. Do not
+upgrade an entire dependency graph merely because newer packages are listed.
+
+### Merge checks
+
+Require the successful `Build and regression checks` result for the current PR head before merging.
+Recommended main/dev repository rules prohibit force pushes and branch deletion, require pull
+requests and that check, and resolve review conversations. A solo-maintainer acceptance record can
+state the inspected change, exact head, automated results, and remaining manual checks; it must not
+claim an independent review that did not occur. Repository rules require administrator access and
+are separate from this documentation; a workflow file alone does not enforce them.
 
 ## Pull requests
 

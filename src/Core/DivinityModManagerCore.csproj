@@ -26,6 +26,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\External\lslib\LSLibNative\LSLibNative.vcxproj" />
 		<ProjectReference Include="..\..\External\lslib\LSLib\LSLib.csproj" />
+		<ProjectReference Include="..\..\External\lslib\LSLibStats\LSLibStats.csproj" />
 		<ProjectReference Include="..\..\External\CrossSpeak\CrossSpeak\CrossSpeak.csproj" />
 		<Reference Include="TolkDotNet">
 			<HintPath>..\..\External\CrossSpeak\CrossSpeak\lib\TolkDotNet.dll</HintPath>

@@ -62,6 +62,11 @@ Redux introduces a shared visual system across its main window and dialogs:
 - richer hover information and a persistent selected-mod details drawer; and
 - a unified Lucide-based icon language while preserving official provider branding where relevant.
 
+Since 16.7, the interface supports English, French, Spanish, Russian, and Simplified Chinese.
+Preferences and Welcome Setup offer language selection. Missing translations fall back to
+English; native-speaker wording review remains welcome. User content and formatting culture
+remain independent of the interface language.
+
 Appearance choices propagate through Redux-owned utility and review windows. Hiding interface
 icons removes their reserved layout space where appropriate; colored-text and colored-interaction
 preferences also govern category and semantic presentation in Quick Access. Redux Debug Mode and
@@ -331,7 +336,6 @@ Redux currently does not provide:
 - public Nexus SSO authentication;
 - automatic dependency downloading, compatibility repair, or conflict resolution;
 - silent load-order sorting or automatic game-file export;
-- application localization;
 - Linux, macOS, Wine, or Proton support; or
 - a self-contained .NET distribution.
 

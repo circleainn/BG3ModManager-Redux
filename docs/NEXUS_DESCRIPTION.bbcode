@@ -1,394 +1,233 @@
 [center]
 [img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/00-redux-header.png?v=ae09fac[/img]
 
-[url=https://github.com/circleainn/BG3ModManager-Redux][b]GitHub & Full Documentation[/b][/url] • [url=https://discord.gg/rJJF89vqFZ][b]Discord[/b][/url] • [url=https://github.com/circleainn/BG3ModManager-Redux/issues][b]Report an Issue[/b][/url]
+[b][color=#B89CFF]Less mod chaos. More control.[/color][/b]
+
+[url=https://github.com/circleainn/BG3ModManager-Redux][b]GitHub & Documentation[/b][/url] • [url=https://github.com/circleainn/BG3ModManager-Redux/releases][b]Releases & Changelog[/b][/url] • [url=https://discord.gg/rJJF89vqFZ][b]Discord[/b][/url]
 [/center]
 
-Baldur's Gate 3 Mod Manager Redux is a community fork of [url=https://github.com/LaughingLeader/BG3ModManager][b]LaughingLeader's BG3 Mod Manager[/b][/url].
+[b]Baldur's Gate 3 Mod Manager Redux[/b] is a Windows community fork of [url=https://github.com/LaughingLeader/BG3ModManager][b]LaughingLeader's BG3 Mod Manager[/b][/url], built to make your mod setup easier to organize, understand, and maintain.
 
-It keeps BG3MM's familiar profiles, Active/Inactive workflow, package handling, and load-order foundation, while adding a redesigned interface, stronger organization, built-in diagnostics, downloads, save management, native-mod tools, Nexus Collection importing, custom themes, and a much broader set of review and recovery tools.
-
-[center][heading][color=#B89CFF]Redux, explained like caveman[/color][/heading]
-[b]Less mod chaos. More control.[/b][/center]
-
-[quote][list]
-[*][b]Me have BG3 mods.[/b] Redux shows Active, Inactive, and Overrides in one place.[/*]
-[*][b]Me want tidy list.[/b] Drag mods, make groups, and switch between saved load orders.[/*]
-[*][b]Me want no surprises.[/b] Download, install, activate, and Sync are separate choices. Redux shows changes before writing them to the game.[/*]
-[*][b]Me already use BG3 Mod Manager.[/b] Redux reads the same Mods folder and profiles. No rebuilding everything just to try it.[/*]
-[*][b]Me new to modding.[/b] Welcome Setup shows the basics. Me still read mod-page instructions and keep backups. Big brain optional.[/*]
-[/list][/quote]
-
+Keep the familiar Active, Inactive, and Override panes, profiles, and drag-and-drop load orders. Add a redesigned interface, collapsible sections, built-in diagnostics, download and save managers, custom themes, and tools for backing up and restoring your setup.
 
 [quote]
-[color=#F0B44D][b]Redux is currently in public alpha.[/b][/color]
-
-Redux is developed and maintained primarily by me. The main workflows have had a lot of testing, but I cannot realistically cover every mod list, Windows configuration, archive layout, display setup, or combination of features on my own.
-
-[b]Bugs should still be expected.[/b]
-
-If you find something, the quickest way to get it in front of me is to [url=https://github.com/circleainn/BG3ModManager-Redux/issues][b]open a GitHub issue[/b][/url] or [url=https://discord.gg/rJJF89vqFZ][b]join the Redux Discord[/b][/url].
-
-Please keep backups of anything important while using alpha builds.[/quote]
-
-
-[heading][color=#B89CFF]What's new in 0.1.0-alpha.16.5[/color][/heading]
-
-Alpha.16.5 focuses on organizing large mod lists, managing Overrides across saved orders, and making updates and storage easier to control.
-
-[list]
-[*][b]Sub-separators across all three mod panes[/b] — organize Active, Inactive, and Override Mods with one level of nested sections, independent collapse, section-aware moves, and Undo/Redo. The rows, branch connectors, headers, and editor have also been refined.[/*]
-[*][b]A choice for existing separators[/b] — when an older order is opened, choose whether to share separator appearance across orders and whether to turn off existing separator lines. Redux makes a pre-upgrade copy before changing an existing order.[/*]
-[*][b]Overrides per saved order[/b] — optionally choose which Override PAKs belong to each saved order. Redux reviews file changes, keeps disabled PAKs in a managed folder, and recovers interrupted moves. Orders that do not opt in keep the previous all-Overrides behavior.[/*]
-[*][b]Clearer mod updates[/b] — check from Mod Review, see which verified Nexus files have a replacement, and open the affected mod pages from named review findings.[/*]
-[*][b]Update & Back Up[/b] — during an app update, save a ZIP of the existing Redux installation, BG3 mod PAKs and previous versions, saved orders, and profile load-order files before restart. Game saves are not included.[/*]
-[*][b]More control over local files[/b] — choose the managed Downloads folder, limit retained previous PAK versions separately from downloads, and add local aliases or preview artwork without changing a mod's package identity.[/*]
-[*][b]Native plugin management through YANML[/b] — install, update, or remove supported reviewed plugins through an existing compatible YANML setup.[/*]
-[*][b]Load-order and UI fixes[/b] — improved how Current follows a successful Sync, kept the selected BG3 profile through Refresh, and refined drag placement, columns, pane controls, and category assignment.[/*]
-[/list]
-
-[url=https://github.com/circleainn/BG3ModManager-Redux/releases/tag/v0.1.0-alpha.16.5][b]Read the full 0.1.0-alpha.16.5 release notes[/b][/url]
-
-
-[center]
-[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/01-what-is-redux.png?v=3275e4e[/img]
-[/center]
-
-Redux is still recognizably BG3 Mod Manager.
-
-You have [b]Active Mods[/b], [b]Inactive Mods[/b], [b]Override Mods[/b], profiles, saved load orders, drag-and-drop ordering, and the underlying BG3MM package workflow.
-
-The difference is everything built around that foundation.
-
-Redux is aimed at making larger mod setups easier to organize, understand, recover, and maintain without quietly taking control away from you.
-
-Downloading, installing, activating, saving, and syncing are intentionally separate actions.
-
-[list]
-[*]Downloading a package does not automatically install it.[/*]
-[*]Installing a normal PAK does not automatically activate it.[/*]
-[*]Editing your active order does not automatically save it.[/*]
-[*]Saving a Redux order does not automatically change BG3's [i]modsettings.lsx[/i].[/*]
-[/list]
-
-[b]Sync Load Order to Game[/b] is the separate reviewed step that writes the selected order to Baldur's Gate 3.
+[color=#F0B44D][b]Public alpha — actively developed, with bugs still expected.[/b][/color]
+Redux is developed and maintained primarily by me. Testing cannot cover every mod list or Windows setup, so keep independent backups of important mods, profiles, and saves. Reports and feedback help shape the next build.
+[/quote]
 
 
 [center]
 [img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/02-main-features.png?v=3275e4e[/img]
 [/center]
 
-[heading][color=#B89CFF]At a glance[/color][/heading]
-
 [list]
-[*][b]Categories[/b] with custom names, descriptions, colors, icons, ordering, filtering, and multiple assignments per mod.[/*]
-[*][b]Separators and sub-separators[/b] for named, colored, collapsible sections in Active, Inactive, and Override Mods.[/*]
-[*][b]Selected Mod Drawer[/b] with descriptions, requirements, files, changelogs, source information, diagnostics, and personal notes.[/*]
-[*][b]Saved Load Orders[/b] with comparison, history, restore points, Undo/Redo, optional per-order Override selection, and preview-first syncing.[/*]
-[*][b]Download Manager[/b] for local packages and optional Nexus Mod Manager downloads.[/*]
-[*][b]Nexus Collection Importer[/b] with installed-mod comparison, selective downloads, recent collections, and supported load-order import.[/*]
-[*][b]Package Archive Library[/b] for optional retention and reuse of verified install packages.[/*]
-[*][b]Save Game Manager[/b] with campaign grouping, screenshots, party data, mod review, imports, exports, and safer deletion.[/*]
-[*][b]Game-Directory Mod Manager[/b] for a reviewed catalog of Script Extender, native, and root-level packages.[/*]
-[*][b]Mod Diagnostics[/b] for locally detectable dependencies, UUID problems, overrides, conflicts, Script Extender requirements, and other package information.[/*]
-[*][b]Load Order Advisor[/b] for optional, experimental, preview-first organization guidance.[/*]
-[*][b]Redux Modlists[/b] for sharing saved orders and Redux organization data without redistributing PAK files.[/*]
-[*][b]Package Inspector[/b] for reviewing supported packages before installation.[/*]
-[*][b]Offline Mod Database[/b] for conservative source recognition and reviewed Advisor evidence.[/*]
-[*][b]Themes & Accessibility[/b] including Dark, Light, Parchment, custom themes, custom fonts, text sizing, Reduce Motion, configurable shortcuts, icon controls, and more.[/*]
+[*][b]Make a large library manageable.[/b] Use categories, nested collapsible sections, filters, and saved orders to find what you need.[/*]
+[*][b]See what will change.[/b] Review installs, game syncs, and optional load-order suggestions before applying them.[/*]
+[*][b]Keep a way back.[/b] Use Undo/Redo, order history, restore points, and named snapshots for different kinds of recovery.[/*]
+[*][b]Bring more of your setup together.[/b] Manage downloads, Nexus Collections, saves, and supported native plugins from Redux.[/*]
+[*][b]Make the interface yours.[/b] Choose themes, fonts, text sizes, shortcuts, icons, and motion settings.[/*]
 [/list]
-
-This is only the overview.
-
-For the [b]complete feature breakdown, documentation, current project state, troubleshooting, privacy information, developer tools, release notes, and technical details[/b], see the [url=https://github.com/circleainn/BG3ModManager-Redux][b]Redux GitHub repository[/b][/url].
-
-
-[center]
-[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/03-organization.png?v=3275e4e[/img]
-[/center]
-
-[heading][color=#B89CFF]Organization without changing the real load order[/color][/heading]
-
-Categories and separators are Redux organization tools.
-
-Categories let you group and filter mods without changing where they actually sit in the game order.
-
-Separators and sub-separators create collapsible sections and keep their membership as you move them around. Inactive organization is global; saved Active orders keep their own placement and collapsed state. Override organization stays in the Override pane, outside the numbered game load order.
-
-Inactive ordering and separators are also remembered automatically, so organizing your inactive library no longer depends on saving an active load order.
-
-[b]Categories, separators, colors, icons, and notes never enter [i]modsettings.lsx[/i].[/b] Optional per-order Override selection changes which PAK files are available to the game and is reviewed separately when you switch orders.
-
-
-[center]
-[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/04-saving-and-syncing.png?v=3275e4e[/img]
-[/center]
-
-[heading][color=#B89CFF]Load orders, history and safer syncing[/color][/heading]
-
-Redux treats three things separately:
-
-[list]
-[*]the active order you are currently editing;[/*]
-[*]the Redux saved order you have selected; and[/*]
-[*]the order currently written to Baldur's Gate 3.[/*]
-[/list]
-
-[b]Save[/b] updates your selected Redux order.
-
-[b]Sync Load Order to Game[/b] shows what will activate, deactivate, or move before writing the reviewed result to BG3.
-
-Redux also includes named orders, comparison, history, restore points, bounded Undo/Redo, staged writes, and protection against blindly undoing over a game file that BG3 or another manager changed afterward.
-
-The game-backed [b]Current[/b] order follows a successful Sync. Named Redux orders remain separate, and Sync does not silently save an unsaved edit to one.
-
-
-[center]
-[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/05-downloads.png?v=3275e4e[/img]
-[/center]
-
-[heading][color=#B89CFF]Download Manager[/color][/heading]
-
-Download Manager is the shared intake area for supported local packages and optional Nexus Mod Manager downloads.
-
-Drop a supported package onto Redux or add it directly. Redux inspects it before deciding where it belongs.
-
-[list]
-[*]Normal PAK mods go through the normal mod workflow.[/*]
-[*]Save packages are handed to Save Game Manager.[/*]
-[*]Reviewed native, root-level, and Script Extender packages use Game-Directory Mod Manager.[/*]
-[/list]
-
-New PAK mods normally enter [b]Inactive Mods[/b]. Updates preserve the installed mod's active/inactive state and load-order position where applicable.
-
-Downloads have visible progress, pause/resume/retry, restart recovery, package verification, installed history, and optional retained archives.
-
-You can choose Redux's managed Downloads folder in Preferences. A separate storage limit controls how much space retained previous PAK versions may use after a successful replacement.
-
-[b]Install All[/b] performs one grouped review before changing destinations instead of blindly processing everything in the queue.
-
-
-[heading][color=#B89CFF]Nexus Collection Importer[/color][/heading]
-
-Collections can be imported directly through Download Manager.
-
-Paste a BG3 Nexus Collection link and Redux can:
-
-[list]
-[*]show the collection artwork, author information, and contained files;[/*]
-[*]search and filter by Missing, Installed, Unverified, or Needs attention;[/*]
-[*]compare collection files against Nexus-linked mods in both Active and Inactive Mods;[/*]
-[*]skip exact installed files by default while keeping uncertain matches visible;[/*]
-[*]remember selections for recently opened collections;[/*]
-[*]guide Nexus authorization and track each requested download; and[/*]
-[*]review and save supported BG3 collection load orders without activating mods or replacing your current order.[/*]
-[/list]
-
-Collection-specific installer instructions are not automatically applied. Always read the collection author's setup instructions.
-
-
-[center]
-[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/06-save-game-manager.png?v=3275e4e[/img]
-[/center]
-
-[heading][color=#B89CFF]Save Game Manager[/color][/heading]
-
-Save Game Manager groups saves by campaign and shows available screenshots, save type, difficulty, date, size, location, game version, party information, and mod counts.
-
-[b]Review Mods[/b] compares a save's recorded UUIDs against your installed library and highlights missing or inactive mods.
-
-If an installed requirement is currently inactive, selected requirements can be activated directly from the review with Undo support.
-
-That does [b]not[/b] automatically save or sync your current order.
-
-You can also:
-
-[list]
-[*]import save folders, loose [i].lsv[/i] files, and supported archives;[/*]
-[*]export individual saves or complete campaigns to ZIP;[/*]
-[*]open saves directly in Explorer; and[/*]
-[*]send normal deletions to the Windows Recycle Bin.[/*]
-[/list]
-
-Redux reads save metadata but does not repair or guarantee save contents.
-
-[b]Close BG3 before changing saves and keep independent backups.[/b]
-
-
-[center]
-[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/07-game-directory-mods.png?v=3275e4e[/img]
-[/center]
-
-[heading][color=#B89CFF]Game-Directory Mod Manager[/color][/heading]
-
-Native and root-level mods are kept separate from the normal PAK load order.
-
-Game-Directory Mod Manager supports a reviewed catalog of package layouts, including Script Extender and several common native plugins.
-
-For compatible installations, Redux can also manage supported reviewed plugins through an existing YANML setup. YANML's own watcher, injector, and autostart still require their separate setup.
-
-Redux shows managed destinations before applying changes, validates supported layouts, tracks files it owns, preserves originals where required, and keeps unknown native layouts unmanaged rather than guessing where they belong.
-
-[quote]
-A recognized layout is not a publisher signature, malware scan, or compatibility guarantee.
-
-Native DLLs execute inside the game. Only install native code from sources you trust.[/quote]
-
-
-[center]
-[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/08-diagnostics-and-load-order-advisor.png?v=3275e4e[/img]
-[/center]
-
-[heading][color=#B89CFF]Diagnostics and Load Order Advisor[/color][/heading]
-
-[b]Mod Diagnostics[/b] is built in and read-only.
-
-Redux surfaces package information it can actually detect, including dependencies, UUID problems, overrides, Mod Fixer behavior, Script Extender requirements, and other warnings.
-
-Mod Review also names verified Nexus file updates after you run [b]Check Mod Updates[/b], with links to the affected mod pages. Redux does not mark uncertain version matches as confirmed updates.
-
-Diagnostics do not automatically repair, download, activate, remove, or reorder anything.
-
-The [b]Load Order Advisor[/b] is separate, optional, and experimental.
-
-It uses exact package declarations and reviewed offline knowledge to produce an [b]Organize Active Load Order[/b] preview.
-
-You review the moves and separator changes before applying them. Applying the preview creates one unsaved, undoable edit.
-
-[b]The Advisor is not a universal compatibility solver.[/b] Mod-author instructions still take priority.
-
-
-[heading][color=#B89CFF]Offline mod recognition[/color][/heading]
-
-Redux includes a curated offline mod database used for conservative source recognition and reviewed Advisor evidence.
-
-Recognition is intentionally cautious.
-
-If Redux does not have strong enough evidence to associate a package with Nexus Mods or another provider, it remains [b]Local[/b] rather than being matched from a similar-looking filename.
-
-The database can also be improved through privacy-limited contribution reports generated inside Redux. Reports contain sanitized identity information and fingerprints, not your PAK files, API key, private notes, or filesystem paths.
-
-
-[center]
-[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/09-themes-and-personalization.png?v=3275e4e[/img]
-[/center]
-
-[heading][color=#B89CFF]Themes, onboarding and accessibility[/color][/heading]
-
-Redux includes:
-
-[list]
-[*][b]Redux Dark[/b], [b]Redux Light[/b], and [b]Parchment[/b];[/*]
-[*]custom themes with live editing;[/*]
-[*]generated gradients or solid semantic colors;[/*]
-[*]bundled and imported fonts;[/*]
-[*]multiple text sizes;[/*]
-[*]custom category PNG icons;[/*]
-[*]Reduce Motion;[/*]
-[*]optional blur and background dimming;[/*]
-[*]configurable keyboard shortcuts; and[/*]
-[*]screen-reader and keyboard-accessibility support inherited and expanded from BG3MM.[/*]
-[/list]
-
-Welcome Setup now walks through appearance, adding mods, load-order practice, organization, and the Saves/native-mod managers.
-
-Appearance settings preview live, and the organization step can optionally create starter sections such as Foundations, Interface, Character Creation, Classes & Subclasses, Spells, Gameplay, Equipment, Visuals, and Patches.
 
 
 [center]
 [img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/10-installation.png?v=3275e4e[/img]
 [/center]
 
-[heading][color=#B89CFF]Installation and updating[/color][/heading]
-
-Redux public-alpha releases use one [b]Portable ZIP[/b].
-
-GitHub Releases and Nexus Mods receive the same approved archive.
+[b]Requirements:[/b] Windows 10 or 11 (x64), Baldur's Gate 3, and the [url=https://dotnet.microsoft.com/download/dotnet/8.0][b].NET 8 Desktop Runtime[/b][/url]. Linux, macOS, Wine, and Proton are not supported platforms.
 
 [list=1]
-[*]Install the [url=https://dotnet.microsoft.com/download/dotnet/8.0][b].NET 8 Desktop Runtime[/b][/url].[/*]
-[*]Download Redux from this Nexus page or the official GitHub Releases page.[/*]
-[*]Extract the [b]complete archive[/b] into a dedicated writable folder such as [b]C:\Modding\Redux[/b].[/*]
-[*]Launch [b]Redux.exe[/b].[/*]
-[*]Review the detected BG3 and profile paths before installing or syncing anything.[/*]
+[*]Install the [b].NET 8 Desktop Runtime[/b].[/*]
+[*]Download the [b]Portable ZIP[/b] from this Nexus page or [url=https://github.com/circleainn/BG3ModManager-Redux/releases][b]GitHub Releases[/b][/url]. Both receive the same approved archive.[/*]
+[*]Extract the [b]entire ZIP[/b] into a dedicated writable folder, such as [b]C:\Modding\Redux[/b].[/*]
+[*]Run [b]Redux.exe[/b], review the detected game and profile paths, and follow Welcome Setup.[/*]
 [/list]
 
-Do not run Redux from inside the ZIP, the Baldur's Gate 3 installation directory, or a protected Windows system folder.
+Do not run Redux inside the ZIP, the BG3 installation directory, or a protected Windows system folder.
 
-Redux can notify you when a newer fully published public-alpha build is available and apply supported updates in place.
+[b]Already using BG3 Mod Manager?[/b] Redux can use the same BG3 Mods folder and profiles. Give Redux its own application folder, keep backups, and check the selected profile and order before syncing. Avoid running file operations in both managers at the same time.
 
-When updating in the app, [b]Update & Back Up[/b] can create a ZIP of your existing Redux installation, BG3 mod PAKs and retained previous versions, saved orders, and profile load-order files before restart. This backup does not include game saves; keep separate backups of those.
+[b]Updating Redux:[/b] use the built-in updater, or close Redux, back up its folder, and extract the complete newer archive over it. [b]Update & Back Up[/b] offers a pre-update ZIP; ordinary [b]Update & Restart[/b] does not create that backup. Preserve your Data, orders, downloads, retained archives, logs, caches, and backups during a routine update.
 
-You can also update manually by closing Redux and extracting the complete newer archive over your existing folder.
-
-[b]Do not delete Redux's Data, downloads, logs, caches, retained archives, or backups during a routine update.[/b]
-
-[center]
-[url=https://github.com/circleainn/BG3ModManager-Redux/blob/main/docs/INSTALLATION.md][b]Full Installation, Update, Rollback & Removal Guide[/b][/url]
-[/center]
+[url=https://github.com/circleainn/BG3ModManager-Redux/blob/main/docs/INSTALLATION.md][b]Full installation, update, migration & removal guide[/b][/url]
 
 
 [center]
-[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/11-requirements.png?v=3275e4e[/img]
+[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/04-saving-and-syncing.png?v=3275e4e[/img]
 [/center]
+
+[heading][color=#B89CFF]From installed mod to game load order[/color][/heading]
+
+[list=1]
+[*][b]Install.[/b] Add a supported local package or install a completed download. New ordinary PAK mods enter [b]Inactive Mods[/b]; updates preserve an installed mod's active/inactive state and position where applicable.[/*]
+[*][b]Activate and arrange.[/b] Move the mods you want into [b]Active Mods[/b], then arrange them according to the authors' instructions.[/*]
+[*][b]Save.[/b] Store the working order in your selected Redux saved order.[/*]
+[*][b]Sync Load Order to Game.[/b] Review what will activate, deactivate, or move, then confirm writing the result to BG3's [i]modsettings.lsx[/i].[/*]
+[/list]
+
+[b]Save keeps your Redux order. Sync changes the game's order.[/b] They are separate actions. Sync updates the game-backed [b]Current[/b] order without silently saving unfinished edits to a named order.
+
+Named orders, comparisons, history, restore points, and Undo/Redo help you track changes. Redux also checks for external game-file changes before undoing a previous sync.
+
+[heading][color=#B89CFF]Backups and snapshots[/color][/heading]
+
+Open [b]Preferences > Backups[/b] or [b]Tools > Backups and snapshots[/b] to create a named snapshot of Redux's application files, settings, artwork, and saved orders. Enable [b]Include mods and mod lists[/b] to also capture BG3 PAKs, held Overrides, and profile load-order files.
+
+Restoring verifies the archive and creates a return snapshot first, so you can restore that state again later. Restore replaces the included folders and can remove newer files from them; review the scope before proceeding.
+
+[b]Snapshots exclude game saves and game-directory DLL/loose-texture mods.[/b] Pre-update ZIP backups also exclude saves. Keep independent copies of important files and use Save Game Manager for save exports.
+
+[url=https://github.com/circleainn/BG3ModManager-Redux/blob/main/docs/BACKUPS.md][b]Snapshot contents, restore limits & recovery guide[/b][/url]
+
+
+[center]
+[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/03-organization.png?v=3275e4e[/img]
+[/center]
+
+[b]Give every part of your library a place.[/b]
 
 [list]
-[*]Windows 10 or Windows 11, x64[/*]
-[*].NET 8 Desktop Runtime[/*]
-[*]Baldur's Gate 3[/*]
+[*][b]Categories:[/b] assign multiple labels per mod, with custom names, colors, icons, descriptions, and filters. Clear or restore automatic assignments while keeping manual choices.[/*]
+[*][b]Separators and sub-separators:[/b] create named, collapsible sections with one level of nesting across Active, Inactive, and Override Mods. Move selected mods into nested or collapsed sections with Undo/Redo.[/*]
+[*][b]Persistent organization:[/b] Inactive ordering and sections save automatically. Saved Active orders retain their own placement and collapsed state.[/*]
+[*][b]Mod details:[/b] inspect descriptions, requirements, files, changelogs, source information, and diagnostics in the selected mod drawer. Add private notes, searchable local aliases, or custom preview artwork.[/*]
+[*][b]Overrides per order:[/b] move Override PAKs between Inactive and Override Mods to record which are enabled for a saved order. Disabled PAKs stay in a Redux-managed folder. Orders without a recorded selection keep the previous all-Overrides behavior.[/*]
 [/list]
 
-Linux, macOS, Wine, and Proton are not currently supported.
+Categories, section labels, icons, aliases, and notes never enter [i]modsettings.lsx[/i]. Dragging a collapsed Active section also moves its contained mods in the working order; enabling or disabling Overrides changes which PAK files are available to the game.
+
+[b]Duplicate Override files?[/b] Use [b]Tools > Resolve Override Copies[/b] to compare copies, choose which to keep, and retain recovery backups.
+
+[heading][color=#B89CFF]Share your setup with Redux Modlists[/color][/heading]
+
+Export a [b].bg3redux Modlist[/b] with a saved order and selected categories, separators, icons, and public source links. Private notes are included only if you choose them. Imports and exports show a preview.
+
+Modlists contain no PAKs, saves, profiles, or API keys, and importing one does not install missing mods.
+
+
+[center]
+[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/05-downloads.png?v=3275e4e[/img]
+[/center]
+
+[b]Download, inspect, then decide what to install.[/b]
+
+Download Manager handles supported local packages and optional Nexus [b]Mod Manager Download[/b] links. Downloads stay separate from installation, with progress, pause/resume/retry, restart recovery, and package verification.
+
+Redux inspects packages and routes ordinary PAKs, saves, and reviewed native or Script Extender packages to the appropriate manager. [b]Install All[/b] gives you one grouped review of destinations and skipped items before installation.
+
+Choose a managed Downloads folder in Preferences. Enable the optional [b]Package Archive Library[/b] to retain verified installation packages for reuse, within a configurable storage limit. Previous PAK versions have their own storage limit, separate from downloads.
+
+[heading][color=#B89CFF]Nexus Collections[/color][/heading]
+
+Choose [b]Import Nexus Collection[/b] and paste a BG3 collection page link to review its latest published revision.
+
+[list]
+[*]Compare collection files with Nexus-linked mods in Active and Inactive Mods.[/*]
+[*]Skip exact installed files by default; filter Missing, Installed, Unverified, and Needs attention entries.[/*]
+[*]Choose files to download and return to remembered selections in recent collections.[/*]
+[*]Review and save a supported collection load order without activating mods or replacing your current order.[/*]
+[/list]
+
+Nexus integration requires API-key setup; manager downloads also use NXM link handling. Free accounts authorize individual files through [b]Mod Manager Download[/b]. Collection installer rules are not applied automatically, so follow the collection author's setup instructions.
+
+[heading][color=#B89CFF]Check updates on your terms[/color][/heading]
+
+Use [b]Mod Review > Check Mod Updates[/b], or right-click a linked Nexus mod and choose [b]Check Nexus File Update[/b]. Redux identifies verified replacement files and links to the affected mod pages; uncertain matches are not treated as confirmed updates.
+
+[b]Skip this update[/b] hides specific offered replacements while allowing later updates to notify you. Use [b]Show skipped updates[/b] to bring those notifications back.
+
+
+[center]
+[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/08-diagnostics-and-load-order-advisor.png?v=3275e4e[/img]
+[/center]
+
+[b]Understand the warnings before changing the order.[/b]
+
+[b]Mod Diagnostics[/b] surfaces locally detectable dependencies, UUID problems, overrides, Mod Fixer behavior, Script Extender requirements, and package warnings. It is built in and read-only; diagnostics do not automatically repair, install, activate, or reorder mods.
+
+The optional, experimental [b]Load Order Advisor[/b] uses package declarations, explicit offline rules, and labeled grouping suggestions to preview changes to Active Mods. Keep existing sections, replace them with suggested sections, or organize without sections. Applying a preview creates one unsaved, undoable edit.
+
+[b]The Advisor cannot guarantee compatibility.[/b] Mod-author instructions still take priority.
+
+The bundled offline database also helps identify mod sources. When the evidence is uncertain, a package stays [b]Local[/b]. You can help improve recognition by generating a contribution report containing sanitized identity information and fingerprints, without including PAKs, credentials, private notes, or filesystem paths.
+
+
+[center]
+[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/06-save-game-manager.png?v=3275e4e[/img]
+[/center]
+
+[b]Find the campaign, inspect the save, review its mods.[/b]
+
+Save Game Manager groups saves by campaign and shows available screenshots, dates, difficulty, location, party information, and mod counts.
+
+[b]Review Mods[/b] compares recorded mod UUIDs with your installed library and highlights missing or inactive entries. You can activate installed inactive requirements with Undo support, then save and sync separately. This review does not verify required versions, dependency chains, or native mods.
+
+Import save folders, loose [i].lsv[/i] files, or supported archives. Export saves or campaigns to ZIP within the export limits: [b]32 saves, 1 GB total, 256 MB per file[/b]. Normal deletion uses the Windows Recycle Bin.
+
+[b]Close BG3 before changing saves and keep independent backups.[/b] Redux reads metadata; it does not repair save contents. Steam Cloud may restore files deleted locally.
+
+
+[center]
+[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/07-game-directory-mods.png?v=3275e4e[/img]
+[/center]
+
+[b]Manage supported native mods alongside your PAK library.[/b]
+
+Game-Directory Mod Manager handles a reviewed catalog of Script Extender, native, and root-level package layouts. It previews destinations, validates supported files, tracks ownership, and preserves originals where required. Unknown or modified native layouts remain unmanaged.
+
+With an existing compatible [b]YANML[/b] setup, Redux can install, update, or remove supported reviewed plugins. YANML itself, including its watcher, injector, and autostart, still needs separate setup.
+
+Native DLLs execute inside the game. Use trusted sources: layout recognition is not a publisher signature, malware scan, or compatibility guarantee.
+
+
+[center]
+[img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/09-themes-and-personalization.png?v=3275e4e[/img]
+[/center]
+
+[b]Set up a workspace that feels comfortable to use.[/b]
+
+Choose English, French, Spanish, Russian, or Simplified Chinese in [b]Preferences > General > Interface language[/b] or Welcome Setup. Missing translations fall back to English; mod names, user content, and date/number formatting remain unchanged. Translation corrections are welcome.
+
+Choose [b]Redux Dark[/b], [b]Redux Light[/b], or [b]Parchment[/b], or edit a custom theme with live previews. Adjust fonts, text size, gradients, category icons, blur, background dimming, and Reduce Motion.
+
+Configure keyboard shortcuts, use keyboard and screen-reader support, or open [b]Quick Access (Ctrl + Q)[/b] to find commands, mods, profiles, orders, themes, and folders.
+
+Welcome Setup introduces the main workflow and can create starter sections for your library.
 
 
 [center]
 [img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/12-privacy.png?v=3275e4e[/img]
 [/center]
 
-Redux is a local desktop application.
+Redux runs locally, with [b]no Redux account, advertising, analytics, or general-purpose telemetry[/b]. Core package discovery, load-order editing, diagnostics, saved orders, and save browsing work offline.
 
-There is no Redux account, advertising, analytics, or general-purpose telemetry.
+Optional provider information, downloads, and application updates use their relevant online services. Your mod list, saves, categories, notes, settings, and diagnostics are not uploaded to a Redux service.
 
-Your mod list, saves, categories, notes, settings, and diagnostics are not uploaded to a Redux service.
-
-Optional online features make network requests only when enabled or used.
+[url=https://github.com/circleainn/BG3ModManager-Redux/blob/main/docs/PRIVACY_AND_DATA.md][b]Privacy, local storage & network details[/b][/url]
 
 
 [center]
 [img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/13-bugs-feedback-and-support.png?v=3275e4e[/img]
 [/center]
 
-[heading][color=#B89CFF]Bugs, feedback and contributions[/color][/heading]
+Found a bug, have an idea, or need help with a setup?
 
-Redux is still actively being developed.
+[list]
+[*][url=https://github.com/circleainn/BG3ModManager-Redux/issues][b]GitHub Issues[/b][/url] — reproducible bugs and focused feature requests. Include your Redux and Windows versions, relevant BG3 patch, steps to reproduce, and what you expected to happen.[/*]
+[*][url=https://discord.gg/rJJF89vqFZ][b]Redux Discord[/b][/url] — troubleshooting, discussion, testing feedback, and help narrowing down an issue.[/*]
+[*][url=https://github.com/circleainn/BG3ModManager-Redux/blob/main/docs/FAQ.md][b]FAQ[/b][/url] and [url=https://github.com/circleainn/BG3ModManager-Redux/blob/main/docs/TROUBLESHOOTING.md][b]Troubleshooting[/b][/url] — answers and practical checks.[/*]
+[/list]
 
-If something breaks, please report it rather than assuming it is intentional.
+Developers, mod authors, testers, writers, and designers are welcome to [url=https://github.com/circleainn/BG3ModManager-Redux/blob/main/docs/CONTRIBUTING.md][b]contribute[/b][/url].
 
-[url=https://github.com/circleainn/BG3ModManager-Redux/issues][b]GitHub Issues[/b][/url] — reproducible bugs and focused feature requests.
-
-[url=https://discord.gg/rJJF89vqFZ][b]Redux Discord[/b][/url] — troubleshooting, discussion, testing feedback, and quicker back-and-forth while tracking down an issue.
-
-The project is also open to contributions. Developers, mod authors, testers, documentation contributors, UI/UX designers, and graphic designers are welcome.
-
-If you are interested in helping, GitHub or Discord are the best places to get in touch.
-
-[center][color=#E26473][b]Never share API keys, credentials, signed authorization links, or screenshots containing them.[/b][/color][/center]
+[b]Review screenshots and logs before sharing.[/b] Remove personal paths and never post API keys, credentials, signed download links, or private backup archives.
 
 
 [center]
 [img]https://raw.githubusercontent.com/circleainn/BG3ModManager-Redux/main/docs/assets/nexus-description/14-credits.png?v=3275e4e[/img]
-[/center]
 
-[center]
-Redux exists because of [url=https://github.com/LaughingLeader/BG3ModManager][b]LaughingLeader's original BG3 Mod Manager[/b][/url] and retains substantial upstream code and behavior.
+Redux builds on [url=https://github.com/LaughingLeader/BG3ModManager][b]LaughingLeader's BG3 Mod Manager[/b][/url] and retains substantial upstream code and behavior. It also uses [b]Norbyte's LSLib[/b] and other open-source libraries, fonts, accessibility components, and icons.
 
-It also uses [b]Norbyte's LSLib[/b] along with other open-source libraries, fonts, accessibility components, and icon resources.
+[url=https://ko-fi.com/LaughingLeader][b]Support LaughingLeader[/b][/url] • [url=https://ko-fi.com/circleain][b]Support Redux[/b][/url] • [url=https://github.com/circleainn/BG3ModManager-Redux/blob/main/licenses/Third-Party-Notices.md][b]Third-party notices & licenses[/b][/url]
 
-[url=https://ko-fi.com/LaughingLeader][b]Support LaughingLeader[/b][/url] • [url=https://ko-fi.com/circleain][b]Support Redux[/b][/url]
-
-[url=https://github.com/circleainn/BG3ModManager-Redux/blob/main/licenses/Third-Party-Notices.md][b]Third-Party Notices & Licenses[/b][/url]
-
-Baldur's Gate 3 Mod Manager Redux is an unofficial community project and is not affiliated with or endorsed by Larian Studios, Nexus Mods, or mod.io.
-
-[url=https://github.com/circleainn/BG3ModManager-Redux][b]GitHub & Documentation[/b][/url] • [url=https://discord.gg/rJJF89vqFZ][b]Discord[/b][/url]
+Baldur's Gate 3 Mod Manager Redux is an unofficial community project, not affiliated with or endorsed by Larian Studios, Nexus Mods, or mod.io.
 [/center]

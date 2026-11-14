@@ -253,6 +253,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private const string PrivateNoteMenuTag = "ReduxPrivateNote";
 	private const string ModAliasMenuTag = "ReduxModAlias";
 	private const string ModArtworkMenuTag = "ReduxModArtwork";
+	private const string ModContentMenuTag = "ReduxModContent";
 	private const string OverrideTransferMenuTag = "ReduxOverrideTransfer";
 	private const string ModUpdateMenuTag = "ReduxModUpdate";
 	private const string BulkActionsMenuTag = "ReduxBulkActions";
@@ -1193,6 +1194,20 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			categoryMenu.Items.Add(categoryItem);
 		}
 
+		if (!hasBulkCategoryTargets && !String.IsNullOrWhiteSpace(mod.FilePath))
+		{
+			var inspectContent = new MenuItem
+			{
+				Tag = ModContentMenuTag,
+				Icon = ReduxIcon.FromResource("Redux.Icon.DocumentText", true),
+				IsEnabled = !ViewModel.MainProgressIsActive
+			};
+			DivinityModManager.Localization.LocalizationBindings.Set(
+				inspectContent, HeaderedItemsControl.HeaderProperty, "What this mod changes...");
+			inspectContent.Click += (_, _) => ViewModel.OpenModContentInspector(mod);
+			menu.Items.Insert(0, inspectContent);
+		}
+
 		var privateNoteItem = new MenuItem
 		{
 			Header = hasBulkCategoryTargets
@@ -1527,6 +1542,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		|| Equals(entry.Tag, PrivateNoteMenuTag)
 		|| Equals(entry.Tag, ModAliasMenuTag)
 		|| Equals(entry.Tag, ModArtworkMenuTag)
+		|| Equals(entry.Tag, ModContentMenuTag)
 		|| Equals(entry.Tag, OverrideTransferMenuTag)
 		|| Equals(entry.Tag, ModUpdateMenuTag)
 		|| Equals(entry.Tag, SourceLinkMenuTag)
@@ -1613,6 +1629,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		if (sender is FrameworkElement { DataContext: DivinityModData mod })
 			ShowModNoteDialog(mod);
+	}
+
+	private void InspectModContentButton_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is FrameworkElement { DataContext: DivinityModData mod })
+			ViewModel?.OpenModContentInspector(mod);
 	}
 
 	private void EditModAliasButton_Click(object sender, RoutedEventArgs e)
@@ -4094,12 +4116,24 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		return ReferenceEquals(InactiveModsListView.View, gridView) ? InactiveModsListView : null;
 	}
 
+	private string GetColumnPaneKey(GridView view) => ReferenceEquals(view, InactiveModsListView.View)
+		? "Inactive" : ReferenceEquals(view, ForceLoadedModsListView.View) ? "Override" : "Active";
+
+	private List<string> GetPersistedColumnOrder(GridView view)
+	{
+		ViewModel.Settings.ModListColumnOrders ??= new();
+		ViewModel.Settings.ModListColumnOrders.TryGetValue(GetColumnPaneKey(view), out var saved);
+		return ModColumnOrder.Normalize(saved, _modListColumnRegistry[view].OrderBy(x => x.Value.Index).Select(x => x.Key));
+	}
+
 	private void RestorePersistedModListColumnWidths()
 	{
 		CaptureModListColumnWidths();
 		foreach (var (gridView, registry) in _modListColumnRegistry)
 		{
 			var listView = GetOwningModListView(gridView);
+			var order = GetPersistedColumnOrder(gridView);
+			ModColumnOrder.RestoreVisible(gridView.Columns, order.Select(key => registry[key].Column));
 			var persisted = GetPersistedColumnWidths(listView);
 			if (listView == null || persisted == null || persisted.Count == 0)
 			{
@@ -4142,9 +4176,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			if (Double.IsFinite(width) && width > 0)
 			{
 				persisted[columnName] = width;
+				_visibleModListColumnWidths[entry.Column] = width;
 			}
 		}
 
+		ViewModel.Settings.ModListColumnOrders[GetColumnPaneKey(gridView)] = ModColumnOrder.MergeVisible(
+			GetPersistedColumnOrder(gridView), gridView.Columns.Select(GetColumnName), registry.OrderBy(x => x.Value.Index).Select(x => x.Key));
 		if (queueSave)
 		{
 			ViewModel.QueueSave();
@@ -4515,9 +4552,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 		if (isVisible)
 		{
+			if (gridView.Columns.Contains(column)) return;
 			if (!gridView.Columns.Contains(column))
 			{
-				var insertionIndex = registry.Values.Count(item => item.Index < registeredColumn.Index && gridView.Columns.Contains(item.Column));
+				var order = GetPersistedColumnOrder(gridView);
+				var insertionIndex = order.TakeWhile(key => !String.Equals(key, columnName, StringComparison.OrdinalIgnoreCase))
+					.Count(key => gridView.Columns.Contains(registry[key].Column));
 				gridView.Columns.Insert(Math.Min(insertionIndex, gridView.Columns.Count), column);
 			}
 			column.Width = _visibleModListColumnWidths.TryGetValue(column, out var storedWidth)
@@ -4560,6 +4600,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 
 	private void ResetModListColumnsToDefaults()
 	{
+		ViewModel.Settings.ModListColumnOrders = new();
 		ViewModel.Settings.ShowActiveModIndex = true;
         ViewModel.Settings.ShowInactiveModIndex = false;
         CaptureModListColumnWidths();

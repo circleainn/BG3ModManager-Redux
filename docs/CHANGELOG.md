@@ -3,7 +3,29 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
-## Unreleased
+## 0.1.0-alpha.16.7.1
+
+- Inspect an installed mod with **What this mod changes...** to browse its package files, Stats declarations, and fields inherited within the package.
+
+- Refresh the offline Load Order Advisor with 1,391 additional modules, updated dependency and
+  placement guidance, and support for Fade's Equipment Distribution AIO as a substitute for FED.
+
+- Check the Nexus project identity when reviewing native mod archives. A replacement DLL from a
+  different project can share the original's file layout and still require its own review.
+- Show a repeated Nexus file once in collection previews when its details and optional status agree.
+  If two entries conflict, the error identifies the collection revision and file ID.
+- Clarify that the AppData override changes Redux's paths without moving files or redirecting BG3.
+  Explain changed native DLLs without implying they are disabled, and stop presenting recorded or
+  source-page versions as verified installed versions for changed files. Clarify API-key versus NXM-link entry.
+- Preserve Script Extender version/digest pins while refreshing the available-version list,
+  including pins no longer listed. Only an explicit version selection changes the pin.
+- Remember column order separately for Active, Inactive, and Override panes, retain hidden
+  column positions, and preserve resized widths when toggling other columns.
+- Preserve Override package selection and separator placement when using **Save Order As**.
+  Replacing an existing saved order refreshes its loaded copies and selects the destination
+  through the normal order-switch review. Failed writes retain the previous file and loaded state.
+- Clarify Install All results in all five interface languages: new load-order mods start inactive,
+  while updates preserve their existing state and position.
 
 ## 0.1.0-alpha.16.7 — 2026-10-23
 
