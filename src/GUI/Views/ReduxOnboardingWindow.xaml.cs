@@ -82,7 +82,7 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 			var label = new TextBlock { TextWrapping = TextWrapping.Wrap };
 			LocalizationBindings.Set(label, TextBlock.TextProperty, section.Title);
 			content.Children.Add(label);
-			var choice = new CheckBox { Tag = section.Title, IsChecked = true, Margin = new Thickness(0, 6, 10, 6), Content = content };
+			var choice = new CheckBox { Tag = section.Title, IsChecked = true, Margin = new Thickness(0, 3, 10, 3), Content = content };
 			System.Windows.Automation.AutomationProperties.SetLabeledBy(choice, label);
 			choice.SetResourceReference(StyleProperty, "ReduxCheckBoxStyle");
 			StarterSeparatorsPreview.Children.Add(choice);
