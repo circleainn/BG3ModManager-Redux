@@ -297,7 +297,8 @@ public static class ReduxGameDirectoryModCatalog
 			BinaryFingerprints = Fingerprints(
 				Fingerprint("bin/DWrite.dll", 5837824, "25151fb060cdad69fc322bb338edbf822d77291ef75661958a72df186d1a2fcb", "31"),
 				Fingerprint("bin/DWrite.dll", 5988352, "8f3c0782461cc280cab4adfc270979549211f6cac91ad851baa2b2716118ecb0", "32"),
-				Fingerprint("bin/DWrite.dll", 5987840, "3d2496c8e2e88accc53ef50f5cca7967b437409c4e11b744861cc3ae2816c777", "32 hotfix 1"))
+				Fingerprint("bin/DWrite.dll", 5987840, "3d2496c8e2e88accc53ef50f5cca7967b437409c4e11b744861cc3ae2816c777", "32 hotfix 1"),
+				Fingerprint("bin/DWrite.dll", 6429184, "69352751162bf7e2adcd6f8ba2eed38ab4a150a605926d2cc44eb650e188ec31", "33"))
 		}
 	});
 
@@ -497,6 +498,10 @@ public sealed class ReduxGameDirectoryInstallService
 					!String.Equals(item.File.InstalledHash, item.Current.Hash, StringComparison.Ordinal));
 				var status = missing ? ReduxGameDirectoryModStatus.Missing
 					: changed ? ReduxGameDirectoryModStatus.Changed : ReduxGameDirectoryModStatus.Managed;
+				var detectedVersion = installation.DetectedVersion;
+				if (status == ReduxGameDirectoryModStatus.Managed && String.IsNullOrEmpty(detectedVersion)
+					&& definition.Kind == ReduxGameDirectoryModKind.ScriptExtender)
+					detectedVersion = FindExactReviewedDllSetIdentity(definition, snapshots.Select(item => item.Current).ToArray())?.Fingerprint.Version ?? String.Empty;
 				var statusText = missing ? "Managed files are missing"
 					: changed ? "Changed outside Redux" : "Managed by Redux";
 				results.Add(new ReduxGameDirectoryModEntry(
@@ -504,7 +509,7 @@ public sealed class ReduxGameDirectoryInstallService
 					installation.ArchiveName,
 					status, statusText, installation.Files.Select(file => file.RelativePath).ToArray(),
 					status == ReduxGameDirectoryModStatus.Managed,
-					status == ReduxGameDirectoryModStatus.Managed ? installation.DetectedVersion : String.Empty));
+					status == ReduxGameDirectoryModStatus.Managed ? detectedVersion : String.Empty));
 			}
 		}
 
@@ -544,7 +549,7 @@ public sealed class ReduxGameDirectoryInstallService
 				_ => "Unverified game-directory mod variant"
 			};
 			if (isUnverifiedVariant && representative?.Kind == ReduxGameDirectoryModKind.ScriptExtender)
-				externalName = "Baldur's Gate 3 Script Extender (unverified variant)";
+				externalName = "Unidentified DWrite.dll";
 			var detectedVersion = exactMatch?.Fingerprint.Version ?? String.Empty;
 			var statusText = isUnverifiedVariant ? "Not managed by this Redux installation · unverified variant"
 				: String.IsNullOrWhiteSpace(detectedVersion) ? "Not managed by this Redux installation"
@@ -946,6 +951,8 @@ public sealed class ReduxGameDirectoryInstallService
 					throw new InvalidDataException("The staged native file changed after archive validation.");
 			}
 
+			if (plan.AlreadyInstalledExternally) return;
+
 			var transactionBackups = await CreateTransactionBackupsAsync(plan.Writes, plan.TransactionId, cancellationToken);
 			foreach (var write in plan.Writes)
 			{
@@ -1054,6 +1061,15 @@ public sealed class ReduxGameDirectoryInstallService
 			InstalledAtUtc = DateTimeOffset.UtcNow
 		};
 		var writes = new List<PlannedWrite>();
+		if (existing == null && definition.Kind == ReduxGameDirectoryModKind.ScriptExtender
+			&& detectedVersion.Length > 0 && snapshots.Count == 1
+			&& snapshots["DWrite.dll"].Hash == stagedHashes["DWrite.dll"])
+		{
+			return new NativeInstallPlan(definition, manifestFingerprint, archivePath, archiveFingerprint,
+				stageDirectory, transactionId, guards, writes, installation,
+				$"The official v{detectedVersion} Script Extender updater is already installed. Redux will keep the existing file.",
+				alreadyInstalledExternally: true);
+		}
 
 		if (definition.Kind == ReduxGameDirectoryModKind.NativeLoader)
 		{
@@ -1143,7 +1159,16 @@ public sealed class ReduxGameDirectoryInstallService
 			if (snapshot.Exists)
 			{
 				if (prior == null && !definition.ReplacementOriginals.ContainsKey(canonicalPath))
+				{
+					if (definition.Kind == ReduxGameDirectoryModKind.ScriptExtender)
+					{
+						var recognized = ReduxGameDirectoryModCatalog.FindByBinaryFingerprint(canonicalPath, snapshot.Length, snapshot.Hash!);
+						throw new InvalidOperationException(recognized != null
+							? "A different Script Extender updater is already installed. Choose Manage in Game-Directory Mod Manager before updating it."
+							: "An unidentified DWrite.dll already exists in the BG3 bin folder. Redux left it in place. Check where that file came from before installing Script Extender.");
+					}
 					throw new InvalidOperationException($"Redux will not replace the unmanaged native file '{relativePath}'.");
+				}
 				if (prior != null && definition.ReplacesExistingGameFiles) EnsureOwnedFileUnchanged(prior, snapshot);
 			}
 			else if (prior != null && definition.ReplacesExistingGameFiles)
@@ -2181,12 +2206,13 @@ public sealed class ReduxGameDirectoryInstallService
 		public IReadOnlyList<DestinationSnapshot> Guards { get; }
 		public IReadOnlyList<PlannedWrite> Writes { get; }
 		public NativeOwnedInstallation InstallationAfter { get; }
+		public bool AlreadyInstalledExternally { get; }
 		public string ReviewText { get; }
 
 		public NativeInstallPlan(ReduxGameDirectoryModDefinition definition, string manifestFingerprint, string archivePath,
 			FileFingerprint archiveFingerprint, string stageDirectory, string transactionId,
 			IReadOnlyList<DestinationSnapshot> guards, IReadOnlyList<PlannedWrite> writes,
-			NativeOwnedInstallation installationAfter, string reviewText)
+			NativeOwnedInstallation installationAfter, string reviewText, bool alreadyInstalledExternally = false)
 		{
 			Definition = definition;
 			ManifestFingerprint = manifestFingerprint;
@@ -2197,6 +2223,7 @@ public sealed class ReduxGameDirectoryInstallService
 			Guards = guards;
 			Writes = writes;
 			InstallationAfter = installationAfter;
+			AlreadyInstalledExternally = alreadyInstalledExternally;
 			ReviewText = reviewText;
 		}
 	}
@@ -2280,6 +2307,7 @@ public sealed class ReduxGameDirectoryInstallTransaction : IAsyncDisposable
 	}
 
 	public string ReviewText { get; }
+	public bool AlreadyInstalledExternally => _plan?.AlreadyInstalledExternally == true;
 
 	public async Task CommitAsync(CancellationToken cancellationToken = default)
 	{

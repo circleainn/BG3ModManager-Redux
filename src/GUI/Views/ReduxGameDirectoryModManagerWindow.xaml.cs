@@ -36,7 +36,9 @@ public sealed record ReduxGameDirectoryModListItem(
 	public bool IsAdopted => Entry.ArchiveName == "Adopted external installation";
 	public bool IsExternalReplacement => Entry.Status == ReduxGameDirectoryModStatus.External
 		&& ReduxGameDirectoryModCatalog.Find(Entry.NexusModId)?.ReplacesExistingGameFiles == true;
-	public string ManagementNote => CanAdopt
+	public string ManagementNote => Status == ReduxGameDirectoryModStatus.External && Entry.PackageId == "script-extender" && !CanAdopt
+		? "Check where this DWrite.dll came from before installing Script Extender."
+		: CanAdopt
 		? "Redux recognizes this exact reviewed DLL. Manage it without changing the installed file."
 		: IsExternalReplacement
 			? "This Redux installation has no protected original backups. If another Redux copy installed this mod, manage it there. Otherwise, remove it, verify BG3's files in Steam or GOG, then install it through this copy."
@@ -157,7 +159,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 					installer.NativePluginDestination == ReduxNativePluginDestination.YanmlPlugins
 						? $"Destination: YANML Plugins\\{relative[("NativeMods/".Length)..].Replace('/', '\\')}"
 						: $"Destination: BG3\\bin\\{relative.Replace('/', '\\')}",
-					preserve ? "Keep existing settings" : replacesExisting ? "Replace file · protect original" : isRepair ? "Repair managed file" : isUpdate ? "Update managed file" : "Install managed file",
+					transaction.AlreadyInstalledExternally ? "Already installed · keep existing file" : preserve ? "Keep existing settings" : replacesExisting ? "Replace file · protect original" : isRepair ? "Repair managed file" : isUpdate ? "Update managed file" : "Install managed file",
 					isRepair ? ReduxInstallReviewTone.Warning : preserve || replacesExisting ? ReduxInstallReviewTone.Info
 						: isUpdate ? ReduxInstallReviewTone.Success : ReduxInstallReviewTone.Info);
 			}).ToList();
@@ -184,7 +186,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 				"Some plugins still read settings from BG3\\bin\\NativeMods even when YANML loads their DLL from the local Plugins folder.",
 				"Check the plugin's settings path if it loads but ignores configuration", ReduxInstallReviewTone.Info));
 
-			var summary = $"{(isRepair ? "Managed repair" : isUpdate ? "Managed update" : "New managed install")} · {inspection.Definition.Name} · {inspection.LayoutName} · {inspection.FileCount} files · "
+			var summary = $"{(transaction.AlreadyInstalledExternally ? "Already installed" : isRepair ? "Managed repair" : isUpdate ? "Managed update" : "New managed install")} · {inspection.Definition.Name} · {inspection.LayoutName} · {inspection.FileCount} files · "
 				+ $"{FormatBytes(inspection.ExpandedBytes)} expanded";
 			var dialog = new ReduxInstallReviewWindow(owner, reviewItems,
 				ReduxInstallReviewKind.GameDirectory,
@@ -200,7 +202,8 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 					inspection.PackageEntries.Count > 0
 						? token => viewModel.ImportModsWithoutReviewAsync([archivePath], null, nexusSource, token)
 						: null, cancellationToken);
-				viewModel.ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Installed {inspection.Definition.Name}."), AlertType.Success, 20);
+				viewModel.ShowAlert(transaction.AlreadyInstalledExternally ? transaction.ReviewText
+					: DivinityModManager.Localization.ReduxLanguageService.Current.Format($"Installed {inspection.Definition.Name}."), AlertType.Success, 20);
 				return true;
 			}
 			catch (OperationCanceledException) when (!cancellationToken.CanBeCanceled)
@@ -290,6 +293,10 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 	private ReduxGameDirectoryModListItem CreateListItem(ReduxGameDirectoryModEntry entry, bool isYanml)
 	{
 		var definition = ReduxGameDirectoryModCatalog.Find(entry.NexusModId);
+		if (definition?.Kind == ReduxGameDirectoryModKind.ScriptExtender
+			&& entry.Status == ReduxGameDirectoryModStatus.External && !entry.CanAdopt)
+			return new ReduxGameDirectoryModListItem(entry, "Files: DWrite.dll", String.Empty,
+				"Redux could not match this file to a reviewed Script Extender updater.", "BG3 game folder · Identity unknown", String.Empty);
 		var metadata = ResolveSourceDetails(entry.NexusModId);
 		var sourceUrl = !String.IsNullOrWhiteSpace(entry.SourceUrl) ? entry.SourceUrl : definition?.SourceUrl ?? String.Empty;
 		var summary = !String.IsNullOrWhiteSpace(metadata?.Summary) ? metadata.Summary.Trim()
@@ -457,8 +464,6 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		var hasRelease = !String.IsNullOrWhiteSpace(_viewModel.PathwayData.ScriptExtenderLatestReleaseUrl);
 		var latestVersion = ParseLeadingVersion(_viewModel.PathwayData.ScriptExtenderLatestReleaseVersion);
 		var installedVersion = ParseLeadingVersion(scriptExtender?.Entry.DetectedVersion);
-		if (installedVersion < 0 && _viewModel.Settings.ExtenderUpdaterSettings.UpdaterVersion > 0)
-			installedVersion = _viewModel.Settings.ExtenderUpdaterSettings.UpdaterVersion;
 
 		if (recoveryRequired)
 		{
@@ -484,7 +489,7 @@ public partial class ReduxGameDirectoryModManagerWindow : AdonisUI.Controls.Adon
 		{
 			if (!scriptExtender.CanAdopt)
 			{
-				SetScriptExtenderAction("Unverified Script Extender", false, scriptExtender.ManagementNote);
+				SetScriptExtenderAction("Unidentified DWrite.dll", false, "Check the existing file in the BG3 bin folder before installing Script Extender.");
 				return;
 			}
 			if (latestVersion < 0)
