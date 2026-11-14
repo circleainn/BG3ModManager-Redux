@@ -5,6 +5,9 @@ source for individual implementation details.
 
 ## Unreleased
 
+- Refresh the offline Load Order Advisor with 1,391 additional modules, updated dependency and
+  placement guidance, and support for Fade's Equipment Distribution AIO as a substitute for FED.
+
 - Check the Nexus project identity when reviewing native mod archives. A replacement DLL from a
   different project can share the original's file layout and still require its own review.
 - Show a repeated Nexus file once in collection previews when its details and optional status agree.

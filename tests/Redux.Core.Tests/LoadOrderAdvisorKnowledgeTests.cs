@@ -20,10 +20,10 @@ internal sealed class LoadOrderAdvisorKnowledgeTests
 	{
 		var knowledge = ReduxModDatabaseService.LoadOrderAdvisorKnowledge;
 
-		RegressionAssert.Equal(10626, knowledge.EntryCount);
+		RegressionAssert.Equal(12017, knowledge.EntryCount);
 		RegressionAssert.Equal(30, knowledge.GroupCount);
 		RegressionAssert.Equal(9, knowledge.DependencyAliasCount);
-		RegressionAssert.Equal(3, knowledge.DependencySubstituteCount);
+		RegressionAssert.Equal(4, knowledge.DependencySubstituteCount);
 		RegressionAssert.True(knowledge.TryGetGroupPosition("Resources", out var resources));
 		RegressionAssert.True(knowledge.TryGetGroupPosition("Utilities", out var utilities));
 		RegressionAssert.True(resources < utilities);
