@@ -315,7 +315,12 @@
                     <Grid Grid.ColumnSpan="2" Margin="0,0,0,10"><Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=DownloadsTabs}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Grid.Style><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <DockPanel VerticalAlignment="Center"><controls:ReduxIcon Width="13" Height="13" Margin="0,0,6,0" VerticalAlignment="Center" StrokeData="{StaticResource Redux.Icon.LinkStroke}" Foreground="{DynamicResource ReduxTextMutedBrush}" Style="{StaticResource ReduxOptionalInterfaceIconStyle}"/><TextBlock x:Name="AssociationText" Text="{loc:Text NXM_links_are_off_6dac06c6}" Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap"/></DockPanel>
                         <CheckBox Grid.Column="1" x:Name="AssociationCheckBox" Content="{loc:Text Use_Redux_for_NXM_links_4b638394}" Margin="14,0,2,0" VerticalAlignment="Center" Click="AssociationButton_Click" Style="{StaticResource ReduxCheckBoxStyle}"/>
-                        <TextBlock x:Name="AssociationScopeText" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,6,0,0" Visibility="Collapsed" Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap"/>
+                        <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
+                        <CheckBox x:Name="AutoInstallNxmCheckBox" Margin="0,6,0,0" HorizontalAlignment="Left" Style="{StaticResource ReduxCheckBoxStyle}"
+                            IsChecked="{Binding Settings.AutoInstallNxmToInactive, Mode=TwoWay}" Click="DownloadPreference_Click"
+                            Content="{loc:Text AutoInstallNxmToInactive}" ToolTip="{loc:Text AutoInstallNxmToInactiveHelp}"/>
+                        <TextBlock x:Name="AssociationScopeText" Margin="0,6,0,0" Visibility="Collapsed" Foreground="{DynamicResource ReduxTextMutedBrush}" TextWrapping="Wrap"/>
+                        </StackPanel>
                     </Grid>
 					<Grid Grid.ColumnSpan="2" Margin="0,0,0,10">
 								<Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding SelectedIndex, ElementName=DownloadsTabs}" Value="2"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Grid.Style><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
@@ -326,7 +331,7 @@
 								</StackPanel>
 								<CheckBox Grid.Column="1" Margin="14,0,2,0" VerticalAlignment="Center"
 									IsChecked="{Binding Settings.RetainInstalledPackageArchives, Mode=TwoWay}"
-									Click="ArchiveRetentionCheckBox_Click" Style="{StaticResource ReduxCheckBoxStyle}"
+									Click="DownloadPreference_Click" Style="{StaticResource ReduxCheckBoxStyle}"
 									Content="{loc:Text Retain_installed_package_archives_bc1fd3ef}"
 									ToolTip="{loc:Text Keep_verified_install_packages_in_the_deduplicated_archive_l_78391f72}" />
 							</Grid>

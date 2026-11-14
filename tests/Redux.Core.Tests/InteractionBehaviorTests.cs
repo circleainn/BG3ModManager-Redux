@@ -922,11 +922,11 @@ public sealed class InteractionBehaviorTests
 			saveContinue.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             RegressionAssert.Equal(Visibility.Visible, ((FrameworkElement)window.FindName("OrganizePage")).Visibility);
             RegressionAssert.False(window.AddStarterSeparators);
-            RegressionAssert.Equal(9, window.SelectedStarterSeparators.Count);
+            RegressionAssert.Equal(ReduxOnboardingPolicy.StarterSections.Count, window.SelectedStarterSeparators.Count);
             ((CheckBox)window.FindName("StarterSeparatorsCheckBox")).IsChecked = true;
             var starter = (System.Windows.Controls.Primitives.UniformGrid)window.FindName("StarterSeparatorsPreview");
             ((CheckBox)starter.Children[0]).IsChecked = false;
-            RegressionAssert.Equal(8, window.SelectedStarterSeparators.Count);
+            RegressionAssert.Equal(ReduxOnboardingPolicy.StarterSections.Count - 1, window.SelectedStarterSeparators.Count);
             RegressionAssert.True(window.AddStarterSeparators);
             saveContinue.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 			RegressionAssert.Equal(Visibility.Visible, ((FrameworkElement)window.FindName("ManagersPage")).Visibility);

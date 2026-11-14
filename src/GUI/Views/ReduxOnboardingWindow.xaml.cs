@@ -74,14 +74,19 @@ public partial class ReduxOnboardingWindow : AdonisUI.Controls.AdonisWindow
 			LocalizationBindings.Set(NxmLinksLabel, TextBlock.TextProperty, NxmAssociationPresentation.GetToggleLabel(isWine: true));
 			NxmLinksCheckBox.ToolTip = NxmAssociationPresentation.WineScopeNote;
 		}
-		foreach (var title in ReduxOnboardingPolicy.StarterSeparatorTitles)
-        {
-            var choice = new CheckBox { Tag = title, IsChecked = true, Margin = new Thickness(0, 8, 12, 8),
-                Content = new TextBlock { Text = title, TextWrapping = TextWrapping.Wrap } };
-            choice.SetResourceReference(StyleProperty, "ReduxCheckBoxStyle");
-            LocalizationBindings.Set((TextBlock)choice.Content, TextBlock.TextProperty, title);
-            StarterSeparatorsPreview.Children.Add(choice);
-        }
+		foreach (var section in ReduxOnboardingPolicy.StarterSections)
+		{
+			var content = new DockPanel();
+			content.Children.Add(new DivinityModManager.Controls.ReduxIcon { IconKey = section.IconId, Width = 15, Height = 15,
+				Margin = new Thickness(0, 0, 6, 0), Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString(section.Color)) });
+			var label = new TextBlock { TextWrapping = TextWrapping.Wrap };
+			LocalizationBindings.Set(label, TextBlock.TextProperty, section.Title);
+			content.Children.Add(label);
+			var choice = new CheckBox { Tag = section.Title, IsChecked = true, Margin = new Thickness(0, 3, 10, 3), Content = content };
+			System.Windows.Automation.AutomationProperties.SetLabeledBy(choice, label);
+			choice.SetResourceReference(StyleProperty, "ReduxCheckBoxStyle");
+			StarterSeparatorsPreview.Children.Add(choice);
+		}
         ReduxWindowBehavior.AttachDialogTransitions(this, 30);
 		ReduxWindowBehavior.AttachRoundedCorners(this);
 		_ownerWindow = owner as MainWindow;

@@ -17,7 +17,7 @@ public interface INxmDownloadManager
 	event Action<string> FocusRequested;
 	event Action<NxmDownloadItem> ItemChanged;
 	Task InitializeAsync(CancellationToken cancellationToken = default);
-	Task<string> EnqueueAsync(NexusModManagerLink link, CancellationToken cancellationToken = default);
+	Task<string> EnqueueAsync(NexusModManagerLink link, CancellationToken cancellationToken = default, bool autoInstallToInactive = false);
 	Task<string> AddLocalPackageAsync(string sourcePath, string archiveSha256, string projectName,
 		string contentKind, string destination, string inspectionSummary,
 		AcquiredPackageSourceKind sourceKind = AcquiredPackageSourceKind.LocalFile,
@@ -114,7 +114,7 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 		await ScheduleReadyTransfersAsync();
 	}
 
-	public async Task<string> EnqueueAsync(NexusModManagerLink link, CancellationToken cancellationToken = default)
+	public async Task<string> EnqueueAsync(NexusModManagerLink link, CancellationToken cancellationToken = default, bool autoInstallToInactive = false)
 	{
 		ArgumentNullException.ThrowIfNull(link);
 		await _stateGate.WaitAsync(cancellationToken);
@@ -146,6 +146,7 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 				item = new NxmDownloadItem
 				{
 					QueuePosition = _nextQueuePosition + 1,
+					AutoInstallRequested = autoInstallToInactive,
 					ModId = link.ModId,
 					FileId = link.FileId,
 					RequiresAuthorization = !String.IsNullOrWhiteSpace(link.DownloadKey),
@@ -390,6 +391,9 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 		if (item.State == NxmDownloadState.Resolving)
 			StartResolution(item, new NexusModManagerLink(item.ModId, item.FileId, null, null, null), CancellationToken.None);
 	}
+
+	public Task<bool> ConsumeAutoInstallRequestAsync(NxmDownloadItem item) =>
+		UpdatePersistedAsync(item, candidate => candidate.AutoInstallRequested = false);
 
 	public Task SetStateAsync(string itemId, NxmDownloadState state, string errorCode = "", string errorDetails = "")
 	{
@@ -1107,6 +1111,7 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 		DetectedDestination = item.DetectedDestination,
 		InspectionSummary = item.InspectionSummary,
 		InspectionCompleted = item.InspectionCompleted,
+		AutoInstallRequested = item.AutoInstallRequested,
 		IsSelected = item.IsSelected
 	};
 
@@ -1131,6 +1136,7 @@ public sealed class NxmDownloadManager : INxmDownloadManager
 		target.DetectedDestination = source.DetectedDestination;
 		target.InspectionSummary = source.InspectionSummary;
 		target.InspectionCompleted = source.InspectionCompleted;
+		target.AutoInstallRequested = source.AutoInstallRequested;
 		target.State = source.State;
 		target.RequiresAuthorization = source.RequiresAuthorization;
 		target.RetryCount = source.RetryCount;

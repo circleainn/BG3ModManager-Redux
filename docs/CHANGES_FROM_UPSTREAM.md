@@ -263,6 +263,8 @@ Library or uninstalling content. When archive retention is off, the successfully
 inbox copy is removed while a user-owned local original remains untouched. The clear-history action is available with the Installed view
 rather than consuming space inside the history list. Downloading or installing never activates,
 reorders, or syncs a mod automatically.
+On the Downloads tab, **Auto-install NXM downloads to Inactive Mods** applies to newly queued Nexus links. Verified new PAK mods enter the inactive library automatically. Packages that update existing mods, contain always-loaded overrides, install saves, or write to the game folder stay available for review.
+
 Retained Download Manager archives can be reinstalled directly from history. Explicitly adding an
 identical local archive returns its existing record to the inbox and refreshes its classification
 and artwork instead of duplicating it.

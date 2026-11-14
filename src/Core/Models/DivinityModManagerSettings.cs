@@ -263,6 +263,8 @@ public class DivinityModManagerSettings : ReactiveObject
 	[SettingsEntry("Open Download Manager for Nexus links", "Bring Download Manager forward when a Nexus download starts. When off, show a quiet notification.")]
 	[DataMember, Reactive] public bool BringNxmDownloadsToFront { get; set; } = false;
 
+	[DataMember, Reactive] public bool AutoInstallNxmToInactive { get; set; }
+
 	[DefaultValue(false)]
 	[SettingsEntry("Retain installed package archives", "Keep a deduplicated copy of successfully installed packages for later reinstall. Disabled by default and may use significant disk space.")]
 	[DataMember, Reactive] public bool RetainInstalledPackageArchives { get; set; }

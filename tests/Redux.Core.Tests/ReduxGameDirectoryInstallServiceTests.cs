@@ -175,7 +175,7 @@ public sealed class ReduxGameDirectoryInstallServiceTests
 		{
 			(944, "1.0"), (781, "1.9.9"), (945, "2.4.5"), (22892, "2.5.1"),
 			(668, "1.3"), (1326, "1.0.0"), (742, "2.0"), (23881, "2.2.0"),
-			(23413, "1.2"), (23959, "2.0"), (24804, "1.0"), (2172, "32 hotfix 1")
+			(23413, "1.2"), (23959, "2.0"), (24804, "1.0"), (2172, "32 hotfix 1"), (2172, "33")
 		};
 		foreach (var expected in expectedVersions)
 		{
@@ -292,6 +292,21 @@ public sealed class ReduxGameDirectoryInstallServiceTests
 		var managed = fixture.Installer().GetInstalledMods().Single();
 		RegressionAssert.Equal("script-extender", managed.PackageId);
 		RegressionAssert.Equal(ReduxGameDirectoryModStatus.Managed, managed.Status);
+	}
+
+	public void IdenticalUnidentifiedScriptExtenderDllStaysUnmanaged()
+	{
+		using var fixture = new NativeFixture();
+		var bytes = fixture.Pe("unidentified DWrite");
+		var path = Path.Combine(fixture.GameBin, "DWrite.dll");
+		File.WriteAllBytes(path, bytes);
+		fixture.CreateArchive(fixture.OtherArchivePath, ("DWrite.dll", bytes));
+		RegressionAssert.Throws<InvalidOperationException>(() => fixture.Install(2172, fixture.OtherArchivePath, null));
+		var entry = fixture.Installer().GetInstalledMods().Single();
+		RegressionAssert.Equal("Unidentified DWrite.dll", entry.Name);
+		RegressionAssert.False(entry.CanAdopt);
+		RegressionAssert.SequenceEqual(bytes, File.ReadAllBytes(path));
+		RegressionAssert.False(File.Exists(fixture.ManifestPath));
 	}
 
 	public void UnreviewedDllArchiveIsNeverTreatedAsAnOrdinaryModArchive()
