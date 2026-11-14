@@ -12080,5 +12080,551 @@
     "es": "Resultados: {0}",
     "ru": "Результатов: {0}",
     "zh-Hans": "结果：{0}"
+  },
+  "ModContent_Core_01": {
+    "en": "File is not a PAK package.",
+    "fr": "Le fichier n’est pas un paquet PAK.",
+    "es": "El archivo no es un paquete PAK.",
+    "ru": "Файл не является пакетом PAK.",
+    "zh-Hans": "该文件不是 PAK 包。"
+  },
+  "ModContent_Core_02": {
+    "en": "Package header is incomplete.",
+    "fr": "L’en-tête du paquet est incomplet.",
+    "es": "La cabecera del paquete está incompleta.",
+    "ru": "Заголовок пакета неполон.",
+    "zh-Hans": "包头不完整。"
+  },
+  "ModContent_Core_03": {
+    "en": "Package contains an invalid internal path; its contents were not inspected.",
+    "fr": "Le paquet contient un chemin interne invalide ; son contenu n’a pas été inspecté.",
+    "es": "El paquete contiene una ruta interna no válida; su contenido no se ha inspeccionado.",
+    "ru": "Пакет содержит недопустимый внутренний путь; его содержимое не проверено.",
+    "zh-Hans": "包中存在无效的内部路径；未检查其内容。"
+  },
+  "ModContent_Core_04": {
+    "en": "Package contains a duplicate internal path; the duplicate was not inspected.",
+    "fr": "Le paquet contient un chemin interne en double ; le doublon n’a pas été inspecté.",
+    "es": "El paquete contiene una ruta interna duplicada; no se ha inspeccionado el duplicado.",
+    "ru": "Пакет содержит повторяющийся внутренний путь; дубликат не проверен.",
+    "zh-Hans": "包中存在重复的内部路径；未检查重复项。"
+  },
+  "ModContent_Core_05": {
+    "en": "This package entry deletes a file and has no readable content.",
+    "fr": "Cette entrée du paquet supprime un fichier et n’a aucun contenu lisible.",
+    "es": "Esta entrada del paquete elimina un archivo y no tiene contenido legible.",
+    "ru": "Эта запись пакета удаляет файл и не содержит читаемых данных.",
+    "zh-Hans": "该包条目用于删除文件，没有可读取的内容。"
+  },
+  "ModContent_Core_06": {
+    "en": "Stats file exceeds the inspection size limit.",
+    "fr": "Le fichier Stats dépasse la limite de taille de l’inspection.",
+    "es": "El archivo Stats supera el límite de tamaño de la inspección.",
+    "ru": "Файл Stats превышает допустимый размер для проверки.",
+    "zh-Hans": "Stats 文件超过检查大小限制。"
+  },
+  "ModContent_Core_07": {
+    "en": "Stats file length does not match the package metadata.",
+    "fr": "La taille du fichier Stats ne correspond pas aux métadonnées du paquet.",
+    "es": "El tamaño del archivo Stats no coincide con los metadatos del paquete.",
+    "ru": "Размер файла Stats не соответствует метаданным пакета.",
+    "zh-Hans": "Stats 文件大小与包的元数据不符。"
+  },
+  "ModContent_Core_08": {
+    "en": "This package version is not supported by the content inspector.",
+    "fr": "Cette version de paquet n’est pas prise en charge par l’inspecteur de contenu.",
+    "es": "El inspector de contenido no admite esta versión del paquete.",
+    "ru": "Инспектор содержимого не поддерживает эту версию пакета.",
+    "zh-Hans": "内容检查器不支持此包版本。"
+  },
+  "ModContent_Core_09": {
+    "en": "Solid-compressed packages are not supported by the bounded content inspector.",
+    "fr": "Les paquets à compression solide ne sont pas pris en charge par l’inspecteur de contenu à limites de ressources.",
+    "es": "El inspector de contenido con límites de recursos no admite paquetes con compresión sólida.",
+    "ru": "Инспектор с ограничением ресурсов не поддерживает пакеты с непрерывным сжатием.",
+    "zh-Hans": "受资源限制的内容检查器不支持固实压缩包。"
+  },
+  "ModContent_Core_10": {
+    "en": "Package part count exceeds the inspection limit.",
+    "fr": "Le nombre de parties du paquet dépasse la limite d’inspection.",
+    "es": "El número de partes del paquete supera el límite de inspección.",
+    "ru": "Количество частей пакета превышает предел проверки.",
+    "zh-Hans": "包的分卷数量超过检查限制。"
+  },
+  "ModContent_Core_11": {
+    "en": "Package file table is outside the package.",
+    "fr": "La table des fichiers se trouve en dehors du paquet.",
+    "es": "La tabla de archivos se encuentra fuera del paquete.",
+    "ru": "Таблица файлов находится за пределами пакета.",
+    "zh-Hans": "包的文件表位于包范围之外。"
+  },
+  "ModContent_Core_12": {
+    "en": "Package file table exceeds the inspection limit or is incomplete.",
+    "fr": "La table des fichiers dépasse la limite d’inspection ou est incomplète.",
+    "es": "La tabla de archivos supera el límite de inspección o está incompleta.",
+    "ru": "Таблица файлов превышает предел проверки или неполна.",
+    "zh-Hans": "包的文件表超过检查限制或不完整。"
+  },
+  "ModContent_Core_13": {
+    "en": "Content could not be inspected.",
+    "fr": "Le contenu n’a pas pu être inspecté.",
+    "es": "No se ha podido inspeccionar el contenido.",
+    "ru": "Не удалось проверить содержимое.",
+    "zh-Hans": "无法检查内容。"
+  },
+  "ModContent_Core_14": {
+    "en": "Stats file count exceeds the inspection limit.",
+    "fr": "Le nombre de fichiers Stats dépasse la limite d’inspection.",
+    "es": "El número de archivos Stats supera el límite de inspección.",
+    "ru": "Количество файлов Stats превышает предел проверки.",
+    "zh-Hans": "Stats 文件数量超过检查限制。"
+  },
+  "ModContent_Core_15": {
+    "en": "Total Stats data exceeds the inspection size limit.",
+    "fr": "Le volume total de données Stats dépasse la limite de taille de l’inspection.",
+    "es": "El tamaño total de los datos Stats supera el límite de inspección.",
+    "ru": "Общий объём данных Stats превышает предел проверки.",
+    "zh-Hans": "Stats 数据总量超过检查大小限制。"
+  },
+  "ModContent_Core_16": {
+    "en": "Stats syntax could not be parsed; this file's records were not included.",
+    "fr": "La syntaxe Stats n’a pas pu être analysée ; les entrées de ce fichier n’ont pas été incluses.",
+    "es": "No se ha podido analizar la sintaxis Stats; no se han incluido las entradas de este archivo.",
+    "ru": "Не удалось разобрать синтаксис Stats; записи этого файла не включены.",
+    "zh-Hans": "无法解析 Stats 语法；未包含此文件的记录。"
+  },
+  "ModContent_Core_17": {
+    "en": "A Stats field is declared more than once; the last declared value is shown.",
+    "fr": "Un champ Stats est déclaré plusieurs fois ; la dernière valeur déclarée est affichée.",
+    "es": "Un campo Stats se declara más de una vez; se muestra el último valor declarado.",
+    "ru": "Поле Stats объявлено несколько раз; показано последнее объявленное значение.",
+    "zh-Hans": "某个 Stats 字段被多次声明；显示最后声明的值。"
+  },
+  "ModContent_Core_18": {
+    "en": "Record or field count exceeds the inspection limit; remaining records were skipped.",
+    "fr": "Le nombre d’entrées ou de champs dépasse la limite d’inspection ; les entrées restantes ont été ignorées.",
+    "es": "El número de entradas o campos supera el límite de inspección; se han omitido las entradas restantes.",
+    "ru": "Количество записей или полей превышает предел проверки; остальные записи пропущены.",
+    "zh-Hans": "记录或字段数量超过检查限制；已跳过剩余记录。"
+  },
+  "ModContent_Core_19": {
+    "en": "A declaration has no supported name/type; it was not included as a Stats record.",
+    "fr": "Une déclaration n’a pas de nom ou de type pris en charge ; elle n’a pas été incluse comme entrée Stats.",
+    "es": "Una declaración no tiene un nombre o tipo compatible; no se ha incluido como entrada Stats.",
+    "ru": "У объявления нет поддерживаемого имени или типа; оно не включено как запись Stats.",
+    "zh-Hans": "某条声明没有受支持的名称或类型；未将其包含为 Stats 记录。"
+  },
+  "ModContent_Core_20": {
+    "en": "A structured Stats field is outside this inspector's supported scope.",
+    "fr": "Un champ Stats structuré dépasse le périmètre pris en charge par cet inspecteur.",
+    "es": "Un campo Stats estructurado queda fuera del alcance de este inspector.",
+    "ru": "Структурированное поле Stats не поддерживается этим инспектором.",
+    "zh-Hans": "某个结构化 Stats 字段不在此检查器的支持范围内。"
+  },
+  "ModContent_Core_21": {
+    "en": "Inheritance is incomplete: the parent or an earlier definition is outside this package.",
+    "fr": "L’héritage est incomplet : le parent ou une définition antérieure se trouve hors de ce paquet.",
+    "es": "La herencia está incompleta: el elemento padre o una definición anterior está fuera de este paquete.",
+    "ru": "Наследование неполное: родитель или более раннее определение находится вне этого пакета.",
+    "zh-Hans": "继承不完整：父记录或更早的定义位于此包之外。"
+  },
+  "ModContent_Core_22": {
+    "en": "Inheritance is incomplete: multiple parent definitions have no verified order.",
+    "fr": "L’héritage est incomplet : l’ordre de plusieurs définitions parentes n’est pas vérifié.",
+    "es": "La herencia está incompleta: hay varias definiciones del elemento padre sin un orden verificado.",
+    "ru": "Наследование неполное: порядок нескольких родительских определений не подтверждён.",
+    "zh-Hans": "继承不完整：多个父定义的顺序尚未确认。"
+  },
+  "ModContent_Core_23": {
+    "en": "Inheritance is incomplete: the parent chain contains a cycle.",
+    "fr": "L’héritage est incomplet : la chaîne des parents contient un cycle.",
+    "es": "La herencia está incompleta: la cadena de elementos padre contiene un ciclo.",
+    "ru": "Наследование неполное: цепочка родителей содержит цикл.",
+    "zh-Hans": "继承不完整：父记录链中存在循环。"
+  },
+  "ModContent_Core_24": {
+    "en": "Inheritance is incomplete: the inspection limit was reached.",
+    "fr": "L’héritage est incomplet : la limite d’inspection a été atteinte.",
+    "es": "La herencia está incompleta: se ha alcanzado el límite de inspección.",
+    "ru": "Наследование неполное: достигнут предел проверки.",
+    "zh-Hans": "继承不完整：已达到检查限制。"
+  },
+  "ModContent_Core_25": {
+    "en": "Stats",
+    "fr": "Statistiques",
+    "es": "Estadísticas",
+    "ru": "Характеристики",
+    "zh-Hans": "数值数据"
+  },
+  "ModContent_Core_26": {
+    "en": "Scripts",
+    "fr": "Scripts",
+    "es": "Scripts",
+    "ru": "Скрипты",
+    "zh-Hans": "脚本"
+  },
+  "ModContent_Core_27": {
+    "en": "Resources",
+    "fr": "Ressources",
+    "es": "Recursos",
+    "ru": "Ресурсы",
+    "zh-Hans": "资源"
+  },
+  "ModContent_Core_28": {
+    "en": "Textures",
+    "fr": "Textures",
+    "es": "Texturas",
+    "ru": "Текстуры",
+    "zh-Hans": "纹理"
+  },
+  "ModContent_Core_29": {
+    "en": "Localization",
+    "fr": "Localisation",
+    "es": "Localización",
+    "ru": "Локализация",
+    "zh-Hans": "本地化"
+  },
+  "ModContent_Core_30": {
+    "en": "Other",
+    "fr": "Autre",
+    "es": "Otros",
+    "ru": "Прочее",
+    "zh-Hans": "其他"
+  },
+  "ModContent_Command": {
+    "en": "What this mod changes...",
+    "fr": "Ce que ce mod modifie...",
+    "es": "Qué cambia este mod...",
+    "ru": "Что изменяет этот мод...",
+    "zh-Hans": "此模组的改动..."
+  },
+  "ModContent_CommandDescription": {
+    "en": "Inspect the selected mod's Stats records and package contents without changing any files.",
+    "fr": "Examiner les entrées Stats et le contenu du mod sélectionné sans modifier de fichiers.",
+    "es": "Inspeccionar los registros Stats y el contenido del mod seleccionado sin modificar archivos.",
+    "ru": "Просмотреть записи Stats и содержимое выбранного мода без изменения файлов.",
+    "zh-Hans": "查看所选模组的 Stats 记录和包内容，不修改任何文件。"
+  },
+  "ModContent_MissingPak": {
+    "en": "The installed PAK could not be found. Refresh the mod list and try again.",
+    "fr": "Le PAK installé est introuvable. Actualisez la liste des mods et réessayez.",
+    "es": "No se encontró el PAK instalado. Actualiza la lista de mods e inténtalo de nuevo.",
+    "ru": "Установленный PAK не найден. Обновите список модов и повторите попытку.",
+    "zh-Hans": "找不到已安装的 PAK。请刷新模组列表后重试。"
+  },
+  "ModContent_Title": {
+    "en": "What this mod changes",
+    "fr": "Ce que ce mod modifie",
+    "es": "Qué cambia este mod",
+    "ru": "Что изменяет этот мод",
+    "zh-Hans": "此模组的改动"
+  },
+  "ModContent_Scope": {
+    "en": "Browse this package's Stats records and file inventory. This view does not compare against the base game or other mods.",
+    "fr": "Parcourez les entrées Stats et les fichiers de ce paquet. Cette vue ne compare pas leur contenu au jeu de base ou aux autres mods.",
+    "es": "Explora los registros Stats y los archivos de este paquete. Esta vista no los compara con el juego base ni con otros mods.",
+    "ru": "Просмотрите записи Stats и список файлов пакета. Здесь нет сравнения с базовой игрой или другими модами.",
+    "zh-Hans": "浏览此包的 Stats 记录和文件列表。此视图不与原版游戏或其他模组进行比较。"
+  },
+  "ModContent_Search": {
+    "en": "Search records or package paths",
+    "fr": "Rechercher des entrées ou des chemins du paquet",
+    "es": "Buscar registros o rutas del paquete",
+    "ru": "Поиск записей или путей в пакете",
+    "zh-Hans": "搜索记录或包内路径"
+  },
+  "ModContent_SearchTip": {
+    "en": "Search by record name, type, parent, or package path. Ctrl+F focuses search.",
+    "fr": "Rechercher par nom, type, parent ou chemin dans le paquet. Ctrl+F active la recherche.",
+    "es": "Busca por nombre, tipo, registro padre o ruta del paquete. Ctrl+F activa la búsqueda.",
+    "ru": "Поиск по имени, типу, родительской записи или пути в пакете. Ctrl+F переводит фокус на поиск.",
+    "zh-Hans": "按记录名称、类型、父记录或包内路径搜索。按 Ctrl+F 聚焦搜索框。"
+  },
+  "ModContent_Clear": {
+    "en": "Clear search",
+    "fr": "Effacer la recherche",
+    "es": "Borrar búsqueda",
+    "ru": "Очистить поиск",
+    "zh-Hans": "清除搜索"
+  },
+  "ModContent_StatsRecords": {
+    "en": "Stats records",
+    "fr": "Entrées Stats",
+    "es": "Registros Stats",
+    "ru": "Записи Stats",
+    "zh-Hans": "Stats 记录"
+  },
+  "ModContent_SelectedFields": {
+    "en": "Selected record fields",
+    "fr": "Champs de l'entrée sélectionnée",
+    "es": "Campos del registro seleccionado",
+    "ru": "Поля выбранной записи",
+    "zh-Hans": "所选记录的字段"
+  },
+  "ModContent_Inventory": {
+    "en": "Package file inventory",
+    "fr": "Liste des fichiers du paquet",
+    "es": "Lista de archivos del paquete",
+    "ru": "Список файлов пакета",
+    "zh-Hans": "包文件列表"
+  },
+  "ModContent_Notes": {
+    "en": "Inspection notes",
+    "fr": "Notes d'inspection",
+    "es": "Notas de inspección",
+    "ru": "Примечания проверки",
+    "zh-Hans": "检查说明"
+  },
+  "ModContent_Record": {
+    "en": "Record",
+    "fr": "Entrée",
+    "es": "Registro",
+    "ru": "Запись",
+    "zh-Hans": "记录"
+  },
+  "ModContent_Parent": {
+    "en": "Parent record",
+    "fr": "Entrée parente",
+    "es": "Registro padre",
+    "ru": "Родительская запись",
+    "zh-Hans": "父记录"
+  },
+  "ModContent_Path": {
+    "en": "Package path",
+    "fr": "Chemin dans le paquet",
+    "es": "Ruta del paquete",
+    "ru": "Путь в пакете",
+    "zh-Hans": "包内路径"
+  },
+  "ModContent_Field": {
+    "en": "Field",
+    "fr": "Champ",
+    "es": "Campo",
+    "ru": "Поле",
+    "zh-Hans": "字段"
+  },
+  "ModContent_Value": {
+    "en": "Value",
+    "fr": "Valeur",
+    "es": "Valor",
+    "ru": "Значение",
+    "zh-Hans": "值"
+  },
+  "ModContent_Origin": {
+    "en": "Origin",
+    "fr": "Origine",
+    "es": "Origen",
+    "ru": "Происхождение",
+    "zh-Hans": "来源"
+  },
+  "ModContent_SourceRecord": {
+    "en": "Source record",
+    "fr": "Entrée source",
+    "es": "Registro de origen",
+    "ru": "Исходная запись",
+    "zh-Hans": "源记录"
+  },
+  "ModContent_Bytes": {
+    "en": "Bytes",
+    "fr": "Octets",
+    "es": "Bytes",
+    "ru": "Байты",
+    "zh-Hans": "字节"
+  },
+  "ModContent_Note": {
+    "en": "Note",
+    "fr": "Note",
+    "es": "Nota",
+    "ru": "Примечание",
+    "zh-Hans": "说明"
+  },
+  "ModContent_Line": {
+    "en": "Line",
+    "fr": "Ligne",
+    "es": "Línea",
+    "ru": "Строка",
+    "zh-Hans": "行"
+  },
+  "ModContent_Files": {
+    "en": "Package files",
+    "fr": "Fichiers du paquet",
+    "es": "Archivos del paquete",
+    "ru": "Файлы пакета",
+    "zh-Hans": "包文件"
+  },
+  "ModContent_NotesCount": {
+    "en": "Inspection notes ({0})",
+    "fr": "Notes d'inspection ({0})",
+    "es": "Notas de inspección ({0})",
+    "ru": "Примечания проверки ({0})",
+    "zh-Hans": "检查说明（{0}）"
+  },
+  "ModContent_Counts": {
+    "en": "{0} of {1} records · {2} of {3} files",
+    "fr": "{0} sur {1} entrées · {2} sur {3} fichiers",
+    "es": "{0} de {1} registros · {2} de {3} archivos",
+    "ru": "Записи: {0} из {1} · Файлы: {2} из {3}",
+    "zh-Hans": "记录：{0}/{1} · 文件：{2}/{3}"
+  },
+  "ModContent_CategoryCount": {
+    "en": "{0}: {1}",
+    "fr": "{0} : {1}",
+    "es": "{0}: {1}",
+    "ru": "{0}: {1}",
+    "zh-Hans": "{0}：{1}"
+  },
+  "ModContent_SourceLine": {
+    "en": "{0} · line {1}",
+    "fr": "{0} · ligne {1}",
+    "es": "{0} · línea {1}",
+    "ru": "{0} · строка {1}",
+    "zh-Hans": "{0} · 第 {1} 行"
+  },
+  "ModContent_Inherited": {
+    "en": "Inherited",
+    "fr": "Hérité",
+    "es": "Heredado",
+    "ru": "Унаследовано",
+    "zh-Hans": "继承"
+  },
+  "ModContent_Declared": {
+    "en": "Declared",
+    "fr": "Déclaré",
+    "es": "Declarado",
+    "ru": "Объявлено",
+    "zh-Hans": "声明"
+  },
+  "ModContent_SelectRecord": {
+    "en": "Select a record to inspect its fields.",
+    "fr": "Sélectionnez une entrée pour examiner ses champs.",
+    "es": "Selecciona un registro para examinar sus campos.",
+    "ru": "Выберите запись для просмотра её полей.",
+    "zh-Hans": "选择一条记录以查看其字段。"
+  },
+  "ModContent_NoSelection": {
+    "en": "No record selected",
+    "fr": "Aucune entrée sélectionnée",
+    "es": "Ningún registro seleccionado",
+    "ru": "Запись не выбрана",
+    "zh-Hans": "未选择记录"
+  },
+  "ModContent_NoFields": {
+    "en": "No fields were read for this record.",
+    "fr": "Aucun champ n'a été lu pour cette entrée.",
+    "es": "No se leyeron campos de este registro.",
+    "ru": "Не удалось прочитать поля этой записи.",
+    "zh-Hans": "未读取到此记录的字段。"
+  },
+  "ModContent_Incomplete": {
+    "en": "Inheritance is incomplete. Only values resolved within this package are shown.",
+    "fr": "L'héritage est incomplet. Seules les valeurs résolues dans ce paquet sont affichées.",
+    "es": "La herencia está incompleta. Solo se muestran los valores resueltos dentro de este paquete.",
+    "ru": "Наследование неполное. Показаны только значения, найденные внутри этого пакета.",
+    "zh-Hans": "继承不完整。仅显示在此包内解析出的值。"
+  },
+  "ModContent_DeclaredFields": {
+    "en": "Declared fields in this record.",
+    "fr": "Champs déclarés dans cette entrée.",
+    "es": "Campos declarados en este registro.",
+    "ru": "Поля, объявленные в этой записи.",
+    "zh-Hans": "此记录中声明的字段。"
+  },
+  "ModContent_InheritedFields": {
+    "en": "Inherited fields come from parent records inside this package.",
+    "fr": "Les champs hérités proviennent d'entrées parentes dans ce paquet.",
+    "es": "Los campos heredados proceden de registros padre de este paquete.",
+    "ru": "Унаследованные поля взяты из родительских записей этого пакета.",
+    "zh-Hans": "继承字段来自此包内的父记录。"
+  },
+  "ModContent_Reading": {
+    "en": "Reading package contents...",
+    "fr": "Lecture du contenu du paquet...",
+    "es": "Leyendo el contenido del paquete...",
+    "ru": "Чтение содержимого пакета...",
+    "zh-Hans": "正在读取包内容..."
+  },
+  "ModContent_NoStats": {
+    "en": "No supported Stats records were read. Package files and inspection notes may have more information.",
+    "fr": "Aucune entrée Stats prise en charge n'a été lue. Consultez les fichiers du paquet et les notes d'inspection.",
+    "es": "No se leyeron registros Stats compatibles. Consulta los archivos del paquete y las notas de inspección.",
+    "ru": "Поддерживаемые записи Stats не найдены. Дополнительные сведения могут быть в списке файлов и примечаниях.",
+    "zh-Hans": "未读取到受支持的 Stats 记录。包文件和检查说明中可能有更多信息。"
+  },
+  "ModContent_NoMatchRecords": {
+    "en": "No matching records. Try a different name, type, parent, or path.",
+    "fr": "Aucune entrée correspondante. Essayez un autre nom, type, parent ou chemin.",
+    "es": "No hay registros coincidentes. Prueba otro nombre, tipo, registro padre o ruta.",
+    "ru": "Совпадений нет. Попробуйте другое имя, тип, родительскую запись или путь.",
+    "zh-Hans": "没有匹配的记录。请尝试其他名称、类型、父记录或路径。"
+  },
+  "ModContent_NoInventory": {
+    "en": "File inventory is not available.",
+    "fr": "La liste des fichiers est indisponible.",
+    "es": "La lista de archivos no está disponible.",
+    "ru": "Список файлов недоступен.",
+    "zh-Hans": "文件列表不可用。"
+  },
+  "ModContent_NoMatchFiles": {
+    "en": "No matching package files.",
+    "fr": "Aucun fichier correspondant dans le paquet.",
+    "es": "No hay archivos coincidentes en el paquete.",
+    "ru": "Совпадающих файлов в пакете нет.",
+    "zh-Hans": "没有匹配的包文件。"
+  },
+  "ModContent_NoNotesAvailable": {
+    "en": "Inspection notes are not available.",
+    "fr": "Les notes d'inspection sont indisponibles.",
+    "es": "Las notas de inspección no están disponibles.",
+    "ru": "Примечания проверки недоступны.",
+    "zh-Hans": "检查说明不可用。"
+  },
+  "ModContent_NoNotes": {
+    "en": "No inspection notes. This does not establish compatibility with other mods.",
+    "fr": "Aucune note d'inspection. Cela ne garantit pas la compatibilité avec les autres mods.",
+    "es": "No hay notas de inspección. Esto no garantiza la compatibilidad con otros mods.",
+    "ru": "Примечаний нет. Это не подтверждает совместимость с другими модами.",
+    "zh-Hans": "没有检查说明。这不代表与其他模组兼容。"
+  },
+  "ModContent_ReadingCount": {
+    "en": "Reading Stats files: {0} of {1}",
+    "fr": "Lecture des fichiers Stats : {0} sur {1}",
+    "es": "Leyendo archivos Stats: {0} de {1}",
+    "ru": "Чтение файлов Stats: {0} из {1}",
+    "zh-Hans": "正在读取 Stats 文件：{0}/{1}"
+  },
+  "ModContent_Failed": {
+    "en": "Inspection failed. See the Redux log for details.",
+    "fr": "L'inspection a échoué. Consultez le journal Redux pour plus de détails.",
+    "es": "La inspección falló. Consulta el registro de Redux para más detalles.",
+    "ru": "Проверка не удалась. Подробности в журнале Redux.",
+    "zh-Hans": "检查失败。详情请查看 Redux 日志。"
+  },
+  "ModContent_Cancelled": {
+    "en": "Inspection cancelled. The package was not changed.",
+    "fr": "Inspection annulée. Le paquet n'a pas été modifié.",
+    "es": "Inspección cancelada. El paquete no se modificó.",
+    "ru": "Проверка отменена. Пакет не изменён.",
+    "zh-Hans": "检查已取消。包未被修改。"
+  },
+  "ModContent_Partial": {
+    "en": "Partial inspection. Open Inspection notes for skipped or unresolved content.",
+    "fr": "Inspection partielle. Consultez les notes pour connaître le contenu ignoré ou non résolu.",
+    "es": "Inspección parcial. Consulta las notas para ver el contenido omitido o sin resolver.",
+    "ru": "Частичная проверка. Сведения о пропущенном или неразрешённом содержимом есть в примечаниях.",
+    "zh-Hans": "检查未完成。请打开检查说明，查看跳过或未解析的内容。"
+  },
+  "ModContent_Complete": {
+    "en": "Inspection complete. Only supported Stats content was interpreted; other files are listed by path.",
+    "fr": "Inspection terminée. Seul le contenu Stats pris en charge a été interprété ; les autres fichiers sont listés par chemin.",
+    "es": "Inspección completa. Solo se interpretó el contenido Stats compatible; los demás archivos se muestran por ruta.",
+    "ru": "Проверка завершена. Разобраны только поддерживаемые данные Stats; остальные файлы перечислены по путям.",
+    "zh-Hans": "检查完成。仅解析了受支持的 Stats 内容；其他文件按路径列出。"
+  },
+  "ModContent_Resize": {
+    "en": "Resize records and fields",
+    "fr": "Redimensionner les entrées et les champs",
+    "es": "Cambiar el tamaño de registros y campos",
+    "ru": "Изменить размер областей записей и полей",
+    "zh-Hans": "调整记录和字段区域大小"
   }
 }

@@ -253,6 +253,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	private const string PrivateNoteMenuTag = "ReduxPrivateNote";
 	private const string ModAliasMenuTag = "ReduxModAlias";
 	private const string ModArtworkMenuTag = "ReduxModArtwork";
+	private const string ModContentMenuTag = "ReduxModContent";
 	private const string OverrideTransferMenuTag = "ReduxOverrideTransfer";
 	private const string ModUpdateMenuTag = "ReduxModUpdate";
 	private const string BulkActionsMenuTag = "ReduxBulkActions";
@@ -1193,6 +1194,20 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 			categoryMenu.Items.Add(categoryItem);
 		}
 
+		if (!hasBulkCategoryTargets && !String.IsNullOrWhiteSpace(mod.FilePath))
+		{
+			var inspectContent = new MenuItem
+			{
+				Tag = ModContentMenuTag,
+				Icon = ReduxIcon.FromResource("Redux.Icon.DocumentText", true),
+				IsEnabled = !ViewModel.MainProgressIsActive
+			};
+			DivinityModManager.Localization.LocalizationBindings.Set(
+				inspectContent, HeaderedItemsControl.HeaderProperty, "What this mod changes...");
+			inspectContent.Click += (_, _) => ViewModel.OpenModContentInspector(mod);
+			menu.Items.Insert(0, inspectContent);
+		}
+
 		var privateNoteItem = new MenuItem
 		{
 			Header = hasBulkCategoryTargets
@@ -1527,6 +1542,7 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 		|| Equals(entry.Tag, PrivateNoteMenuTag)
 		|| Equals(entry.Tag, ModAliasMenuTag)
 		|| Equals(entry.Tag, ModArtworkMenuTag)
+		|| Equals(entry.Tag, ModContentMenuTag)
 		|| Equals(entry.Tag, OverrideTransferMenuTag)
 		|| Equals(entry.Tag, ModUpdateMenuTag)
 		|| Equals(entry.Tag, SourceLinkMenuTag)
@@ -1613,6 +1629,12 @@ public partial class HorizontalModLayout : HorizontalModLayoutBase, IModViewLayo
 	{
 		if (sender is FrameworkElement { DataContext: DivinityModData mod })
 			ShowModNoteDialog(mod);
+	}
+
+	private void InspectModContentButton_Click(object sender, RoutedEventArgs e)
+	{
+		if (sender is FrameworkElement { DataContext: DivinityModData mod })
+			ViewModel?.OpenModContentInspector(mod);
 	}
 
 	private void EditModAliasButton_Click(object sender, RoutedEventArgs e)

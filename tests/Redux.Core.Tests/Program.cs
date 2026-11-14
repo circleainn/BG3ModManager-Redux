@@ -46,6 +46,8 @@ internal static class Program
 		var restorePoints = new LoadOrderRestorePointTests();
 		var annotations = new ModAnnotationTests();
 		var overlaps = new ModFileOverlapTests();
+		var modContent = new ModContentInspectionTests();
+		var modContentWindow = new ModContentWindowTests();
 		var preflight = new PackagePreflightTests();
 		var archivePreflight = new ArchivePackagePreflightTests();
 		var archiveTraversal = new ArchiveEntryTraversalTests();
@@ -120,6 +122,23 @@ internal static class Program
 		var overrideDuplicateDialog = new OverrideDuplicateDialogTests();
 		var tests = new (string Name, Action Run)[]
 		{
+			(nameof(modContentWindow.ModContentInspectorCatalogHasCompleteTranslations), modContentWindow.ModContentInspectorCatalogHasCompleteTranslations),
+			(nameof(modContentWindow.ModContentInspectorCanCancelBeforeLoadWithoutReadingPackage), modContentWindow.ModContentInspectorCanCancelBeforeLoadWithoutReadingPackage),
+			(nameof(modContent.ContentInspectionCancellationStopsDuringContentRead), modContent.ContentInspectionCancellationStopsDuringContentRead),
+			(nameof(modContent.ContentInspectionBoundsZstdDecoderWindowIndependentlyOfOutput), modContent.ContentInspectionBoundsZstdDecoderWindowIndependentlyOfOutput),
+			(nameof(modContentWindow.ModContentInspectorKeepsActionsReachableAcrossThemesAndLanguages), modContentWindow.ModContentInspectorKeepsActionsReachableAcrossThemesAndLanguages),
+			(nameof(modContentWindow.ModContentInspectorSearchAndSelectionPreservePackageValues), modContentWindow.ModContentInspectorSearchAndSelectionPreservePackageValues),
+			(nameof(modContentWindow.ModContentInspectorShowsPartialAndEmptyResultsWithoutCompatibilityClaims), modContentWindow.ModContentInspectorShowsPartialAndEmptyResultsWithoutCompatibilityClaims),
+			(nameof(modContentWindow.ModContentInspectorVirtualizesLargeInventories), modContentWindow.ModContentInspectorVirtualizesLargeInventories),
+			(nameof(modContent.StatsInspectionKeepsDeclaredValuesAndInheritanceProvenance), modContent.StatsInspectionKeepsDeclaredValuesAndInheritanceProvenance),
+			(nameof(modContent.StatsInspectionRetainsSelfLayersButDoesNotGuessFileOrder), modContent.StatsInspectionRetainsSelfLayersButDoesNotGuessFileOrder),
+			(nameof(modContent.StatsInspectionFlagsExternalParentsAndCyclesWithoutInventingFields), modContent.StatsInspectionFlagsExternalParentsAndCyclesWithoutInventingFields),
+			(nameof(modContent.StatsInspectionIsolatesMalformedAndOversizedFiles), modContent.StatsInspectionIsolatesMalformedAndOversizedFiles),
+			(nameof(modContent.StatsInspectionCancellationAndRecordLimitsRemainBounded), modContent.StatsInspectionCancellationAndRecordLimitsRemainBounded),
+			(nameof(modContent.PackageContentInspectionReadsSelectedStatsWithoutWritesOrExtraction), modContent.PackageContentInspectionReadsSelectedStatsWithoutWritesOrExtraction),
+			(nameof(modContent.PackageContentInspectionRejectsSolidAndOversizedTablesBeforeExpansion), modContent.PackageContentInspectionRejectsSolidAndOversizedTablesBeforeExpansion),
+			(nameof(modContent.StatsInspectionReportsRepeatedFieldsWithoutDroppingTheRecord), modContent.StatsInspectionReportsRepeatedFieldsWithoutDroppingTheRecord),
+			(nameof(modContent.ContentInspectionDiagnosticsHaveAllInterfaceTranslations), modContent.ContentInspectionDiagnosticsHaveAllInterfaceTranslations),
 			(nameof(languages.BoundSentenceTranslationsUpdateCountsAndPreserveNames), languages.BoundSentenceTranslationsUpdateCountsAndPreserveNames),
 			(nameof(languages.DownloadAndSnapshotDetailsTranslateWithoutRewritingStoredData), languages.DownloadAndSnapshotDetailsTranslateWithoutRewritingStoredData),
 			(nameof(languages.SettingsAndCommandMetadataHaveTranslationsInEveryLanguage), languages.SettingsAndCommandMetadataHaveTranslationsInEveryLanguage),

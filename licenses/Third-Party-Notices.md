@@ -84,6 +84,19 @@ license and attribution requirements. The complete license and native third-part
 - Project: https://github.com/mono/SkiaSharp/tree/v4.153.1
 - Source package: https://www.nuget.org/packages/SkiaSharp.NativeAssets.Win32/4.153.1
 
+## LSLibStats and BG3 Forge
+
+The read-only mod content inspector uses LSLibStats from Norbyte's LSLib project
+under the MIT License. Its package-local Stats inheritance resolver adapts the
+iterative ancestor-chain and reverse-overlay algorithm from BG3 Forge's
+`StatsCollection.resolved`, copyright (c) 2026 BG3 Forge contributors, under MIT.
+Redux adds field provenance, resource limits and conservative handling of
+ambiguous definitions. The full Forge license is retained in `BG3-Forge-MIT.txt`.
+
+- LSLib: https://github.com/Norbyte/lslib
+- Forge source: https://github.com/crazyace/bg3-forge/blob/10fa2959b472bb71ba2714d274b9828e59cd4576/src/bg3forge/parsers/stats.py
+
+
 ## GitHub branding
 
 Redux uses the official GitHub Invertocat image to identify links to GitHub repositories and
@@ -106,7 +119,7 @@ project files and resolved dependency graph.
 | DynamicData | MIT | [DynamicData](https://github.com/reactivemarbles/DynamicData) |
 | Gameloop.Vdf | MIT | [Gameloop.Vdf](https://github.com/shravan2x/Gameloop.Vdf) |
 | GongSolutions.WPF.DragDrop | BSD-3-Clause | [gong-wpf-dragdrop](https://github.com/punker76/gong-wpf-dragdrop) |
-| LSLib and LSLibNative | MIT | [lslib](https://github.com/Norbyte/lslib) |
+| LSLib, LSLibNative and LSLibStats | MIT | [lslib](https://github.com/Norbyte/lslib) |
 | lz4net and native LZ4 libraries | BSD-2-Clause | [lz4net](https://github.com/MiloszKrajewski/lz4net) |
 | Newtonsoft.Json | MIT | [Newtonsoft.Json](https://github.com/JamesNK/Newtonsoft.Json) |
 | NexusModsNET | MIT | [NexusModsNET](https://github.com/Proless/NexusModsNET) |

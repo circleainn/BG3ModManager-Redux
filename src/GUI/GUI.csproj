@@ -130,6 +130,12 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</None>
+		<None Include="..\..\licenses\BG3-Forge-MIT.txt">
+			<Link>licenses\BG3-Forge-MIT.txt</Link>
+			<TargetPath>licenses\BG3-Forge-MIT.txt</TargetPath>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</None>
 		<None Include="..\..\licenses\CrossSpeak-LGPL-2.1.txt">
 			<Link>licenses\CrossSpeak-LGPL-2.1.txt</Link>
 			<TargetPath>licenses\CrossSpeak-LGPL-2.1.txt</TargetPath>
