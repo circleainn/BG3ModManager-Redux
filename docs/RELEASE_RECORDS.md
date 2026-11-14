@@ -1,5 +1,17 @@
 # Public-alpha publication records
 
+## 0.1.0-alpha.16.7.1 — offline database and maintenance update
+
+Published November 13, 2026 (America/New_York) as a quiet maintenance release.
+[GitHub release](https://github.com/circleainn/BG3ModManager-Redux/releases/tag/v0.1.0-alpha.16.7.1) · [Nexus files](https://www.nexusmods.com/baldursgate3/mods/23799?tab=files)
+
+- The annotated tag points to main commit `aa596d2162c9599d3d234f52ee4881f189975246`. Candidate `ce5bada6` and development integration `8f64de7d` share Git tree `54200253ef38ed8312c9a2dc560776d1999bfa63` with the release. [Main CI](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/43533830740) and [dev CI](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/43533837038) passed, including the dependency audit.
+- Both local Debug and Publish builds passed 789/789 regression checks. Four additional checks used assemblies extracted from the portable ZIP to exercise saved orders, separators, Override membership, package inspection and the offline Advisor.
+- The portable ZIP contains 78 inventory entries and measures 24,017,893 bytes. Its SHA-256 is `d59d2bdb354c175486c34a0b64ef3dabb1774753b5e49efd5a031ee371108a04`. The local candidate, draft download, and anonymous public download matched. The public download opened the 16.7.1 main window and exited normally.
+- A disposable installation of the official 16.7 package received the update through the public in-app dialog and restarted as 16.7.1. All 78 installed files matched the archive, and the saved order survived. Separate exact-package tests verified manual replacement, rollback under a locked DLL, and inventory-based removal with five synthetic user files preserved. These checks used a disposable game profile without running BG3.
+- The [Nexus upload](https://github.com/circleainn/BG3ModManager-Redux/actions/runs/43535066140) recorded file-version ID `14920716521721` and the matching archive digest. The public-alpha manifest was updated last. Its anonymous download measured 618 bytes with SHA-256 `3a4f19615645fbb9ba213fabc3d8b1750e3e24ba6f46ec393f325adf01ef3edc`, display version `0.1.0-alpha.16.7.1` and internal version `0.1.16.701`.
+- The maintainer explicitly approved this maintenance release on the existing .NET 8 runtime after its November 10 end of support, with the runtime note in the public release notes. Migration to a supported runtime remains outstanding. The no-announcement marker is present in the GitHub notes.
+
 ## 0.1.0-alpha.16.7 — interface languages
 
 - Source: `main` merge commit `c7444a3aae44ee678d53f2a04e0c90bd04bce400`; annotated tag `v0.1.0-alpha.16.7` points to that commit. Tested preparation commit `d66c001978da26ee77a185f4202d10af224fb6b4` and development integration `a128fc9e997652f384ce831365f5162262dc642b` share tree `a2e6f507dd0740df19589743f268b3295bb7decf` with main. PRs: [language implementation #194](https://github.com/circleainn/BG3ModManager-Redux/pull/194), [release preparation #195](https://github.com/circleainn/BG3ModManager-Redux/pull/195), and [main #196](https://github.com/circleainn/BG3ModManager-Redux/pull/196).

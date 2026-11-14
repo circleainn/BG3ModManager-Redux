@@ -7,7 +7,7 @@ test builds, and source snapshots are unsupported once a newer build is availabl
 
 ### Runtime lifecycle
 
-The published 16.7 application requires .NET 8 Desktop Runtime. Microsoft ends .NET 8 support on
+The published 16.7.1 application requires .NET 8 Desktop Runtime. Microsoft ended .NET 8 support on
 November 10, 2026; the current release does not yet provide a supported-runtime migration.
 The maintenance target is .NET 10 LTS, subject to validation of the Windows desktop and C++/CLI
 dependencies. Installing a newer major runtime alone does not retarget the existing application.
