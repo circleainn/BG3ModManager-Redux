@@ -8,6 +8,8 @@ source for individual implementation details.
 - Refresh the offline Load Order Advisor with 1,391 additional modules, updated dependency and
   placement guidance, and support for Fade's Equipment Distribution AIO as a substitute for FED.
 
+- Check the Nexus project identity when reviewing native mod archives. A replacement DLL from a
+  different project can share the original's file layout and still require its own review.
 - Show a repeated Nexus file once in collection previews when its details and optional status agree.
   If two entries conflict, the error identifies the collection revision and file ID.
 - Clarify that the AppData override changes Redux's paths without moving files or redirecting BG3.
