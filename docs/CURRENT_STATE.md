@@ -5,7 +5,7 @@ to check before changing established behavior. The [changelog](CHANGELOG.md) rec
 the [issue tracker](https://github.com/circleainn/BG3ModManager-Redux/issues) tracks individual
 reports and proposals, and the source and tests remain authoritative for implementation details.
 
-Last reviewed: November 13, 2026. Published release line: `0.1.0-alpha.16.7.1`.
+Last reviewed: November 13, 2026. Published release line: `0.1.0-alpha.16.7.2`.
 
 Save Manager now exports selected saves or a selected campaign to ZIP, including thumbnails,
 with progress and cancellation. Export retains the import limits: 32 saves, 1 GB total and
@@ -29,6 +29,10 @@ enforce repository branch protection by themselves.
 The .NET 8 support deadline is November 10, 2026. Runtime migration remains outstanding; the
 [security policy](SECURITY.md#runtime-lifecycle) records the .NET 10 toolchain, native-library,
 updater-prerequisite, and release-validation requirements.
+
+### 16.7.2 maintenance update
+
+New Nexus downloads can optionally install straight to Inactive Mods. Welcome Setup places 11 starter sections using offline mod groups. Redux recognizes the v33 Script Extender updater and preserves an identical existing copy. [Release notes](releases/0.1.0-alpha.16.7.2.md)
 
 ### 16.7.1 maintenance update
 
@@ -189,7 +193,7 @@ mods, and never saves or syncs automatically.
 |:--|:--|
 | Product | Baldur's Gate 3 Mod Manager Redux |
 | Short name | Redux |
-| Latest verified published version | `0.1.0-alpha.16.7.1` |
+| Latest verified published version | `0.1.0-alpha.16.7.2` |
 | Lifecycle | Public alpha |
 | Supported platform | Windows 10/11 x64 |
 | Required runtime | .NET 8 Desktop Runtime |
@@ -199,7 +203,7 @@ mods, and never saves or syncs automatically.
 | Update channel | `public-alpha` |
 | Active milestone | `v0.1.0 – Public Alpha` |
 
-The release tag is `v0.1.0-alpha.16.7.1`. Always verify the live branches and releases before
+The release tag is `v0.1.0-alpha.16.7.2`. Always verify the live branches and releases before
 preparing another publication.
 
 ## What Redux is
