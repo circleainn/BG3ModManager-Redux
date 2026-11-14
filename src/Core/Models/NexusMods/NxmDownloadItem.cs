@@ -150,6 +150,8 @@ public sealed class NxmDownloadItem : ReactiveObject
 	[DataMember(Order = 31), Reactive] public string InspectionSummary { get; set; } = String.Empty;
 	[DataMember(Order = 32), Reactive] public bool InspectionCompleted { get; set; }
 
+	[DataMember(Order = 33, EmitDefaultValue = false)] public bool AutoInstallRequested { get; set; }
+
 	[IgnoreDataMember] public NexusModManagerLink Authorization { get; set; }
 	[IgnoreDataMember] public NxmArchiveInspection Inspection { get; set; }
 	private double _bytesPerSecond;

@@ -173,6 +173,25 @@ internal sealed class NxmDownloadManagerTests
 		RegressionAssert.Equal(6, fixture.Manager.Items.Count(item => item.State == NxmDownloadState.Downloaded));
 	}
 
+	public void OnlyNewOptedInNxmLinksCarryAnAutoInstallRequest()
+	{
+		var manager = new NxmDownloadManager(System.IO.Path.GetTempPath(), new MemoryStore(), new ResolverFactory(),
+			new ReportingTransfer(), 1, () => false, (_, _) => Task.FromResult(true));
+		var first = new NexusModManagerLink(80, 90, null!, null, null);
+		manager.EnqueueAsync(first).GetAwaiter().GetResult();
+		manager.EnqueueAsync(first, autoInstallToInactive: true).GetAwaiter().GetResult();
+		manager.EnqueueAsync(new NexusModManagerLink(81, 91, null!, null, null), autoInstallToInactive: true).GetAwaiter().GetResult();
+		RegressionAssert.True(SpinWait.SpinUntil(() => manager.Items.All(i => i.State == NxmDownloadState.Downloaded), 5000));
+		RegressionAssert.False(manager.Items.First().AutoInstallRequested);
+		var item = manager.Items.Last();
+		RegressionAssert.True(item.AutoInstallRequested);
+		manager.SetInspectionAsync(item.Id, "Example", "PAK mod", "Inactive Mods", "", true).GetAwaiter().GetResult();
+		RegressionAssert.True(item.AutoInstallRequested);
+		RegressionAssert.True(manager.ConsumeAutoInstallRequestAsync(item).GetAwaiter().GetResult());
+		RegressionAssert.False(item.AutoInstallRequested);
+		manager.ShutdownAsync().GetAwaiter().GetResult();
+	}
+
 	public void RemovingResolvingItemCancelsItBeforeTransfer()
 	{
 		var transfer = new FakeTransfer();

@@ -149,7 +149,7 @@ The interface-language choice is retained even if setup is deferred. Online sour
 Advisor guidance, and retained package archives remain independent opt-in choices. Enabling NXM
 links does not enable archive retention, and enabling provider information does not authorize a
 download or installation. Setup does not install packages or sync the game. Explicitly requested
-starter separators can add presentation data to the working Active order.
+starter separators mark sections in the working Active order. Each has its own icon and color. Setup uses known offline group assignments to place headings around ungrouped mods and preserves existing sections.
 
 ## Rules for new feature work
 

@@ -3,7 +3,7 @@
 <img src="docs/assets/nexus-description/00-redux-header.png#gh-dark-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 <img src="docs/assets/nexus-description/00-redux-header-light.png#gh-light-mode-only" alt="Baldur's Gate 3 Mod Manager Redux" width="100%">
 
-[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.7.1-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
+[![Current build](https://img.shields.io/badge/build-0.1.0--alpha.16.7.2-9A7BFF?style=flat-square)](https://github.com/circleainn/BG3ModManager-Redux/releases)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-4F86F7?style=flat-square)](#requirements-and-alpha-status)
 [![License](https://img.shields.io/badge/license-MIT-42A66F?style=flat-square)](LICENSE)
 [![Support on Ko-fi](https://img.shields.io/badge/Support-Ko--fi-FF5E5B?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/circleain)
@@ -25,9 +25,9 @@ Redux is a Windows mod manager built on
 BG3MM's proven package, profile, and load-order foundation while adding a cohesive interface,
 stronger organization, safer review workflows, and optional offline-assisted guidance.
 
-## Maintenance update 16.7.1
+## Maintenance update 16.7.2
 
-The offline Load Order Advisor recognizes 1,391 more modules. Inspect the contents of an installed mod with **What this mod changes...**. This update also improves saved orders, column layouts, collection previews, and Script Extender version selection. [Release notes](docs/releases/0.1.0-alpha.16.7.1.md)
+Optionally install new Nexus downloads directly to Inactive Mods, organize your load order with 11 starter sections, and recognize the official v33 Script Extender updater. [Release notes](docs/releases/0.1.0-alpha.16.7.2.md)
 
 <h3 id="new-in-16-7" align="center">New in 16.7</h3>
 <hr>

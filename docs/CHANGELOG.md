@@ -3,6 +3,12 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
+## 0.1.0-alpha.16.7.2
+
+- Download Manager has an optional **Auto-install NXM downloads to Inactive Mods** checkbox. With it enabled, new PAK mods from Nexus links go straight to the inactive library. Updates, overrides, saves and game-folder packages stay in Downloads for review.
+- Welcome Setup offers 11 starter sections with distinct icons and colors. Redux uses offline mod groups to place headings around existing mods and preserves custom sections and load order.
+- Redux recognizes Norbyte’s official v33 Script Extender updater. Installing an identical copy succeeds without replacing the DLL or changing who manages it. Unidentified DWrite.dll files are labeled and left in place.
+
 ## 0.1.0-alpha.16.7.1
 
 - Inspect an installed mod with **What this mod changes...** to browse its package files, Stats declarations, and fields inherited within the package.
