@@ -3,7 +3,9 @@
 This file summarizes user-visible Redux releases. The issue tracker and Git history remain the
 source for individual implementation details.
 
-## Unreleased
+## 0.1.0-alpha.16.7.1
+
+- Inspect an installed mod with **What this mod changes...** to browse its package files, Stats declarations, and fields inherited within the package.
 
 - Refresh the offline Load Order Advisor with 1,391 additional modules, updated dependency and
   placement guidance, and support for Fade's Equipment Distribution AIO as a substitute for FED.
