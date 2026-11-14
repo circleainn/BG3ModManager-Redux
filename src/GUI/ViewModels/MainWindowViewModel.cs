@@ -6488,6 +6488,22 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 			20);
 	}
 
+	public void OpenModContentInspector(DivinityModData mod)
+	{
+		if (MainProgressIsActive || mod == null || mod.IsVisualDivider) return;
+		if (String.IsNullOrWhiteSpace(mod.FilePath)
+			|| !String.Equals(Path.GetExtension(mod.FilePath), ".pak", StringComparison.OrdinalIgnoreCase)
+			|| !File.Exists(mod.FilePath))
+		{
+			ShowAlert(DivinityModManager.Localization.ReduxLanguageService.Current.Translate(
+				"The installed PAK could not be found. Refresh the mod list and try again."), AlertType.Info, 15);
+			return;
+		}
+		var dialog = new ReduxModContentWindow(mod.FilePath, mod.DisplayName);
+		if (Window?.IsLoaded == true) dialog.Owner = Window;
+		dialog.ShowDialog();
+	}
+
 	private void OpenFileOverlapInspector()
 	{
 		if (MainProgressIsActive)
@@ -13539,6 +13555,11 @@ public class MainWindowViewModel : BaseHistoryViewModel, IActivatableViewModel, 
 		DeleteOrderCommand = ReactiveCommand.Create<DivinityLoadOrder>(DeleteOrder, canDeleteOrder, RxApp.MainThreadScheduler);
 
 		modsConnection.AutoRefresh(x => x.IsSelected).Filter(x => x.IsSelected && !x.IsEditorMod && File.Exists(x.FilePath)).Bind(out selectedPakMods).Subscribe();
+
+		Keys.InspectModContent.AddAction(
+			() => OpenModContentInspector(SelectedPakMods.Count == 1 ? SelectedPakMods[0] : null),
+			this.WhenAnyValue(x => x.SelectedPakMods.Count)
+				.CombineLatest(canOpenDialogWindow, (count, canOpen) => count == 1 && canOpen));
 
 		var anyPakModSelectedObservable = this.WhenAnyValue(x => x.SelectedPakMods.Count, (count) => count > 0);
 		Keys.ExtractSelectedMods.AddAction(ExtractSelectedMods_Start, anyPakModSelectedObservable);

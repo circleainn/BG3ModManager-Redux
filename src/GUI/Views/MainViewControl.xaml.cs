@@ -121,6 +121,7 @@ public partial class MainViewControl : MainViewControlViewBase
 			[nameof(AppKeys.ExtractSelectedAdventure)] = ("Redux.Icon.Archive", true, null),
 			[nameof(AppKeys.ToggleVersionGeneratorWindow)] = ("Redux.Icon.Build", true, null),
 			[nameof(AppKeys.InspectFileOverlaps)] = ("Redux.Icon.Blocks", true, null),
+			[nameof(AppKeys.InspectModContent)] = ("Redux.Icon.DocumentText", true, null),
 			[nameof(AppKeys.DownloadScriptExtender)] = ("Redux.Icon.Download", true, null),
 			[nameof(AppKeys.SpeakActiveModOrder)] = ("Redux.Icon.VolumeHigh", true, null),
 			[nameof(AppKeys.StopSpeaking)] = ("Redux.Icon.StopCircle", true, "ReduxErrorBrush"),

@@ -31,6 +31,28 @@ Save archives and loose `.lsv` files reuse Save Game Manager's validation and me
 Recognized saves show campaign, difficulty, timestamp, and contents, together with a clear route to
 Save Game Manager rather than the normal mod installer.
 
+## What this mod changes
+
+Select one installed PAK mod and open **Tools > What this mod changes...**, the same action in
+**Quick Access**, its right-click menu, or its details **Files** tab. The inspector reads the
+selected package on demand without extraction or modification.
+
+The **Stats records** tab shows supported declarations from `Public/.../Stats/Generated/Data/*.txt`.
+Select a record to see its fields, parent, source path and line, and whether each value was declared
+there or inherited from a parent in the same package. Search by record name, type, parent or path.
+**Package files** inventories other content, including textures, scripts and localization;
+**Inspection notes** explains malformed, skipped or unresolved content.
+
+LSLibStats parses the declarations. The package-local inheritance resolver adapts BG3 Forge's
+iterative resolver and retains provenance. An external parent, uncertain definition order or cycle
+is reported as incomplete. This view does not compare with the base game, interpret every file
+format, run scripts, or determine compatibility and winning values across the active load order.
+
+Inspection supports non-solid PAK versions 15, 16 and 18. It limits Stats reads to 2 MiB per file,
+16 MiB total, 512 Stats files and 10,000 records, with separate field and file-table limits.
+Unsupported or oversized content produces a partial result instead of an unrestricted read.
+Cancel stops the inspection and leaves the package untouched.
+
 ## Understand the result
 
 | Result | Meaning |

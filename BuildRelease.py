@@ -25,6 +25,7 @@ THIRD_PARTY_LICENSE_FILES = (
 	Path("CrossSpeak-LGPL-2.1.txt"),
 	Path("Lucide-ISC.txt"),
 	Path("LSLib-MIT.txt"),
+	Path("BG3-Forge-MIT.txt"),
 	Path("Manrope-OFL-1.1.txt"),
 	Path("Atkinson-Hyperlegible-OFL-1.1.txt"),
 	Path("ArchivoBlack-OFL-1.1.txt"),
